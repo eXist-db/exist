@@ -32,9 +32,9 @@
          <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
 
         <para>
-            Using an XQuery package in the repository is as simple as importing it the normal way.
+            Deploying an XQuery package in the repository can be reduced to a single <a href="install-functx.xqy" target="_example">click to install functx</a> .
 <example>
-            <title>List existing packages</title>
+            <title>Functx example</title>
             <programlisting>
             <markup>
 import module namespace functx="http://www.functx.com";
@@ -42,12 +42,10 @@ import module namespace functx="http://www.functx.com";
 functx:capitalize-first('hello')
             </markup>
             </programlisting>
-    <a href="install-functx.xqy" target="_example">click here to install functx</a> |
-
+    <a href="/exist/rest/db?_query=import%20module%20namespace%20repo=%22http://exist-db.org/xquery/repo%22;%20repo:list%28%29" target="list">list installed packages</a>
 </example>
-            If you installed the functx-1.0.xar package the above would work as eXist package manager will resolve the module
-            from the repository. You can <a href="/exist/rest/db?_query=import%20module%20namespace%20repo=%22http://exist-db.org/xquery/repo%22;%20repo:list%28%29" target="list">list installed packages</a>
-to see if Functx module is now installed.</para>
+            If you installed the functx-1.0.xar package the above XQuery listing would work as eXist package manager will resolve the module
+            from the repository.</para>
         <para>
             <important>
                 <para>Any newly installed packages still requires you to restart eXistdb, a limitation we will be addressing in the near future.</para>
