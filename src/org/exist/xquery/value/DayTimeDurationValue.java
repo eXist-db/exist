@@ -86,16 +86,18 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public String getStringValue() {
-		int d = duration.getDays();
-		int h = duration.getHours();
-		int m = duration.getMinutes();
-		Number s = duration.getField(DatatypeConstants.SECONDS);
+		canonicalize();
+		
+		int d = canonicalDuration.getDays();
+		int h = canonicalDuration.getHours();
+		int m = canonicalDuration.getMinutes();
+		Number s = canonicalDuration.getField(DatatypeConstants.SECONDS);
         if (s == null)
         	s = new Integer(0);
 	
 		//Copied from Saxon 8.6.1		
         FastStringBuffer sb = new FastStringBuffer(32);
-        if (duration.getSign() < 0) {
+        if (canonicalDuration.getSign() < 0) {
             sb.append('-');
         }
         sb.append('P');        
