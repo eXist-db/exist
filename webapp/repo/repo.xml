@@ -25,12 +25,10 @@
             third party XQuery libraries to full applications or other XML technology functionality.
         </para>
          <para>
-             eXist-db now uses expath repository to resolve external XQuery dependencies located in [package repository
+             eXist-db is integrated with an <a href="http://expath.org/modules/pkg/">expath repository</a> to resolve external XQuery dependencies located in [package repository
              to be used by your own XQuery. Soon we will also have support for being able to deploy and manage
              other XML technologies like XSLT, Xproc, Schema, and data/resources.
          </para>
-         <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
-
         <para>
             Deploying an XQuery package in the repository can be reduced to a single <a href="install-functx.xqy" target="_example">click to install functx</a> .
             If everything went ok the functx-1.0.xar package should now be installed (you need to restart eXist) and the
