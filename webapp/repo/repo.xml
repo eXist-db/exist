@@ -297,9 +297,8 @@ repo:remove('functx-1.0')
     <section>
         <title>Resources</title>
         <ul>
-            <li><a href="http://expath.org" target="_resource">EXPath</a>: Florent Georges maintains this Community defined extensions to XPath. Currently, xprocxq uses expath http-client module.</li>
-            <li><a href="http://expath.org/modules/pkg/" target="_resource">Expath Packaging Documentation</a>: Information on vendor specific expath repository implementations.</li>
             <li><a href="http://expath.org/modules/pkg.html" target="_resource">Expath Package Specification</a>: Community defined specification</li>
+            <li><a href="http://expath.org/modules/pkg/" target="_resource">Expath Packaging Documentation</a>: Information on vendor specific expath repository implementations.</li>
         </ul>
     </section>
 
