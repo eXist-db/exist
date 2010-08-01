@@ -231,7 +231,7 @@ math:pi()
     The repo:list() function returns a sequence of strings containing the names of installed packages.
 
     <example>
-			<title>List existing packages</title>
+			<title>packages/list-repo.xqy: List existing packages</title>
 			<programlisting>
 			<markup>
 import module namespace repo="http://exist-db.org/xquery/repo";
@@ -250,7 +250,7 @@ repo:list()
         The repo:install() function returns a boolean value indicating success or failure of installation.
 
         <example>
-			<title>Install existing packages</title>
+			<title>packages/install-functx.xqy: Install existing packages</title>
 			<programlisting>
 			<markup>
 import module namespace repo="http://exist-db.org/xquery/repo";
@@ -269,7 +269,7 @@ repo:install('http://127.0.0.1:8080/exist/repo/packages/functx-1.0.xar')
         The repo:remove() function returns a sequence of strings containing the names of installed packages.
 
         <example>
-			<title>Remove existing packages</title>
+			<title>packages/remove-functx.xqy: Remove existing packages</title>
 			<programlisting>
 			<markup>
 import module namespace repo="http://exist-db.org/xquery/repo";
