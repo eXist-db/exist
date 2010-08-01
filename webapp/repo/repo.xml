@@ -33,7 +33,11 @@
 
         <para>
             Deploying an XQuery package in the repository can be reduced to a single <a href="install-functx.xqy" target="_example">click to install functx</a> .
-<example>
+            If everything went ok the functx-1.0.xar package should now be installed (you need to restart eXist) and the
+    following XQuery should run properly in the <a href="/exist/sandbox/sandbox.xql" target="sandbox">XQuery sandbox</a>.
+
+<example>.
+            from the repository.
             <title>Functx example</title>
             <programlisting>
             <markup>
@@ -44,8 +48,7 @@ functx:capitalize-first('hello')
             </programlisting>
     <a href="/exist/rest/db?_query=import%20module%20namespace%20repo=%22http://exist-db.org/xquery/repo%22;%20repo:list%28%29" target="list">list installed packages</a>
 </example>
-            If you installed the functx-1.0.xar package the above XQuery listing would work as eXist package manager will resolve the module
-            from the repository.</para>
+            </para>
         <para>
             <important>
                 <para>Any newly installed packages still requires you to restart eXistdb, a limitation we will be addressing in the near future.</para>
