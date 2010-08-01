@@ -282,6 +282,44 @@ public class LocationStep extends Step {
 				&& this.test.getType() == Type.NODE)
 			contextInfo.addFlag(DOT_TEST);
 
+		// static analysis for empty-sequence
+		Expression contextStep;
+		switch (axis) {
+		case Constants.SELF_AXIS:
+			contextStep = contextInfo.getContextStep();
+			if (contextStep instanceof LocationStep) {
+				LocationStep cStep = (LocationStep) contextStep;
+				
+				if (!Type.subTypeOf(cStep.getTest().getType(), getTest().getType()))
+					throw new XPathException(this, 
+							"err:XPST0005: get nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
+				
+				if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
+					throw new XPathException(this, 
+							"err:XPST0005: self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
+			}
+			break;
+//		case Constants.DESCENDANT_AXIS:
+		case Constants.DESCENDANT_SELF_AXIS:
+			contextStep = contextInfo.getContextStep();
+			if (contextStep instanceof LocationStep) {
+				LocationStep cStep = (LocationStep) contextStep;
+				
+				if ((
+						cStep.getTest().getType() == Type.ATTRIBUTE || 
+						cStep.getTest().getType() == Type.TEXT
+					)
+						&& cStep.getTest() != getTest())
+					throw new XPathException(this, 
+							"err:XPST0005: descendant-or-self::"+getTest()+" from an attribute gets nothing.");
+			}
+			break;
+//		case Constants.PARENT_AXIS:
+//		case Constants.ATTRIBUTE_AXIS:
+		default:
+			;
+		}
+
 		// TODO : log somewhere ?
 		super.analyze(contextInfo);
 	}
