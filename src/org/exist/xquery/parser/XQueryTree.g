@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * basé sur 4568, modif boris GB 
+ * base sur 4568, modif boris GB 
  *  $Id$
  */
 header {
@@ -73,11 +73,16 @@ options {
 	protected boolean foundError= false;
 	protected Map declaredNamespaces = new HashMap();
 	protected Set declaredGlobalVars = new TreeSet();
-	
+
 	public XQueryTreeParser(XQueryContext context) {
+        this(context, null);
+	}
+
+	public XQueryTreeParser(XQueryContext context, ExternalModule module) {
 		this();
-                this.staticContext = new XQueryContext(context);
+        this.staticContext = new XQueryContext(context);
 		this.context= context;
+		this.myModule = module;
 	}
 
 	public ExternalModule getModule() {
@@ -211,7 +216,10 @@ throws PermissionDeniedException, EXistException, XPathException
    #(
             m:MODULE_DECL uri:STRING_LITERAL
             {
-                myModule = new ExternalModuleImpl(uri.getText(), m.getText());
+                if (myModule == null)
+                    myModule = new ExternalModuleImpl(uri.getText(), m.getText());
+                else
+                    myModule.setNamespace(m.getText(), uri.getText());
                 context.declareNamespace(m.getText(), uri.getText());
                 staticContext.declareNamespace(m.getText(), uri.getText());
             }

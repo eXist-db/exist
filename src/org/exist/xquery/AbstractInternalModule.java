@@ -78,10 +78,14 @@ public abstract class AbstractInternalModule implements InternalModule {
 	public boolean isInternalModule() {
 		return true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Module#getNamespaceURI()
-	 */
+
+    public boolean isReady() {
+        return true;    // internal modules don't need to be compiled
+    }
+
+    /* (non-Javadoc)
+      * @see org.exist.xquery.Module#getNamespaceURI()
+      */
 	public abstract String getNamespaceURI();
 
 	/* (non-Javadoc)
