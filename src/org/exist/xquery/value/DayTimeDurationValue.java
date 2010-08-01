@@ -86,7 +86,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public String getStringValue() {
-		canonicalize();
+		Duration canonicalDuration = getCanonicalDuration();
 		
 		int d = canonicalDuration.getDays();
 		int h = canonicalDuration.getHours();

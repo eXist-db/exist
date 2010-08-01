@@ -45,7 +45,7 @@ public class DurationValue extends ComputableValue {
 	public final static int MINUTE = 4;
 	
 	protected final Duration duration;
-	protected Duration canonicalDuration;
+	private Duration canonicalDuration;
 	
 	protected static final BigInteger
 		TWELVE = BigInteger.valueOf(12),
@@ -132,7 +132,7 @@ public class DurationValue extends ComputableValue {
 		return x;
 	}
 	
-	protected void canonicalize() {
+	private void canonicalize() {
 		if (canonicalDuration != null)
 			return;
 		
