@@ -23,21 +23,11 @@ package org.exist.xquery.xqts;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TimeZone;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
 
 import junit.framework.Assert;
 
@@ -45,45 +35,23 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.custommonkey.xmlunit.Diff;
-import org.exist.Namespaces;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.SAXAdapter;
-import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.w3c.tests.TestCase;
-import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -408,6 +376,7 @@ public class XQTS_case extends TestCase {
 						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				Assert.fail(e.toString());
 			}
 		} catch (XMLDBException e) {
