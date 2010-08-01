@@ -221,7 +221,7 @@ public abstract class TestCase {
 
 				if (!ok) {
 					if (!expResult.equals(res))
-						if (compare.equals("Fragment")) {
+						if (compare.equals("Fragment") || compare.equals("Inspect")) {
 							
 							try {
 								ok = diffXML(expResult, res);
