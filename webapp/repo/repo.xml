@@ -132,7 +132,78 @@ functx/
             <li>example app Invoice-1.0 <a href="packages/invoice-1.0.xar?install=true" target="install">install</a> | <a href="packages/invoice-1.0.xar?remove=true" target="remove">remove</a> </li>
         </ul>
     </para>
+<para>A more advanced package could contain other archive resources. We can package up eXist own modules into jars and
+    distribute them using .xar. The following expath-pkg.xml package describes eXist's own math module.
+    <example>
+			<title>package description for extensions math module</title>
+			<programlisting>
+			<markup>
+&lt;package xmlns="http://expath.org/ns/pkg"&gt;
+   &lt;module name="math" version="1.0"&gt;
+      &lt;title&gt;Math extension packaged as xar&lt;/title&gt;
+      &lt;exist&gt;
+         &lt;jar&gt;math.jar&lt;/jar&gt;
+         &lt;java&gt;
+            &lt;namespace&gt;http://exist-db.org/xquery/math&lt;/namespace&gt;
+            &lt;class&gt;org.exist.xquery.modules.math.MathModule&lt;/class&gt;
+         &lt;/java&gt;
+      &lt;/exist&gt;
+   &lt;/module&gt;
+&lt;/package&gt;
+            </markup>
+			</programlisting>
+        </example>
+</para>
+
 <para>
+The <a href="packages/math-example/math" target="math">math jar</a> that is referenced from expath-pkg.xml needs to contain the correct MANIFEST.MF which lists out any other
+    dependent jars (lib/exist.jar and lib/xmldb.jar), as shown below.
+
+<example>
+        <title>math.jar MANIFEST.MF</title>
+        <programlisting>
+        <markup>
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.1
+Created-By: 14.1-b02-90 (Apple Inc.)
+Project-Name: eXist
+Project-Version: 1.5.0dev
+Class-Path: lib/exist.jar lib/xmldb.jar
+        </markup>
+        </programlisting>
+    </example>
+
+</para>
+<para>
+Then its just a matter of including all the extensions classes.
+<example>
+        <title>xar-math target in extensions/modules/build.xml creates math.jar which ships inside math-1.0.xar </title>
+        <programlisting>
+        <markup>
+drwxr-xr-x         0  31-Jul-2010  22:09:40  META-INF/
+-rw-r--r--       183  31-Jul-2010  22:09:38  META-INF/MANIFEST.MF
+drwxr-xr-x         0  31-Jul-2010  14:03:36  org/
+drwxr-xr-x         0  31-Jul-2010  14:03:36  org/exist/
+drwxr-xr-x         0  31-Jul-2010  14:03:36  org/exist/xquery/
+drwxr-xr-x         0  31-Jul-2010  14:03:46  org/exist/xquery/modules/
+drwxr-xr-x         0  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/
+-rw-r--r--      1867  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/MathModule.class
+-rw-r--r--      3695  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/NoParamFunctions.class
+-rw-r--r--      6996  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/OneParamFunctions.class
+-rw-r--r--      4522  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/TwoParamFunctions.class
+        </markup>
+        </programlisting>
+</example>
+
+</para>
+
+<para>
+We will probably be repackaging all existing extensions to take advantage of this, for now you can test deploying
+    eXists own extensions using the <a href="packages/math-example" target="math">Math-1.0.xar</a> which is eXist's own math module
+    repackaged up using .xar.
+    <ul>
+        <li>Math-1.0 <a href="packages/math-1.0.xar?install=true" target="install">install</a> | <a href="packages/math-1.0.xar?remove=true" target="remove">remove</a> </li>
+    </ul>
 </para>
     </section>
 
