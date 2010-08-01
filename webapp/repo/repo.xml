@@ -40,12 +40,12 @@ import module namespace functx="http://www.functx.com";
 functx:capitalize-first('hello')
             </markup>
             </programlisting>
-    <a href="install-functx.xqy" target="_example">click here to install functx</a>
+    <a href="install-functx.xqy" target="_example">click here to install functx</a> |
 
 </example>
             If you installed the functx-1.0.xar package the above would work as eXist package manager will resolve the module
-            from the repository.
-        </para>
+            from the repository. You can <a href="/exist/rest/db?_query=import%20module%20namespace%20repo=%22http://exist-db.org/xquery/repo%22;%20repo:list%28%29" target="list">list installed packages</a>
+to see if Functx module is now installed.</para>
         <para>
             <important>
                 <para>eXist repository is based on the <a href="http://expath.org/modules/pkg/">expath package repository specification</a>.</para>
