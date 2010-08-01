@@ -286,17 +286,20 @@ public class LocationStep extends Step {
 		Expression contextStep;
 		switch (axis) {
 		case Constants.SELF_AXIS:
-			contextStep = contextInfo.getContextStep();
-			if (contextStep instanceof LocationStep) {
-				LocationStep cStep = (LocationStep) contextStep;
+			if (getTest().getType() != Type.NODE) {
 				
-				if (!Type.subTypeOf(cStep.getTest().getType(), getTest().getType()))
-					throw new XPathException(this, 
-							"err:XPST0005: get nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
-				
-				if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
-					throw new XPathException(this, 
-							"err:XPST0005: self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
+				contextStep = contextInfo.getContextStep();
+				if (contextStep instanceof LocationStep) {
+					LocationStep cStep = (LocationStep) contextStep;
+					
+					if (!Type.subTypeOf(cStep.getTest().getType(), getTest().getType()))
+						throw new XPathException(this, 
+								"err:XPST0005: get nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
+					
+					if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
+						throw new XPathException(this, 
+								"err:XPST0005: self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
+				}
 			}
 			break;
 //		case Constants.DESCENDANT_AXIS:
