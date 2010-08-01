@@ -51,7 +51,7 @@ public class JavaCall extends Function {
 	private final QName qname;
 	private String name;
 	private Class<?> myClass = null;
-	private List candidateMethods = new ArrayList(5);
+	private List<AccessibleObject> candidateMethods = new ArrayList<AccessibleObject>(5);
 
 	/**
 	 * @param context
@@ -202,10 +202,10 @@ public class JavaCall extends Function {
 		// get the actual arguments
 		Sequence args[] = getArguments(contextSequence, contextItem);
 
-		AccessibleObject bestMethod = (AccessibleObject) candidateMethods.get(0);
+		AccessibleObject bestMethod = candidateMethods.get(0);
 		int conversionPrefs[] = getConversionPreferences(bestMethod, args);
-		for (int i = 1; i < candidateMethods.size(); i++) {
-			AccessibleObject nextMethod = (AccessibleObject) candidateMethods.get(i);
+
+		for (AccessibleObject nextMethod : candidateMethods) {
 			int prefs[] = getConversionPreferences(nextMethod, args);
 			for (int j = 0; j < prefs.length; j++) {
 				if (prefs[j] < conversionPrefs[j]) {
