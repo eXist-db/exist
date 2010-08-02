@@ -108,13 +108,13 @@ public class LDAPRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public Group getRole(String name) {
+	public Group getGroup(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean hasRole(String name) {
+	public boolean hasGroup(String name) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -126,7 +126,7 @@ public class LDAPRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public Group getRole(int id) {
+	public Group getGroup(int id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -162,6 +162,48 @@ public class LDAPRealm implements Realm, Configurable {
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+
+	@Override
+	public User addAccount(User account) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasAccount(User account) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteAccount(User account) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Group addGroup(Group role) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasGroup(Group role) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean updateGroup(Group role) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

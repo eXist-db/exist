@@ -121,7 +121,9 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 				}
 			}
 		} catch (NamingException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+			throw new AuthenticationException(
+					AuthenticationException.UNNOWN_EXCEPTION, 
+					e.getMessage());
 		}
 
 		return new UserImpl(this, username);

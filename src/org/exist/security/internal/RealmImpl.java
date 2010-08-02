@@ -55,8 +55,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -248,18 +246,30 @@ public class RealmImpl implements Realm {
 	}
 
 	public synchronized Group addGroup(String name) {
-		Group group = _addGroup(name);
+		Group created_group = _addGroup(name);
 		
 		_save();
 		
-		return group;
+		return created_group;
 	}
 
-	public synchronized boolean hasRole(String name) {
+	public synchronized Group addGroup(Group group) {
+		Group created_group = _addGroup(group.getName());
+		
+		_save();
+		
+		return created_group;
+	}
+
+	public synchronized boolean hasGroup(String name) {
 		return groupsByName.containsKey(name);
 	}
 
-	public synchronized Group getRole(String name) {
+	public synchronized boolean hasGroup(Group role) {
+		return groupsByName.containsKey(role.getName());
+	}
+
+	public synchronized Group getGroup(String name) {
 		return groupsByName.get(name);
 	}
 	
@@ -342,9 +352,9 @@ public class RealmImpl implements Realm {
 		return usersByName.values();
 	}
 
-	public synchronized void deleteAccount(User user) throws PermissionDeniedException {
+	public synchronized boolean deleteAccount(User user) throws PermissionDeniedException {
 		if(user == null)
-			return;
+			return false;
 		
 		usersById.remove(user.getUID());
 		usersByName.remove(user.getName());
@@ -355,22 +365,35 @@ public class RealmImpl implements Realm {
 //			LOG.debug("user not found");
 		
 		_save();
+		
+		return true;
 	}
 
-	public synchronized void deleteRole(String name) throws PermissionDeniedException {
+	public synchronized boolean deleteRole(String name) throws PermissionDeniedException {
 		if(name == null)
-			return;
+			return false;
 		
 		Group role = groupsByName.get(name);
 		if (role == null)
-			return;
+			return false;
 		
 		groupsById.remove(role.getId());
 		groupsByName.remove(role.getName());
 
 		_save();
+		
+		return true;
 	}
 
+	public synchronized boolean updateGroup(Group role) throws PermissionDeniedException {
+		throw new PermissionDeniedException("not implemented");
+		//TODO: code
+	}
+
+	public synchronized boolean deleteGroup(Group role) throws PermissionDeniedException {
+		return deleteRole(role.getName());
+	}
+	
 	@Override
 	public synchronized User authenticate(String accountName, Object credentials) throws AuthenticationException {
 		User user = getAccount(accountName);
@@ -482,8 +505,12 @@ public class RealmImpl implements Realm {
 	}
 
 	@Override
-	public boolean hasAccount(String accountName) {
+	public synchronized boolean hasAccount(String accountName) {
 		return usersByName.containsKey(accountName);
+	}
+
+	public synchronized boolean hasAccount(User account) {
+		return usersByName.containsKey(account.getName());
 	}
 
 	@Override
@@ -492,7 +519,7 @@ public class RealmImpl implements Realm {
 	}
 
 	@Override
-	public synchronized Group getRole(int id) {
+	public synchronized Group getGroup(int id) {
 		return groupsById.get(id);
 	}
 }
