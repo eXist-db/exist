@@ -49,9 +49,9 @@ public class LDAPRealm implements Realm, Configurable {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
-    private LdapContextFactory ldapContextFactory = null;
+	protected LdapContextFactory ldapContextFactory = null;
     
-    private Configuration configuration = null;
+    protected Configuration configuration = null;
     
     public LDAPRealm(Configuration config) {
     	configuration = Configurator.configure(this, config);
