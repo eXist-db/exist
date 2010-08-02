@@ -52,7 +52,7 @@ public class LdapContextFactory implements Configurable {
 
 	@ConfigurationField("principalPattern")
     protected String principalPattern = null;
-	private MessageFormat principalPatternFormat;
+	protected MessageFormat principalPatternFormat;
 
 	@ConfigurationField("url")
     protected String url = null;
