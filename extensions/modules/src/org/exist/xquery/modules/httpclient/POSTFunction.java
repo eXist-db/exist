@@ -187,7 +187,7 @@ public class POSTFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, post, persistState );
+            response = doRequest(context, post, persistState, null, null);
 
         }
         catch( IOException ioe ) {

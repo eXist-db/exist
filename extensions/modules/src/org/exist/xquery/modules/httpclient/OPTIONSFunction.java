@@ -91,10 +91,10 @@ public class OPTIONSFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, options, persistState );
+            response = doRequest(context, options, persistState, null, null);
         }
         catch( IOException ioe ) {
-            throw( new XPathException( this, ioe.getMessage(), ioe ) );
+            throw(new XPathException(this, ioe.getMessage(), ioe));
         }
         finally {
             options.releaseConnection();

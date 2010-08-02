@@ -67,6 +67,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -88,6 +90,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     protected static final FunctionParameterSequenceType POST_FORM_PARAM                = new FunctionParameterSequenceType( "content", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The form data in the format <httpclient:fields><httpclient:field name=\"\" value=\"\" type=\"string|file\"/>...</httpclient:fields>.  If the field values will be suitably URLEncoded and sent with the mime type application/x-www-form-urlencoded." );
     protected static final FunctionParameterSequenceType PERSIST_PARAM                  = new FunctionParameterSequenceType( "persist", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates if the HTTP state (eg. cookies, credentials, etc.) should persist for the life of this xquery" );
     protected static final FunctionParameterSequenceType REQUEST_HEADER_PARAM           = new FunctionParameterSequenceType( "request-headers", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Any HTTP Request Headers to set in the form  <headers><header name=\"\" value=\"\"/></headers>" );
+    protected static final FunctionParameterSequenceType OPTIONS_PARAM                  = new FunctionParameterSequenceType( "parser-options", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "Feature and Property options to be passed to the HTML/XML parser in the form <options><feature name=\"\" value=\"{true|false}\"/><property name=\"\" value=\"\"/></options>" );
 
     protected static final FunctionReturnSequenceType    XML_BODY_RETURN                = new FunctionReturnSequenceType( Type.ITEM, Cardinality.EXACTLY_ONE, "the XML body content" );
 
@@ -147,7 +150,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  IOException     
      * @throws  XPathException  
      */
-    protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistState ) throws IOException, XPathException
+    protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistState, Map<String, Boolean> parserFeatures, Map<String, String> parserProperties) throws IOException, XPathException
     {
         int      statusCode      = 0;
         Sequence encodedResponse = null;
@@ -181,7 +184,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             //perform the request
             statusCode      = http.executeMethod( method );
 
-            encodedResponse = encodeResponseAsXML( context, method, statusCode );
+            encodedResponse = encodeResponseAsXML( context, method, statusCode, parserFeatures, parserProperties );
 
             //persist state?
             if( persistState ) {
@@ -208,7 +211,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  XPathException 
      * @throws  IOException     
      */
-    private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode ) throws XPathException, IOException
+    private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode, Map<String, Boolean> parserFeatures, Map<String, String> parserProperties) throws XPathException, IOException
     {
         Sequence       xmlResponse = null;
 
@@ -237,7 +240,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             // Add the response body node
             builder.startElement( new QName( "body", NAMESPACE_URI, PREFIX ), null );
 
-            insertResponseBody( context, method, builder );
+            insertResponseBody( context, method, builder, parserFeatures, parserProperties);
 
             builder.endElement();
         }
@@ -303,7 +306,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  IOException     
      * @throws  XPathException  
      */
-    private void insertResponseBody( XQueryContext context, HttpMethod method, MemTreeBuilder builder ) throws IOException, XPathException
+    private void insertResponseBody( XQueryContext context, HttpMethod method, MemTreeBuilder builder, Map<String, Boolean>parserFeatures, Map<String, String>parserProperties) throws IOException, XPathException
     {
         @SuppressWarnings( "unused" )
         boolean     parsed       = false;
@@ -353,7 +356,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     try {
 
                         //parse html to xml(html)
-                        responseNode = ( NodeImpl )ModuleUtils.htmlToXHtml( context, method.getURI().toString(), new InputSource( new ByteArrayInputStream( body ) ) ).getDocumentElement();
+                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(new ByteArrayInputStream(body)), parserFeatures, parserProperties).getDocumentElement();
                         builder.addAttribute( new QName( "type", null, null ), "xhtml" );
                         responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );
                     }
@@ -425,4 +428,58 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         return( returnMimeType );
     }
 
+    protected class FeaturesAndProperties {
+        private Map<String,Boolean> features = new HashMap<String, Boolean>();
+        private Map<String,String> properties = new HashMap<String, String>();
+
+        public FeaturesAndProperties(Map<String,Boolean>features, Map<String,String>properties) {
+            this.features = features;
+            this.properties = properties;
+        }
+
+        public Map<String, Boolean> getFeatures() {
+            return features;
+        }
+
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+
+
+    }
+
+    protected FeaturesAndProperties getParserFeaturesAndProperties(Node options) throws XPathException {
+
+        Map<String,Boolean> features = new HashMap<String, Boolean>();
+        Map<String,String> properties = new HashMap<String, String>();
+
+        if((options.getNodeType() == Node.ELEMENT_NODE ) && options.getLocalName().equals("options")) {
+            NodeList optionList = options.getChildNodes();
+
+            for(int i = 0; i < optionList.getLength(); i++) {
+                Node option = optionList.item( i );
+
+                if((option.getNodeType() == Node.ELEMENT_NODE)) {
+                    String name  = ((Element)option).getAttribute("name");
+                    String value = ((Element)option).getAttribute("value");
+
+                    if((name == null) || (value == null)) {
+                        throw(new XPathException( this, "Name or value attribute missing for parser feature/property"));
+                    }
+
+                    if(option.getLocalName().equals("feature")) {
+                        if(value.matches("(true|false)")) {
+                            features.put(name, Boolean.parseBoolean(value));
+                        } else {
+                            throw(new XPathException(this, "Feature value must be true or false"));
+                        }
+                    } else if (option.getLocalName().equals("property")) {
+                        properties.put(name, value);
+                    }
+                }
+            }
+        }
+
+        return new FeaturesAndProperties(features, properties);
+    }
 }

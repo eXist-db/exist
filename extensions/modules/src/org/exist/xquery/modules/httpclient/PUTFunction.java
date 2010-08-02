@@ -132,7 +132,7 @@ public class PUTFunction extends BaseHTTPClientFunction
         try {
 
             //execute the request
-            response = doRequest( context, put, persistState );
+            response = doRequest(context, put, persistState, null, null);
 
         }
         catch( IOException ioe ) {

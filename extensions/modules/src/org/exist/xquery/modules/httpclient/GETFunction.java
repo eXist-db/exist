@@ -34,6 +34,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -48,25 +55,44 @@ public class GETFunction extends BaseHTTPClientFunction
 {
     protected static final Logger         logger    = Logger.getLogger( GETFunction.class );
 
-    public final static FunctionSignature signature = 
-		new FunctionSignature( 
-			new QName( "get", NAMESPACE_URI, PREFIX ), 
-			"Performs a HTTP GET request." + 
-			" This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" + 
-			" where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.", 
-			new SequenceType[] {
-            	URI_PARAM, PERSIST_PARAM, REQUEST_HEADER_PARAM
-        	}, 
-			XML_BODY_RETURN 
-		);
+    public final static FunctionSignature signatures[]  = {
+        new FunctionSignature(
+            new QName( "get", NAMESPACE_URI, PREFIX ),
+            "Performs a HTTP GET request." +
+            " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" +
+            " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
+            new SequenceType[] {
+                URI_PARAM,
+                PERSIST_PARAM,
+                REQUEST_HEADER_PARAM
+            },
+            XML_BODY_RETURN
+        ),
+        
+        new FunctionSignature( 
+            new QName( "get", NAMESPACE_URI, PREFIX ), 
+            "Performs a HTTP GET request." + 
+            " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" + 
+            " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data."+
+            " When HTML is converted to XML. Features and properties of the parser may be set in the options parameter.", 
+            new SequenceType[] {
+                URI_PARAM,
+                PERSIST_PARAM,
+                REQUEST_HEADER_PARAM,
+                OPTIONS_PARAM
+            }, 
+            XML_BODY_RETURN 
+        )
+    };
 
 	
-    public GETFunction( XQueryContext context )
+    public GETFunction(XQueryContext context, FunctionSignature signature)
     {
-        super( context, signature );
+        super(context, signature);
     }
 
 	
+    @Override
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
         Sequence response = null;
@@ -90,10 +116,20 @@ public class GETFunction extends BaseHTTPClientFunction
             setHeaders( get, ( ( NodeValue )args[2].itemAt( 0 ) ).getNode() );
         }
 
-        try {
+        FeaturesAndProperties featuresAndProperties = null;
+        if (args.length > 3 && !args[3].isEmpty()) {
+            featuresAndProperties = getParserFeaturesAndProperties(((NodeValue)args[3].itemAt(0)).getNode());
+        }
 
+        try {
             //execute the request
-            response = doRequest( context, get, persistState );
+            response = doRequest(
+                    context,
+                    get,
+                    persistState,
+                    featuresAndProperties == null ? null : featuresAndProperties.getFeatures(),
+                    featuresAndProperties == null ? null : featuresAndProperties.getProperties()
+            );
         }
         catch( IOException ioe ) {
             throw( new XPathException( this, ioe.getMessage(), ioe ) );
