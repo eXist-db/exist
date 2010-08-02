@@ -63,6 +63,12 @@ public class Configurator {
     			link.put(field.getAnnotation(ConfigurationField.class).value(), field);
     		}
     	
+    	Class<?> superClass = clazz.getSuperclass();
+		if (superClass.isAnnotationPresent(ConfigurationClass.class)) {
+			if (superClass.getAnnotation(ConfigurationClass.class).value().equals( clazz.getAnnotation(ConfigurationClass.class).value() ))
+				link.putAll( getProperyFieldMap(superClass) );
+		}
+
     	return link;
 	}
 	
