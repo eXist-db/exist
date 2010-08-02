@@ -34,8 +34,7 @@ import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
 import org.exist.security.User;
 import org.exist.security.UserImpl;
@@ -44,92 +43,87 @@ import org.exist.security.realm.ldap.LdapContextFactory;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 @ConfigurationClass("ActiveDirectory")
 public class ActiveDirectoryRealm extends LDAPRealm {
-	
+
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
 	public ActiveDirectoryRealm(Configuration config) {
 		super(config);
 	}
 
-    protected LdapContextFactory ensureContextFactory() {
-        if (this.ldapContextFactory == null) {
+	protected LdapContextFactory ensureContextFactory() {
+		if (this.ldapContextFactory == null) {
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug("No LdapContextFactory specified - creating a default instance.");
-            }
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("No LdapContextFactory specified - creating a default instance.");
+			}
 
-            LdapContextFactory factory = new ContextFactory(configuration);
+			LdapContextFactory factory = new ContextFactory(configuration);
 
-            this.ldapContextFactory = factory;
-        }
-        return this.ldapContextFactory;
-    }
+			this.ldapContextFactory = factory;
+		}
+		return this.ldapContextFactory;
+	}
 
-    /* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.exist.security.Realm#getId()
 	 */
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return "ActiveDirectory@" + ((ContextFactory) ensureContextFactory()).getDomain();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.Realm#authenticate(java.lang.String, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.exist.security.Realm#authenticate(java.lang.String,
+	 * java.lang.Object)
 	 */
 	public User authenticate(String username, Object credentials) throws AuthenticationException {
 
-		String returnedAtts[] ={ "sn", "givenName", "mail" };   
-        String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";   
+		String returnedAtts[] = { "sn", "givenName", "mail" };
+		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
 
-        //Create the search controls   
-        SearchControls searchCtls = new SearchControls();   
-        searchCtls.setReturningAttributes(returnedAtts);   
+		// Create the search controls
+		SearchControls searchCtls = new SearchControls();
+		searchCtls.setReturningAttributes(returnedAtts);
 
-        //Specify the search scope   
-        searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);   
+		// Specify the search scope
+		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-        LdapContext ctxGC = null;   
-        boolean ldapUser = false;   
+		LdapContext ctxGC = null;
+		boolean ldapUser = false;
 
-        try   
-        {   
-              ctxGC = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
-              
-              //Search objects in GC using filters   
-              NamingEnumeration answer = ctxGC.search(
-            		  ((ContextFactory)ensureContextFactory()).getSearchBase(),
-            		  searchFilter, 
-            		  searchCtls); 
-              
-              while (answer.hasMoreElements())   
-              {   
-                    SearchResult sr = (SearchResult) answer.next();   
-                    Attributes attrs = sr.getAttributes();   
-                    Map amap = null;   
-                    if (attrs != null)   
-                    {   
-                          amap = new HashMap();   
-                          NamingEnumeration ne = attrs.getAll();   
-                          while (ne.hasMore())   
-                          {   
-                                Attribute attr = (Attribute) ne.next();   
-                                amap.put(attr.getID(), attr.get());   
-                                ldapUser = true;   
-                          }   
-                          ne.close();   
-                    }   
-              }   
-        } catch (NamingException e) {   
-			throw new AuthenticationException(
-					AuthenticationException.UNNOWN_EXCEPTION, 
-					e.getMessage());
-        }   
+		try {
+			ctxGC = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
-        return new UserImpl(this, username);
+			// Search objects in GC using filters
+			NamingEnumeration<SearchResult> answer = ctxGC.search(((ContextFactory) ensureContextFactory()).getSearchBase(), searchFilter, searchCtls);
+
+			while (answer.hasMoreElements()) {
+				SearchResult sr = answer.next();
+				Attributes attrs = sr.getAttributes();
+				Map<String, Object> amap = null;
+				if (attrs != null) {
+					amap = new HashMap<String, Object>();
+					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
+					while (ne.hasMore()) {
+						Attribute attr = ne.next();
+						amap.put(attr.getID(), attr.get());
+						ldapUser = true;
+					}
+					ne.close();
+				}
+			}
+		} catch (NamingException e) {
+			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+		}
+
+		return new UserImpl(this, username);
 	}
 }
