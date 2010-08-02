@@ -56,10 +56,10 @@ public class ActiveDirectoryRealmTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		InputStream is = new ByteArrayInputStream(config.getBytes("UTF-8"));
-        
-        Configuration config = Configurator.parse(is);
+		
+		Configuration config = Configurator.parse(is);
 
-        realm = new ActiveDirectoryRealm(config);
+		realm = new ActiveDirectoryRealm(config);
 	}
 
 	/**

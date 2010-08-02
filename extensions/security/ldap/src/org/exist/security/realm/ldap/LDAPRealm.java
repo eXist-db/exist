@@ -42,7 +42,7 @@ import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 @ConfigurationClass("LDAP")
 public class LDAPRealm implements Realm, Configurable {
@@ -50,28 +50,28 @@ public class LDAPRealm implements Realm, Configurable {
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
 	protected LdapContextFactory ldapContextFactory = null;
-    
-    protected Configuration configuration = null;
-    
-    public LDAPRealm(Configuration config) {
-    	configuration = Configurator.configure(this, config);
-    }
 
-    protected LdapContextFactory ensureContextFactory() {
-        if (this.ldapContextFactory == null) {
+	protected Configuration configuration = null;
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug("No LdapContextFactory specified - creating a default instance.");
-            }
+	public LDAPRealm(Configuration config) {
+		configuration = Configurator.configure(this, config);
+	}
 
-            LdapContextFactory factory = new LdapContextFactory(configuration);
+	protected LdapContextFactory ensureContextFactory() {
+		if (this.ldapContextFactory == null) {
 
-            this.ldapContextFactory = factory;
-        }
-        return this.ldapContextFactory;
-    }
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("No LdapContextFactory specified - creating a default instance.");
+			}
 
-    @Override
+			LdapContextFactory factory = new LdapContextFactory(configuration);
+
+			this.ldapContextFactory = factory;
+		}
+		return this.ldapContextFactory;
+	}
+
+	@Override
 	public String getId() {
 		// TODO Auto-generated method stub
 		return null;
@@ -134,26 +134,26 @@ public class LDAPRealm implements Realm, Configurable {
 	@Override
 	public void startUp(DBBroker broker) throws EXistException {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	public User authenticate(String username, Object credentials) throws AuthenticationException {
-		// Binds using the username and password provided by the user.
-        LdapContext ctx = null;
-        try {
-			ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
-		
-        } catch (NamingException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
-        
-        } finally {
-            LdapUtils.closeContext(ctx);
-        }
-        
-        return new UserImpl(this, username);
+
 	}
 
-	//configurable methods
+	public User authenticate(String username, Object credentials) throws AuthenticationException {
+		// Binds using the username and password provided by the user.
+		LdapContext ctx = null;
+		try {
+			ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
+
+		} catch (NamingException e) {
+			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+
+		} finally {
+			LdapUtils.closeContext(ctx);
+		}
+
+		return new UserImpl(this, username);
+	}
+
+	// configurable methods
 	@Override
 	public boolean isConfigured() {
 		return (configuration != null);

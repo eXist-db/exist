@@ -36,7 +36,7 @@ import org.exist.security.realm.ldap.LdapContextFactory;
 public class ContextFactory extends LdapContextFactory {
 
 	@ConfigurationField("domain")
-    protected String domain = null;
+	protected String domain = null;
 
 	@ConfigurationField("searchBase")
 	private String searchBase = null;
@@ -55,6 +55,10 @@ public class ContextFactory extends LdapContextFactory {
 	
 	public String getSearchBase() {
 		return searchBase;
+	}
+
+	public String getDomain() {
+		return domain;
 	}
 
 }

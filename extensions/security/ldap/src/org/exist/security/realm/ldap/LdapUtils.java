@@ -28,21 +28,21 @@ import org.apache.log4j.Logger;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 public class LdapUtils {
 
 	protected final static Logger LOG = Logger.getLogger(LdapUtils.class);
 
-    public static void closeContext(LdapContext ctx) {
-        try {
-            if (ctx != null) {
-                ctx.close();
-            }
-        } catch (NamingException e) {
-            if (LOG.isDebugEnabled()) {
-            	LOG.error("Exception while closing LDAP context. ", e);
-            }
-        }
-    }
+	public static void closeContext(LdapContext ctx) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+			}
+		} catch (NamingException e) {
+			if (LOG.isDebugEnabled()) {
+				LOG.error("Exception while closing LDAP context. ", e);
+			}
+		}
+	}
 }
