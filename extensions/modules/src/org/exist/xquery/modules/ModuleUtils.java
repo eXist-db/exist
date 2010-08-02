@@ -24,6 +24,8 @@ package org.exist.xquery.modules;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -125,7 +127,7 @@ public class ModuleUtils {
 	 * @return An in-memory Document representing the XML'ised HTML
 	 */
 	public static DocumentImpl htmlToXHtml(XQueryContext context, String url,
-			InputSource srcHtml) throws XPathException, SAXException {
+			InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
 		// we use eXist's in-memory DOM implementation
 		org.exist.memtree.DocumentImpl memtreeDoc = null;
 
@@ -137,16 +139,23 @@ public class ModuleUtils {
 			reader = (XMLReader) Class.forName(
 					"org.cyberneko.html.parsers.SAXParser").newInstance();
 
-			// do not modify the case of elements and attributes
-			reader
-					.setProperty(
-							"http://cyberneko.org/html/properties/names/elems",
-							"match");
-			reader.setProperty(
-					"http://cyberneko.org/html/properties/names/attrs",
-					"no-change");
+                        if(parserFeatures != null) {
+                            for(Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
+                                reader.setFeature(parserFeature.getKey(), parserFeature.getValue());
+                            }
+                        }
+
+			if(parserProperties == null) {
+                            //default: do not modify the case of elements and attributes
+                            reader.setProperty("http://cyberneko.org/html/properties/names/elems","match");
+                            reader.setProperty("http://cyberneko.org/html/properties/names/attrs","no-change");
+                        } else {
+                            for(Entry<String, String> parserProperty : parserProperties.entrySet()) {
+                                reader.setProperty(parserProperty.getKey(), parserProperty.getValue());
+                            }
+                        }
 		} catch (Exception e) {
-			String errorMsg = "Error while involing NekoHTML parser. ("
+			String errorMsg = "Error while invoking NekoHTML parser. ("
 					+ e.getMessage()
 					+ "). If you want to parse non-wellformed HTML files, put "
 					+ "nekohtml.jar into directory 'lib/user'.";

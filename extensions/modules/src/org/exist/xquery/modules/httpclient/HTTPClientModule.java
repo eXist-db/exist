@@ -46,7 +46,8 @@ public class HTTPClientModule extends AbstractInternalModule
 
 	
     private final static FunctionDef[] functions                      = {
-        new FunctionDef( GETFunction.signature, GETFunction.class ),
+        new FunctionDef( GETFunction.signatures[0], GETFunction.class ),
+        new FunctionDef( GETFunction.signatures[1], GETFunction.class ),
         new FunctionDef( PUTFunction.signature, PUTFunction.class ),
         new FunctionDef( DELETEFunction.signature, DELETEFunction.class ),
         new FunctionDef( POSTFunction.signatures[0], POSTFunction.class ),
