@@ -19,46 +19,17 @@
  *  
  *  $Id$
  */
-package org.exist.security.realm.activedirectory;
+package org.exist.security.realm;
 
-import java.text.MessageFormat;
-
-import org.exist.config.Configuration;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
-import org.exist.security.realm.ldap.LdapContextFactory;
+import org.exist.security.AuthenticationException;
+import org.exist.security.User;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@ConfigurationClass("context")
-public class ContextFactory extends LdapContextFactory {
+public interface AuthenticatingRealm {
 
-	@ConfigurationField("domain")
-	protected String domain = null;
-
-	@ConfigurationField("searchBase")
-	private String searchBase = null;
-
-	
-	protected ContextFactory(Configuration config) {
-		super(config);
-
-//		if (domain == null) {
-//			//throw error?
-//			domain = "";
-//		}
-//			
-//		principalPatternFormat = new MessageFormat("{0}@"+domain);
-	}
-	
-	public String getSearchBase() {
-		return searchBase;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
+	User authenticate(String accountName, Object credentials) throws AuthenticationException;
 
 }

@@ -317,7 +317,7 @@ public class UserImpl implements User {
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
 	public final Group addGroup(String name) {
-		Group role = realm.getRole(name);
+		Group role = realm.getGroup(name);
 		if (role == null)
 			return null;
 		

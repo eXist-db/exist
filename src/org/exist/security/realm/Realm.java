@@ -24,38 +24,27 @@ package org.exist.security.realm;
 import java.util.Collection;
 
 import org.exist.EXistException;
-import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.management.AccountsManagement;
+import org.exist.security.management.GroupsManagement;
 import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Realm {
+public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement {
 	
 	public String getId();
 	
-	//accounts manipulation methods
-	public User getAccount(String name);
 	public Collection<User> getAccounts();
-	public boolean hasAccount(String accountName);
 	
-	public boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
-	
-	//roles manipulation methods
 	public Collection<Group> getRoles();
-
-	public Group getRole(String name);
-	public boolean hasRole(String name);
-
-	User authenticate(String username, Object credentials) throws AuthenticationException;
 
 	//possible, internal methods
 	public User getAccount(int id);
-	public Group getRole(int id);
+	public Group getGroup(int id);
 
 	public void startUp(DBBroker broker) throws EXistException;
 }

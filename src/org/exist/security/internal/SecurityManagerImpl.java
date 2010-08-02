@@ -42,6 +42,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
 import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.realm.AuthenticatingRealm;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
@@ -57,8 +58,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -408,7 +407,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     public synchronized boolean hasGroup(String name) {
     	for (Realm realm : realms) {
-    		if (realm.hasRole(name)) return true;
+    		if (realm.hasGroup(name)) return true;
     	}
     	return false;
 	}
@@ -419,7 +418,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     public synchronized Group getGroup(String name) {
     	for (Realm realm : realms) {
-    		Group group = realm.getRole(name);
+    		Group group = realm.getGroup(name);
     		if (group != null) return group;
     	}
 		return null;
@@ -427,7 +426,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	public synchronized Group getGroup(int id) {
     	for (Realm realm : realms) {
-    		Group role = realm.getRole(id);
+    		Group role = realm.getGroup(id);
     		if (role != null) return role;
     	}
 		return null;

@@ -43,9 +43,9 @@ public class ActiveDirectoryRealmTest {
 	private static String config = 
 		"<ActiveDirectory>" +
 		"	<context " +
-		"		domain='local.domain' " +
-		"		searchBase='cn=users,dc=local,dc=domain' " +
-		"		url='ldap://localhost:389'/>" +
+		"		principalPattern='CN={0},OU=kjc,OU=institute,DC=ad,DC=uni-heidelberg,DC=de' " +
+		"		searchBase='cn=users,dc=ad,dc=uni-heidelberg,dc=de' " +
+		"		url='ldap://ad.uni-heidelberg.de:389'/>" +
 		"</ActiveDirectory>";
 
 	private static ActiveDirectoryRealm realm;
@@ -76,8 +76,9 @@ public class ActiveDirectoryRealmTest {
 	public void testAuthenticate() {
 		User account = null;
 		try {
-			account = realm.authenticate("admin", "passwd");
+			account = realm.authenticate("exist", "p2zlw4mg");
 		} catch (AuthenticationException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		

@@ -19,46 +19,12 @@
  *  
  *  $Id$
  */
-package org.exist.security.realm.activedirectory;
-
-import java.text.MessageFormat;
-
-import org.exist.config.Configuration;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
-import org.exist.security.realm.ldap.LdapContextFactory;
+package org.exist.security.realm;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@ConfigurationClass("context")
-public class ContextFactory extends LdapContextFactory {
-
-	@ConfigurationField("domain")
-	protected String domain = null;
-
-	@ConfigurationField("searchBase")
-	private String searchBase = null;
-
-	
-	protected ContextFactory(Configuration config) {
-		super(config);
-
-//		if (domain == null) {
-//			//throw error?
-//			domain = "";
-//		}
-//			
-//		principalPatternFormat = new MessageFormat("{0}@"+domain);
-	}
-	
-	public String getSearchBase() {
-		return searchBase;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
+public interface AuthorizingRealm {
 
 }
