@@ -16,7 +16,6 @@
     <p:identity/>
     <p:add-attribute match="test" attribute-name="test" attribute-value="here"/>
 </p:declare-step>
-
         ]]></store>
         <store collection="/db/xmlcalabash-test" name="pipe.xml"><![CDATA[
 <p:declare-step xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc" version="1.0">
@@ -27,7 +26,6 @@
     <p:identity/>
     <p:add-attribute match="test" attribute-name="test" attribute-value="here"/>
 </p:declare-step>
-
         ]]></store>
         <store collection="/db/xmlcalabash-test" name="test.xml"><![CDATA[
 <test>some test input</test>
@@ -39,7 +37,7 @@
     </tearDown>
     <test output="text">
         <task>Simple eval</task>
-        <code>xmlcalabash:process('xmldb:exist:///db/xmlcalabash-test/pipe.xml','-')</code>
+        <code>util:eval("xmlcalabash:process('xmldb:exist:///db/xmlcalabash-test/pipe.xml','-')")</code>
         <expected><test test="here">some test input</test></expected>
     </test>
 </TestSet>
