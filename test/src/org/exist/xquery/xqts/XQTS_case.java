@@ -295,7 +295,28 @@ public class XQTS_case extends TestCase {
 					if (exp.isEmpty())
 						exp += "error "+expectedError;
 					
-					Assert.fail("expected \n["+exp+"]\n, get \n["+res+"]");
+					StringBuilder data = new StringBuilder();
+					for (int i = 0; i < inputFiles.getLength(); i++) {
+						ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
+						String id = inputFile.getNodeValue();
+						data.append(inputFile.getAttribute("variable"));
+						data.append(" = \n");
+						data.append(readFileAsString(new File(sources.get(id))));
+						data.append("\n");
+					}
+
+					StringBuilder message = new StringBuilder();
+					message.append("expected \n[");
+					message.append(exp);
+					message.append("]\n, get \n[");
+					message.append(res);
+					message.append("]");
+					message.append("\nsctipt:\n");
+					message.append(readFileAsString(caseScript));
+					message.append("\ndata:\n");
+					message.append(data);
+					
+					Assert.fail(message.toString());
 				}
 			} catch (XPathException e) {
 				String error = e.getMessage();
