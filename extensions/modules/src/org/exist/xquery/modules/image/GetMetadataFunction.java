@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension GetMetadataFunction
- *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-10 Adam Retter <adam@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,6 +24,9 @@ package org.exist.xquery.modules.image;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -50,6 +53,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
@@ -69,26 +73,36 @@ public class GetMetadataFunction extends BasicFunction
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(GetMetadataFunction.class);
 	
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
+			new QName("get-exif-metadata", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
+			"Gets the exif metadata of the image passed in, only suitable for exif providers e.g. JPEG.",
+			new SequenceType[]
+			{
+				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
+			},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the exif metadata")),
+
+
+                new FunctionSignature(
 			new QName("get-metadata", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Gets the metadta of the image passed in, returning the images XML metadata.",
+			"Gets the metadata of the image passed in, returning the images XML metadata.",
 			new SequenceType[]
 			{
 				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data"),
 				new FunctionParameterSequenceType("native-format", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "When true metadata of the images native format is returned, otherwise common java ImageIO metadata is returned.")
 			},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the image metadata"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the image metadata"))
+        };
 
 	/**
 	 * GetMetadataFunction Constructor
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
-	public GetMetadataFunction(XQueryContext context)
-	{
+	public GetMetadataFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
-    }
+        }
 
 	/**
 	 * evaluate the call to the xquery get-metadata() function,
@@ -100,79 +114,125 @@ public class GetMetadataFunction extends BasicFunction
 	 * 
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
+        @Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
 		//was an image and format speficifed
-		if (args[0].isEmpty() || args[1].isEmpty()) {
-            return Sequence.EMPTY_SEQUENCE;
+		if (args[0].isEmpty()) {
+                    return Sequence.EMPTY_SEQUENCE;
 		}
         
-        //get the images raw binary data
-		byte[] imgData = ImageModule.getImageData((Base64Binary)args[0].itemAt(0));
-		
-		//get the format of metadata to return
-		boolean nativeFormat = args[1].effectiveBooleanValue();
-		
-		try
-		{
-			//get an input stream
-			ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imgData));
-		
-			//get an image reader
-			Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-			if(readers.hasNext())
-			{
-				ImageReader imageReader = readers.next();
-				imageReader.setInput(iis);
-				
-				//read the metadata
-				IIOMetadata metadata = imageReader.getImageMetadata(0);
-				Node nMetadata = null; 
-				if(nativeFormat)
-				{
-					//native format
-					nMetadata = metadata.getAsTree(metadata.getNativeMetadataFormatName());
-				}
-				else
-				{
-					//common format
-					nMetadata = metadata.getAsTree("javax_imageio_1.0");
-				}
-				
-				//check we have the metadata
-				if(nMetadata == null) {
-					return Sequence.EMPTY_SEQUENCE;
-				}
-				
-				
-				//return the metadata
-				context.pushDocumentContext();
-				try
-				{
-					MemTreeBuilder builder = context.getDocumentBuilder();
-                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-					DOMStreamer streamer = new DOMStreamer();
-					streamer.setContentHandler(receiver);
-					streamer.serialize(nMetadata);
-					Document docMetadata = receiver.getDocument();
-                    
-					return (NodeValue)docMetadata;
-				}
-				catch(SAXException se)
-				{
-				    throw (new XPathException(this, se.getMessage(), se));
-				}
-				finally
-				{
-					context.popDocumentContext();
-				}
-			}
-		}
-		catch(IOException ioe)
-		{
-		    throw (new XPathException(this, ioe.getMessage(), ioe));
-		}
-		
-		return Sequence.EMPTY_SEQUENCE;
+                //get the images raw binary data
+		byte imgData[] = ImageModule.getImageData((Base64Binary)args[0].itemAt(0));
+
+                if(isCalledAs("get-exif-metadata")) {
+                    return parseWithTikaJpegParser(imgData);
+                } else {
+                    if(args[1].isEmpty()) {
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+                    //get the format of metadata to return
+                    boolean nativeFormat = args[1].effectiveBooleanValue();
+
+                    try {
+                        //get an input stream
+                        ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imgData));
+                        return parseWithImageIO(iis, nativeFormat);
+                    } catch(IOException ioe) {
+                        throw (new XPathException(this, ioe.getMessage(), ioe));
+                    }
+            }
 	}
+
+        private Sequence parseWithTikaJpegParser(byte imgData[]) throws XPathException {
+
+            context.pushDocumentContext();
+            try {
+                Object jpegParser = Class.forName("org.apache.tika.parser.jpeg.JpegParser").newInstance();
+                Object metadata = Class.forName("org.apache.tika.metadata.Metadata").newInstance();
+
+                Method parseMethod = jpegParser.getClass().getMethod("parse", new Class[]{
+                    InputStream.class,
+                    ContentHandler.class,
+                    metadata.getClass()
+                });
+
+                MemTreeBuilder builder = context.getDocumentBuilder();
+                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+
+                parseMethod.invoke(jpegParser, new Object[]{
+                    new ByteArrayInputStream(imgData),
+                    receiver,
+                    metadata
+
+                });
+
+                return (NodeValue)receiver.getDocument();
+
+            } catch (InstantiationException ie) {
+                throw new XPathException(ie.getMessage(), ie);
+            } catch (IllegalAccessException iae) {
+                throw new XPathException(iae.getMessage(), iae);
+            } catch (ClassNotFoundException cnfe) {
+                throw new XPathException(cnfe.getMessage(), cnfe);
+            } catch (NoSuchMethodException nsme) {
+                throw new XPathException(nsme.getMessage(), nsme);
+            } catch(InvocationTargetException ite) {
+                throw new XPathException(ite.getMessage(), ite);
+            } finally {
+                context.popDocumentContext();
+            }
+        }
+
+        private Sequence parseWithImageIO(ImageInputStream iis, boolean nativeFormat) throws IOException, XPathException {
+
+            //get an image reader
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if(readers.hasNext())
+            {
+                ImageReader imageReader = readers.next();
+                imageReader.setInput(iis);
+
+                //read the metadata
+                IIOMetadata metadata = imageReader.getImageMetadata(0);
+                Node nMetadata = null;
+                if(nativeFormat) {
+                    //native format
+                    nMetadata = metadata.getAsTree(metadata.getNativeMetadataFormatName());
+                } else {
+                    //common format
+                    nMetadata = metadata.getAsTree("javax_imageio_1.0");
+                }
+
+                //check we have the metadata
+                if(nMetadata == null) {
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+
+
+                //return the metadata
+                context.pushDocumentContext();
+                try
+                {
+                        MemTreeBuilder builder = context.getDocumentBuilder();
+                        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+                        DOMStreamer streamer = new DOMStreamer();
+                        streamer.setContentHandler(receiver);
+                        streamer.serialize(nMetadata);
+                        Document docMetadata = receiver.getDocument();
+
+                        return (NodeValue)docMetadata;
+                }
+                catch(SAXException se)
+                {
+                    throw new XPathException(this, se.getMessage(), se);
+                }
+                finally
+                {
+                    context.popDocumentContext();
+                }
+            }
+
+            return Sequence.EMPTY_SEQUENCE;
+        }
 }

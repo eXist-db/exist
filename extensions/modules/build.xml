@@ -264,6 +264,19 @@
 
     </target>
 
+    <!--
+        Special targets for image module
+    -->
+    <target name="prepare-image" if="include.module.image.config">
+        <echo message="--------------------------------------------------"/>
+        <echo message="Downloading libraries required by the image module"/>
+        <echo message="--------------------------------------------------"/>
+
+        <get src="${include.module.image.tika.core.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+        <get src="${include.module.image.tika.parsers.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+        <get src="${include.module.image.tika.parsers.deps.drewnoakes.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+    </target>
+
     <!-- 
         ========================================
         Below this line only generic build items
