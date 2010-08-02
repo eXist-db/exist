@@ -133,6 +133,8 @@
 
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
                maxmemory="${junit.forked.VM.maxmemory}">
+
+            <!--TODO: cutlass deactivated exist.home setting as it was interfering with repo manager, unsure if its needed //-->
             <!--sysproperty key="exist.home" value="${top.dir}"/-->
 
             <classpath>
