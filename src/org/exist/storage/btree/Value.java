@@ -164,8 +164,8 @@ public class Value implements Comparable {
 	}
 
 	public final int compareTo(Value value) {
-		final int dlen = value.len;
-		final int stop = len > dlen ? dlen : len;
+		//final int dlen = value.len;
+		final int stop = len > value.len ? value.len : len;
 
 		for (int i = 0; i < stop; i++) {
 			final byte b1 = data[pos + i];
@@ -177,10 +177,10 @@ public class Value implements Comparable {
 			}
 		}
 
-		if (len == dlen)
+		if (len == value.len)
 			return 0;
 		else
-			return len > dlen ? stop + 1 : - (stop + 1);
+			return len > value.len ? stop + 1 : - (stop + 1);
 	}
 
 	public final int compareTo(Object obj) {
@@ -191,8 +191,8 @@ public class Value implements Comparable {
 	}
 
     public final int comparePrefix(Value value) {
-        int size = value.len;
-        for (int i = 0; i < size; i++) {
+        //int size = value.len;
+        for (int i = 0; i < value.len; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
             if (b1 != b2){
