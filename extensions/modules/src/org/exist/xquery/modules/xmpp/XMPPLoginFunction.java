@@ -12,8 +12,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id: MailSessionFunctions.java 9745 2009-08-09 21:37:29Z ixitar $
  */
 
 package org.exist.xquery.modules.xmpp;
@@ -36,17 +34,6 @@ import org.exist.xquery.value.Type;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
-/**
- * eXist Mail Module Extension GetSession
- * 
- * Get a mail session
- * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
- * @serial 2009-03-12
- * @version 1.3
- *
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
- */
 public class XMPPLoginFunction extends BasicFunction
 {
 	protected static final Logger logger = Logger.getLogger(XMPPLoginFunction.class);

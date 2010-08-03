@@ -12,8 +12,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id: MailSessionFunctions.java 9745 2009-08-09 21:37:29Z ixitar $
  */
 
 package org.exist.xquery.modules.xmpp;
@@ -66,9 +64,7 @@ public class XMPPConnectionFunction extends BasicFunction
 
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
-		Properties props = new Properties();
-		
-		props = ModuleUtils.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
+		Properties props = ModuleUtils.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
 		
 		ProxyInfo proxy; 
 		ConnectionConfiguration config;

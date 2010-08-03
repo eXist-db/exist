@@ -12,8 +12,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id: MailSessionFunctions.java 9745 2009-08-09 21:37:29Z ixitar $
  */
 
 package org.exist.xquery.modules.xmpp;

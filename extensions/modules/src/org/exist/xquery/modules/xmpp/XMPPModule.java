@@ -12,8 +12,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id: MailModule.java 10647 2009-11-26 17:27:50Z shabanovd $
  */
 
 package org.exist.xquery.modules.xmpp;
@@ -33,6 +31,7 @@ import org.jivesoftware.smack.XMPPConnection;
  * An extension module for the eXist Native XML Database that allows
  * chats via XMPP protocol.
  *   
+ * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.5
  *
  */
@@ -43,8 +42,6 @@ public class XMPPModule extends AbstractInternalModule
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmpp";
 	
 	public final static String PREFIX = "xmpp";
-    // JavaMail-based from 2009-03-14
-    // makes the need for versioning of the functions obvious too /ljo
     public final static String INCLUSION_DATE = "2010-02-14";
     public final static String RELEASED_IN_VERSION = "eXist-1.5 (Smack-based in trunk)";
     
@@ -90,7 +87,7 @@ public class XMPPModule extends AbstractInternalModule
 
 	public String getDescription()
 	{
-		return( "A module for performing email related functions" );
+		return( "A module for XMPP messaging" );
 	}
 	
     public String getReleaseVersion() {
