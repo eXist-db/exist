@@ -204,6 +204,12 @@ public class StoredModuleTest {
     "'hi from module 4'" +
     "};";
 
+    private static final String module5 = "module namespace mod5 = 'urn:module5';" +
+    "declare variable $mod5:testvar := 'variable works' ;"+
+    "declare function mod5:showMe() as xs:string {" +
+    "concat('hi from module 5: ',$mod5:testvar)" +
+    "};";
+
     @Test(expected=XMLDBException.class)
     public void testModule23_missingRelativeContext() throws XMLDBException {
         String collection2Name = "module2";
@@ -308,7 +314,6 @@ public class StoredModuleTest {
         }
     }
 
-    @Ignore
     @Test
     public void testCircularImports() throws XMLDBException {
         
