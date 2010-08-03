@@ -88,7 +88,13 @@ public class BrokerPool extends Observable {
 	
 	private final static TreeMap<String, BrokerPool> instances = new TreeMap<String, BrokerPool>();
 
-    public final static String SIGNAL_STARTUP = "startup";
+    /*** initializing subcomponents */
+	public final static String SIGNAL_STARTUP = "startup";
+	/*** ready for recovery & read-only operations */
+    public final static String SIGNAL_READINESS = "readiness";
+    /*** ready for writable operations */
+    public final static String SIGNAL_RIDEABLE = "rideable";
+    /*** running shutdown sequence */
     public final static String SIGNAL_SHUTDOWN = "shutdown";
     
 	/**
@@ -374,11 +380,11 @@ public class BrokerPool extends Observable {
 	private String instanceName;
 
 	//TODO: change 0 = initializing, 1 = operating, -1 = shutdown  (shabanovd)
-    private final static int OPERATING = 0;
-    private final static int INITIALIZING = 1;
-    private final static int SHUTDOWN = 2;
+    private final static int SHUTDOWN = -1;
+    private final static int INITIALIZING = 0;
+    private final static int OPERATING = 1;
     
-    private int status = OPERATING;
+    private int status = INITIALIZING;
     
 	/**
 	 * The number of brokers for the database instance 
@@ -751,6 +757,7 @@ public class BrokerPool extends Observable {
         long minFree = maxMem / 5;
         reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
         LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
+        
         notificationService = new NotificationService();
 
         //REFACTOR : construct then... configure
@@ -815,19 +822,23 @@ public class BrokerPool extends Observable {
         
 		status = OPERATING;
 
-		//wake-up the security manager
+        signalSystemStatus(SIGNAL_READINESS);
+
+        //wake-up the security manager
         securityManager.attach(this, broker);
 
 		//have to do this after initializing = false
 		// so that the policies collection is saved
 		if(securityManager.isXACMLEnabled())
 			securityManager.getPDP().initializePolicyCollection();
+		
 		//Get a manager to handle further collectios configuration
         try {
             collectionConfigurationManager = new CollectionConfigurationManager(broker);
         } catch (Exception e) {
             LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
+        
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
         if (recovered) {
@@ -847,7 +858,8 @@ public class BrokerPool extends Observable {
         }
 
         //OK : the DB is repaired; let's make a few RW operations
-		
+        signalSystemStatus(SIGNAL_RIDEABLE);
+
         // remove temporary docs
         broker.cleanUpTempResources(true);
 
@@ -969,9 +981,11 @@ public class BrokerPool extends Observable {
 
     public void signalSystemStatus(String signal) {
         if (System.currentTimeMillis() > nextSystemStatus) {
-            setChanged();
+            
+        	setChanged();
             notifyObservers(signal);
-            nextSystemStatus = System.currentTimeMillis() + 10000;
+
+            nextSystemStatus = System.currentTimeMillis() + 100;
         }
     }
 
@@ -1015,7 +1029,7 @@ public class BrokerPool extends Observable {
 	public int available() {
 		return inactiveBrokers.size();
 	}
-	
+
 	//TODO : getMin() method ?
 	
 	/**
