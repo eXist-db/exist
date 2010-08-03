@@ -428,7 +428,7 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
             , ", ")
     return
         <div>
-            { $id, for $child in $config/node()[not(self::jquery:*)] return jquery:process-templates($child) }
+            { $id, for $child in $config/*[not(self::jquery:*)] return jquery:process-templates($child) }
             <script type="text/javascript">
                 $(document).ready(function(ev) {{
                     $('#{$id/string()}').dialog({{
