@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2005-2010 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.storage;
 
 import org.apache.log4j.Logger;
@@ -6,7 +27,6 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 
 /**
  * Global notification service for document updates. Other classes
@@ -16,7 +36,9 @@ import java.util.Iterator;
  * @author wolf
  *
  */
-public class NotificationService extends IdentityHashMap {
+public class NotificationService extends IdentityHashMap<UpdateListener, Object> {
+
+	private static final long serialVersionUID = -3629584664969740903L;
 
 	private final static Logger LOG = Logger.getLogger(NotificationService.class);
 	
@@ -53,9 +75,7 @@ public class NotificationService extends IdentityHashMap {
 	 * @param event
 	 */
 	public synchronized void notifyUpdate(DocumentImpl document, int event) {
-		UpdateListener listener;
-		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
-	        listener = i.next();
+		for (UpdateListener listener : keySet()) {
 	        listener.documentUpdated(document, event);
 		}
 	}
@@ -65,18 +85,14 @@ public class NotificationService extends IdentityHashMap {
      * defragmentation run.
 	 */
 	public synchronized void notifyMove(NodeId oldNodeId, StoredNode newNode) {
-		UpdateListener listener;
-		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
-	        listener = i.next();
+		for (UpdateListener listener : keySet()) {
 	        listener.nodeMoved(oldNodeId, newNode);
 		}
 	}
 
     public void debug() {
 		LOG.debug("Registered UpdateListeners:");
-		UpdateListener listener;
-		for (Iterator<UpdateListener> i = keySet().iterator(); i.hasNext(); ) {
-	        listener = i.next();
+		for (UpdateListener listener : keySet()) {
 	        listener.debug();
 		}
 	}
