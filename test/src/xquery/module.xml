@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>fn regex related tests</testName>
+    <description>
+        <p>Test the regex related functions</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="module-test"/>
+<store collection="/db/module-test" type="application/xquery" name="test1.xqm">xquery version "1.0";
+module namespace test1='http://example.com/test-1';
+declare variable $test1:var1 := "test1:var1 success";    
+declare function test1:test() {
+    'test1 function'
+};</store>
+
+<store collection="/db/module-test" type="application/xquery" name="test2.xqm">xquery version "1.0";
+module namespace test2='http://example.com/test-2';
+import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
+declare function test2:test() {
+    'test2 function'
+};</store>
+
+<store collection="/db/module-test" type="application/xquery" name="test3.xqm">xquery version "1.0";
+module namespace test3='http://example.com/test-3';
+import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
+declare function test3:test() {
+    'test3 function'
+};</store>
+
+<store collection="/db/module-test" type="application/xquery" name="test4.xqm">xquery version "1.0";
+module namespace test4='http://example.com/test-4';
+declare variable $test4:var1 := "test4:var1 success";
+import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
+declare function test4:test() {
+    concat('test4 function: ',$test4:var1)
+};</store>
+
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/module-test"/>
+    </tearDown>
+
+
+    <test output="text">
+        <task>test simple importing modules1</task>
+        <code>util:eval("
+           import module namespace test3='http://example.com/test-3' at 'xmldb:exist:///db/module-test/test3.xqm';
+           test3:test()
+            ")</code>
+        <expected>test3 function</expected>
+    </test>
+
+    <test output="text">
+        <task>test importing modules2</task>
+        <code>util:eval("
+           import module namespace test2='http://example.com/test-2' at 'xmldb:exist:///db/module-test/test2.xqm';
+           import module namespace test3='http://example.com/test-3' at 'xmldb:exist:///db/module-test/test3.xqm';
+           test3:test()
+            ")</code>
+        <expected>test3 function</expected>
+    </test>
+    <test output="text">
+        <task>test importing modules3 with declared var</task>
+        <code>util:eval("
+            import module namespace test2='http://example.com/test-2' at 'xmldb:exist:///db/module-test/test2.xqm';
+            import module namespace test3='http://example.com/test-3' at 'xmldb:exist:///db/module-test/test3.xqm';
+            import module namespace test4='http://example.com/test-4' at 'xmldb:exist:///db/module-test/test4.xqm';
+
+               test4:test()
+
+            ")</code>
+        <expected>test4 function: test4:var1 success</expected>
+    </test>
+    <test output="text">
+        <task>test importing modules4 with declared var</task>
+        <code>util:eval("
+            import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
+            import module namespace test3='http://example.com/test-3' at 'xmldb:exist:///db/module-test/test3.xqm';
+            import module namespace test4='http://example.com/test-4' at 'xmldb:exist:///db/module-test/test4.xqm';
+
+               test4:test()
+
+            ")</code>
+        <expected>test4 function: test4:var1 success</expected>
+    </test>
+</TestSet>
