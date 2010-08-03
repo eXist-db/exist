@@ -170,9 +170,7 @@ public class Value implements Comparable {
 		for (int i = 0; i < stop; i++) {
 			final byte b1 = data[pos + i];
 			final byte b2 = value.data[value.pos + i];
-			if (b1 == b2)
-				continue;
-			else {
+			if (b1 != b2){
 				final short s1 = (short) (b1 & 0xFF);
 				final short s2 = (short) (b2 & 0xFF);
 				return s1 > s2 ? (i + 1) : - (i + 1);
@@ -197,9 +195,7 @@ public class Value implements Comparable {
         for (int i = 0; i < size; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
-            if (b1 == b2)
-                continue;
-            else {
+            if (b1 != b2){
                 final short s1 = (short) (b1 & 0xFF);
                 final short s2 = (short) (b2 & 0xFF);
                 return s1 > s2 ? (i + 1) : - (i + 1);
@@ -216,9 +212,7 @@ public class Value implements Comparable {
             for (int i = prefix.getLength(); i < keyPrefix.getLength(); i++) {
                 final byte b1 = data[pos + i];
                 final byte b2 = keyPrefix.data[keyPrefix.pos + i];
-                if (b1 == b2)
-                    continue;
-                else {
+                if (b1 != b2){
                     final short s1 = (short) (b1 & 0xFF);
                     final short s2 = (short) (b2 & 0xFF);
                     return s1 > s2 ? (i + 1) : - (i + 1);
