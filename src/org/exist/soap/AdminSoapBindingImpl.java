@@ -801,7 +801,13 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 
                 String roleName = groups.getElements()[i];
                 if (!manager.hasGroup(roleName))
-                	manager.addGroup(roleName);
+					try {
+						manager.addGroup(roleName);
+					} catch (PermissionDeniedException e) {
+	                    throw new RemoteException(e.getMessage());
+					} catch (EXistException e) {
+	                    throw new RemoteException(e.getMessage());
+					}
                 
                 u.addGroup(roleName);
             }
@@ -813,7 +819,13 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         		throw new RemoteException("Invalid collection URI",e);
         	}
         }
-        manager.setUser(u);
+        try {
+			manager.setUser(u);
+		} catch (PermissionDeniedException e) {
+    		throw new RemoteException(e.getMessage(), e);
+		} catch (EXistException e) {
+    		throw new RemoteException(e.getMessage(), e);
+		}
     }
     
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
@@ -847,7 +859,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             manager.deleteUser(name);
         } catch (PermissionDeniedException e) {
             throw new RemoteException(e.getMessage());
-        }
+        } catch (EXistException e) {
+            throw new RemoteException(e.getMessage());
+		}
     }
     
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {

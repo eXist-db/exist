@@ -919,7 +919,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
     *
     * <pre>&lt;exist:permissions mode="0775" owner="editor" group="users"/&gt;</pre>
     */
-   protected void setPermissions(DBBroker broker, Element parent, Collection collection) throws LockException, PermissionDeniedException {
+   protected void setPermissions(DBBroker broker, Element parent, Collection collection) throws LockException, PermissionDeniedException, EXistException {
       Element element = DOM.findChild(parent, Namespaces.EXIST_NS, "permissions");
       if (element != null) {
          String mode = element.getAttribute("mode");
@@ -948,7 +948,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
    }
 
-   protected void setPermissions(DBBroker broker, Element parent, DocumentImpl resource) throws LockException, PermissionDeniedException {
+   protected void setPermissions(DBBroker broker, Element parent, DocumentImpl resource) throws LockException, PermissionDeniedException, EXistException {
       Element element = DOM.findChild(parent, Namespaces.EXIST_NS, "permissions");
       if (element != null) {
          String mode = element.getAttribute("mode");

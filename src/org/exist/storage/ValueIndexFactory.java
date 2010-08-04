@@ -23,6 +23,8 @@
 package org.exist.storage;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -69,14 +71,25 @@ public class ValueIndexFactory {
 
 		/* xs:dateTime */
 		else if (Type.subTypeOf(type, Type.DATE_TIME)) {
-			// get the dateTime back as a long
-			long value = ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE));
 			// Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
-			GregorianCalendar utccal = new GregorianCalendar();
-			utccal.setTimeInMillis(value);
-			// Create a XMLGregorianCalendar from the GregorianCalendar
+//			GregorianCalendar utccal = new GregorianCalendar();
+//			utccal.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
+//			utccal.set(
 			try {
-				XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
+			XMLGregorianCalendar xmlutccal =
+				DatatypeFactory.newInstance().newXMLGregorianCalendar(
+					BigInteger.valueOf((long)ByteConversion.byteToIntH(data, start + 1)), 
+					data[start + 5],
+					data[start + 6],
+					data[start + 7],
+					data[start + 8],
+					data[start + 9],
+					BigDecimal.valueOf((long)ByteConversion.byteToShortH(data, start + 10)),
+					0);
+			//utccal.setTimeInMillis(value);
+			// Create a XMLGregorianCalendar from the GregorianCalendar
+//			try {
+//				XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
 				return new DateTimeValue(xmlutccal);
 			} catch (DatatypeConfigurationException dtce) {
 				throw new EXistException("Could not deserialize xs:dateTime data type for range index key: " + Type.getTypeName(type) + " - "
@@ -235,14 +248,14 @@ public class ValueIndexFactory {
 			DateTimeValue dtv = new DateTimeValue("0753-04-21T01:00:00+01:00");
 			byte[] b1 = ValueIndexFactory.serialize(dtv, 0);
 			print(dtv, b1);
-			DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+01:00");
+			DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+00:00");
 			byte[] b2 = ValueIndexFactory.serialize(dtv2, 0);
 			print(dtv2, b2);
 			System.out.println(new Value(b1).compareTo(new Value(b2)));
 
 			DateTimeValue dtv2_ = (DateTimeValue) ValueIndexFactory.deserialize(b2, 0, b2.length);
 			if (dtv2 != dtv2_)
-				System.out.println("ERROR!");
+				System.out.println("ERROR! "+dtv2.toString()+" ne "+dtv2_.toString());
 
 			IntegerValue iv = new IntegerValue(753);
 			byte[] i1 = ValueIndexFactory.serialize(iv, 0);
