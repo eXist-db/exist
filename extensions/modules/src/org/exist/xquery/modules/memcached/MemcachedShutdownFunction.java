@@ -58,9 +58,7 @@ public class MemcachedShutdownFunction extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		long clientHandle = ((IntegerValue) args[0].itemAt(0)).getLong();
-		MemcachedClient client = MemcachedModule.retrieveClient(clientHandle);
-
-		client.shutdown();
+		MemcachedModule.shutdownClient(clientHandle);
 		
 		return Sequence.EMPTY_SEQUENCE;
 	}
