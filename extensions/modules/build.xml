@@ -250,11 +250,22 @@
     </target>
 
     <!-- 
+        Special targets for memcached module
+    -->
+    <target name="prepare-memcached" if="include.module.memcached.config">
+        <echo message="-------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the memcached module"/>
+        <echo message="-------------------------------------------------------"/>
+
+        <get src="${include.module.memcached.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+    </target>
+
+    <!-- 
         Special targets for xmpp module 
     -->
     <target name="prepare-xmpp" if="include.module.xmpp.config">
         <echo message="--------------------------------------------------"/>
-        <echo message="Downloading libraries required by the smack module"/>
+        <echo message="Downloading libraries required by the XMPP module"/>
         <echo message="--------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
@@ -286,7 +297,7 @@
         ========================================
     -->
 
-    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
+    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
         <mkdir dir="${classes}"/>
     </target>
 
