@@ -240,11 +240,16 @@ public abstract class TestCase {
 							//workaround problematic results
 							if (expResult.equals("&amp;") && res.equals("&"))
 								;
-							//workaround problematic results
 							else if (expResult.equals("&lt;") && res.equals("<"))
 								;
-							else
-								return false;
+							else {
+								//last try
+								expResult = expResult.replaceAll("&lt;","<");
+								expResult = expResult.replaceAll("&gt;",">");
+								expResult = expResult.replaceAll("&amp;","&");
+								if (!expResult.equals(res))
+									return false;
+							}
 						}
 						
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
