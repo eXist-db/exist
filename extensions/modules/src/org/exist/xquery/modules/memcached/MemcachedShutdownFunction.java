@@ -18,8 +18,6 @@
 package org.exist.xquery.modules.memcached;
 
 
-import net.spy.memcached.MemcachedClient;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
