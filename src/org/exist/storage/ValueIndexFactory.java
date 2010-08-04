@@ -23,9 +23,6 @@
 package org.exist.storage;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -71,25 +68,17 @@ public class ValueIndexFactory {
 
 		/* xs:dateTime */
 		else if (Type.subTypeOf(type, Type.DATE_TIME)) {
-			// Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
-//			GregorianCalendar utccal = new GregorianCalendar();
-//			utccal.setTimeZone(TimeZone.getTimeZone("GMT+00:00"));
-//			utccal.set(
 			try {
-			XMLGregorianCalendar xmlutccal =
-				DatatypeFactory.newInstance().newXMLGregorianCalendar(
-					BigInteger.valueOf((long)ByteConversion.byteToIntH(data, start + 1)), 
-					data[start + 5],
-					data[start + 6],
-					data[start + 7],
-					data[start + 8],
-					data[start + 9],
-					BigDecimal.valueOf((long)ByteConversion.byteToShortH(data, start + 10)),
-					0);
-			//utccal.setTimeInMillis(value);
-			// Create a XMLGregorianCalendar from the GregorianCalendar
-//			try {
-//				XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
+				XMLGregorianCalendar xmlutccal =
+					DatatypeFactory.newInstance().newXMLGregorianCalendar(
+						ByteConversion.byteToIntH(data, start + 1), 
+						data[start + 5],
+						data[start + 6],
+						data[start + 7],
+						data[start + 8],
+						data[start + 9],
+						ByteConversion.byteToShortH(data, start + 10),
+						0);
 				return new DateTimeValue(xmlutccal);
 			} catch (DatatypeConfigurationException dtce) {
 				throw new EXistException("Could not deserialize xs:dateTime data type for range index key: " + Type.getTypeName(type) + " - "
@@ -99,14 +88,13 @@ public class ValueIndexFactory {
 
 		/* xs:date */
 		else if (Type.subTypeOf(type, Type.DATE)) {
-			// get the date back as a long
-			long value = ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE));
-			// Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
-			GregorianCalendar utccal = new GregorianCalendar();
-			utccal.setTimeInMillis(value);
-			// Create a XMLGregorianCalendar from the GregorianCalendar
 			try {
-				XMLGregorianCalendar xmlutccal = DatatypeFactory.newInstance().newXMLGregorianCalendar(utccal);
+				XMLGregorianCalendar xmlutccal =
+					DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
+						ByteConversion.byteToIntH(data, start + 1), 
+						data[start + 5],
+						data[start + 6],
+						0);
 				return new DateValue(xmlutccal);
 			} catch (DatatypeConfigurationException dtce) {
 				throw new EXistException("Could not deserialize xs:date data type for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
@@ -245,18 +233,29 @@ public class ValueIndexFactory {
 
 	public static void main(String[] args) {
 		try {
+			//******** DateTimeValue ********
 			DateTimeValue dtv = new DateTimeValue("0753-04-21T01:00:00+01:00");
 			byte[] b1 = ValueIndexFactory.serialize(dtv, 0);
 			print(dtv, b1);
-			DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+00:00");
+			DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+01:00");
 			byte[] b2 = ValueIndexFactory.serialize(dtv2, 0);
 			print(dtv2, b2);
 			System.out.println(new Value(b1).compareTo(new Value(b2)));
 
 			DateTimeValue dtv2_ = (DateTimeValue) ValueIndexFactory.deserialize(b2, 0, b2.length);
-			if (dtv2 != dtv2_)
+			if (!dtv2.equals(dtv2_))
 				System.out.println("ERROR! "+dtv2.toString()+" ne "+dtv2_.toString());
 
+			//******** DateValue ********
+			DateValue dv = new DateValue("1960-03-19Z");
+			byte[] b3 = ValueIndexFactory.serialize(dv, 0);
+			print(dv, b3);
+
+			DateValue dv_ = (DateValue) ValueIndexFactory.deserialize(b3, 0, b3.length);
+			if (!dv.equals(dv_))
+				System.out.println("ERROR! "+dv.toString()+" ne "+dv_.toString());
+
+			//******** IntegerValue ********
 			IntegerValue iv = new IntegerValue(753);
 			byte[] i1 = ValueIndexFactory.serialize(iv, 0);
 			print(iv, i1);
