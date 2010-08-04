@@ -292,7 +292,7 @@ public class LocationStep extends Step {
 				if (contextStep instanceof LocationStep) {
 					LocationStep cStep = (LocationStep) contextStep;
 					
-					if (!Type.subTypeOf(cStep.getTest().getType(), getTest().getType()))
+					if (!Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
 						throw new XPathException(this, 
 								"err:XPST0005: get nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
 					
