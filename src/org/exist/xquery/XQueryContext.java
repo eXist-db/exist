@@ -1800,20 +1800,27 @@ public class XQueryContext
     {
         // TODO: redeclaring functions should be forbidden. however, throwing an
         // exception will currently break util:eval.
-        if( Namespaces.XML_NS.equals( function.getSignature().getName().getNamespaceURI() ) ) {
+    	
+    	QName name = function.getSignature().getName();
+    	
+        if( Namespaces.XML_NS.equals( name.getNamespaceURI() ) ) {
             throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.XML_NS + "'" ) );
         }
 
-        if( Namespaces.SCHEMA_NS.equals( function.getSignature().getName().getNamespaceURI() ) ) {
+        if( Namespaces.SCHEMA_NS.equals( name.getNamespaceURI() ) ) {
             throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'" ) );
         }
 
-        if( Namespaces.SCHEMA_INSTANCE_NS.equals( function.getSignature().getName().getNamespaceURI() ) ) {
+        if( Namespaces.SCHEMA_INSTANCE_NS.equals( name.getNamespaceURI() ) ) {
             throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'" ) );
         }
 
-        if( Namespaces.XPATH_FUNCTIONS_NS.equals( function.getSignature().getName().getNamespaceURI() ) ) {
+        if( Namespaces.XPATH_FUNCTIONS_NS.equals( name.getNamespaceURI() ) ) {
             throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'" ) );
+        }
+
+        if( "".equals( name.getNamespaceURI() ) ) {
+            throw( new XPathException( "err:XQST0060: every declared function name must have a non-null namespace URI" ) );
         }
 
         declaredFunctions.put( function.getSignature().getFunctionId(), function );
