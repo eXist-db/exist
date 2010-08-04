@@ -106,7 +106,7 @@
             <test fork="yes" name="xquery.CoreTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.util.UtilTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.xinclude.XIncludeTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="xquery.dates.DateTests" todir="${junit.reports.dat}"/>
+            <!--test fork="yes" name="xquery.dates.DateTests" todir="${junit.reports.dat}"/-->
 
             <!--  //-->            
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
