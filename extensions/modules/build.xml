@@ -68,6 +68,9 @@
     <condition property="include.module.math.config">
         <istrue value="${include.module.math}"/>
     </condition>
+    <condition property="include.module.memcached.config">
+        <istrue value="${include.module.memcached}"/>
+    </condition>
 	<condition property="include.module.oracle.config">
         <istrue value="${include.module.oracle}"/>
     </condition>
@@ -316,6 +319,7 @@
             <exclude name="org/exist/xquery/modules/lib/**" unless="include.module.lib.config"/>
 			<exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
             <exclude name="org/exist/xquery/modules/math/**" unless="include.module.math.config"/>
+            <exclude name="org/exist/xquery/modules/memcached/**" unless="include.module.memcached.config"/>
             <exclude name="org/exist/xquery/modules/oracle/**" unless="include.module.oracle.config"/>
 			<exclude name="org/exist/xquery/modules/scheduler/**" unless="include.module.scheduler.config"/>
             <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
