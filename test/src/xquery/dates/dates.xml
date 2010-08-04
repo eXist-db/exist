@@ -16,8 +16,8 @@
               </index>
             </collection>
         ]]></store>
-        <create-collection parent="/db" name="test"/>
-        <store collection="/db/test" name="test.xml"><![CDATA[
+        <create-collection parent="/db" name="dates-test"/>
+        <store collection="/db/dates-test" name="test.xml"><![CDATA[
             <dates>
                 <date>0753-04-21T00:00:00+01:00</date>
                 <date>1969-11-03T19:03:59.782+01:00</date>
@@ -29,7 +29,7 @@
         ]]></store>
     </setup>
     <tearDown>
-        <!--remove-collection collection="/db/test"/-->
+        <remove-collection collection="/db/dates-test"/>
     </tearDown>
     <test output="text">
         <task>Equality lookup</task>
