@@ -29,16 +29,16 @@ import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.XMLWriter;
+import org.exist.util.serializer.IndentingXMLWriter;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.*;
 
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -58,19 +58,29 @@ public class PUTFunction extends BaseHTTPClientFunction
 {
     protected static final Logger         logger    = Logger.getLogger( PUTFunction.class );
 
-    public final static FunctionSignature signature = 
-		new FunctionSignature( 
-			new QName( "put", NAMESPACE_URI, PREFIX ), 
-			"Performs a HTTP PUT request.." + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" + 
-			" where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.", 
+    public final static FunctionSignature signatures[]  = {
+		new FunctionSignature(
+			new QName( "put", NAMESPACE_URI, PREFIX ),
+			"Performs a HTTP PUT request.." + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" +
+			" where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
 			new SequenceType[] {
 	            URI_PARAM, PUT_CONTENT_PARAM, PERSIST_PARAM, REQUEST_HEADER_PARAM
-	        }, 
-			XML_BODY_RETURN 
-		);
+	        },
+			XML_BODY_RETURN
+		),
 
-	
-    public PUTFunction( XQueryContext context )
+            new FunctionSignature(
+                    new QName( "put", NAMESPACE_URI, PREFIX ),
+                    "Performs a HTTP PUT request.." + " This method returns the HTTP response encoded as an XML fragment, that looks as follows: <httpclient:response xmlns:httpclient=\"http://exist-db.org/xquery/httpclient\" statusCode=\"200\"><httpclient:headers><httpclient:header name=\"name\" value=\"value\"/>...</httpclient:headers><httpclient:body type=\"xml|xhtml|text|binary\" mimetype=\"returned content mimetype\">body content</httpclient:body></httpclient:response>" +
+                    " where XML body content will be returned as a Node, HTML body content will be tidied into an XML compatible form, a body with mime-type of \"text/...\" will be returned as a URLEncoded string, and any other body content will be returned as xs:base64Binary encoded data.",
+                    new SequenceType[] {
+                        URI_PARAM, PUT_CONTENT_PARAM, PERSIST_PARAM, REQUEST_HEADER_PARAM, INDENTATION_PARAM
+                    },
+                    XML_BODY_RETURN
+            )
+    };
+
+    public PUTFunction( XQueryContext context, FunctionSignature signature )
     {
         super( context, signature );
     }
@@ -94,6 +104,8 @@ public class PUTFunction extends BaseHTTPClientFunction
         //get the persist state
         boolean               persistState 	 = args[2].effectiveBooleanValue();
 
+        String indentLevel = (args.length >= 5 && !args[4].isEmpty()) ? args[4].itemAt(0).toString() : null;
+
         //serialize the node to SAX
         ByteArrayOutputStream baos           = new ByteArrayOutputStream();
         OutputStreamWriter    osw            = null;
@@ -104,7 +116,17 @@ public class PUTFunction extends BaseHTTPClientFunction
         catch( UnsupportedEncodingException e ) {
             throw( new XPathException( this, "Internal error" ) );
         }
-        XMLWriter     xmlWriter = new XMLWriter( osw );
+        IndentingXMLWriter     xmlWriter = new IndentingXMLWriter( osw );
+        Properties outputProperties = new Properties();
+        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        if (indentLevel != null) {
+            outputProperties.setProperty(OutputKeys.INDENT, "yes");
+            outputProperties.setProperty(EXistOutputKeys.INDENT_SPACES, indentLevel);
+        } else {
+            outputProperties.setProperty(OutputKeys.INDENT, "no");
+        }
+        xmlWriter.setOutputProperties(outputProperties);
+
         SAXSerializer sax       = new SAXSerializer();
 
         sax.setReceiver( xmlWriter );
