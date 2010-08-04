@@ -49,7 +49,19 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"user " + u.getName() + " exists");
-		manager.setUser(u);
+		try {
+			manager.setUser(u);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(),
+					e);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					e.getMessage(),
+					e);
+		}
 	}
 
 	public void addRole(Group role) throws XMLDBException {
@@ -62,11 +74,23 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"role " + role.getName() + " exists");
-		manager.addGroup(role);
+		try {
+			manager.addGroup(role);
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(),
+					e);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+					ErrorCodes.UNKNOWN_ERROR,
+					e.getMessage(),
+					e);
+		}
 	}
 
-	public void setPermissions(Resource resource, Permission perm)
-		throws XMLDBException {
+	public void setPermissions(Resource resource, Permission perm) throws XMLDBException {
+		
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
@@ -85,7 +109,14 @@ public class LocalUserManagementService implements UserManagementService {
             if (!manager.hasGroup(perm.getOwnerGroup()))
                 manager.addGroup(perm.getOwnerGroup());
             broker.storeXMLResource(transaction, document);
+        
             transact.commit(transaction);
+		
+		} catch (PermissionDeniedException e) {
+			throw new XMLDBException(
+					ErrorCodes.PERMISSION_DENIED,
+					e.getMessage(),
+					e);
 		} catch (EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
@@ -399,7 +430,13 @@ public class LocalUserManagementService implements UserManagementService {
 			Permission perm = document.getPermissions();
 			perm.setOwner(u);
             if (!manager.hasGroup(group))
-                manager.addGroup(group);
+				try {
+					manager.addGroup(group);
+				} catch (PermissionDeniedException e) {
+					throw new XMLDBException(
+							ErrorCodes.PERMISSION_DENIED,
+							e.getMessage());
+				}
 			perm.setGroup(group);
             broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
@@ -649,6 +686,11 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				"unable to remove user " + u.getName(),
 				e);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+					ErrorCodes.VENDOR_ERROR,
+					e.getMessage(),
+					e);
 		}
 	}
 
@@ -665,6 +707,11 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				"unable to remove role " + role.getName(),
 				e);
+		} catch (EXistException e) {
+			throw new XMLDBException(
+					ErrorCodes.VENDOR_ERROR,
+					e.getMessage(),
+					e);
 		}
 	}
 

@@ -30,6 +30,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
@@ -42,7 +44,6 @@ import org.exist.security.SecurityManager;
 import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
 import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.realm.AuthenticatingRealm;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
@@ -70,6 +71,7 @@ import org.w3c.dom.NodeList;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
+@ConfigurationClass("security-manager")
 public class SecurityManagerImpl implements SecurityManager {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
@@ -87,10 +89,16 @@ public class SecurityManagerImpl implements SecurityManager {
 	protected int nextUserId = 0;
 	protected int nextGroupId = 0;
 
+	@ConfigurationField("collection")
 	private int defCollectionPermissions = Permission.DEFAULT_PERM;
+	
+	@ConfigurationField("resource")
     private int defResourcePermissions = Permission.DEFAULT_PERM;
     
-    private ExistPDP pdp;
+	@ConfigurationField("valueString")
+	private Boolean enableXACML = false;
+
+	private ExistPDP pdp;
     
 	//default UnixStylePermission
     public final Permission DEFAULT_PERMISSION;
@@ -305,7 +313,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if (defOpt != null)
 			defResourcePermissions = defOpt.intValue();
 		   
-		Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
+		enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
 		if(enableXACML != null && enableXACML.booleanValue()) {
 			pdp = new ExistPDP(pool);
 			LOG.debug("XACML enabled");
@@ -323,38 +331,19 @@ public class SecurityManagerImpl implements SecurityManager {
 		return defaultRealm.updateAccount(account);
 	}
 
-	public synchronized void deleteRole(String name) throws PermissionDeniedException {
+	public synchronized void deleteRole(String name) throws PermissionDeniedException, EXistException {
 		defaultRealm.deleteRole(name);
 	}
 
-	public synchronized void deleteUser(String name) throws PermissionDeniedException {
+	public synchronized void deleteUser(String name) throws PermissionDeniedException, EXistException {
 		deleteUser(getUser(name));
 	}
 	
-	public synchronized void deleteUser(User user) throws PermissionDeniedException {
+	public synchronized void deleteUser(User user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return;
 		
 		defaultRealm.deleteAccount(user);
-
-//		user = (User)users.remove(user.getUID());
-//		if(user != null)
-//			LOG.debug("user " + user.getName() + " removed");
-//		else
-//			LOG.debug("user not found");
-//		DBBroker broker = null;
-//        TransactionManager transact = pool.getTransactionManager();
-//        Txn txn = transact.beginTransaction();
-//		try {
-//			broker = pool.get(SYSTEM_USER);
-//			save(broker, txn);
-//            transact.commit(txn);
-//		} catch (EXistException e) {
-//            transact.abort(txn);
-//			e.printStackTrace();
-//		} finally {
-//			pool.release(broker);
-//		}
 	}
 
 	public synchronized User getUser(String name) {
@@ -401,7 +390,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		return null;
 	}
 	
-    public synchronized void addGroup(Group name) {
+    public synchronized void addGroup(Group name) throws PermissionDeniedException, EXistException {
     	defaultRealm.addGroup(name.getName());
     }
 
@@ -501,7 +490,7 @@ public class SecurityManagerImpl implements SecurityManager {
 //		broker.sync(Sync.MAJOR_SYNC);
 	}
 
-	public synchronized void setUser(User user) {
+	public synchronized void setUser(User user) throws PermissionDeniedException, EXistException {
 		 defaultRealm.addAccount(user);
 		
 //		if (user.getUID() < 0)
@@ -618,7 +607,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	@Override
-	public void addGroup(String name) {
+	public void addGroup(String name) throws PermissionDeniedException, EXistException {
 		addGroup(new GroupAider(name));
 	}
 }

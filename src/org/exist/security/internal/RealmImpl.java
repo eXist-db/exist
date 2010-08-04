@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
@@ -63,6 +64,8 @@ import org.xml.sax.SAXException;
 public class RealmImpl implements Realm {
 	
 	public static String ID = "exist"; //TODO: final "eXist-db";
+
+	private final static Logger LOG = Logger.getLogger(Realm.class);
 
 	static public void setPasswordRealm(String value) {
 		ID = value;
@@ -245,7 +248,7 @@ public class RealmImpl implements Realm {
 		return group;
 	}
 
-	public synchronized Group addGroup(String name) {
+	public synchronized Group addGroup(String name) throws PermissionDeniedException, EXistException {
 		Group created_group = _addGroup(name);
 		
 		_save();
@@ -253,7 +256,7 @@ public class RealmImpl implements Realm {
 		return created_group;
 	}
 
-	public synchronized Group addGroup(Group group) {
+	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
 		Group created_group = _addGroup(group.getName());
 		
 		_save();
@@ -277,7 +280,7 @@ public class RealmImpl implements Realm {
 		return groupsByName.values();
 	}
 
-	private User _addAccount(int id, User account) {
+	private User _addAccount(int id, User account) throws PermissionDeniedException, EXistException {
 		if (usersByName.containsKey(account.getName()))
 			throw new IllegalArgumentException("User "+account.getName()+" exist.");
 		
@@ -289,15 +292,17 @@ public class RealmImpl implements Realm {
 		usersByName.put(new_account.getName(), new_account);
 		
 		_save();
+		
+		createUserHome(new_account);
 
 		return account;
 	}
 
-	public synchronized User addAccount(String name) {
+	public synchronized User addAccount(String name) throws PermissionDeniedException, EXistException {
 		return _addAccount(sm.getNextAccoutId(), new UserImpl(this, name));
 	}
 
-	public synchronized User addAccount(User account) {
+	public synchronized User addAccount(User account) throws PermissionDeniedException, EXistException {
 		User added = _addAccount(sm.getNextAccoutId(), account);
 		
 		return added;
@@ -352,24 +357,19 @@ public class RealmImpl implements Realm {
 		return usersByName.values();
 	}
 
-	public synchronized boolean deleteAccount(User user) throws PermissionDeniedException {
+	public synchronized boolean deleteAccount(User user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return false;
 		
 		usersById.remove(user.getUID());
 		usersByName.remove(user.getName());
 
-//		if(user != null)
-//			LOG.debug("user " + user.getName() + " removed");
-//		else
-//			LOG.debug("user not found");
-		
 		_save();
 		
 		return true;
 	}
 
-	public synchronized boolean deleteRole(String name) throws PermissionDeniedException {
+	public synchronized boolean deleteRole(String name) throws PermissionDeniedException, EXistException {
 		if(name == null)
 			return false;
 		
@@ -390,7 +390,7 @@ public class RealmImpl implements Realm {
 		//TODO: code
 	}
 
-	public synchronized boolean deleteGroup(Group role) throws PermissionDeniedException {
+	public synchronized boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException {
 		return deleteRole(role.getName());
 	}
 	
@@ -412,7 +412,7 @@ public class RealmImpl implements Realm {
 				"Wrong password for user [" + accountName + "] ");
 	}
 	
-	private void _save() {
+	private void _save() throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		TransactionManager transact = sm.getDatabase().getTransactionManager();
 		Txn txn = transact.beginTransaction();
@@ -422,13 +422,20 @@ public class RealmImpl implements Realm {
 			transact.commit(txn);
 		} catch (EXistException e) {
 			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			
 			e.printStackTrace();
+			
+			throw e;
 		} finally {
 			sm.getDatabase().release(broker);
 		}
 	}
 
-	private synchronized void _save(DBBroker broker, Txn transaction) throws EXistException {
+	private synchronized void _save(DBBroker broker, Txn transaction) throws EXistException, PermissionDeniedException {
 		//LOG.debug("storing acl file");
 		StringBuffer buf = new StringBuffer();
         buf.append("<!-- Central user configuration. Editing this document will cause the security " +
@@ -456,7 +463,7 @@ public class RealmImpl implements Realm {
 		
 		User currentUser = broker.getUser();
 		try {
-			broker.setUser(ACCOUNT_SYSTEM);
+			broker.setUser(sm.getSystemAccount());
 			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
             IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
@@ -466,15 +473,9 @@ public class RealmImpl implements Realm {
             sysCollection.store(transaction, broker, info, data, false);
 			doc.setPermissions(0770);
 			broker.saveCollection(transaction, doc.getCollection());
-		} catch (IOException e) {
-			throw new EXistException(e.getMessage());
-        } catch (TriggerException e) {
-            throw new EXistException(e.getMessage());
-		} catch (SAXException e) {
-			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
-			throw new EXistException(e.getMessage());
-		} catch (LockException e) {
+			throw e;
+		} catch (Exception e) {
 			throw new EXistException(e.getMessage());
 		} finally {
 			broker.setUser(currentUser);
@@ -484,23 +485,69 @@ public class RealmImpl implements Realm {
 		broker.sync(Sync.MAJOR_SYNC);
 	}
 	
-	private void createUserHome(DBBroker broker, Txn transaction, User account) 
-	throws EXistException, PermissionDeniedException, IOException {
+	private void createUserHome(User account) throws EXistException, PermissionDeniedException {
 		if(account.getHome() == null)
 			return;
 		
-		User currentUser = broker.getUser();
-		
+		DBBroker broker = null;
+		TransactionManager transact = sm.getDatabase().getTransactionManager();
+		Txn txn = transact.beginTransaction();
 		try {
-			broker.setUser(getAccount(SecurityManager.DBA_USER));
-			Collection home = broker.getOrCreateCollection(transaction, account.getHome());
-			home.getPermissions().setOwner(account);
-			CollectionConfiguration config = home.getConfiguration(broker);
-			String role = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-			home.getPermissions().setGroup(role);
-			broker.saveCollection(transaction, home);
+			broker = sm.getDatabase().get(null);
+
+			User currentUser = broker.getUser();
+			
+			try {
+		
+				broker.setUser(sm.getSystemAccount());
+	
+				Collection home = broker.getOrCreateCollection(txn, account.getHome());
+				
+				home.getPermissions().setOwner(account);
+				CollectionConfiguration config = home.getConfiguration(broker);
+				String role = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
+				home.getPermissions().setGroup(role);
+				
+				broker.saveCollection(txn, home);
+				
+				transact.commit(txn);
+			
+			} finally {
+				broker.setUser(currentUser);
+			}
+		
+		} catch (IOException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw new EXistException(e);
+		
+		} catch (PermissionDeniedException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw e;
+		
+		} catch (EXistException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw e;
+		
 		} finally {
-			broker.setUser(currentUser);
+			sm.getDatabase().release(broker);
 		}
 	}
 

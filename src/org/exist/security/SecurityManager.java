@@ -61,18 +61,18 @@ public interface SecurityManager {
    boolean hasUser(String name);
 
    // TODO: this should be addUser
-   void setUser(User user);
+   void setUser(User user) throws PermissionDeniedException, EXistException;
 
-   void deleteUser(String name) throws PermissionDeniedException;
-   void deleteUser(User user) throws PermissionDeniedException;
+   void deleteUser(String name) throws PermissionDeniedException, EXistException;
+   void deleteUser(User user) throws PermissionDeniedException, EXistException;
 
    boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
 
    User getUser(String name);
 
-   void addGroup(Group group);
+   void addGroup(Group group) throws PermissionDeniedException, EXistException;
    @Deprecated
-   void addGroup(String group);
+   void addGroup(String group) throws PermissionDeniedException, EXistException;
 
    boolean hasGroup(String name);
    boolean hasGroup(Group group);
@@ -80,7 +80,7 @@ public interface SecurityManager {
    Group getGroup(String name);
    Group getGroup(int gid);
 
-   void deleteRole(String name) throws PermissionDeniedException;
+   void deleteRole(String name) throws PermissionDeniedException, EXistException;
 
    boolean hasAdminPrivileges(User user);
 
