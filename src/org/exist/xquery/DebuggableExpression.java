@@ -151,4 +151,9 @@ public class DebuggableExpression implements Expression {
 	public boolean allowMixNodesInReturn() {
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return expression.toString();
+	}
 }
