@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet xmlns:xproc="http://xproc.net/xproc">
+    <testName>XProc tests</testName>
+    <description>
+        <p>Testing eXist native xproc processing</p>
+        <author>James Fuller</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xproc-test"/>
+        <store collection="/db/xproc-test" name="pipe.xml"><![CDATA[
+<p:pipeline name="pipeline"
+            xmlns:p="http://www.w3.org/ns/xproc">
+    <p:identity/>
+</p:pipeline>
+        ]]></store>
+        <store collection="/db/xproc-test" name="test.xml"><![CDATA[
+<test>some test input</test>
+        ]]></store>
+
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xproc-test"/>
+    </tearDown>
+    <test output="text">
+        <task>xproc1</task>
+        <code>
+            import module namespace xproc = "http://xproc.net/xproc";            
+            xproc:run('xmldb:exist:///db/xproc-test/pipe.xml','xmldb:exist:///db/xproc-test/test.xml')</code>
+        <expected><test test="here">some test input</test></expected>
+    </test>
+</TestSet>
