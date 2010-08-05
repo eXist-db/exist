@@ -375,7 +375,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 	protected String translateRegexp(String pattern) throws XPathException {
 		// convert pattern to Java regex syntax
        try {
-	       	int xmlVersion = 1;
+	       	int xmlVersion = 11;
 	    	boolean ignoreWhitespace = false;
 	    	boolean caseBlind = false;
 	

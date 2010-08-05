@@ -71,7 +71,7 @@ public class RewriteConfig {
 
         private Mapping(String regex, URLRewrite action) throws ServletException {
             try {
-            	int xmlVersion = 1;
+            	int xmlVersion = 11;
             	boolean ignoreWhitespace = false;
             	boolean caseBlind = false;
 
