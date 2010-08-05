@@ -281,6 +281,11 @@ public class LocationStep extends Step {
 		if (this.axis == Constants.SELF_AXIS
 				&& this.test.getType() == Type.NODE)
 			contextInfo.addFlag(DOT_TEST);
+		
+		//Change axis from descendant-or-self to descendant for '//'
+		if (this.axis == Constants.DESCENDANT_SELF_AXIS && isAbbreviated()) {
+			this.axis = Constants.DESCENDANT_AXIS;
+		}
 
 		// static analysis for empty-sequence
 		Expression contextStep;
