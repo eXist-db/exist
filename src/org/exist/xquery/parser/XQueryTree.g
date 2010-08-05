@@ -1718,6 +1718,8 @@ throws PermissionDeniedException, EXistException, XPathException
 						rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
 					} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
 						rs.setAxis(Constants.DESCENDANT_AXIS);
+					} else if (rs.getAxis() == Constants.SELF_AXIS) {
+						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
 					} else {
 						rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
 						rs.setAbbreviated(true);
