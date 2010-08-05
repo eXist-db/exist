@@ -49,6 +49,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.FunDoc;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -254,13 +255,6 @@ public class XQTS_case extends TestCase {
 					ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
 					String id = inputFile.getNodeValue();
 					
-					//use doc dunction
-					FunDoc fn = new FunDoc(context);
-					List arg = new ArrayList();
-					arg.add( new StringValue( sources.get(id) ) );
-					fn.setArguments(arg);
-					context.declareVariable( inputFile.getAttribute("variable"), fn );
-					
 					//use DocUtils
 //					context.declareVariable( 
 //							inputFile.getAttribute("variable"),
@@ -269,7 +263,7 @@ public class XQTS_case extends TestCase {
 					
 					
 					//in-memory nodes
-					//context.declareVariable(inputFile.getAttribute("variable"), loadVarFromURI(context, sources.get(id)));
+					context.declareVariable(inputFile.getAttribute("variable"), loadVarFromURI(context, sources.get(id)));
 				}
 				
 				Sequence contextSequence = null;
