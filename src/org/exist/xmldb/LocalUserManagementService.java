@@ -725,12 +725,16 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public void updateUser(User u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		DBBroker broker = null;
 		try {
+			broker = pool.get(user);
 			manager.updateAccount(u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
 		} catch (EXistException e) {
 			new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
+		} finally {
+			pool.release(broker);
 		}
 	}
 	
