@@ -25,7 +25,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -46,8 +48,11 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.FunDoc;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -238,7 +243,23 @@ public class XQTS_case extends TestCase {
 				for (int i = 0; i < inputFiles.getLength(); i++) {
 					ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
 					String id = inputFile.getNodeValue();
-					context.declareVariable(inputFile.getAttribute("variable"), loadVarFromURI(context, sources.get(id)));
+					
+					//use doc dunction
+					FunDoc fn = new FunDoc(context);
+					List arg = new ArrayList();
+					arg.add( new StringValue( sources.get(id) ) );
+					fn.setArguments(arg);
+					context.declareVariable( inputFile.getAttribute("variable"), fn );
+					
+					//use DocUtils
+//					context.declareVariable( 
+//							inputFile.getAttribute("variable"),
+//							DocUtils.getDocument(context, sources.get(id))
+//					);
+					
+					
+					//in-memory nodes
+					//context.declareVariable(inputFile.getAttribute("variable"), loadVarFromURI(context, sources.get(id)));
 				}
 				
 				Sequence contextSequence = null;
