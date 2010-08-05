@@ -1,6 +1,5 @@
 xquery version "1.0";
 
-import module namespace const = "http://xproc.net/xproc/const";
 import module namespace xproc = "http://xproc.net/xproc";
 
 declare variable $pipeline external;
