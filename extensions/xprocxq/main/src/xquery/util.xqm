@@ -22,8 +22,8 @@ declare namespace xxq-error = "http://xproc.net/xproc/error";
 declare namespace t = "http://xproc.org/ns/testsuite";
 
 (: Module Imports :)
-import module namespace const = "http://xproc.net/xproc/const";
-import module namespace p1 = "http://xproc.net/xproc/functions";
+import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
+import module namespace p1 = "http://xproc.net/xproc/functions" at "resource:net/xproc/xprocxq/src/xquery/functions.xqm";
 
 
 (: set to 1 to enable debugging :)

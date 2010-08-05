@@ -16,7 +16,7 @@ declare namespace xproc = "http://xproc.net/xproc";
 declare namespace t = "http://xproc.org/ns/testsuite";
 
 (: Module Imports :)
-import module namespace u = "http://xproc.net/xproc/util";
+import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
 
 (: -------------------------------------------------------------------------- :)
 

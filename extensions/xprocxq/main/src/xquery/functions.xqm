@@ -13,7 +13,7 @@ declare namespace xproc = "http://xproc.net/xproc";
 declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
 
 (: XProc Namespaces :)
-import module namespace const = "http://xproc.net/xproc/const";
+import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
 
 (: -------------------------------------------------------------------------- :)
 
