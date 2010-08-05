@@ -36,6 +36,15 @@ declare function test4:test() {
     concat('test4 function: ',$test4:var1)
 };</store>
 
+        <store collection="/db/module-test" type="application/xquery" name="test5.xqm">xquery version "1.0";
+module namespace test5='http://example.com/test-5';
+declare function test5:fib-recur($n as xs:integer) as xs:integer? {
+    if ($n lt 0) then ()
+    else if ($n = 0)  then 0
+    else if ($n=1)   then 1
+    else test5:fib-recur($n - 1)  + test5:fib-recur($n - 2)
+};
+</store>
     </setup>
     <tearDown>
         <remove-collection collection="/db/module-test"/>
@@ -84,4 +93,17 @@ declare function test4:test() {
             ")</code>
         <expected>test4 function: test4:var1 success</expected>
     </test>
+
+     <test output="text">
+        <task>test importing modules5 with recursive function</task>
+        <code>util:eval("
+            import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
+            import module namespace test5='http://example.com/test-5' at 'xmldb:exist:///db/module-test/test5.xqm';
+
+               test5:fib-recur(10)
+
+            ")</code>
+        <expected></expected>
+    </test>
+
 </TestSet>
