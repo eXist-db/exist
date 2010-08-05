@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -36,6 +36,8 @@ public class CDATAConstructor extends NodeConstructor {
 
     private final String cdata;
     
+    private boolean literalCharacters = false;
+    
     /**
      * @param context
      */
@@ -61,8 +63,14 @@ public class CDATAConstructor extends NodeConstructor {
             context.pushDocumentContext();
         try {
             MemTreeBuilder builder = context.getDocumentBuilder();
-            int nodeNr = builder.cdataSection(cdata);
-            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            
+            int nodeNr;
+            if (literalCharacters) {
+            	nodeNr = builder.characters(cdata);
+            } else {
+            	nodeNr = builder.cdataSection(cdata);
+            }
+        	NodeImpl node = builder.getDocument().getNode(nodeNr);
 
             if (context.getProfiler().isEnabled())
                 context.getProfiler().end(this, "", node);
@@ -79,6 +87,8 @@ public class CDATAConstructor extends NodeConstructor {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
+
+        literalCharacters = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) != 0;
     }
 
     /* (non-Javadoc)
