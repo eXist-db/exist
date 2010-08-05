@@ -94,7 +94,7 @@ declare function test5:fib-recur($n as xs:integer) as xs:integer? {
         <expected>test4 function: test4:var1 success</expected>
     </test>
 
-     <test output="text">
+     <!--test output="text">
         <task>test importing modules5 with recursive function</task>
         <code>util:eval("
             import module namespace test1='http://example.com/test-1' at 'xmldb:exist:///db/module-test/test1.xqm';
@@ -103,7 +103,7 @@ declare function test5:fib-recur($n as xs:integer) as xs:integer? {
                test5:fib-recur(10)
 
             ")</code>
-        <expected></expected>
-    </test>
+        <expected>55</expected>
+    </test-->
 
 </TestSet>
