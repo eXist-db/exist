@@ -180,7 +180,7 @@ public abstract class TestCase {
 				
 				//caught-on length on last result
 				else if (!i.hasNext())
-					l = (int) expectedResult.length() - pos - 1;
+					l = (int) expectedResult.length() - pos;
 				
 				else
 					l = res.length();
@@ -261,10 +261,9 @@ public abstract class TestCase {
 					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
 						reader.mark(1);
 						if (' ' != (char)reader.read())
-//							if (compare.equals("Fragment"))
-								reader.reset();
-//							else
-//								return false;
+							reader.reset();
+						else
+							pos++;
 					}
 				}
 			}
