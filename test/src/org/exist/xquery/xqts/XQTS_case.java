@@ -49,7 +49,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.FunDoc;
-import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -146,6 +145,17 @@ public class XQTS_case extends TestCase {
 		//ignore tests
 		if (testGroup.equals("FunctionCallExpr") && testCase.equals("K-FunctionCallExpr-11"))
 			return;
+		else if (testGroup.equals("SeqCollectionFunc")) {
+			if (testCase.equals("fn-collection-4d"))
+				return;
+			else if (testCase.equals("fn-collection-5d"))
+				return;
+			else if (testCase.equals("fn-collection-9"))
+				return;
+			else if (testCase.equals("fn-collection-10d"))
+				return;
+		}
+		
 		
 		try {
 			XQueryService service = (XQueryService) testCollection.getService(
