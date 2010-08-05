@@ -15,8 +15,8 @@ declare namespace comp="http://xproc.net/xproc/comp";
 declare namespace xproc = "http://xproc.net/xproc";
 
 (: Module Imports :)
-import module namespace u = "http://xproc.net/xproc/util";
-import module namespace const = "http://xproc.net/xproc/const";
+import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
+import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
 (: import module namespace xslfo = "http://exist-db.org/xquery/xslfo"; (: for p:xsl-formatter :) :)
 
 (: -------------------------------------------------------------------------- :)

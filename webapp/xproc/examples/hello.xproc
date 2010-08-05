@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<p:pipeline version="1.0" xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
+<p:pipeline version="1.0" xmlns:p="http://www.w3.org/ns/xproc" name="pipeline">
 <p:identity>
 <p:input port="source">
     <p:inline>

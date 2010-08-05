@@ -17,11 +17,11 @@ declare namespace xproc = "http://xproc.net/xproc";
 declare namespace xxq-error = "http://xproc.net/xproc/error";
 
 (: Module Imports :)
-import module namespace const = "http://xproc.net/xproc/const";
-import module namespace u = "http://xproc.net/xproc/util";
-import module namespace std = "http://xproc.net/xproc/std";
-import module namespace opt = "http://xproc.net/xproc/opt";
-import module namespace ext = "http://xproc.net/xproc/ext";
+import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
+import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
+import module namespace std = "http://xproc.net/xproc/std" at "resource:net/xproc/xprocxq/src/xquery/std.xqm";
+import module namespace opt = "http://xproc.net/xproc/opt" at "resource:net/xproc/xprocxq/src/xquery/opt.xqm";
+import module namespace ext = "http://xproc.net/xproc/ext" at "resource:net/xproc/xprocxq/src/xquery/ext.xqm";
 
 
 (: -------------------------------------------------------------------------- :)
