@@ -200,20 +200,18 @@ public abstract class TestCase {
 					
 					if (chars[x] == '\r') {
 						chars[x] = (char)reader.read();
+						pos++;
 					}
 					
 					pos++;
 				}
 				
-				if (result.getItemCount() == 1 && skipped != 0) {
+				if ( (result.getItemCount() == 1 || !i.hasNext() ) && skipped != 0) {
 					char[] oldChars = chars; 
 					chars = new char[l-skipped];
 					System.arraycopy(oldChars, 0, chars, 0, l-skipped);
 				}
 				
-	//			System.out.println(res);
-	//			System.out.println(String.copyValueOf(chars));
-	
 				String expResult = String.copyValueOf(chars);
 				
 				boolean ok = false;
