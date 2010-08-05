@@ -9,7 +9,8 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.memtree.SAXAdapter;
-import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -70,10 +71,15 @@ public class RewriteConfig {
 
         private Mapping(String regex, URLRewrite action) throws ServletException {
             try {
-                regex = RegexTranslator.translate(regex, true);
-                this.pattern = Pattern.compile(regex, 0);
+            	int xmlVersion = 1;
+            	boolean ignoreWhitespace = false;
+            	boolean caseBlind = false;
+
+            	regex = JDK15RegexTranslator.translate(regex, xmlVersion, true, ignoreWhitespace, caseBlind);
+                
+            	this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
-            } catch (RegexTranslator.RegexSyntaxException e) {
+            } catch (RegexSyntaxException e) {
                 throw new ServletException("Syntax error in regular expression specified for path. " +
                     e.getMessage(), e);
             }
