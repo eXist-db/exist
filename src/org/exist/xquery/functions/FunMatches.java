@@ -32,10 +32,10 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.pragmas.Optimize;
+import org.exist.xquery.regex.JDK15RegexTranslator;
+import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.util.RegexTranslator;
-import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -462,7 +462,10 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 	protected String translateRegexp(String pattern) throws XPathException {
 		// convert pattern to Java regex syntax
         try {
-			pattern = RegexTranslator.translate(pattern, true);
+        	int xmlVersion = 1;
+        	boolean ignoreWhitespace = false;
+        	boolean caseBlind = false;
+			pattern = JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
 		} catch (RegexSyntaxException e) {
 			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
