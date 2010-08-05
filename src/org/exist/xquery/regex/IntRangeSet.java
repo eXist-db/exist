@@ -233,7 +233,7 @@ public class IntRangeSet implements Serializable {
      * Get an iterator over the values
      */
 
-    public IntIterator iterator() {
+    public IntRangeSetIterator iterator() {
         return new IntRangeSetIterator();
     }
 
@@ -280,7 +280,7 @@ public class IntRangeSet implements Serializable {
      */
 
     public boolean containsAll(IntRangeSet other) {
-        IntIterator it = other.iterator();
+    	IntRangeSetIterator it = other.iterator();
         while (it.hasNext()) {
             if (!contains(it.next())) {
                 return false;
@@ -348,7 +348,7 @@ public class IntRangeSet implements Serializable {
      * Iterator class
      */
 
-    private class IntRangeSetIterator implements IntIterator, Serializable {
+    private class IntRangeSetIterator implements Serializable {
 
         private int i = 0;
         private int current = 0;
