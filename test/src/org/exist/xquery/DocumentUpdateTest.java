@@ -67,7 +67,7 @@ public class DocumentUpdateTest extends TestCase {
 	    		"let $path := '/db/testup'\n" +
 	    		"let $d1 := local:xpath($path)//n/text()\n" +
 	    		"let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" + 
-	    		"return local:xpath($path)//n/text()";
+	    		"return local:xpath($path)/text()";
 			result = execQuery(query);
 			assertEquals(result, "1");
 		
