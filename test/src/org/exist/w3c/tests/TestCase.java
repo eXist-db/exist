@@ -174,8 +174,14 @@ public abstract class TestCase {
 				String res = xmldbResource.getContent().toString();
 				
 				int l;
+				//expected result length is only one result
 				if (result.getItemCount() == 1)
 					l = (int) expectedResult.length();
+				
+				//caught-on length on last result
+				else if (!i.hasNext())
+					l = (int) expectedResult.length() - pos - 1;
+				
 				else
 					l = res.length();
 				

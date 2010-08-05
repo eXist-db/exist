@@ -101,7 +101,6 @@ public class FunTokenize extends FunMatches {
                 result = Sequence.EMPTY_SEQUENCE;
 
             else {
-            	//TODO : make fn:tokenize("Some unparsed <br> HTML <BR> text", "\s*<br>\s*", "") work  
                 String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
                 if (Pattern.matches(pattern, "")) {
                 	throw new XPathException(this, "FORX0003: regular expression could match empty string");
