@@ -2670,6 +2670,10 @@ public class XQueryContext
      */
     public void importModule( String namespaceURI, String prefix, String location ) throws XPathException
     {
+    	
+    	if ("".equals(namespaceURI))
+            throw new XPathException("err:XQST0088: The first URILiteral in a module import must be of nonzero length.");
+    	
         Module module = getRootModule( namespaceURI );
 
         if( module != null ) {
