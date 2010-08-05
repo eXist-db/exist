@@ -1641,9 +1641,13 @@ public class ElementImpl extends NamedNode implements Element {
 	 */
 	public String getBaseURI() {
         String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
-        if ( baseURI == null) {
-            baseURI = "";
+        if ( baseURI == null || "".equals(baseURI)) {
+            StoredNode parent = getParentStoredNode();
+            if (parent != null)
+            	return parent.getBaseURI();
         }
+
+        baseURI = "";
         StoredNode parent = getParentStoredNode();
         while (parent != null && parent.getBaseURI() != null) {
             if ("".equals(baseURI)) {
