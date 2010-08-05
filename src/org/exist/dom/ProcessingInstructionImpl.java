@@ -117,22 +117,11 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-        String baseURI = "";
-
         StoredNode parent = getParentStoredNode();
-        while (parent != null && parent.getBaseURI() != null) {
-            if ("".equals(baseURI)) {
-                baseURI = parent.getBaseURI();
-            } else {
-                baseURI = parent.getBaseURI() + "/" + baseURI;
-            }
-            parent = parent.getParentStoredNode();
-            if (parent == null) return baseURI;
-        }
-        if ("".equals(baseURI)) {
-            baseURI = getDocument().getBaseURI();
-        }
-        return baseURI;
+        if (parent != null )
+        	return parent.getBaseURI();
+
+        return getDocument().getBaseURI();
 	}
 
     /**
