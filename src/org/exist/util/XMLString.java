@@ -204,7 +204,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 		}
 	}
 
-	private static boolean isWhiteSpace(char ch) {
+	public static boolean isWhiteSpace(char ch) {
 		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}
 
