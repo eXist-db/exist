@@ -393,15 +393,16 @@ public abstract class TestCase {
 	}
 	
 	public String sequenceToString(Sequence seq) {
-		String res = "";
+		StringBuilder res = new StringBuilder();
 		try {
 			for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 				Resource resource = getResource(i.nextItem());
-				res += resource.getContent().toString();
+				res.append(resource.getContent().toString());
+				if (i.hasNext()) res.append(" ");
 			}
 		} catch (Exception e) {
-			res += e.getMessage();
+			res.append(e.getMessage());
 		}
-		return res;
+		return res.toString();
 	}
 }
