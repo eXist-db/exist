@@ -979,13 +979,16 @@ public class BrokerPool extends Observable {
         return pageSize;
     }
 
+    private String lastSignal = "";
     public void signalSystemStatus(String signal) {
-        if (System.currentTimeMillis() > nextSystemStatus) {
+        if (!lastSignal.equals(signal) || System.currentTimeMillis() > nextSystemStatus) {
             
+        	lastSignal = signal;
+        	
         	setChanged();
             notifyObservers(signal);
 
-            nextSystemStatus = System.currentTimeMillis() + 100;
+            nextSystemStatus = System.currentTimeMillis() + 10000;
         }
     }
 
