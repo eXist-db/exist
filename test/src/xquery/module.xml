@@ -60,7 +60,7 @@ declare function test4:test() {
             ")</code>
         <expected>test3 function</expected>
     </test>
-    <test output="text">
+    <test output="text">           
         <task>test importing modules3 with declared var</task>
         <code>util:eval("
             import module namespace test2='http://example.com/test-2' at 'xmldb:exist:///db/module-test/test2.xqm';
