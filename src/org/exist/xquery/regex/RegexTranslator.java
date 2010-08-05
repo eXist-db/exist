@@ -1,19 +1,19 @@
 package org.exist.xquery.regex;
 
-import net.sf.saxon.trans.Err;
-import net.sf.saxon.charcode.UTF16CharacterSet;
-import net.sf.saxon.om.FastStringBuffer;
-import net.sf.saxon.sort.IntHashSet;
-import net.sf.saxon.value.Whitespace;
-
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+
+import org.exist.util.FastStringBuffer;
+import org.exist.util.UTF16CharacterSet;
+import org.exist.util.XMLChar;
+import org.exist.util.XMLString;
 
 /**
  * Abstract superclass for the various regex translators, which differ according to the target platform.
  * 
- * Copied from Saxon-HE 9.2 package net.sf.saxon.regex without change.
+ * Copied from Saxon-HE 9.2 package net.sf.saxon.regex.
  */
 public abstract class RegexTranslator {
 
@@ -28,8 +28,8 @@ public abstract class RegexTranslator {
     protected char curChar;
     protected boolean eos = false;
     protected int currentCapture = 0;
-    protected IntHashSet captures = new IntHashSet();
-    protected final FastStringBuffer result = new FastStringBuffer(FastStringBuffer.SMALL);
+    protected HashSet captures = new HashSet(); //IntHashSet
+    protected final FastStringBuffer result = new FastStringBuffer(64);
 
     protected void translateTop() throws RegexSyntaxException {
          translateRegExp();
@@ -104,7 +104,7 @@ public abstract class RegexTranslator {
     }
 
     protected CharSequence parseQuantExact() throws RegexSyntaxException {
-        FastStringBuffer buf = new FastStringBuffer(FastStringBuffer.TINY);
+        FastStringBuffer buf = new FastStringBuffer(16);
         do {
             if ("0123456789".indexOf(curChar) < 0)
                 throw makeException("expected digit in quantifier");
@@ -192,7 +192,7 @@ public abstract class RegexTranslator {
         if (pos < length) {
             curChar = regExp.charAt(pos++);
             if (ignoreWhitespace && !inCharClassExpr) {
-                while (Whitespace.isWhitespace(curChar)) {
+                while (XMLString.isWhiteSpace(curChar)) {
                     advance();
                 }
             }
@@ -204,12 +204,12 @@ public abstract class RegexTranslator {
     }
 
     protected int absorbSurrogatePair() throws RegexSyntaxException {
-        if (UTF16CharacterSet.isSurrogate(curChar)) {
-            if (!UTF16CharacterSet.isHighSurrogate(curChar))
+        if (XMLChar.isSurrogate(curChar)) {
+            if (!XMLChar.isHighSurrogate(curChar))
                 throw makeException("invalid surrogate pair");
             char c1 = curChar;
             advance();
-            if (!UTF16CharacterSet.isLowSurrogate(curChar))
+            if (!XMLChar.isLowSurrogate(curChar))
                 throw makeException("invalid surrogate pair");
             return UTF16CharacterSet.combinePair(c1, curChar);
         } else {
@@ -227,7 +227,7 @@ public abstract class RegexTranslator {
             curChar = regExp.charAt((--pos)-1);
         }
         if (ignoreWhitespace && !inCharClassExpr) {
-            while (Whitespace.isWhitespace(curChar)) {
+            while (XMLString.isWhiteSpace(curChar)) {
                 recede();
             }
         }
@@ -241,12 +241,12 @@ public abstract class RegexTranslator {
 
     protected RegexSyntaxException makeException(String key) {
         return new RegexSyntaxException("Error at character " + (pos - 1) +
-                " in regular expression " + Err.wrap(regExp, Err.VALUE) + ": " + key);
+                " in regular expression " + regExp + ": " + key);
     }
 
     protected RegexSyntaxException makeException(String key, String arg) {
         return new RegexSyntaxException("Error at character " + (pos - 1) +
-                " in regular expression " + Err.wrap(regExp, Err.VALUE) + ": " + key +
+                " in regular expression " + regExp + ": " + key +
                 " (" + arg + ')');
     }
 
@@ -277,10 +277,10 @@ public abstract class RegexTranslator {
         FastStringBuffer highRanges = new FastStringBuffer(ranges.size() * 2);
         for (int i = 0, len = ranges.size(); i < len; i++) {
             Range r = (Range)ranges.get(i);
-            char min1 = UTF16CharacterSet.highSurrogate(r.getMin());
-            char min2 = UTF16CharacterSet.lowSurrogate(r.getMin());
-            char max1 = UTF16CharacterSet.highSurrogate(r.getMax());
-            char max2 = UTF16CharacterSet.lowSurrogate(r.getMax());
+            char min1 = XMLChar.highSurrogate(r.getMin());
+            char min2 = XMLChar.lowSurrogate(r.getMin());
+            char max1 = XMLChar.highSurrogate(r.getMax());
+            char max2 = XMLChar.lowSurrogate(r.getMax());
             if (min2 != UTF16CharacterSet.SURROGATE2_MIN) {
                 min1++;
             }
@@ -299,10 +299,10 @@ public abstract class RegexTranslator {
         FastStringBuffer lowRanges = new FastStringBuffer(ranges.size() * 2);
         for (int i = 0, len = ranges.size(); i < len; i++) {
             Range r = (Range)ranges.get(i);
-            char min1 = UTF16CharacterSet.highSurrogate(r.getMin());
-            char min2 = UTF16CharacterSet.lowSurrogate(r.getMin());
-            char max1 = UTF16CharacterSet.highSurrogate(r.getMax());
-            char max2 = UTF16CharacterSet.lowSurrogate(r.getMax());
+            char min1 = XMLChar.highSurrogate(r.getMin());
+            char min2 = XMLChar.lowSurrogate(r.getMin());
+            char max1 = XMLChar.highSurrogate(r.getMax());
+            char max2 = XMLChar.lowSurrogate(r.getMax());
             if (min1 == max1) {
                 if (min2 != UTF16CharacterSet.SURROGATE2_MIN || max2 != UTF16CharacterSet.SURROGATE2_MAX) {
                     lowRanges.append(min1);

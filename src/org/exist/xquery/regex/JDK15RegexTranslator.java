@@ -1,16 +1,11 @@
 package org.exist.xquery.regex;
 
-import net.sf.saxon.Configuration;
-import net.sf.saxon.charcode.UTF16CharacterSet;
-import net.sf.saxon.charcode.XMLCharacterData;
-import net.sf.saxon.om.FastStringBuffer;
-import net.sf.saxon.sort.IntRangeSet;
-import net.sf.saxon.value.StringValue;
-import net.sf.saxon.value.Whitespace;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import org.exist.util.FastStringBuffer;
+import org.exist.util.UTF16CharacterSet;
+import org.exist.xquery.value.StringValue;
 
 /**
  * This class translates XML Schema regex syntax into JDK 1.5 regex syntax. This differs from the JDK 1.4
@@ -22,9 +17,11 @@ import java.util.regex.Pattern;
  * to the XML Schema regex syntax. This version also removes most of the complexities of handling non-BMP
  * characters, since JDK 1.5 handles these natively.
  * 
- * Copied from Saxon-HE 9.2 package net.sf.saxon.regex without change.
+ * Copied from Saxon-HE 9.2 package net.sf.saxon.regex.
  */
 public class JDK15RegexTranslator extends RegexTranslator {
+	
+	int XML10 = 10;
 
     /**
      * Translates XML Schema and XPath regexes into <code>java.util.regex</code> regexes.
@@ -595,16 +592,16 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 return ESC_S;
             case 'i':
                 advance();
-                return (xmlVersion == Configuration.XML10 ? ESC_i_10 : ESC_i_11);
+                return (xmlVersion == XML10 ? ESC_i_10 : ESC_i_11);
             case 'I':
                 advance();
-                return (xmlVersion == Configuration.XML10 ? ESC_I_10 : ESC_I_11);
+                return (xmlVersion == XML10 ? ESC_I_10 : ESC_I_11);
             case 'c':
                 advance();
-                return (xmlVersion == Configuration.XML10 ? ESC_c_10 : ESC_c_11);
+                return (xmlVersion == XML10 ? ESC_c_10 : ESC_c_11);
             case 'C':
                 advance();
-                return (xmlVersion == Configuration.XML10 ? ESC_C_10 : ESC_C_11);
+                return (xmlVersion == XML10 ? ESC_C_10 : ESC_C_11);
             case 'd':
                 advance();
                 return ESC_d;
@@ -687,7 +684,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
         }
         CharSequence propertyNameCS = regExp.subSequence(start, pos - 1);
         if (ignoreWhitespace && !inCharClassExpr) {
-            propertyNameCS = Whitespace.removeAllWhitespace(propertyNameCS);
+            propertyNameCS = StringValue.collapseWhitespace(propertyNameCS);
         }
         String propertyName = propertyNameCS.toString();
         advance();
@@ -948,16 +945,16 @@ public class JDK15RegexTranslator extends RegexTranslator {
      * @throws RegexSyntaxException
      */
 
-    public static void main(String[] args) throws RegexSyntaxException {
-        String s = translate(args[0], 11, args[1].equals("xpath"), false, true);
-        System.err.println(StringValue.diagnosticDisplay(s));
-        try {
-            Pattern.compile(s);
-        } catch (Exception err) {
-            System.err.println("Error: " + err.getMessage());
-        }
-        System.err.println();
-    }
+//    public static void main(String[] args) throws RegexSyntaxException {
+//        String s = translate(args[0], 11, args[1].equals("xpath"), false, true);
+//        System.err.println(StringValue.diagnosticDisplay(s));
+//        try {
+//            Pattern.compile(s);
+//        } catch (Exception err) {
+//            System.err.println("Error: " + err.getMessage());
+//        }
+//        System.err.println();
+//    }
 
 
 //}

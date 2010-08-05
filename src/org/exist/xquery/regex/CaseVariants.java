@@ -1,23 +1,22 @@
 package org.exist.xquery.regex;
 
-import net.sf.saxon.sort.IntArraySet;
-import net.sf.saxon.sort.IntHashMap;
-import net.sf.saxon.sort.IntToIntHashMap;
-import net.sf.saxon.sort.IntToIntMap;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**
  * This class holds data about the case-variants of Unicode characters. The data is automatically
  * generated from the Unicode database.
  * 
- * Copied from Saxon-HE 9.2 package net.sf.saxon.regex without change.
+ * Copied from Saxon-HE 9.2 package net.sf.saxon.regex.
  */
 public class CaseVariants {
 
+	static int[] EMPTY_INT_ARRAY = new int[0];
+	
     // Use one hashmap for characters with a single case variant, another for characters with multiple
     // case variants, to reduce the number of objects that need to be allocated
 
-    private static IntToIntMap monoVariants = new IntToIntHashMap(2500);
-    private static IntHashMap<int[]> polyVariants = new IntHashMap<int[]>(100);
+    private static Int2ObjectHashMap monoVariants = new Int2ObjectHashMap(2500);
+    private static Int2ObjectHashMap<int[]> polyVariants = new Int2ObjectHashMap<int[]>(100);
 
     private static void cv(int a, int b) {
         monoVariants.put(a, b);
@@ -41,17 +40,18 @@ public class CaseVariants {
      */
 
     public static int[] getCaseVariants(int code) {
-        int mono = monoVariants.get(code);
-        if (mono != monoVariants.getDefaultValue()) {
-            return new int[]{mono};
-        } else {
+        int mono = (Integer) monoVariants.get(code);
+        //UNDERSTAND: is it safe?
+//        if (mono != monoVariants.getDefaultValue()) {
+//            return new int[]{mono};
+//        } else {
             int[] result = polyVariants.get(code);
             if (result == null) {
-                return IntArraySet.EMPTY_INT_ARRAY;
+                return EMPTY_INT_ARRAY;
             } else {
                 return result;
             }
-        }
+//        }
     }
 
     /**
