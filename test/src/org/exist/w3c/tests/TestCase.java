@@ -354,6 +354,9 @@ public abstract class TestCase {
             InputSource src = new InputSource(isr);
             xr.parse(src);
             isr.close();
+            
+            adapter.getDocument().setDocumentURI(new File(uri).getAbsoluteFile().toString());
+            
             return (NodeImpl) adapter.getDocument();
 		} catch (SAXException e) {
 			
@@ -364,6 +367,9 @@ public abstract class TestCase {
 	            	xml = xml.trim().replaceFirst("^([\\W]+)<","<");
 	            	InputSource src = new InputSource(new StringReader(xml));
 					xr.parse(src);
+		            
+					adapter.getDocument().setDocumentURI(new File(uri).getAbsoluteFile().toString());
+
 		            return (NodeImpl) adapter.getDocument();
 				} catch (SAXException e1) {
 					throw new IOException(e);
