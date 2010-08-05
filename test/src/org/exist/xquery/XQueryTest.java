@@ -1047,7 +1047,7 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(message.indexOf("XQST0033") > -1);
 
             System.out.println("testNamespace 3: ========");
-            query = "xquery version \"1.0\";\n" + "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$foo:bar";
+            query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$foo:bar";
             try {
                 message = "";
                 result = service.query(query);
@@ -1058,7 +1058,7 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(message.indexOf("does not match namespace URI") > -1);
 
             System.out.println("testNamespace 4: ========");
-            query = "xquery version \"1.0\";\n" + "import module namespace foo=\"\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
+            query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
             try {
                 message = "";
                 result = service.query(query);
