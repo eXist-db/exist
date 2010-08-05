@@ -470,7 +470,7 @@ public class UserImpl implements User {
 			this.password = null;
 			this.digestPassword = null;
 		} else {
-			this.password = ((Password)_cred).pw;
+			this.password = _cred.toString();
 			this.digestPassword = digest(passwd);
 		}
 	}
@@ -521,8 +521,8 @@ public class UserImpl implements User {
 		buf.append(Integer.toString(uid));
 		buf.append("\"");
 		if (password != null) {
-			buf.append(" password=\"{MD5}");
-			buf.append(password);
+			buf.append(" password=\"");
+			buf.append(_cred.toString());
 			buf.append('"');
 		}
 		if (digestPassword != null) {
