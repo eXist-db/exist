@@ -283,7 +283,6 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
 (: -------------------------------------------------------------------------- :)
 declare function xproc:generate-explicit-input($step,$count,$xproc,$unique_before,$unique_id,$allstep){
 (: -------------------------------------------------------------------------- :)
-
  (: TODO - this section will be refactored:)
  for $input in $step/p:input
      return
@@ -303,38 +302,42 @@ declare function xproc:generate-explicit-input($step,$count,$xproc,$unique_befor
                         u:staticError('err:XS0032', concat("static error during explicit binding pass:",$input,$allstep))
                     else
                         $input/*
-                 else
-                     if(name($step)="ext:pre" or name($step)="ext:post" ) then
+                else if(name($step)="ext:pre" or name($step)="ext:post" ) then
                     let $a := $unique_before
                     let $a1 := substring-before($a,'.0')
                     let $b := tokenize($a1,'\.')[last()]
                     let $c := substring-before($a1,$b)
-
-
+                    return
+                        if($input/*/p:pipe or contains($b,'!')) then
+                            $input/*
+                        else
+                        let $d := xs:integer($b) - 1
+                        let $e := concat($c,$d)
                         return
-                            if($input/*/p:pipe or contains($b,'!')) then
-                                $input/*
+                            if ($e eq '') then
+                                let $part  := tokenize($unique_id,'\.')[last()]
+                                let $part1 := xs:integer($part) - 1
+                                let $part2 := substring-before($unique_id,$part)
+                                let $part3 := concat($part2,$part1)
+                                return
+                                    <p:pipe step="{$part3}" port="result"/>
                             else
-                            let $d := xs:integer($b) - 1
-                            let $e := concat($c,$d)
-                            return
-                                <p:pipe step="{$e}"
-                              port="result"/>
-                     else
-                        let $l_count := $count - 1
-                        return
-                            if($l_count=0) then
-                                <p:pipe step="{substring-before($unique_id,'.1')}"
-                                        port="source"/>
-                            else
-                                <p:pipe step="{
-                                        if (empty(string($xproc/*[$l_count]/@name)) or string($xproc/*[$l_count]/@name) eq '') then
-                                            $unique_before
-                                        else
-                                            $xproc/*[$l_count]/@name
-                                            }"
-                                 port="{$xproc/*[$l_count]/p:output[@primary='true']/@port}"/>
-                    }
+                                <p:pipe step="{$e}" port="result"/>
+                else
+                    let $l_count := $count - 1
+                    return
+                        if($l_count=0) then
+                            <p:pipe step="{substring-before($unique_id,'.1')}"
+                                    port="source"/>
+                        else
+                            <p:pipe step="{
+                                    if (empty(string($xproc/*[$l_count]/@name)) or string($xproc/*[$l_count]/@name) eq '') then
+                                        $unique_before
+                                    else
+                                        $xproc/*[$l_count]/@name
+                                        }"
+                             port="{$xproc/*[$l_count]/p:output[@primary='true']/@port}"/>
+                }
  };
 
 
@@ -414,8 +417,9 @@ declare function xproc:explicitbindings($xproc,$unique_id){
 
              if ($is_declare-step) then
                 xproc:generate-declare-step-binding($step,$is_declare-step)
-             else if($is_step) then xproc:generate-step-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_current,$unique_before,$is_step)
-              else if ($is_component) then
+             else if($is_step) then
+                xproc:generate-step-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_current,$unique_before,$is_step)
+             else if ($is_component) then
                 xproc:generate-component-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_current,$unique_before,$is_component)
              else
                  u:staticError('err:XS0044', concat("static error during explicit binding pass:",$stepname,$step/@name,$is_declare-step,$is_step,$is_component))
@@ -656,7 +660,6 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:evalstep ($step,$namespaces,$primaryinput,$pipeline,$outputs) {
  (: -------------------------------------------------------------------------- :)
-
      let $declarens :=  u:declare-ns($namespaces)
      let $currentstep := $pipeline/*[@name=$step][1]
      let $stepfuncname := $currentstep/@xproc:step
@@ -669,8 +672,8 @@ declare function xproc:explicitbindings($xproc,$unique_id){
      let $options := xproc:eval-options($pipeline,$step)
      let $output := xproc:eval-outputs($pipeline,$step)
 
-    let $log-href := $currentstep/p:log/@href
-    let $log-port := $currentstep/p:log/@port
+     let $log-href := $currentstep/p:log/@href
+     let $log-port := $currentstep/p:log/@port
 
      return
          if(name($currentstep) = "p:declare-step") then
@@ -683,41 +686,43 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                            select="{$currentstep/p:input[1][@primary='true']/@select}"
                            port="{$currentstep/p:input[1][@primary='true']/@port}"
                            func="{$stepfuncname}">{
-                                    $primary/node()
+                                   if ( empty($primary/node()) ) then
+                                      $outputs[@xproc:defaultname=$currentstep/p:input[1]/p:pipe/@step]/node()
+                                   else
+                                      $primary/node()
                           }
-             </xproc:output>
+                     </xproc:output>
             let $secondaryinput: =(  for $child in $secondary/xproc:input
                  return
-                      <xproc:output step="{$step}"
-                                   port-type="input"
-                                   primary="false"
-                                   select="{$child/@select}"
-                                   port="{$child/@port}"
-                                   func="{$stepfuncname}">{
-                                     $child/node()
-                                   }
-                      </xproc:output>
+                     <xproc:output step="{$step}"
+                           port-type="input"
+                           primary="false"
+                           select="{$child/@select}"
+                           port="{$child/@port}"
+                           func="{$stepfuncname}">{
+                             $child/node()
+                           }
+                     </xproc:output>
                     )
             return
                 ($primaryinput,
                 $secondaryinput,
-
                 if($currentstep/p:output[@primary='true']) then
                       <xproc:output step="{$step}"
                                        port-type="output"
                                        primary="true"
-                                      xproc:defaultname="{$currentstep/@xproc:defaultname}"
+                                       xproc:defaultname="{$currentstep/@xproc:defaultname}"
                                        select="{$currentstep/p:output[@primary='true']/@select}"
                                        port="{$currentstep/p:output[@primary='true']/@port}"
                                        func="{$stepfuncname}">{
                                            if(contains($stepfuncname,'xproc:')) then
-  u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
-                                             else
-                                                u:call(u:xquery($stepfunc),$primary,$secondary,$options)
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
+                                           else
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options)
                                        }
                       </xproc:output>
                 else
-                          <xproc:output step="{$step}"
+                      <xproc:output step="{$step}"
                                        port-type="output"
                                        primary="false"
                                       xproc:defaultname="{$currentstep/@xproc:defaultname}"
@@ -726,15 +731,13 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                                        func="{$stepfuncname}">
                                        {
                                            if(contains($stepfuncname,'xproc:')) then
- u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
-                                             else
-                                                 u:call(u:xquery($stepfunc),$primary,$secondary,$options)
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
+                                           else
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options)
                                        }
-                          </xproc:output>
+                      </xproc:output>
              )
  };
-
-
 
  (: ------------------------------------------------------------------------------------------ :)
                                                                            (: CONTROL ROUTINES:)
@@ -762,7 +765,9 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                  $stdin,
                  (xproc:resolve-external-bindings($bindings,$pipeline/@name),
                  (<xproc:output
-                     step="{if ($steps[1] = '|') then '!1|' else $steps[1]}"
+                     step="{if ($steps[1] = '|') then 
+                                '!1|'
+                            else $steps[1]}"
                      port="stdin"
                      test="test"
                      port-type="external"
@@ -833,18 +838,23 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  declare function xproc:output($result,$dflag){
  (: -------------------------------------------------------------------------- :)
  let $pipeline :=subsequence($result,1,1)
- let $output := subsequence($result,2)
+ let $output := <xproc:outputs>{ subsequence($result,2) } </xproc:outputs>
      return
          if($dflag eq "1") then
              <xproc:debug>
                  <xproc:pipeline>{$pipeline}</xproc:pipeline>
-                 <xproc:outputs>{$output}</xproc:outputs>
+                {$output}
              </xproc:debug>
          else
             (: TODO - define default p:serialization options here:)
-            ($output/.)[last()]/node()
+            let $stdout := $output//*[@port eq 'stdout']/node()
+            let $count := count ($result)
+         return
+               if (empty($stdout)) then
+                subsequence($result,$count - 2,1)/node()
+               else
+                  $stdout
  };
-
 
  (: ----------------------------------------------------------------------------------- :)
                                                                       (: ENTRY POINTS   :)
@@ -872,6 +882,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  };
 
 
+ (: entry point :)
  (: -------------------------------------------------------------------------- :)
  declare function xproc:run($pipeline,$stdin,$dflag,$tflag,$bindings,$options){
  (: -------------------------------------------------------------------------- :)
@@ -913,10 +924,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                      </xproc:result>
                      }
               else
-                 document
-                    {
                      $serialized_result
-                     }
          )
  };
 
@@ -966,10 +974,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                      </xproc:result>
                      }
               else
-                 document
-                    {
                      $serialized_result
-                     }
          )
  else
     u:xprocxqError('xxq-error:XXQ0003','check pipeline.')

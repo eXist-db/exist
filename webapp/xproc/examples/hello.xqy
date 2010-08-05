@@ -16,4 +16,5 @@ let $pipeline :=document{
 
 return
 (: the simplest xproc entry function :)
-     xproc:run($pipeline,$stdin)
+     (: xproc:run($pipeline,$stdin) :)
+     xproc:run($pipeline,$stdin,"0","0",(),())
