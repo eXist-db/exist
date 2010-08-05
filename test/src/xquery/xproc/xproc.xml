@@ -24,8 +24,12 @@
     <test output="text">
         <task>xproc1</task>
         <code>
-            import module namespace xproc = "http://xproc.net/xproc";            
-            xproc:run('xmldb:exist:///db/xproc-test/pipe.xml','xmldb:exist:///db/xproc-test/test.xml')</code>
+            import module namespace xproc = "http://xproc.net/xproc";
+            let $pipe :=  doc("xmldb:exist:///db/xproc-test/pipe.xml")
+            let $xml : =   doc("xmldb:exist:///db/xproc-test/test.xml")
+            return
+              xproc:run($pipe,$xml)
+        </code>
         <expected><test test="here">some test input</test></expected>
     </test>
 </TestSet>
