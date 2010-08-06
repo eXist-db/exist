@@ -80,21 +80,10 @@ public class DynamicTextConstructor extends NodeConstructor {
         try {
             Sequence contentSeq = content.eval(contextSequence, contextItem);
 
-            //It is possible for a text node constructor to construct a text node containing a zero-length string.
-            //However, if used in the content of a constructed element or document node,
-            //such a text node will be deleted or merged with another text node.
-            //TODO : how to enforce this behaviour ? We have to detect that the parent of the text node
-            //is an element or a document node. Unfortunately, we are using a *new* MemTreeBuilder
             if(contentSeq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            	result = Sequence.EMPTY_SEQUENCE;
             else {
                 MemTreeBuilder builder = context.getDocumentBuilder();
-                //The line below if necessayr to make fn-root-17 pass (but no other test AFAICT)
-                //let $var := text {"a text Node"} return  fn:root(text {"A text Node"})
-                //<expected-result compare="Text">A text Node</expected-result>
-                //The result of the constructed text node is reused
-                //TODO : how to avoid this ?
-                builder.startDocument();
                 context.proceed(this, builder);
                 StringBuilder buf = new StringBuilder();
                 for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
@@ -104,7 +93,10 @@ public class DynamicTextConstructor extends NodeConstructor {
                         buf.append(' ');
                     buf.append(next.toString());
                 }
-                if (buf.length() == 0)
+                //It is possible for a text node constructor to construct a text node containing a zero-length string.
+                //However, if used in the content of a constructed element or document node,
+                //such a text node will be deleted or merged with another text node.
+                if (!newDocumentContext && buf.length() == 0)
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
                     int nodeNr = builder.characters(buf);
