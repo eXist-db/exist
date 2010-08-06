@@ -358,12 +358,36 @@ public class StoredModuleTest {
             "};";
 
         Collection testHome = createCollection("testCircular");
-        //writeModule(testHome, "index.xqy", index_module);
         writeModule(testHome, "module1.xqy", module1_module);
         writeModule(testHome, "processor.xqy", processor_module);
         writeModule(testHome, "impl.xqy", impl_module);
         writeModule(testHome, "controller.xqy", controller_module);
         
+        CompiledExpression query = xqService.compile(index_module);
+        ResourceSet execute = xqService.execute(query);
+    }
+
+    @Test
+    public void testLocalVariableDeclarationCallsLocalFunction() throws XMLDBException {
+        final String index_module =
+            "xquery version \"1.0\";" +
+            "import module namespace xqmvc = \"http://scholarsportal.info/xqmvc/core\" at \"xmldb:exist:///db/testLocalVariableDeclaration/module1.xqm\";" +
+            "xqmvc:function1()";
+
+        final String module1_module =
+            "xquery version \"1.0\";" +
+            "module namespace xqmvc = \"http://scholarsportal.info/xqmvc/core\";" +
+            "declare variable $xqmvc:plugin-resource-dir as xs:string := fn:concat('/plugins/', xqmvc:current-plugin(), '/resources');" +
+            "declare function xqmvc:current-plugin() {" +
+                "\"somePlugin\"" +
+            "};" +
+            "declare function xqmvc:function1() {" +
+                "\"hello world\"" +
+            "};";
+
+        Collection testHome = createCollection("testLocalVariableDeclaration");
+        writeModule(testHome, "module1.xqm", module1_module);
+
         CompiledExpression query = xqService.compile(index_module);
         ResourceSet execute = xqService.execute(query);
     }
