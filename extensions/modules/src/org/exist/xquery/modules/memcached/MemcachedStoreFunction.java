@@ -96,7 +96,7 @@ public class MemcachedStoreFunction extends BasicFunction
 			o = data.getStringValue();
 		}
 		
-		int exp = new Long(key = args[3].itemAt(0).getStringValue()).intValue(); 
+		int exp = ((IntegerValue) args[3].itemAt(0)).getInt(); 
 
 		if (isCalledAs("set")){
 			client.set(key, exp, o);

@@ -80,12 +80,14 @@ public class MemcachedGetFunction extends BasicFunction
 
 		String key = args[1].itemAt(0).getStringValue();
 		
-		String data = client.get(key).toString();
+		Object o = client.get(key);
 		
-        if (data == null || data.length() == 0) {
+        if (o == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
         
+		String data = o.toString();
+		
         StringReader reader = new StringReader(data);
         
         try {
