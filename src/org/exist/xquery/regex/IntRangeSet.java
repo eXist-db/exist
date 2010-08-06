@@ -1,9 +1,9 @@
 package org.exist.xquery.regex;
 
-import net.sf.saxon.om.FastStringBuffer;
-
 import java.io.Serializable;
 import java.util.Arrays;
+
+import org.exist.util.FastStringBuffer;
 
 /**
  * Set of int values. This implementation of IntSet uses a sorted array
