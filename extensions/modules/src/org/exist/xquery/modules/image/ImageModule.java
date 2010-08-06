@@ -165,6 +165,7 @@ public class ImageModule extends AbstractInternalModule {
 		graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
+		graphics2D.dispose();
 		return thumbImage;
 	}
 }
