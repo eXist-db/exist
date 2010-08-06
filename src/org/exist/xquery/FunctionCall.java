@@ -70,10 +70,10 @@ public class FunctionCall extends Function {
 	}
 	
 	private void setFunction(UserDefinedFunction functionDef) {
-		this.functionDef = functionDef;
-		this.mySignature = functionDef.getSignature();
-		this.expression = functionDef;
-		SequenceType returnType = functionDef.getSignature().getReturnType();
+		this.functionDef = (UserDefinedFunction) functionDef.clone();
+		this.mySignature = this.functionDef.getSignature();
+		this.expression = this.functionDef;
+		SequenceType returnType = this.functionDef.getSignature().getReturnType();
 		// add return type checks
 		if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE)
 			expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression,

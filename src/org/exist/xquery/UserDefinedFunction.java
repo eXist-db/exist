@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * @author wolf
  */
-public class UserDefinedFunction extends Function {
+public class UserDefinedFunction extends Function implements Cloneable {
 
 	private Expression body;
 	
@@ -215,5 +215,19 @@ public class UserDefinedFunction extends Function {
     public List<QName> getParameters()
     {
     	return parameters;
+    }
+
+    public synchronized Object clone() {
+    	try {
+    		UserDefinedFunction clone = (UserDefinedFunction) super.clone();
+    		
+    		clone.currentArguments = null;
+    		clone.contextDocs = null;
+    	    
+    	    return clone;
+    	} catch (CloneNotSupportedException e) {
+    	    // this shouldn't happen, since we are Cloneable
+    	    throw new InternalError();
+    	}
     }
 }
