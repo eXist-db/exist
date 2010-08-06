@@ -104,6 +104,8 @@ public class UntypedValueCheck extends AbstractExpression {
     private Item convert(Item item) throws XPathException {
         if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
             try {
+                if (Type.subTypeOf(item.getType(), requiredType))
+                    return item;
                 item = item.convertTo(requiredType);
             } catch (XPathException e) {
                 error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),

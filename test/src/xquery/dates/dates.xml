@@ -96,4 +96,21 @@
         <code>count(//date[. gt xs:dateTime('1970-10-07T08:00:00-01:00')])</code>
         <expected>0</expected>
     </test>
+
+    <!--test output="text">
+        <task>BUG ID: 3025768</task>
+        <description> was thrwing: Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: xs:duration [source: String]</description>
+        <code>
+        declare namespace datetime="http://exist-db.org/xquery/datetime";
+        let $sdate := xs:date(datetime:format-date(current-date() - xs:dayTimeDuration('P1D'), 'yyyy-MM-dd'))
+        let $step := xs:dayTimeDuration("-P1D")
+        let $count := 5
+        let $dates := datetime:date-range($sdate, $step, $count)
+        return string-join($dates,'&#x0a;')
+           
+        </code>
+        <expected>0</expected>
+    </test-->
+
+
 </TestSet>
