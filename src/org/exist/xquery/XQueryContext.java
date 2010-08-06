@@ -1681,6 +1681,11 @@ public class XQueryContext
 
     public void analyzeAndOptimizeIfModulesChanged( PathExpr expr ) throws XPathException
     {
+    	for (Module module : expr.getContext().modules.values()) {
+            if( !module.isInternalModule() ) {
+            	((ExternalModule)module).getRootExpression().analyze( new AnalyzeContextInfo() );
+            }
+    	}
         expr.analyze( new AnalyzeContextInfo() );
 
         if( optimizationsEnabled() ) {
@@ -2885,7 +2890,8 @@ public class XQueryContext
             if( astParser.foundErrors() ) {
                 throw( new XPathException( "error found while loading module from " + location + ": " + astParser.getErrorMessage(), astParser.getLastException() ) );
             }
-            path.analyze( new AnalyzeContextInfo() );
+            
+            modExternal.setRootExpression(path);
 
             if( modExternal == null ) {
                 throw( new XPathException( "source at " + location + " is not a valid module" ) );
@@ -2917,6 +2923,7 @@ public class XQueryContext
             throw( e );
         }
         catch( Exception e ) {
+        	e.printStackTrace();
             throw( new XPathException( "Internal error while loading module: " + location, e ) );
         }
         finally {
