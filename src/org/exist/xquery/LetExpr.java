@@ -310,11 +310,13 @@ public class LetExpr extends BindingExpression {
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return returnExpr.returnsType();
-//		if (sequenceType != null)
-//			return sequenceType.getPrimaryType();
-//		//Type.ITEM by default : this may change *after* evaluation
-//		return actualReturnType;
+		//TODO: let must return "return expression type"
+		//return returnExpr.returnsType();
+		
+		if (sequenceType != null)
+			return sequenceType.getPrimaryType();
+		//Type.ITEM by default : this may change *after* evaluation
+		return actualReturnType;
 	}
 
 	/* (non-Javadoc)
