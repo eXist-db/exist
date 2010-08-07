@@ -2569,7 +2569,12 @@ public class XQueryTest extends XMLTestCase {
 
         // NOK
         try {
-            String query = "declare namespace tst = \"http://test\"; " + "declare function tst:foo($a as element()?) {   $a }; " + "tst:foo( " + "let $a as xs:boolean := true()  return <result/> )";
+            String query = "declare namespace tst = \"http://test\"; " 
+                    + "declare function tst:foo($a as element()?) {   $a }; "
+                    + "tst:foo( "
+                    + "  let $a as xs:boolean := true()  "
+                    + "  return <result/> "
+                    + ")";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
@@ -2907,14 +2912,21 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    public void bugtestCCE_SaxException() {
+    public void testCCE_SaxException() {
 
         try {
             String xmldocument = "<a><b><c>mmm</c></b></a>";
             String location = "ccesax.xml";
             String query =
-                    "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " + "declare option exist:serialize 'indent=no';" + "let $results := doc(\"ccesax.xml\")/element() " + "let $output := let $body := <e>{$results/b/c}</e>   return <d>{$body}</d> " + "let $id := $output/e/c return xmldb:store(\"/db\", \"output.xml\", $output)";
-            String output = "<d><b><c>mmm</c></b></d>";
+                    "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " 
+                    + "declare option exist:serialize 'indent=no';"
+                    + "let $results := doc(\"ccesax.xml\")/element() "
+                    + "let $output := let $body := <e>{$results/b/c}</e>  return <d>{$body}</d> "
+                    + "let $id := $output/e/c "
+                    + "let $store := xmldb:store(\"/db\", \"output.xml\", $output)"
+                    + "return doc('/db/output.xml')";
+//            String output = "<d><b><c>mmm</c></b></d>";
+            String output = "<d><e><c>mmm</c></e></d>";
 
             XPathQueryService service =
                     storeXMLStringAndGetQueryService(location, xmldocument);
@@ -2930,16 +2942,16 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/support/tracker.php?aid=2003042
-    public void bugtestXPTY0018_MixNodesAtomicValues_2003042() {
+    public void testXPTY0018_MixNodesAtomicValues_2003042() {
 
         try {
-            String query = "<a>{2}<b/></a>";
+            String query = "declare option exist:serialize 'indent=no'; <a>{2}<b/></a>";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
 
             assertEquals(1, result.getSize());
-            assertEquals(query, "<a>{2}<b/></a>",
+            assertEquals(query, "<a>2<b/></a>", //checked with saxon
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {
