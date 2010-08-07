@@ -58,30 +58,36 @@
     <tearDown>
         <remove-collection collection="/db/xproc-test"/>
     </tearDown>
-    <test output="text">
-        <task>xproc1</task>
-        <code>
-            import module namespace xproc = "http://xproc.net/xproc";
-            let $pipe :=  doc("xmldb:exist:///db/xproc-test/pipe.xml")
-            let $xml : =   doc("xmldb:exist:///db/xproc-test/test.xml")
-            return
-              xproc:run($pipe,$xml)
-        </code>
-        <expected><test test="here">some test input</test></expected>
-    </test>
-
-
-     <test output="text">
-        <task>bug id: 2840896</task>
-        <code>
+<test output="text">
+    <task>xproc1</task>
+    <code>
         import module namespace xproc = "http://xproc.net/xproc";
-        let $pipe :=  doc("xmldb:exist:///db/xproc-test/pipe1.xml")
-        let $xml : =   doc("xmldb:exist:///db/xproc-test/test1.xml")
+        let $pipe :=  doc("xmldb:exist:///db/xproc-test/pipe.xml")
+        let $xml : =   doc("xmldb:exist:///db/xproc-test/test.xml")
         return
-        xproc:run($p,$xml,"0","0",(),())
-        </code>
-        <expected><test test="here">some test input</test></expected>
-    </test>
+          xproc:run($pipe,$xml)
+    </code>
+    <expected><test>some test input</test>
+</expected>
+</test>
+
+
+ <test output="text">
+    <task>bug id: 2840896</task>
+    <code>
+    import module namespace xproc = "http://xproc.net/xproc";
+    let $pipe :=  doc("xmldb:exist:///db/xproc-test/pipe1.xml")
+    let $xml : =   doc("xmldb:exist:///db/xproc-test/test1.xml")
+    return
+    xproc:run($pipe,$xml,"0","0",(),())
+    </code>
+    <expected><html xmlns="f">
+            <body>
+                <h1>It Worked</h1>
+                <p>I was passed through an XSLT stylesheet.</p>
+            </body>
+        </html></expected>
+</test>
 
 
 
