@@ -154,6 +154,7 @@ public class XQuery {
             		treeParser.getLastException());
             }
             
+            context.getRootContext().resolveForwardReferences();
             context.analyzeAndOptimizeIfModulesChanged(expr);
 
             // Log the query if it is not too large, but avoid
