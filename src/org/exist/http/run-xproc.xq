@@ -2,11 +2,11 @@ xquery version "1.0";
 
 import module namespace xproc = "http://xproc.net/xproc";
 
-declare variable $pipeline external;
-declare variable $stdin    external;
-declare variable $debug    external;
-declare variable $bindings external;
-declare variable $options  external;
+declare variable $pipeline as item() external;
+declare variable $stdin    as item() external;
+declare variable $debug    as item() external;
+declare variable $bindings as item() external;
+declare variable $options  as item() external;
 declare variable $autobind  external;
 
 let $requestparams :=

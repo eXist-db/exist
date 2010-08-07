@@ -258,11 +258,11 @@ if($primary//t:document) then
 	return
 		    document{$child}
 else
-
 	for $child in $primary/node()
 	return
 		    document{$child}
 };
+
 
 (: -------------------------------------------------------------------------- :)
 declare function u:random() as  xs:double  {
@@ -364,8 +364,8 @@ declare function u:xquery($query as xs:string){
 
 
 (: -------------------------------------------------------------------------- :)
-declare function u:xslt($xslt,$xml){
-	transform:transform(document{$xml},$xslt, ())
+declare function u:xslt($input,$style){
+    transform:transform($input, document{$style}, ())
 };
 
 
