@@ -24,9 +24,12 @@ package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -97,7 +100,15 @@ public class PrologFunctions extends BasicFunction {
 		String uri = args[0].getStringValue();
 		String prefix = args[1].getStringValue();
 		String location = args[2].getStringValue();
-		context.importModule(uri, prefix, location);
+		Module module = context.importModule(uri, prefix, location);
+
+		context.getRootContext().resolveForwardReferences();
+
+		if( !module.isInternalModule() ) {
+        	((ExternalModule)module).getRootExpression().analyze( new AnalyzeContextInfo() );
+        }
+		
+//		context.getRootContext().analyzeAndOptimizeIfModulesChanged((PathExpr) context.getRootExpression());
 	}
 	
 	private void declareOption(Sequence[] args) throws XPathException {
