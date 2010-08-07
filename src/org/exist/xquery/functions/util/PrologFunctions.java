@@ -30,11 +30,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
+import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class PrologFunctions extends BasicFunction {
@@ -68,6 +70,13 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("option", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option value")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+                new FunctionSignature(
+                    new QName("get-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Gets the value of a serialization option as set with 'declare option'.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option name")
+                    },
+                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE))
 	};
 	
 	public PrologFunctions(XQueryContext context, FunctionSignature signature) {
@@ -77,12 +86,16 @@ public class PrologFunctions extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		if (isCalledAs("declare-namespace"))
-			declareNamespace(args);
-		else if (isCalledAs("declare-option"))
-			declareOption(args);
-		else
-			importModule(args);
+		if (isCalledAs("declare-namespace")) {
+                    declareNamespace(args);
+                } else if (isCalledAs("declare-option")) {
+                    declareOption(args);
+                } else if(isCalledAs("get-option")) {
+                    return getOption(args);
+                } else{
+                    importModule(args);
+                }
+
 		return Sequence.EMPTY_SEQUENCE;
 	}
 
@@ -116,4 +129,12 @@ public class PrologFunctions extends BasicFunction {
 		String options = args[1].getStringValue();
 		context.addDynamicOption(qname, options);
 	}
+
+        private Sequence getOption(Sequence[] args) throws XPathException {
+            String qnameString = args[0].getStringValue();
+            QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
+            Option option = context.getOption(qname);
+
+            return new StringValue(option.getContents());
+        }
 }
