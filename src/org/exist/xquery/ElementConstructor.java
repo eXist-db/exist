@@ -31,6 +31,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.Iterator;
@@ -380,4 +381,9 @@ public class ElementConstructor extends NodeConstructor {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitElementConstructor(this);
     }
+    
+	public int returnsType() {
+		return Type.ELEMENT;
+	}
+
 }
