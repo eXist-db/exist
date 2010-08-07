@@ -2673,7 +2673,7 @@ public class XQueryContext
      *
      * @throws  XPathException
      */
-    public void importModule( String namespaceURI, String prefix, String location ) throws XPathException
+    public Module importModule( String namespaceURI, String prefix, String location ) throws XPathException
     {
     	
     	if ("".equals(namespaceURI))
@@ -2785,6 +2785,8 @@ public class XQueryContext
             prefix = module.getDefaultPrefix();
         }
         declareNamespace( prefix, namespaceURI );
+        
+        return module;
     }
 
 
