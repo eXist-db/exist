@@ -105,6 +105,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( PrologFunctions.signatures[0], PrologFunctions.class ),
         new FunctionDef( PrologFunctions.signatures[1], PrologFunctions.class ),
         new FunctionDef( PrologFunctions.signatures[2], PrologFunctions.class ),
+        new FunctionDef( PrologFunctions.signatures[3], PrologFunctions.class ),
         new FunctionDef( SystemTime.signatures[0], SystemTime.class ),
         new FunctionDef( SystemTime.signatures[1], SystemTime.class ),
         new FunctionDef( SystemTime.signatures[2], SystemTime.class ),
