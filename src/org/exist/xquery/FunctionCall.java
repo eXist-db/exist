@@ -104,8 +104,10 @@ public class FunctionCall extends Function {
                 if (rootModule != null) {
                     UserDefinedFunction replacementFunctionDef =
                         rootModule.getFunction(functionDef.getName(), getArgumentCount());
-                    if (replacementFunctionDef != null)
-                        expression = functionDef = replacementFunctionDef;
+                    if (replacementFunctionDef != null) {
+                        expression = functionDef = (UserDefinedFunction) replacementFunctionDef.clone();
+                		mySignature = functionDef.getSignature();
+                    }
                 }
 			}
 		}
