@@ -373,17 +373,18 @@ public class XMLWriter {
 			writer.write(name);
 			if (publicId != null) {
 				//writer.write(" PUBLIC \"" + publicId + "\"");
-				writer.write(" PUBLIC \"" + publicId.replaceAll("&#160;", " ") + "\"");	//workaround for XHTML doctype, declare does not allow spaces so use &#160; instead and then replace each &#160; with a space here - delirium 
+				writer.write(" PUBLIC \"" + publicId.replaceAll("&#160;", " ") + "\"");	//workaround for XHTML doctype, declare does not allow spaces so use &#160; instead and then replace each &#160; with a space here - Adam
 			}
 			if (systemId != null) {
-                if (publicId == null)
-                    writer.write(" SYSTEM");
-				writer.write(" \"" + systemId + "\"");
-			}
-			writer.write(">");
-		} catch (IOException e) {
-			throw new TransformerException(e.getMessage(), e);
-		}
+                            if (publicId == null) {
+                                writer.write(" SYSTEM");
+                            }
+                            writer.write(" \"" + systemId + "\"");
+                        }
+                        writer.write(">");
+                } catch (IOException e) {
+                    throw new TransformerException(e.getMessage(), e);
+                }
         doctypeWritten = true;
 	}
 
