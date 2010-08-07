@@ -2126,13 +2126,23 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/tracker/index.php?func=detail&aid=1691174&group_id=17691&atid=117691
-    public void bugtestAttribute_1691174() {
-        String query = "declare function local:show($el1, $el2) { " + "	<Foobar> " + "	{ (\"first: \", $el1, \" second: \", $el2) } " + "	</Foobar> " + "}; " + "declare function local:attrib($n as node()) { " + "	<Attrib>{$n}</Attrib> " + "}; " + "local:show( " + "	<Attrib name=\"value\"/>, " + "	local:attrib(attribute name {\"value\"})  (: Exist bug! :) " + ")  ";
+    public void testAttribute_1691174() {
+        String query = "declare function local:show($el1, $el2) { " 
+                + "	<Foobar> "
+                + "	{ (\"first: \", $el1, \" second: \", $el2) } "
+                + "	</Foobar> " + "}; "
+                + "declare function local:attrib($n as node()) { "
+                + "	<Attrib>{$n}</Attrib> "
+                + "}; "
+                + "local:show( "
+                + "	<Attrib name=\"value\"/>, "
+                + "	local:attrib(attribute name {\"value\"})  (: Exist bug! :) "
+                + ")  ";
         XPathQueryService service;
         try {
             service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
-            assertEquals("XQuery: " + query, 0, result.getSize());
+            assertEquals("XQuery: " + query, 1, result.getSize());
         } catch (XMLDBException ex) {
             fail(ex.toString());
         }
@@ -2409,7 +2419,7 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/support/tracker.php?aid=1665215 
-    public void bugtestPredicateMinLast_1665215() {
+    public void testPredicateMinLast_1665215() {
 
         try {
             String query = "declare option exist:serialize 'indent=no';" +
@@ -2431,7 +2441,7 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/support/tracker.php?aid=1665213 
-    public void bugtestPredicatePositionLast_1665213() {
+    public void testPredicatePositionLast_1665213() {
 
         // OK, regression
         try {
@@ -2543,7 +2553,9 @@ public class XQueryTest extends XMLTestCase {
 
         // OK
         try {
-            String query = "declare namespace tst = \"http://test\"; " + "declare function tst:foo($a as element()?) {   $a }; " + "tst:foo( <result/> )";
+            String query = "declare namespace tst = \"http://test\"; " 
+                    + "declare function tst:foo($a as element()?) {   $a }; "
+                    + "tst:foo( <result/> )";
 
             XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
@@ -2723,7 +2735,7 @@ public class XQueryTest extends XMLTestCase {
     }
 
     // http://sourceforge.net/support/tracker.php?aid=1970717
-    public void bugtestConstructTextNodeWithEmptyString_1970717() {
+    public void testConstructTextNodeWithEmptyString_1970717() {
 
         // OK
         try {
@@ -2991,7 +3003,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     // http://sourceforge.net/support/tracker.php?aid=1841635
-    public void bugtestResolveBaseURI_1841635() {
+    public void testResolveBaseURI_1841635() {
         String xmldoc = "<Root><Node1><Node2><Node3></Node3></Node2></Node1></Root>";
 
        XPathQueryService service = null;
