@@ -71,9 +71,10 @@ public class FunNot extends Function {
     }
     
 	public int returnsType() {
-		return Type.subTypeOf(getArgument(0).returnsType(), Type.NODE)
-			? Type.NODE
-			: Type.BOOLEAN;
+		return Type.BOOLEAN;
+//		return Type.subTypeOf(getArgument(0).returnsType(), Type.NODE)
+//			? Type.NODE
+//			: Type.BOOLEAN;
 	}
 
 	/* (non-Javadoc)
