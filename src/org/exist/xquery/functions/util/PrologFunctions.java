@@ -135,6 +135,10 @@ public class PrologFunctions extends BasicFunction {
             QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
             Option option = context.getOption(qname);
 
-            return new StringValue(option.getContents());
+            if(option != null) {
+                return new StringValue(option.getContents());
+            } else {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
 }
