@@ -70,6 +70,8 @@ let $query := if (starts-with($match,'/')) then
 let $matchresult := u:evalXPATH($query, $v, $primary)
 let $attribute-name := u:get-option('attribute-name',$options,$v)
 let $attribute-value := u:get-option('attribute-value',$options,$v)
+let $attribute-prefix := u:get-option('attribute-prefix',$options,$v)
+let $attribute-namespace := u:get-option('attribute-namespace',$options,$v)
 return
 	u:add-attribute-matching-elements($v/*,$matchresult,$attribute-name,$attribute-value)
 };
@@ -155,11 +157,14 @@ let $v := u:get-primary($primary)
 let $path := u:get-option('path',$options,$v)
 let $include-filter := u:get-option('include-filter',$options,$v)
 let $exclude-filter := u:get-option('exclude-filter',$options,$v)
+
+let $segment := substring-after($path,'file://')
+let $dirname := tokenize($path, '/')[last()]
 let $result := if (starts-with($path,'file://')) then
-                let $query := concat("file:directory-list('",substring-after($path,'file://'),"','",$include-filter,"')")
+                let $query := concat("file:directory-list('",$segment,"','",$include-filter,"')")
                 let $files := u:eval($query)
                 return
-                    <c:directory name="">
+                    <c:directory name="{$dirname}">
 					{for $file in $files//*:file
 					return
 						<c:file name="{$file/@name}"/>
@@ -168,12 +173,13 @@ let $result := if (starts-with($path,'file://')) then
               else
                 let $files := collection($path)/util:document-name(.)
                 return
-                    <c:directory name="">
+                    <c:directory name="{$dirname}">
 					{for $file in $files
 					return
 						<c:file name="{$file}"/>
 					}
 				    </c:directory>
+				    (: TODO: throw err:XC0017 if no directory exists :)
 return
 		u:outputResultElement($result)
 };
@@ -568,14 +574,10 @@ declare function std:unwrap($primary,$secondary,$options) {
 
 (: -------------------------------------------------------------------------- :)
 declare function std:xslt($primary,$secondary,$options){
-    u:assert(exists($secondary/xproc:input[@port='stylesheet']/*),'stylesheet is required'),
 	let $v := u:get-primary($primary)
     let $stylesheet := u:get-secondary('stylesheet',$secondary)
     return
-    $v
-    (:
-        u:xslt($stylesheet,$v)
-:)
+       u:xslt(document{$v},document{$stylesheet})
 };
 
 
