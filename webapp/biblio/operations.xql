@@ -12,7 +12,11 @@ declare variable $rwxrwx--- := 504;
 declare variable $rwxrwxrwx := 511;
 
 declare function op:create-collection($parent as xs:string, $name as xs:string) as element(status) {
-    let $collection := xmldb:create-collection($parent, $name) return
+    let $collection := xmldb:create-collection($parent, $name),
+    
+    (: by default newly created collections are private :)
+    $current-group := xmldb:get-group($collection),
+    $null := xmldb:set-collection-permissions($collection, request:get-attribute("xquery.user"), $current-group, $rwx------) return
         <status id="created">{$collection}</status>
 };
 
