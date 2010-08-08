@@ -106,7 +106,7 @@ public class NativeSerializer extends Serializer {
     	DocumentImpl documentImpl = doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
 				+ " (" + documentImpl.getURI() + ")"
-    			+ " to SAX took " + (System.currentTimeMillis() - start));
+    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");
     	if (generateDocEvent) receiver.endDocument();
     }
     
