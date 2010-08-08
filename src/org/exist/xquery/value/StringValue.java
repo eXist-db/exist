@@ -516,8 +516,9 @@ public class StringValue extends AtomicValue {
 	                    if (found) {
 	                        buf.append((char) expandEntity(entityRef.toString()));
 	                    } else {
-	                        throw new XPathException("XPST0003 : Invalid character in entity name ("+ch+") or missing ;");
+	                        throw new XPathException("XPST0003 : Invalid character ("+ch+") in entity name ("+entityRef+") or missing ;");
 	                    }
+                        
 	                } else {
 	                    entityRef.append(ch);
 	                    ch = seq.charAt(i+2);
