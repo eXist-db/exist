@@ -418,9 +418,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = encodeQName(qname);
                 analyzer = getAnalyzer(qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
-                LuceneHitCollector collector = new LuceneHitCollector();
-                searcher.search(query, collector);
-                processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);
+                if (query != null) {
+	                LuceneHitCollector collector = new LuceneHitCollector();
+	                searcher.search(query, collector);
+	                processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);
+                }
             }
         } finally {
             index.releaseSearcher(searcher);
