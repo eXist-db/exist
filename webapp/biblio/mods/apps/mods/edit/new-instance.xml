@@ -63,21 +63,18 @@
     <subject authority="" xlink="" ID="" lang="" xml:lang="" script="" transliteration="">
         <topic authority=""/>
         <geographic/>
-        <temporal encoding="" point="" keyDate=""/>
-        <titleInfo type="" authority="" displayLabel="">
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink="">
             <nonSort/>
             <title/>
             <subTitle/>
             <partNumber/>
             <partName/>
         </titleInfo>
-        <name type="" authority="">
-            <namePart/>
-            <role>
-                <roleTerm/>
-            </role>
+        <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
+            <namePart type=""/>
         </name>
-        <genre type="" authority="" lang="" xml:lang="" script="" transliteration=""/>
+        <genre type="code" authority="" lang="" xml:lang="" script="" transliteration=""/>
         <hierarchicalGeographic>
             <continent/>
             <country/>
@@ -92,7 +89,11 @@
             <area/>
             <extraterrestrialArea/>
         </hierarchicalGeographic>
-        <cartographics/>
+        <cartographics>
+            <scale/>
+            <coordinates/>
+            <projection/>
+        </cartographics>
         <geographicCode authority=""/>
         <occupation/>
     </subject>
