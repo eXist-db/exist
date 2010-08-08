@@ -1,59 +1,41 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract">
-    <!--abstract begins-->
     <fieldset>
-        <legend><span class="legend">Abstract</span></legend>
-        
+        <legend>
+            <span class="legend">Abstract</span>
+        </legend>
+        <xf:hint>A summary of the content of the resource.<br/> Use of one Abstract element in every record, except when a title serves as an adequate summary
+            of the content of the resource. </xf:hint>
         <!--abstract repeat begins-->
         <xf:repeat nodeset="instance('save-data')/mods:abstract" id="abstract-repeat">
-            
             <!--abstract input begins-->
-            <xf:select1 ref="./@type">
-                <xf:label>Type:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <!--change code-table!-->
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <xf:input ref="./@displayLabel" class="text_150">
-                <xf:label>Display Label: </xf:label>
-                <xf:hint>Hint</xf:hint>
-            </xf:input>
-            
-            <xf:textarea ref="instance('save-data')/mods:abstract" class="textarea">
-                <xf:hint>Hint</xf:hint>
+            <!--DLF/Aquifer: NOT RECOMMENDED-->
+            <!--Cluster: omit-->
+            <!-- <xf:input ref="./@type"> <xf:label>Type:</xf:label> <xf:hint>Hint</xf:hint> </xf:input> -->
+            <!--DLF/Aquifer: OPTIONAL-->
+            <!--Cluster: omit-->
+            <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint>Hint</xf:hint> </xf:input> -->
+            <xf:textarea ref="." class="textarea">
+                <xf:hint>A summary of the content of the resource.</xf:hint>
             </xf:textarea>
-            
             <!--abstract input ends-->
-            
+            <br/>
             <!--abstract delete begins-->
-            
             <xf:trigger ref="self::node()[count(../mods:abstract) &gt; 1]">
                 <xf:label>Delete This Abstract</xf:label>
-                <xf:hint>Hint</xf:hint>
                 <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:abstract" at="index('abstract-repeat')"/>
             </xf:trigger>
             <!--abstract delete ends-->
-            
             <div class="hr"/>
-            
         </xf:repeat>
-        
         <!--abstract repeat ends-->
-        
         <!--abstract add begins-->
         <xf:trigger class="add">
             <xf:label>Add Abstract</xf:label>
-            <xf:hint>Hint</xf:hint>
             <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:abstract" at="index('abstract-repeat')" position="after"
-                    origin="instance('insert-templates')/mods:abstract"/>
+                <xf:insert nodeset="mods:abstract" at="index('abstract-repeat')" position="after" origin="instance('insert-templates')/mods:abstract"/>
                 <xf:setvalue ref="instance('save-data')/mods:abstract[last()]" value="''"/>
             </xf:action>
         </xf:trigger>
         <!--abstract add ends-->
-        
     </fieldset>
-    <!--abstract ends-->
 </div>
