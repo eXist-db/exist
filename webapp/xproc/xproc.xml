@@ -175,10 +175,7 @@ The following XQuery file is an example of how to programatically run xprocxq fr
 
 xquery version "1.0" encoding "UTF-8";
 
-(: for now you need to declare these namespaces :)
-import module namespace const = "http://xproc.net/xproc/const";
 import module namespace xproc = "http://xproc.net/xproc";
-import module namespace u = "http://xproc.net/xproc/util";
 
 (: define standard input source binding :)
 let $stdin :=document{<test>Hello World</test>}

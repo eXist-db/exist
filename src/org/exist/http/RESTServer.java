@@ -409,12 +409,13 @@ public class RESTServer {
 						writeResourceAs(resource, broker, stylesheet, encoding,
 								MimeType.TEXT_TYPE.getName(), outputProperties,
 								request, response);
-					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
-						// Show the source of the XProc
-						writeResourceAs(resource, broker, stylesheet, encoding,
-								MimeType.XML_TYPE.getName(), outputProperties,
-								request, response);
 					}
+                    //else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+						// Show the source of the XProc
+					//	writeResourceAs(resource, broker, stylesheet, encoding,
+					//			MimeType.XML_TYPE.getName(), outputProperties,
+					//			request, response);
+					//}
 				} else {
 					// we are not allowed to show the source - query not
 					// allowed in descriptor.xml
@@ -434,11 +435,12 @@ public class RESTServer {
 						// Execute the XQuery
 						executeXQuery(broker, resource, request, response,
 								outputProperties, servletPath.toString(), pathInfo);
-					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
-						// Execute the XProc
-						executeXProc(broker, resource, request, response,
-								outputProperties, servletPath.toString(), pathInfo);
 					}
+                    //else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+						// Execute the XProc
+					//	executeXProc(broker, resource, request, response,
+					//			outputProperties, servletPath.toString(), pathInfo);
+					//}
 				} catch (XPathException e) {
 					if (LOG.isDebugEnabled())
 						LOG.debug(e.getMessage(), e);
@@ -562,9 +564,10 @@ public class RESTServer {
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
 				if (null != resource
 						&& (resource.getResourceType() == DocumentImpl.BINARY_FILE
-							&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
-							resource.getResourceType() == DocumentImpl.XML_FILE
-							&& xproc_mime_type.equals(resource.getMetadata().getMimeType()))
+							&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) )
+                        //||
+						//	resource.getResourceType() == DocumentImpl.XML_FILE
+						//	&& xproc_mime_type.equals(resource.getMetadata().getMimeType()))
 							) {
 					break; // found a binary file with mime-type xquery or XML file with mime-type xproc
 
@@ -580,9 +583,10 @@ public class RESTServer {
 
 			if (resource != null) {
 				if (resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
-					resource.getResourceType() == DocumentImpl.XML_FILE
-						&& xproc_mime_type.equals(resource.getMetadata().getMimeType())
+						&& xquery_mime_type.equals(resource.getMetadata().getMimeType())
+                //||
+				//	resource.getResourceType() == DocumentImpl.XML_FILE
+				//		&& xproc_mime_type.equals(resource.getMetadata().getMimeType())
 						) {
 
 					// found an XQuery resource, fixup request values
@@ -592,11 +596,12 @@ public class RESTServer {
 							// Execute the XQuery
 							executeXQuery(broker, resource, request, response,
 									outputProperties, servletPath.toString(), pathInfo);
-						} else {
-							// Execute the XProc
-							executeXProc(broker, resource, request, response,
-									outputProperties, servletPath.toString(), pathInfo);
 						}
+                        //else {
+							// Execute the XProc
+						//	executeXProc(broker, resource, request, response,
+						//			outputProperties, servletPath.toString(), pathInfo);
+						//}
 					} catch (XPathException e) {
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
 							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
@@ -1255,9 +1260,8 @@ public class RESTServer {
 		} else {
 			context = compiled.getContext();
 		}
-		
+
 		context.declareVariable("pipeline", resource.getURI().toString());
-		
 		String stdin = request.getParameter("stdin");
 		context.declareVariable("stdin", stdin == null ? "" : stdin);
 		
@@ -1278,6 +1282,7 @@ public class RESTServer {
 				resource.getCollection().getURI()).toString());
 		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
 				.getCollection().getURI() });
+
 		HttpRequestWrapper reqw = declareVariables(context, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);

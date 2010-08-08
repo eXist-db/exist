@@ -577,7 +577,7 @@ declare function std:xslt($primary,$secondary,$options){
 	let $v := u:get-primary($primary)
     let $stylesheet := u:get-secondary('stylesheet',$secondary)
     return
-       u:xslt(document{$v},document{$stylesheet})
+        u:xslt(document{$v},document{$stylesheet})
 };
 
 

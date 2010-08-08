@@ -7,9 +7,18 @@
        <p:output port="result" primary="true"/>
        <p:xquery xproc:preserve-context="true">
            <p:input port="query">
-               <p:inline><c:query xmlns:c="http://www.w3.org/ns/xproc-step"
- xproc:escape="true">
-               <c:result>{compression:zip(<entry name="/db/xproc/examples" type="collection"/>, true())}</c:result>
+               <p:inline>
+                   <c:query xmlns:c="http://www.w3.org/ns/xproc-step" xproc:escape="true">
+               <c:result>{
+                   import module namespace compression='http://exist-db.org/xquery/compression';
+                   let $entry := <entry name="test.txt" type="text" method="store">hello</entry>
+                    return
+                      response:stream-binary(
+                        compression:zip($entry, true() ),
+                        'application/zip',
+                        'test.zip'
+                      )
+               </c:result>
                </c:query></p:inline>
            </p:input>
        </p:xquery>

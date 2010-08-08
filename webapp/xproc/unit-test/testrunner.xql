@@ -4,7 +4,7 @@ declare namespace t="http://xproc.org/ns/testsuite";
 declare namespace c="http://www.w3.org/ns/xproc-step";
 
 (:NOTE - requires file module to be enabled :)
-declare namespace file="http://exist-db.org/xquery/file";
+import module namespace file="http://exist-db.org/xquery/file";
 
 import module namespace xproc = "http://xproc.net/xproc";
 

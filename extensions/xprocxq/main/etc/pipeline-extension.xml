@@ -4,13 +4,13 @@
                     name="xprocxq-extension-library">
                         
     <p:declare-step type="ext:pre" xproc:bindings="all" xproc:support="true">
-        <p:input port="source" primary="true" select="/"/>
-        <p:output port="result" primary="true" select="/"/>
+        <p:input port="source" primary="true" sequence="true" select="/"/>
+        <p:output port="result" primary="true" sequence="true" select="/"/>
     </p:declare-step>
 
     <p:declare-step type="ext:post" xproc:support="true">
-        <p:input port="source" primary="true" select="/"/>
-        <p:output port="stdout" primary="true" select="/"/>
+        <p:input port="source" primary="true" sequence="true" select="/"/>
+        <p:output port="stdout" primary="true" sequence="true" select="/"/>
     </p:declare-step> 
 
     <p:declare-step type="ext:xproc" xproc:use-function="xproc:run-step" xproc:support="true">
