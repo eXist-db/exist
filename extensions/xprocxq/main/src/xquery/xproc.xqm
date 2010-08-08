@@ -462,8 +462,8 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-document-binding($child){
  (: -------------------------------------------------------------------------- :)
-    if (doc-available($child/@href)) then
-        doc($child/@href)
+    if (doc-available(string($child/@href))) then
+        doc(string($child/@href))
     else
         u:dynamicError('err:XD0002',concat(" cannot access document ",$child/@href))
  };
@@ -493,7 +493,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
           $result
         
         else
-	            util:binary-to-string(util:binary-doc($child/@href))
+	        util:binary-to-string(util:binary-doc($child/@href))
 
 
 (:          u:unparsed-data($child/@href,'text/plain')
@@ -686,9 +686,6 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                            select="{$currentstep/p:input[1][@primary='true']/@select}"
                            port="{$currentstep/p:input[1][@primary='true']/@port}"
                            func="{$stepfuncname}">{
-                                   if ( empty($primary/node()) ) then
-                                      $outputs[@xproc:defaultname=$currentstep/p:input[1]/p:pipe/@step]/node()
-                                   else
                                       $primary/node()
                           }
                      </xproc:output>

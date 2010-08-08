@@ -9,9 +9,9 @@
 		<p:xquery xproc:preserve-context="true">
 			<p:input port="query">
 				<p:inline>
-					<c:query xmlns:c="http://www.w3.org/ns/xproc-step" xproc:escape="true">
-						<c:result>{compression:zip(<entry name="/db/xproc/examples" type="collection"/>, true())}</c:result>
-					</c:query>
+					<d:query xmlns:d="http://www.w3.org/ns/xproc-step" xproc:escape="true">
+						<d:result>{compression:zip(<entry name="/db/xproc/examples" type="collection"/>, true())}</d:result>
+					</d:query>
 				</p:inline>
 			</p:input>
 		</p:xquery>
