@@ -107,8 +107,9 @@ public class XMLWriter {
 			outputProperties = defaultProperties;
 		else
 			outputProperties = properties;
-		String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
-				"UTF-8");
+		
+		String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+		
 		charSet = CharacterSet.getCharacterSet(encoding);
         if (charSet == null)
             throw new IllegalStateException("Charset should never be null");
@@ -116,6 +117,14 @@ public class XMLWriter {
 
 	protected void reset() {
         writer = null;
+        resetObjectState();
+    }
+
+	protected void resetObjectState() {
+		tagIsOpen = false;
+		tagIsEmpty = true;
+		declarationWritten = false;
+		doctypeWritten = false;
         defaultNamespace = "";
     }
 
@@ -126,10 +135,7 @@ public class XMLWriter {
 	 */
 	public void setWriter(Writer writer) {
 		this.writer = writer;
-		tagIsOpen = false;
-		tagIsEmpty = true;
-		declarationWritten = false;
-		defaultNamespace = "";
+		resetObjectState();
 	}
 
 	public String getDefaultNamespace() {
@@ -141,11 +147,7 @@ public class XMLWriter {
 	}
 	
 	public void startDocument() throws TransformerException {
-		tagIsOpen = false;
-		tagIsEmpty = true;
-		declarationWritten = false;
-		doctypeWritten = false;
-		defaultNamespace = "";
+		resetObjectState();
 	}
 
 	public void endDocument() throws TransformerException {
