@@ -3235,7 +3235,7 @@ public class XQueryTest extends XMLTestCase {
 
             XPathQueryService service = (XPathQueryService)
                     getTestCollection().getService("XPathQueryService", "1.0");
-            service.query(query);
+            ResourceSet result = service.query(query);
 
         } catch (XMLDBException ex) {
             // should not yield into NPE
@@ -3245,6 +3245,24 @@ public class XQueryTest extends XMLTestCase {
     }
 
    
+    public void bugtestAsDouble_1840775() {
+        try {
+            String query = "declare function local:testCase($failure as element(Failure)?)"
+                    + "as element(TestCase) { <TestCase/> };"
+                    + "local:testCase("
+                    + "(: work-around for this eXist 1.1.2dev-rev:6992-20071127 bug: let $ltValue := 0.0 :)"
+                    + "let $ltValue as xs:double := 0.0e0 return <Failure/>)";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+        } catch (XMLDBException ex) {
+            // should not yield into NPE
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
 
 
