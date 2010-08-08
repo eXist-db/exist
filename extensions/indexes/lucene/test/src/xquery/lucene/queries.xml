@@ -17,7 +17,9 @@
 					<!-- Lucene index is configured below -->
 					<lucene>
 						<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+						<analyzer id="stop" class="org.apache.lucene.analysis.StopAnalyzer"/>
 						<text qname="p"/>
+						<text qname="para" analyzer="stop"/>
 					</lucene>
 				</index>
 			</collection>
@@ -27,6 +29,7 @@
 			<test>
 				<p>Eins zwei drei vier zwei fünf sechs.</p>
 				<p>Sieben acht <b>neun</b> zehn acht.</p>
+				<para>The stopwords should not be indexed.</para>
 			</test>
 		</store>
     </setup>
@@ -35,6 +38,189 @@
     	<remove-document collection="/db/system/config/db" name="collection.xconf"/>
     </tearDown>
 	<!-- Following axis tests -->
+	<test output="xml">
+		<task>Case sensitivity</task>
+		<code>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., 'Eins')]
+			return
+				$hit
+		</code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 1: boolean with must, matches</task>
+		<code><![CDATA[
+			let $qu := <query><bool><term occur="must">eins</term><term occur="must">zwei</term></bool></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 2: boolean with must, no match</task>
+		<code><![CDATA[
+			let $qu := <query><bool><term occur="must">eins</term><term occur="must">sieben</term></bool></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test 3: boolean with should</task>
+		<code><![CDATA[
+			let $qu := <query><bool><term occur="must">eins</term><term occur="should">sieben</term></bool></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 4: phrase</task>
+		<code><![CDATA[
+			let $qu := <query><phrase><term>eins</term><term>zwei</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 5: phrase, matches too distant</task>
+		<code><![CDATA[
+			let $qu := <query><phrase><term>eins</term><term>drei</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test 6: phrase with slop 2</task>
+		<code><![CDATA[
+			let $qu := <query><phrase slop="2"><term>eins</term><term>drei</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 7: phrase, wrong order of terms</task>
+		<code><![CDATA[
+			let $qu := <query><phrase><term>zwei</term><term>eins</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test 8: near</task>
+		<code><![CDATA[
+			let $qu := <query><near slop="4"><term>eins</term><term>vier</term></near></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 9: near, wrong slop</task>
+		<code><![CDATA[
+			let $qu := <query><near slop="1"><term>eins</term><term>vier</term></near></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test 10: near, unordered</task>
+		<code><![CDATA[
+			let $qu := <query><near ordered="no"><term>zwei</term><term>eins</term></near></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 11: near, nested</task>
+		<code><![CDATA[
+			let $qu := 
+				<query>
+					<near slop="10">
+						<near><term>eins</term><term>zwei</term></near>
+						<near><term>zwei</term><term>fünf</term></near>
+					</near>
+				</query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 11: near, first</task>
+		<code><![CDATA[
+			let $qu := 
+				<query>
+					<near slop="10">
+						<first end="3"><term>zwei</term><term>drei</term></first>
+						<near><term>fünf</term><term>sechs</term></near>
+					</near>
+				</query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 12: wildcard</task>
+		<code><![CDATA[
+			let $qu := <query><term>eins</term><wildcard>sech*</wildcard></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 12: regex</task>
+		<code><![CDATA[
+			let $qu := <query><term>eins</term><regex>sech.*</regex></query>
+			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
     <test output="xml">
         <task>Phrase highlighting 1</task>
         <code>
@@ -179,6 +365,93 @@
 			<terms>
 				<t>sieben</t>
 			</terms>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Analyzer test</task>
+		<code>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., '"and indexed"')]
+			return
+				$hit
+		</code>
+		<expected>
+			<para>The stopwords should not be indexed.</para>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 1: phrase using stopword</task>
+		<code><![CDATA[
+			let $qu := <query><phrase><term>and</term><term>indexed</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<para>The stopwords should not be indexed.</para>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 2: near using stopword</task>
+		<code><![CDATA[
+			let $qu := <query><near><term>and</term><term>indexed</term></near></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<para>The stopwords should not be indexed.</para>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 3: stopword only</task>
+		<code><![CDATA[
+			let $qu := <query><term>and</term></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 4: stopword only</task>
+		<code><![CDATA[
+			let $qu := <query><near><term>and</term></near></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 5: stopword only</task>
+		<code><![CDATA[
+			let $qu := <query><phrase><term>and</term></phrase></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 6: stopword only</task>
+		<code><![CDATA[
+			let $qu := <query><bool><term occur="must">and</term><term occur="must">the</term></bool></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Analyzer test 7: stopword in boolean</task>
+		<code><![CDATA[
+			let $qu := <query><bool><term occur="must">stopwords</term><term occur="must">and</term></bool></query>
+			for $hit in doc("/db/test/text1.xml")//para[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<para>The stopwords should not be indexed.</para>
 		</expected>
 	</test>
 </TestSet>
