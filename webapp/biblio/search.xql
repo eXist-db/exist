@@ -408,7 +408,7 @@ declare function biblio:clear() {
     Scan the input HTML template and expand the biblio:* tags
     found therein.
 :)
-declare function biblio:process-templates($query as element(), $hitCount as xs:integer, $node as node()) {
+declare function biblio:process-templates($query as element()?, $hitCount as xs:integer?, $node as node()) {
     typeswitch ($node)
         case element(biblio:login) return
             let $user := request:get-attribute("xquery.user")
@@ -440,6 +440,12 @@ declare function biblio:process-templates($query as element(), $hitCount as xs:i
                 </select>
         case element(biblio:current-user) return
             <span>{request:get-attribute("xquery.user")}</span>
+        case element(biblio:conditional) return
+            biblio:conditional($node)
+        case element(biblio:is-collection-owner) return
+            biblio:is-collection-owner()
+        case element(biblio:has-collection-write-permissions) return
+            biblio:has-collection-write-permissions()
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -449,6 +455,45 @@ declare function biblio:process-templates($query as element(), $hitCount as xs:i
             }
         default return
             $node
+};
+
+declare function biblio:conditional($node as element(biblio:conditional)) {
+    let $test-result := biblio:process-templates((), (), $node/biblio:test/biblio:*) return
+        if($test-result) then
+        (
+            $node/biblio:result/child::node()
+        )else()
+};
+
+declare function biblio:is-collection-owner() as xs:boolean {
+    let $user := request:get-attribute("xquery.user"),
+    $collection-owner := xmldb:get-owner(request:get-parameter("collection", $biblio:COLLECTION)) return
+        $user eq $collection-owner
+};
+
+declare function biblio:has-collection-write-permissions() as xs:boolean {
+    let $user := request:get-attribute("xquery.user"),
+    $collection := request:get-parameter("collection", $biblio:COLLECTION),
+    $collection-permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
+        if(fn:matches($collection-permissions, ".......w."))then
+        (
+            (: world writeable :)
+            true()
+        )
+        else if(xmldb:get-user-groups($user) = xmldb:get-group($collection) and fn:matches($collection-permissions, "....w...."))then
+        (
+            (: group writeable :)
+            true()
+        )
+        else if($user eq xmldb:get-owner($collection) and fn:matches($collection-permissions, ".w......."))then
+        (
+            (: owner writeable :)
+            true()
+        )
+        else
+        (
+            false()
+        )
 };
 
 (:~
