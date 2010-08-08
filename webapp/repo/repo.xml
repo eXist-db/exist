@@ -154,7 +154,7 @@ functx/
 
 <para>
 The <a href="packages/math-example/math" target="math">math jar</a> that is referenced from expath-pkg.xml needs to contain the correct MANIFEST.MF which lists out any other
-    dependent jars (lib/exist.jar and lib/xmldb.jar), as shown below.
+    dependent jars (exist.jar and xmldb.jar), as shown below.
 
 <example>
         <title>math.jar MANIFEST.MF</title>
@@ -165,7 +165,7 @@ Ant-Version: Apache Ant 1.7.1
 Created-By: 14.1-b02-90 (Apple Inc.)
 Project-Name: eXist
 Project-Version: 1.5.0dev
-Class-Path: lib/exist.jar lib/xmldb.jar
+Class-Path: exist.jar xmldb.jar
         </markup>
         </programlisting>
     </example>
