@@ -1,108 +1,60 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="contents-misc">
     <!--tableOfContents begins-->
+    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+    <!--Cluster: include-->
     <fieldset>
-        <legend><span class="legend">Table Of Contents</span></legend>
-        
+        <legend>
+            <span class="legend">Table Of Contents</span>
+        </legend>
+        <xf:hint> A description of the contents of a resource.<br/> A Table Of Contents can be rendered e.g. with dashes separating the chapter titles.<br/> Use
+            of Table Of Contents should be determined by the complexity of the digital object and whether or not the information is readily available. If more
+            structured information is needed, consider using Related Item with the type="constituent" attribute instead. Table Of Contents can also be used as
+            an empty element with an xlink:href attribute to link to an external table of contents. </xf:hint>
         <!--tableOfContents repeat begins-->
         <xf:repeat nodeset="instance('save-data')/mods:tableOfContents" id="tableOfContents-repeat">
-            
             <!--tableOfContents input begins-->
-            <xf:select1 ref="./@type" selection="open">
-                <xf:label>Type:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <!--change code-table!-->
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='identifier-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <br/>
-            
+            <!--DLF/Aquifer: NOT RECOMMENDED-->
+            <!--Cluster: omit-->
+            <!-- <xf:input ref="./@type"> <xf:label>Type:</xf:label> <xf:hint>Hint</xf:hint> </xf:input> <br/> -->
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
             <!--Cluster: include-->
-            
             <xf:input ref="./@xlink" class="text_50">
                 <xf:label>XLink: </xf:label>
-                <xf:hint>
-                    The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents.
-                </xf:hint>
+                <xf:hint> The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of
+                    Contents. </xf:hint>
             </xf:input>
-            
             <br/>
-            
-            <xf:input ref="./@displayLabel" class="text_150">
-                <xf:label>Display Label: </xf:label>
-                <xf:hint>Hint</xf:hint>
-            </xf:input>
-            
-            <br/>
-            
-            <xf:select1 ref="./@lang">
-                <xf:label>Language:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <!--DLF/Aquifer: NOT RECOMMENDED]-->
+            <!--DLF/Aquifer: OPTIONAL-->
             <!--Cluster: omit-->
-            
-            <xf:select1 ref="./@xml:lang">
-                <xf:label>xml:lang:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <br/>
-            <xf:select1 ref="./@script">
-                <xf:label>Script:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <xf:select1 ref="./@transliteration">
-                <xf:label>Transliteration:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <br/>
-            
-            <xf:textarea ref="instance('save-data')/mods:tableOfContents" class="textarea">
-                <xf:hint>Hint</xf:hint>
+            <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint>Hint</xf:hint> </xf:input> <br/> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit: would follow languageOfResource-->
+            <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit: would follow languageOfResource-->
+            <!-- <xf:select1 ref="./@xml:lang"> <xf:label>xml:lang:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <xf:textarea ref="." class="textarea">
+                <xf:hint>A description of the contents of a resource.</xf:hint>
             </xf:textarea>
-            
             <!--tableOfContents input ends-->
-            
             <!--tableOfContents delete begins-->
-            
             <xf:trigger ref="self::node()[count(../mods:tableOfContents) &gt; 1]">
                 <xf:label>Delete This Table Of Contents</xf:label>
-                <xf:hint>Hint</xf:hint>
                 <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:tableOfContents" at="index('tableOfContents-repeat')"/>
             </xf:trigger>
             <!--tableOfContents delete ends-->
-            
             <div class="hr"/>
-            
         </xf:repeat>
-        
         <!--tableOfContents repeat ends-->
-        
         <!--tableOfContents add begins-->
         <xf:trigger class="add">
             <xf:label>Add Table Of Contents</xf:label>
-            <xf:hint>Hint</xf:hint>
             <xf:action ev:event="DOMActivate">
                 <xf:insert nodeset="mods:tableOfContents" at="index('tableOfContents-repeat')" position="after"
                     origin="instance('insert-templates')/mods:tableOfContents"/>
@@ -110,143 +62,63 @@
             </xf:action>
         </xf:trigger>
         <!--tableOfContents add ends-->
-        
     </fieldset>
     <!--tableOfContents ends-->
-    
     <!--note begins-->
+    <!--DLF/Aquifer: RECOMMENDED OF APPLICABLE-->
+    <!--Cluster: include-->
     <fieldset>
-        <legend>Notes</legend>
-        
+        <legend>
+            <span class="legend">Note</span>
+        </legend>
+        <xf:hint>General information relating to a resource.<br/> Note should be used only for information that cannot be encoded in another, more specific,
+            ways. </xf:hint>
         <!--note repeat begins-->
-        <xf:repeat nodeset="./mods:note" id="physical-description-note-repeat">
-            
+        <xf:repeat nodeset="instance('save-data')/mods:note" id="note-repeat">
             <!--note input begins-->
-            
-            <xf:select1 ref="./@type" selection="open">
-                <xf:label>Type:</xf:label>
-                <xf:hint>
-                    This attribute is used if desired to specify whether the note concerns materials or techniques, e.g. type="material": oil paint; type="technique": painting.
-                </xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--DLF/Aquifer: OPTIONAL-->
             <!--Cluster: omit-->
-            
-            <xf:input ref="./@xlink" class="text_150">
-                <xf:label>XLink: </xf:label>
-                <xf:hint>
-                    The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents.
-                </xf:hint>
-            </xf:input>
-            
-            <xf:select1 ref="./@authority">
-                <xf:label>Authority:</xf:label>
-                <xf:hint>
-                    The name of the authoritative list for a controlled value is recorded here. 
-                    A list of authorities is maintained at: www.loc.gov/marc/sourcecode/note/notesource.html. 
-                    The MARC 21 form list contains most of the values defined in fields 008/23 (BK, MU, CR, MX) and 008/29 (MP, VM). 
-                    Use authority="marcform" to indicate its use.
-                </xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-authority-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <br/>
-            
-            <xf:select1 ref="./@lang">
-                <xf:label>Language:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <!--DLF/Aquifer: NOT RECOMMENDED]-->
+            <!-- <xf:input ref="./@type"> <xf:label>Type:</xf:label> <xf:hint>Hint</xf:hint> </xf:input> -->
+            <!--DLF/Aquifer: N/A-->
             <!--Cluster: omit-->
-            
-            <xf:select1 ref="./@xml:lang">
-                <xf:label>xml:lang:</xf:label>
+            <!-- <xf:select1 ref="./@authority" selection="open"> <xf:label>Authority:</xf:label> <xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: NOT RECOMMENDED-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@xml:lang"> <xf:label>xml:lang:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: OPTIONAL-->
+            <!--Cluster: omit-->
+            <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint>General information relating to a resource.</xf:hint> </xf:input> <br/> -->
+            <xf:textarea ref="." class="textarea">
                 <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <br/>
-            
-            <xf:select1 ref="./@script">
-                <xf:label>Script:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <xf:select1 ref="./@transliteration">
-                <xf:label>Transliteration:</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            
-            <br/>
-            
-            <xf:input ref="./@displayLabel" class="text_150">
-                <xf:label>Display Label:</xf:label>
-                <xf:hint>Hint</xf:hint>
-            </xf:input>
-            
-            <br/>
-            
-            <xf:textarea ref="instance('save-data')/mods:physicalDescription/mods:note" class="textarea">
-                <xf:label>Note:</xf:label>
-                <xf:hint>
-                    A designation of a particular physical presentation of a resource.
-                    Form includes innoteation that specifies the physical note or medium of material for a resource. 
-                    Either a controlled list of values or free text may be used.
-                </xf:hint>
             </xf:textarea>
-            
             <!--note input ends-->
-            
             <!--note delete begins-->
-            
             <xf:trigger ref="self::node()[count(../mods:note) &gt; 1]">
                 <xf:label>Delete This Note</xf:label>
-                <xf:hint>Hint</xf:hint>
-                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:note" at="index('physical-description-note-repeat')"/>
+                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:note" at="index('note-repeat')"/>
             </xf:trigger>
             <!--note delete ends-->
-            
             <div class="hr"/>
-            
         </xf:repeat>
-        
         <!--note repeat ends-->
-        
         <!--note add begins-->
         <xf:trigger class="add">
             <xf:label>Add Note</xf:label>
-            <xf:hint>Hint</xf:hint>
             <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:note" at="index('physical-description-note-repeat')" position="after"
-                    origin="instance('insert-templates')/mods:physicalDescription/mods:note"/>
+                <xf:insert nodeset="mods:note" at="index('note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/>
                 <xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/>
             </xf:action>
         </xf:trigger>
         <!--note add ends-->
-        
     </fieldset>
     <!--note ends-->
 </div>
