@@ -7,14 +7,16 @@ $(function() {
 });
 
 /* collection permissions toggles for user groups */
-$('#collection-restrict-all').click(function(){
-    $('#collection-restrict-user-group').hide()
-});
-$('#collection-restrict-user').click(function(){
-    $('#collection-restrict-user-group').hide()
-});
-$('#collection-restrict-group').click(function(){
-    $('#collection-restrict-user-group').show()
+$(document).ready(function(){ 
+    $('#collection-restrict-all').click(function(){
+        $('#collection-restrict-user-group').hide();
+    });
+    $('#collection-restrict-user').click(function(){
+        $('#collection-restrict-user-group').hide();
+    });
+    $('#collection-restrict-group').click(function(){
+        $('#collection-restrict-user-group').show();
+    });
 });
 
 /*
