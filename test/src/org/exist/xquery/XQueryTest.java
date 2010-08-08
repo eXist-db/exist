@@ -3280,7 +3280,28 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // http://sourceforge.net/support/tracker.php?aid=2117655
+    public void testTypeMismatch_2117655() {
+        try {
+            String query = "declare namespace t = \"test\"; "
+                    +"declare function t:foo() as xs:string{"
+                    + "<Value>23</Value>}; "
+                    + "t:foo()";
 
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "23",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            // should not yield into exceptio
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     /**
