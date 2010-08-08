@@ -2721,9 +2721,25 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-    // https://sourceforge.net/tracker/?func=detail&aid=2871975&group_id=17691&atid=117691
+    // http://sourceforge.net/support/tracker.php?aid=2871975
     public void bugtestStringOfEmptySequenceWithExplicitContext_2871975() {
 
+        // OK
+        try {
+            String query = "empty( ()/string() )";
+
+            XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "true",
+                    result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        // NOK
         try {
             String query = "empty( ()/string(.) )";
 
@@ -3244,7 +3260,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
-   
+    // http://sourceforge.net/support/tracker.php?aid=1840775
     public void bugtestAsDouble_1840775() {
         try {
             String query = "declare function local:testCase($failure as element(Failure)?)"
