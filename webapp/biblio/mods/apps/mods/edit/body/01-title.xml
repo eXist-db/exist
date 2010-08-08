@@ -38,12 +38,14 @@
                 <!--titleInfo input begins-->
                 <!--DLF/Aquifer: OPTIONAL-->
                 <!--Cluster: omit-->
+                <!-- 
                 <xf:input ref="./@ID" class="text_50">
                     <xf:label>ID: </xf:label>
                     <xf:hint> This attribute is used to link among records inside the database and to reference an element inside the database from the outside.
                         The UID of the record as a whole is noted in mods:identifier type="local". </xf:hint>
                 </xf:input>
                 <br/>
+                -->
                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
                 <!--Cluster: omit-->
                 <!--
