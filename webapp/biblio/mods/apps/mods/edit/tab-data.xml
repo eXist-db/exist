@@ -98,11 +98,18 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Note and TOC</label>
-        <tab-id>contents-misc</tab-id>
+        <label>TOC</label>
+        <tab-id>table-of-contents</tab-id>
         <color>lightblue</color>
         <default-visibility>show</default-visibility>
         <path>tableOfContents</path>
+    </tab>
+    <tab>
+        <category>Contents</category>
+        <label>Note</label>
+        <tab-id>note</tab-id>
+        <color>lightblue</color>
+        <default-visibility>show</default-visibility>
         <path>note</path>
     </tab>
     <tab>
