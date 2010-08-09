@@ -3470,6 +3470,36 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+  // http://sourceforge.net/support/tracker.php?aid=1460791
+    public void testDescendantOrSelf_1460791() {
+        try {
+            String query =
+                     "declare option exist:serialize 'indent=no';"
+                    +"let $test:=<z> <a> aaa </a> <z> zzz </z> </z> "
+                    +"return "
+                    +"( "
+                    +"<one> {$test//z} </one>, "
+                    +"<two> {$test/descendant-or-self::node()/child::z} </two> "
+                    +"(: note that these should be the same *by definition* :) "
+                    +")";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query,
+                    result.getResource(0).getContent().toString(), "<one><z> zzz </z></one>");
+            assertEquals(query,
+                    result.getResource(1).getContent().toString(), "<two><z> zzz </z></two>");
+
+        } catch (XMLDBException ex) {
+            // should not yield into exceptio
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
     // ======================================
     /**
      * @return
