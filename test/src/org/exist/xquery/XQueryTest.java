@@ -3374,6 +3374,26 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+  // http://sourceforge.net/support/tracker.php?aid=1789370
+    public void testOrderBy_1789370() {
+        try {
+            String query =
+                     "(for $vi in <elem>text</elem> order by $vi return $vi)/text()";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "text",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            // should not yield into exceptio
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     /**
