@@ -3394,6 +3394,50 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+    
+  // http://sourceforge.net/support/tracker.php?aid=1817822
+    public void testVariableScopeBug_1817822() {
+        try {
+            String query =
+                         "declare namespace test = \"http://example.com\"; "
+                        +"declare function test:expression($expr) as xs:double? { "
+                        +" typeswitch($expr) "
+                        +"   case element(Value) return test:value($expr) "
+                        +"   case element(SomethingRandom) return test:product($expr/*) "
+                        +"   default return () "
+                        +"}; "
+
+                        +"declare function test:value($expr) { "
+                        +"   xs:double($expr) "
+                        +"}; "
+
+                        +"declare function test:product($expressions) { "
+                        +"   test:expression($expressions[1]) "
+                        +"   * "
+                        +"   test:expression($expressions[2]) "
+                        +"}; "
+
+                        +"let $values := (<Value>2</Value>,<Value>3</Value>) "
+                        +"let $a := test:expression(<AnotherSomethingRandom/>) "
+                        +"let $b := test:product($values) "
+                        +"return <Result>{$b}</Result>";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query,
+                    result.getResource(0).getContent().toString(), "<Result>6</Result>");
+
+        } catch (XMLDBException ex) {
+            // should not yield into exceptio
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
 
     // ======================================
     /**
