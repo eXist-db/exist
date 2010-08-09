@@ -2,7 +2,11 @@
 <code-table>
     <code-table-name>ReleaseCode</code-table-name>
     <file-name>ReleaseCodes.xml</file-name>
+    <status/>
+    <form/>
+    <basis/>
     <description>Release Codes</description>
+    <notes/>
     <items>
         <item>
             <label>Version 0.1</label>
