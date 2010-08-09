@@ -1,6 +1,7 @@
 package org.exist.backup;
 
 import org.exist.Namespaces;
+import org.exist.client.ClientFrame;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -33,7 +34,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Observable;
 import java.util.Stack;
 import java.util.Properties;
@@ -56,7 +59,8 @@ public class Restore extends DefaultHandler {
 	private RestoreDialog dialog = null;
 	private int version=0;
 	private RestoreListener listener;
-
+	private List<String>			 errors = new ArrayList<String>();
+	
 	private static final int strictUriVersion = 1;
 
 	/**
@@ -146,6 +150,9 @@ public class Restore extends DefaultHandler {
 							dialog.displayMessage(e.getMessage());
 						}
 					}
+					if (errors.size() > 0) {
+                    	showErrorMessage("Warnings found during restore", formatErrors());
+                    }
 					dialog.setVisible(false);
 				}
 			};
@@ -168,6 +175,8 @@ public class Restore extends DefaultHandler {
 				//restoring sysId
 				reader.parse(is);
 			}
+			if (errors.size() > 0)
+            	System.err.println(formatErrors());
 		}
 	}
 
@@ -418,7 +427,20 @@ public class Restore extends DefaultHandler {
 		pass = adminPassword;
 	}
 	
+	private String formatErrors() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("------------------------------------\n");
+		for (String error : errors) {
+			builder.append("WARN: ").append(error).append('\n');
+		}
+		return builder.toString();
+	}
+	
 	public static void showErrorMessage(String message) {
+		showErrorMessage("Error", message);
+	}
+	
+	public static void showErrorMessage(String title, String message) {
         JTextArea msgArea = new JTextArea(message);
         msgArea.setEditable(false);
         msgArea.setBackground(null);
@@ -426,7 +448,7 @@ public class Restore extends DefaultHandler {
         JOptionPane optionPane = new JOptionPane();
         optionPane.setMessage(new Object[]{scroll});
         optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
-        JDialog dialog = optionPane.createDialog(null, "Error");
+        JDialog dialog = optionPane.createDialog(null, title);
         dialog.setResizable(true);
         dialog.pack();
         dialog.setVisible(true);
@@ -466,6 +488,7 @@ public class Restore extends DefaultHandler {
             dialog.displayMessage(message);
          else
             System.err.println(message);
+         errors.add(message);
       }
    }
 }
