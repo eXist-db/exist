@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>language-authority-code</code-table-name>
-    <form>closed</form>
     <status>finished</status>
+    <form>closed</form>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>type-of-resource-code</code-table-name>
+    <status/>
+    <form/>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>
@@ -41,10 +46,6 @@
         <item>
             <label>Three Dimensional Object</label>
             <value>three dimensional object</value>
-        </item>
-        <item>
-            <label>Family</label>
-            <value>family</value>
         </item>
         <item>
             <label>Software, Multimedia</label>

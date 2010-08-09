@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>internet-media-type-code</code-table-name>
-    <status>dummy</status>
+    <status>finished</status>
+    <form></form>
     <basis>http://en.wikipedia.org/wiki/Internet_media_type; see also http://www.iana.org/assignments/media-types/index.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

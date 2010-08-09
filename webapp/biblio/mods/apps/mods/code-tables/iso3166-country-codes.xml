@@ -2,7 +2,10 @@
 <code-table>
     <code-table-name>iso3166-country-code</code-table-name>
     <status>finished</status>
+    <form></form>
     <basis>http://www.iso.org/iso/iso_3166-1_list_en.zip</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

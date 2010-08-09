@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>geographic-code-authority-code</code-table-name>
+    <status/>
+    <form/>
     <basis>http://chelsea.library.ualberta.ca/cocoon210/modseditor/edit/mods99042030.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

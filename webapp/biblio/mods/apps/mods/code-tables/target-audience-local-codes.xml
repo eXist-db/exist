@@ -1,1 +1,19 @@
-<code-table><code-table-name>target-audience-local-code</code-table-name><status>dummy</status><basis/><items><item><label>(none selected)</label><value/></item><item><label>to be developed</label><value>to be developed</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>target-audience-local-code</code-table-name>
+    <status>dummy</status>
+    <form/>
+    <basis/>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>to be developed</label>
+            <value>to be developed</value>
+        </item>
+    </items>
+</code-table>

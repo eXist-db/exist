@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>title-type-code</code-table-name>
-    <form>closed</form>
     <status>finished</status>
+    <form>closed</form>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>Basic Title Information</label>
