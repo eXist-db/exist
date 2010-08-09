@@ -3339,6 +3339,42 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+    // http://sourceforge.net/support/tracker.php?aid=1807014
+    public void testWrongAddNamespace_1807014() {
+        try {
+    Collection testCollection = getTestCollection();
+            Resource doc = testCollection.createResource("a.xqy", "BinaryResource");
+            doc.setContent("module namespace a = \"http://www.a.com\"; "
+                            +"declare function a:selectionList() as element(ul) { "
+                            +"<ul class=\"a\"/> "
+                            +"};");
+            ((EXistResource) doc).setMimeType("application/xquery");
+            testCollection.storeResource(doc);
+
+            String query =
+                    "declare option exist:serialize 'indent=no';"
+                    +"import module namespace a = \"http://www.a.com\" at \"xmldb:exist://db/test/a.xqy\"; "
+                    +"<html xmlns=\"http://www.w3.org/1999/xhtml\"> "
+                    +"{ a:selectionList() } "
+                    +"</html>";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(1, result.getSize());
+            assertEquals(query, "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                    +"<ul class=\"a\"/></html>",
+                    result.getResource(0).getContent().toString());
+
+        } catch (XMLDBException ex) {
+            // should not yield into exception
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
+
+
     // ======================================
     /**
      * @return
