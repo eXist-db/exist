@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
-    <status>finished</status>
     <code-table-name>abbreviated-title-authority-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
     <basis>http://www.loc.gov/standards/sourcelist/abbreviated-title.html</basis>
+    <description></description>
+    <notes></notes>
     <items>
         <item>
             <label>(none selected)</label>
