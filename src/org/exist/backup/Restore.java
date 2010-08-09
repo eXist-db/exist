@@ -35,6 +35,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import org.exist.Namespaces;
+import org.exist.client.ClientFrame;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -59,7 +60,9 @@ import java.io.IOException;
 
 import java.net.URISyntaxException;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Observable;
 import java.util.Properties;
 import java.util.Stack;
@@ -90,7 +93,8 @@ public class Restore extends DefaultHandler
     private RestoreDialog           dialog           = null;
     private int                     version          = 0;
     private RestoreListener         listener;
-
+    private List<String>			 errors = new ArrayList<String>();
+    
     /**
      * Constructor for Restore.
      *
@@ -203,7 +207,10 @@ public class Restore extends DefaultHandler
                             dialog.displayMessage( e.getMessage() );
                         }
                     }
-                    dialog.setVisible( false );
+                    if (errors.size() > 0) {
+                    	ClientFrame.showErrorMessage(formatErrors(), null);
+                    }
+                    dialog.setVisible(false);
                 }
             };
             restoreThread.start();
@@ -232,6 +239,8 @@ public class Restore extends DefaultHandler
                 //restoring sysId
                 reader.parse( is );
             }
+            if (errors.size() > 0)
+            	System.err.println(formatErrors());
         }
     }
 
@@ -327,7 +336,7 @@ public class Restore extends DefaultHandler
                 if( subbd != null ) {
                     stack.push( subbd );
                 } else {
-                    listener.warn( name + " does not exist or is not readable." );
+                    listener.warn( "collection " + contents.getSymbolicPath(name, false) + " does not exist or is not readable." );
                 }
             } else if( localName.equals( "resource" ) ) {
                 String skip = atts.getValue( "skip" );
@@ -452,7 +461,8 @@ public class Restore extends DefaultHandler
 							}
 							service.chmod(res, Integer.parseInt(perms, 8));
 						} else {
-	                    	listener.warn("Failed to restore empty XML resouce: " + name + "; skipping ...");
+	                    	listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + 
+	                    			"'. The resource is empty.");
 	                    }
 						listener.restored( name );
                     }
@@ -552,7 +562,17 @@ public class Restore extends DefaultHandler
     }
 
 
-    public static void showErrorMessage( String message )
+    private String formatErrors() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("------------------------------------\n");
+		builder.append("Warnings were found during restore:\n");
+		for (String error : errors) {
+			builder.append("WARN: ").append(error).append('\n');
+		}
+		return builder.toString();
+	}
+
+	public static void showErrorMessage( String message )
     {
         JTextArea msgArea = new JTextArea( message );
         msgArea.setEditable( false );
@@ -613,6 +633,7 @@ public class Restore extends DefaultHandler
             } else {
                 System.err.println( message );
             }
+            errors.add(message);
         }
     }
 }
