@@ -2,6 +2,10 @@
 <code-table>
     <code-table-name>digital-origin-type-code</code-table-name>
     <status>finished</status>
+    <form/>
+    <basis/>
+    <description></description>
+    <notes></notes>
     <items>
         <item>
             <label>(none selected)</label>
