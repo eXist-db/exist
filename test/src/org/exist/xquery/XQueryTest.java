@@ -3437,7 +3437,38 @@ public class XQueryTest extends XMLTestCase {
         }
     }
 
+  // http://sourceforge.net/support/tracker.php?aid=1718626
+    public void testConstructednodePosition_1718626() {
+        try {
+            String query =
+                     "declare variable $categories := "
+                    +" <categories> "
+                    +"         <category uid=\"1\">Fruit</category> "
+                    +"         <category uid=\"2\">Vegetable</category> "
+                    +"         <category uid=\"3\">Meat</category> "
+                    +"         <category uid=\"4\">Dairy</category> "
+                    +" </categories> "
+                    +" ; "
 
+                    +" $categories/category[1], "
+                    +" $categories/category[position() eq 1]";
+
+            XPathQueryService service = (XPathQueryService)
+                    getTestCollection().getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+
+            assertEquals(2, result.getSize());
+            assertEquals(query,
+                    result.getResource(0).getContent().toString(), "<category uid=\"1\">Fruit</category>");
+            assertEquals(query,
+                    result.getResource(1).getContent().toString(), "<category uid=\"1\">Fruit</category>");
+
+        } catch (XMLDBException ex) {
+            // should not yield into exceptio
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+    }
 
     // ======================================
     /**
