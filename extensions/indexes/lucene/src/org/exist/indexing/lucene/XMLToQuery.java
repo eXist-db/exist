@@ -36,6 +36,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.exist.xquery.XPathException;
 
 import java.io.StringReader;
@@ -62,7 +63,7 @@ public class XMLToQuery {
         if ("query".equals(localName))
             query = parseChildren(field, root, analyzer, options);
         else if ("term".equals(localName))
-            query = termQuery(field, root);
+            query = termQuery(field, root, analyzer);
         else if ("wildcard".equals(localName))
             query = wildcardQuery(field, root, options);
         else if ("prefix".equals(localName))
@@ -81,7 +82,8 @@ public class XMLToQuery {
             query = regexQuery(field, root, options);
         else
             throw new XPathException("Unknown element in lucene query expression: " + localName);
-        setBoost(root, query);
+        if (query != null)
+        	setBoost(root, query);
         return query;
     }
 
@@ -91,12 +93,14 @@ public class XMLToQuery {
             PhraseQuery query = new PhraseQuery();
             String qstr = getText(node);
             TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
-            Token token = new Token();
+            TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
             try {
-                while ((token = stream.next(token)) != null) {
-                    String str = new String(token.termBuffer(), 0, token.termLength());
-                    query.add(new Term(field, str));
+            	stream.reset();
+                while (stream.incrementToken()) {
+                    query.add(new Term(field, termAttr.term()));
                 }
+                stream.end();
+                stream.close();
             } catch (IOException e) {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
@@ -113,8 +117,11 @@ public class XMLToQuery {
                     Term[] expanded = expandTerms(field, text);
                     if (expanded.length > 0)
                         query.add(expanded);
-                } else
-                    query.add(new Term(field, text));
+                } else {
+                	String termStr = getTerm(field, text, analyzer);
+                	if (termStr != null)
+                		query.add(new Term(field, text));
+                }
             }
             int slop = getSlop(node);
             if (slop > -1)
@@ -134,13 +141,15 @@ public class XMLToQuery {
         if (!hasElementContent(node)) {
             String qstr = getText(node);
             TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
+            TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
             List<SpanTermQuery> list = new ArrayList<SpanTermQuery>(8);
-            Token token = new Token();
             try {
-                while ((token = stream.next(token)) != null) {
-                    String str = new String(token.termBuffer(), 0, token.termLength());
-                    list.add(new SpanTermQuery(new Term(field, str)));
+            	stream.reset();
+                while (stream.incrementToken()) {
+                    list.add(new SpanTermQuery(new Term(field, termAttr.term())));
                 }
+                stream.end();
+                stream.close();
             } catch (IOException e) {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
@@ -158,7 +167,7 @@ public class XMLToQuery {
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 if ("term".equals(child.getLocalName()))
-                    list.add(getSpanTerm(field, (Element) child));
+                    getSpanTerm(list, field, (Element) child, analyzer);
                 else if ("near".equals(child.getLocalName()))
                     list.add(nearQuery(field, (Element) child, analyzer));
                 else if ("first".equals(child.getLocalName()))
@@ -171,19 +180,27 @@ public class XMLToQuery {
         return list.toArray(new SpanQuery[list.size()]);
     }
 
-    private SpanQuery getSpanTerm(String field, Element node) {
-        return new SpanTermQuery(new Term(field, getText(node)));
+    private void getSpanTerm(List<SpanQuery> list, String field, Element node, Analyzer analyzer) throws XPathException {
+    	String termStr = getTerm(field, getText(node), analyzer);
+    	if (termStr != null)
+    		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
-        SpanQuery query;
+    	int slop = getSlop(node);
+        if (slop < 0)
+            slop = 0;
+        boolean inOrder = true;
+        if (node.hasAttribute("ordered"))
+            inOrder = node.getAttribute("ordered").equals("yes");
+        SpanQuery query = null;
         if (hasElementContent(node)) {
             SpanQuery[] children = parseSpanChildren(field, node, analyzer);
-            if (children.length != 1)
-                throw new XPathException("Query element 'first' expects exactly one child element");
-            query = children[0];
+            query = new SpanNearQuery(children, slop, inOrder);
         } else {
-            query = new SpanTermQuery(new Term(field, getText(node)));
+        	String termStr = getTerm(field, getText(node), analyzer);
+        	if (termStr != null)
+        		query = new SpanTermQuery(new Term(field, termStr));
         }
         int end = 0;
         if (node.hasAttribute("end")) {
@@ -194,7 +211,7 @@ public class XMLToQuery {
                         "valid integer. Got: " + node.getAttribute("end"));
             }
         }
-        return new SpanFirstQuery(query, end);
+        return query != null ? new SpanFirstQuery(query, end) : null;
     }
 
     private int getSlop(Element node) throws XPathException {
@@ -232,10 +249,28 @@ public class XMLToQuery {
         }
     }
 
-    private Query termQuery(String field, Element node) {
-        return new TermQuery(new Term(field, getText(node)));
+    private Query termQuery(String field, Element node, Analyzer analyzer) throws XPathException {
+    	String termStr = getTerm(field, getText(node), analyzer);
+    	return termStr == null ? null : new TermQuery(new Term(field, termStr));
     }
 
+    private String getTerm(String field, String text, Analyzer analyzer) throws XPathException {
+    	TokenStream stream = analyzer.tokenStream(field, new StringReader(text));
+    	TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
+    	String term = null;
+    	try {
+    		stream.reset();
+			if (stream.incrementToken()) {
+				term = termAttr.term();
+			}
+			stream.end();
+			stream.close();
+			return term;
+		} catch (IOException e) {
+			throw new XPathException("Lucene index error while creating query: " + e.getMessage(), e);
+		}
+    }
+    
     private Query wildcardQuery(String field, Element node, Properties options) {
         WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
@@ -274,8 +309,10 @@ public class XMLToQuery {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element) child;
                 Query childQuery = parse(field, elem, analyzer, options);
-                BooleanClause.Occur occur = getOccur(elem);
-                query.add(childQuery, occur);
+                if (childQuery != null) {
+	                BooleanClause.Occur occur = getOccur(elem);
+	                query.add(childQuery, occur);
+                }
             }
             child = child.getNextSibling();
         }
