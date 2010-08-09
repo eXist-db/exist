@@ -514,25 +514,22 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-primary-input-binding($result,$pipeline-name){
  (: -------------------------------------------------------------------------- :)
-    $result/xproc:output[@port eq 'result'][@step=concat('!',$pipeline-name)]/node()
+    $result/xproc:output[@port eq 'result'][@step eq concat('!',$pipeline-name)]/node()
  };
 
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-non-primary-input-binding($result,$child,$pipeline-name){
  (: -------------------------------------------------------------------------- :)
-    $result/xproc:output[@port=$child/@port][@step=concat('!',$pipeline-name)]/node()
+    $result/xproc:output[@port=$child/@port][@step eq concat('!',$pipeline-name)]/node()
  };
 
 
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-pipe-binding($result,$child){
  (: -------------------------------------------------------------------------- :)
-    if ($result/xproc:output[@port=$child/@port][@step=$child/@step]) then
-        $result/xproc:output[@port=$child/@port][@step=$child/@step]/node()
- (:	else if($result/xproc:output[@port=$child/@port][@step=$child/@xproc:defaultname]) then
-        $result/xproc:output[@port=$child/@port][@step=$child/@xproc:defaultname]/node()
- :)
+    if ($result/xproc:output[@port=$child/@port][@step eq $child/@step]) then
+        $result/xproc:output[@port=$child/@port][@step eq $child/@step]/node()
     else
         $result/xproc:output[last()]/node()
  };
