@@ -42,6 +42,8 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
@@ -389,7 +391,7 @@ public class Restore extends DefaultHandler
                         if( dialog != null ) {
                             dialog.setResource( name );
                         }
-                        final Resource res = current.createResource( docUri.toString(), type );
+                        Resource res = current.createResource( docUri.toString(), type );
 
                         if( mimetype != null ) {
                             ( (EXistResource)res ).setMimeType( mimetype );
@@ -398,64 +400,66 @@ public class Restore extends DefaultHandler
                         if( is.getByteStreamLength() > 0 ) {
                             res.setContent( is );
                         } else {
-                            res.setContent( "" );
+                        	if (type.equals("BinaryResource"))
+                        		res.setContent( "" );
+                        	else
+                        		res = null;
                         }
 
                         // Restoring name
 
-                        Date date_created  = null;
-                        Date date_modified = null;
+                        if (res != null) {
+							Date date_created = null;
+							Date date_modified = null;
+							if (created != null) {
 
-                        if( created != null ) {
+								try {
+									date_created = (new DateTimeValue(created))
+											.getDate();
+								} catch (XPathException e2) {
+									listener.warn("Illegal creation date. Skipping ...");
+								}
+							}
+							if (modified != null) {
 
-                            try {
-                                date_created = ( new DateTimeValue( created ) ).getDate();
-                            }
-                            catch( XPathException e2 ) {
-                                listener.warn( "Illegal creation date. Skipping ..." );
-                            }
-                        }
+								try {
+									date_modified = (Date) (new DateTimeValue(
+											modified)).getDate();
+								} catch (XPathException e2) {
+									listener.warn("Illegal modification date. Skipping ...");
+								}
+							}
+							current.storeResource(res, date_created,
+									date_modified);
+							if ((publicid != null) || (systemid != null)) {
+								DocumentType doctype = new DocumentTypeImpl(
+										namedoctype, publicid, systemid);
 
-                        if( modified != null ) {
-
-                            try {
-                                date_modified = (Date)( new DateTimeValue( modified ) ).getDate();
-                            }
-                            catch( XPathException e2 ) {
-                                listener.warn( "Illegal modification date. Skipping ..." );
-                            }
-                        }
-
-                        current.storeResource( res, date_created, date_modified );
-
-
-                        if( ( publicid != null ) || ( systemid != null ) ) {
-                            DocumentType doctype = new DocumentTypeImpl( namedoctype, publicid, systemid );
-
-                            try {
-                                ( (EXistResource)res ).setDocType( doctype );
-                            }
-                            catch( XMLDBException e1 ) {
-                                e1.printStackTrace();
-                            }
-                        }
-
-                        UserManagementService service = (UserManagementService)current.getService( "UserManagementService", "1.0" );
-                        User  u    = new UserAider( owner, new GroupAider( group ) );
-
-                        try {
-                            service.chown( res, u, group );
-                        }
-                        catch( XMLDBException e1 ) {
-                            listener.warn( "Failed to change owner on document '" + name + "'; skipping ..." );
-                        }
-                        service.chmod( res, Integer.parseInt( perms, 8 ) );
-                        listener.restored( name );
+								try {
+									((EXistResource) res).setDocType(doctype);
+								} catch (XMLDBException e1) {
+									e1.printStackTrace();
+								}
+							}
+							UserManagementService service = (UserManagementService) current
+									.getService("UserManagementService", "1.0");
+							User u = new UserAider(owner, new GroupAider(group));
+							try {
+								service.chown(res, u, group);
+							} catch (XMLDBException e1) {
+								listener.warn("Failed to change owner on document '"
+										+ name + "'; skipping ...");
+							}
+							service.chmod(res, Integer.parseInt(perms, 8));
+						} else {
+	                    	listener.warn("Failed to restore empty XML resouce: " + name + "; skipping ...");
+	                    }
+						listener.restored( name );
                     }
                     catch( Exception e ) {
                         listener.warn( "Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + "'.\nReason: " + e.getMessage() );
                         e.printStackTrace();
-                        throw( new RuntimeException( e ) );
+//                        throw( new RuntimeException( e ) );
                     }
                     finally {
                         is.close();
