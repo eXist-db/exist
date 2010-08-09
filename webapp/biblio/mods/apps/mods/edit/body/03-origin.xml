@@ -1,29 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?> 
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin">
-    <!--originInfo begins-->
-    
-    <!--
-        The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. 
-        place, publisher, and edition are recommended if applicable. 
-        These guidelines make no recommendation on the use of the elements issuance and frequency.
-    -->
+    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. place, publisher, and edition are recommended if applicable. These guidelines make no recommendation on the use of the elements issuance and frequency. -->
     <fieldset>
         <legend>Origin Information</legend>
-        <xf:hint>
-            Information about the origin of the resource, including place of origin or publication, publisher/originator, and dates associated with the resource. 
-        </xf:hint>
-        
+        <xf:hint> Information about the origin of the resource, including place of origin or publication, publisher/originator, and dates associated with the
+            resource. </xf:hint>
         <!--originInfo repeat begins-->
         <xf:repeat nodeset="mods:originInfo" id="origininfo-repeat">
-            
             <!--originInfo input begins-->
-            
-            <!--
-                NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language.
-                What about Beijing/Peking? Are they in different languages?
-                Basically originInfo consists of place names, publishers, and dates. 
-            -->
-            
+            <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
             <!--DLF/Aquifer: N/A-->
             <!--Cluster: omit-->
             <xf:select1 ref="./@lang">
@@ -35,7 +20,6 @@
                 </xf:itemset>
             </xf:select1>
             <br/>
-            
             <!--DLF/Aquifer: NOT RECOMMENDED-->
             <!--Cluster: omit-->
             <xf:select1 ref="./@xml:lang">
@@ -47,76 +31,57 @@
                 </xf:itemset>
             </xf:select1>
             <br/>
-            
             <!--DLF/Aquifer: N/A-->
             <!--Cluster: include-->
             <xf:select1 ref=".[string-length(@transliteration)=0]/@script">
                 <xf:label>Script:</xf:label>
-                <xf:hint>
-                    If the Origin Information is in a non-Latin script, note here the script utilised.
-                    As Latin script is default and transliterations used the Latin script, the Transliteration attribute becomes unneccesary.
-                </xf:hint>
+                <xf:hint> If the Origin Information is in a non-Latin script, note here the script utilised. As Latin script is default and transliterations
+                    used the Latin script, the Transliteration attribute becomes unneccesary. </xf:hint>
                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
                     <xf:label ref="label"/>
                     <xf:value ref="value"/>
                 </xf:itemset>
             </xf:select1>
             <br/>
-            
             <!--DLF/Aquifer: N/A-->
             <!--Cluster: include-->
             <xf:select1 ref=".[not(@script='Latn')]/@transliteration">
                 <xf:label>Transliteration:</xf:label>
-                <xf:hint>
-                    If the Origin Information is transliterated, note here the transliteration scheme utilised.
-                    As transliterations are romanisations, the Script attribute becomes unneccesary.
-                </xf:hint>
+                <xf:hint> If the Origin Information is transliterated, note here the transliteration scheme utilised. As transliterations are romanisations, the
+                    Script attribute becomes unneccesary. </xf:hint>
                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
                     <xf:label ref="label"/>
                     <xf:value ref="value"/>
                 </xf:itemset>
             </xf:select1>
-            
             <!--originInfo input ends-->
             <!--place begins-->
-
-<!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-<!--Cluster: include-->
+            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+            <!--Cluster: include-->
             <fieldset>
                 <legend>Place</legend>
-                <xf:hint>
-            Record in Place and its subelement Place Term place names associated with the creation or issuance of a resource. 
-            Descriptive standards such as AACR2 may be used to determine which places to record for published resources. 
-            For unpublished resources, if a place of origin is known, record it in Place Term under Place. 
-            Place and Place Term should be omitted if no information about the originating place of the resource is known. 
-            Repeat Place for recording multiple places.
-        </xf:hint>
-        
-<!--place repeat begins-->
+                <xf:hint> Record in Place and its subelement Place Term place names associated with the creation or issuance of a resource. Descriptive
+                    standards such as AACR2 may be used to determine which places to record for published resources. For unpublished resources, if a place of
+                    origin is known, record it in Place Term under Place. Place and Place Term should be omitted if no information about the originating place
+                    of the resource is known. Repeat Place for recording multiple places. </xf:hint>
+                <!--place repeat begins-->
                 <xf:repeat nodeset="./mods:place" id="place-repeat">
-                
-<!--no place input fields-->
-                
-<!--placeTerm begins-->
-
-                <!--DLF/Aquifer: REQUIRED-->
-                <!--Cluster: include-->
+                    <!--no place input fields-->
+                    <!--placeTerm begins-->
+                    <!--DLF/Aquifer: REQUIRED-->
+                    <!--Cluster: include-->
                     <fieldset>
                         <legend>Place Term</legend>
-                        <xf:hint>
-                        Use the Place Term subelement to record the textual or code form of the place.
-                        If the place is a country, the name of the country can be selected from the MARC country code list or the ISO3166 standard list of country names.
-                        If the place is not a country, add another Place Term and write the place name (e.g. city name) with Type set to "Text".
-                    </xf:hint>
-                
-<!--placeTerm repeat begins-->
+                        <xf:hint> Use the Place Term subelement to record the textual or code form of the place. If the place is a country, the name of the
+                            country can be selected from the MARC country code list or the ISO3166 standard list of country names. If the place is not a
+                            country, add another Place Term and write the place name (e.g. city name) with Type set to "Text". </xf:hint>
+                        <!--placeTerm repeat begins-->
                         <xf:repeat nodeset="./mods:placeTerm" id="place-term-repeat">
-                        
-<!--placeTerm input begins-->
+                            <!--placeTerm input begins-->
                             <xf:select1 ref="./@type">
                                 <xf:label>Type:</xf:label>
                                 <xf:hint>Hint</xf:hint>
-                            <!--change code-table!-->
+                                <!--change code-table!-->
                                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item">
                                     <xf:label ref="label"/>
                                     <xf:value ref="value"/>
@@ -124,9 +89,7 @@
                             </xf:select1>
                             <xf:select1 ref=".[@type='code']/@authority">
                                 <xf:label>Authority:</xf:label>
-                                <xf:hint>
-                                The name of the authoritative list for a controlled value is recorded here.
-                            </xf:hint>
+                                <xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint>
                                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='place-authority-code']/items/item">
                                     <xf:label ref="label"/>
                                     <xf:value ref="value"/>
@@ -134,9 +97,7 @@
                             </xf:select1>
                             <xf:select1 ref=".[(@type='code') and (@authority='marccountry')]">
                                 <xf:label>Place Term:</xf:label>
-                                <xf:hint>
-                                Place Terms according to the marccountry standard list.
-                            </xf:hint>
+                                <xf:hint> Place Terms according to the marccountry standard list. </xf:hint>
                                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='marc-country-code']/items/item">
                                     <xf:label ref="label"/>
                                     <xf:value ref="value"/>
@@ -144,9 +105,7 @@
                             </xf:select1>
                             <xf:select1 ref=".[(@type='code') and (@authority='iso3166')]">
                                 <xf:label>Place Term:</xf:label>
-                                <xf:hint>
-                                Place Terms according to the iso3166 standard list.
-                            </xf:hint>
+                                <xf:hint> Place Terms according to the iso3166 standard list. </xf:hint>
                                 <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='iso3166-country-code']/items/item">
                                     <xf:label ref="label"/>
                                     <xf:value ref="value"/>
@@ -156,53 +115,43 @@
                                 <xf:label>Place Term: </xf:label>
                                 <xf:hint>Hint</xf:hint>
                             </xf:input>
-
-
-                        
-<!--placeTerm input ends-->
-                        
-<!--placeTerm delete begins-->
+                            <!--placeTerm input ends-->
+                            <!--placeTerm delete begins-->
                             <xf:trigger ref="self::node()[count(../mods:placeTerm) &gt; 1]">
                                 <xf:label>Delete This Place Term</xf:label>
                                 <xf:hint>Hint</xf:hint>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place/mods:placeTerm" at="index('place-term-repeat')"/>
+                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place/mods:placeTerm"
+                                    at="index('place-term-repeat')"/>
                             </xf:trigger>
-
-<!--placeTerm delete ends-->
+                            <!--placeTerm delete ends-->
                             <div class="hr"/>
                         </xf:repeat>
-                    
-<!--placeTerm repeat ends-->
-                    
-<!--placeTerm add begins-->
+                        <!--placeTerm repeat ends-->
+                        <!--placeTerm add begins-->
                         <xf:trigger class="add">
                             <xf:label>Add Place Term</xf:label>
                             <xf:hint>Hint</xf:hint>
                             <xf:action ev:event="DOMActivate">
-                                <xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after" origin="instance('insert-templates')/mods:placeTerm"/>
+                                <xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after"
+                                    origin="instance('insert-templates')/mods:placeTerm"/>
                                 <xf:setvalue ref="instance('save-data')/mods:placeTerm[last()]" value="''"/>
                             </xf:action>
                         </xf:trigger>
-
-<!--placeTerm add ends-->
+                        <!--placeTerm add ends-->
                     </fieldset>
                     <br/>
-
-<!--placeTerm ends-->
-                
-<!--place delete begins-->
+                    <!--placeTerm ends-->
+                    <!--place delete begins-->
                     <xf:trigger ref="self::node()[count(../mods:place) &gt; 1]">
                         <xf:label>Delete This Place</xf:label>
                         <xf:hint>Hint</xf:hint>
                         <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place" at="index('place-repeat')"/>
                     </xf:trigger>
-                <!--place delete ends-->
+                    <!--place delete ends-->
                     <div class="hr"/>
                 </xf:repeat>
-            
-<!--place repeat ends-->
-            
-<!--place add begins-->
+                <!--place repeat ends-->
+                <!--place add begins-->
                 <xf:trigger class="add">
                     <xf:label>Add Place</xf:label>
                     <xf:hint>Hint</xf:hint>
@@ -211,94 +160,72 @@
                         <xf:setvalue ref="instance('save-data')/mods:place[last()]" value="''"/>
                     </xf:action>
                 </xf:trigger>
-
-
-<!--place add ends-->
+                <!--place add ends-->
             </fieldset>
-        
-<!--place ends-->
-
-<!--publisher begins-->
+            <!--place ends-->
+            <!--publisher begins-->
             <fieldset>
                 <legend>Publisher</legend>
                 <xf:hint>Hint</xf:hint>
-        
-<!--publisher input begins-->
+                <!--publisher input begins-->
                 <xf:input ref="./mods:publisher" class="text_150">
                     <xf:label>Publisher: </xf:label>
-                    <xf:hint>
-                Record in Publisher a named entity determined to be the publisher or originator for a resource. 
-                Descriptive standards such as AACR2 may be used to format the name of the publisher. 
-                Information about an institution responsible for digitising and delivering online a previously published resource should be included in Note, rather than Publisher.
-            </xf:hint>
+                    <xf:hint> Record in Publisher a named entity determined to be the publisher or originator for a resource. Descriptive standards such as
+                        AACR2 may be used to format the name of the publisher. Information about an institution responsible for digitising and delivering online
+                        a previously published resource should be included in Note, rather than Publisher. </xf:hint>
                 </xf:input>
-
-<!--publisher input ends-->
+                <!--publisher input ends-->
             </fieldset>
-
-<!--publisher ends-->
-        
-<!--edition begins-->
+            <!--publisher ends-->
+            <!--edition begins-->
             <fieldset>
                 <legend>Edition</legend>
-        
-<!--edition input begins-->
+                <!--edition input begins-->
                 <xf:input ref="./mods:edition" class="text_50">
                     <xf:label>Edition: </xf:label>
                     <xf:hint>Hint</xf:hint>
                 </xf:input>
-        
-<!--edition input ends-->
+                <!--edition input ends-->
             </fieldset>
-        
-<!--edition ends-->
-        
-<!--issuance and frequency begins-->
-        
-<!--issuance begins-->
+            <!--edition ends-->
+            <!--issuance and frequency begins-->
+            <!--issuance begins-->
             <fieldset>
                 <legend>Issuance and Frequency</legend>
                 <xf:hint>Hint</xf:hint>
                 <xf:select1 ref="./mods:issuance" selection="open">
                     <xf:label>Issuance:</xf:label>
                     <xf:hint>Hint</xf:hint>
-<!--change code-table!-->
+                    <!--change code-table!-->
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='issuance-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
-        
-<!--issuance ends-->
-        
-        <!--frequency begins-->
+                <!--issuance ends-->
+                <!--frequency begins-->
                 <xf:select1 ref="./mods:frequency">
                     <xf:label>Frequency:</xf:label>
                     <xf:hint>Hint</xf:hint>
-            <!--change code-table!-->
+                    <!--change code-table!-->
                     <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='frequency-code']/items/item">
                         <xf:label ref="label"/>
                         <xf:value ref="value"/>
                     </xf:itemset>
                 </xf:select1>
             </fieldset>
-        <!--frequency ends-->
-        <!--issuance and frequency ends-->
-
-        <!--dates begins-->
+            <!--frequency ends-->
+            <!--issuance and frequency ends-->
+            <!--dates begins-->
             <fieldset>
                 <legend>Dates</legend>
-        
-        <!--dateIssued begins-->
+                <!--dateIssued begins-->
                 <fieldset>
                     <legend>Date Issued</legend>
-        
-        <!--dateIssued input begins-->
+                    <!--dateIssued input begins-->
                     <xf:select1 ref="mods:dateIssued/@encoding">
                         <xf:label>Encoding:</xf:label>
-                        <xf:hint>
-                            Hint
-                        </xf:hint>
+                        <xf:hint> Hint </xf:hint>
                         <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item">
                             <xf:label ref="label"/>
                             <xf:value ref="value"/>
@@ -306,10 +233,8 @@
                     </xf:select1>
                     <xf:select1 ref="mods:dateIssued/@point">
                         <xf:label>Point:</xf:label>
-                        <xf:hint>
-                            If no point attribute is specified, date is assumed to be a single date. 
-                            The following values are used with the point attribute: start , end. 
-                         </xf:hint>
+                        <xf:hint> If no point attribute is specified, date is assumed to be a single date. The following values are used with the point
+                            attribute: start , end. </xf:hint>
                         <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item">
                             <xf:label ref="label"/>
                             <xf:value ref="value"/>
@@ -337,17 +262,14 @@
                         <xf:label>Date Issued: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-        <!--dateIssued input ends-->
+                    <!--dateIssued input ends-->
                 </fieldset>
-        
-        <!--dateIssued ends-->
+                <!--dateIssued ends-->
                 <br/>
-        
-<!--dateCreated begins-->
+                <!--dateCreated begins-->
                 <fieldset>
                     <legend>Date Created</legend>
-    
-    <!--dateCreated input begins-->
+                    <!--dateCreated input begins-->
                     <xf:select1 ref="mods:dateCreated/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -386,17 +308,14 @@
                         <xf:label>Date Created: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    <!--dateCreated input ends-->
+                    <!--dateCreated input ends-->
                 </fieldset>
-
-<!--dateCreated ends-->
+                <!--dateCreated ends-->
                 <br/>
-                
-<!--dateCaptured begins-->
+                <!--dateCaptured begins-->
                 <fieldset>
                     <legend>Date Captured</legend>
-    
-    <!--dateCaptured input begins-->
+                    <!--dateCaptured input begins-->
                     <xf:select1 ref="mods:dateCaptured/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -435,17 +354,14 @@
                         <xf:label>Date Captured: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    
-    <!--dateCaptured input ends-->
+                    <!--dateCaptured input ends-->
                 </fieldset>
-<!--dateCaptured ends-->
+                <!--dateCaptured ends-->
                 <br/>
-                
-<!--dateValid begins-->
+                <!--dateValid begins-->
                 <fieldset>
                     <legend>Date Valid</legend>
-    
-    <!--dateValid input begins-->
+                    <!--dateValid input begins-->
                     <xf:select1 ref="mods:dateValid/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -484,18 +400,14 @@
                         <xf:label>Date Valid: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    
-    <!--dateValid input ends-->
+                    <!--dateValid input ends-->
                 </fieldset>
-
-<!--dateValid ends-->
+                <!--dateValid ends-->
                 <br/>
-
-<!--dateModified begins-->
+                <!--dateModified begins-->
                 <fieldset>
                     <legend>Date Modified</legend>
-    
-    <!--dateModified input begins-->
+                    <!--dateModified input begins-->
                     <xf:select1 ref="mods:dateModified/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -534,17 +446,13 @@
                         <xf:label>Date Modified: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    
-    <!--dateModified input ends-->
+                    <!--dateModified input ends-->
                 </fieldset>
-
-<!--dateModified ends-->
-
-<!--copyrightDate begins-->
+                <!--dateModified ends-->
+                <!--copyrightDate begins-->
                 <fieldset>
                     <legend>Copyright Date</legend>
-    
-    <!--copyrightDate input begins-->
+                    <!--copyrightDate input begins-->
                     <xf:select1 ref="mods:copyrightDate/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -583,17 +491,13 @@
                         <xf:label>Copyright Date: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    
-    <!--copyrightDate input ends-->
+                    <!--copyrightDate input ends-->
                 </fieldset>
-
-<!--copyrightDate ends-->
-
-<!--dateOther begins-->
+                <!--copyrightDate ends-->
+                <!--dateOther begins-->
                 <fieldset>
                     <legend>Other Date</legend>
-    
-    <!--dateOther input begins-->
+                    <!--dateOther input begins-->
                     <xf:select1 ref="mods:dateOther/@encoding">
                         <xf:label>Encoding:</xf:label>
                         <xf:hint>Hint</xf:hint>
@@ -632,28 +536,23 @@
                         <xf:label>Other Date: </xf:label>
                         <xf:hint>Hint</xf:hint>
                     </xf:input>
-    
-    <!--dateOther input ends-->
+                    <!--dateOther input ends-->
                 </fieldset>
-
-<!--dateOther ends-->
+                <!--dateOther ends-->
                 <br/>
             </fieldset>
-        <!--dates ends-->
+            <!--dates ends-->
             <div class="hr"/>
-        
-        <!--originInfo delete begins-->
+            <!--originInfo delete begins-->
             <xf:trigger ref="self::node()[count(../mods:originInfo) &gt; 1]">
                 <xf:label>Delete This Origin Information</xf:label>
                 <xf:hint>Hint</xf:hint>
                 <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo" at="index('origininfo-repeat')"/>
             </xf:trigger>
-        <!--originInfo delete ends-->
+            <!--originInfo delete ends-->
         </xf:repeat>
-    
-    <!--originInfo repeat ends-->
-    
-    <!--originInfo add begins-->
+        <!--originInfo repeat ends-->
+        <!--originInfo add begins-->
         <xf:trigger class="add">
             <xf:label>Add Origin Information</xf:label>
             <xf:hint>Hint</xf:hint>
@@ -662,7 +561,6 @@
                 <xf:setvalue ref="instance('save-data')/mods:originInfo[last()]" value="''"/>
             </xf:action>
         </xf:trigger>
-    <!--originInfo add ends-->
+        <!--originInfo add ends-->
     </fieldset>
-<!--originInfo ends-->
 </div>
