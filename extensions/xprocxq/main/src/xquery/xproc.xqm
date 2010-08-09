@@ -528,8 +528,11 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-pipe-binding($result,$child){
  (: -------------------------------------------------------------------------- :)
+
     if ($result/xproc:output[@port=$child/@port][@step eq $child/@step]) then
         $result/xproc:output[@port=$child/@port][@step eq $child/@step]/node()
+    else if ($result/xproc:output[@port=$child/@port][@xproc:defaultname eq $child/@step]) then 
+        $result/xproc:output[@port=$child/@port][@xproc:defaultname eq $child/@step]/node()
     else
         $result/xproc:output[last()]/node()
  };
