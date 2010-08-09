@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>bgtchm-genre-code</code-table-name>
-    <form>closed</form>
     <status>finished</status>
-    <source> Basic Genre Terms for Cultural Heritage Materials http://memory.loc.gov/ammem/techdocs/genre.html </source>
+    <form>closed</form>
+    <basis>http://memory.loc.gov/ammem/techdocs/genre.html </basis>
+    <description>Basic Genre Terms for Cultural Heritage Materials</description>
+    <notes></notes>
     <items>
         <item>
             <label>(none selected)</label>
