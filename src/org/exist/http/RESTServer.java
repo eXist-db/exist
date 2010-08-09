@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.http;
@@ -116,18 +116,18 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 /**
- * 
+ *
  * @author wolf
  * @author ljo
  * @author adam
  * @author gev
- * 
+ *
  */
 
 public class RESTServer {
 
 	protected final static Logger LOG = Logger.getLogger(RESTServer.class);
-	
+
 	// Should we not obey the instance's defaults? /ljo
 	protected final static Properties defaultProperties = new Properties();
 
@@ -185,33 +185,33 @@ public class RESTServer {
 	 * a listing of the collection contents is returned. If it resolves to a
 	 * binary resource with mime-type "application/xquery", this resource will
 	 * be loaded and executed by the XQuery engine.
-	 * 
+	 *
 	 * The method also recognizes a number of predefined parameters:
-	 * 
+	 *
 	 * <ul>
 	 * <li>_xpath or _query: if specified, the given query is executed on the
 	 * current resource or collection.</li>
-	 * 
+	 *
 	 * <li>_howmany: defines how many items from the query result will be
 	 * returned.</li>
-	 * 
+	 *
 	 * <li>_start: a start offset into the result set.</li>
-	 * 
+	 *
 	 * <li>_wrap: if set to "yes", the query results will be wrapped into a
 	 * exist:result element.</li>
-	 * 
+	 *
 	 * <li>_indent: if set to "yes", the returned XML will be pretty-printed.
 	 * </li>
-	 * 
+	 *
 	 * <li>_source: if set to "yes" and a resource with mime-type
 	 * "application/xquery" is requested then the xquery will not be executed,
 	 * instead the source of the document will be returned. Must be enabled in
 	 * descriptor.xml with the following syntax <xquery-app><allow-source><xquery
 	 * path="/db/mycollection/myquery.xql"/></allow-source></xquery-app> </li>
-	 * 
+	 *
 	 * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to
 	 * the returned XML.</li>
-	 * 
+	 *
 	 * @param broker
 	 * @param request
 	 * @param response
@@ -335,7 +335,7 @@ public class RESTServer {
 			String xproc_mime_type = MimeType.XPROC_TYPE.getName();
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-			if (null != resource && !isExecutableType(resource)) { 
+			if (null != resource && !isExecutableType(resource)) {
 				// return regular resource that is not an xquery and not is xproc
 				writeResourceAs(resource, broker, stylesheet, encoding, null,
 						outputProperties, request, response);
@@ -372,7 +372,7 @@ public class RESTServer {
 
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
 				if (null != resource && isExecutableType(resource)) {
-					break; 
+					break;
 
 				} else if (null != resource) {
 					// not an xquery resource. This means we have a path
@@ -409,13 +409,12 @@ public class RESTServer {
 						writeResourceAs(resource, broker, stylesheet, encoding,
 								MimeType.TEXT_TYPE.getName(), outputProperties,
 								request, response);
-					}
-                    //else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
 						// Show the source of the XProc
-					//	writeResourceAs(resource, broker, stylesheet, encoding,
-					//			MimeType.XML_TYPE.getName(), outputProperties,
-					//			request, response);
-					//}
+						writeResourceAs(resource, broker, stylesheet, encoding,
+								MimeType.XML_TYPE.getName(), outputProperties,
+								request, response);
+					}
 				} else {
 					// we are not allowed to show the source - query not
 					// allowed in descriptor.xml
@@ -429,18 +428,17 @@ public class RESTServer {
 											+ " denied. Must be explicitly defined in descriptor.xml");
 					return;
 				}
-			} else { 
+			} else {
 				try {
 					if (xquery_mime_type.equals(resource.getMetadata().getMimeType())){
 						// Execute the XQuery
 						executeXQuery(broker, resource, request, response,
 								outputProperties, servletPath.toString(), pathInfo);
-					}
-                    //else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+					} else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
 						// Execute the XProc
-					//	executeXProc(broker, resource, request, response,
-					//			outputProperties, servletPath.toString(), pathInfo);
-					//}
+						executeXProc(broker, resource, request, response,
+								outputProperties, servletPath.toString(), pathInfo);
+					}
 				} catch (XPathException e) {
 					if (LOG.isDebugEnabled())
 						LOG.debug(e.getMessage(), e);
@@ -463,19 +461,19 @@ public class RESTServer {
 		Properties outputProperties = new Properties(defaultOutputKeysProperties);
 		@SuppressWarnings("unused")
 		String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-		  
+
 		String encoding;
 		if ((encoding = request.getParameter("_encoding")) != null)
 			outputProperties.setProperty(OutputKeys.ENCODING, encoding);
 		else
 			encoding = "UTF-8";
-		
+
 		DocumentImpl resource = null;
 		XmldbURI pathUri = XmldbURI.create(path);
 		try
 		{
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-			
+
 			if(resource != null)
 			{
 				if (!resource.getPermissions().validate(broker.getUser(),
@@ -499,7 +497,7 @@ public class RESTServer {
 
 					return;
 				}
-				
+
 				if(!col.getPermissions().validate(broker.getUser(), Permission.READ))
 				{
 					throw new PermissionDeniedException(
@@ -522,7 +520,7 @@ public class RESTServer {
 	 * mime-type "application/xquery", that resource will be read and executed
 	 * by the XQuery engine. Otherwise, the request content is loaded and parsed
 	 * as XML. It may either contain an XUpdate or a query request.
-	 * 
+	 *
 	 * @param broker
 	 * @param request
 	 * @param response
@@ -564,10 +562,9 @@ public class RESTServer {
 				resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
 				if (null != resource
 						&& (resource.getResourceType() == DocumentImpl.BINARY_FILE
-							&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) )
-                        //||
-						//	resource.getResourceType() == DocumentImpl.XML_FILE
-						//	&& xproc_mime_type.equals(resource.getMetadata().getMimeType()))
+							&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
+							resource.getResourceType() == DocumentImpl.XML_FILE
+							&& xproc_mime_type.equals(resource.getMetadata().getMimeType()))
 							) {
 					break; // found a binary file with mime-type xquery or XML file with mime-type xproc
 
@@ -583,10 +580,9 @@ public class RESTServer {
 
 			if (resource != null) {
 				if (resource.getResourceType() == DocumentImpl.BINARY_FILE
-						&& xquery_mime_type.equals(resource.getMetadata().getMimeType())
-                //||
-				//	resource.getResourceType() == DocumentImpl.XML_FILE
-				//		&& xproc_mime_type.equals(resource.getMetadata().getMimeType())
+						&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
+					resource.getResourceType() == DocumentImpl.XML_FILE
+						&& xproc_mime_type.equals(resource.getMetadata().getMimeType())
 						) {
 
 					// found an XQuery resource, fixup request values
@@ -596,12 +592,11 @@ public class RESTServer {
 							// Execute the XQuery
 							executeXQuery(broker, resource, request, response,
 									outputProperties, servletPath.toString(), pathInfo);
-						}
-                        //else {
+						} else {
 							// Execute the XProc
-						//	executeXProc(broker, resource, request, response,
-						//			outputProperties, servletPath.toString(), pathInfo);
-						//}
+							executeXProc(broker, resource, request, response,
+									outputProperties, servletPath.toString(), pathInfo);
+						}
 					} catch (XPathException e) {
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
 							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
@@ -827,11 +822,11 @@ public class RESTServer {
 
 		return (ElementImpl) doc.getDocumentElement();
 	}
-	
+
 	private class NamespaceExtractor extends XMLFilterImpl
 	{
 		List<Namespace> namespaces = new ArrayList<Namespace>(); //<Namespace>
-		
+
 		public void startPrefixMapping(String prefix, String uri) throws SAXException
 		{
             if (!Namespaces.EXIST_NS.equals(uri)) {
@@ -840,18 +835,18 @@ public class RESTServer {
             }
 			super.startPrefixMapping(prefix, uri);
 		}
-		
+
 		public List<Namespace>  getNamespaces()
 		{
 			return namespaces;
 		}
 	}
-	
+
 	private class Namespace
 	{
 		private String prefix = null;
 		private String uri = null;
-		
+
 		public Namespace(String prefix, String uri)
 		{
 			this.prefix = prefix;
@@ -866,7 +861,7 @@ public class RESTServer {
 			return uri;
 		}
 	}
-	
+
 	/**
 	 * Creates an input source from a URL location with an optional known
 	 * charset.
@@ -887,12 +882,12 @@ public class RESTServer {
 	 * Handles PUT requests. The request content is stored as a new resource at
 	 * the specified location. If the resource already exists, it is overwritten
 	 * if the user has write permissions.
-	 * 
+	 *
 	 * The resource type depends on the content type specified in the HTTP
 	 * header. The content type will be looked up in the global mime table. If
 	 * the corresponding mime type is not a know XML mime type, the resource
 	 * will be stored as a binary resource.
-	 * 
+	 *
 	 * @param broker
 	 * @param tempFile
 	 *            The temp file from which the PUT will get its content
@@ -1060,7 +1055,7 @@ public class RESTServer {
 
 	/**
 	 * TODO: pass request and response objects to XQuery.
-	 * 
+	 *
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
@@ -1112,7 +1107,7 @@ public class RESTServer {
 				compiled.getContext().updateContext(context);
                 context.getWatchDog().reset();
             }
-            
+
 			try {
 				long startTime = System.currentTimeMillis();
 				Sequence resultSequence = xquery.execute(compiled, null, outputProperties);
@@ -1144,15 +1139,15 @@ public class RESTServer {
 	{
 		if(namespaces == null)
 			return;
-		
+
 		for(Namespace ns : namespaces) {
 			context.declareNamespace(ns.getPrefix(), ns.getUri());
 		}
 	}
-	
+
 	/**
 	 * Pass the request, response and session objects to the XQuery context.
-	 * 
+	 *
 	 * @param context
 	 * @param request
 	 * @param response
@@ -1209,7 +1204,7 @@ public class RESTServer {
 						+ resource.getURI(), e);
 			}
 		}
-		
+
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
 		if (xdebug != null)
 			compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
@@ -1224,7 +1219,7 @@ public class RESTServer {
     			if (cookies != null) {
         			for (int i = 0; i < cookies.length; i++) {
         				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
-        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
+        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd
         					compiled.getContext().declareVariable(Debuggee.SESSION, cookies[i].getValue());
             				break;
         				}
@@ -1262,9 +1257,10 @@ public class RESTServer {
 		}
 
 		context.declareVariable("pipeline", resource.getURI().toString());
+
 		String stdin = request.getParameter("stdin");
 		context.declareVariable("stdin", stdin == null ? "" : stdin);
-		
+
 		String debug = request.getParameter("debug");
 		context.declareVariable("debug",  debug == null ? "0" : "1");
 
@@ -1282,7 +1278,6 @@ public class RESTServer {
 				resource.getCollection().getURI()).toString());
 		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
 				.getCollection().getURI() });
-
 		HttpRequestWrapper reqw = declareVariables(context, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);
@@ -1294,7 +1289,7 @@ public class RESTServer {
 						+ source.getURL(), e);
 			}
 		}
-		
+
 		try {
 			Sequence result = xquery.execute(compiled, null, outputProperties);
 			writeResults(response, broker, result, -1, 1, outputProperties, false);
@@ -1302,7 +1297,7 @@ public class RESTServer {
 			pool.returnCompiledXQuery(source, compiled);
 		}
 	}
-		
+
 	// writes out a resource, uses asMimeType as the specified mime-type or if
 	// null uses the type of the resource
 	private void writeResourceAs(DocumentImpl resource, DBBroker broker,
@@ -1325,7 +1320,7 @@ public class RESTServer {
 			if (asMimeType == null) { // wasn't a mime-type specified?
 				asMimeType = resource.getMetadata().getMimeType();
 			}
-			
+
 			if (asMimeType.startsWith("text/")){
 				response.setContentType(asMimeType + "; charset="
 						+ encoding);
@@ -1349,8 +1344,8 @@ public class RESTServer {
 			httpContext.setRequest(reqw);
 			httpContext.setSession(reqw.getSession(false));
 			serializer.setHttpContext(httpContext);
-			
-			
+
+
 			// Serialize the document
 			try {
 				sax = (SAXSerializer) SerializerPool.getInstance()
@@ -1393,7 +1388,7 @@ public class RESTServer {
 						.getOutputStream(), encoding);
 				sax.setOutput(writer, outputProperties);
 				serializer.setSAXHandlers(sax, sax);
-				
+
 				serializer.toSAX(resource);
 
 				writer.flush();
@@ -1419,7 +1414,7 @@ public class RESTServer {
 	 * @param query
 	 * @param path
 	 * @param e
-	 * 
+	 *
 	 */
 	private void writeXPathExceptionHtml(HttpServletResponse response, int httpStatusCode,
 			String encoding, String query, String path, XPathException e)
@@ -1430,7 +1425,7 @@ public class RESTServer {
 		}
 
         response.setStatus(httpStatusCode);
-			
+
 		response.setContentType(MimeType.HTML_TYPE.getName() + "; charset="
 				+ encoding);
 
@@ -1755,14 +1750,14 @@ public class RESTServer {
 	}
 
     private boolean isExecutableType(DocumentImpl resource) {
-	if (resource != null 
+	if (resource != null
 	    && (MimeType.XQUERY_TYPE.getName().equals(resource.getMetadata().getMimeType()) // a xquery
 		|| MimeType.XPROC_TYPE.getName().equals(resource.getMetadata().getMimeType()))//a xproc
 	    )
 	    return true;
 	else
 	    return false;
-	    
+
     }
 
 
