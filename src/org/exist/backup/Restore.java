@@ -343,7 +343,7 @@ public class Restore extends DefaultHandler {
                        listener.warn("Failed to restore resource '" + name + "'\nfrom file '" +
                                contents.getSymbolicPath(name,false) + "'.\nReason: " + e.getMessage());
                         e.printStackTrace();
-                        throw new RuntimeException(e);
+//                        throw new RuntimeException(e);
                     }
                 }
             } else if (localName.equals("deleted")) {
