@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>date-month-code</code-table-name>
-    <description>A list of all the month codes for doing searchs.</description>
+    <description>A list of all the month codes for doing searches.</description>
     <items>
         <item>
             <label>January</label>
