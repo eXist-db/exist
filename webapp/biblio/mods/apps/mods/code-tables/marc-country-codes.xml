@@ -2,7 +2,10 @@
 <code-table>
     <code-table-name>marc-country-code</code-table-name>
     <status>finished, but clean up divs</status>
+    <form></form>
     <basis>http://www.loc.gov/marc/countries/countries_name.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

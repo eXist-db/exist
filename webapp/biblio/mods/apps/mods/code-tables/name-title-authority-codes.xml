@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
-    <status>finished</status>
     <code-table-name>name-title-authority-code</code-table-name>
-    <basis>Based mainly on http://www.loc.gov/standards/sourcelist/name-title.html. 
-        <description>Name and Title Sources identifies databases and lists
-            containing standard names of persons, organizations, families, and meetings and standard titles for resources and assigns a code to each database or
-            list.
-        </description>
-    </basis>
+    <status>finished</status>
+    <form></form>
+    <basis>Based mainly on http://www.loc.gov/standards/sourcelist/name-title.html</basis>
+    <description>Name and Title Sources identifies databases and lists
+        containing standard names of persons, organizations, families, and meetings and standard titles for resources and assigns a code to each database or
+        list.
+    </description>
+    <notes></notes>
     <note>
         Should this list be split up in title and name authority files or should http://www.loc.gov/standards/sourcelist/subject.html be merged with it?
         "Some subject heading lists also incorporate names and titles. Thus the lists assigned source codes in Subject Heading and Term Source Codes may also be used in the usage elements identified for names and titles if appropriate.  Many of the subject sources that contain names and titles, along with subjects, are repeated on this list with the same source code."

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
-    <status>unfinished</status>
     <code-table-name>frequency-code</code-table-name>
+    <status>unfinished</status>
+    <form/>
+    <basis/>
+    <description></description>
+    <notes></notes>
     <items>
         <item>
             <label>(none selected)</label>

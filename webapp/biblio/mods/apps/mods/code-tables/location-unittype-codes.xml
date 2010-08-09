@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>location-unittype-code</code-table-name>
-    <basis>file:///Users/jens/Desktop/MODS/www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis>
+    <status>finished</status>
+    <form/>
+    <basis>www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

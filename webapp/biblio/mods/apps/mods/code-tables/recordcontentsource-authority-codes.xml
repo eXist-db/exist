@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>recordcontensource-authority-code</code-table-name>
-    <basis>http://www.loc.gov/standards/sourcelist/organization.html</basis>
     <status>finished</status>
+    <form/>
+    <basis>http://www.loc.gov/standards/sourcelist/organization.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>
@@ -10,15 +13,11 @@
         </item>
         <item>
             <value>marcorg</value>
-            <label>marcorg</label>
-        </item>
-        <item>
-            <value>doi</value>
-            <label>Digital Objects Identifier</label>
+            <label>MARC Code List for Organizations</label>
         </item>
         <item>
             <value>oclcorg</value>
-            <label>oclcorg</label>
+            <label>OCLC Participating Institutions</label>
         </item>
     </items>
 </code-table>

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
-    <status>dummy</status>
     <code-table-name>transliteration-code</code-table-name>
+    <status>dummy</status>
+    <form/>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>identifier-type-code</code-table-name>
-    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis>
-    <basis>DLFMODS_ImplementationGuidelines.pdf</basis>
     <status>finished</status>
-    <note>There is no controlled list of identifier types. Suggested values include, but are not limited to the following. Cluster: unused are commented out.</note>
+    <form></form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier, DLFMODS_ImplementationGuidelines.pdf</basis>
+    <description/>
+    <notes>There is no controlled list of identifier types. Suggested values include, but are not limited to the following. Cluster: unused are commented out.</notes>
     <items>
         <item>
             <label>(none selected)</label>
@@ -39,10 +40,10 @@
             <label>ISSN (International Standard Serials Number)</label>
         </item>
         <!--
-        <item>
+            <item>
             <value>issue number</value>
             <label>issue number</label>
-        </item>
+            </item>
         -->
         <item>
             <value>istc</value>
@@ -53,32 +54,32 @@
             <label>Library of Congress Control Number</label>
         </item>
         <!-- 
-        <item>
+            <item>
             <value>local</value>
             <label>local</label>
-        </item>
+            </item>
         -->
         <!-- 
-        <item>
+            <item>
             <value>matrix number</value>
             <label>matrix number</label>
-        </item>
-        <item>
+            </item>
+            <item>
             <value>music plate</value>
             <label>music plate</label>
-        </item>
-        <item>
+            </item>
+            <item>
             <value>music publisher</value>
             <label>music publisher</label>
-        </item>
-        <item>
+            </item>
+            <item>
             <value>sici</value>
             <label>Serial Item and Contribution Identifier</label>
-        </item>
-        <item>
+            </item>
+            <item>
             <value>stock number</value>
             <label>stock number</label>
-        </item>
+            </item>
         -->
         <item>
             <value>upc</value>
@@ -89,10 +90,10 @@
             <label>Uniform Resource Identifier</label>
         </item>
         <!-- 
-        <item>
+            <item>
             <value>videorecording identifier</value>
             <label>videorecording identifier</label>
-        </item>
+            </item>
         -->
     </items>
 </code-table>

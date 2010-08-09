@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>note-type-code</code-table-name>
-    <basis>file:///Users/jens/Desktop/MODS/www.loc.gov/standards/mods/mods-notes.html</basis>
+    <status/>
+    <form/>
+    <basis>www.loc.gov/standards/mods/mods-notes.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

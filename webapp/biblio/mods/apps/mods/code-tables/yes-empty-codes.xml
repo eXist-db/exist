@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>yes-empty-code</code-table-name>
+    <form/>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>

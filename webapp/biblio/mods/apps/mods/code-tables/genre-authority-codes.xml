@@ -1,139 +1,176 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <code-table>
     <code-table-name>genre-authority-code</code-table-name>
+    <status/>
+    <form/>
     <basis>http://www.loc.gov/standards/sourcelist/genre-form.html</basis>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>
             <value/>
         </item>
-        <item>
+        <!--
+            <item>
             <label>Audiovisual material glossary</label>
             <value>amg</value>
+            </item>
+        -->
+        <item>
+            <label>Basic genre terms for cultural heritage materials</label>
+            <value>bgtchm</value>
         </item>
         <item>
             <label>Dublin Core list of resources types</label>
             <value>dct</value>
         </item>
         <item>
+            <label>---</label>
+            <value> </value>
+        </item>
+        
+        <!--
+            <item>
             <label>Eighteenth century short title catalogue</label>
             <value>estc</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Films by genre</label>
             <value>fbg</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Form/genre terms for printed cartoon material</label>
             <value>fgtpcm</value>
-        </item>
-        <item>
-            <label>Form terms for archival and manuscripts contro</label>
-            <value>ftamce</value>
-        </item>
-        <item>
+            </item>
+            <item>
+            <label>Form terms for archival and manuscripts control</label>
+            <value>ftamc</value>
+            </item>
+            <item>
             <label>Anglo-American Cataloguing Rules general material designation</label>
             <value>gmd</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Thesaurus for graphic materials</label>
             <value>gmgpc</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Guidelines on subject access to individual works of fiction, drama, etc</label>
             <value>gsafd</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Genre terms for law materials</label>
             <value>gtlm</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Library of Congress genre/form terms for library and archival materials</label>
             <value>lcgft</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>MARC code list for carrier types</label>
             <value>marccarrier</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>MARC code list for content types</label>
             <value>marccontent</value>
-        </item>
-        <item>
+            </item>
+            <item>ail
             <label>MARC form of item term list</label>
             <value>marcform</value>
-        </item>
+            </item>
+        -->
         <item>
             <label>MARC genre terms</label>
             <value>marcgt</value>
         </item>
-        <item>
+        <!-- 
+            <item>
             <label>MARC code list for media types</label>
             <value>marcmedia</value>
-        </item>
+            </item>
+        -->
         <item>
             <label>MARC specific material form term list</label>
             <value>marcsmd</value>
         </item>
-        <item>
+        <!-- 
+            <item>
             <label>Moving image genre-form guide</label>
             <value>migfg</value>
-        </item>
-        <item>
+            </item>
+            <item>
+            <label>Moving image materials: genre terms</label>
+            <value>mim</value>
+            </item>
+            <item>
             <label>MuzeVideo UK DVD and UMD film genre classification</label>
             <value>muzeukv</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Newspaper genre list</label>
             <value>ngl</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>NIMA form codes</label>
             <value>nimafc</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Revised nomenclature for museum cataloging</label>
             <value>nmc</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Radio form / genre terms guide</label>
             <value>radfg</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Binding terms: a thesaurus for use in rare book and special collections cataloguing</label>
             <value>rbbin</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Genre terms: a thesaurus for use in rare book and special collections cataloguing</label>
             <value>rbgenr</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Paper terms: a thesaurus for use in rare book and special collections cataloging</label>
             <value>rbpap</value>
-        </item>
-        <item>
-            <label>Printing &amp; publishing evidence: a thesaurus for use in rare book and special collections cataloging</label>
+            </item>
+            <item>
+            <label>Printing & publishing evidence: a thesaurus for use in rare book and special collections cataloging</label>
             <value>rbpri</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Provenance evidence: a thesaurus for use in rare book and special collections cataloging</label>
             <value>rbprov</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Printing and publishing evidence: a thesaurus for use in rare book and special collections cataloging</label>
             <value>rbpub</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Type evidence: a thesaurus for use in rare book and special collections cataloging</label>
             <value>rbtyp</value>
-        </item>
-        <item>
+            </item>
+            <item>
+            <label>Term and code list for RDA carrier types</label>
+            <value>rdacarrier</value>
+            </item>
+            <item>
+            <label>Term and code list for RDA content types</label>
+            <value>rdacontent</value>
+            </item>
+            <item>
+            <label>Term and code list for RDA media types</label>
+            <value>rdamedia</value>
+            </item>
+            <item>
             <label>REVEAL: fiction indexing and genre headings</label>
             <value>reveal</value>
-        </item>
-        <item>
+            </item>
+            <item>
             <label>Svenska genrebeteckningar för periodika</label>
             <value>sgp</value>
-        </item>
+            </item>
+        -->
     </items>
 </code-table>

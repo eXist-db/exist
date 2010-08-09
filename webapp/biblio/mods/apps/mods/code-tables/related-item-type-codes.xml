@@ -2,33 +2,37 @@
 <code-table>
     <code-table-name>related-item-type-code</code-table-name>
     <status>finished</status>
+    <form/>
+    <basis/>
+    <description/>
+    <notes/>
     <items>
         <item>
             <label>(none selected)</label>
             <value/>
         </item>
         <item>
-            <label>preceding</label>
+            <label>Preceding</label>
             <value>preceding</value>
         </item>
         <item>
-            <label>succeeding</label>
+            <label>Succeeding</label>
             <value>succeeding</value>
         </item>
         <item>
-            <label>original</label>
+            <label>Original</label>
             <value>original</value>
         </item>
         <item>
-            <label>host</label>
+            <label>Host</label>
             <value>host</value>
         </item>
         <item>
-            <label>constituent</label>
+            <label>Constituent</label>
             <value>constituent</value>
         </item>
         <item>
-            <label>series</label>
+            <label>Series</label>
             <value>series</value>
         </item>
         <item>
