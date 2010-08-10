@@ -193,6 +193,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             }
         }
         catch( Exception e ) {
+            LOG.error(e.getMessage(), e);
             encodedResponse = encodeErrorResponse( context, e.getMessage() );
         }
 
