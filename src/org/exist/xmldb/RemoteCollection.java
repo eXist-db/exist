@@ -25,7 +25,6 @@ package org.exist.xmldb;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
 import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;

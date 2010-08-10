@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;

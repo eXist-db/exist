@@ -320,9 +320,9 @@ public class Shared {
         AttributesImpl attribs = new AttributesImpl();
 
         // iterate validation report items, write message
-        List cr = report.getValidationReportItemList();
-        for (Iterator iter = cr.iterator(); iter.hasNext();) {
-            ValidationReportItem vri = (ValidationReportItem) iter.next();
+        List<ValidationReportItem> cr = report.getValidationReportItemList();
+        for (Iterator<ValidationReportItem> iter = cr.iterator(); iter.hasNext();) {
+            ValidationReportItem vri = iter.next();
 
             // construct attributes
             attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
