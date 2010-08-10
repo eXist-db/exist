@@ -36,7 +36,9 @@ public interface NodeAtExist extends Node, QNameable, Comparable<Object> {
 	
 	public DocumentAtExist getDocumentAtExist();
 	
+	//the document nodes' array index
 	public int getNodeNumber();
+	
 	public NodeId getNodeId();
 	
 //	public Boolean matchChildren(NodeTest test) throws XPathException;

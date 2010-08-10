@@ -1,4 +1,3 @@
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-06,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)

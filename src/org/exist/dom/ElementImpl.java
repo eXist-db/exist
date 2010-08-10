@@ -74,7 +74,7 @@ import java.util.TreeSet;
  *
  * @author Wolfgang Meier
  */
-public class ElementImpl extends NamedNode implements Element {
+public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
@@ -1017,6 +1017,10 @@ public class ElementImpl extends NamedNode implements Element {
         for (String ns : namespaceMappings.values()) {
             ownerDocument.getBrokerPool().getSymbols().getNSSymbol(ns);
         }
+    }
+
+    public Map<String, String> getNamespaceMap() {
+        return new HashMap<String, String>(namespaceMappings);
     }
 
     public Iterator<String> getPrefixes() {

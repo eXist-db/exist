@@ -8,7 +8,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.UserDataHandler;
 
-public abstract class NodeImpl implements Node, QNameable {
+public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
     
     protected final static Logger LOG = Logger.getLogger(NodeImpl.class);    
 
@@ -327,5 +327,4 @@ public abstract class NodeImpl implements Node, QNameable {
             return nodeName.getStringValue();
         //return "";
     }
-    
 }

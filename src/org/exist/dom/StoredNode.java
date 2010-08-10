@@ -28,6 +28,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
 import org.exist.util.pool.NodePool;
+import org.exist.xquery.Constants;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -253,6 +254,11 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return ownerDocument;
     }
     
+	public DocumentAtExist getDocumentAtExist() {
+        return ownerDocument;
+	}
+
+    
     /**
      *  Set the owner document.
      *
@@ -474,6 +480,10 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return visitor.visit(this);
     }
     
+	public int getNodeNumber() {
+		return 0; //TODO: find a value for node number
+	}
+	
     @Deprecated
     private final static class PreviousSiblingVisitor implements NodeVisitor {
         
@@ -492,4 +502,25 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             return true;
         }
     }
+
+	@Override
+	public int compareTo(Object other) {
+        if( !( other instanceof StoredNode ) ) {
+            return( Constants.INFERIOR );
+        }
+        StoredNode n = (StoredNode)other;
+
+        if( n.ownerDocument == ownerDocument ) {
+        	return nodeId.compareTo(n.nodeId);
+
+        } else if( ownerDocument.getDocId() < n.ownerDocument.getDocId() ) {
+        
+        	return( Constants.INFERIOR );
+        
+        } else {
+            return( Constants.SUPERIOR );
+        
+        }
+	}
+
 }
