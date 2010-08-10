@@ -23,7 +23,6 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
