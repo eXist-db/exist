@@ -868,7 +868,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
         CollectionIterator() {
             if (partCount > 0) {
-                ObjectHashSet collections = new ObjectHashSet();
+                ObjectHashSet<Collection> collections = new ObjectHashSet<Collection>();
                 
                 Part part;
                 for (int i = 0; i < partCount; i++) {
