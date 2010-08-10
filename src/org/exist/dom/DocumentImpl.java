@@ -72,7 +72,7 @@ import java.util.Iterator;
  *  
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl implements Document, Comparable<DocumentImpl>, Iterable<NodeImpl> {
+public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist, Iterable<NodeImpl> { //Comparable<DocumentImpl>, 
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
     
@@ -587,8 +587,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
      * @param other an <code>DocumentImpl</code> value
      * @return an <code>int</code> value
      */
-    public final int compareTo(DocumentImpl other) {
-    	final long otherId = other.docId;
+    public final int compareTo(Object other) {
+    	if (!(other instanceof DocumentImpl)) {
+    		return Constants.INFERIOR;
+		}
+
+    	final long otherId = ((DocumentImpl)other).docId;
     	if (otherId == docId)
     		return Constants.EQUAL;
     	else if (docId < otherId)
@@ -1355,5 +1359,45 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable<Docum
 	public Iterator<NodeImpl> iterator() {
 		//XXX: implement
 		return null;
+	}
+
+	public DocumentAtExist getDocumentAtExist() {
+        return this;
+	}
+
+	@Override
+	public int getNodeNumber() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public NodeId getNodeId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getFirstChildFor(int nodeNumber) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public NodeAtExist getNode(int nodeNr) throws DOMException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getNextNodeNumber(int nodeNr) throws DOMException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean hasReferenceNodes() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
