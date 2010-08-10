@@ -33,6 +33,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
@@ -101,9 +102,9 @@ public class NodeImpl implements NodeAtExist, NodeValue
     }
 
 
-    public Iterator getCollectionIterator()
+    public Iterator<Collection> getCollectionIterator()
     {
-        return( EmptyNodeSet.EMPTY_ITERATOR );
+        return( EmptyNodeSet.EMPTY_COLLECTION_ITERATOR );
     }
 
 
