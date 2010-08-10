@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.EmptyNodeSet;
 import org.exist.dom.NodeProxy;
@@ -135,8 +136,8 @@ public abstract class AbstractSequence implements Sequence {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
-    public Iterator getCollectionIterator() {
-        return EmptyNodeSet.EMPTY_ITERATOR;
+    public Iterator<Collection> getCollectionIterator() {
+        return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
