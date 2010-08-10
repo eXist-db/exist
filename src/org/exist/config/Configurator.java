@@ -21,25 +21,46 @@
  */
 package org.exist.config;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldSettings;
+import org.exist.dom.DocumentAtExist;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.User;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -116,7 +137,21 @@ public class Configurator {
 						field.set(instance, value);
 					}
 				} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
-					Integer value = configuration.getPropertyInteger(property);
+
+					Integer value;
+		    		if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
+		    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+		    			int radix = 10;
+		    			if (settings.startsWith("radix=")) {
+		    				radix = Integer.valueOf(settings.substring(6));
+		    			}
+		    			value = Integer.valueOf( configuration.getProperty(property), radix );
+		    			
+		    		} else {
+						value = configuration.getPropertyInteger(property);
+						
+		    		}
+		    		
 					if (value != null) {
 						field.setAccessible(true);
 						field.set(instance, value);
@@ -194,5 +229,147 @@ public class Configurator {
 		} catch (FileNotFoundException e) {
 			throw new ExceptionConfiguration(e);
 		}
+	}
+
+	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ExceptionConfiguration {
+		DocumentAtExist document = collection.getDocument(broker, fileURL);
+		
+		if (document == null) {
+			
+			Class<?> clazz = instance.getClass();
+			instance.getClass().getAnnotations();
+			if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+				return null; //UNDERSTAND: throw exception
+			}
+			
+			String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+
+			StringBuilder buf = new StringBuilder();
+			//open tag
+			buf.append("<");
+			buf.append(configName);
+			
+			//attributes
+			Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+			for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
+
+				buf.append(" ");
+				buf.append(entry.getKey());
+				buf.append("='");
+				try {
+					final Field field = entry.getValue();
+					
+					field.setAccessible(true);
+					
+					String typeName = field.getType().getName();
+
+					if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+						if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
+			    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+			    			int radix = 10;
+			    			if (settings.startsWith("radix=")) {
+			    				try {
+			    					radix = Integer.valueOf(settings.substring(6));
+			    				} catch (Exception e) {
+			    					//UNDERSTAND: ignore, set back to default or throw error? 
+			    					radix = 10;
+								}
+			    			}
+		    				buf.append(Integer.toString((Integer)field.get(instance), radix) );
+						} else { 
+		    				buf.append(field.get(instance));
+						}
+					} else {
+						buf.append(field.get(instance));
+					}
+
+				
+				} catch (IllegalArgumentException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+
+				} catch (IllegalAccessException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				}
+				buf.append("'");
+			}
+
+			buf.append(">");
+
+			//close tag
+			buf.append("</");
+			buf.append(configName);
+			buf.append(">");
+			
+			if (broker.isReadOnly()) {
+				//database in read-only mode & there no configuration file, 
+				//create in memory document & configuration 
+				try {
+					return parse( new ByteArrayInputStream(buf.toString().getBytes("UTF-8")) );
+				} catch (UnsupportedEncodingException e) {
+					return null;
+				}
+				
+			} else {
+				//create & save configuration file
+				broker.flush();
+				broker.sync(Sync.MAJOR_SYNC);
+	
+				BrokerPool pool = broker.getBrokerPool();
+				TransactionManager transact = pool.getTransactionManager();
+				Txn txn = transact.beginTransaction();
+	
+				User currentUser = broker.getUser();
+				try {
+					broker.setUser(pool.getSecurityManager().getSystemAccount());
+					
+		            String data = buf.toString();
+		            IndexInfo info = collection.validateXMLResource(txn, broker, fileURL, data);
+	
+		            //TODO : unlock the collection here ?
+		            DocumentImpl doc = info.getDocument();
+		            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
+		            collection.store(txn, broker, info, data, false);
+					doc.setPermissions(0770);
+					
+					broker.saveCollection(txn, doc.getCollection());
+					
+					transact.commit(txn);
+	
+				} catch (IOException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+	
+				} catch (TriggerException e) {
+		            throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} catch (SAXException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} catch (PermissionDeniedException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} catch (LockException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} catch (TransactionException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} catch (EXistException e) {
+					throw new ExceptionConfiguration(e.getMessage(), e);
+				
+				} finally {
+					broker.setUser(currentUser);
+				}
+				
+				broker.flush();
+				broker.sync(Sync.MAJOR_SYNC);
+
+				document = collection.getDocument(broker, fileURL);
+				if (document == null)
+					throw new ExceptionConfiguration("The configuration file can't be found, url = "+collection.getURI().append(fileURL));
+			}
+		}
+		
+		return new ConfigurationImpl((ElementAtExist) document.getDocumentElement());
 	}
 }
