@@ -21,6 +21,9 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
+import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -31,6 +34,8 @@ import org.w3c.dom.NodeList;
 public final class EmptyNodeSet extends AbstractNodeSet {
 
 	public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
+	
+	public final static EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
 	
     public NodeSetIterator iterator() {
 	    return EMPTY_ITERATOR;
@@ -169,4 +174,18 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         }          
 		
 	} 
+
+    private final static class EmptyCollectionIterator implements Iterator<Collection> {
+
+        public boolean hasNext() {
+            return false;
+        }
+
+        public Collection next() {
+            return null;
+        }
+
+        public void remove() {
+        }
+    }
 }
