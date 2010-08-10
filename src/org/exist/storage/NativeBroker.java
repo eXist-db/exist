@@ -774,8 +774,8 @@ public class NativeBroker extends DBBroker {
                     newUri = destination.getURI().append(newUri);
                     LOG.debug("Copying collection to '" + newUri + "'");
                     destCollection = getOrCreateCollection(transaction, newUri);
-                    for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-                        DocumentImpl child = (DocumentImpl) i.next();
+                    for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+                        DocumentImpl child = i.next();
                         LOG.debug("Copying resource: '" + child.getURI() + "'");
                         if (child.getResourceType() == DocumentImpl.XML_FILE) {
                             //TODO : put a lock on newDoc ?
@@ -807,8 +807,8 @@ public class NativeBroker extends DBBroker {
             }
 
             XmldbURI name = collection.getURI();
-            for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-                XmldbURI childName = (XmldbURI)i.next();
+            for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+                XmldbURI childName = i.next();
                 //TODO : resolve URIs ! collection.getURI().resolve(childName)
                 Collection child = openCollection(name.append(childName), Lock.WRITE_LOCK);
                 if(child == null)
@@ -933,8 +933,8 @@ public class NativeBroker extends DBBroker {
                 lock.release(Lock.WRITE_LOCK);
             }        
 
-            for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-            	XmldbURI childName = (XmldbURI)i.next();
+            for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+            	XmldbURI childName = i.next();
             	//TODO : resolve URIs !!! name.resolve(childName)
             	Collection child = openCollection(uri.append(childName), Lock.WRITE_LOCK);
                 if (child == null)
@@ -958,9 +958,9 @@ public class NativeBroker extends DBBroker {
         if(!collection.getPermissions().validate(getUser(), Permission.WRITE))
             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
         final XmldbURI uri = collection.getURI();
-        for(Iterator i = collection.collectionIterator(); i.hasNext();)
+        for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext();)
         {
-            final XmldbURI childName = (XmldbURI) i.next();
+            final XmldbURI childName = i.next();
             //TODO : resolve from collection's base URI
             //TODO : resulve URIs !!! (uri.resolve(childName))
             Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
@@ -1029,9 +1029,9 @@ public class NativeBroker extends DBBroker {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
 
-                for(Iterator i = collection.collectionIterator(); i.hasNext();)
+                for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext();)
                 {
-                    final XmldbURI childName = (XmldbURI) i.next();
+                    final XmldbURI childName = i.next();
                     //TODO : resolve from collection's base URI
                     //TODO : resulve URIs !!! (uri.resolve(childName))
                     Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
@@ -1136,9 +1136,9 @@ public class NativeBroker extends DBBroker {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Removing resources in '" + collName + "'...");
 
-                for(Iterator i = collection.iterator(this); i.hasNext();)
+                for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();)
                 {
-                    final DocumentImpl doc = (DocumentImpl) i.next();
+                    final DocumentImpl doc = i.next();
                     //Remove doc's metadata
                     // WM: now removed in one step. see above.
                     //removeResourceMetadata(transaction, doc);
@@ -1430,8 +1430,8 @@ public class NativeBroker extends DBBroker {
         notifyDropIndex(collection);
         indexController.removeCollection(collection, this);
         
-        for (Iterator i = collection.iterator(this); i.hasNext();) {
-            final DocumentImpl doc = (DocumentImpl) i.next();
+        for (Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
+            final DocumentImpl doc = i.next();
             LOG.debug("Dropping index for document " + doc.getFileURI());
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                 public Object start() {
@@ -1573,9 +1573,9 @@ public class NativeBroker extends DBBroker {
         if(!forceRemoval)
         {
 	        long now = System.currentTimeMillis();
-	        for(Iterator i = temp.iterator(this); i.hasNext();)
+	        for(Iterator<DocumentImpl> i = temp.iterator(this); i.hasNext();)
 	        {
-	            DocumentImpl next = (DocumentImpl) i.next();
+	            DocumentImpl next = i.next();
 	            long modified = next.getMetadata().getLastModified();
 	            if(now - modified < TEMP_FRAGMENT_TIMEOUT)
 	            {
@@ -1965,8 +1965,8 @@ public class NativeBroker extends DBBroker {
      */
     public MutableDocumentSet getXMLResourcesByDoctype(String doctypeName, MutableDocumentSet result) {
         MutableDocumentSet docs = getAllXMLResources(new DefaultDocumentSet());
-        for (Iterator i = docs.getDocumentIterator(); i.hasNext();) {
-		    DocumentImpl doc = (DocumentImpl) i.next();
+        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+		    DocumentImpl doc = i.next();
 		    DocumentType doctype = doc.getDoctype();
             if (doctype == null)
                 continue;
@@ -2109,7 +2109,7 @@ public class NativeBroker extends DBBroker {
         NodeList nodes = oldDoc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
 		    StoredNode node = (StoredNode) nodes.item(i);
-		    Iterator iterator = getNodeIterator(node);
+		    Iterator<StoredNode> iterator = getNodeIterator(node);
             iterator.next();
             copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true, listener);
         }
@@ -2272,7 +2272,7 @@ public class NativeBroker extends DBBroker {
         NodeList nodes = document.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             StoredNode node = (StoredNode) nodes.item(i);
-            Iterator iterator = getNodeIterator(node);
+            Iterator<StoredNode> iterator = getNodeIterator(node);
             iterator.next();
             scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE, listener);
         }
@@ -2543,7 +2543,7 @@ public class NativeBroker extends DBBroker {
             NodeList nodes = doc.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
-            	Iterator iterator = getNodeIterator(node);
+            	Iterator<StoredNode> iterator = getNodeIterator(node);
                 iterator.next();                
                 copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true, listener);
             }
@@ -2618,7 +2618,7 @@ public class NativeBroker extends DBBroker {
             NodeList nodes = doc.getChildNodes();            
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
-                Iterator iterator = getNodeIterator(node);
+                Iterator<StoredNode> iterator = getNodeIterator(node);
                 iterator.next();
                 StringBuilder buf = new StringBuilder();
 //                Pass buf to the following method to get a dump of all node ids in the document
@@ -2744,12 +2744,12 @@ public class NativeBroker extends DBBroker {
 	    .run();
     }
 
-    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
+    private void copyNodes(Txn transaction, Iterator<StoredNode> iterator, StoredNode node, NodePath currentPath,
 			   DocumentImpl newDoc, boolean defrag, boolean index, StreamListener listener) {
         copyNodes(transaction, iterator, node, currentPath, newDoc, defrag, index, listener, null);
     }
 
-    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
+    private void copyNodes(Txn transaction, Iterator<StoredNode> iterator, StoredNode node, NodePath currentPath,
 			   DocumentImpl newDoc, boolean defrag, boolean index, StreamListener listener, NodeId oldNodeId) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
@@ -2794,7 +2794,7 @@ public class NativeBroker extends DBBroker {
             int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
             for (int i = 0; i < count; i++) {
-                StoredNode child = (StoredNode) iterator.next();
+                StoredNode child = iterator.next();
                 oldNodeId = child.getNodeId();
                 if (defrag) {
                     if (i == 0)
@@ -2912,17 +2912,17 @@ public class NativeBroker extends DBBroker {
     }
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath, StreamListener listener) {
-        Iterator iterator = getNodeIterator(node);
+        Iterator<StoredNode> iterator = getNodeIterator(node);
         iterator.next();
-        Stack stack = new Stack();
+        Stack<RemovedNode> stack = new Stack<RemovedNode>();
         collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
         while (!stack.isEmpty()) {
-	    RemovedNode next = (RemovedNode) stack.pop();
+        	RemovedNode next = stack.pop();
             removeNode(transaction, next.node, next.path, next.content);
         }
     }
     
-    private void collectNodesForRemoval(Txn transaction, Stack stack, Iterator iterator, StreamListener listener, StoredNode node,
+    private void collectNodesForRemoval(Txn transaction, Stack<RemovedNode> stack, Iterator<StoredNode> iterator, StreamListener listener, StoredNode node,
                                         NodePath currentPath) {
         RemovedNode removed;
         switch (node.getNodeType()) {
@@ -2947,7 +2947,7 @@ public class NativeBroker extends DBBroker {
 	    if (node.hasChildNodes()) {
 		int childCount = node.getChildCount();
 		for (int i = 0; i < childCount; i++) {
-		    StoredNode child = (StoredNode) iterator.next();
+		    StoredNode child = iterator.next();
 		    if (child.getNodeType() == Node.ELEMENT_NODE)
 			currentPath.addComponent(child.getQName());
 		    collectNodesForRemoval(transaction, stack, iterator, listener, child, currentPath);
@@ -2993,7 +2993,7 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.index();
     }
     
-    private boolean checkNodeTree(Iterator iterator, StoredNode node, StringBuilder buf) {
+    private boolean checkNodeTree(Iterator<StoredNode> iterator, StoredNode node, StringBuilder buf) {
         if (buf != null) {
             if (buf.length() > 0)
                 buf.append(", ");
@@ -3006,7 +3006,7 @@ public class NativeBroker extends DBBroker {
                 buf.append('[').append(count).append(']');
             StoredNode previous = null;
             for (int i = 0; i < count; i++) {
-                StoredNode child = (StoredNode) iterator.next();
+                StoredNode child = iterator.next();
                 if (i > 0 && !(child.getNodeId().isSiblingOf(previous.getNodeId()) &&
                         child.getNodeId().compareTo(previous.getNodeId()) > 0)) {
                     LOG.fatal("node " + child.getNodeId() + " cannot be a sibling of " + previous.getNodeId() +
@@ -3041,7 +3041,7 @@ public class NativeBroker extends DBBroker {
      * @param node
      * @param currentPath
      */
-    private void scanNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
+    private void scanNodes(Txn transaction, Iterator<StoredNode> iterator, StoredNode node, NodePath currentPath,
 			   int mode, StreamListener listener) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
@@ -3067,7 +3067,7 @@ public class NativeBroker extends DBBroker {
         if (node.hasChildNodes()) {
             final int count = node.getChildCount();
             for (int i = 0; i < count; i++) {
-            	StoredNode child = (StoredNode) iterator.next();
+            	StoredNode child = iterator.next();
                 if (child == null) {
                     LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
 			      "; children = " + node.getChildCount());

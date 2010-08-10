@@ -69,8 +69,7 @@ public class Messages {
         }
         ResourceBundle bundle = getBundle(Locale.getDefault());
         String message = bundle.getString(messageId);
-        if (args == null)
-            return message;
+
         return MessageFormat.format(message, args);
     }
     

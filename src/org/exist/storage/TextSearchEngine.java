@@ -106,7 +106,7 @@ public abstract class TextSearchEngine extends Observable {
 		
 		if ((tokenizerClass = (String) config.getProperty(PROPERTY_TOKENIZER)) != null) {
 			try {
-				Class tokClass = Class.forName(tokenizerClass);
+				Class<?> tokClass = Class.forName(tokenizerClass);
 				tokenizer = (Tokenizer) tokClass.newInstance();
 				LOG.debug("using tokenizer: " + tokenizerClass);
 			} catch (ClassNotFoundException e) {
