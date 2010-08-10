@@ -12,11 +12,12 @@ let $body-docs := collection($collection-path)/div
 
 let $content :=
 <div class="content">
+   <p>MODS XForms editor files sorted by file name.</p>
       <table class="body">
          <thead>
            <tr>
-              <th>tab-id</th>
               <th>File</th>
+              <th>tab-id</th>
               <th>node count</th>
               <th>input count</th>
               <th>select1 count</th>
@@ -27,7 +28,7 @@ let $content :=
       for $body in $body-docs
       let $node-count := count( $body//node() )
       let $file := util:document-name($body)
-      order by $node-count descending
+      order by $file
       return
            <tr>
               <td>{string($body/@class)}</td>

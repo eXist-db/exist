@@ -13,6 +13,9 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 (: This is the document we are going to edit if we are not creating a new record :)
 let $id := request:get-parameter('id', '')
 let $new := request:get-parameter('new', 'true')
+
+(: this is the ID of the tab but we just use tab in the URL :)
+let $tab-id := request:get-parameter('tab', 'title')
 let $debug := request:get-parameter('debug', 'false')
 
 let $app-collection := $style:db-path-to-app
@@ -24,14 +27,15 @@ let $instance :=
    if ($new = 'true')
       then doc(concat($style:db-path-to-app, '/edit/new-instance.xml'))/mods:mods
       else collection($data-collection)/mods:mods[$id = id]
-      
+
+(: open the tab databse so for a given tab, we go into the tab database and get the right path :)
 let $tab-data := doc(concat($style:db-path-to-app, '/edit/tab-data.xml'))/tabs
 
-(: lookup the XPath expressions for this tab-id in the tab database :)
-let $tab := $tab-data/tab[tab-id = $id]
+(: get the tab data for this tab. :)
+let $tab-data := $tab-data/tab[tab-id = $tab-id]
 
 (: get a list of all the XPath expressions to include in this instance used by the form :)
-let $paths := $tab-data/tab[tab-id = $id]/path/text()
+let $paths := $tab-data/path/text()
 
 (: build up a string of prefix:element pairs for doing an eval :)
 let $path-string :=
@@ -50,14 +54,14 @@ return
   { (: this is used for debuggin only.  Just add the debug=true to the URL and it will be added to the output :)
   if ($debug = 'true')
     then <debug>
-      <tab>{$tab}</tab>
-      <paths>{$paths}</paths>
+      <tab-id>{$tab-id}</tab-id>
+      <path-string>{$path-string}</path-string>
       <eval-string>{$eval-string}</eval-string>
     </debug> else ()
   }
   
-  (: this is where we run the query that gets just the data we need for this tab :)
-  {util:eval($eval-string)}
+  { (: this is where we run the query that gets just the data we need for this tab :)
+  util:eval($eval-string)}
   
   </mods:mods>
    

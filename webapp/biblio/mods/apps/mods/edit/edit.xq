@@ -9,17 +9,20 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 let $title := 'MODS Record Editor'
 let $new := request:get-parameter('new', '')
 let $id := request:get-parameter('id', 'new')
-let $tab := request:get-parameter('tab', '')
+
+(: if no tab is specified, we default to the title tab :)
+let $tab := request:get-parameter('tab', 'title')
 let $user := xmldb:get-current-user()
 return
+
 (: check for required parameters :)
-if (not($new or $id))
+if (not($id))
     then (
     <error>
-        <message>The parameters "new" and "id" are both missing. One of these two parameters is required for viewing this form.</message>
+        <message>The parameters "id" is missing. This parameter is required.  For new data set id=new.</message>
     </error>)
     else
-    let $file := if ($new)
+    let $file := if ($id = 'new')
         then concat('get-instance.xq?new=true&amp;tab=', $tab)
         else concat('../views/get-instance.xq?id=', $id)
 
@@ -76,7 +79,7 @@ Body Elements = {count($form-body/*/*)}<br/>
         </xf:output>
         </div>
     
-    <a href="../views/get-instance.xq?id={$id}">View XML</a>
+    <a href="get-instance.xq?id={$id}">View XML</a>
 </div>
 
 return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, true())

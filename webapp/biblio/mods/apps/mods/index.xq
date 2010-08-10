@@ -4,30 +4,23 @@ xquery version "1.0";
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../modules/style.xqm";
 
-let $title := 'MODS XRX Demo'
+let $title := 'MODS XRX Application'
 
 let $content := 
     <div class="content">
-       <p>Welcome to the Item Manager.</p>
-       <div class="debug">
-          $style:site-images={$style:site-images}<br/>
-       </div>
-       <p>This demo uses eXist and XForms to allows you to perform basic database operations CRUD (Create, Read/Search, Update, Delete) operations on Items:
+       <p>Welcome to the MODS XRX Application.</p>
+       <p>This demonstration application uses eXist and XForms to allows you to perform basic database operations CRUDS (Create, Read/Search, Update, Delete and Search) operations on MODS records:
           <ol>
+              <!--
               <li>
-                  <a href="views/list-items.xq">List</a> List of all Items
+                  <a href="search/search.xq">Search</a> Search for MODS records
+              </li>
+              -->
+              <li>
+                  <a href="views/list-items.xq">List</a> List of all MODS records in test collection sorted by document title
               </li>
               <li>
-                  <a href="edit/edit.xq?new=true&amp;tab=title">New</a> Create New Item (Titles)
-              </li>
-              <li>
-                  <a href="search/search.xq">Search</a> Search for Items
-              </li>
-              <li>
-                  <a href="views/list-categories.xq">List Categories</a> List all Item Classifiers including status, category and tags
-              </li>
-              <li>
-                  <a href="views/metrics.xq">Item Metrics</a> Counts of various Item Metrics
+                  <a href="edit/edit.xq?id=new">New</a> Create a new MODS record
               </li>
           </ol>
           
