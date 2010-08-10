@@ -88,6 +88,7 @@ public class BrokerPool extends Observable {
 	
 	private final static TreeMap<String, BrokerPool> instances = new TreeMap<String, BrokerPool>();
 
+	//on-start, ready, go
     /*** initializing subcomponents */
 	public final static String SIGNAL_STARTUP = "startup";
 	/*** ready for recovery & read-only operations */

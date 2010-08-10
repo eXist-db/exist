@@ -61,7 +61,7 @@ import org.apache.log4j.Logger;
  * underlying byte array is not.
  */
 
-public class Value implements Comparable {
+public class Value implements Comparable<Object> {
 
     public final static Value EMPTY_VALUE = new Value(new byte[0]);
 
