@@ -131,7 +131,7 @@ public class NativeValueIndex implements ContentLoadingObserver
      * values} that implement {@link Indexable Indexable}. The values are {@link org.exist.util.LongLinkedList lists} containing the nodes GIDs
      * (global identifiers.
      */
-    protected Map[]                  pending                        = new Map[2];
+    protected Map<Object, List<NodeId>>[] pending = new Map[2];
 
     /** The current document. */
     private DocumentImpl             doc;
@@ -146,8 +146,8 @@ public class NativeValueIndex implements ContentLoadingObserver
     {
         this.broker               = broker;
         this.config               = config;
-        this.pending[IDX_GENERIC] = new TreeMap();
-        this.pending[IDX_QNAME]   = new TreeMap();
+        this.pending[IDX_GENERIC] = new TreeMap<Object, List<NodeId>>();
+        this.pending[IDX_QNAME]   = new TreeMap<Object, List<NodeId>>();
 
         //use inheritance if necessary !
         //TODO : read from configuration (key ?)
@@ -240,15 +240,15 @@ public class NativeValueIndex implements ContentLoadingObserver
         }
 
         if( !remove ) {
-            ArrayList buf;
+            List<NodeId> buf;
 
             //Is this indexable value already pending ?
             if( pending[indexType].containsKey( key ) ) {
-                buf = ( ArrayList )pending[indexType].get( key );
+                buf = pending[indexType].get( key );
             } else {
 
                 //Create a NodeId list
-                buf = new ArrayList( 8 );
+                buf = new ArrayList<NodeId>( 8 );
                 pending[indexType].put( key, buf );
             }
 
@@ -305,17 +305,17 @@ public class NativeValueIndex implements ContentLoadingObserver
         }
 
         if( !remove ) {
-            ArrayList buf;
+            List<NodeId> buf;
 
             //Is this indexable value already pending ?
             if( pending[indexType].containsKey( key ) ) {
 
                 //Reuse the existing NodeId list
-                buf = ( ArrayList )pending[indexType].get( key );
+                buf = pending[indexType].get( key );
             } else {
 
                 //Create a NodeId list
-                buf = new ArrayList( 8 );
+                buf = new ArrayList<NodeId>( 8 );
                 pending[indexType].put( key, buf );
             }
 
@@ -418,13 +418,12 @@ public class NativeValueIndex implements ContentLoadingObserver
 
         for( byte section = 0; section <= IDX_QNAME; section++ ) {
 
-            for( Iterator i = pending[section].entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry     = ( Map.Entry )i.next();
-                Object    key       = entry.getKey();
+            for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
+                Object key = entry.getKey();
 
                 //TODO : NativeElementIndex uses ArrayLists -pb
-                ArrayList gids      = ( ArrayList )entry.getValue();
-                int       gidsCount = gids.size();
+                List<NodeId> gids = entry.getValue();
+                int gidsCount = gids.size();
 
                 //Don't forget this one
                 FastQSort.sort( gids, 0, gidsCount - 1 );
@@ -441,9 +440,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                 //Compute the GID list
                 NodeId previous = null;
 
-                for( int j = 0; j < gidsCount; j++ ) {
-                    NodeId nodeId = ( NodeId )gids.get( j );
-
+                for( NodeId nodeId : gids ) {
                     try {
                         previous = nodeId.write( previous, os );
 //                        nodeId.write(os);
@@ -516,11 +513,10 @@ public class NativeValueIndex implements ContentLoadingObserver
 
         for( byte section = 0; section <= IDX_QNAME; section++ ) {
 
-            for( Iterator i = pending[section].entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry         = ( Map.Entry )i.next();
+            for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
                 Object    key           = entry.getKey();
-                ArrayList storedGIDList = ( ArrayList )entry.getValue();
-                ArrayList newGIDList    = new ArrayList();
+                List<NodeId> storedGIDList = entry.getValue();
+                List<NodeId> newGIDList    = new ArrayList<NodeId>();
                 os.clear();
 
                 try {
@@ -591,9 +587,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                             os.writeFixedInt( 0 );
                             NodeId previous = null;
 
-                            for( int j = 0; j < gidsCount; j++ ) {
-                                NodeId nodeId = ( NodeId )newGIDList.get( j );
-
+                            for( NodeId nodeId : newGIDList ) {
                                 try {
                                     previous = nodeId.write( previous, os );
                                 }
@@ -644,7 +638,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     }
 
 
-    private static boolean containsNode( List list, NodeId nodeId )
+    private static boolean containsNode( List<NodeId> list, NodeId nodeId )
     {
         for( int i = 0; i < list.size(); i++ ) {
 
@@ -704,8 +698,7 @@ public class NativeValueIndex implements ContentLoadingObserver
 
             for( int section = 0; section <= IDX_QNAME; section++ ) {
 
-                for( Iterator i = pending[section].entrySet().iterator(); i.hasNext(); ) {
-                    Map.Entry entry = ( Map.Entry )i.next();
+                for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
                     Object    key   = entry.getKey();
 
                     //Compute a key for the indexed value in the collection
@@ -803,7 +796,7 @@ public class NativeValueIndex implements ContentLoadingObserver
         if( qname == null ) {
             findAll( relation, docs, contextSet, axis, null, value, result, collator );
         } else {
-            List qnames = new LinkedList();
+            List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
             findAll( relation, docs, contextSet, axis, qnames, value, result, collator );
             if (mixedIndex)
@@ -856,7 +849,7 @@ public class NativeValueIndex implements ContentLoadingObserver
         final Lock           lock = dbValues.getLock();
 
         for( Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
-            final int collectionId = ( ( Collection )iter.next() ).getId();
+            final int collectionId = iter.next().getId();
             final int idxOp        = checkRelationOp( relation );
             Value     searchKey;
             Value     prefixKey;
@@ -957,7 +950,7 @@ public class NativeValueIndex implements ContentLoadingObserver
         if( qname == null ) {
             matchAll( docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
         } else {
-            List qnames = new LinkedList();
+            List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
             matchAll( docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation );
         }
@@ -1187,7 +1180,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                 lock.release( Lock.READ_LOCK );
             }
         }
-        Map                map    = cb.map;
+        Map<AtomicValue, ValueOccurrences> map = cb.map;
         ValueOccurrences[] result = new ValueOccurrences[map.size()];
         return( ( ValueOccurrences[] )map.values().toArray( result ) );
     }
@@ -1258,7 +1251,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                 }
             }
         }
-        Map                map    = cb.map;
+        Map<AtomicValue, ValueOccurrences> map = cb.map;
         ValueOccurrences[] result = new ValueOccurrences[map.size()];
         return( ( ValueOccurrences[] )map.values().toArray( result ) );
     }
@@ -1659,7 +1652,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     {
         private DocumentSet docs;
         private NodeSet     contextSet;
-        private Map         map     = new TreeMap();
+        private Map<AtomicValue, ValueOccurrences> map = new TreeMap<AtomicValue, ValueOccurrences>();
         private int         type;
         private boolean     byQName;
 
@@ -1704,7 +1697,7 @@ public class NativeValueIndex implements ContentLoadingObserver
                 return( true );
             }
 
-            ValueOccurrences oc = ( ValueOccurrences )map.get( atomic );
+            ValueOccurrences oc = map.get( atomic );
 
             try {
 
@@ -1776,7 +1769,7 @@ public class NativeValueIndex implements ContentLoadingObserver
     //*
     //***************************************************************************/
 
-    private static class QNameKey implements Comparable
+    private static class QNameKey implements Comparable<QNameKey>
     {
         private QName       qname;
         private AtomicValue value;
@@ -1787,10 +1780,9 @@ public class NativeValueIndex implements ContentLoadingObserver
             this.value = atomic;
         }
 
-        public int compareTo( Object o )
+        public int compareTo( QNameKey other )
         {
-            QNameKey other = ( QNameKey )o;
-            int      cmp   = qname.compareTo( other.qname );
+            int cmp = qname.compareTo( other.qname );
 
             if( cmp == 0 ) {
                 return( value.compareTo( other.value ) );
