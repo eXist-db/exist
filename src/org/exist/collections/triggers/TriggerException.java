@@ -1,8 +1,7 @@
 /*
- *  TriggerException.java - eXist Open Source Native XML Database
- *  Copyright (C) 2003 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2003-2010 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,9 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  * $Id$
  *
@@ -30,9 +29,8 @@ import org.xml.sax.SAXException;
  */
 public class TriggerException extends SAXException {
 
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = -6501877347817156557L;
+
 	public TriggerException() {
 		super();
 	}

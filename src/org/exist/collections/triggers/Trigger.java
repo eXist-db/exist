@@ -1,9 +1,8 @@
 /*
- *  Trigger.java - eXist Open Source Native XML Database
- *  Copyright (C) 2003 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2003-2010 The eXist Project
  *  http://exist-db.org
- * 
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
@@ -14,9 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  * $Id$
  *
@@ -105,8 +104,7 @@ public interface Trigger {
 	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
 	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
 	 */
-	public void configure(DBBroker broker, Collection parent, Map parameters)
-		throws CollectionConfigurationException;
+	public void configure(DBBroker broker, Collection parent, Map<String, String> parameters) throws CollectionConfigurationException;
 
 	/**
 	 * Returns a Logger object. Use this to log debugging information.
