@@ -1376,20 +1376,22 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             // check if the document is locked by another user
             User lockUser = oldDoc.getUserLock();
             if(lockUser != null && !lockUser.equals(broker.getUser()))
-                throw new PermissionDeniedException("The document is locked by user " +
+                throw new PermissionDeniedException(
+                		"The document is locked by user " +
                         lockUser.getName());
             
             
             // do we have permissions for update?
-            if (!oldDoc.getPermissions().validate(broker.getUser(),
-                    Permission.UPDATE))
+            if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
                 throw new PermissionDeniedException(
-                        "Document exists and update is not allowed");
+                		"Document exists and update is not allowed");
+            
+            // do we have write permissions?
             if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
                     getPermissions().validate(broker.getUser(), Permission.WRITE)))
                 throw new PermissionDeniedException(
-                        "Document exists and update is not allowed for the collection");
-            // do we have write permissions?
+                		"Document exists and update is not allowed for the collection");
+            
         } else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException(
                     "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
