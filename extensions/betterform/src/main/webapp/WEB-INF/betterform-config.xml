@@ -14,20 +14,21 @@
 
         <property name="uploadDir" value="upload" description="the name of the upload directory relative to context"/>
 
-		<!-- DEPRECATED -->
-<!--
         <property name="resources.dir.name" description="name of the resources directory - the root of all betterForm resources files like JS, CSS, XSLT..."
-                  value="resources"/>
--->
+                  value="betterform/resources/"/>
+        <!-- DEPRECATED -->
+<!--
         <property name="xslt.path" value="resources/xslt"
                   description="directory location for XSLT files relative to context"/>
-        <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
-
         <property name="scriptPath" value="/resources/scripts/"
                   description="directory for script files relative to context"/>
         <property name="CSSPath" value="/resources/styles/"
                   description="directory for betterForm CSS files relative to context"/>
-        <property name="error.page" value="jsp/error.jsp"
+-->
+
+        <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
+
+        <property name="error.page" value="betterform/xquery/xferror.xql"
                   description="location of error-page relative to context"/>
         
 		<!-- DEPRECATED -->

@@ -9,7 +9,8 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xforms="http://www.w3.org/2002/xforms"
     xmlns:bf="http://betterform.sourceforge.net/xforms"
-    exclude-result-prefixes="xhtml xforms bf">
+    exclude-result-prefixes="xhtml xforms bf"
+    xpath-default-namespace= "http://www.w3.org/1999/xhtml">
 
     <!-- ####################################################################################################### -->
     <!-- This stylesheet handles the XForms UI constructs [XForms 1.0, Chapter 9]'group', 'repeat' and           -->
@@ -24,7 +25,6 @@
     <!-- ############################################ VARIABLES ################################################ -->
 
 
-    <xsl:output method="html" indent="yes"/>
     <xsl:preserve-space elements="*"/>
 
     <!-- ####################################################################################################### -->

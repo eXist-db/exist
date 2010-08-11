@@ -111,14 +111,6 @@
                <url-pattern>*.xql</url-pattern>
         </servlet-mapping>
 
-        <error-page>
-            <exception-type>javax.servlet.ServletException</exception-type>
-            <location>/xquery/xferror.xql</location>
-        </error-page>
-        <error-page>
-            <error-code>500</error-code>
-            <location>/xquery/xferror.xsl</location>
-        </error-page>
     </xsl:template>
 
 

@@ -95,7 +95,7 @@ declare function local:project() as element()?
     	<div id="dataTable">
     	   <div id="checkBoxSelectors">
     	        Select: <a href="javascript:selectAll();">All</a> | <a href="javascript:selectNone();">None</a>
-    	        <button onclick="passValuesToXForms();" value="setSelected"/>
+    	        <!--<button onclick="passValuesToXForms();" value="setSelected"/>-->
     	   </div>
 		   <table id="taskTable">
 			 <tr>

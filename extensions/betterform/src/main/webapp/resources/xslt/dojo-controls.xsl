@@ -9,7 +9,8 @@
                 xmlns:xforms="http://www.w3.org/2002/xforms"
                 xmlns:bf="http://betterform.sourceforge.net/xforms"
                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                exclude-result-prefixes="bf xforms xsl xsd">
+                exclude-result-prefixes="bf xforms xsl xsd"
+                xpath-default-namespace="http://www.w3.org/1999/xhtml">
 
     <xsl:variable name="data-prefix" select="'d_'"/>
     <xsl:variable name="trigger-prefix" select="'t_'"/>
@@ -19,7 +20,6 @@
     <!-- change this to your ShowAttachmentServlet -->
 
     <!-- This stylesheet contains a collection of templates which map XForms controls to HTML controls. -->
-    <xsl:output method="html" version="4.01" indent="yes"/>
 
 
     <!-- ######################################################################################################## -->
@@ -256,7 +256,7 @@
                               <xsl:apply-templates select="@*[not(name()='class')][not(name()='id')][not(name()='appearance')][not(name()='src')]"/>
                         </span>
                 </xsl:when>
-                <xsl:when test="$appearance='imageTrigger'">
+                <xsl:when test="$appearance='bf:imageTrigger'">
                     <button id="{$id}-value"
                             appearance="{@appearance}"
                             controlType="trigger"

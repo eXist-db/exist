@@ -174,7 +174,7 @@ declare option exist:serialize "method=xhtml media-type=application/xhtml+html";
 
                     <xf:instance id="i-vars">
                         <data xmlns="">
-                            <default-duration>30</default-duration>
+                            <default-duration>120</default-duration>
                             <currentTask/>
                             <selectedTasks/>
                         </data>
@@ -384,9 +384,11 @@ declare option exist:serialize "method=xhtml media-type=application/xhtml+html";
 
                 <div id="aboutDialog" dojotype="dijit.Dialog" href="about.html" title="About" style="width:500px;height:500px;"></div>
 
+<!--
                 <xf:output ref="instance('i-vars')/selectedTasks">
                     <xf:label>all selected tasks</xf:label>
                 </xf:output>
+-->
 
                 <div id="report"></div>
 

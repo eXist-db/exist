@@ -53,10 +53,6 @@
     width: 750px;
 }
 
-.dijitContentPane {
-    overflow: hidden;
-}
-
 .xfFullRepeat .xfRepeatItem .xfControl  {
     clear:both;
 }
