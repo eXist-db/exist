@@ -825,6 +825,13 @@ public class BrokerPool extends Observable {
 
         signalSystemStatus(SIGNAL_READINESS);
 
+		//Get a manager to handle further collections configuration
+        try {
+            collectionConfigurationManager = new CollectionConfigurationManager(broker);
+        } catch (Exception e) {
+            LOG.error("Found an error while initializing database: " + e.getMessage(), e);
+        }
+        
         //wake-up the security manager
         securityManager.attach(this, broker);
 
@@ -833,13 +840,6 @@ public class BrokerPool extends Observable {
 		if(securityManager.isXACMLEnabled())
 			securityManager.getPDP().initializePolicyCollection();
 		
-		//Get a manager to handle further collectios configuration
-        try {
-            collectionConfigurationManager = new CollectionConfigurationManager(broker);
-        } catch (Exception e) {
-            LOG.error("Found an error while initializing database: " + e.getMessage(), e);
-        }
-        
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
         if (recovered) {
@@ -1403,12 +1403,12 @@ public class BrokerPool extends Observable {
          */
 	public void reloadSecurityManager(DBBroker broker) {
 		 //XXX: reload
-		try {
-			securityManager.attach(this, broker);
-		} catch (EXistException e) {
-			LOG.debug("Security manager reloaded failed: "+e.getMessage());
-		}
-		LOG.debug("Security manager reloaded");
+//		try {
+//			securityManager.attach(this, broker);
+//		} catch (EXistException e) {
+//			LOG.debug("Security manager reloaded failed: "+e.getMessage());
+//		}
+//		LOG.debug("Security manager reloaded");
 	}
 
 	public long getMajorSyncPeriod()
