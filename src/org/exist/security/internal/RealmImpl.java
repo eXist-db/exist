@@ -30,7 +30,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.config.Configurator;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
@@ -46,7 +45,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
@@ -55,7 +53,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -147,14 +144,11 @@ public class RealmImpl implements Realm {
 		TransactionManager transact = pool.getTransactionManager();
 		Txn txn = null;
 		try {
-			Collection sysCollection = broker
-					.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
 			if (sysCollection == null) {
 				txn = transact.beginTransaction();
-				sysCollection = broker.getOrCreateCollection(txn,
-						XmldbURI.SYSTEM_COLLECTION_URI);
-				if (sysCollection == null)
-					return;
+				sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+				if (sysCollection == null) return; //TODO: throw error?
 				sysCollection.setPermissions(0770);
 				broker.saveCollection(txn, sysCollection);
 				transact.commit(txn);

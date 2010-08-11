@@ -30,11 +30,10 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.config.Configuration;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -48,12 +47,9 @@ import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.Indexable;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ValueOccurrences;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.value.IntegerValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -89,13 +85,18 @@ public class SecurityManagerImpl implements SecurityManager {
 	protected int nextUserId = 0;
 	protected int nextGroupId = 0;
 
-	@ConfigurationField("collection")
-	private int defCollectionPermissions = Permission.DEFAULT_PERM;
+	@ConfigurationField("version")
+	private String version = "2.0";
+
+//	@ConfigurationField("default-collection-permissions")
+//	@ConfigurationFieldSettings("radix=8")
+	private int defaultCollectionPermissions = Permission.DEFAULT_PERM;
 	
-	@ConfigurationField("resource")
-    private int defResourcePermissions = Permission.DEFAULT_PERM;
+//	@ConfigurationField("default-resource-permissions")
+//	@ConfigurationFieldSettings("radix=8")
+    private int defaultResourcePermissions = Permission.DEFAULT_PERM;
     
-	@ConfigurationField("valueString")
+//	@ConfigurationField("enableXACML")
 	private Boolean enableXACML = false;
 
 	private ExistPDP pdp;
@@ -107,7 +108,9 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private List<Realm> realms = new ArrayList<Realm>();
     
-    Collection collection = null;
+    private Collection collection = null;
+    
+    private Configuration configuration = null;
     
     public SecurityManagerImpl(BrokerPool pool) {
     	this.pool = pool;
@@ -137,7 +140,11 @@ public class SecurityManagerImpl implements SecurityManager {
     	this.pool = pool;
     	
         String COLLECTION_CONFIG =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+        	"	<exist:triggers>" +
+        	"		<exist:trigger event='store,remove' class='org.exist.examples.triggers.ExampleTrigger'>" +
+        	"		</exist:trigger>" +
+        	"	</exist:triggers>" +
         	"	<index>" +
         	"		<fulltext default=\"none\">" +
         	"		</fulltext>" +
@@ -148,18 +155,19 @@ public class SecurityManagerImpl implements SecurityManager {
         TransactionManager transaction = pool.getTransactionManager();
         Txn txn = null;
 		
+        Collection systemCollection = null;
         try {
-	        collection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-			if (collection == null) {
+	        systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+			if (systemCollection == null) {
 				txn = transaction.beginTransaction();
-				collection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-				if (collection == null)
+				systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+				if (systemCollection == null)
 					return;
-				collection.setPermissions(0770);
-				broker.saveCollection(txn, collection);
+				systemCollection.setPermissions(0770);
+				broker.saveCollection(txn, systemCollection);
 
-				CollectionConfigurationManager mgr = pool.getConfigurationManager();
-		        mgr.addConfiguration(txn, broker, collection, COLLECTION_CONFIG);
+//				CollectionConfigurationManager mgr = pool.getConfigurationManager();
+//		        mgr.addConfiguration(txn, broker, systemCollection, COLLECTION_CONFIG);
 
 				transaction.commit(txn);
 			}
@@ -169,7 +177,7 @@ public class SecurityManagerImpl implements SecurityManager {
 			LOG.debug("loading acl failed: " + e.getMessage());
 		}
 
-		Document config = collection.getDocument(broker, ACL_FILE_URI);
+		Document config = systemCollection.getDocument(broker, ACL_FILE_URI);
 		if (config != null) {
 			Element element = config.getDocumentElement();
 
@@ -207,11 +215,50 @@ public class SecurityManagerImpl implements SecurityManager {
 			}
 		}
 
-        for (Realm realm : realms) {
+        try {
+	        collection = broker.getCollection(SECURITY_COLLETION_URI);
+			if (collection == null) {
+				txn = transaction.beginTransaction();
+				collection = broker.getOrCreateCollection(txn, SECURITY_COLLETION_URI);
+				if (collection == null) return; //throw error???
+				collection.setPermissions(0770);
+				broker.saveCollection(txn, collection);
+
+//				CollectionConfigurationManager mgr = pool.getConfigurationManager();
+//		        mgr.addConfiguration(txn, broker, collection, COLLECTION_CONFIG);
+
+				transaction.commit(txn);
+			}
+			
+	        CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+			CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+			collConf.registerTrigger(broker, 
+					"store,update,remove", 
+					"org.exist.config.ConfigurationDocumentTrigger", null);
+
+        	Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+    		configuration = Configurator.configure(this, _config_);
+
+        } catch (Exception e) {
+			transaction.abort(txn);
+			e.printStackTrace();
+			LOG.debug("loading configuration failed: " + e.getMessage());
+		}
+
+		for (Realm realm : realms) {
     		realm.startUp(broker);
     	}
-
         
+//        
+//		Element docElement = null;
+//		if (new_config != null)
+//			docElement = new_config.getDocumentElement();
+//		if (docElement == null) {
+//			_save();
+//		} else {
+//			
+//		}
+
 //       TransactionManager transact = pool.getTransactionManager();
 //       Txn txn = null;
 //       DBBroker broker = sysBroker;
@@ -307,11 +354,11 @@ public class SecurityManagerImpl implements SecurityManager {
 		// read default collection and resource permissions
 		Integer defOpt = (Integer) broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
 		if (defOpt != null)
-			defCollectionPermissions = defOpt.intValue();
+			defaultResourcePermissions = defOpt.intValue();
 		
 		defOpt = (Integer)broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
 		if (defOpt != null)
-			defResourcePermissions = defOpt.intValue();
+			defaultResourcePermissions = defOpt.intValue();
 		   
 		enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
 		if(enableXACML != null && enableXACML.booleanValue()) {
@@ -356,32 +403,6 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized User getUser(int uid) {
-		if (collection != null) {
-			DBBroker broker = null;
-			try {
-				broker = pool.get(getSystemAccount());
-				MutableDocumentSet docs = new DefaultDocumentSet();
-				
-				DocumentImpl acl = collection.getDocument(broker, ACL_FILE_URI);
-				docs.add(acl);
-		
-				Indexable value = new IntegerValue(uid);
-				
-				ValueOccurrences[] occurrences = broker.getValueIndex().scanIndexKeys(docs, null, value);
-	
-		        for (int i = 0; i < occurrences.length; i++) {
-		            ValueOccurrences occurrence = occurrences[i];
-		            System.out.println("Found: " + occurrence.getValue());
-		            if (occurrence.getValue().compareTo(value) == 0)
-		                System.out.println("found");
-		        }
-			} catch (EXistException e) {
-			} finally {
-				pool.release(broker);
-			}
-		}
-
-        
 		for (Realm realm : realms) {
 			User account = realm.getAccount(uid);
 			if (account != null) return account;
@@ -527,11 +548,11 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
 	public int getResourceDefaultPerms() {
-		return defResourcePermissions;
+		return defaultResourcePermissions;
 	}
 	
 	public int getCollectionDefaultPerms() {
-		return defCollectionPermissions;
+		return defaultCollectionPermissions;
 	}
 	
 	private void createUserHome(DBBroker broker, Txn transaction, User user) 
@@ -609,5 +630,15 @@ public class SecurityManagerImpl implements SecurityManager {
 	@Override
 	public void addGroup(String name) throws PermissionDeniedException, EXistException {
 		addGroup(new GroupAider(name));
+	}
+
+	@Override
+	public boolean isConfigured() {
+		return configuration != null;
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 }
