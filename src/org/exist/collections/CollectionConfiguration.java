@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.SecurityManager;
+import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -76,21 +76,19 @@ public class CollectionConfiguration {
     private XmldbURI docName = null;
     private XmldbURI srcCollectionURI;
 	
-	private int defCollPermissions;
-	private int defResPermissions;
+	private int defCollPermissions = Permission.DEFAULT_PERM;
+	private int defResPermissions = Permission.DEFAULT_PERM;
     
 	private String defCollGroup = null;
 	private String defResGroup = null;
     
     private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
     
-    private SecurityManager secman;
-
+    private BrokerPool pool;
+    
     public CollectionConfiguration(BrokerPool pool) {
-    	secman = pool.getSecurityManager();
-    	defResPermissions = secman.getResourceDefaultPerms();
-		defCollPermissions = secman.getCollectionDefaultPerms();
-     }
+    	this.pool = pool;
+    }
     
     @Deprecated //use DocumentImpl.isCollectionConfig() 
 	public static boolean isCollectionConfigDocument(XmldbURI docName) {
@@ -198,7 +196,7 @@ public class CollectionConfiguration {
 			    	String groupOpt = elem.getAttribute(RESOURCE_ATTR);
 					if (groupOpt != null && groupOpt.length() > 0) {
 						LOG.debug("RESOURCE: " + groupOpt);
-						if (secman.getGroup(groupOpt)!=null){
+						if (pool.getSecurityManager().getGroup(groupOpt)!=null){
 							defResGroup = groupOpt;	
 						} else {
                             if (checkOnly)
@@ -210,7 +208,7 @@ public class CollectionConfiguration {
 					groupOpt = elem.getAttribute(COLLECTION_ATTR);
 					if (groupOpt != null && groupOpt.length() > 0) {
 						LOG.debug("COLLECTION: " + groupOpt);
-						if (secman.getGroup(groupOpt)!=null){
+						if (pool.getSecurityManager().getGroup(groupOpt)!=null){
 							defCollGroup = groupOpt;	
 						} else {
                             if (checkOnly)
@@ -327,32 +325,33 @@ public class CollectionConfiguration {
             while(tok.hasMoreTokens()) {
                 event = tok.nextToken();
                 LOG.debug("Registering trigger '" + classAttr + "' for event '" + event + "'");
+                int triggerEvent = -1;
                 if(event.equalsIgnoreCase("store")) {
-                    if (triggers[Trigger.STORE_DOCUMENT_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.STORE_DOCUMENT_EVENT] = trigger;
+                	triggerEvent = Trigger.STORE_DOCUMENT_EVENT;
+                
                 } else if(event.equalsIgnoreCase("update")) {
-                    if (triggers[Trigger.UPDATE_DOCUMENT_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.UPDATE_DOCUMENT_EVENT] = trigger;
+                	triggerEvent = Trigger.UPDATE_DOCUMENT_EVENT;
+
                 } else if(event.equalsIgnoreCase("remove")) {
-                    if (triggers[Trigger.REMOVE_DOCUMENT_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.REMOVE_DOCUMENT_EVENT] = trigger;
+                	triggerEvent = Trigger.REMOVE_DOCUMENT_EVENT;
+
                 } else if(event.equalsIgnoreCase("create-collection")) {
-                    if (triggers[Trigger.CREATE_COLLECTION_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.CREATE_COLLECTION_EVENT] = trigger;
+                	triggerEvent = Trigger.CREATE_COLLECTION_EVENT;
+
                 } else if(event.equalsIgnoreCase("rename-collection")) {
-                    if (triggers[Trigger.RENAME_COLLECTION_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.RENAME_COLLECTION_EVENT] = trigger;
+                	triggerEvent = Trigger.RENAME_COLLECTION_EVENT; 
+
                 } else if(event.equalsIgnoreCase("delete-collection")) {
-                    if (triggers[Trigger.DELETE_COLLECTION_EVENT] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[Trigger.DELETE_COLLECTION_EVENT] = trigger;
+                	triggerEvent = Trigger.DELETE_COLLECTION_EVENT;
+
                 } else
                     LOG.warn("Unknown event type '" + event + "' in trigger '" + classAttr + "'");
+                
+                if (triggerEvent > -1) {
+                    if (triggers[triggerEvent] != null)
+                        LOG.warn("Trigger '" + classAttr + "' already registered");
+                    triggers[triggerEvent] = trigger;
+                }
             }
         }
     }
@@ -399,6 +398,67 @@ public class CollectionConfiguration {
         return null;
     }
 	
+	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, String> parameters) throws CollectionConfigurationException {
+
+		TriggerConfig trigger = instantiate(broker, classname, parameters);
+
+	    StringTokenizer tok = new StringTokenizer(events, ", ");
+	    String event;
+	    while(tok.hasMoreTokens()) {
+	        event = tok.nextToken();
+	        LOG.debug("Registering trigger '" + classname + "' for event '" + event + "'");
+	        int triggerEvent = -1;
+	        if(event.equalsIgnoreCase("store")) {
+	        	triggerEvent = Trigger.STORE_DOCUMENT_EVENT;
+	        
+	        } else if(event.equalsIgnoreCase("update")) {
+	        	triggerEvent = Trigger.UPDATE_DOCUMENT_EVENT;
+	
+	        } else if(event.equalsIgnoreCase("remove")) {
+	        	triggerEvent = Trigger.REMOVE_DOCUMENT_EVENT;
+	
+	        } else if(event.equalsIgnoreCase("create-collection")) {
+	        	triggerEvent = Trigger.CREATE_COLLECTION_EVENT;
+	
+	        } else if(event.equalsIgnoreCase("rename-collection")) {
+	        	triggerEvent = Trigger.RENAME_COLLECTION_EVENT; 
+	
+	        } else if(event.equalsIgnoreCase("delete-collection")) {
+	        	triggerEvent = Trigger.DELETE_COLLECTION_EVENT;
+	
+	        } else
+	        	throw new CollectionConfigurationException(
+	        			"Unknown event type '" + event + "' in trigger '" + classname + "'");
+	        
+	        if (triggerEvent > -1) {
+	            
+	        	if (triggers[triggerEvent] != null)
+		        	throw new CollectionConfigurationException(
+		        			"Trigger '" + classname + "' already registered");
+	            
+	            triggers[triggerEvent] = trigger;
+	        }
+	    }
+	}
+
+	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, String> parameters) throws CollectionConfigurationException {
+		try {
+			Class<?> clazz = Class.forName(classname);
+			if(!Trigger.class.isAssignableFrom(clazz)) {
+				throw new CollectionConfigurationException(
+						"Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'");
+		    }
+		    TriggerConfig triggerConf = new TriggerConfig((Class<Trigger>) clazz);
+		    
+		    if (parameters != null)
+		    	triggerConf.setParameters(parameters);
+
+		    return triggerConf;
+		} catch (ClassNotFoundException e) {
+	        throw new CollectionConfigurationException(e.getMessage(), e);
+		}
+	}
+
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		if (indexSpec != null)
