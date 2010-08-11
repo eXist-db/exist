@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import org.exist.EXistException;
+import org.exist.config.Configurable;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -38,11 +39,14 @@ import org.exist.xmldb.XmldbURI;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
-public interface SecurityManager {
+public interface SecurityManager extends Configurable {
 
    public final static String ACL_FILE = "users.xml";
    public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
    
+   public final static XmldbURI SECURITY_COLLETION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("security");
+   public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
+
    public final static String DBA_GROUP = "dba";
    public final static String DBA_USER = "admin";
    public final static String GUEST_GROUP = "guest";
@@ -84,7 +88,9 @@ public interface SecurityManager {
 
    boolean hasAdminPrivileges(User user);
 
+   @Deprecated //use CollectionConfiguration one
    int getResourceDefaultPerms();
+   @Deprecated //use CollectionConfiguration one
    int getCollectionDefaultPerms();
 	
    public User authenticate(String username, Object credentials) throws AuthenticationException;
