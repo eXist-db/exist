@@ -49,8 +49,8 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	// initial state
 	private Subject subject;
 	private CallbackHandler callbackHandler;
-	private Map sharedState;
-	private Map options;
+	private Map<String, ?> sharedState;
+	private Map<String, ?> options;
 
 	// configurable option
 	private boolean debug = false;

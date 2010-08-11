@@ -24,7 +24,7 @@ package org.exist.security;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
-public class GroupImpl implements Comparable, Group {
+public class GroupImpl implements Comparable<Object>, Group {
 
 	private String name;
 	private int id;
