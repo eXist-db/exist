@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
