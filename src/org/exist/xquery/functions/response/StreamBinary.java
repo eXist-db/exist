@@ -79,7 +79,7 @@ public class StreamBinary extends BasicFunction {
         }
         
         ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
-        // request object is read from global variable $response
+        // response object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if(respVar == null || respVar.getValue() == null)
             throw new XPathException(this, "No response object found in the current XQuery context.");
