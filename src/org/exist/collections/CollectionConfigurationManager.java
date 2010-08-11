@@ -254,6 +254,22 @@ public class CollectionConfigurationManager {
             }
         }
     }
+    
+    public CollectionConfiguration getOrCreateCollectionConfiguration(DBBroker broker, Collection collection) {
+        CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
+        path.append(collection.getURI().getRawCollectionPath());
+
+        CollectionConfiguration conf;
+        synchronized (latch) {
+        	conf = configurations.get(path);
+        	if (conf == null) {
+        		conf = new CollectionConfiguration(broker.getBrokerPool());
+        		configurations.put(path, conf);
+        	}
+        }
+        
+        return conf;
+    }
 
     /**
      * Notify the manager that a collection.xconf file has changed. All cached configurations
