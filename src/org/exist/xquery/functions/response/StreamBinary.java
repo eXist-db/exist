@@ -82,7 +82,7 @@ public class StreamBinary extends BasicFunction {
         // request object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if(respVar == null || respVar.getValue() == null)
-            throw new XPathException(this, "No request object found in the current XQuery context.");
+            throw new XPathException(this, "No response object found in the current XQuery context.");
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
             throw new XPathException(this, "Variable $response is not bound to an Java object.");
         JavaObjectValue respValue = (JavaObjectValue)
