@@ -1,0 +1,73 @@
+@import url(xml2html.css);
+
+body { font-size:87.5%; line-height:1.25; }
+
+#editor {
+    width: 100%;
+    height: 400px;
+}
+
+#results {
+    width: 100%;
+    overflow: auto;
+}
+
+#collection-browser {
+    font-size: 10pt;
+    height: 100%;
+}
+
+div.ui-dynatree-container {
+	height: 200px;
+	border: 0;
+}
+
+.resource-view thead th { text-align: left; border-bottom: 1px solid black; }
+.resource-view td, .resource-view th { font-size: 85%; padding: 4px; cursor: pointer; }
+.name { font-weight: bold; }
+.resource-view .even { background-color: #CCC; }
+
+#results-container { font-size: 85%; width: 100%; }
+
+#results-container .results {
+    height: 100%;
+	overflow: auto;
+	background-color: white;
+}
+
+.navbar { background-color: #ECE9D8; border: 1px solid #888; padding: 2px 4px; height: 20px; }
+
+.previous {
+	float: left;
+}
+
+.current {
+	text-align: center;
+	font-weight: bold;
+}
+
+.next {
+	float: right;
+}
+
+.item {
+	min-height: 2.5em;
+}
+
+/* Hack for internet explorer */
+/*\*/
+* html .item {
+	height: 2.5em;
+}
+
+.even {
+	background-color: #CDE9FF;
+}
+
+.pos {
+	float: left;
+	background-color: #ECF;
+	font-size: 1.25em;
+	padding: 2px;
+	margin-right: 5px;
+}

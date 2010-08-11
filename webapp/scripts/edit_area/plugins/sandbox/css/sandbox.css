@@ -1,0 +1,26 @@
+/*** Auto completion ***/
+#sandbox_auto_completion_area
+{
+    background: #FFF;
+    border:     solid 1px #888;
+    position:   absolute;
+    z-index:    20;
+    width:  450px;
+    height: 180px;
+    overflow: auto;
+    display:none;
+}
+
+#sandbox_auto_completion_area ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#sandbox_auto_completion_area li {
+    padding: 4px 0;
+}
+
+#sandbox_auto_completion_area li.selection {
+    background-color: #D6E1FE;
+e
