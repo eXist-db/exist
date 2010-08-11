@@ -12,27 +12,24 @@
     <property name="bf.shortname" value="betterform"/>
     <!--todo:move property to build.properties.xml-->
     <property name="bf.version" value="3.1.0"/>
+    <property file="../build.properties"/>
 
-
-    <!-- <property name="target.dir" value="${basedir}/target"/>  -->
-    <!--<property name="bf.name" value="${bf.shortname}-${bf.version}"/>-->
+    <condition property="include.feature.betterform.config">
+        <istrue value="${include.feature.betterform}"/>
+    </condition>
 
     <property name="betterform.home" value="${exist.rootdir}/extensions/betterform"/>
     <property name="betterform.etc" value="${betterform.home}/src/main/etc"/>
     <property name="betterform.xrx" value="${betterform.home}/src/main/xrx"/>
     <property name="betterform.webapp" value="${betterform.home}/src/main/webapp"/>
 
-    <!--<property name="bfSrc.dir" value="${exist.rootdir}/extensions/betterform/src/main"/>-->
-
     <!--todo:move property to build.properties.xml-->
     <property name="bf.release.name" value="betterform-3.1.0"/>
-    <!--<property name="bf.download.url" value="http://www.betterform.de/dist/${bf.name}.zip"/>-->
 
     <path id="generator.libs" description="classpath for using Saxon XSLT">
-        <pathelement location="${betterform.webapp}/WEB-INF/lib/saxon-9.0.jar"/>
-        <pathelement location="${betterform.webapp}/WEB-INF/lib/saxon-dom-9.0.jar"/>
+        <pathelement location="${exist.rootdir}/lib/user/saxon-9.0.jar"/>
+        <pathelement location="${exist.rootdir}/lib/user/saxon-dom-9.0.jar"/>
     </path>
-
 
     <path id="classpath.exist">
         <fileset dir="${exist.rootdir}/lib/core">
@@ -46,82 +43,44 @@
         <classpath refid="classpath.exist"/>
     </typedef>
 
-    <target name="install" description="install betterFORM into an existing eXist XML Db installation">
+    <target name="install" description="install betterFORM into an existing eXist XML Db installation" if="include.feature.betterform.config">
         <echo message="************************************************************************************"/>
         <echo message="add betterFORM config parameters to eXist to ${exist.web.xml}"/>
         <echo message="************************************************************************************"/>
 
         <antcall target="patchWebXml"/>
 
-
         <echo message="************************************************************************************"/>
         <echo message="deploy betterFORM resources to eXist webapp  (${exist.web.xml}/webapp)"/>
         <echo message="************************************************************************************"/>
 
         <antcall target="deployBetterFORMResources"/>
-
-<!--
-        <echo message="************************************************************************************"/>
-        <echo message="deploy betterFORM resources into running eXist XML DB"/>
-        <echo message="************************************************************************************"/>
-
-        <antcall target="prepareDB"/>
--->
+        <antcall target="create-jar"/>
 
         <echo message="************************************************************************************"/>
         <echo message="add betterFORM lib folder to eXist start.config"/>
         <echo message="************************************************************************************"/>
 
-        <antcall target="patchStartConfig"/>
-
-        <copy todir="${exist.rootdir}/webapp/xquery">
-            <fileset file="${betterform.webapp}/xquery/xferror.xql"/>
-        </copy>
     </target>
 
-    <target name="install-xrx" description="installs sample XRX applications">
-        <!-- <unzip src="${target.dir}/xrx.zip" dest="${target.dir}/xrx" /> -->
-
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"
-                   uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/betterform/apps"
-                   createsubcollections="true"
-                   createcollection="true"
-                   user="admin"
-                   password="${pass}">
-            <fileset dir="${betterform.xrx}" includes="**/*.*">
-                <exclude name="lucene"/>
-                <exclude name="lucene/collection.xconf"/>
-            </fileset>
-        </xdb:store>
-
-        <!--timetracker lucene indexes-->
-        <xdb:store xmlns:xdb="http://exist-db.org/ant"
-                   uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db/betterform/apps/timetracker/data/task"
-                   createsubcollections="true"
-                   createcollection="true"
-                   user="admin"
-                   password="${pass}">
-            <fileset dir="${betterform.xrx}/timetracker/lucene" includes="*.*"/>
-        </xdb:store>
+    <target  name="create-jar">
+        <jar basedir="${betterform.webapp}/WEB-INF/classes" compress="true" jarfile="${exist.rootdir}/lib/user/betterform.jar" update="true">
+            <exclude name="schema/**"/>
+            <exclude name=".svn"/>
+            <exclude name="**/.svn/**"/>
+        </jar>
     </target>
 
 
-    <target name="uninstall" xmlns:xmldb="http://exist-db.org/ant" description="uninstall betterFORM">
+    <target name="uninstall" xmlns:xmldb="http://exist-db.org/ant" description="uninstall betterFORM" if="include.feature.betterform.config">
         <delete file="${exist.web.xml}" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/forms" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/resources/images" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/resources/scripts" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/resources/styles" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/resources/xsd" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/resources/xslt" failonerror="false"/>
-        <move file="${basedir}/uninstall/web.xml" tofile="${exist.web.xml}" failonerror="false"/>
+        <delete dir="${exist.rootdir}/webapp/betterform" failonerror="false"/>
+        <!-- TODO: remove when cocoon is removed -->
         <!-- eXist 1.5.0 -->
         <move file="${basedir}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/extensions/cocoon/lib/ehcache-1.1.jar" failonerror="false"/>
         <!-- eXist 1.4 -->
         <!-- <move file="${basedir}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" failonerror="false"/> -->
 
-        <!--delete start.config from exist dir-->
-        <delete file="${exist.rootdir}/start.config"/>
 
         <!--delete files from WEB-INF-->
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" failonerror="false"/>
@@ -132,81 +91,33 @@
         <delete file="${exist.rootdir}/webapp/WEB-INF/web.xml.original" failonerror="false"/>
 
         <!--delete error page-->
-        <delete file="${exist.rootdir}/webapp/xquery/error.xql" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/betterform/xquery/error.xql" failonerror="false"/>
 
         <!--delete sample file-->
-        <delete file="${exist.rootdir}/webapp/xquery/xfGuess.xql" failonerror="false"/>
+        <!-- <delete file="${exist.rootdir}/webapp/xquery/xfGuess.xql" failonerror="false"/> -->
 
-        <!--remove betterFORM from the database-->
-        <xdb:remove xmlns:xdb="http://exist-db.org/ant"
-            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db"
-            collection="betterform"
-            user="admin"
-            password="${pass}"/>
-
-        <!--remove timetracker lucene config-->
-        <xdb:remove xmlns:xdb="http://exist-db.org/ant"
-            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db"
-            collection="betterform"
-            user="admin"
-            password="${pass}"/>
-
-        <echo message="!!!!! To fully remove betterFORM from eXist you have to delete the 'betterform' directory and 'betterform.zip' from EXIST_HOME/extensions !!!!!"/>
+        <!-- restore web.xml -->
+        <copy tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" file="${basedir}/uninstall/web.xml"/>
     </target>
-
-
-<!--
-    <target name="unzip_betterFORM_release">
-        <available property="betterFormAvailable" file="${bfSrc.dir}.zip"/>
-        <antcall  target="download_betterFORM_release"/>
-        <unzip src="${bfSrc.dir}.zip" dest="${bfSrc.dir}"/>
-    </target>
-
-    <target name="download_betterFORM_release" unless="betterFormAvailable">
-        <mkdir dir="${target.dir}"/>
-        <get usetimestamp="true" ignoreerrors="true"  src="${bf.download.url}"  dest="${bfSrc.dir}.zip"/>
-    </target>
--->
 
     <target name="patchWebXml">
         <mkdir dir="${basedir}/uninstall"/>
-
 
         <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" force="true"
               style="${betterform.etc}/MergeWebXML.xsl">
             <classpath refid="generator.libs"/>
             <param name="webxml.path" expression="${exist.web.xml}"/>
         </xslt>
-        <copy file="${exist.web.xml}.original" tofile="${basedir}/uninstall/web.xml"/>
+        <move file="${exist.web.xml}.original" tofile="${basedir}/uninstall/web.xml"/>
         <move file="${exist.web.xml}.bf" tofile="${exist.web.xml}"/>
     </target>
 
-
-    <!-- deploys betterform resources into an existing and running eXist XML Db installation -->
-    <target name="prepareDB" xmlns:xmldb="http://exist-db.org/ant">
-		<xdb:store xmlns:xdb="http://exist-db.org/ant"
-                   uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/xforms/betterform/resources"
-                   createsubcollections="true"
-                   createcollection="true"
-                   type="binary">
-			<fileset dir="${betterform.webapp}/resources" includes="**/*.*"/>
-		</xdb:store>
-
-		<xdb:store xmlns:xdb="http://exist-db.org/ant"
-                   uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/xforms/betterform/forms"
-                   createsubcollections="true"
-                   createcollection="true" >
-			<fileset dir="${betterform.webapp}/forms" includes="**/*.*"/>
-
-		</xdb:store>
-    </target>
-
     <target name="deployBetterFORMResources" >
-        <copy todir="${exist.rootdir}/webapp/forms">
-            <fileset dir="${betterform.webapp}/forms"/>
+        <copy todir="${exist.rootdir}/webapp/betterform/forms">
+            <fileset dir="${betterform.webapp}/forms" excludes="**/.svn **/.svn/**"/>
         </copy>
-        <copy todir="${exist.rootdir}/webapp/resources">
-            <fileset dir="${betterform.webapp}/resources"/>
+        <copy todir="${exist.rootdir}/webapp/betterform/resources">
+            <fileset dir="${betterform.webapp}/resources" excludes="**/.svn **/.svn/**"/>
         </copy>
 
         <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
@@ -219,28 +130,14 @@
 
         <mkdir dir="${basedir}/uninstall"/>
         <!-- eXist 1.5.0 -->
-        <move file="${exist.rootdir}/extensions/cocoon/lib/ehcache-1.1.jar" tofile="${basedir}/uninstall/ehcache-1.1.jar" />
+        <!-- TODO: remove when cocoon is removed -->
+        <move file="${exist.rootdir}/extensions/cocoon/lib/ehcache-1.1.jar" tofile="${basedir}/uninstall/ehcache-1.1.jar" failonerror="false"/>
         <!-- eXist 1.4 -->
         <!-- <move file="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" tofile="${basedir}/uninstall/ehcache-1.1.jar" /> -->
 
-    </target>
-
-
-    <target  name="patchStartConfig">
-        <!-- <copy file="${basedir}/start.config.betterform" tofile="${exist.rootdir}/start.config"/> -->
-        <copy file="${betterform.home}/src/main/etc/start.config.betterform-1.5" tofile="${exist.rootdir}/start.config"/>
-<!-- DO NOT REMOVE: This would be the preferred way to use the start.config but it is only available if sources of eXist have been
-installed. Therefore we maintain our own full copy for now.
-        <copy file="${exist.rootdir}/src/org/exist/start/start.config" todir="${exist.rootdir}"/>
-
-        <concat destfile="${exist.rootdir}/start.config">
-            <filelist dir="${exist.rootdir}/src/org/exist/start"
-		         files="start.config"/>
-            <filelist dir="${basedir}"
-		         files="start.config.betterform"/>
-
-        </concat>
--->
+        <copy todir="${exist.rootdir}/webapp/betterform/xquery">
+            <fileset file="${betterform.webapp}/xquery/xferror.xql"/>
+        </copy>
     </target>
 
 </project>

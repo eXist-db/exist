@@ -5,11 +5,12 @@
   -->
 
 <xsl:stylesheet version="2.0"
-    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:bf="http://betterform.sourceforge.net/xforms"
     xmlns:xf="http://www.w3.org/2002/xforms"
-    exclude-result-prefixes="xf bf xsl">
+    exclude-result-prefixes="xf bf xsl"
+    xpath-default-namespace="http://www.w3.org/1999/xhtml">
 
     <!-- ### this url will be used to build the form action attribute ### -->
     <xsl:param name="sessionKey" select="''"/>
@@ -21,13 +22,13 @@
         <xsl:apply-templates/>
     </xsl:template>
 
-    <xsl:template match="xhtml:html">
+    <xsl:template match="html">
         <html>
             <xsl:apply-templates/>
         </html>
     </xsl:template>
 
-    <xsl:template match="xhtml:link">
+    <xsl:template match="link">
         <xsl:copy-of select="."/>
     </xsl:template>
 
@@ -47,7 +48,7 @@
     <xsl:template match="bf:selector">
     </xsl:template>
 
-    <xsl:template match="xhtml:span">
+    <xsl:template match="span">
         <span>
             <xsl:if test="@class">
                 <xsl:attribute name="class">
@@ -104,7 +105,7 @@
     <xsl:template name="getMeta">
         <xsl:variable name="uc">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
         <xsl:variable name="lc">abcdefghijklmnopqrstuvwxyz</xsl:variable>
-        <xsl:for-each select="xhtml:meta">
+        <xsl:for-each select="meta">
             <xsl:choose>
                 <xsl:when test="translate(./@http-equiv, $uc, $lc) = 'content-type'"/>
                 <xsl:otherwise>
@@ -117,7 +118,7 @@
     </xsl:template>
 
     <xsl:template name="getLinkAndStyle"><xsl:text>
-</xsl:text><xsl:for-each select="xhtml:link|xhtml:style">
+</xsl:text><xsl:for-each select="link|style">
             <xsl:element name="{local-name()}">
                 <xsl:copy-of select="@*"/>
                 <xsl:apply-templates/>
@@ -143,7 +144,7 @@
 
     <xsl:template name="copyInlineScript">
         <!-- copy inline javascript -->
-        <xsl:for-each select="xhtml:script">
+        <xsl:for-each select="script">
             <script>
                     <xsl:attribute name="type">
                         <xsl:value-of select="@type"/>
@@ -229,7 +230,7 @@
     </xsl:template>
 
     <xsl:template name="get-name-classes">
-        <xsl:param name="name" select="local-name()"/>
+        <xsl:param name="name" select="local-name()" />
         <xsl:param name="appearance"/>
 
 
@@ -351,8 +352,8 @@
             <xsl:when test="@class">
                 <xsl:value-of select="@class"/>
             </xsl:when>
-            <xsl:when test="@xhtml:class">
-                <xsl:value-of select="@xhtml:class"/>
+            <xsl:when test="@class">
+                <xsl:value-of select="@class"/>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
