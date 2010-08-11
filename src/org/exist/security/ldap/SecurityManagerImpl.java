@@ -27,6 +27,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
+import org.exist.config.Configuration;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.GroupImpl;
@@ -574,6 +575,18 @@ public class SecurityManagerImpl implements SecurityManager
 
 	@Override
 	public BrokerPool getDatabase() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isConfigured() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Configuration getConfiguration() {
 		// TODO Auto-generated method stub
 		return null;
 	}

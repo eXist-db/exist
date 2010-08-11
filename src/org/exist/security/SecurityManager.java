@@ -39,7 +39,7 @@ import org.exist.xmldb.XmldbURI;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
-public interface SecurityManager {
+public interface SecurityManager extends Configurable {
 
    public final static String ACL_FILE = "users.xml";
    public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
