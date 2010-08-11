@@ -621,12 +621,9 @@
             for Saxon (XSLT 2.0 support):
             - "net.sf.saxon.TransformerFactoryImpl"
             
-                You will need to copy saxon8.jar saxon8-dom.jar and saxon8-xpath.jar
-                into lib/endorsed. 
-                You can get these from http://sourceforge.net/projects/saxon
-            
             for Xalan (XSLT 1.0 support):
             - "org.apache.xalan.processor.TransformerFactoryImpl"
+
         - caching:
             You can enable or disable xsl caching by this option.     
             This option is set to "yes" by default.     
@@ -648,8 +645,9 @@
         and "string".  Anything else will be treated as type "string".
         
     -->
-    <transformer
-        class="org.apache.xalan.processor.TransformerFactoryImpl" caching="yes"/>
+    <transformer class="net.sf.saxon.TransformerFactoryImpl" caching="yes">
+        <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+    </transformer>
 
     <!--
         Settings for XML validation

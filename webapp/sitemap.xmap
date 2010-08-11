@@ -96,7 +96,7 @@
       <use-request-parameters>false</use-request-parameters>
       <use-session-parameters>false</use-session-parameters>
       <use-cookie-parameters>false</use-cookie-parameters>
-      <xslt-processor-role>xalan</xslt-processor-role>
+      <xslt-processor-role>saxon</xslt-processor-role>
       <check-includes>true</check-includes>
     </map:transformer>
 

@@ -440,16 +440,17 @@
       |  <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
       | For new (7+) Saxon use:
       |  <parameter name="transformer-factory" value="net.sf.saxon.TransformerFactoryImpl"/>
+      +-->
   <component logger="core.xslt-processor"
              role="org.apache.excalibur.xml.xslt.XSLTProcessor/saxon"
              class="org.apache.excalibur.xml.xslt.XSLTProcessorImpl">
      <parameter name="use-store" value="true"/>
-     <parameter name="transformer-factory" value="com.icl.saxon.TransformerFactoryImpl"/>
+     <parameter name="transformer-factory" value="net.sf.saxon.TransformerFactoryImpl"/>
   </component>
-      +-->
+
 
   <!-- Xpath Processor: -->
-  <xpath-processor class="org.apache.excalibur.xml.xpath.XPathProcessorImpl" logger="core.xpath-processor"/>
+  <xpath-processor class="org.apache.excalibur.xml.xpath.Saxon7ProcessorImpl" logger="core.xpath-processor"/>
 
   <!-- The XMLizers converts different mime-types to XML -->
   <xmlizer>
