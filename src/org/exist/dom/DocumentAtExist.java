@@ -22,6 +22,7 @@
 
 package org.exist.dom;
 
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 //import org.exist.collections.Collection;
@@ -55,4 +56,6 @@ public interface DocumentAtExist extends NodeAtExist, Document {
 //	public User getUserLock();
 	
 //	public Collection getCollection();
+	
+    public XmldbURI getURI();
 }

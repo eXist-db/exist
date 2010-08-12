@@ -36,15 +36,15 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 
 	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-
-		System.out.println("ConfigurationDocumentTrigger event = "+event+" documentPath = "+documentPath);
+		;
 	}
 
 	@Override
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
 
-		System.out.println("ConfigurationDocumentTrigger event = "+event+" documentPath = "+documentPath);
-		
+		Configuration conf = Configurator.hotConfigs.get(documentPath);
+		if (conf != null) 
+			conf.checkForUpdates();
 	}
 
 }

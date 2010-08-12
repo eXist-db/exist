@@ -1923,4 +1923,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     {
         return( document.next[nextNode] );
     }
+
+	@Override
+	public XmldbURI getURI() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

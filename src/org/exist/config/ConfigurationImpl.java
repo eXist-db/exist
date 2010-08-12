@@ -21,6 +21,7 @@
  */
 package org.exist.config;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +45,8 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 	
 	private Map<String, List<Configuration>> configs = new HashMap<String, List<Configuration>>();
+	
+	protected WeakReference<Configurable> configuredObjectReferene = null;
 	
 	private ConfigurationImpl() {
 	}
@@ -249,5 +252,11 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	@Override
 	public Object getObject(String name) {
 		return objects.get(name);
+	}
+
+	@Override
+	public void checkForUpdates() {
+		if (configuredObjectReferene != null && configuredObjectReferene.get() != null)
+			Configurator.configure(configuredObjectReferene.get(), this);
 	}
 }

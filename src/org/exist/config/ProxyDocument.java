@@ -23,6 +23,7 @@ package org.exist.config;
 
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeAtExist;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.*;
 
 /**
@@ -288,5 +289,10 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 
 	public boolean hasReferenceNodes() {
 		return getProxyObject().hasReferenceNodes();
+	}
+
+	@Override
+	public XmldbURI getURI() {
+		return getProxyObject().getURI();
 	}
 }
