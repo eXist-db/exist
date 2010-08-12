@@ -28,11 +28,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -71,6 +74,8 @@ import org.xml.sax.XMLReader;
  */
 public class Configurator {
 	
+	protected static ConcurrentMap<XmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<XmldbURI, Configuration>();
+	
 	private static Map<Class<Configurable>, Map<String, Field>> map = 
 		new HashMap<Class<Configurable>, Map<String, Field>>();
 	
@@ -94,6 +99,24 @@ public class Configurator {
 	}
 	
 	public static Configuration configure(Configurable instance, Configuration configuration) {
+		
+		if (configuration instanceof ConfigurationImpl) {
+			ConfigurationImpl impl = (ConfigurationImpl) configuration;
+			
+			//XXX: lock issue here, fix it
+			Configurable configurable = null;
+			
+			if (impl.configuredObjectReferene != null)
+				configurable = impl.configuredObjectReferene.get();
+			
+			if (configurable != null) {
+				if (configurable != instance)
+					throw new IllegalArgumentException("Configuration allready in use by "+impl.configuredObjectReferene.get());
+			
+			} else 
+				impl.configuredObjectReferene = new WeakReference<Configurable>(instance);
+		}
+		
 		Class<?> clazz = instance.getClass();
 		instance.getClass().getAnnotations();
 		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
@@ -128,17 +151,16 @@ public class Configurator {
 			}
 			
 			Field field = properyFieldMap.get(property);
+			field.setAccessible(true);
+
+			Object value = null;
 			String typeName = field.getType().getName();
 			try {
 				if (typeName.equals("java.lang.String")) {
-					String value = configuration.getProperty(property);
-					if (value != null) {
-						field.setAccessible(true);
-						field.set(instance, value);
-					}
+					value = configuration.getProperty(property);
+
 				} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
 
-					Integer value;
 		    		if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
 		    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
 		    			int radix = 10;
@@ -151,26 +173,21 @@ public class Configurator {
 						value = configuration.getPropertyInteger(property);
 						
 		    		}
-		    		
-					if (value != null) {
-						field.setAccessible(true);
-						field.set(instance, value);
-					}
+
 				} else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
-					Long value = configuration.getPropertyLong(property);
-					if (value != null) {
-						field.setAccessible(true);
-						field.set(instance, value);
-					}
+					value = configuration.getPropertyLong(property);
+
 				} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-					Boolean value = configuration.getPropertyBoolean(property);
-					if (value != null) {
-						field.setAccessible(true);
-						field.set(instance, value);
-					}
+					value = configuration.getPropertyBoolean(property);
+
 				} else {
 					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
 				}
+			
+				if (value != null && !field.get(instance).equals(value)) {
+					field.set(instance, value);
+				}
+
 			} catch (IllegalArgumentException e) {
 				System.out.println("configuration error: \n" +
 						" config: "+configuration.getName()+"\n" +
@@ -232,6 +249,11 @@ public class Configurator {
 	}
 
 	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ExceptionConfiguration {
+		
+		Configuration conf = hotConfigs.get(collection.getURI().append(fileURL));
+		if (conf != null) return conf;
+		
+		//XXX: locking required
 		DocumentAtExist document = collection.getDocument(broker, fileURL);
 		
 		if (document == null) {
@@ -370,6 +392,10 @@ public class Configurator {
 			}
 		}
 		
-		return new ConfigurationImpl((ElementAtExist) document.getDocumentElement());
+		conf = new ConfigurationImpl((ElementAtExist) document.getDocumentElement());
+		
+		hotConfigs.put(document.getURI(), conf);
+		
+		return conf;
 	}
 }

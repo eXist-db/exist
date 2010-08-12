@@ -51,4 +51,6 @@ public interface Configuration {
 	public Object getObject(String name);
 
 	public String getName();
+
+	public void checkForUpdates();
 }
