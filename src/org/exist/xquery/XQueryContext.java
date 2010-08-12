@@ -1665,16 +1665,14 @@ public class XQueryContext
      */
     public boolean checkModulesValid()
     {
-        for( Module module : modules.values() ) {
-
-            if( !module.isInternalModule() ) {
-
-                if( !( (ExternalModule)module ).moduleIsValid( getBroker() ) ) {
+    	for (Module module : allModules.values() ) {
+    		if( !module.isInternalModule() ) {
+    			if( !( (ExternalModule)module ).moduleIsValid( getBroker() ) ) {
                     LOG.debug( "Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded" );
                     return( false );
                 }
-            }
-        }
+    		}
+    	}
         return( true );
     }
 
