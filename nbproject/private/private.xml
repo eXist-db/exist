@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/Users/aretter/Desktop/eXist/conf.xml</file>
-        <file>file:/Users/aretter/Desktop/eXist/extensions/modules/src/org/exist/xquery/modules/httpclient/HTTPClientModule.java</file>
-        <file>file:/Users/aretter/Desktop/eXist/extensions/modules/src/org/exist/xquery/modules/httpclient/GETFunction.java</file>
-        <file>file:/Users/aretter/Desktop/eXist/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java</file>
-    </open-files>
 </project-private>
