@@ -8,6 +8,8 @@
             <source-roots>
                 <root id="src.dir"/>
                 <root id="src.src.dir" name="Modules"/>
+                <root id="src.src8.dir" name="XQDoc"/>
+                <root id="src.src9.dir" name="Index Sort"/>
                 <root id="src.src2.dir" name="Index NGram"/>
                 <root id="src.src3.dir" name="Index Spatial"/>
                 <root id="src.src4.dir" name="Index Lucene"/>
