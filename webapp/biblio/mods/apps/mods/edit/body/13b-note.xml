@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="note">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="note" tab-id="note">
     <!--note begins-->
     <!--DLF/Aquifer: RECOMMENDED OF APPLICABLE-->
     <!--Cluster: include-->

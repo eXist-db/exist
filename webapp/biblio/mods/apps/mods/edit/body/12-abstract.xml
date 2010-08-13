@@ -1,4 +1,4 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract" tab-id="abstract">
     <fieldset>
         <legend>
             <span class="legend">Abstract</span>

@@ -2,7 +2,8 @@ xquery version "1.0";
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 declare namespace mods = "http://www.loc.gov/mods/v3";
 
-(:
+
+(: get-instance.xq - get the instance data to load into the edit XForms application.
 There are many sub-parts to the form.  Each part needs to map the right part of an instance into one tab
 :)
 
@@ -14,8 +15,10 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 let $id := request:get-parameter('id', '')
 let $new := request:get-parameter('new', 'true')
 
+(: TODO - check for required id parameter :)
+
 (: this is the ID of the tab but we just use tab in the URL :)
-let $tab-id := request:get-parameter('tab', 'title')
+let $tab-id := request:get-parameter('tab-id', 'title')
 let $debug := request:get-parameter('debug', 'false')
 
 let $app-collection := $style:db-path-to-app

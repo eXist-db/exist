@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="title">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="title" tab-id="title">
     <fieldset>
         <legend>
             <span class="legend">Title Information</span>
