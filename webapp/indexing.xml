@@ -467,7 +467,7 @@ include.index.spatial = false
         <!-- Range indexes -->
         <create qname="title" type="xs:string"/>
         <create qname="author" type="xs:string"/>
-        <create qname="year" type="xs:int"/>
+        <create qname="year" type="xs:integer"/>
         <!-- "old" context-dependant configuration using the path attribute: -->
         <create path="//booktitle" type="xs:string"/>
 
@@ -526,7 +526,7 @@ include.index.spatial = false
 <markup><![CDATA[<!-- Range indexes -->
 <create qname="title" type="xs:string"/>
 <create qname="author" type="xs:string"/>
-<create qname="year" type="xs:int"/>
+<create qname="year" type="xs:integer"/>
 <!-- "old" context-dependant configuration using the path attribute: -->
 <create path="//booktitle" type="xs:string"/>]]></markup>
                         </programlisting>
@@ -692,7 +692,7 @@ include.index.spatial = false
                     >util:index-keys</function> function (for range indexes):</para>
             <example>
                 <title>Query to List Index Contents</title>
-                <programlisting language="xquery"><![CDATA[declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
+                <programlisting language="xquery"><![CDATA[declare function local:term-callback($term as xs:string, $data as xs:integer+) as element() {
    <entry>
      <term>{$term}</term>
      <frequency>{$data[1]}</frequency>
@@ -717,7 +717,7 @@ util:index-keys(//name, "A", util:function(xs:QName("local:term-callback"), 2), 
             <example>
                 <title>Query to List Full Test Index Contents</title>
                 <programlisting language="xquery">
-<![CDATA[declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
+<![CDATA[declare function local:term-callback($term as xs:string, $data as xs:integer+) as element() {
    <entry>
      <term>{$term}</term>
      <frequency>{$data[1]}</frequency>
