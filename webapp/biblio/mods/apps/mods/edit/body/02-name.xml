@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="name">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="name" tab-id="name">
     <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records requires the use of at least one name element to describe the creator of the intellectual content of the resource, if available. The guidelines recommend the use of the type attribute with all name elements whenever possible for greater control and interoperability. In addition, they require the use of namePart as a subelement of name. This element is repeatable. -->
     <fieldset>
         <legend>Names</legend>

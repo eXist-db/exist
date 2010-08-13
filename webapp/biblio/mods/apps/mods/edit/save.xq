@@ -3,6 +3,8 @@ xquery version "1.0";
 (: XQuery script to save a new MODS record from an incomming HTTP POST :)
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
+import module namespace mods = "http://www.loc.gov/mods/v3" at "../modules/mods.xqm";
+  
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
@@ -19,31 +21,33 @@ let $item := request:get-data()
 
 let $doc := doc($save-file)/data
 
-
 (: in the incoming has any part then we update it in the document :)
-let $s1 := if ($item//part1) then update replace $doc/part1 with $item/part1 else ()
-let $s2 := if ($item//part2) then update replace $doc/part2 with $item/part2 else ()
-let $s3 := if ($item//part3) then update replace $doc/part3 with $item/part3 else ()
-let $s4 := if ($item//part4) then update replace $doc/part4 with $item/part4 else ()
-let $s5 := if ($item//part5) then update replace $doc/part5 with $item/part5 else ()
+let $titleInfo := if ($item//titleInfo) then update replace $doc/titleInfo with $item/titleInfo else ()
+let $name := if ($item/name) then update replace $doc/name with $item/name else ()
+let $originInfo := if ($item/originInfo) then update replace $doc/originInfo with $item/originInfo else ()
+let $physicalDescription := if ($item/physicalDescription) then update replace $doc/physicalDescription with $item/physicalDescription else ()
+let $targetAudience := if ($item/targetAudience) then update replace $doc/targetAudience with $item/targetAudience else ()
+let $language := if ($item/language) then update replace $doc/part5 with $item/part5 else ()
+let $typeOfResource := if ($item/typeOfResource) then update replace $doc/part5 with $item/part5 else ()
+let $genre := if ($item/genre) then update replace $doc/part5 with $item/part5 else ()
+let $subject := if ($item/subject) then update replace $doc/subject with $item/subject else ()
+let $classification := if ($item/classification) then update replace $doc/classification with $item/classification else ()
+let $abstract := if ($item/abstract) then update replace $doc/abstract with $item/abstract else ()
+let $table-of-contents := if ($item/table-of-contents) then update replace $doc/table-of-contents with $item/table-of-contents else ()
+let $note := if ($item/note) then update replace $doc/note with $item/note else ()
+let $related := if ($item/related) then update replace $doc/related with $item/related else ()
+let $identifier := if ($item/identifier) then update replace $doc/identifier with $item/identifier else ()
+let $record-info := if ($item/record-info) then update replace $doc/record-info with $item/record-info else ()
+let $access-condition := if ($item/access-condition) then update replace $doc/access-condition with $item/access-condition else ()
 
 let $content :=
 <div class="content">
+
+  <message>Save Status = OK</message>
   
-  
-  <tabs>
-  <a href="edit-1.xq" class="tab1">Citation</a>
-  <a href="edit-2.xq" class="tab2">Description</a>
-  <a href="edit-3.xq" class="tab3">Contents</a>
-  <a href="edit-4.xq" class="tab4">Relationships</a>
-  <a href="edit-5.xq" class="tab5">Administration</a>
-  </tabs>
-  <br/><br/>
-  
-  Save Status = <span class="success">OK</span>
-  
+  {mods:tabs-table('title', true()) }
   
 </div>
 
-return style:assemble-page($title, $content)
+return $content
 

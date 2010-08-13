@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin" tab-id="origin">
     <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. place, publisher, and edition are recommended if applicable. These guidelines make no recommendation on the use of the elements issuance and frequency. -->
     <fieldset>
         <legend>Origin Information</legend>

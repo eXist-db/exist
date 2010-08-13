@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="record-info">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="record-info" tab-id="record-info">
     <!-- Definition: information about the metadata record. Application: "recordInfo" is a wrapper element that contains subelements relating to information necessary for managing metadata. Data is only input within each subelement. -->
     <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of one recordInfo element with the subelement languageOfCataloging to record the language of the text in the MODS record. recordInfo is not repeatable. -->
     <!--NB: at save time, the recordContentSource element should be populated with the current user id and/or the formal name of the Cluster, the recordCreationDate element should be populated with the current time, and the first recordChangeDate element should be populated with the current time. -->
