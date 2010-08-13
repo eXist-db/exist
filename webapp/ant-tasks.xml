@@ -469,7 +469,7 @@
                  </listitem>
              </varlistentry>
              <varlistentry>
-                 <term>destfile</term>
+                 <term>destDir</term>
                  <listitem>
                      <para>write the results of the query to a destination file.
                        In this case the whole XML fragments of the result is written to the file.
