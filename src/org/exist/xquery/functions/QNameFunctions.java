@@ -103,7 +103,7 @@ public class QNameFunctions extends BasicFunction {
     		QName qname = value.getQName();
     		if (isCalledAs("prefix-from-QName")) {
     			String prefix = qname.getPrefix();
-    			if (prefix == null)
+    			if (prefix == null || prefix.length() == 0)
                     result = Sequence.EMPTY_SEQUENCE;
     			else
                     result = new StringValue(prefix, Type.NCNAME);
