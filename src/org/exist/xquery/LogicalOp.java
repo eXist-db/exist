@@ -41,7 +41,8 @@ public abstract class LogicalOp extends BinaryOp {
 	 * nodes from the context set.
 	 */
 	protected boolean optimize = false;
-
+	protected boolean rewritable = false;
+	
     protected Expression parent;
 
     /**
@@ -82,6 +83,7 @@ public abstract class LogicalOp extends BinaryOp {
 			optimize = true;
 		else
 			optimize = false;
+		rewritable = (contextInfo.getFlags() & Expression.IN_PREDICATE) == 0;
 	}
 	
 	public int returnsType() {		
@@ -107,5 +109,9 @@ public abstract class LogicalOp extends BinaryOp {
 
     public Expression getParent() {
         return this.parent;
+    }
+    
+    public boolean isRewritable() {
+    	return rewritable;
     }
 }
