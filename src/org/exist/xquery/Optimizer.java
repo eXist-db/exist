@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.storage.NodePath;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.log4j.Logger;
 import org.exist.xquery.functions.ExtFulltext;
@@ -179,10 +180,20 @@ public class Optimizer extends DefaultExpressionVisitor {
             newPred.add(and.getRight());
             step.insertPredicate(predicate, newPred);
             path.replaceExpression(and, and.getLeft());
+        } else if (and.isRewritable()) {
+        	and.getLeft().accept(this);
+			and.getRight().accept(this);
         }
     }
 
-    public void visitPredicate(Predicate predicate) {
+	public void visitOrExpr(OpOr or) {
+    	if (or.isRewritable()) {
+        	or.getLeft().accept(this);
+			or.getRight().accept(this);
+        }
+	}
+
+	public void visitPredicate(Predicate predicate) {
         ++predicates;
         super.visitPredicate(predicate);
         --predicates;
