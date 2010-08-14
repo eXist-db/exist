@@ -43,5 +43,8 @@ public class EXistOutputKeys {
     public final static String ADD_EXIST_ID = "add-exist-id";
 
     public final static String XINCLUDE_PATH = "xinclude-path";
+    
+    // enforce XHTML namespace on elements with no namespace
+    public final static String ENFORCE_XHTML = "enforce-xhtml";
 	
 }

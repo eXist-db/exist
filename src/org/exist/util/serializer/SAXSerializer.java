@@ -21,6 +21,7 @@ package org.exist.util.serializer;
 
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -39,6 +40,8 @@ import java.util.Properties;
 
 public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 
+	private final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
+	
 	private final static Properties defaultProperties = new Properties();
 	
 	static {
@@ -62,6 +65,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	protected NamespaceSupport nsSupport = new NamespaceSupport();
 	protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
 	protected HashMap<String, String> optionalNamespaceDecls = new HashMap<String, String>();
+	protected boolean enforceXHTML = false;
 
 	public SAXSerializer() {
 		super();
@@ -87,6 +91,10 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
         else
             receiver = writers[XML_WRITER];
         
+        // if set, enforce XHTML namespace on elements with no namespace
+        String xhtml = outputProperties.getProperty(EXistOutputKeys.ENFORCE_XHTML, "no");
+    	enforceXHTML = xhtml.equalsIgnoreCase("yes");
+    	
         receiver.setWriter(writer);
         receiver.setOutputProperties(outputProperties);
     }
@@ -178,6 +186,9 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 				elemPrefix = qname.substring(0, p);
 			if (namespaceURI == null)
 				namespaceURI = "";
+			if (enforceXHTML && elemPrefix.length() == 0 && namespaceURI.length() == 0)
+				namespaceURI = XHTML_NS;
+				
 			if (nsSupport.getURI(elemPrefix) == null) {
 				namespaceDecls.put(elemPrefix, namespaceURI);
 				nsSupport.declarePrefix(elemPrefix, namespaceURI);
@@ -251,13 +262,19 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		try {
 			namespaceDecls.clear();
 			nsSupport.pushContext();
-			receiver.startElement(qname);
+			
 			String prefix = qname.getPrefix();
 			String namespaceURI = qname.getNamespaceURI();
 			if(prefix == null)
 				prefix = "";
 			if (namespaceURI == null)
-				namespaceURI = "";			
+				namespaceURI = "";
+			if (enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
+				namespaceURI = XHTML_NS;
+				qname.setNamespaceURI(namespaceURI);
+			}
+			receiver.startElement(qname);
+			
 			if (nsSupport.getURI(prefix) == null) {
 				namespaceDecls.put(prefix, namespaceURI);
 				nsSupport.declarePrefix(prefix, namespaceURI);
@@ -351,6 +368,16 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 	public void endElement(QName qname) throws SAXException {
 		try {
 			nsSupport.popContext();
+			String prefix = qname.getPrefix();
+			String namespaceURI = qname.getNamespaceURI();
+			if(prefix == null)
+				prefix = "";
+			if (namespaceURI == null)
+				namespaceURI = "";
+			if (enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
+				namespaceURI = XHTML_NS;
+				qname.setNamespaceURI(namespaceURI);
+			}
 			receiver.endElement(qname);
 			receiver.setDefaultNamespace(nsSupport.getURI(""));
 		} catch (TransformerException e) {
