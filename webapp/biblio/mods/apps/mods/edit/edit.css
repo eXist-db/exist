@@ -1,0 +1,41 @@
+<css>
+@namespace xf url(http://www.w3.org/2002/xforms);
+
+/* style every table data as a tab if the table has a class of tabs */
+.tabs tr td {
+    color: black;
+    font-size: 12px;
+    background: #CCC;
+    border: 0.1em outset #BBB;	/* Make it look like a button */
+    font-weight: bold;
+    text-decoration: none;
+    text-align:center;
+    padding: 2px 3px;
+    /* round the top corners - works under FireFox */
+    -moz-border-radius: .75em .75em 0em 0em;
+ }
+
+/* this styles just the lower sub-tab row that has labels inside of triggers */
+.tabs tr td xf|trigger xf|label {
+    color: blue;
+    /* this keeps the tabs on a single line.  */
+    /* white-space:nowrap; */
+    
+}
+
+fieldset {
+  background-color:#eee;
+  margin: 2px 2px;
+  padding: 0;
+}
+
+legend {
+  font-weight:bold;
+}
+
+.legend {
+  background: white;
+  margin: 2px 4px;  
+}
+
+</css>
