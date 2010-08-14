@@ -12,6 +12,7 @@
     <property name="bf.shortname" value="betterform"/>
     <!--todo:move property to build.properties.xml-->
     <property name="bf.version" value="3.1.0"/>
+    <property file="../local.build.properties"/>
     <property file="../build.properties"/>
 
     <condition property="include.feature.betterform.config">
