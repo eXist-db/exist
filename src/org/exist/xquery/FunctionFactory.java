@@ -286,7 +286,10 @@ public class FunctionFactory {
                         else {
                             FunctionCall call = new FunctionCall(((ExternalModule) module).getContext(), qname, params);
                             call.setLocation(ast.getLine(), ast.getColumn());
-					        context.getRootContext().addForwardReference(call);
+                            if (((ExternalModule) module).getContext() == context)
+                                context.addForwardReference(call);
+                            else
+					            context.getRootContext().addForwardReference(call);
                             step = call;
                         }
                     } else {
