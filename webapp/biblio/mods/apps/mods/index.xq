@@ -20,7 +20,11 @@ let $content :=
                   <a href="views/list-items.xq">List</a> List of all MODS records in test collection sorted by document title
               </li>
               <li>
-                  <a href="edit/edit.xq?id=new">New</a> Create a new MODS record
+                  <a href="edit/edit.xq?id=new">New</a> Create a new MODS record using default tabs
+              </li>
+              
+              <li>
+                  <a href="edit/edit.xq?id=new&amp;show-all=true">New Full</a> Create a new MODS record will all tabs
               </li>
           </ol>
           
@@ -54,6 +58,14 @@ let $content :=
               </li>
               <li>
                   <a href="analysis/forms-body-metrics.xq">Forms Body Report</a> Analysis of each tab body of the form.
+              </li>
+         </ol>
+         
+         <ol>
+              <h3>Unit Tests</h3>
+              <li>
+                  <a href="unit-tests/edit-body-div-attribute-test.xq">Edit Body Files</a> A report of all of the files
+                  use to build the body elements.
               </li>
          </ol>
          
