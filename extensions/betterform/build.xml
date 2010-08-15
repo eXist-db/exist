@@ -19,6 +19,10 @@
         <istrue value="${include.feature.betterform}"/>
     </condition>
 
+	<condition property="betterform.installed">
+		<available file="${exist.rootdir}/webapp/betterform"/>
+	</condition>
+
     <property name="betterform.home" value="${exist.rootdir}/extensions/betterform"/>
     <property name="betterform.etc" value="${betterform.home}/src/main/etc"/>
     <property name="betterform.xrx" value="${betterform.home}/src/main/xrx"/>
@@ -44,7 +48,7 @@
         <classpath refid="classpath.exist"/>
     </typedef>
 
-    <target name="install" description="install betterFORM into an existing eXist XML Db installation" if="include.feature.betterform.config">
+    <target name="install" description="install betterFORM into an existing eXist XML Db installation" if="include.feature.betterform.config" unless="betterform.installed">
         <echo message="************************************************************************************"/>
         <echo message="add betterFORM config parameters to eXist to ${exist.web.xml}"/>
         <echo message="************************************************************************************"/>
