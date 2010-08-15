@@ -184,7 +184,7 @@ return util:eval('testmodule:test()')
     </test>    
 
     <test output="text">
-        <task>util:import-module</task>
+        <task>util:index-type</task>
         <code>util:index-type(collection('/db/util-test')//para)</code>
         <expected>item()</expected>
     </test>
