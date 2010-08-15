@@ -33,13 +33,12 @@
                 invited to provide input and feedback on development. Development discussion should
                 take place through the <ulink url="http://sourceforge.net/mail/?group_id=17691"
                     >eXist-db Development mailing list</ulink>.</para>
-            <para>If conflicts of interest occur during discussion, they must be resolved before any
-                code changes are made. If conflicts cannot be resolved by the community, one of the core
-                maintainers may act as a moderator. Maintainers are contributors who feel responsible 
-                for the project as a whole and have shown it in the past through their committment and
-                support. Right now this includes: Pierrick Brihaye, Wolfgang Meier, Leif-Jöran Olsson, Adam Retter 
-                and Dannes Wessels. We name those people, so you know who to talk to, but the list is in no way exclusive
-                and may change over time.</para>
+            <para>If conflicts of interest occur during discussion, they must be resolved before any code changes are
+                made. If conflicts cannot be resolved by the community, one of the core maintainers may act as a
+                moderator. Maintainers are contributors who feel responsible for the project as a whole and have shown
+                it in the past through their commitment and support. Right now this includes: Pierrick Brihaye, Wolfgang
+                Meier, Leif-Jöran Olsson, Adam Retter and Dannes Wessels. We name those people, so you know who to talk
+                to, but the list is in no way exclusive and may change over time.</para>
         </section>
         <section>
             <title>Maintainability</title>
@@ -115,7 +114,7 @@
             <title>Before Committing</title>
             <itemizedlist>
                 <listitem>
-                    <para><emphasis>TEST, TEST and TEST again!</emphasis></para>
+                    <para><emphasis>TEST, TEST and TEST again!</emphasis> See last section how to do this.</para>
                 </listitem>
                 <listitem>
                     <para>Execute the JUnit test suite to ensure that there are no regressions, if
@@ -204,5 +203,41 @@
                 to the Manifesto then Commit access to the eXist-db repository could be revoked by
                 the core developers.</para>
         </section>
+        <section>
+            <title>Appendix: How to enable all and test</title>
+            <para>It is essential that none of the existing code breaks because of your commit. Here is how to be sure
+                all code can be built and tested:</para>
+            <para>
+                <orderedlist>
+                    <listitem>
+                        <para>Edit <filename>conf.xml</filename> (or actually the original file <filename>conf.xml.tmpl</filename>)<orderedlist>
+                                <listitem>
+                                    <para>Uncomment all (really, all) builtin-modules under xpath
+                                        <filename>/exist/xquery/builtin-modules</filename></para>
+                                </listitem>
+                                <listitem>
+                                    <para>Activate the spatial index by uncomment the index-module "spatial-index" under
+                                        xpath <filename>/exist/indexer/modules</filename> (the corresponding function module is uncommented
+                                        by the first step.</para>
+                                </listitem>
+                            </orderedlist></para>
+                    </listitem>
+                    <listitem>
+                        <para>Edit <filename><emphasis role="bold"><emphasis role="underline"
+                                    >local</emphasis></emphasis>.build.properties</filename>, switch-on all modules<orderedlist>
+                                <listitem>
+                                    <para>The Oracle module can be switched to false, the required jar is a bit
+                                        difficult to download</para>
+                                </listitem>
+                                <listitem>
+                                    <para>Switch all on modules on with the command
+                                        <synopsis format="linespecific">cat build.properties | sed 's/false/true/g' > local.build.properties</synopsis></para>
+                                </listitem>
+                            </orderedlist></para>
+                    </listitem>
+                </orderedlist>
+            </para>
+        </section>
+        
     </chapter>
 </book>
