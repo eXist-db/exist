@@ -69,7 +69,11 @@ as element() {
 };
 
 declare function style:breadcrumbs() as node() {
-   <div class="breadcrumbs"></div>
+   <div class="breadcrumbs">
+      <a href="/rest/db/org/library/index.xq">Library Home</a> &gt;
+      <a href="/rest/db/org/library/apps/index.xq">Library Apps</a> &gt;
+      <a href="/rest/db/org/library/apps/mods/index.xq">MODS Editor</a>
+   </div>
 };
 
 declare function style:assemble-form($model as node(), $content as node()+) 
