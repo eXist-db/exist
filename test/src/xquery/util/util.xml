@@ -172,8 +172,17 @@ testmodule:test()
         <expected>1</expected>
     </test>
 
-    <test output="text">
+     <test output="text">
         <task>util:import-module</task>
+        <code>
+            let $null := util:import-module(xs:anyURI('http://example.com/test-a'), 'testmodule', xs:anyURI('xmldb:exist:///db/util-test/test.xqm'))
+            return util:eval('testmodule:test()')
+        </code>
+        <expected>1</expected>
+    </test>
+
+    <test output="text">
+        <task>util:import-module inside eval</task>
         <code>
 util:eval("
 let $null := util:import-module(xs:anyURI('http://example.com/test-a'), 'testmodule', xs:anyURI('xmldb:exist:///db/util-test/test.xqm'))
