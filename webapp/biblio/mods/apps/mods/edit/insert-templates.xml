@@ -1,46 +1,153 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3">
-    <titleInfo type="" lang="en">
+    <identifier type="" invalid="" displayLabel=""/>
+    <titleInfo lang="" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink="">
         <nonSort/>
         <title/>
         <subTitle/>
         <partNumber/>
         <partName/>
     </titleInfo>
-    <name type="" authority="">
-        <namePart type="" authority=""/>
+    <name type="personal" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
+        <namePart type="given"/>
+        <namePart type="family"/>
+        <description/>
+        <displayForm/>
+        <affiliation/>
         <role>
-            <roleTerm authority="" type=""/>
+            <roleTerm type="code" authority="marcrelator"/>
         </role>
     </name>
-    <typeOfResource/>
-    <genre authority=""/>
-    <originInfo>
-        <dateCreated encoding="" keydate=""/>
+    <originInfo lang="" xml:lang="" script="Latn" transliteration="">
+        <place>
+            <placeTerm type="text" authority=""/>
+        </place>
+        <dateIssued encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateCreated encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateCaptured encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateValid encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateModified encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <copyrightDate encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateOther encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <publisher/>
+        <edition/>
+        <issuance/>
+        <frequency/>
     </originInfo>
-    <language>
-        <languageTerm type=""/>
-    </language>
-    <physicalDescription>
+    <genre type="code" authority="marcgt" lang="" xml:lang="" script="" transliteration=""/>
+    <physicalDescription lang="" xml:lang="" script="" transliteration="">
+        <form type="material" authority="marcform"/>
+        <reformattingQuality/>
         <internetMediaType/>
+        <extent/>
         <digitalOrigin/>
+        <note lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink=""/>
     </physicalDescription>
-    <subject authority="">
-        <topic/>
-        <topic/>
-        <geographic/>
-    </subject>
-    <classification authority=""/>
-    <relatedItem type="">
-        <titleInfo>
-            <title/>
-        </titleInfo>
+    <note lang="eng" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink=""/>
+    <relatedItem type="" xlink="" ID="" displayLabel="">
+        <part type="" order="" ID="">
+            <detail type="" level="">
+                <number/>
+                <caption/>
+                <title/>
+            </detail>
+            <extent unit="">
+                <start/>
+                <end/>
+                <total/>
+                <list/>
+            </extent>
+            <date encoding="" point="" qualifier=""/>
+            <text/>
+        </part>
     </relatedItem>
-    <recordInfo>
-        <recordContentSource/>
-        <languageOfCataloging>
-            <languageTerm type=""/>
-        </languageOfCataloging>
+    <abstract type="" displayLabel=""/>
+    <subject authority="" xlink="" ID="" lang="" xml:lang="" script="" transliteration="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+            <partNumber/>
+            <partName/>
+        </titleInfo>
+        <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
+            <namePart type=""/>
+        </name>
+        <genre type="code" authority="" lang="" xml:lang="" script="" transliteration=""/>
+        <hierarchicalGeographic>
+            <continent/>
+            <country/>
+            <province/>
+            <region/>
+            <state/>
+            <territory/>
+            <county/>
+            <city/>
+            <citySection/>
+            <island/>
+            <area/>
+            <extraterrestrialArea/>
+        </hierarchicalGeographic>
+        <cartographics>
+            <scale/>
+            <coordinates/>
+            <projection/>
+        </cartographics>
+        <geographicCode authority=""/>
+        <occupation/>
+    </subject>
+    <recordInfo lang="eng" xml:lang="" type="" authority="">
+        <recordContentSource authority=""/>
+        <recordCreationDate encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <recordChangeDate encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <recordIdentifier source=""/>
         <recordOrigin/>
+        <languageOfCataloging>
+            <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+            <languageTerm type="text">English</languageTerm>
+        </languageOfCataloging>
+        <descriptionStandard authority=""/>
     </recordInfo>
+    <typeOfResource collection="" manuscript=""/>
+    <accessCondition lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink=""/>
+    <classification authority="" edition="" displayLabel="" lang="eng" xml:lang="" script="" transliteration=""/>
+    <tableOfContents type="" displayLabel="" lang="eng" xml:lang="" script="" transliteration="" xlink=""/>
+    <language objectPart="">
+        <languageTerm authority="iso639-2b" type="code"/>
+        <languageTerm type="text"/>
+    </language>
+    <location>
+        <physicalLocation displayLabel="" type="" authority="" xlink="" lang="eng" xml:lang="" script="" transliteration=""/>
+        <shelfLocator/>
+        <url displayLabel="" dateLastAccessed="" note="" access="" usage=""/>
+        <holdingSimple>
+            <copyInformation>
+                <form authority=""/>
+                <sublocation/>
+                <shelfLocator/>
+                <electronicLocator/>
+                <note type="" displayLabel=""/>
+                <enumerationAndChronology unitType=""/>
+            </copyInformation>
+        </holdingSimple>
+        <holdingExternal/>
+    </location>
+    <targetAudience lang="eng" xml:lang="" authority="marctarget" script="" transliteration=""/>
+    <part type="" order="" ID="">
+        <detail type="" level="">
+            <number/>
+            <caption/>
+            <title/>
+        </detail>
+        <extent unit="">
+            <start/>
+            <end/>
+            <total/>
+            <list/>
+        </extent>
+        <date encoding="" point="" qualifier=""/>
+        <text/>
+    </part>
 </mods>
