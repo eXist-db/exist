@@ -7,8 +7,9 @@
         <partNumber/>
         <partName/>
     </titleInfo>
-    <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
-        <namePart type=""/>
+    <name type="personal" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
+        <namePart type="given"/>
+        <namePart type="family"/>
         <description/>
         <displayForm/>
         <affiliation/>
@@ -16,17 +17,17 @@
             <roleTerm type="code" authority="marcrelator"/>
         </role>
     </name>
-    <originInfo lang="" xml:lang="" script="" transliteration="">
+    <originInfo lang="" xml:lang="" script="Latn" transliteration="">
         <place>
-            <placeTerm type="" authority=""/>
+            <placeTerm type="text" authority=""/>
         </place>
-        <dateIssued encoding="" point="" keyDate="" qualifier=""/>
-        <dateCreated encoding="" point="" keyDate="" qualifier=""/>
-        <dateCaptured encoding="" point="" keyDate="" qualifier=""/>
-        <dateValid encoding="" point="" keyDate="" qualifier=""/>
-        <dateModified encoding="" point="" keyDate="" qualifier=""/>
-        <copyrightDate encoding="" point="" keyDate="" qualifier=""/>
-        <dateOther encoding="" point="" keyDate="" qualifier=""/>
+        <dateIssued encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateCreated encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateCaptured encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateValid encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateModified encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <copyrightDate encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <dateOther encoding="w3cdtf" point="" keyDate="" qualifier=""/>
         <publisher/>
         <edition/>
         <issuance/>
