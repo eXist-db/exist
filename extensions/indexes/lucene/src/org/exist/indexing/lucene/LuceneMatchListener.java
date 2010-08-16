@@ -294,13 +294,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     IndexReader reader = null;
                     try {
                         reader = index.getReader();
-                        query = query.rewrite(reader);
+                        LuceneUtil.extractTerms(query, termMap, reader);
                     } catch (IOException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
                     } finally {
                         index.releaseReader(reader);
                     }
-                    LuceneUtil.extractTerms(query, termMap);
                 }
             }
             nextMatch = nextMatch.getNextMatch();

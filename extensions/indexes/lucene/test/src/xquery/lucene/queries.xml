@@ -277,6 +277,83 @@
 		</expected>
 	</test>
 	<test output="xml">
+        <task>Match highlighting: prefix query</task>
+        <code>
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., 'neu*')]
+            return
+                util:expand($hit/b)
+        </code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: prefix query xml syntax</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><prefix>neu</prefix></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: wildcard query</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><wildcard>*eu*</wildcard></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: regex query</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><regex>.?eu.*</regex></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: fuzzy query</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><fuzzy>neue</fuzzy></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: near query</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><near>acht neun</near></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Match highlighting: near query</task>
+        <code><![CDATA[
+            for $hit in doc("/db/test/text1.xml")//p[ft:query(., <query><near><term>acht</term><near>neun</near></near></query>)]
+            return
+                util:expand($hit/b)
+        ]]></code>
+        <expected>
+            <b><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">neun</exist:match></b>
+        </expected>
+    </test>
+	<test output="xml">
 		<task>index-keys test 1</task>
 		<code><![CDATA[
 			declare function local:key($key, $options) {
