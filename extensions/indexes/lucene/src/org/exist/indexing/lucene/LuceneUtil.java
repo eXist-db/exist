@@ -1,17 +1,15 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.regex.RegexQuery;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermFreqVector;
 
+import java.io.IOException;
 import java.util.*;
 
 public class LuceneUtil {
-
-    public static Map<String, Query> extractTerms(Query query) {
-        Map<String, Query> terms = new TreeMap<String, Query>();
-        extractTerms(query, terms);
-        return terms;
-    }
 
     /**
      * Extract all terms which would be matched by a given query.
@@ -23,18 +21,21 @@ public class LuceneUtil {
      *
      * @param query
      * @param terms
+     * @throws IOException in case of an error
      */
-    public static void extractTerms(Query query, Map<String, Query> terms) {
+    public static void extractTerms(Query query, Map<String, Query> terms, IndexReader reader) throws IOException {
         if (query instanceof BooleanQuery)
-            extractTermsFromBoolean((BooleanQuery)query, terms);
+            extractTermsFromBoolean((BooleanQuery)query, terms, reader);
         else if (query instanceof TermQuery)
             extractTermsFromTerm((TermQuery) query, terms);
         else if (query instanceof WildcardQuery)
-            extractTermsFromWildcard((WildcardQuery) query, terms);
+            extractTermsFromWildcard((WildcardQuery) query,terms, reader);
+        else if (query instanceof RegexQuery)
+        	extractTermsFromRegex((RegexQuery) query, terms, reader);
         else if (query instanceof FuzzyQuery)
-            extractTermsFromFuzzy((FuzzyQuery) query, terms);
+            extractTermsFromFuzzy((FuzzyQuery) query, terms, reader);
         else if (query instanceof PrefixQuery)
-            extractTermsFromPrefix((PrefixQuery) query, terms);
+            extractTermsFromPrefix((PrefixQuery) query, terms, reader);
         else if (query instanceof PhraseQuery)
             extractTermsFromPhrase((PhraseQuery) query, terms);
         else {
@@ -48,10 +49,10 @@ public class LuceneUtil {
         }
     }
 
-    private static void extractTermsFromBoolean(BooleanQuery query, Map<String, Query> terms) {
+    private static void extractTermsFromBoolean(BooleanQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
         BooleanClause clauses[] = query.getClauses();
         for (int i = 0; i < clauses.length; i++) {
-            extractTerms(clauses[i].getQuery(), terms);
+            extractTerms(clauses[i].getQuery(), terms, reader);
         }
     }
 
@@ -59,16 +60,20 @@ public class LuceneUtil {
         terms.put(query.getTerm().text(), query);
     }
 
-    private static void extractTermsFromWildcard(WildcardQuery query, Map<String, Query> terms) {
-        terms.put(query.getTerm().text(), query);
+    private static void extractTermsFromWildcard(WildcardQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
+    	extractTerms(rewrite(query, reader), terms, reader);
     }
 
-    private static void extractTermsFromFuzzy(FuzzyQuery query, Map<String, Query> terms) {
-        terms.put(query.getTerm().text(), query);
+    private static void extractTermsFromRegex(RegexQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
+    	extractTerms(rewrite(query, reader), terms, reader);
+    }
+    
+    private static void extractTermsFromFuzzy(FuzzyQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
+    	extractTerms(query.rewrite(reader), terms, reader);
     }
 
-    private static void extractTermsFromPrefix(PrefixQuery query, Map<String, Query> terms) {
-        terms.put(query.getPrefix().text(), query);
+    private static void extractTermsFromPrefix(PrefixQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
+    	extractTerms(rewrite(query, reader), terms, reader);
     }
 
     private static void extractTermsFromPhrase(PhraseQuery query, Map<String, Query> terms) {
@@ -76,5 +81,10 @@ public class LuceneUtil {
         for (int i = 0; i < t.length; i++) {
             terms.put(t[i].text(), query);
         }
+    }
+    
+    private static Query rewrite(MultiTermQuery query, IndexReader reader) throws IOException {
+    	query.setRewriteMethod(PrefixQuery.SCORING_BOOLEAN_QUERY_REWRITE);
+    	return query.rewrite(reader);
     }
 }
