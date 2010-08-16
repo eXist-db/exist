@@ -30,19 +30,28 @@ else
 
 let $code-table-collection := concat($style:web-path-to-app, '/code-tables/')
 let $xforms-body-collection := concat($style:web-path-to-app, '/edit/body')
-let $codes-found := collection($xforms-body-collection)/*[@tab-id=$tab-id]//xf:itemset
-let $count := count($codes-found)
+let $itemsets := collection($xforms-body-collection)/*[@tab-id=$tab-id]//xf:itemset
+let $code-table-names :=
+   for $itemset in $itemsets
+      let $nodeset := string($itemset/@nodeset)
+      let $after := substring-after($nodeset, "code-table-name='")
+      let $code-table-name := substring-before($after, "']/items/item")
+      order by $code-table-name
+      return $code-table-name
+let $distinct-code-table-names := distinct-values($code-table-names)
+let $itemset-count := count($itemsets)
+let $count-distinct := count($distinct-code-table-names)
 
 return
 <code-tables>
    <code-table-collection>{$code-table-collection}</code-table-collection>
    <xforms-body-collection>{$xforms-body-collection}</xforms-body-collection>
    <tab-id>{$tab-id}</tab-id>
-   <code-table-count>{$count}</code-table-count>
-   {for $code-table in $codes-found
-      let $nodeset := string($code-table/@nodeset)
-      let $after := substring-after($nodeset, "code-table-name='")
-      let $code-table-name := substring-before($after, "']/items/item")
+   <itemset-count>{$itemset-count}</itemset-count>
+   <code-table-name-count>{$count-distinct}</code-table-name-count>
+   <distinct-code-table-names>{$distinct-code-table-names}</distinct-code-table-names>
+   {for $code-table-name in $distinct-code-table-names
+      
       let $file-path := concat($code-table-collection, $code-table-name, 's.xml')
       let $code-table := doc($file-path)
       return

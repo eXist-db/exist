@@ -4,11 +4,13 @@ declare namespace xf = "http://www.w3.org/2002/xforms";
 
 (: unit test and browser of the body files for the form :)
 
+let $title := 'Unit Test for XForms Tab Div Tags'
+
+(: the collection path of the body divs :)
 let $xforms-body-collection := concat($style:web-path-to-app, '/edit/body')
 
+(: a sequence of all the files with root div elements in the collection :)
 let $div-tags := collection($xforms-body-collection)/div
-
-let $title := 'Unit Test for XForms Tab Div Tags'
 
 let $content :=
 <div class="content">
@@ -20,7 +22,8 @@ let $content :=
              <th class="span-3">Class Attribute</th>
              <th class="span-3">Tab ID Attribute</th>
              <th class="span-2">PASS/FAIL</th>
-             <th class="span-1"> # Code Tables</th>
+             <th class="span-1"> # Itemsets</th>
+             <th class="span-1"> # Distinct Code Tables</th>
              <th class="span-1">Code Tables</th>
              <th class="span-1">Edit</th>
              <th class="span-1 last">Instance</th>
@@ -34,6 +37,13 @@ let $content :=
             let $file-path := concat($collection-name, '/', $file-name)
             let $itemsets := doc($file-path)/*[@tab-id=$tab-id]//xf:itemset
             let $count-itemsets := count($itemsets)
+            let $code-table-names :=
+               for $itemset in $itemsets
+                  let $nodeset := string($itemset/@nodeset)
+                  let $after := substring-after($nodeset, "code-table-name='")
+                  return substring-before($after, "']/items/item")
+            let $count-distinct-code-table-names := count( distinct-values($code-table-names) )
+            
             order by $file-name
             return
                <tr>
@@ -47,6 +57,7 @@ let $content :=
                     }
                   </td>
                   <td>{$count-itemsets}</td>
+                  <td>{$count-distinct-code-table-names}</td>
                   <td><a href="../edit/codes-for-tab.xq?tab-id={$tab-id}">codes</a></td>
                   <td><a href="../edit/edit.xq?tab-id={$tab-id}">edit</a></td>
                   <td><a href="../edit/get-instance.xq?tab-id={$tab-id}">instance</a></td>
