@@ -61,7 +61,7 @@ else if ($exist:resource eq 'index.xml') then
                 	    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
                 <set-attribute name="xslt.output.doctype-system"
                     value="resources/xhtml1-transitional.dtd"/>
-                <set-attribute name="xslt.enforce-xhtml"
+                <set-attribute name="xslt.output.enforce-xhtml"
                     value="yes"/>
     		</forward>
 		</view>
