@@ -65,4 +65,9 @@ public interface Debugger {
 	public List<Location> getStackFrames() throws IOException;
 
 	public String evaluate(String script) throws IOException;
+
+	
+	public boolean isSuspended();
+	
+	public boolean isTerminated();
 }

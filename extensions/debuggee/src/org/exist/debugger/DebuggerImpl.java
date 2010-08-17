@@ -59,6 +59,9 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	private static DebuggerImpl instance = null;
 	
+	String lastStatus = null;
+	int lastStatusId = -1;
+	
 	public static Debugger getDebugger() throws IOException {
 		if (instance == null)
 			instance = new DebuggerImpl();
@@ -229,8 +232,15 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 						response.getTransactionID()))
 			currentCommand.putResponse(response);
 
-//		if (response.hasAttribute("status"))
-//			lastStatus = response.getAttribute("status");
+		if (response.hasAttribute("status")) {
+			try {
+				int id = Integer.valueOf(response.getTransactionID());
+				if (lastStatusId < id) {
+					lastStatus = response.getAttribute("status");
+				}
+			} catch (Exception e) {
+			}
+		}
 		
 		//it should be commands map, this implementation is dangerous
 		//rethink!!!
@@ -294,7 +304,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 					break;
 
 				String getStatus = response.getAttribute("status");
-
+				
 				if (getStatus.equals(status)) {
 					break;
 				} else if (getStatus.equals(STOPPED)) {
@@ -460,5 +470,13 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		}
 
 		return null;
+	}
+
+	public boolean isSuspended() {
+		return lastStatus.equals(BREAK);
+	}
+
+	public boolean isTerminated() {
+		return lastStatus.equals(STOPPED);
 	}
 }

@@ -90,16 +90,14 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	 * @see org.exist.debugger.DebuggingSource#isSuspended()
 	 */
 	public boolean isSuspended() {
-		// TODO Auto-generated method stub
-		return false;
+		return debugger.isSuspended();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#isTerminated()
 	 */
 	public boolean isTerminated() {
-		// TODO Auto-generated method stub
-		return false;
+		return debugger.isTerminated();
 	}
 
 	/* (non-Javadoc)
