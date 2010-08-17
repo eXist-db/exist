@@ -155,6 +155,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		if(prefix == null)
 			prefix = "";
 		String ns = nsSupport.getURI(prefix);
+        if (enforceXHTML && !XHTML_NS.equals(namespaceURI))
+                namespaceURI = XHTML_NS;
 		if(ns == null || (!ns.equals(namespaceURI))) {
 			optionalNamespaceDecls.put(prefix, namespaceURI);
 		}
@@ -203,6 +205,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 					if (attrName.equals("xmlns")) {
 						if (nsSupport.getURI("") == null) {
 							uri = attribs.getValue(i);
+                            if (enforceXHTML && !XHTML_NS.equals(uri))
+                                uri = XHTML_NS;
 							namespaceDecls.put("", uri);
 							nsSupport.declarePrefix("", uri);
 						}
@@ -288,6 +292,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 					if (attrQName.getLocalName().equals("xmlns")) {
 						if (nsSupport.getURI("") == null) {
 							uri = attribs.getValue(i);
+                            if (enforceXHTML && !XHTML_NS.equals(uri))
+                                uri = XHTML_NS;
 							namespaceDecls.put("", uri);
 							nsSupport.declarePrefix("", uri);
 						}
