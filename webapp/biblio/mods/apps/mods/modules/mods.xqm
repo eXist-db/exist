@@ -7,6 +7,8 @@ declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
 
 declare variable $mods:tabs-file := '/db/org/library/apps/mods/edit/tab-data.xml';
+declare variable $mods:body-file-collection := '/db/org/library/apps/mods/edit/body';
+declare variable $mods:code-table-collection := '/db/org/library/apps/mods/code-tables';
 
 (: Display all the tabs in a div using triggers. :)
 declare function mods:simple-tabs($tab-id as xs:string, $id as xs:string) as node()  {
@@ -155,4 +157,22 @@ declare function mods:tabs-table($selected-tab-id as xs:string, $show-all as xs:
           
            </table>
      </div>
+};
+
+(: given a specific code table name, list all the tabs that use this code table :)
+declare function mods:tabs-for-code-table($code-table-name as xs:string) {
+let $itemsets := collection($mods:body-file-collection)//xf:itemset[contains(@nodeset, $code-table-name)]
+return
+  if ($itemsets)
+   then
+    <ol>
+    {for $itemset in $itemsets
+       return
+       
+         <li>Tab: {substring-before(util:document-name($itemset), '.xml')} Label: {substring-before($itemset/../*:label/text(), ':') }</li>
+    }
+    </ol>
+   else
+      <div><br/><span class="error">Code Table Not Referenced</span><br/></div>
+
 };
