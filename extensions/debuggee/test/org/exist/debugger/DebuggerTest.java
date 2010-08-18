@@ -81,11 +81,6 @@ public class DebuggerTest implements ResponseListener {
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
-			try { //why???
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-			
 			System.out.println("get stack frames");
 			List<Location> stack = source.getStackFrames();
 			assertEquals(1, stack.size());
@@ -372,6 +367,28 @@ public class DebuggerTest implements ResponseListener {
 			exception = e;
 		}
 		assertEquals(exception.getClass().toString(), "class java.io.IOException");
+	}
+	
+	@Test
+	public void testStepInto() throws Exception {
+		Debugger debugger = DebuggerImpl.getDebugger();
+		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
+		for (int i = 0; i < 10; i++) {
+			System.out.println("init "+i);
+			DebuggingSource debuggerSource = debugger.init(url);
+			debuggerSource.stepInto();
+			//Thread.sleep(1000);
+
+			List<Location> stack = debuggerSource.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(8, stack.get(0).getLineBegin());
+			assertEquals(6, stack.get(0).getColumnBegin());
+
+			debuggerSource.stop();
+			//Thread.sleep(1000);
+			
+			System.out.println("stoped");
+		} 
 	}
 
 	static org.exist.start.Main database;
