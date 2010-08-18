@@ -46,7 +46,7 @@ declare function local:mode() as xs:string{
             </xf:header>
             <xf:header>
                 <xf:name>password</xf:name>
-                <xf:value>admin</xf:value>
+                <xf:value></xf:value>
             </xf:header>
             <xf:header>
                 <xf:name>realm</xf:name>

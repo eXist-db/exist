@@ -77,7 +77,10 @@
         </servlet>
     </xsl:template>
 
-    <xsl:template match="/webxml:web-app/webxml:filter-mapping[1]">
+    <xsl:template match="/webxml:web-app/webxml:filter-mapping[webxml:filter-name/text()='XQueryURLRewrite']">
+        <xsl:copy-of select="."/>
+        <xsl:text>
+</xsl:text>
         <filter-mapping>
             <filter-name>XFormsFilter</filter-name>
             <url-pattern>/*</url-pattern>
@@ -86,7 +89,6 @@
         <xsl:text>
     </xsl:text>
 
-        <xsl:copy-of select="."/>
     </xsl:template>
 
     <xsl:template match="/webxml:web-app/webxml:servlet-mapping[last()]">
