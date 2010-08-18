@@ -377,7 +377,11 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 		command.toDebuggee();
 		
-		waitFor(command.getTransactionId(), BREAK);
+		try {
+			waitFor(command.getTransactionId(), BREAK);
+		} catch (IOException e) {
+			//closed?
+		}
 	}
 
 	public boolean setBreakpoint(Breakpoint breakpoint) throws IOException {
