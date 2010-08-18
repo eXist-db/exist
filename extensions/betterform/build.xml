@@ -6,7 +6,7 @@
 <project name="betterFORM extension for eXist" default="install" basedir=".">
 
     <property name="pass" value="betterform"/>
-    <property name="exist.rootdir" value="../.."/>
+    <property name="exist.rootdir" value="${basedir}/../.."/>
     <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
 
     <property name="bf.shortname" value="betterform"/>
@@ -31,9 +31,10 @@
     <!--todo:move property to build.properties.xml-->
     <property name="bf.release.name" value="betterform-3.1.0"/>
 
+
     <path id="generator.libs" description="classpath for using Saxon XSLT">
-        <pathelement location="${exist.rootdir}/lib/user/saxon-9.0.jar"/>
-        <pathelement location="${exist.rootdir}/lib/user/saxon-dom-9.0.jar"/>
+        <pathelement location="${exist.rootdir}/lib/endorsed/saxonb-9.1.0.8.jar"/>
+        <pathelement location="${exist.rootdir}/lib/endorsed/saxonb-dom-9.1.0.8.jar"/>
     </path>
 
     <path id="classpath.exist">
@@ -43,10 +44,6 @@
         <pathelement path="${exist.rootdir}/exist.jar"/>
         <pathelement path="${exist.rootdir}/exist-optional.jar"/>
     </path>
-
-    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-        <classpath refid="classpath.exist"/>
-    </typedef>
 
     <target name="install" description="install betterFORM into an existing eXist XML Db installation" if="include.feature.betterform.config" unless="betterform.installed">
         <echo message="************************************************************************************"/>
@@ -60,32 +57,17 @@
         <echo message="************************************************************************************"/>
 
         <antcall target="deployBetterFORMResources"/>
-        <antcall target="create-jar"/>
-
-        <echo message="************************************************************************************"/>
-        <echo message="add betterFORM lib folder to eXist start.config"/>
-        <echo message="************************************************************************************"/>
-
     </target>
-
-    <target  name="create-jar">
-        <jar basedir="${betterform.webapp}/WEB-INF/classes" compress="true" jarfile="${exist.rootdir}/lib/user/betterform.jar" update="true">
-            <exclude name="schema/**"/>
-            <exclude name=".svn"/>
-            <exclude name="**/.svn/**"/>
-        </jar>
-    </target>
-
 
     <target name="uninstall" xmlns:xmldb="http://exist-db.org/ant" description="uninstall betterFORM" if="include.feature.betterform.config">
         <delete file="${exist.web.xml}" failonerror="false"/>
-        <delete dir="${exist.rootdir}/webapp/betterform" failonerror="false"/>
+        <delete dir="${exist.rootdir}/webapp/betterform" />
+
         <!-- TODO: remove when cocoon is removed -->
         <!-- eXist 1.5.0 -->
         <move file="${basedir}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/extensions/cocoon/lib/ehcache-1.1.jar" failonerror="false"/>
         <!-- eXist 1.4 -->
         <!-- <move file="${basedir}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" failonerror="false"/> -->
-
 
         <!--delete files from WEB-INF-->
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" failonerror="false"/>
@@ -94,9 +76,6 @@
         <delete file="${exist.rootdir}/webapp/WEB-INF/log4j.dtd" failonerror="false"/>
         <delete file="${exist.rootdir}/webapp/WEB-INF/log4j.xml" failonerror="false"/>
         <delete file="${exist.rootdir}/webapp/WEB-INF/web.xml.original" failonerror="false"/>
-
-        <!--delete error page-->
-        <delete file="${exist.rootdir}/webapp/betterform/xquery/error.xql" failonerror="false"/>
 
         <!--delete sample file-->
         <!-- <delete file="${exist.rootdir}/webapp/xquery/xfGuess.xql" failonerror="false"/> -->
@@ -107,11 +86,10 @@
 
     <target name="patchWebXml">
         <mkdir dir="${basedir}/uninstall"/>
-
+        
         <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" force="true"
               style="${betterform.etc}/MergeWebXML.xsl">
             <classpath refid="generator.libs"/>
-			<factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <param name="webxml.path" expression="${exist.web.xml}"/>
         </xslt>
         <move file="${exist.web.xml}.original" tofile="${basedir}/uninstall/web.xml"/>
@@ -135,8 +113,9 @@
         <!--<copy file="${basedir}/sample/xfGuess.xql" tofile="${exist.rootdir}/webapp/xquery/xfGuess.xql" />-->
 
         <mkdir dir="${basedir}/uninstall"/>
-        <!-- eXist 1.5.0 -->
+
         <!-- TODO: remove when cocoon is removed -->
+        <!-- eXist 1.5.0 -->
         <move file="${exist.rootdir}/extensions/cocoon/lib/ehcache-1.1.jar" tofile="${basedir}/uninstall/ehcache-1.1.jar" failonerror="false"/>
         <!-- eXist 1.4 -->
         <!-- <move file="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" tofile="${basedir}/uninstall/ehcache-1.1.jar" /> -->
