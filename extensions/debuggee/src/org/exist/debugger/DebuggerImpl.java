@@ -59,9 +59,6 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 
 	private static DebuggerImpl instance = null;
 	
-	String lastStatus = null;
-	int lastStatusId = -1;
-	
 	public static Debugger getDebugger() throws IOException {
 		if (instance == null)
 			instance = new DebuggerImpl();
@@ -197,7 +194,6 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return variables;
 	}
 	
-
 	public List<Location> getStackFrames() throws IOException {
 		StackGet command = new StackGet(session, " -i " + getNextTransaction());
 		command.toDebuggee();
@@ -232,16 +228,6 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 						response.getTransactionID()))
 			currentCommand.putResponse(response);
 
-		if (response.hasAttribute("status")) {
-			try {
-				int id = Integer.valueOf(response.getTransactionID());
-				if (lastStatusId < id) {
-					lastStatus = response.getAttribute("status");
-				}
-			} catch (Exception e) {
-			}
-		}
-		
 		//it should be commands map, this implementation is dangerous
 		//rethink!!!
 		responses.put(response.getTransactionID(), response);
@@ -473,10 +459,14 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	}
 
 	public boolean isSuspended() {
-		return lastStatus.equals(BREAK);
+		if (currentCommand == null) return false;
+		if (currentCommand.getStatus() == null) return false;
+		return (currentCommand.getStatus().equals(BREAK));
 	}
 
 	public boolean isTerminated() {
-		return lastStatus.equals(STOPPED);
+		if (currentCommand == null) return false;
+		if (currentCommand.getStatus() == null) return false;
+		return (currentCommand.equals(STOPPED));
 	}
 }
