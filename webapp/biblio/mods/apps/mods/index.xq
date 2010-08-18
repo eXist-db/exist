@@ -59,6 +59,9 @@ let $content :=
               <li>
                   <a href="analysis/forms-body-metrics.xq">Forms Body Report</a> Analysis of each tab body of the form.
               </li>
+              <li>
+                  <a href="analysis/tabs-for-code-table.xq">All Tabs Used By A Code Table</a> Analysis of each tab body and the code tables that use it.
+              </li>
          </ol>
          
          <ol>
@@ -66,6 +69,9 @@ let $content :=
               <li>
                   <a href="unit-tests/edit-body-div-attribute-test.xq">Edit Body Files</a> A report of all of the files
                   use to build the body elements.
+              </li>
+              <li>
+                  <a href="unit-tests/tab-table-test.xq">HTML Table Tabs</a> A tool to test the XQuery mods:tabs-table() function
               </li>
          </ol>
          
