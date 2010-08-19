@@ -125,7 +125,7 @@ declare function repomanager:main() as element() {
             <tr>
                 <th/>
                 <th>Package</th>
-                <th>Date installed</th>
+                <th>Date Uploaded</th>
                 <th>Installed</th>
                 <th>Action</th>
             </tr>
