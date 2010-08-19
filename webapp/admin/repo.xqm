@@ -111,7 +111,8 @@ declare function repomanager:process-action() as element()*
 
 declare function repomanager:main() as element() {
     let $action := lower-case(request:get-parameter("action", "refresh"))
-   
+    let $repocol :=  if (collection('/db/system/repo')) then () else xmldb:create-collection('/db/system','repo')
+
     return
         <div class="panel">
             <h1>Package Repository</h1>
@@ -129,7 +130,7 @@ declare function repomanager:main() as element() {
                 <th>Action</th>
             </tr>
         {
-         let $files := collection('/db/system/repo')/util:document-name(.)
+         let $files := if (collection('/db/system/repo')) then collection('/db/system/repo')/util:document-name(.) else ()
          let $repos := repo:list()
          return
 
