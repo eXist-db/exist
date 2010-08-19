@@ -31,6 +31,7 @@ declare function op:remove-collection($collection as xs:string) as element(statu
 };
 
 declare function op:update-collection-permissions($collection as xs:string, $restriction as xs:string, $user-group as xs:string?) as element(status) {
+    
     let $null := if($restriction eq "user") then
         (
             (: onlu this user can access, so restrict full access to user :)

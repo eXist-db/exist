@@ -107,8 +107,8 @@ function removeCollection(dialog) {
     Called when the user clicks on the "create" button in the create collection dialog.
  */
 function updateCollectionPermissions(dialog) {
-    var restriction = $('#update-collection-permissions-form input[name = restriction]').val();
-    var userGroup = $('#update-collection-permissions-form input[name = userGroup]').val();
+    var restriction = $('#update-collection-permissions-form input[name = restriction]:checked').val();
+    var userGroup = $('#update-collection-permissions-form select[name = userGroup]').val();
     var collection = $('#simple-search-form input[name = collection]').val();
     var params = { action: 'update-collection-permissions', restriction: restriction, userGroup: userGroup, collection: collection };
     $.get("operations.xql", params, function (data) {
