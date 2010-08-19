@@ -26,14 +26,6 @@
       <maximumStackSize value="32" />
       <properties />
     </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="1.5" />
-      <maximumHeapSize value="128" />
-      <maximumStackSize value="32" />
-      <properties />
-    </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
@@ -137,6 +129,7 @@
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
   <component name="JavacSettings">
     <option name="DEPRECATION" value="false" />
+    <option name="MAXIMUM_HEAP_SIZE" value="300" />
   </component>
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />

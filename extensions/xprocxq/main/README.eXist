@@ -14,32 +14,8 @@ that you can orchestrate and create sophisticated XML workflows.
 eXist XMLDB Integration
 -----------------------
 
-xprocxq is now a part of the eXist standard build and release and enabled
+xprocxq is a part of the eXist standard build and release and enabled
 by default (as of v1.3/1.4).
-
-
-Why XProc in XQuery ?
----------------------
-XQuery's somewhat functional approach appealed to me and having been 
-a long time XSLT user I wanted to gain some understanding of the nuances 
-between XSLT and XQuery.
-
-In building xqueryxq, my primary goals were;
-
-    * Exercise fundamental FP principles building a non trivial XQuery 
-application. I think I have achieved this goal, as xprocxq 'main engine'
- is the util:step-fold() function which operates on simple pipelines. 
-
-    * To understand variability between XQuery processors. I think there 
-is a surprising amount of differences between XQuery processors, but 
-thankfully mostly in the form of extension functions, implicit type casting 
-and in smaller part some interpretations of the spec (where the spec allowed 
-for impl to do things as they see fit). The real impact though is that we 
-need things like expath and exquery to allow for even a remote chance at 
-compatibility between processors. 
-
-	* that this approach may prove highly performant within the context of XML
-database
 
 
 Documentation
@@ -229,6 +205,31 @@ history.
 Todo/Issues/Bugs
 ----------------
 Known issues are tracked using eXist project issue tracker
+
+
+
+Why XProc in XQuery ?
+---------------------
+XQuery's somewhat functional approach appealed to me and having been
+a long time XSLT user I wanted to gain some understanding of the nuances
+between XSLT and XQuery.
+
+In building xqueryxq, my primary goals were;
+
+    * Exercise fundamental FP principles building a non trivial XQuery
+application. I think I have achieved this goal, as xprocxq 'main engine'
+ is the util:step-fold() function which operates on simple pipelines.
+
+    * To understand variability between XQuery processors. I think there
+is a surprising amount of differences between XQuery processors, but
+thankfully mostly in the form of extension functions, implicit type casting
+and in smaller part some interpretations of the spec (where the spec allowed
+for impl to do things as they see fit). The real impact though is that we
+need things like expath and exquery to allow for even a remote chance at
+compatibility between processors.
+
+	* that this approach may prove highly performant within the context of XML
+database
 
 
 More Info
