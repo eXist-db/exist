@@ -66,6 +66,17 @@ function initCollectionTree() {
 }
 
 /*
+    Called when the user clicks on the "remove" button in the remove resource dialog
+ */
+function removeResource(dialog) {
+    var resource = $('#remove-resource-form input[name = resource]').val();
+    var params = { action: 'remove-resource', resource: resource };
+    $.get("operations.xql", params, function (data) {
+        dialog.dialog("close");
+    });
+}
+
+/*
     Called when the user clicks on the "create" button in the create collection dialog.
  */
 function createCollection(dialog) {
