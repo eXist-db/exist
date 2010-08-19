@@ -431,13 +431,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                 <input type="hidden" name="collection" value="{$collection}"/>
             )
         case element(biblio:form-select-current-user-groups) return
-            let $user := request:get-attribute("xquery.user") return
-                <select name="userGroup">
-                {
-                    for $group in xmldb:get-user-groups($user) return
-                        <option value="{$group}">{$group}</option>
-                }
-                </select>
+            biblio:form-select-current-user-groups($node/@name)
         case element(biblio:current-user) return
             <span>{request:get-attribute("xquery.user")}</span>
         case element(biblio:conditional) return
@@ -451,7 +445,9 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:is-collection-owner) return
             biblio:is-collection-owner()
         case element(biblio:has-collection-write-permissions) return
-            biblio:has-collection-write-permissions()
+            biblio:has-collection-write-permissions(request:get-parameter("collection", $biblio:COLLECTION))
+        case element(biblio:form-select-collection) return
+            biblio:form-select-collection($node/@name)
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -460,6 +456,57 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             }
         default return
             $node
+};
+
+declare function biblio:form-select-current-user-groups($select-name as xs:string) as element(select) {
+    let $user := request:get-attribute("xquery.user") return
+        <select name="{$select-name}">
+        {
+            for $group in xmldb:get-user-groups($user) return
+                <option value="{$group}">{$group}</option>
+        }
+        </select>
+};
+
+declare function biblio:form-select-collection($select-name as xs:string) as element(select) {
+
+    let $current-collection := request:get-parameter("collection", $biblio:COLLECTION) return
+
+        <select name="{$select-name}">
+        {
+            if(biblio:has-collection-write-permissions("/db"))then
+            (
+                element option {
+                    if("/db" eq $current-collection)then
+                    (
+                        attribute selected { "selected" }
+                    )else(),
+                    text { "/db" }
+                }
+            )else(),
+        
+            for $sub-collection-path in biblio:get-writeable-subcollection-paths("/db") return
+                element option {
+                    if($sub-collection-path eq $current-collection)then
+                    (
+                        attribute selected { "selected" }
+                    )else(),
+                    text { $sub-collection-path }
+                }
+        }
+        </select>
+};
+
+declare function biblio:get-writeable-subcollection-paths($path as xs:string) {
+    
+	for $sub in xmldb:get-child-collections($path)
+	let $col := concat($path, "/", $sub) return
+		(
+			if(biblio:has-collection-write-permissions($col))then(
+			 $col
+			)else(),
+			biblio:get-writeable-subcollection-paths($col)
+		)
 };
 
 declare function biblio:conditional($node as element(biblio:conditional)) {
@@ -476,9 +523,8 @@ declare function biblio:is-collection-owner() as xs:boolean {
         $user eq $collection-owner
 };
 
-declare function biblio:has-collection-write-permissions() as xs:boolean {
+declare function biblio:has-collection-write-permissions($collection as xs:string) as xs:boolean {
     let $user := request:get-attribute("xquery.user"),
-    $collection := request:get-parameter("collection", $biblio:COLLECTION),
     $collection-permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
         if(fn:matches($collection-permissions, ".......w."))then
         (

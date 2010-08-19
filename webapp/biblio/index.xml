@@ -213,7 +213,7 @@
                     <jquery:button label="Move" function="moveCollection"/>
                     <jquery:button id="cancel" label="Cancel"/>
                     <form id="move-collection-form" action="operations.xql">
-                        <div>Move collection '<span><biblio:collection-path/></span>' to <input name="path" type="text"/></div>
+                        <div>Move collection '<span><biblio:collection-path/></span>' to <biblio:form-select-collection name="path"/></div>
                     </form>
                 </jquery:dialog>
                 <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder" trigger="#collection-remove-folder"
@@ -244,8 +244,8 @@
                                 <label for="collection-restrict-group">Group</label>
                             </div>
                         </div>
-                        <div id="collection-restrict-user-group" name="userGroup">
-                            <biblio:form-select-current-user-groups/>
+                        <div id="collection-restrict-user-group">
+                            <biblio:form-select-current-user-groups name="userGroup"/>
                         </div>
                     </form>
                 </jquery:dialog>
