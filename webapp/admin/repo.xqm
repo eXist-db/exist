@@ -10,6 +10,7 @@ import module namespace repo="http://exist-db.org/xquery/repo";
 declare function repomanager:upload() as element()
 {
     let $name := request:get-parameter("name", ()),
+    $repocol :=  if (collection('/db/system/repo')) then () else xmldb:create-collection('/db/system','repo'),
     $docName := if($name) then $name else request:get-uploaded-file-name("upload"),
     $file := request:get-uploaded-file-data("upload") return
 
