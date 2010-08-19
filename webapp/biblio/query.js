@@ -82,7 +82,7 @@ function createCollection(dialog) {
     Called when the user clicks on the "move" button in the move collection dialog.
  */
 function moveCollection(dialog) {
-    var path = $('#move-collection-form input[name = path]').val();
+    var path = $('#move-collection-form select[name = path]').val();
     var collection = $('#simple-search-form input[name = collection]').val();
     var params = { action: 'move-collection', path: path, collection: collection };
     $.get("operations.xql", params, function (data) {

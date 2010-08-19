@@ -12,6 +12,7 @@ xquery version "1.0";
 :)
 
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
+import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
 
 declare namespace bs="http://exist-db.org/xquery/biblio/session";
 
@@ -37,11 +38,26 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                 <tr>
                     <td class="current">{$currentPos}</td>
                     <td class="actions">
-                        <a id="{$id}" href="#{$currentPos}" class="save">
+                        <a id="save_{$id}" href="#{$currentPos}" class="save">
                             <img title="save to my list" 
                                 src="{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                 class="{if ($saved) then 'stored' else ''}"/>
                         </a>
+                        {
+                            if($count eq 1)then(
+                                <a id="resource_remove" href="#"><img title="delete" src="img/delete.png"/></a>,
+                                jquery:process-templates(
+                                    <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" trigger="#resource-remove" width="450">
+                                        <jquery:button label="Remove" function="removeResource"/>
+                                        <jquery:button id="cancel" label="Cancel"/>
+                                        <form id="remove-resource-form" action="operations.xql">
+                                            <div>Are you sure you wish to remove the resource: <span>{document-uri(root($item))}</span></div>
+                                            <input id="resource" type="hidden" value="{document-uri(root($item))}"/>
+                                        </form>
+                                    </jquery:dialog>
+                                )
+                            )else()
+                        }
                     </td>
                     <td>
                         <img title="{$item/mods:typeOfResource/string()}" 
