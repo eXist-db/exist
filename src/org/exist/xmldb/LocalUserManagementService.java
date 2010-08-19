@@ -89,6 +89,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+        @Override
 	public void setPermissions(Resource resource, Permission perm) throws XMLDBException {
 		
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -99,11 +100,13 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get(user);
 			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user))
+
+                        if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)){
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this resource; owner = "
+					"you are either not the owner of this resource or a sysadmin; owner = "
 						+ document.getPermissions().getOwner());
+                        }
 
 			document.setPermissions(perm);
             if (!manager.hasGroup(perm.getOwnerGroup()))
@@ -129,6 +132,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void setPermissions(Collection child, Permission perm)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -142,11 +146,12 @@ public class LocalUserManagementService implements UserManagementService {
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
-			if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
+			
+                        if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this collection");
+					"you are eirther not the owner of this collection or a sysadmin");
             }
             if (!manager.hasGroup(perm.getOwnerGroup()))
                 manager.addGroup(perm.getOwnerGroup());
