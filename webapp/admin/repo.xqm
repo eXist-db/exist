@@ -176,7 +176,8 @@ declare function repomanager:main() as element() {
                         <td><input type="file" size="30" name="upload"/></td>
                     </tr>
                 </table>
-                <p><i>note: link to eXist-db own public package repository coming soon ....</i>    </p>
+                <p> You can find example .xar packages located under webapp/repo/packages</p>
+                <p><i>Note: link to eXist-db own public package repository coming soon ....</i>    </p>
 
           </form>
         </div>
