@@ -441,7 +441,13 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:current-user) return
             <span>{request:get-attribute("xquery.user")}</span>
         case element(biblio:conditional) return
-            biblio:conditional($node)
+            let $result := biblio:conditional($node) return
+                if($result)then
+                (
+                    for $child in $result/node() return
+                        biblio:process-templates($query, $hitCount, $child)
+                )
+                else()
         case element(biblio:is-collection-owner) return
             biblio:is-collection-owner()
         case element(biblio:has-collection-write-permissions) return
@@ -449,8 +455,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element() return
             element { node-name($node) } {
                 $node/@*,
-                for $child in $node/node()
-                return
+                for $child in $node/node() return
                     biblio:process-templates($query, $hitCount, $child)
             }
         default return
@@ -461,7 +466,7 @@ declare function biblio:conditional($node as element(biblio:conditional)) {
     let $test-result := biblio:process-templates((), (), $node/biblio:test/biblio:*) return
         if($test-result) then
         (
-            $node/biblio:result/child::node()
+            $node/biblio:result
         )else()
 };
 

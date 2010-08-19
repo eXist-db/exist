@@ -244,7 +244,7 @@
                                 <label for="collection-restrict-group">Group</label>
                             </div>
                         </div>
-                        <div id="collection-restrict-user-group">
+                        <div id="collection-restrict-user-group" name="userGroup">
                             <biblio:form-select-current-user-groups/>
                         </div>
                     </form>
