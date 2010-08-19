@@ -61,6 +61,7 @@ declare variable $std:xslt :=util:function(xs:QName("std:xslt"), 3);
 
 (: -------------------------------------------------------------------------- :)
 declare function std:add-attribute($primary,$secondary,$options) {
+
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if (starts-with($match,'/')) then
@@ -69,11 +70,23 @@ let $query := if (starts-with($match,'/')) then
 				concat('//',$match)
 let $matchresult := u:evalXPATH($query, $v, $primary)
 let $attribute-name := u:get-option('attribute-name',$options,$v)
+let $checkname := u:asserterror('err:XC0059', boolean($attribute-name ne 'xmlns'), 'This step cannot be used to add namespace declarations')
 let $attribute-value := u:get-option('attribute-value',$options,$v)
 let $attribute-prefix := u:get-option('attribute-prefix',$options,$v)
 let $attribute-namespace := u:get-option('attribute-namespace',$options,$v)
+let $ifnamespacedeclared := if ($attribute-namespace ne '') then
+util:declare-namespace($attribute-prefix, $attribute-namespace)
+else
+ ()
+
+let $attrname  := if ($attribute-namespace ne '') then
+fn:QName($attribute-namespace,$attribute-name)
+else
+ $attribute-name
+
 return
-	u:add-attribute-matching-elements($v/*,$matchresult,$attribute-name,$attribute-value)
+
+	u:add-attribute-matching-elements($v/*,$matchresult,$attrname,$attribute-value)
 };
 
 
@@ -86,10 +99,8 @@ let $matchresult := u:evalXPATH('//*', $v, $primary)
 let $attribute-name := "xml:base"
 let $attribute-value := base-uri($v)
 return
-<test uri="{$attribute-value}">{$v}</test>
-(:
 	u:add-attribute-matching-elements($v,$matchresult,$attribute-name,$attribute-value)
-:)};
+};
 
 
 (: -------------------------------------------------------------------------- :)

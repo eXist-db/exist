@@ -27,7 +27,7 @@ import module namespace p1 = "http://xproc.net/xproc/functions" at "resource:net
 
 
 (: set to 1 to enable debugging :)
-declare variable $u:NDEBUG :=0;
+declare variable $u:NDEBUG :=1;
 
 (: -------------------------------------------------------------------------- :)
 (: manage namespaces                                                          :)
@@ -135,6 +135,15 @@ declare function u:type($stepname as xs:string,$is_declare-step) as xs:string {
 declare function u:trace($value as item()*, $what as xs:string)  {
 if(boolean($u:NDEBUG)) then
     trace($value,$what)
+else
+    ()
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function u:asserterror($errortype as xs:string, $booleanexp as item(), $why as xs:string)  {
+if(not($booleanexp) and boolean($u:NDEBUG)) then
+    u:dynamicError(fn:QName('http://www.w3.org/ns/xproc-error',$errortype),$why)
 else
     ()
 };

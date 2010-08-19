@@ -3,6 +3,8 @@
            xmlns:xproc="http://xproc.net/xproc" version="1.0">
 	<p:declare-step type="my:bar">
 		<p:input port="source"/>
+        <p:wrap/>
+
 		<p:count/>
 	</p:declare-step>
 </p:library>
