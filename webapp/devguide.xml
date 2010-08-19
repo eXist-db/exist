@@ -25,6 +25,12 @@
                     <ulink url="devguide_xquery.xml">Writing Web Applications using XQuery</ulink>
                 </tocentry>
             </tocpart>
+
+            <tocpart>
+                <tocentry>
+                    <ulink url="testing/testing.xml">Unit Testing XQuery</ulink>
+                </tocentry>
+            </tocpart>
             <tocpart>
                 <tocentry>
                     <ulink url="devguide_rest.xml">REST-Style Web API</ulink>
