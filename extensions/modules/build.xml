@@ -187,11 +187,11 @@
             </patternset>
         </fetch>
         
-        <!-- fetch dependency saxon TODO: make generic download function -->
+        <!-- fetch dependency on saxon 9.1 s9api TODO: remove when we move to saxon 9.2 -->
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.xmlcalabash.saxon.url}" classname="net.sf.saxon.Version">
+            url="${include.module.xmlcalabash.saxon9b.url}" classname="net.sf.saxon.s9api.Processor">
             <patternset>
-                <include name="**/saxon9he.jar"/>
+                <include name="saxon9-s9api.jar"/>
             </patternset>
         </fetch>
 
