@@ -371,23 +371,30 @@ public class DebuggerTest implements ResponseListener {
 	
 	@Test
 	public void testStepInto() throws Exception {
-		Debugger debugger = DebuggerImpl.getDebugger();
 		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
 		for (int i = 0; i < 10; i++) {
+			Debugger debugger = DebuggerImpl.getDebugger();
+
 			System.out.println("init "+i);
 			DebuggingSource debuggerSource = debugger.init(url);
+
+			System.out.println("send stepInto");
 			debuggerSource.stepInto();
 			//Thread.sleep(1000);
 
+			System.out.println("send getStackFrames");
 			List<Location> stack = debuggerSource.getStackFrames();
 			assertEquals(1, stack.size());
 			assertEquals(8, stack.get(0).getLineBegin());
 			assertEquals(6, stack.get(0).getColumnBegin());
 
+			System.out.println("send stop");
 			debuggerSource.stop();
 			//Thread.sleep(1000);
 			
 			System.out.println("stoped");
+
+			DebuggerImpl.shutdownDebugger();
 		} 
 	}
 

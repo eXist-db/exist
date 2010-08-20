@@ -53,7 +53,7 @@ public class ProtocolHandler extends IoHandlerAdapter {
 			joint.sessionClosed(false);
 
 		if (LOG.isDebugEnabled())
-			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed.");
+			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed, " + session.getWrittenBytes() + " byte(s) writed.");
 	}
 
 	@Override
