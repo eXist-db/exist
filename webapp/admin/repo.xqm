@@ -7,10 +7,41 @@ declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 import module namespace repo="http://exist-db.org/xquery/repo";
 
+declare variable $repomanager:coll := "/db/system/repo";
+declare variable $repomanager:repo-uri := if (request:get-parameter("repository-url", ())) then
+              request:get-parameter("repository-url", ())
+            else
+            "http://demo.exist-db.org/exist/repo/public/all/";
+
+declare function repomanager:publicrepo() as element()
+{
+let $package-url := request:get-parameter("package-url", ())
+return
+        <div class="process">
+            <h3>Actions:</h3>
+            <ul>
+                {
+                if (ends-with($package-url,'.xar')) then
+                    (<li>uploaded package: {$package-url}</li>,
+
+                    let $http-response := httpclient:get(xs:anyURI($package-url), false(), ())
+                    let $name := tokenize($package-url, "/")[last()]
+                    return
+                    let $package-mimetype := 'application/xar',
+                    $package-data := $http-response/httpclient:body/text() return
+                    xmldb:store("/db/system/repo", $name, xs:base64Binary($package-data), $package-mimetype)
+                    )
+                else
+                    <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
+                }
+            </ul>
+    </div>
+};
+
 declare function repomanager:upload() as element()
 {
     let $name := request:get-parameter("name", ()),
-    $repocol :=  if (collection('/db/system/repo')) then () else xmldb:create-collection('/db/system','repo'),
+    $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo'),
     $docName := if($name) then $name else request:get-uploaded-file-name("upload"),
     $file := request:get-uploaded-file-data("upload") return
 
@@ -21,7 +52,7 @@ declare function repomanager:upload() as element()
                 if (contains($docName,'.xar')) then
                     (<li>uploaded package: {$docName}</li>,
 
-                    xdb:decode-uri(xs:anyURI(xdb:store('/db/system/repo', xdb:encode-uri($docName), $file)))
+                    xdb:decode-uri(xs:anyURI(xdb:store($repomanager:coll, xdb:encode-uri($docName), $file)))
                     )
                 else
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
@@ -43,7 +74,7 @@ declare function repomanager:activate() as element()
             <ul>
                 <li>activated package: {$name}</li>
                 {
-                    repo:install(concat('http://',$hostname,':',$port,'/exist/rest/db/system/repo/',$name,'.xar'))
+                    repo:install(concat('http://',$hostname,':',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar'))
                 }
             </ul>
     </div>
@@ -76,7 +107,7 @@ declare function repomanager:remove() as element()
             <h3>Actions:</h3>
             <ul>
                 <li>removed package: {$name}</li>
-                {xmldb:remove('/db/system/repo',concat($name,'.xar'))}
+                {xmldb:remove($repomanager:coll,concat($name,'.xar'))}
             </ul>
     </div>
 };
@@ -100,6 +131,10 @@ declare function repomanager:process-action() as element()*
             else if($action eq "Upload Package") then
             (
                 repomanager:upload()
+            )
+            else if($action eq "Download from Public Repository") then
+            (
+                repomanager:publicrepo()
             )else(),
 
             <div class="error">
@@ -111,7 +146,7 @@ declare function repomanager:process-action() as element()*
 
 declare function repomanager:main() as element() {
     let $action := lower-case(request:get-parameter("action", "refresh"))
-    let $repocol :=  if (collection('/db/system/repo')) then () else xmldb:create-collection('/db/system','repo')
+    let $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo')
 
     return
         <div class="panel">
@@ -130,18 +165,18 @@ declare function repomanager:main() as element() {
                 <th>Action</th>
             </tr>
         {
-         let $files := if (collection('/db/system/repo')) then collection('/db/system/repo')/util:document-name(.) else ()
+         let $files := if (collection($repomanager:coll)) then collection($repomanager:coll)/util:document-name(.) else ()
          let $repos := repo:list()
          return
 
-            for $file in $files
+            for $file in $files[contains(.,'.xar')]
             let $package-name := substring-before($file,'.xar')
             let $installed := exists($repos[. eq $package-name])
             return
              <tr>
                 <td/>
                 <td>{$package-name}</td>
-                <td>{xmldb:last-modified('/db/system/repo', concat($package-name,'.xar'))}</td>
+                <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
                 <td> 
                 {if ($installed) then
                     <span style="color:#00FF00">{$installed}</span>
@@ -164,23 +199,38 @@ declare function repomanager:main() as element() {
              </tr>
             }
                 </table>
-               <br/><br/><br/> <br/>
+               <br/><br/>
+               <p>    </p>
                 <table>
-                    <!--tr>
-                        <td><input type="submit" name="action" value="store"/></td>
-                        <td>Path to file on server:<br/>
-                        <input type="text" name="uri" size="40"/></td>
-                        <td>Store as:<br/>
-                        <input type="text" name="name" size="20"/></td>
-                    </tr-->
+                    <tr>
+                        <td> Public Repository URL :
+                        </td>
+                        <td><input name="repository-url" size="40" value="{$repomanager:repo-uri}"/></td>
+                        <td><input type="submit" name="action" value="refresh"/></td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" name="action" value="Download from Public Repository"/></td>
+                        <td>
+                        <select name="package-url">
+                           {
+                            let $packages := httpclient:get(xs:anyURI($repomanager:repo-uri),false(),())//httpclient:body/node()
+                             return
+                             for $package in $packages//package[contains(url/.,'.xar')]
+                             return
+                                <option value="{$package/url}">{tokenize($package/url, "/")[last()]}</option>
+                           }
+                        </select>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <table>
                     <tr>
                         <td><input type="submit" name="action" value="Upload Package"/></td>
                         <td><input type="file" size="30" name="upload"/></td>
                     </tr>
                 </table>
-                <p> You can find example .xar packages located under webapp/repo/packages</p>
-                <p><i>Note: link to eXist-db own public package repository coming soon ....</i>    </p>
-
+                <span><i>Note: You can also find example .xar packages located under webapp/repo/packages</i></span>
           </form>
         </div>
 };
