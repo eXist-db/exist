@@ -166,7 +166,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			//stop command, terminate
 			if (command.is(CommandContinuation.STOP) && !command.isStatus(STOPPED)) {
 				command.setStatus(STOPPED);
-	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
+				
+				sessionClosed(true);
+	            
+				throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
 
 			//step-into is done
@@ -202,7 +205,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 				}
 			}
 			
-			//RUS command with status RUNNING can be break only on breakpoints
+			//RUN command with status RUNNING can be break only on breakpoints
 			if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING)) {
 				break;
 
@@ -231,13 +234,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
                 command.setStatus(STOPPED);
 
                 sessionClosed(true);
-
-                //TODO: check this values
-                stackDepth = 0;
-                stack = new ArrayList<Expression>();
-
-                command = null;
-                commands = new Stack<CommandContinuation>();
+                
+                reset();
             }
             inProlog = false;
 		}
@@ -245,7 +243,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 	
 	private synchronized void waitCommand() {
-		if (command.isStatus(BREAK) && commands.size() != 0) {
+		if (commands.size() != 0 && command.isStatus(BREAK)) {
 			command = commands.pop();
 			
 			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
@@ -438,6 +436,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		if (command != null && disconnect)
 			command.disconnect();
+		
+		reset();
 		
 		notifyAll();
 	}
