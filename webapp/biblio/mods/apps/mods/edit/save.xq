@@ -22,14 +22,14 @@ let $data-collection := $style:db-path-to-app-data
 let $item := request:get-data()
 
 (: check to see if we have an indentifier in the incomming post :)
-let $incomming-id := $item/mods:identifier/text()
+let $incomming-id := $item//mods:identifier/text()
 
 (: if we do not have an ID then throw an error :) 
 return
 if ( string-length($incomming-id) = 0 )
    then
         <error>
-          <message>Attempted to save a record with no ID specified.</message>
+          <message class="warning">ERROR! Attempted to save a record with no ID specified.</message>
         </error>
    else
 
@@ -38,32 +38,69 @@ if ( string-length($incomming-id) = 0 )
 let $file-to-update := concat($incomming-id, '.xml')
 let $file-path := concat($data-collection, '/', $file-to-update)
 
+(: uncomment the following line in for testing if you have not run the security setup tools :)
+let $login := xmldb:login($style:db-path-to-app-data, 'admin', '')
+ 
 (: this is the document on disk to be updated :)
 let $doc := doc($file-path)/mods:mods
 
-(: If the incoming has any part then we update it in the document :)
-let $titleInfo := if ($item/mods:titleInfo) then update replace $doc/mods:titleInfo with $item/mods:titleInfo else ()
+(: If the incoming has any part then we update it in the document 
 
-(:
-let $name := if ($item/name) then update replace $doc/name with $item/name else ()
-let $originInfo := if ($item/originInfo) then update replace $doc/originInfo with $item/originInfo else ()
-let $physicalDescription := if ($item/physicalDescription) then update replace $doc/physicalDescription with $item/physicalDescription else ()
-let $targetAudience := if ($item/targetAudience) then update replace $doc/targetAudience with $item/targetAudience else ()
-let $language := if ($item/language) then update replace $doc/part5 with $item/part5 else ()
-let $typeOfResource := if ($item/typeOfResource) then update replace $doc/part5 with $item/part5 else ()
-let $genre := if ($item/genre) then update replace $doc/part5 with $item/part5 else ()
-let $subject := if ($item/subject) then update replace $doc/subject with $item/subject else ()
-let $classification := if ($item/classification) then update replace $doc/classification with $item/classification else ()
-let $abstract := if ($item/abstract) then update replace $doc/abstract with $item/abstract else ()
-let $table-of-contents := if ($item/table-of-contents) then update replace $doc/table-of-contents with $item/table-of-contents else ()
-let $note := if ($item/note) then update replace $doc/note with $item/note else ()
-let $related := if ($item/related) then update replace $doc/related with $item/related else ()
-let $identifier := if ($item/identifier) then update replace $doc/identifier with $item/identifier else ()
-let $record-info := if ($item/record-info) then update replace $doc/record-info with $item/record-info else ()
-let $access-condition := if ($item/access-condition) then update replace $doc/access-condition with $item/access-condition 
-:)
+Note that is has the side effect of adding the mods prefix in the data files.  Semantically this
+means the same thing but I don't know of a way to tell eXist to always use a default namespace
+when doing an update.  :)
+
+(: TODO figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
+
+(: this checks to see if we have a titleInfo in the save.  If we do then it goes through each one and
+it that is in the data it does a replace, else it does an insert. :)
+
+let $titleInfo :=
+   if ($item/mods:titleInfo)
+   then 
+        for $new-title-info at $count in $item/mods:titleInfo
+           return
+              if ($doc/mods:titleInfo[$count])
+              then
+                 update replace $doc/mods:titleInfo[$count] with $new-title-info
+              else
+                 update insert $item/mods:titleInfo[2] following $doc/mods:titleInfo[$count -1]
+   else ()
+
+let $name := if ($item/mods:name) then update replace $doc/mods:name with $item/mods:name else ()
+
+let $originInfo := if ($item/mods:originInfo) then update replace $doc/mods:originInfo with $item/mods:originInfo else ()
+
+let $physicalDescription := if ($item/mods:physicalDescription) then update replace $doc/mods:physicalDescription with $item/mods:physicalDescription else ()
+
+let $targetAudience := if ($item/mods:targetAudience) then update replace $doc/mods:targetAudience with $item/mods:targetAudience else ()
+
+let $language := if ($item/mods:language) then update replace $doc/mods:language with $item/mods:language else ()
+
+let $typeOfResource := if ($item/mods:typeOfResource) then update replace $doc/mods:typeOfResource with $item/mods:typeOfResource else ()
+
+let $genre := if ($item/mods:genre) then update replace $doc/mods:genre with $item/mods:genre else ()
+
+let $subject := if ($item/mods:subject) then update replace $doc/mods:subject with $item/mods:subject else ()
+
+let $classification := if ($item/mods:classification) then update replace $doc/mods:classification with $item/mods:classification else ()
+
+let $abstract := if ($item/mods:abstract) then update replace $doc/mods:abstract with $item/mods:abstract else ()
+
+let $table-of-contents := if ($item/mods:table-of-contents) then update replace $doc/mods:table-of-contents with $item/mods:table-of-contents else ()
+
+let $note := if ($item/mods:note) then update replace $doc/mods:note with $item/mods:note else ()
+
+let $related := if ($item/mods:related) then update replace $doc/mods:related with $item/mods:related else ()
+
+let $identifier := if ($item/mods:identifier) then update replace $doc/mods:identifier with $item/mods:identifier else ()
+
+let $record-info := if ($item/mods:record-info) then update replace $doc/mods:record-info with $item/mods:record-info else ()
+
+let $access-condition := if ($item/mods:access-condition) then update replace $doc/mods:access-condition with $item/mods:access-condition else ()
+
 
 return
 <results>
-  <message>Update Status = OK</message>
+  <message>Update Status = OK titles = {count($item/mods:titleInfo)}</message>
 </results>
