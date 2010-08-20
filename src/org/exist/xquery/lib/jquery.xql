@@ -454,14 +454,21 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
                                     ()
                         }
                     }});
-                    var trigger = '{$trigger/string()}';
-                    if (trigger != '')
-                        $(trigger).click(function() {{
-                            $('#{$id/string()}').dialog('open');
-                            return false;
-                        }});
                 }});
             </script>
+            {
+                if($trigger)then
+                (
+                    <script type="text/javascript">
+                        var trigger = '{$trigger/string()}';
+                        if (trigger != '')
+                            $(trigger).click(function() {{
+                                $('#{$id/string()}').dialog('open');
+                                return false;
+                            }});
+                    </script>
+                )else()
+            }
         </div>
 };
 
