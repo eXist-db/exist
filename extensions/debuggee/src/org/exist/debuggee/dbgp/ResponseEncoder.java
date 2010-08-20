@@ -36,8 +36,7 @@ public class ResponseEncoder extends ProtocolEncoderAdapter {
 
     private final static Logger LOG = Logger.getLogger(ResponseEncoder.class);
 
-	public void encode(IoSession session, Object message, ProtocolEncoderOutput out)
-			throws Exception {
+	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		Packet packet = (Packet) message;
 		
 		byte[] response = packet.responseBytes();

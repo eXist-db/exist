@@ -71,6 +71,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 			return;
 		
 		instance.acceptor.unbind();
+		instance = null;
 	}
 
 	private NioSocketAcceptor acceptor;
@@ -91,8 +92,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 	private DebuggerImpl() throws IOException {
 		acceptor = new NioSocketAcceptor();
 		acceptor.setCloseOnDeactivation(true);
-		acceptor.getFilterChain().addLast("protocol",
-				new ProtocolCodecFilter(new CodecFactory()));
+		acceptor.getFilterChain().addLast("protocol", new ProtocolCodecFilter(new CodecFactory()));
 		acceptor.setHandler(new ProtocolHandler(this));
 		acceptor.bind(new InetSocketAddress(eventPort));
 	}
@@ -101,7 +101,7 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		return currentTransactionId++;
 	}
 
-	protected void setSession(IoSession session) {
+	private void setSession(IoSession session) {
 		this.session = session;
 	}
 
@@ -112,13 +112,16 @@ public class DebuggerImpl implements Debugger, org.exist.debuggee.Status {
 		if (this.session != null) new IOException("Another debugging session is active.");
 
 		responseCode = 0;
+		responses = new HashMap<String, Response>();
+		sources = new HashMap<String, DebuggingSource>();
+		currentTransactionId = 1;
 		
 		Thread session = new Thread(new HttpSession(this, url));
 		session.start();
 
 		// 30s timeout
 		ResponseImpl response = (ResponseImpl) getResponse("init", 30 * 1000); 
-		this.session = response.getSession();
+		setSession(response.getSession());
 
 		// TODO: fileuri as constant???
 		return getSource(response.getAttribute("fileuri"));

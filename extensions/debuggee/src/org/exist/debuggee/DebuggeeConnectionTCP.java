@@ -49,8 +49,7 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 		// Set connect timeout for 30 seconds.
 		connector.setConnectTimeoutMillis(30*1000L);
 
-		connector.getFilterChain().addLast(
-				"protocol", new ProtocolCodecFilter(new CodecFactory()));
+		connector.getFilterChain().addLast( "protocol", new ProtocolCodecFilter(new CodecFactory()) );
 		
 		// Start communication.
 		connector.setHandler(new ProtocolHandler());
@@ -63,7 +62,7 @@ public class DebuggeeConnectionTCP implements DebuggeeConnection {
 				future.awaitUninterruptibly();
 				return future.getSession();
 			} catch (RuntimeIoException e) {
-				System.err.println("Failed to connect.");
+				e.printStackTrace();
 				return null;
 			}
 		}

@@ -42,7 +42,7 @@ public class CodecFactory implements ProtocolCodecFactory {
 	}
 	
 	public ProtocolDecoder getDecoder(IoSession ioSession) throws Exception {
-		synchronized (decoders) {//TODO: rewrite???
+		synchronized (decoders) {
 			if (decoders.containsKey(ioSession))
 				return decoders.get(ioSession);
 			
@@ -54,7 +54,7 @@ public class CodecFactory implements ProtocolCodecFactory {
 	}
 
 	public ProtocolEncoder getEncoder(IoSession ioSession) throws Exception {
-		synchronized (encoders) {//TODO: rewrite???
+		synchronized (encoders) {
 			if (encoders.containsKey(ioSession))
 				return encoders.get(ioSession);
 			
