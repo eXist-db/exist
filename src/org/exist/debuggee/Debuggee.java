@@ -35,5 +35,5 @@ public interface Debuggee {
 
 	public static final QName SESSION = new QName("session", NAMESPACE_URI, PREFIX);
 	
-	public void joint(CompiledXQuery compiledXQuery);
+	public boolean joint(CompiledXQuery compiledXQuery);
 }
