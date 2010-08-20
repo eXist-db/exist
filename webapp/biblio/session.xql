@@ -45,7 +45,8 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                         </a>
                         {
                             if($count eq 1)then(
-                                <a id="remove-resource" href="#{$id}"><img title="delete" src="img/delete.png"/></a>
+                                <a id="remove-resource" href="#{$id}"><img title="delete" src="img/delete.png"/></a>,
+                                <a id="move-resource" href="#{$id}"><img title="move" src="img/shape_move_front.png"/></a>
                             )else()
                         }
                     </td>

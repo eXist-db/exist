@@ -7,6 +7,8 @@ declare namespace response="http://exist-db.org/xquery/response";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+declare namespace mods="http://www.loc.gov/mods/v3";
+
 declare variable $rwx------ := 448;
 declare variable $rwxrwx--- := 504;
 declare variable $rwxrwxrwx := 511;
@@ -70,6 +72,39 @@ declare function op:remove-resource($resource-id as xs:string) as element(status
     <status id="removed">{$resource-id}</status>
 };
 
+(:~
+:
+: @ resource-id has the format db-document-path#node-id e.g. /db/mods/eXist/exist-articles.xml#1.36
+:)
+declare function op:move-resource($resource-id as xs:string, $destination-collection as xs:string) as element(status) {
+    
+    let $path := substring-before($resource-id, "#"),
+    $id := substring-after($resource-id, "#"),
+    $resource := util:node-by-id(doc($path), $id),
+    $destination-resource-name := replace($path, ".*/", ""),
+    $destination-path := concat($destination-collection, "/", $destination-resource-name) return
+    
+    let $mods-destination := if(doc-available($destination-path))then
+        (
+            doc($destination-path)/mods:modsCollection
+        )
+        else
+        (
+            doc(
+                xmldb:store($destination-collection, $destination-resource-name,
+                    <modsCollection xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 ../../webapp/WEB-INF/entities/mods-3-3.xsd"/>
+                )
+            )/mods:modsCollection
+        )
+    return
+    (
+        update insert util:node-by-id(doc($path), $id) into $mods-destination,
+        update delete util:node-by-id(doc($path), $id),
+        
+        <status id="moved" from="{$resource-id}">{$destination-path}</status>
+    )
+};
+
 declare function op:unknown-action($action as xs:string) {
         response:set-status-code(403),
         <p>Unknown action: {$action}.</p>
@@ -88,5 +123,7 @@ return
         op:update-collection-permissions($collection, request:get-parameter("restriction", ()), request:get-parameter("userGroup",()))
     else if($action eq "remove-resource")then
         op:remove-resource(request:get-parameter("resource",()))
+    else if($action eq "move-resource")then
+        op:move-resource(request:get-parameter("resource",()), request:get-parameter("path",()))
     else
         op:unknown-action($action)

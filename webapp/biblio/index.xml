@@ -208,7 +208,7 @@
                         <div><input name="name" type="text"/></div>
                     </form>
                 </jquery:dialog>
-                <jquery:dialog id="move-collection-dialog" modal="true" title="Create New Folder" trigger="#collection-move-folder"
+                <jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder" trigger="#collection-move-folder"
                     width="450">
                     <jquery:button label="Move" function="moveCollection"/>
                     <jquery:button id="cancel" label="Cancel"/>
@@ -255,6 +255,14 @@
                     <form id="remove-resource-form" action="operations.xql">
                         <div>Are you sure you wish to remove the resource?</div>
                         <input id="remove-resource-id" name="resource" type="hidden" value=""/>
+                    </form>
+                </jquery:dialog>
+                <jquery:dialog id="move-resource-dialog" modal="true" title="Move Resource" width="450">
+                    <jquery:button label="Move" function="moveResource"/>
+                    <jquery:button id="cancel" label="Cancel"/>
+                    <form id="move-resource-form" action="operations.xql">
+                        <div>Move resource from '<span><biblio:collection-path/></span>' to <biblio:form-select-collection name="path"/></div>
+                        <input id="move-resource-id" name="resource" type="hidden" value=""/>
                     </form>
                 </jquery:dialog>
             </biblio:result>
