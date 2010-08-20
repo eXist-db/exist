@@ -61,9 +61,12 @@ public class DebuggeeImpl implements Debuggee {
 		connection = new DebuggeeConnectionTCP();
 	}
 	
-	public void joint(CompiledXQuery compiledXQuery) {
+	public boolean joint(CompiledXQuery compiledXQuery) {
 		synchronized (this) {
 			IoSession session = connection.connect();
+			
+			if (session == null) 
+				return false;
 
 			//link debugger session & script
 			DebuggeeJointImpl joint = new DebuggeeJointImpl();
@@ -72,6 +75,8 @@ public class DebuggeeImpl implements Debuggee {
 			compiledXQuery.getContext().setDebuggeeJoint(joint);
 			
 			joint.continuation(new Init(session));
+			
+			return true;
 		}
 		
 	}

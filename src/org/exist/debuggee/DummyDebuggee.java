@@ -32,7 +32,8 @@ public class DummyDebuggee implements Debuggee {
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.Debuggee#joint()
 	 */
-	public void joint(CompiledXQuery compiledXQuery) {
+	public boolean joint(CompiledXQuery compiledXQuery) {
+		return false;
 	}
 
 }
