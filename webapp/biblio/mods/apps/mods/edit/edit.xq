@@ -37,8 +37,8 @@ let $instance-src :=
          let $template-path := concat($style:db-path-to-app, '/edit/new-instance.xml')
          let $template := doc($template-path)
          let $new-file-name := concat($id, '.xml')
-         (: put the following line in for testing if you are not admin :)
-         (: let $login := xmldb:login($style:db-path-to-app-data, 'admin', '') :)
+         (: uncomment the following line in for testing if you are not admin :)
+         let $login := xmldb:login($style:db-path-to-app-data, 'admin', '')
          let $store := xmldb:store($style:db-path-to-app-data, $new-file-name, $template)
          let $new-file-path := concat($style:db-path-to-app-data, '/', $new-file-name)
          
@@ -85,6 +85,12 @@ let $model :=
           action="save.xq" replace="instance"
           instance="save-results">
        </xf:submission>
+       
+       <xf:submission id="echo-post-submission" method="post"
+          ref="instance('save-data')"
+          action="echo-post.xq" replace="all">
+       </xf:submission>
+       
     </xf:model>
 
 let $content :=
@@ -106,6 +112,10 @@ let $content :=
     <br/>
     <xf:submit submission="save-submission">
         <xf:label>Save</xf:label>
+    </xf:submit>
+
+    <xf:submit submission="echo-post-submission">
+        <xf:label>Echo Post (no save)</xf:label>
     </xf:submit>
     
     <div class="debug">
