@@ -18,6 +18,7 @@ declare option exist:serialize "method=xml media-type=text/xml indent=yes";
    :)
 
 let $tab-id := request:get-parameter('tab-id', '')
+let $debug := xs:boolean(request:get-parameter('debug', 'false'))
 
 (: TODO check for required tab-id parameter and make sure that the tab is a valid tab ID
 let $check-tab := if ( string-length($tab-id) < 1 )
@@ -44,17 +45,33 @@ let $count-distinct := count($distinct-code-table-names)
 
 return
 <code-tables>
-   <code-table-collection>{$code-table-collection}</code-table-collection>
-   <xforms-body-collection>{$xforms-body-collection}</xforms-body-collection>
-   <tab-id>{$tab-id}</tab-id>
-   <itemset-count>{$itemset-count}</itemset-count>
-   <code-table-name-count>{$count-distinct}</code-table-name-count>
-   <distinct-code-table-names>{$distinct-code-table-names}</distinct-code-table-names>
+
+   { if ($debug)
+     then
+     <debug>
+       <code-table-collection>{$code-table-collection}</code-table-collection>
+       <xforms-body-collection>{$xforms-body-collection}</xforms-body-collection>
+       <tab-id>{$tab-id}</tab-id>
+       <itemset-count>{$itemset-count}</itemset-count>
+       <code-table-name-count>{$count-distinct}</code-table-name-count>
+       <distinct-code-table-names>{$distinct-code-table-names}</distinct-code-table-names>
+     </debug>
+     else ()
+   }
+   
    {for $code-table-name in $distinct-code-table-names
       
       let $file-path := concat($code-table-collection, $code-table-name, 's.xml')
       let $code-table := doc($file-path)
       return
-         $code-table
+         <code-table>
+            <code-table-name>{$code-table-name}</code-table-name>
+            <items>
+            {for $item in $code-table//item
+            return
+               $item
+            }
+            </items>
+         </code-table>
    }
 </code-tables>
