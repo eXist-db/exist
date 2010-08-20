@@ -78,6 +78,18 @@ function removeResource(dialog) {
 }
 
 /*
+    Called when the user clicks on the "remove" button in the remove resource dialog
+ */
+function moveResource(dialog) {
+    var path = $('#move-resource-form select[name = path]').val();
+    var resource = $('#move-resource-form input[name = resource]').val();
+    var params = { action: 'move-resource', path: path, resource: resource };
+    $.get("operations.xql", params, function (data) {
+        dialog.dialog("close");
+    });
+}
+
+/*
     Called when the user clicks on the "create" button in the create collection dialog.
  */
 function createCollection(dialog) {
@@ -227,6 +239,13 @@ function resultsLoaded(options) {
     $('#remove-resource').click(function() {{
         $('#remove-resource-id').val($('#' + this.id).attr('href').substr(1));
         $('#remove-resource-dialog').dialog('open');
+        return false;
+    }});
+    
+    /** add move resource action */
+    $('#move-resource').click(function() {{
+        $('#move-resource-id').val($('#' + this.id).attr('href').substr(1));
+        $('#move-resource-dialog').dialog('open');
         return false;
     }});
 }
