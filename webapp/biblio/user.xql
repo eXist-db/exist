@@ -2,8 +2,10 @@ xquery version "1.0";
 
 declare namespace user="http://exist-db.org/xquery/biblio/user";
 
+declare namespace mods="http://www.loc.gov/mods/v3";
+
 declare function user:add-to-personal-list() {
-    let $cached := session:get-attribute("cached")
+    let $cached := session:get-attribute("mods:cached")
     let $pos := xs:integer(request:get-parameter("pos", 1))
     let $oldList0 := session:get-attribute("personal-list")
     let $oldList :=
