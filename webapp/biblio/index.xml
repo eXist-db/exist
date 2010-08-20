@@ -249,6 +249,14 @@
                         </div>
                     </form>
                 </jquery:dialog>
+                <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" width="450">
+                    <jquery:button label="Remove" function="removeResource"/>
+                    <jquery:button id="cancel" label="Cancel"/>
+                    <form id="remove-resource-form" action="operations.xql">
+                        <div>Are you sure you wish to remove the resource?</div>
+                        <input id="remove-resource-id" name="resource" type="hidden" value=""/>
+                    </form>
+                </jquery:dialog>
             </biblio:result>
         </biblio:conditional>
     </chapter>

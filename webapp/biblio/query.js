@@ -73,6 +73,7 @@ function removeResource(dialog) {
     var params = { action: 'remove-resource', resource: resource };
     $.get("operations.xql", params, function (data) {
         dialog.dialog("close");
+        $(location).attr('href', 'index.xml');
     });
 }
 
@@ -221,6 +222,13 @@ function resultsLoaded(options) {
         }
         $('#personal-list-size').load('user.xql', { action: 'count' });
     });
+    
+    /** add remove resource action */
+    $('#remove-resource').click(function() {{
+        $('#remove-resource-id').val($('#' + this.id).attr('href').substr(1));
+        $('#remove-resource-dialog').dialog('open');
+        return false;
+    }});
 }
 
 function searchTabSelected(ev, ui) {

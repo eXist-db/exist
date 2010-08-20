@@ -55,6 +55,21 @@ declare function op:update-collection-permissions($collection as xs:string, $res
         <status id="permissions">{$restriction}{if($restriction eq "group")then(concat(": ", $user-group))else()}</status>
 };
 
+(:~
+:
+: @ resource-id has the format db-document-path#node-id e.g. /db/mods/eXist/exist-articles.xml#1.36
+:)
+declare function op:remove-resource($resource-id as xs:string) as element(status) {
+    
+    let $path := substring-before($resource-id, "#"),
+    $id := substring-after($resource-id, "#") return
+    
+        update delete util:node-by-id(doc($path), $id),
+    
+    
+    <status id="removed">{$resource-id}</status>
+};
+
 declare function op:unknown-action($action as xs:string) {
         response:set-status-code(403),
         <p>Unknown action: {$action}.</p>
@@ -71,5 +86,7 @@ return
         op:remove-collection($collection)
     else if($action eq "update-collection-permissions")then
         op:update-collection-permissions($collection, request:get-parameter("restriction", ()), request:get-parameter("userGroup",()))
+    else if($action eq "remove-resource")then
+        op:remove-resource(request:get-parameter("resource",()))
     else
         op:unknown-action($action)

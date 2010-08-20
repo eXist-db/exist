@@ -45,17 +45,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                         </a>
                         {
                             if($count eq 1)then(
-                                <a id="resource_remove" href="#"><img title="delete" src="img/delete.png"/></a>,
-                                jquery:process-templates(
-                                    <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" trigger="#resource-remove" width="450">
-                                        <jquery:button label="Remove" function="removeResource"/>
-                                        <jquery:button id="cancel" label="Cancel"/>
-                                        <form id="remove-resource-form" action="operations.xql">
-                                            <div>Are you sure you wish to remove the resource: <span>{document-uri(root($item))}</span></div>
-                                            <input id="resource" type="hidden" value="{document-uri(root($item))}"/>
-                                        </form>
-                                    </jquery:dialog>
-                                )
+                                <a id="remove-resource" href="#{$id}"><img title="delete" src="img/delete.png"/></a>
                             )else()
                         }
                     </td>
