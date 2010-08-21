@@ -66,7 +66,6 @@ pkg-repo.jar
             </markup>
             </programlisting>
 </example>
-
 </para>
             <para>
                If you are working off development /trunk you will need to do the following as eXist-db now depends on
@@ -100,6 +99,18 @@ You will then need to add the following module elements to your conf.xml
 The repo module extension should be enabled by default but you must ensure that the compression module is installed.
 
 
+            </para>
+        </section>
+
+        <section>
+            <title>Administration</title>
+            <para>
+                You can control which modules are loaded into eXist using the <a href="http://127.0.0.1:8080/exist/admin/admin.xql?panel=repo">repo manager admin</a>.
+            </para>
+            <para>
+                <important>
+                    <para>You need to ensure compression module is enabled via conf.xml for repo admin ui to work properly.</para>
+                </important>
             </para>
         </section>
 
