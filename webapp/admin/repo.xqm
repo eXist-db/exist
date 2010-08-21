@@ -2,6 +2,7 @@ xquery version "1.0";
 
 module namespace repomanager="http://exist-db.org/xquery/admin-interface/repo";
 
+declare namespace package="http://expath.org/ns/pkg";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
@@ -12,6 +13,22 @@ declare variable $repomanager:repo-uri := if (request:get-parameter("repository-
               request:get-parameter("repository-url", ())
             else
               "http://demo.exist-db.org/exist/repo/public/all/";
+
+declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
+{
+
+	<entry>
+		<path>{$path}</path>
+		<type>{$type}</type>
+		<data>{$data}</data>
+	</entry>
+};
+
+declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
+{
+
+	true()
+};
 
 declare function repomanager:publicrepo() as element()
 {
@@ -160,7 +177,9 @@ declare function repomanager:main() as element() {
         <table cellspacing="0" cellpadding="5" class="browse">
             <tr>
                 <th/>
-                <th>Package</th>
+                <th>Name</th>
+                <th>Version</th>
+
                 <th>Date Uploaded</th>
                 <th>Installed</th>
                 <th>Action</th>
@@ -172,11 +191,19 @@ declare function repomanager:main() as element() {
 
             for $file in $files[contains(.,'.xar')]
             let $package-name := substring-before($file,'.xar')
+            let $xar := util:binary-doc(concat($repomanager:coll,'/',$file))
+
+            let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
+            let $package := $meta//package:package
+            let $repo := $meta//repo:meta
+
             let $installed := exists($repos[. eq $package-name])
             return
              <tr>
                 <td/>
-                <td>{$package-name}</td>
+                <td><a href="{$repo//repo:website}" target="website">{$package-name}</a></td>
+                <td>{$repo//repo:description}</td>
+
                 <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
                 <td> 
                 {if ($installed) then
@@ -188,8 +215,13 @@ declare function repomanager:main() as element() {
                 <td>
                 {
                 if($installed) then
-                  <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}">deactivate</a>
 
+                    ( <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}">deactivate</a>,
+                      if ($repo//repo:deploy) then 
+                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$package-name}">deploy</a> )
+                     else
+                        ()
+                     )
                  else
                  ( <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">activate</a>,' | ',
                  <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">remove</a>
