@@ -259,10 +259,10 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 	}
 
 	public synchronized Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
-		if (account.getRealm() == null)
-			throw new ConfigurationException("Account realm is null.");
+		if (account.getRealmId() == null)
+			throw new ConfigurationException("Account's realmId is null.");
 		
-		if (account.getRealm() != this)
+		if (!getId().equals(account.getRealmId()))
 			throw new ConfigurationException("Account from different realm");
 
 		return sm.addAccount(account);
