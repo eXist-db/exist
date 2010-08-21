@@ -119,6 +119,8 @@ public class Configurator {
 	
 	public static Configuration configure(Configurable instance, Configuration configuration) {
 		
+		if (configuration == null) return null;
+		
 		if (configuration instanceof ConfigurationImpl) {
 			ConfigurationImpl impl = (ConfigurationImpl) configuration;
 			
@@ -457,12 +459,20 @@ public class Configurator {
 				broker.sync(Sync.MAJOR_SYNC);
 
 				document = collection.getDocument(broker, fileURL);
-				if (document == null)
-					throw new ConfigurationException("The configuration file can't be found, url = "+collection.getURI().append(fileURL));
 			}
 		}
 		
-		conf = new ConfigurationImpl((ElementAtExist) document.getDocumentElement());
+		if (document == null)
+			return null; //possible on corrupted database, find better solution (recovery flag?)
+			//throw new ConfigurationException("The configuration file can't be found, url = "+collection.getURI().append(fileURL));
+		
+		ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+
+		if (confElement == null)
+			return null; //possible on corrupted database, find better solution (recovery flag?)
+			//throw new ConfigurationException("The configuration file is empty, url = "+collection.getURI().append(fileURL));
+		
+		conf = new ConfigurationImpl(confElement);
 		
 		hotConfigs.put(document.getURI(), conf);
 		
