@@ -262,4 +262,15 @@ public final class SubjectImpl implements Subject {
 	public boolean isEnabled() {
 		return account.isEnabled();
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		
+		if (obj instanceof AbstractAccount) {
+			return ((AbstractAccount) obj).equals(this);
+		}
+		
+		return false;
+	}
 }
