@@ -27,7 +27,7 @@ return
                     let $http-response := httpclient:get(xs:anyURI($package-url), false(), ())
                     let $name := tokenize($package-url, "/")[last()]
                     return
-                    let $package-mimetype := "application/zip",
+                    let $package-mimetype := "application/xar",
                     $package-data := xs:base64Binary($http-response/httpclient:body/text())
                     return
                     xmldb:store($repomanager:coll, $name, $package-data, $package-mimetype)
