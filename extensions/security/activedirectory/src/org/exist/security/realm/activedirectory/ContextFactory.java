@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 
 import org.exist.config.Configuration;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.realm.ldap.LdapContextFactory;
 
 /**
@@ -35,10 +35,10 @@ import org.exist.security.realm.ldap.LdapContextFactory;
 @ConfigurationClass("context")
 public class ContextFactory extends LdapContextFactory {
 
-	@ConfigurationField("domain")
+	@ConfigurationFieldAsElement("domain")
 	protected String domain = null;
 
-	@ConfigurationField("searchBase")
+	@ConfigurationFieldAsElement("searchBase")
 	private String searchBase = null;
 
 	

@@ -25,7 +25,7 @@ import java.text.NumberFormat;
 
 import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;
@@ -46,10 +46,10 @@ public class XQueryWatchDog {
 
     private final XQueryContext context;
     
-    @ConfigurationField("query-timeout")
+    @ConfigurationFieldAsAttribute("query-timeout")
     private long timeout = Long.MAX_VALUE;
     
-    @ConfigurationField("output-size-limit")
+    @ConfigurationFieldAsAttribute("output-size-limit")
     private int maxNodesLimit = Integer.MAX_VALUE;
     
     private long startTime;

@@ -41,7 +41,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.SymbolTable;
@@ -395,13 +395,13 @@ public class BrokerPool extends Observable {
 	/**
 	 * The minimal number of brokers for the database instance 
 	 */
-	@ConfigurationField("min")
+	@ConfigurationFieldAsAttribute("min")
 	private int minBrokers;
 	
 	/**
 	 * The maximal number of brokers for the database instance 
 	 */
-	@ConfigurationField("max")
+	@ConfigurationFieldAsAttribute("max")
 	private int maxBrokers;
 
 	/**
@@ -441,7 +441,7 @@ public class BrokerPool extends Observable {
     //TODO : for now, this member is used for recovery management
     private boolean isReadOnly;    
 
-    @ConfigurationField("pageSize")
+    @ConfigurationFieldAsAttribute("pageSize")
     private int pageSize;
     
     private FileLock dataLock;
@@ -454,13 +454,13 @@ public class BrokerPool extends Observable {
 	/**
 	 * Delay (in ms) for running jobs to return when the database instance shuts down.
 	 */
-    @ConfigurationField("wait-before-shutdown")
+    @ConfigurationFieldAsAttribute("wait-before-shutdown")
 	private long maxShutdownWait;
 
 	/**
 	 * The scheduler for the database instance.
 	 */
-    @ConfigurationField("scheduler")
+    @ConfigurationFieldAsAttribute("scheduler")
 	private Scheduler scheduler;
 
     /**
@@ -476,7 +476,7 @@ public class BrokerPool extends Observable {
     /**
 	 * Cache synchronization on the database instance.
 	 */
-    @ConfigurationField("sync-period")
+    @ConfigurationFieldAsAttribute("sync-period")
 	private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;		//the period after which a major sync should occur		
 	private long lastMajorSync = System.currentTimeMillis();	//time the last major sync occurred
     

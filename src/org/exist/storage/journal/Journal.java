@@ -34,7 +34,7 @@ import java.text.DateFormat;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
@@ -105,7 +105,7 @@ public class Journal {
      * size limit for the journal file. A checkpoint will be triggered if the file
      * exceeds this size limit.
      */
-	@ConfigurationField("size")
+	@ConfigurationFieldAsAttribute("size")
     //TODO: conf.xml refactoring <recovery size=""> => <journal size="">
     private int journalSizeLimit = DEFAULT_MAX_SIZE;
     
@@ -119,7 +119,7 @@ public class Journal {
     private Object latch = new Object();
     
     /** the data directory where journal files are written to */
-    @ConfigurationField("journal-dir") 
+    @ConfigurationFieldAsAttribute("journal-dir") 
     //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
     private File dir;
     
@@ -150,7 +150,7 @@ public class Journal {
     private BrokerPool pool;
     
     /** if set to true, a sync will be triggered on the log file after every commit */
-    @ConfigurationField("sync-on-commit")
+    @ConfigurationFieldAsAttribute("sync-on-commit")
     //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
     private boolean syncOnCommit = true;
     

@@ -27,7 +27,7 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Object2ObjectHashMap;
@@ -58,16 +58,16 @@ public class XQueryPool extends Object2ObjectHashMap {
 
     private long lastTimeOutCheck;
 
-	@ConfigurationField("size")
+	@ConfigurationFieldAsAttribute("size")
     private int maxPoolSize;
     
-    @ConfigurationField("max-stack-size")
+    @ConfigurationFieldAsAttribute("max-stack-size")
     private int maxStackSize;
 
-    @ConfigurationField("timeout")
+    @ConfigurationFieldAsAttribute("timeout")
     private long timeout;
 
-    @ConfigurationField("timeout-check-interval")
+    @ConfigurationFieldAsAttribute("timeout-check-interval")
     private long timeoutCheckInterval;
     
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";

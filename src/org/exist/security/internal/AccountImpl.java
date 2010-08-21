@@ -25,8 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
-import org.exist.config.annotation.ConfigurationFieldAsNode;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -131,10 +130,10 @@ public class AccountImpl extends AbstractAccount {
         return null;
 	}
 	
-	@ConfigurationFieldAsNode("password")
+	@ConfigurationFieldAsElement("password")
 	private String password = null;
 
-	@ConfigurationFieldAsNode("digestPassword") 
+	@ConfigurationFieldAsElement("digestPassword") 
 	private String digestPassword = null;
 
 	/**

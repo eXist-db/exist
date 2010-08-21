@@ -34,7 +34,7 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -87,13 +87,13 @@ public class SecurityManagerImpl implements SecurityManager {
 	protected Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
 	protected Int2ObjectHashMap<Account> usersById = new Int2ObjectHashMap<Account>(65);
 	
-	@ConfigurationField("last-account-id")
+	@ConfigurationFieldAsAttribute("last-account-id")
 	protected int lastUserId = 0;
 
-	@ConfigurationField("last-group-id")
+	@ConfigurationFieldAsAttribute("last-group-id")
 	protected int lastGroupId = 0;
 
-	@ConfigurationField("version")
+	@ConfigurationFieldAsAttribute("version")
 	private String version = "2.0";
 
 //	@ConfigurationField("enableXACML")
@@ -106,7 +106,7 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private RealmImpl defaultRealm;
     
-    @ConfigurationField("realm")
+    @ConfigurationFieldAsAttribute("realm")
     private List<Realm> realms = new ArrayList<Realm>();
     
     private Collection collection = null;

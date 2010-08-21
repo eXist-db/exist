@@ -22,7 +22,7 @@
 package org.exist.config;
 
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -31,22 +31,22 @@ import org.exist.config.annotation.ConfigurationField;
 @ConfigurationClass("instance")
 public class ConfigurableObject implements Configurable {
 	
-	@ConfigurationField("valueString")
+	@ConfigurationFieldAsAttribute("valueString")
 	protected String some = "default";
 
-	@ConfigurationField("valueInteger")
+	@ConfigurationFieldAsAttribute("valueInteger")
 	protected Integer someInteger = 7;
 
-	@ConfigurationField("valueInt")
+	@ConfigurationFieldAsAttribute("valueInt")
 	protected int simpleInteger = 5;
 
-	@ConfigurationField("value")
+	@ConfigurationFieldAsAttribute("value")
 	protected int defaultInteger = 3;
 
-	@ConfigurationField("valueboolean")
+	@ConfigurationFieldAsAttribute("valueboolean")
 	protected boolean someboolean = false;
 
-	@ConfigurationField("valueBoolean")
+	@ConfigurationFieldAsAttribute("valueBoolean")
 	protected Boolean someBoolean = true;
 
 	private Configuration configuration;

@@ -35,7 +35,7 @@ import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -50,11 +50,11 @@ public class LdapContextFactory implements Configurable {
 
 	protected String authentication = "simple";
 
-	@ConfigurationField("principalPattern")
+	@ConfigurationFieldAsAttribute("principalPattern")
 	protected String principalPattern = null;
 	protected MessageFormat principalPatternFormat;
 
-	@ConfigurationField("url")
+	@ConfigurationFieldAsAttribute("url")
 	protected String url = null;
 
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
