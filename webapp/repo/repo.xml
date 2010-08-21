@@ -33,8 +33,7 @@
             If everything went ok the functx-1.0.xar package should now be installed (you need to restart eXist) and the
     following XQuery should run properly in the <a href="/exist/sandbox/sandbox.xql" target="sandbox">XQuery sandbox</a>.
 
-<example>.
-            from the repository.
+<example>
             <title>Functx XQuery library example</title>
             <programlisting>
             <markup>
@@ -59,13 +58,11 @@ functx:capitalize-first('hello')
             <para>
                 This module relies on the presence of the following jar files in the EXIST_HOME/lib/core folder. This jar
                 is included in the lib/core already.
-<example>
             <programlisting>
             <markup>
 pkg-repo.jar
             </markup>
             </programlisting>
-</example>
 </para>
             <para>
                If you are working off development /trunk you will need to do the following as eXist-db now depends on
@@ -82,10 +79,8 @@ pkg-repo.jar
                     </li>
                 </ul>
 You will then need to add the following module elements to your conf.xml
-<example>
             <programlisting>
             <markup>
-
 
 &lt;module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
         uri="http://exist-db.org/xquery/repo" /&gt;
@@ -95,7 +90,6 @@ You will then need to add the following module elements to your conf.xml
 
             </markup>
             </programlisting>
-</example>
 The repo module extension should be enabled by default but you must ensure that the compression module is installed.
 
 
@@ -106,6 +100,9 @@ The repo module extension should be enabled by default but you must ensure that 
             <title>Administration</title>
             <para>
                 You can control which modules are loaded into eXist using the <a href="http://127.0.0.1:8080/exist/admin/admin.xql?panel=repo">repo manager admin</a>.
+            </para>
+            <para>
+                From the repo admin ui you can upload packages from your computer or from public package repositories.
             </para>
             <para>
                 <important>
@@ -304,6 +301,17 @@ repo:remove('functx-1.0')
 </para>
  </section>
 
+    </section>
+
+    <section>
+        <title>Public Repository</title>
+        <para>Each eXist XML Database ships with its own Public repository, a facility for which packages can be distributed
+        to other eXistdb instances. Public repositories are used by the eXistdb repo administration module.</para>
+        <graphic fileref="existdb-system.jpg"/>
+        <para>The Public repository is by default empty and can be reached <a href="public/">here</a></para>
+         <important>
+            <para>To upload packages into this public repository you must amend permissions on /db/repo collection.</para>
+        </important>
     </section>
 
     <section>

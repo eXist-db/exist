@@ -12,7 +12,7 @@ let $name := replace($uri, '^.*/([^/]+)$', '$1')
 return
     if ($path = "/repo/") then
 	    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    		<redirect url="examples.xml"/>
+    		<redirect url="repo.xml"/>
     	</dispatch>
     else if (ends-with($uri, '.xar')) then
 
