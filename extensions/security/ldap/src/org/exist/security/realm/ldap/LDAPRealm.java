@@ -21,23 +21,23 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.util.Collection;
-
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.config.Configurable;
 import org.exist.config.Configuration;
-import org.exist.config.Configurator;
+import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
-import org.exist.security.realm.Realm;
+import org.exist.security.Subject;
+import org.exist.security.Account;
+import org.exist.security.internal.AbstractRealm;
+import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.SubjectImpl;
+import org.exist.security.internal.AccountImpl;
 import org.exist.storage.DBBroker;
 
 /**
@@ -45,7 +45,7 @@ import org.exist.storage.DBBroker;
  * 
  */
 @ConfigurationClass("LDAP")
-public class LDAPRealm implements Realm, Configurable {
+public class LDAPRealm extends AbstractRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
@@ -53,8 +53,8 @@ public class LDAPRealm implements Realm, Configurable {
 
 	protected Configuration configuration = null;
 
-	public LDAPRealm(Configuration config) {
-		configuration = Configurator.configure(this, config);
+	public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
+		super(sm, config);
 	}
 
 	protected LdapContextFactory ensureContextFactory() {
@@ -78,57 +78,9 @@ public class LDAPRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public User getAccount(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<User> getAccounts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean hasAccount(String accountName) {
+	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	@Override
-	public boolean updateAccount(User account) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Collection<Group> getRoles() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Group getGroup(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean hasGroup(String name) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public User getAccount(int id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Group getGroup(int id) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -137,7 +89,7 @@ public class LDAPRealm implements Realm, Configurable {
 
 	}
 
-	public User authenticate(String username, Object credentials) throws AuthenticationException {
+	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
 		// Binds using the username and password provided by the user.
 		LdapContext ctx = null;
 		try {
@@ -150,7 +102,13 @@ public class LDAPRealm implements Realm, Configurable {
 			LdapUtils.closeContext(ctx);
 		}
 
-		return new UserImpl(this, username);
+		try {
+			return new SubjectImpl(new AccountImpl(this, username), null);
+		} catch (ConfigurationException e) {
+			throw new AuthenticationException(
+					AuthenticationException.UNNOWN_EXCEPTION,
+					e.getMessage(), e);
+		}
 	}
 
 	// configurable methods
@@ -165,19 +123,13 @@ public class LDAPRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public User addAccount(User account) throws PermissionDeniedException, EXistException {
+	public Account addAccount(Account account) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean hasAccount(User account) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean deleteAccount(User account) throws PermissionDeniedException, EXistException {
+	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -186,12 +138,6 @@ public class LDAPRealm implements Realm, Configurable {
 	public Group addGroup(Group role) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public boolean hasGroup(Group role) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
