@@ -27,9 +27,10 @@ return
                     let $http-response := httpclient:get(xs:anyURI($package-url), false(), ())
                     let $name := tokenize($package-url, "/")[last()]
                     return
-                    let $package-mimetype := 'application/xar',
-                    $package-data := $http-response/httpclient:body/text() return
-                    xmldb:store("/db/system/repo", $name, xs:base64Binary($package-data), $package-mimetype)
+                    let $package-mimetype := "application/zip",
+                    $package-data := xs:base64Binary($http-response/httpclient:body/text())
+                    return
+                    xmldb:store($repomanager:coll, $name, $package-data, $package-mimetype)
                     )
                 else
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
