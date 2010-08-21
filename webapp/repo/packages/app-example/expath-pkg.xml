@@ -1,5 +1,12 @@
 <package xmlns="http://expath.org/ns/pkg">
    <module name="myApp" version="0.1">
+      <repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
+          <repo:author>James Fuller</repo:author>
+          <repo:website>http://www.webcomposite.com/</repo:website>
+          <repo:license></repo:license>
+          <repo:copyright>true</repo:copyright>
+          <repo:description>Example illustrating how to create packages comprised of full blown applications.</repo:description>
+      </repo:meta>
        <title>myApp</title>
       <xquery>
          <namespace>http://www.webcomposite.com/myApp</namespace>
