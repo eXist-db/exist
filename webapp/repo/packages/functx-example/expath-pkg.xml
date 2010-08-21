@@ -1,12 +1,5 @@
 <package xmlns="http://expath.org/ns/pkg">
    <module name="functx" version="1.0">
-      <repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
-          <repo:author>Priscilla Walmsley</repo:author>
-          <repo:website>http://www.xqueryfunctions.com/</repo:website>
-          <repo:license>GNU-LGPL</repo:license>
-          <repo:copyright>true</repo:copyright>
-          <repo:description>he FunctX XQuery/XSLT 2.0 function library is a set of reusable functions for XQuery 1.0 and XSLT 2.0. The project itself is an open source application and framework for developers to create function libraries. </repo:description>
-      </repo:meta>
       <title>FunctX library</title>
       <xquery>
          <namespace>http://www.functx.com</namespace>
