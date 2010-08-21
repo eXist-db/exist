@@ -70,14 +70,9 @@ public abstract class AbstractPrincipal implements Principal {
 			DBBroker broker = null;
 			try {
 				broker = database.get(null);
-				Subject currentUser = broker.getUser();
-				try {
-					broker.setUser(database.getSecurityManager().getSystemSubject());
-					Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name));
-					configuration = Configurator.configure(this, _config_);
-				} finally {
-					broker.setUser(currentUser);
-				}
+
+				Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name));
+				configuration = Configurator.configure(this, _config_);
 			} catch (EXistException e) {
 				throw new ConfigurationException(e);
 			} finally {
@@ -87,7 +82,8 @@ public abstract class AbstractPrincipal implements Principal {
 	}
 	
 	protected void save() throws PermissionDeniedException, EXistException {
-		configuration.save();
+		if (configuration != null)
+			configuration.save();
 	}
 	
 	public final String getName() {

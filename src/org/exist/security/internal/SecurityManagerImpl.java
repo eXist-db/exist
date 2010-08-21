@@ -231,8 +231,8 @@ public class SecurityManagerImpl implements SecurityManager {
 				transaction.commit(txn);
 			}
 			
-        	Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
-    		configuration = Configurator.configure(this, _config_);
+			Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+			configuration = Configurator.configure(this, _config_);
 
         } catch (Exception e) {
 			transaction.abort(txn);
@@ -616,15 +616,15 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
 	protected final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
-		if (account.getRealm() == null) 
-			throw new ConfigurationException("Account must have realm.");
+		if (account.getRealmId() == null) 
+			throw new ConfigurationException("Account must have realm id.");
 		
 		if (account.getName() == null || account.getName().isEmpty()) 
 			throw new ConfigurationException("Account must have name.");
 		
 		AbstractRealm registeredRealm = null;
 		for (Realm realm : realms) {
-			if (realm.getId().equals( account.getRealm().getId() )) {
+			if (realm.getId().equals( account.getRealmId() )) {
 				registeredRealm = (AbstractRealm)realm;
 				break;
 			}
