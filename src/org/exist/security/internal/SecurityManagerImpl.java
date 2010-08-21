@@ -231,13 +231,6 @@ public class SecurityManagerImpl implements SecurityManager {
 				transaction.commit(txn);
 			}
 			
-			//XXX: move it to BrokerBool initialization
-	        CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-			CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
-			collConf.registerTrigger(broker, 
-					"store,update,remove", 
-					"org.exist.config.ConfigurationDocumentTrigger", null);
-
         	Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
     		configuration = Configurator.configure(this, _config_);
 
