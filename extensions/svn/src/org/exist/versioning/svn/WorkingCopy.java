@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
@@ -22,9 +24,12 @@ import org.exist.versioning.svn.wc.SVNClientManager;
 import org.exist.versioning.svn.wc.SVNCopySource;
 import org.exist.versioning.svn.wc.SVNUpdateClient;
 import org.exist.versioning.svn.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.ISVNDirEntryHandler;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
@@ -534,5 +539,23 @@ public class WorkingCopy {
 	            }
 	        }
         }
+    }
+
+    public final List<SVNDirEntry> list(SVNURL url, SVNRevision pegRevision, SVNRevision revision, boolean fetchLocks, 
+            SVNDepth depth, int entryFields) throws SVNException {
+    	
+    	final List<SVNDirEntry> result = new ArrayList<SVNDirEntry>();
+    	ourClientManager.getLogClient().doList(url, pegRevision, revision, fetchLocks, depth, entryFields,
+    			new ISVNDirEntryHandler() {
+					
+					@Override
+					public void handleDirEntry(SVNDirEntry entry) throws SVNException {
+//						if (entry.getKind() == SVNNodeKind.DIR) {
+							result.add(entry);
+//						}
+					}
+				});
+    	
+    	return result;
     }
 }
