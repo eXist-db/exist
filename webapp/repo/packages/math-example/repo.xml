@@ -1,0 +1,7 @@
+<repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
+  <repo:author>Adam Retter</repo:author>
+  <repo:website>http://exist.sourceforge.net</repo:website>
+  <repo:license>GNU-LGPL</repo:license>
+  <repo:copyright>true</repo:copyright>
+  <repo:description>XQuery math functons.</repo:description>
+</repo:meta>
