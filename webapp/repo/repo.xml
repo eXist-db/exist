@@ -82,16 +82,23 @@ pkg-repo.jar
                         rebuild eXist (so repo extension module gets built)
                     </li>
                 </ul>
-You will then need to add the following module element to your conf.xml
+You will then need to add the following module elements to your conf.xml
 <example>
             <programlisting>
             <markup>
+
+
 &lt;module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
         uri="http://exist-db.org/xquery/repo" /&gt;
+
+&lt;module class="org.exist.xquery.modules.compression.CompressionModule"
+        uri="http://exist-db.org/xquery/compression" /&gt;
 
             </markup>
             </programlisting>
 </example>
+The repo module extension should be enabled by default but you must ensure that the compression module is installed.
+
 
             </para>
         </section>
