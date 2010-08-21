@@ -34,6 +34,7 @@ import java.util.Set;
 import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -242,6 +243,11 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     public Set<String> getProperties() {
     	Set<String> properties = new HashSet<String>();
     	
+    	NamedNodeMap attrs = getAttributes();
+    	for (int i = 0; i < attrs.getLength(); i++) {
+    		properties.add(attrs.item(i).getNodeName());
+    	}
+    	
     	Map<String, Boolean> map = new HashMap<String, Boolean>(); 
     	
     	//XXX: detect single element as field value
@@ -250,7 +256,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     		Node child = children.item(i);
     		
     		if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-    			properties.add(child.getNodeName());
+    			//properties.add(child.getNodeName());
     		} else if (child.getNodeType() == Node.ELEMENT_NODE) {
        			map.put(child.getNodeName(), map.containsKey(child.getNodeName()));
     		}
