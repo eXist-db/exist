@@ -54,9 +54,9 @@ declare function local:upload() as element()
                    ,
                     let $meta := compression:unzip($file, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
                     let $package := $meta//package:package
-                    let $meta := $meta//repo:meta                    
+                    let $repo := $meta//repo:meta
                     return
-                     xdb:store($repo-coll, concat(substring-before($docName,'.xar'),'.xml'), <meta>{$package}{$meta}</meta>)
+                     xdb:store($repo-coll, concat(substring-before($docName,'.xar'),'.xml'), <meta>{$package}{$repo}</meta>)
                    )
                 else
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
@@ -89,7 +89,7 @@ declare function local:upload() as element()
        let $package := document(concat($repo-coll,'/',$name,'.xml'))
        return
         <tr>
-            <td>{$name}</td>
+            <td><a href="{$package//repo:website}" target="website">{$name}</a></td>
             <td>{$package//package:title/text()}</td>
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
