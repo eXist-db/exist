@@ -86,7 +86,7 @@ public class XMLDBChangeUser extends BasicFunction {
 	    collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 	    
-	    Account oldUser = ums.getUser(userName);
+	    Account oldUser = ums.getAccount(userName);
 	    if (oldUser == null) {
             logger.error("User " + userName + " not found");
             throw new XPathException(this, "User " + userName + " not found");

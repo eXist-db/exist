@@ -111,7 +111,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 		Account user = null;
 		
 		try {
-			user = service.getUser(username);
+			user = service.getAccount(username);
 		} catch (XMLDBException e) {
 		}
 		
@@ -165,12 +165,12 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 			service = (UserManagementService) collection
 					.getService("UserManagementService", "1.0");
 
-			defaultUser = service.getUser(SecurityManager.GUEST_USER);
+			defaultUser = service.getAccount(SecurityManager.GUEST_USER);
 			
 			/* initialize security */
 			boolean admin = true;
 			if(admin){
-				Account adminUser = service.getUser(SecurityManager.DBA_USER);
+				Account adminUser = service.getAccount(SecurityManager.DBA_USER);
 				if(adminUser.getPassword() == null){
 					adminUser.setPassword("admin");
 					log("Update Admin User on inital start");

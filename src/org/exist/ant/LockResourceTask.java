@@ -58,7 +58,7 @@ public class LockResourceTask extends UserTask {
                 }
 
             } else {
-                Account usr = service.getUser(name);
+                Account usr = service.getAccount(name);
                 if (usr == null) {
                     String msg = "User " + name + " not found";
                     if (failonerror) {

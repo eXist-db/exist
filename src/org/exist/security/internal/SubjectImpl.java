@@ -187,6 +187,11 @@ public final class SubjectImpl implements Subject {
 		return account.getAttributeNames();
 	}
 
+	@Override
+	public String getRealmId() {
+		return account.getRealmId();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.Principal#getId()
 	 */

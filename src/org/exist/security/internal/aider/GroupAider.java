@@ -23,6 +23,7 @@ package org.exist.security.internal.aider;
 
 import org.exist.config.Configuration;
 import org.exist.security.Group;
+import org.exist.security.internal.RealmImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,20 +31,29 @@ import org.exist.security.Group;
  */
 public class GroupAider implements Group {
 
+	private String realmId;
 	private String name;
 	private int id;
 	
 	public GroupAider(int id) {
-		this(id, null);
+		this(id, null, null);
+	}
+	
+	public GroupAider(String realmId, String name) {
+		this(-1, realmId, name);
+	}
+
+	public GroupAider(int id, String realmId, String name) {
+		this.id = id;
+		this.name = name;
+		this.realmId = realmId;
 	}
 	
 	public GroupAider(String name) {
-		this(-1, name);
-	}
-
-	public GroupAider(int id, String name) {
-		this.id = id;
+		this.id = -1;
 		this.name = name;
+		//XXX: parse name for realmId, use default as workaround
+		this.realmId = RealmImpl.ID;
 	}
 
 	/* (non-Javadoc)
@@ -64,14 +74,17 @@ public class GroupAider implements Group {
 
 	@Override
 	public boolean isConfigured() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public Configuration getConfiguration() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String getRealmId() {
+		return realmId;
 	}
 
 }

@@ -50,7 +50,7 @@ public class ChownTask extends UserTask {
         }
 
         try {
-            Account usr = service.getUser(name);
+            Account usr = service.getAccount(name);
             if (resource != null) {
                 Resource res = base.getResource(resource);
                 service.chown(res, usr, group);

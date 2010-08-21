@@ -380,7 +380,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized void deleteUser(String name) throws PermissionDeniedException, EXistException {
-		deleteUser(getUser(name));
+		deleteUser(getAccount(name));
 	}
 	
 	public synchronized void deleteUser(Account user) throws PermissionDeniedException, EXistException {
@@ -390,7 +390,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		defaultRealm.deleteAccount(user);
 	}
 
-	public synchronized Account getUser(String name) {
+	public synchronized Account getAccount(String name) {
 		for (Realm realm : realms) {
 			Account account = realm.getAccount(name);
 			if (account != null) return account;

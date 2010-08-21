@@ -28,6 +28,7 @@ import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -37,6 +38,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class UserAider implements Account {
 
+	private String realmId;
 	private String name;
 	private int id;
 	
@@ -44,20 +46,32 @@ public class UserAider implements Account {
 	private Map<String, Group> roles = new HashMap<String, Group>();
 	
 	public UserAider(int id) {
-		this(id, null);
+		this(id, null, null);
 	}
 
 	public UserAider(String name) {
-		this(-1, name);
+		this.realmId = "exist"; //XXX:parse name for realm id
+		this.name = name;
+		id = -1;
+	}
+
+	public UserAider(String realmId, String name) {
+		this(-1, realmId, name);
 	}
 	
-	public UserAider(int id, String name) {
+	public UserAider(int id, String realmId, String name) {
+		this.realmId = realmId;
 		this.name = name;
 		this.id = id;
 	}
 
+	public UserAider(String realmId, String name, Group group) {
+		this(realmId, name);
+		defaultRole = addGroup(group);
+	}
+
 	public UserAider(String name, Group group) {
-		this(name);
+		this(RealmImpl.ID, name); //XXX: parse name for realmId, use default as workaround 
 		defaultRole = addGroup(group);
 	}
 
@@ -69,12 +83,25 @@ public class UserAider implements Account {
 		return name;
 	}
 
+	@Override
+	public String getRealmId() {
+		return realmId;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.security.Principal#getId()
+	 */
+	@Override
+	public int getId() {
+		return id;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
 	@Override
 	public Group addGroup(String name) {
-		Group role = new GroupAider(name);
+		Group role = new GroupAider(realmId, name);
 		
 		roles.put(name, role);
 		
@@ -123,14 +150,6 @@ public class UserAider implements Account {
 	@Override
 	public boolean hasDbaRole() {
 		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.Principal#getId()
-	 */
-	@Override
-	public int getId() {
-		return id;
 	}
 
 	/* (non-Javadoc)
@@ -288,6 +307,4 @@ public class UserAider implements Account {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	
 }

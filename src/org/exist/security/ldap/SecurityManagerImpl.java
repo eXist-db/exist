@@ -483,7 +483,7 @@ public class SecurityManagerImpl implements SecurityManager
       return user;
    }
 
-   public AccountImpl getUser(String name)
+   public AccountImpl getAccount(String name)
    {
       AccountImpl user = userByNameCache.get(name);
       if (user==null) {
@@ -554,7 +554,7 @@ public class SecurityManagerImpl implements SecurityManager
 
    @Override
    public Subject authenticate(String username, Object credentials) throws AuthenticationException {
-		Account user = getUser(username);
+		Account user = getAccount(username);
 		if (user != null) {
 			Subject newUser = new SubjectImpl((AccountImpl)user, credentials);
 

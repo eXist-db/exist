@@ -122,7 +122,7 @@ class DocumentView extends JFrame {
 	        // lock the resource for editing
 	        UserManagementService service = (UserManagementService)
 	        client.current.getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-	        Account user = service.getUser(properties.getProperty("user")); //$NON-NLS-1$
+	        Account user = service.getAccount(properties.getProperty("user")); //$NON-NLS-1$
 	        String lockOwner = service.hasUserLock(resource);
 	        if(lockOwner != null) {
 	            if(JOptionPane.showConfirmDialog(this,

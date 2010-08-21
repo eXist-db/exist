@@ -31,7 +31,9 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Principal;
+import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
@@ -58,8 +60,29 @@ public abstract class AbstractPrincipal implements Principal {
 		this.name = name;
 		
 		if (collection != null) {
-			Configuration _config_ = Configurator.parse(this, null, collection, XmldbURI.create(name));
-			configuration = Configurator.configure(this, _config_);
+			BrokerPool database;
+			try {
+				database = BrokerPool.getInstance();
+			} catch (EXistException e) {
+				throw new ConfigurationException(e);
+			} 
+			
+			DBBroker broker = null;
+			try {
+				broker = database.get(null);
+				Subject currentUser = broker.getUser();
+				try {
+					broker.setUser(database.getSecurityManager().getSystemSubject());
+					Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name));
+					configuration = Configurator.configure(this, _config_);
+				} finally {
+					broker.setUser(currentUser);
+				}
+			} catch (EXistException e) {
+				throw new ConfigurationException(e);
+			} finally {
+				database.release(broker);
+			}
 		}
 	}
 	
@@ -73,6 +96,10 @@ public abstract class AbstractPrincipal implements Principal {
 
 	public final int getId() {
 		return id;
+	}
+
+	public final String getRealmId() {
+		return realm.getId();
 	}
 
 	@Override
