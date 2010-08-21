@@ -86,6 +86,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		try {
 			store(xmlDocument.toString(), service, document);
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail("Failed to write document to database: " + e.getMessage());
 		}
 
@@ -145,7 +146,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $loggedIn := xdb:login(\"" + DBBroker.ROOT_COLLECTION + "\", \"admin\", \"admin\"),");
+		query.append("let $loggedIn := xdb:login(\"" + DBBroker.ROOT_COLLECTION + "\", \"admin\", \"\"),");
 		query.append("$doc := xdb:store(\"" + DBBroker.ROOT_COLLECTION + "\", $document, $data)");
 		query.append("return <result/>");
 
@@ -176,7 +177,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		query.append("</xu:append>");
 		query.append("</xu:modifications>");
 		query.append("};");
-		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"\"),");
 		query.append("$mods := xdb:update(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $xupdate)");
 		query.append("return <modifications>{$mods}</modifications>");
 
