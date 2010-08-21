@@ -352,7 +352,7 @@
         </copy>
     </target>
 
-    <target name="jar" depends="compile,svn.resources">
+    <target name="jar" depends="compile,svn.resources,xar-math, xar-functx, xar-json">
         <echo message="Creating exist-modules.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
             <manifest>
@@ -364,22 +364,33 @@
         </jar>
     </target>
 
-
     <target name="xar-math" depends="compile,svn.resources">
         <echo message="Creating math.xar example for package manager ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/webapp/repo/packages/math-example/math.jar"
-             includes="org/exist/xquery/modules/math/**"        
+             includes="org/exist/xquery/modules/math/**"
                 >
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
-                <attribute name="Class-Path" value="lib/exist.jar lib/xmldb.jar"/>
+                <attribute name="Class-Path" value="exist.jar xmldb.jar"/>
             </manifest>
         </jar>
         <zip destfile="${top.dir}/webapp/repo/packages/math-1.0.xar"
              basedir="${top.dir}/webapp/repo/packages/math-example"/>
     </target>
 
+    <target name="xar-functx" depends="compile,svn.resources">
+        <echo message="Creating functx-1.0.xar example for package manager ..."/>
+        <zip destfile="${top.dir}/webapp/repo/packages/functx-1.0.xar"
+             basedir="${top.dir}/webapp/repo/packages/functx-example"/>
+    </target>
+
+    <target name="xar-json" depends="compile,svn.resources">
+        <echo message="Creating xquery-json-0.1.xar example for package manager ..."/>
+        <zip destfile="${top.dir}/webapp/repo/packages/xquery-json-0.1.xar"
+             basedir="${top.dir}/webapp/repo/packages/json-example"/>
+    </target>
+    
     <target name="clean" depends="clean-xmlcalabash">
         <delete dir="${classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
@@ -388,5 +399,6 @@
     <target name="clean-xmlcalabash">
         <delete file="${top.dir}/${lib.user}/calabash.jar" failonerror="false"/>
     </target>
+
 
 </project>

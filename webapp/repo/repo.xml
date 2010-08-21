@@ -119,14 +119,11 @@ functx/
 <para>The expath-pkg.xml contains <a href="http://expath.org/modules/pkg.html#d2e112" target="expathspec">package description</a>. The
     .xar comprises of the zipped up distribution.
 </para>
-        <para>We have shipped a few .xar packages in the <a href="http://127.0.0.1:8080/exist/repo/packages" target="dir">.xar directory</a> which you can use
-            to test installing a package. This is achieved by using controller.xql to identify
+        <para>We have shipped a few .xar packages in the <a href="http://127.0.0.1:8080/exist/repo/packages" target="dir">.xar directory</a> which get built automatically
+            by eXist. You can use to test installing a package. This is achieved by using controller.xql to identify
         <ul>
             <li>Functx-1.0 <a href="packages/functx-1.0.xar?install=true" target="install">install</a> | <a href="packages/functx-1.0.xar?remove=true" target="remove">remove</a> </li>
-            <!--li>EXPATH-HTTP-Client-0.1 <a href="packages/expath-http-client-exist-0.1.xar?install=true" target="install">install</a> | <a href="packages/expath-http-client-exist-0.1.xar?remove=true" target="remove">remove</a> </li-->
             <li>XQuery-Json-0.1 <a href="packages/xquery-json-0.1.xar?install=true" target="install">install</a> | <a href="packages/xquery-json-0.1.xar?remove=true" target="remove">remove</a> </li>
-            <li>FXSL-1.0 <a href="packages/fxsl-1.0.xar?install=true" target="install">install</a> | <a href="packages/fxsl-1.0.xar?remove=true" target="remove">remove</a></li>
-            <li>example app Invoice-1.0 <a href="packages/invoice-1.0.xar?install=true" target="install">install</a> | <a href="packages/invoice-1.0.xar?remove=true" target="remove">remove</a> </li>
         </ul>
     </para>
 <para>A more advanced package could contain other archive resources. We can package up eXist own modules into jars and
