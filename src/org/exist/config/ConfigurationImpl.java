@@ -289,9 +289,10 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 		return objects.get(name);
 	}
 
+	private boolean saving = false;
 	@Override
 	public void checkForUpdates() {
-		if (configuredObjectReferene != null && configuredObjectReferene.get() != null)
+		if (!saving && configuredObjectReferene != null && configuredObjectReferene.get() != null)
 			Configurator.configure(configuredObjectReferene.get(), this);
 	}
 
@@ -299,11 +300,13 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	public void save() throws PermissionDeniedException, EXistException {
 
 		try {
-			
+			saving = true;
 			Configurator.save(getProxyObject().getDocumentAtExist());
 		
 		} catch (IOException e) {
 			throw new EXistException(e);
+		} finally {
+			saving = false;
 		}
 	}
 }
