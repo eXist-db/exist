@@ -67,16 +67,16 @@ declare function local:upload() as element()
 
 <html>
     <head>
-    <title>eXist XML Database Public Package Repository</title>
+    <title>eXist XML Database Public Package Repository: http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/ </title>
     <link rel="stylesheet" type="text/css" href="../../styles/default-style2.css" />
     </head>
     <body>
 
-    <h1><a href=".">eXist XML Database Public Repository</a></h1>
+    <h1><a href=".">eXist XML Database Public Repository</a> : http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/</h1>
     <p> To install packages from this repository you will require:
 
     <ul>
-        <li>In your eXist repo manager use this uri: http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/</li>
+        <li>In your eXist repo manager use this uri : http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/</li>
         <li>access permission to this repository (set by the administrator of this repository)</li>
     </ul>
 
@@ -87,6 +87,7 @@ declare function local:upload() as element()
      <tr>
             <th>Package Name</th>
             <th>Description</th>
+            <th>Namespace(s)</th>
             <th>Date Created</th>
             <th>Author</th>
             <th>License</th>
@@ -103,10 +104,16 @@ declare function local:upload() as element()
         <tr>
             <td><a href="{$package//repo:website}" target="website">{$name}</a></td>
             <td>{$package//package:title/text()}</td>
+            <td>
+            {if ($package//package:java/package:namespace/text()) then (concat('java: ',$package//package:java/package:namespace/text()),<br/>) else () }            
+            {if ($package//package:xquery/package:namespace/text()) then (concat('xquery: ',$package//package:xquery/package:namespace/text()),<br/>) else () }
+            {if ($package//package:xslt/package:import-uri/text()) then (concat('xslt: ',$package//package:xslt/package:import-uri/text()),<br/>) else () }
+            </td>
+
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
             <td>{$package//repo:license}</td>
-            <td>{if ($package//repo:deploy) then 'application' else 'library'}</td>
+            <td>{if ($package//repo:deploy) then 'Application' else 'Library'}</td>
 
         </tr>
 
@@ -115,6 +122,8 @@ declare function local:upload() as element()
     </table>
 
     <h2>Add Package</h2>
+        <p>You will require access rights to upload new packages for distribution from this repository.</p>
+
     <form method="POST" enctype="multipart/form-data">
     <table>
     <tr>
