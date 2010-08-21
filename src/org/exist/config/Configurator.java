@@ -57,6 +57,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -434,10 +435,13 @@ public class Configurator {
 					broker.setUser(pool.getSecurityManager().getSystemSubject());
 					
 		            String data = buf.toString();
-		            IndexInfo info = collection.validateXMLResource(txn, broker, fileURL, data);
+					
+		            txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
+
+					IndexInfo info = collection.validateXMLResource(txn, broker, fileURL, data);
 	
-		            //TODO : unlock the collection here ?
 		            DocumentImpl doc = info.getDocument();
+
 		            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
 		            collection.store(txn, broker, info, data, false);
 					doc.setPermissions(0770);
@@ -502,6 +506,8 @@ public class Configurator {
 			TransactionManager transact = pool.getTransactionManager();
 			Txn txn = transact.beginTransaction();
 	
+			System.out.println("STORING CONFIGURATION url = "+document.getURI());
+
 			Subject currentUser = broker.getUser();
 			try {
 				broker.setUser(pool.getSecurityManager().getSystemSubject());
@@ -509,16 +515,21 @@ public class Configurator {
 				Collection collection = broker.getCollection(document.getURI().removeLastSegment());
 				if (collection == null) throw new IOException("Collection URI = "+document.getURI().removeLastSegment()+" not found.");
 				
+				txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
+				
 	            IndexInfo info = collection.validateXMLResource(txn, broker, document.getURI().lastSegment(), document);
 	
 	            collection.store(txn, broker, info, document, false);
 				
-				broker.saveCollection(txn, collection);
+				//broker.saveCollection(txn, collection);
 				
 				transact.commit(txn);
 	
 			} catch (Exception e) {
 				transact.abort(txn);
+				
+				e.printStackTrace();
+				
 				throw new IOException(e);
 
 			} finally {
