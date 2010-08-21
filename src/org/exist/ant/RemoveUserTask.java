@@ -46,7 +46,7 @@ public class RemoveUserTask extends UserTask {
         }
 
         try {
-            Account u = service.getUser(name);
+            Account u = service.getAccount(name);
             if (u != null) {
                 service.removeUser(u);
             }

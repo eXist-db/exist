@@ -98,7 +98,7 @@ public class XMLDBUserAccess extends BasicFunction {
 		try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			Account user = ums.getUser(userName);
+			Account user = ums.getAccount(userName);
 			
 			if(isCalledAs("exists-user"))
 				return null == user ? BooleanValue.FALSE : BooleanValue.TRUE;

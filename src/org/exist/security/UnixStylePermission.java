@@ -79,7 +79,7 @@ public class UnixStylePermission implements Permission {
      */
     public UnixStylePermission(SecurityManager sm, String user, String group, int permissions) {
     	this(sm, permissions);
-        owner = sm.getUser(user);
+        owner = sm.getAccount(user);
         ownerGroup = sm.getGroup(group);
         
         check(user, group);
@@ -154,7 +154,7 @@ public class UnixStylePermission implements Permission {
      *@exception  IOException  Description of the Exception
      */
     public void read( DataInput istream ) throws IOException {
-        owner = sm.getUser(istream.readUTF());
+        owner = sm.getAccount(istream.readUTF());
         ownerGroup = sm.getGroup(istream.readUTF());
         permissions = istream.readByte();
         
@@ -205,7 +205,7 @@ public class UnixStylePermission implements Permission {
      *@param  name  The new owner value
      */
     public void setOwner( String name ) {
-        owner = sm.getUser( name );
+        owner = sm.getAccount( name );
     }
 
     /**

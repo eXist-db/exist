@@ -48,7 +48,7 @@ public class UserPasswordTask extends UserTask {
 
         try {
             log("Looking up user " + name, Project.MSG_INFO);
-            Account usr = service.getUser(name);
+            Account usr = service.getAccount(name);
             if (usr != null) {
                 log("Setting password for user " + name, Project.MSG_INFO);
                 if (secret != null) {

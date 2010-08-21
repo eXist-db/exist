@@ -817,7 +817,7 @@ public class InteractiveClient {
                 try {
                     UserManagementService mgtService = (UserManagementService) current
                             .getService("UserManagementService", "1.0");
-                    Account user = mgtService.getUser(args[1]);
+                    Account user = mgtService.getAccount(args[1]);
                     if (user == null) {
                         System.out.println("no such user.");
                         return true;
@@ -887,7 +887,7 @@ public class InteractiveClient {
                 if (temp != null) {
                     UserManagementService mgtService = (UserManagementService) temp
                             .getService("UserManagementService", "1.0");
-                    Account u = mgtService.getUser(args[1]);
+                    Account u = mgtService.getAccount(args[1]);
                     if (u == null) {
                         System.out.println("unknown user");
                         return true;
@@ -901,7 +901,7 @@ public class InteractiveClient {
                 if (res != null) {
                     UserManagementService mgtService = (UserManagementService) current
                             .getService("UserManagementService", "1.0");
-                    Account u = mgtService.getUser(args[1]);
+                    Account u = mgtService.getAccount(args[1]);
                     if (u == null) {
                         System.out.println("unknown user");
                         return true;
@@ -921,7 +921,7 @@ public class InteractiveClient {
                 if (res != null) {
                     UserManagementService mgtService = (UserManagementService)
                     current.getService("UserManagementService", "1.0");
-                    Account user = mgtService.getUser(properties.getProperty("user", "guest"));
+                    Account user = mgtService.getAccount(properties.getProperty("user", "guest"));
                     if(args[0].equalsIgnoreCase("lock"))
                         mgtService.lockResource(res, user);
                     else

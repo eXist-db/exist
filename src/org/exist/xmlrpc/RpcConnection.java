@@ -1686,7 +1686,7 @@ public class RpcConnection implements RpcAPI {
      */
     public HashMap<String, Object> getUser(String name) throws EXistException,
             PermissionDeniedException {
-        Account u = factory.getBrokerPool().getSecurityManager().getUser(name);
+        Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
         if (u == null)
             throw new EXistException("user " + name + " does not exist");
         HashMap<String, Object> tab = new HashMap<String, Object>();
@@ -3511,7 +3511,7 @@ public class RpcConnection implements RpcAPI {
             ((UserAider)u).setEncodedPassword(passwd);
             ((UserAider)u).setPasswordDigest(passwdDigest);
         } else {
-            u = manager.getUser(name);
+            u = manager.getAccount(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
@@ -3607,7 +3607,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserAider(name);
     	} else {
-    		u = manager.getUser(name);
+    		u = manager.getAccount(name);
     		if (!(u.getName().equals(user.getName()) || manager
     			.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -3642,7 +3642,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserAider(name);
     	} else {
-    		u = manager.getUser(name);
+    		u = manager.getAccount(name);
     		if (!(u.getName().equals(user.getName()) || manager
     				.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(

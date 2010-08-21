@@ -90,7 +90,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 				try {
 		            collection = new LocalCollection(contextUser, context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 					UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-		            Account userObj = ums.getUser(user);
+		            Account userObj = ums.getAccount(user);
 		            if (null != userObj)
 		                ums.removeUser(userObj);
 				} catch (XMLDBException xe) {

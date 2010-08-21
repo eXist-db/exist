@@ -554,7 +554,7 @@ public class Restore extends DefaultHandler
         }
         Collection            root = DatabaseManager.getCollection( dbUri.toString(), username, pass );
         UserManagementService mgmt = (UserManagementService)root.getService( "UserManagementService", "1.0" );
-        Account                  dba  = mgmt.getUser( SecurityManager.DBA_USER );
+        Account                  dba  = mgmt.getAccount( SecurityManager.DBA_USER );
         dba.setPassword( adminPassword );
         mgmt.updateUser( dba );
 

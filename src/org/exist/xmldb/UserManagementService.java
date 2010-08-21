@@ -167,13 +167,13 @@ public interface UserManagementService extends Service {
 
 
     /**
-     *  Get a user record from the database
+     *  Get a account record from the database
      *
      *@param  name                Description of the Parameter
      *@return                     The user value
      *@exception  XMLDBException  Description of the Exception
      */
-    public Account getUser( String name ) throws XMLDBException;
+    public Account getAccount( String name ) throws XMLDBException;
 
 
     /**
@@ -184,7 +184,7 @@ public interface UserManagementService extends Service {
      */
     public Account[] getUsers() throws XMLDBException;
 
-    public Group getRole( String name ) throws XMLDBException;
+    public Group getGroup( String name ) throws XMLDBException;
 
     /**
 	 * Retrieve a list of all existing groups.
@@ -272,7 +272,7 @@ public interface UserManagementService extends Service {
      */
     public void removeUser( Account user ) throws XMLDBException;
     
-    public void removeRole( Group role ) throws XMLDBException;
+    public void removeGroup( Group group ) throws XMLDBException;
 
     /**
 	 *  Update the specified user without update user's password
@@ -294,7 +294,7 @@ public interface UserManagementService extends Service {
     public void removeGroup(Account user, String rmgroup) throws XMLDBException;
 
 
-	public void addRole(Group role) throws XMLDBException;
+	public void addGroup(Group group) throws XMLDBException;
 }
 
 

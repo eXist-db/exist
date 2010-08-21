@@ -73,7 +73,7 @@ public interface SecurityManager extends Configurable {
 
    boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   Account getUser(String name);
+   Account getAccount(String name);
 
    void addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    @Deprecated

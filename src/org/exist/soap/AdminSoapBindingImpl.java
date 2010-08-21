@@ -787,7 +787,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             u = new UserAider(name);
             ((UserAider)u).setPasswordDigest(password);
         } else {
-            u = manager.getUser(name);
+            u = manager.getAccount(name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new RemoteException(
@@ -828,7 +828,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
-        Account u = pool.getSecurityManager().getUser(user);
+        Account u = pool.getSecurityManager().getAccount(user);
         if (u == null)
             throw new RemoteException("user " + user + " does not exist");
         UserDesc desc = new UserDesc();
@@ -941,7 +941,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
-            Account lo = manager.getUser(userName);
+            Account lo = manager.getAccount(userName);
             doc.setUserLock(lo);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);

@@ -30,4 +30,6 @@ import org.exist.config.Configurable;
 public interface Principal extends java.security.Principal, Configurable {
 
 	public int getId();
+	
+	public String getRealmId();
 }

@@ -65,18 +65,21 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	public void addRole(Group role) throws XMLDBException {
+	public void addGroup(Group group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to add role");
-		if (manager.hasGroup(role.getName()))
+		
+		if (manager.hasGroup(group.getName()))
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
-				"role " + role.getName() + " exists");
+				"role " + group.getName() + " exists");
+		
 		try {
-			manager.addGroup(role);
+			manager.addGroup(group);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -636,9 +639,9 @@ public class LocalUserManagementService implements UserManagementService {
 		return null;
 	}
 
-	public Account getUser(String name) throws XMLDBException {
+	public Account getAccount(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		return manager.getUser(name);
+		return manager.getAccount(name);
 	}
 
 	public Account[] getUsers() throws XMLDBException {
@@ -647,7 +650,7 @@ public class LocalUserManagementService implements UserManagementService {
 		return users.toArray(new Account[users.size()]);
 	}
 
-	public Group getRole(String name) throws XMLDBException {
+	public Group getGroup(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		return manager.getGroup(name);
 	}
@@ -689,7 +692,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
-	public void removeRole(Group role) throws XMLDBException {
+	public void removeGroup(Group role) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
