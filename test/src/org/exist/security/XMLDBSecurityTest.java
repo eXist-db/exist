@@ -88,7 +88,7 @@ public class XMLDBSecurityTest {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         UserManagementService ums = (UserManagementService)
             test.getService("UserManagementService", "1.0");
-        Account guest = ums.getUser("guest");
+        Account guest = ums.getAccount("guest");
         // make myself the owner ;-)
         ums.chown(guest, "guest");
     }
@@ -101,7 +101,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getUser("guest");
+        Account test2 = ums.getAccount("guest");
         ums.chown(resource, test2, "guest");
     }
 
@@ -188,7 +188,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getUser("test2");
+        Account test2 = ums.getAccount("test2");
         ums.chown(test2, "users");
         Permission perms = ums.getPermissions(test);
         assertEquals("test2", perms.getOwner());
@@ -202,7 +202,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getUser("test2");
+        Account test2 = ums.getAccount("test2");
         ums.chown(resource, test2, "users");
     }
 
@@ -212,8 +212,8 @@ public class XMLDBSecurityTest {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-            GroupAider group = new GroupAider("users");
-            ums.addRole(group);
+            GroupAider group = new GroupAider("exist","users");
+            ums.addGroup(group);
 
             UserAider user = new UserAider("test1", group);
             user.setPassword("test1");
@@ -229,7 +229,7 @@ public class XMLDBSecurityTest {
             Collection test = cms.createCollection("securityTest1");
             ums = (UserManagementService) test.getService("UserManagementService", "1.0");
             // pass ownership to test1
-            Account test1 = ums.getUser("test1");
+            Account test1 = ums.getAccount("test1");
             ums.chown(test1, "users");
             // full permissions for user and group, none for world
             ums.chmod(0770);
@@ -255,12 +255,12 @@ public class XMLDBSecurityTest {
             if (root.getChildCollection("securityTest1") != null)
                 cms.removeCollection("securityTest1");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
-            Account test1 = ums.getUser("test1");
+            Account test1 = ums.getAccount("test1");
             if (test1 != null) ums.removeUser(test1);
-            Account test2 = ums.getUser("test2");
+            Account test2 = ums.getAccount("test2");
             if (test2 != null) ums.removeUser(test2);
-            Group role = ums.getRole("users");
-            if (role != null) ums.removeRole(role);
+            Group role = ums.getGroup("users");
+            if (role != null) ums.removeGroup(role);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
