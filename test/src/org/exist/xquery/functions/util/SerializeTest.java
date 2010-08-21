@@ -159,14 +159,17 @@ public class SerializeTest {
         String r = "";
         try {
                                 
-            String query = "let $xml := <test xmlns:xi='http://www.w3.org/2001/XInclude'><xi:include href='/db/system/users.xml'/></test>\n" +
+            String query = "let $xml := " +
+            		"<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+            		"	<xi:include href='/db/system/security/config.xml'/>" +
+            		"</test>\n" +
                     "return\n" +
                     "util:serialize($xml,'enable-xincludes=yes')";
 
            result = service.query(query);
            r = (String) result.getResource(0).getContent();
            System.out.println(r);
-           assertXpathEvaluatesTo("1.0","/test/auth/@version",r);
+           assertXpathEvaluatesTo("2.0","/test//@version",r);
 
         } catch (IOException ioe) {
                 fail(ioe.getMessage());
@@ -174,6 +177,7 @@ public class SerializeTest {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
             System.out.println("testSerializeXincludes(): " + e);
+            e.printStackTrace();
             fail(e.getMessage());
         }
 
