@@ -29,7 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.border.EtchedBorder;
 
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
@@ -191,7 +191,7 @@ public class ResourcePropertyDialog extends JDialog {
 		getContentPane().add(label);
 
 		Vector<String> ol = new Vector<String>();
-		User users[] = service.getUsers();
+		Account users[] = service.getUsers();
 		for (int i = 0; i < users.length; i++) {
 			ol.addElement(users[i].getName());
 		}

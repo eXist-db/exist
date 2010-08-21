@@ -24,7 +24,7 @@ package org.exist.xquery.functions.system;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -75,7 +75,7 @@ public class AsUser extends Function {
         String username = usernameResult.getStringValue();
         
         org.exist.security.SecurityManager security = broker.getBrokerPool().getSecurityManager();
-        User user;
+        Subject user;
         try {
             user = security.authenticate(username, password.getStringValue());
 		} catch (AuthenticationException e) {
@@ -84,7 +84,7 @@ public class AsUser extends Function {
             throw exception;
 		}
 
-		User oldUser = broker.getUser();
+		Subject oldUser = broker.getUser();
 		try {
 			logger.info("Setting the authenticated user to: [" + username + "]");
 			broker.setUser(user);

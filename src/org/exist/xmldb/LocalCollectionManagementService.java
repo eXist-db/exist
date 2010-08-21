@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
@@ -49,7 +49,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     protected BrokerPool brokerPool;
 
     protected LocalCollection parent = null;
-    protected User user;
+    protected Subject user;
     protected AccessContext accessCtx;
 
     private static Logger LOG =
@@ -57,7 +57,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         
     @SuppressWarnings("unused")
 	private LocalCollectionManagementService() {}
-    public LocalCollectionManagementService( User user, BrokerPool pool,
+    public LocalCollectionManagementService( Subject user, BrokerPool pool,
                                              LocalCollection parent,
 											 AccessContext accessCtx) {
     	if(accessCtx == null)

@@ -32,9 +32,9 @@ import org.exist.http.SOAPServer;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
 import org.exist.security.XmldbPrincipal;
+import org.exist.security.internal.AccountImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -81,7 +81,7 @@ public class EXistServlet extends HttpServlet {
 
 	private Authenticator authenticator;
 
-	private User defaultUser;
+	private Subject defaultUser;
 
 	/*
 	 * (non-Javadoc)
@@ -131,7 +131,7 @@ public class EXistServlet extends HttpServlet {
 						defaultPassword = option;
 					defaultUser = getDefaultUser();
 				} else {
-					defaultUser = pool.getSecurityManager().getGuestAccount();
+					defaultUser = pool.getSecurityManager().getGuestSubject();
 				}
 				if (defaultUser != null) {
 					LOG.info("Using default user " + defaultUsername + " for all unauthorized requests.");
@@ -195,7 +195,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// third, authenticate the user
-		User user = authenticate(request, response);
+		Subject user = authenticate(request, response);
 		if (user == null) {
 			// You now get a challenge if there is no user
 			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -309,7 +309,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// third, authenticate the user
-		User user = authenticate(request, response);
+		Subject user = authenticate(request, response);
 		if (user == null) {
 			// You now get a challenge if there is no user
 			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -379,7 +379,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// third, authenticate the user
-		User user = authenticate(request, response);
+		Subject user = authenticate(request, response);
 		if (user == null) {
 			// You now get a challenge if there is no user
 			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -446,7 +446,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// third, authenticate the user
-		User user = authenticate(request, response);
+		Subject user = authenticate(request, response);
 		if (user == null) {
 			// You now get a challenge if there is no user
 			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -530,7 +530,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		// third, authenticate the user
-		User user = authenticate(request, response);
+		Subject user = authenticate(request, response);
 		if (user == null) {
 			// You now get a challenge if there is no user
 			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -596,9 +596,9 @@ public class EXistServlet extends HttpServlet {
 		BrokerPool.stopAll(false);
 	}
 
-	private User authenticate(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
-		Principal principal = UserImpl.getUserFromServletRequest(request);
-		if (principal != null) return (User) principal;
+	private Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
+		Principal principal = AccountImpl.getUserFromServletRequest(request);
+		if (principal != null) return (Subject) principal;
 		
 		// Try to validate the principal if passed from the Servlet engine
 		principal = request.getUserPrincipal();
@@ -615,8 +615,8 @@ public class EXistServlet extends HttpServlet {
 			}
 		}
 
-		if (principal instanceof User)
-			return (User) principal;
+		if (principal instanceof Subject)
+			return (Subject) principal;
 
 		// Secondly try basic authentication
 		String auth = request.getHeader("Authorization");
@@ -636,7 +636,7 @@ public class EXistServlet extends HttpServlet {
 		 */
 	}
 
-	private User getDefaultUser() {
+	private Subject getDefaultUser() {
 		if (defaultUsername != null) {
 			try {
 				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);

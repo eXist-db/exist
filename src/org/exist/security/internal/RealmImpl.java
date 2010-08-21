@@ -22,22 +22,20 @@
 package org.exist.security.internal;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.IndexInfo;
-import org.exist.config.Configurator;
+import org.exist.config.Configurable;
+import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
-import org.exist.security.GroupImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
@@ -46,7 +44,6 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -58,7 +55,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class RealmImpl implements Realm {
+public class RealmImpl extends AbstractRealm implements Configurable {
 	
 	public static String ID = "exist"; //TODO: final "eXist-db";
 
@@ -69,69 +66,55 @@ public class RealmImpl implements Realm {
 	}
 
 	protected final static String ACL_FILE = "users.xml";
-	protected final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
+	protected final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE); 
 	   
-	private Map<String, Group> groupsByName = new HashMap<String, Group>(65);
-	private Map<String, User> usersByName = new HashMap<String, User>(65);
-
-	private Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
-	private Int2ObjectHashMap<User> usersById = new Int2ObjectHashMap<User>(65);
-
-	private SecurityManagerImpl sm;
-//	Configuration configuration;
-
-    protected final User ACCOUNT_SYSTEM;
-    protected final User ACCOUNT_GUEST;
+    protected final Account ACCOUNT_SYSTEM;
+    protected final Account ACCOUNT_GUEST;
     protected final Group GROUP_DBA;
     protected final Group GROUP_GUEST;
 
-    protected final User ACCOUNT_UNKNOW;
+    protected final Account ACCOUNT_UNKNOW;
     protected final Group GROUP_UNKNOW;
 
-    protected RealmImpl(SecurityManagerImpl sm) { //, Configuration conf
+    protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
 
-//		configuration = Configurator.configure(this, conf);
-
-		this.sm = sm;
+    	super(sm, config);
 
 		//Build-in accounts
-		GROUP_UNKNOW = new GroupImpl("", 0);
-    	ACCOUNT_UNKNOW = new UserImpl(this, 0, "", null);
+		GROUP_UNKNOW = new GroupImpl(this, -1, "");
+    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", null);
     	ACCOUNT_UNKNOW.addGroup(GROUP_UNKNOW);
 
     	//DBA group & account
-    	GROUP_DBA = new GroupImpl(SecurityManager.DBA_GROUP, 1);
-    	groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
+    	GROUP_DBA = new GroupImpl(this, 1, SecurityManager.DBA_GROUP);
+    	sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
 
-    	ACCOUNT_SYSTEM = new UserImpl(this, 1, SecurityManager.DBA_USER, "");
+    	//System account
+    	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "");
     	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
-    	usersById.put(ACCOUNT_SYSTEM.getUID(), ACCOUNT_SYSTEM);
+    	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
+    	//Administrator account
+    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "");
+    	ACCOUNT_ADMIN.addGroup(GROUP_DBA);
+    	sm.usersById.put(ACCOUNT_ADMIN.getId(), ACCOUNT_ADMIN);
+    	usersByName.put(ACCOUNT_ADMIN.getName(), ACCOUNT_ADMIN);
+
     	//Guest group & account
-    	GROUP_GUEST = new GroupImpl(SecurityManager.GUEST_GROUP, 2);
-    	groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
+    	GROUP_GUEST = new GroupImpl(this, 2, SecurityManager.GUEST_GROUP);
+    	sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
-    	ACCOUNT_GUEST = new UserImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
+    	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
     	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
-    	usersById.put(ACCOUNT_GUEST.getUID(), ACCOUNT_GUEST);
+    	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
     	
-    	sm.nextUserId = 3;
-    	sm.nextGroupId = 3;
+    	sm.lastUserId = 3;
+    	sm.lastGroupId = 3;
 	}
-
-//	@Override
-//	public boolean isConfigured() {
-//		return configuration != null;
-//	}
-//
-//	@Override
-//	public Configuration getConfiguration() {
-//		return configuration;
-//	}
 
 	@Override
 	public String getId() {
@@ -140,28 +123,49 @@ public class RealmImpl implements Realm {
 
 	public void startUp(DBBroker broker) throws EXistException {
 
+		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());
+		
 		BrokerPool pool = broker.getBrokerPool();
 		TransactionManager transact = pool.getTransactionManager();
 		Txn txn = null;
 		try {
-			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-			if (sysCollection == null) {
+			collectionRealm = broker.getCollection(realmCollectionURL);
+			collectionAccounts = broker.getCollection(realmCollectionURL.append("accounts"));
+			collectionGroups = broker.getCollection(realmCollectionURL.append("groups"));
+			
+			if (collectionRealm == null || collectionAccounts == null || collectionGroups == null) {
 				txn = transact.beginTransaction();
-				sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-				if (sysCollection == null) return; //TODO: throw error?
-				sysCollection.setPermissions(0770);
-				broker.saveCollection(txn, sysCollection);
+				
+				if (collectionRealm == null)
+					collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
+				
+				if (collectionAccounts == null)
+					collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
+				
+				if (collectionGroups == null)
+					collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
+
 				transact.commit(txn);
 			}
+			
+			for (Account account : usersByName.values()) {
+				if (account.getId() > 0)
+					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
+			}
+			
+			for (Group group : groupsByName.values()) {
+				if (group.getId() > 0)
+					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
+			}
+			
+			//1.0 version
+			Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLETION_URI);
 			Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
 			Element docElement = null;
 			if (acl != null)
 				docElement = acl.getDocumentElement();
-			if (docElement == null) {
 
-				_save();
-
-			} else {
+			if (docElement != null) {
 				// LOG.debug("loading acl");
 				Element root = acl.getDocumentElement();
 				Attr version = root.getAttributeNode("version");
@@ -177,7 +181,7 @@ public class RealmImpl implements Realm {
 				Node node;
 				Element next;
 				
-				User account = null; Group group = null;
+				Account account = null; Group group = null;
 				NodeList ul;
 				
 				for (int i = 0; i < nl.getLength(); i++) {
@@ -191,8 +195,8 @@ public class RealmImpl implements Realm {
 							node = ul.item(j);
 							if (node.getNodeType() == Node.ELEMENT_NODE
 									&& node.getLocalName().equals("user")) {
-								account = new UserImpl(this, major, minor, (Element) node);
-								usersById.put(account.getUID(), account);
+								account = AccountImpl.createAccount(this, major, minor, (Element) node);
+								sm.usersById.put(account.getId(), account);
 								usersByName.put(account.getName(), account);
 							}
 						}
@@ -203,7 +207,7 @@ public class RealmImpl implements Realm {
 							if (node.getNodeType() == Node.ELEMENT_NODE
 									&& node.getLocalName().equals("group")) {
 								group = new GroupImpl((Element) node);
-								groupsById.put(group.getId(), group);
+								sm.groupsById.put(group.getId(), group);
 								groupsByName.put(group.getName(), group);
 							}
 						}
@@ -217,26 +221,26 @@ public class RealmImpl implements Realm {
 		}
 	}
 
-	private Group _addGroup(String name) {
+	private Group _addGroup(String name) throws ConfigurationException {
 		if (groupsByName.containsKey(name))
 			throw new IllegalArgumentException("Group "+name+" exist.");
 		
-		Group group = new GroupImpl(name, sm.getNextGroupId());
-		groupsById.put(group.getId(), group);
+		Group group = new GroupImpl(this, sm.getNextGroupId(), name);
+		sm.groupsById.put(group.getId(), group);
 		groupsByName.put(name, group);
 		
 		return group;
 	}
 
-	private Group _addGroup(int id, String name) {
+	private Group _addGroup(int id, String name) throws ConfigurationException {
 		if (groupsByName.containsKey(name))
 			throw new IllegalArgumentException("Group "+name+" exist.");
 		
-		if (groupsById.containsKey(id))
+		if (sm.groupsById.containsKey(id))
 			throw new IllegalArgumentException("Group id "+id+" allready used.");
 
-		Group group = new GroupImpl(name, id);
-		groupsById.put(id, group);
+		Group group = new GroupImpl(this, id, name);
+		sm.groupsById.put(id, group);
 		groupsByName.put(name, group);
 		
 		return group;
@@ -245,68 +249,30 @@ public class RealmImpl implements Realm {
 	public synchronized Group addGroup(String name) throws PermissionDeniedException, EXistException {
 		Group created_group = _addGroup(name);
 		
-		_save();
+		((AbstractPrincipal)created_group).save();
 		
 		return created_group;
 	}
 
-	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-		Group created_group = _addGroup(group.getName());
+	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException, IOException {
+		return addGroup(group.getName());
+	}
+
+	public synchronized Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+		if (account.getRealm() == null)
+			throw new ConfigurationException("Account realm is null.");
 		
-		_save();
-		
-		return created_group;
+		if (account.getRealm() != this)
+			throw new ConfigurationException("Account from different realm");
+
+		return sm.addAccount(account);
 	}
 
-	public synchronized boolean hasGroup(String name) {
-		return groupsByName.containsKey(name);
-	}
-
-	public synchronized boolean hasGroup(Group role) {
-		return groupsByName.containsKey(role.getName());
-	}
-
-	public synchronized Group getGroup(String name) {
-		return groupsByName.get(name);
-	}
-	
-	public synchronized java.util.Collection<Group> getRoles() {
-		return groupsByName.values();
-	}
-
-	private User _addAccount(int id, User account) throws PermissionDeniedException, EXistException {
-		if (usersByName.containsKey(account.getName()))
-			throw new IllegalArgumentException("User "+account.getName()+" exist.");
-		
-		if (usersById.containsKey(id))
-			throw new IllegalArgumentException("User's id "+id+" allready used.");
-
-		User new_account = new UserImpl(this, id, account);
-		usersById.put(id, new_account);
-		usersByName.put(new_account.getName(), new_account);
-		
-		_save();
-		
-		createUserHome(new_account);
-
-		return account;
-	}
-
-	public synchronized User addAccount(String name) throws PermissionDeniedException, EXistException {
-		return _addAccount(sm.getNextAccoutId(), new UserImpl(this, name));
-	}
-
-	public synchronized User addAccount(User account) throws PermissionDeniedException, EXistException {
-		User added = _addAccount(sm.getNextAccoutId(), account);
-		
-		return added;
-	}
-
-	public synchronized boolean updateAccount(User account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
 			broker = sm.getDatabase().get(null);
-			User user = broker.getUser();
+			Account user = broker.getUser();
 			
 			if ( ! (account.getName().equals(user.getName()) 
 					|| user.hasDbaRole()) )
@@ -314,7 +280,7 @@ public class RealmImpl implements Realm {
 						" you are not allowed to change '"+account.getName()+"' user");
 	
 	
-			User updatingAccount = getAccount(account.getName());
+			Account updatingAccount = getAccount(account.getName());
 			if (updatingAccount == null)
 				throw new PermissionDeniedException( //XXX: different exception
 					"user " + account.getName() + " does not exist");
@@ -333,7 +299,7 @@ public class RealmImpl implements Realm {
 				
 			updatingAccount.setPassword(account.getPassword());
 	
-			_save();
+			((AbstractPrincipal)updatingAccount).save();
 			
 			return true;
 		} finally {
@@ -341,42 +307,34 @@ public class RealmImpl implements Realm {
 		}
 	}
 
-	@Override
-	public synchronized User getAccount(String name) {
-		return usersByName.get(name);
-	}
-
-	@Override
-	public synchronized java.util.Collection<User> getAccounts() {
-		return usersByName.values();
-	}
-
-	public synchronized boolean deleteAccount(User user) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteAccount(Account user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return false;
 		
-		usersById.remove(user.getUID());
-		usersByName.remove(user.getName());
-
-		_save();
+		//lock and check for documents & collestions it can be owner
+//		sm.usersById.remove(user.getId());
+//		usersByName.remove(user.getName());
+//
+//		_save();
 		
-		return true;
+		return false;
 	}
 
 	public synchronized boolean deleteRole(String name) throws PermissionDeniedException, EXistException {
 		if(name == null)
 			return false;
 		
-		Group role = groupsByName.get(name);
-		if (role == null)
-			return false;
+		//lock and check for documents & collestions it can be owner
+//		Group role = groupsByName.get(name);
+//		if (role == null)
+//			return false;
+//		
+//		sm.groupsById.remove(role.getId());
+//		groupsByName.remove(role.getName());
+//
+//		_save();
 		
-		groupsById.remove(role.getId());
-		groupsByName.remove(role.getName());
-
-		_save();
-		
-		return true;
+		return false;
 	}
 
 	public synchronized boolean updateGroup(Group role) throws PermissionDeniedException {
@@ -389,14 +347,14 @@ public class RealmImpl implements Realm {
 	}
 	
 	@Override
-	public synchronized User authenticate(String accountName, Object credentials) throws AuthenticationException {
-		User user = getAccount(accountName);
+	public synchronized Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
+		Account user = getAccount(accountName);
 		if (user == null)
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,
 					"Acount " + accountName + " not found");
 			
-		User newUser = new UserImpl(this, (UserImpl)user, credentials);
+		Subject newUser = new SubjectImpl((AccountImpl) user, credentials);
 			
 		if (newUser.isAuthenticated())
 			return newUser;
@@ -406,7 +364,7 @@ public class RealmImpl implements Realm {
 				"Wrong password for user [" + accountName + "] ");
 	}
 	
-	private void _save() throws PermissionDeniedException, EXistException {
+	private void __save() throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		TransactionManager transact = sm.getDatabase().getTransactionManager();
 		Txn txn = transact.beginTransaction();
@@ -438,15 +396,15 @@ public class RealmImpl implements Realm {
 		
 		// save groups
         buf.append("<!-- Please do not remove the guest and admin groups -->");
-		buf.append("<groups last-id='"+sm.nextGroupId+"'>");
+		buf.append("<groups last-id='"+sm.lastGroupId+"'>");
 		for (Group group : groupsByName.values())
 			buf.append(group.toString());
 		buf.append("</groups>");
 
 		//save users
         buf.append("<!-- Please do not remove the admin user. -->");
-		buf.append("<users last-id='"+sm.nextUserId+"'>");
-		for (User account : usersByName.values())
+		buf.append("<users last-id='"+sm.lastUserId+"'>");
+		for (Account account : usersByName.values())
 			buf.append(account.toString());
 		buf.append("</users>");
 		buf.append("</auth>");
@@ -455,9 +413,9 @@ public class RealmImpl implements Realm {
 		//broker.flush();
 		//broker.sync(Sync.MAJOR_SYNC);
 		
-		User currentUser = broker.getUser();
+		Subject currentUser = broker.getUser();
 		try {
-			broker.setUser(sm.getSystemAccount());
+			broker.setUser(sm.getSystemSubject());
 			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
             IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
@@ -478,89 +436,5 @@ public class RealmImpl implements Realm {
 		broker.flush();
 		broker.sync(Sync.MAJOR_SYNC);
 	}
-	
-	private void createUserHome(User account) throws EXistException, PermissionDeniedException {
-		if(account.getHome() == null)
-			return;
-		
-		DBBroker broker = null;
-		TransactionManager transact = sm.getDatabase().getTransactionManager();
-		Txn txn = transact.beginTransaction();
-		try {
-			broker = sm.getDatabase().get(null);
 
-			User currentUser = broker.getUser();
-			
-			try {
-		
-				broker.setUser(sm.getSystemAccount());
-	
-				Collection home = broker.getOrCreateCollection(txn, account.getHome());
-				
-				home.getPermissions().setOwner(account);
-				CollectionConfiguration config = home.getConfiguration(broker);
-				String role = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-				home.getPermissions().setGroup(role);
-				
-				broker.saveCollection(txn, home);
-				
-				transact.commit(txn);
-			
-			} finally {
-				broker.setUser(currentUser);
-			}
-		
-		} catch (IOException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw new EXistException(e);
-		
-		} catch (PermissionDeniedException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw e;
-		
-		} catch (EXistException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw e;
-		
-		} finally {
-			sm.getDatabase().release(broker);
-		}
-	}
-
-	@Override
-	public synchronized boolean hasAccount(String accountName) {
-		return usersByName.containsKey(accountName);
-	}
-
-	public synchronized boolean hasAccount(User account) {
-		return usersByName.containsKey(account.getName());
-	}
-
-	@Override
-	public synchronized User getAccount(int id) {
-		return usersById.get(id);
-	}
-
-	@Override
-	public synchronized Group getGroup(int id) {
-		return groupsById.get(id);
-	}
 }

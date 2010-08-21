@@ -56,7 +56,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.NullAccessContextException;
@@ -592,7 +592,7 @@ public class XQueryContext
     {
         //if there is an existing user in the current http session
         //then set the DBBroker user
-        User user = getUserFromHttpSession();
+    	Subject user = getUserFromHttpSession();
 
         if( user != null ) {
             broker.setUser( user );
@@ -2176,7 +2176,7 @@ public class XQueryContext
      *
      * @return  user
      */
-    public User getUser()
+    public Subject getUser()
     {
         return( getBroker().getUser() );
     }
@@ -2187,7 +2187,7 @@ public class XQueryContext
      *
      * @return  The user or null if there is no session or no user
      */
-    private User getUserFromHttpSession()
+    private Subject getUserFromHttpSession()
     {
         SessionModule myModule = (SessionModule)getModule( SessionModule.NAMESPACE_URI );
 
@@ -2213,7 +2213,7 @@ public class XQueryContext
                 if( session.getObject() instanceof SessionWrapper ) {
 
                     try {
-                        return( (User)( (SessionWrapper)session.getObject() ).getAttribute( HTTP_SESSIONVAR_XMLDB_USER ) );
+                        return( (Subject)( (SessionWrapper)session.getObject() ).getAttribute( HTTP_SESSIONVAR_XMLDB_USER ) );
                     }
                     catch( IllegalStateException e ) {
 

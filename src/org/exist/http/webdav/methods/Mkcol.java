@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -50,7 +50,7 @@ public class Mkcol extends AbstractWebDAVMethod {
         super(pool);
     }
 
-    public void process(User user, HttpServletRequest request,
+    public void process(Subject user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
     	//String origPath = request.getPathInfo();
     	if(path == null || path.equals("")) {

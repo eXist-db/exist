@@ -36,6 +36,7 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
@@ -90,14 +91,14 @@ public class RpcConnection implements RpcAPI {
 
     protected XmldbRequestProcessorFactory factory;
 
-    protected User user;
+    protected Subject user;
 
     /**
      * Creates a new <code>RpcConnection</code> instance.
      *
      * @exception EXistException if an error occurs
      */
-    public RpcConnection(XmldbRequestProcessorFactory factory, User user)
+    public RpcConnection(XmldbRequestProcessorFactory factory, Subject user)
     {
         super();
         this.factory = factory;
@@ -1227,7 +1228,7 @@ public class RpcConnection implements RpcAPI {
     public boolean sync() {
         DBBroker broker = null;
         try {
-            broker = factory.getBrokerPool().get(factory.getBrokerPool().getSecurityManager().getSystemAccount());
+            broker = factory.getBrokerPool().get(factory.getBrokerPool().getSecurityManager().getSystemSubject());
             broker.sync(Sync.MAJOR_SYNC);
         } catch (EXistException e) {
         	LOG.warn(e.getMessage(), e);
@@ -1685,7 +1686,7 @@ public class RpcConnection implements RpcAPI {
      */
     public HashMap<String, Object> getUser(String name) throws EXistException,
             PermissionDeniedException {
-        User u = factory.getBrokerPool().getSecurityManager().getUser(name);
+        Account u = factory.getBrokerPool().getSecurityManager().getUser(name);
         if (u == null)
             throw new EXistException("user " + name + " does not exist");
         HashMap<String, Object> tab = new HashMap<String, Object>();
@@ -1709,11 +1710,11 @@ public class RpcConnection implements RpcAPI {
      */
     public Vector<HashMap<String, Object>> getUsers() throws EXistException,
             PermissionDeniedException {
-    	java.util.Collection<User> users = factory.getBrokerPool().getSecurityManager().getUsers();
+    	java.util.Collection<Account> users = factory.getBrokerPool().getSecurityManager().getUsers();
         Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
-        for (User user : users) {
+        for (Account user : users) {
             final HashMap<String, Object> tab = new HashMap<String, Object>();
-            tab.put("uid", user.getUID());
+            tab.put("uid", user.getId());
             tab.put("name", user.getName());
             Vector<String> groups = new Vector<String>();
             String[] gl = user.getGroups();
@@ -3501,7 +3502,7 @@ public class RpcConnection implements RpcAPI {
             passwd = null;
         SecurityManager manager = factory.getBrokerPool()
                 .getSecurityManager();
-        User u;
+        Account u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new PermissionDeniedException(
@@ -3515,8 +3516,8 @@ public class RpcConnection implements RpcAPI {
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
                         "you are not allowed to change this user");
-            ((UserImpl)u).setEncodedPassword(passwd);
-            ((UserImpl)u).setPasswordDigest(passwdDigest);
+            ((AccountImpl)u).setEncodedPassword(passwd);
+            ((AccountImpl)u).setPasswordDigest(passwdDigest);
         }
 
         for (String g : groups) {
@@ -3599,7 +3600,7 @@ public class RpcConnection implements RpcAPI {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
     	
-    	User u;
+    	Account u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
@@ -3634,7 +3635,7 @@ public class RpcConnection implements RpcAPI {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
     	
-    	User u;
+    	Account u;
     	if (!manager.hasUser(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
@@ -3699,7 +3700,7 @@ public class RpcConnection implements RpcAPI {
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
                         "to lock the resource for user " + userName);
-            User lockOwner = doc.getUserLock();
+            Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
@@ -3749,7 +3750,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Resource " + docURI + " not found");
             if(!doc.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
-            User u = doc.getUserLock();
+            Account u = doc.getUserLock();
             return u == null ? "" : u.getName();
 
         } catch (Throwable e) {
@@ -3793,7 +3794,7 @@ public class RpcConnection implements RpcAPI {
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-            User lockOwner = doc.getUserLock();
+            Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());

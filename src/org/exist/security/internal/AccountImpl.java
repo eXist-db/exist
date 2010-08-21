@@ -19,14 +19,20 @@
  *
  *  $Id$
  */
-package org.exist.security;
+package org.exist.security.internal;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.security.internal.Password;
+import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsNode;
+import org.exist.security.MessageDigester;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.ldap.LDAPbindSecurityManager;
-import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
@@ -39,23 +45,21 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * Represents a user within the database.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org> Modified by {Marco.Tampucci,
- *         Massimo.Martinelli} @isti.cnr.it
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
-public class UserImpl implements User {
+@ConfigurationClass("account")
+public class AccountImpl extends AbstractAccount {
 
-	private final static Logger LOG = Logger.getLogger(UserImpl.class);
+	private final static Logger LOG = Logger.getLogger(AccountImpl.class);
 
 	private final static String GROUP = "group";
 	private final static String NAME = "name";
@@ -70,7 +74,7 @@ public class UserImpl implements User {
 	static {
 		Properties props = new Properties();
 		try {
-			props.load(UserImpl.class.getClassLoader().getResourceAsStream(
+			props.load(AccountImpl.class.getClassLoader().getResourceAsStream(
 					"org/exist/security/security.properties"));
 		} catch (IOException e) {
 		}
@@ -98,10 +102,10 @@ public class UserImpl implements User {
 		}
 	}
 
-	static public User getUserFromServletRequest(HttpServletRequest request) {
+	static public Subject getUserFromServletRequest(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
-        if (principal instanceof User) {
-			return (User) principal;
+        if (principal instanceof Subject) {
+			return (Subject) principal;
 			
 		//workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd 
         } else if (principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName()) ) {
@@ -111,8 +115,8 @@ public class UserImpl implements User {
 				if (obj instanceof javax.security.auth.Subject) {
 					javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
 					for (Principal _principal_ : subject.getPrincipals()) {
-				        if (_principal_ instanceof User) {
-							return (User) _principal_;
+				        if (_principal_ instanceof Subject) {
+							return (Subject) _principal_;
 				        }
 					}
 				}
@@ -127,52 +131,35 @@ public class UserImpl implements User {
         return null;
 	}
 	
-	private Realm realm;
-
-	private String name;
-	
-	private int uid = -1;
-	private XmldbURI home = null;
-
-	private Group defaultRole = null;
-	private Set<Group> roles = null;
-	
+	@ConfigurationFieldAsNode("password")
 	private String password = null;
-	private String digestPassword = null;
 
-	/**
-	 * Indicates if the user belongs to the dba group, i.e. is a superuser.
-	 */
-	private boolean hasDbaRole = false;
+	@ConfigurationFieldAsNode("digestPassword") 
+	private String digestPassword = null;
 
 	/**
 	 * Create a new user with name and password
 	 * 
-	 *@param user
+	 * @param user
 	 *            Description of the Parameter
-	 *@param password
+	 * @param password
 	 *            Description of the Parameter
+	 * @throws ConfigurationException 
 	 */
-	public UserImpl(Realm realm, String name, String password) {
-		this.realm = realm;
-		this.name = name;
+	public AccountImpl(AbstractRealm realm, int id, String name, String password) throws ConfigurationException {
+		super(realm, id, name);
 		setPassword(password);
-	}
-
-	public UserImpl(Realm realm, int id, String name, String password) {
-		this(realm, name, password);
-		this.uid = id;
 	}
 
 	/**
 	 * Create a new user with name
 	 * 
-	 * @param user
-	 *            Description of the Parameter
+	 * @param name
+	 *            The account name
+	 * @throws ConfigurationException 
 	 */
-	public UserImpl(Realm realm, String name) {
-		this.realm = realm;
-		this.name = name;
+	public AccountImpl(AbstractRealm realm, String name) throws ConfigurationException {
+		super(realm, -1, name);
 	}
 
 	/**
@@ -184,9 +171,10 @@ public class UserImpl implements User {
 	 *            Description of the Parameter
 	 *@param primaryGroup
 	 *            Description of the Parameter
+	 * @throws ConfigurationException 
 	 */
-	public UserImpl(Realm realm, String name, String password, String primaryGroup) {
-		this(realm, name, password);
+	public AccountImpl(AbstractRealm realm, int id, String name, String password, String primaryGroup) throws ConfigurationException {
+		this(realm, id, name, password);
 		defaultRole = addGroup(primaryGroup);
 	}
 
@@ -197,76 +185,74 @@ public class UserImpl implements User {
 	 *            Description of the Parameter
 	 *@exception DatabaseConfigurationException
 	 *                Description of the Exception
+	 * @throws ConfigurationException 
 	 */
-	public UserImpl(Realm realm, int majorVersion, int minorVersion, Element node)
-			throws DatabaseConfigurationException {
+	public static AccountImpl createAccount(AbstractRealm realm, int majorVersion, int minorVersion, Element node)
+			throws DatabaseConfigurationException, ConfigurationException {
 		
-		this.realm = realm;
+		String password = null;
+		String digestPassword = null;
 		
-		name = node.getAttribute(NAME);
+		int id = -1;
+		XmldbURI home = null;
+		
+		String name = node.getAttribute(NAME);
 		if (name == null ) //|| name.length() == 0
 			throw new DatabaseConfigurationException("user needs a name");
+		
 		Attr attr;
 		if (majorVersion == 0) {
 			attr = node.getAttributeNode(PASS);
-			this.digestPassword = attr == null ? null : attr.getValue();
-			setPassword(null);
-//			this.password = null;
+			digestPassword = attr == null ? null : attr.getValue();
 		} else {
 			attr = node.getAttributeNode(PASS);
-			String password = attr == null ? null : attr.getValue();
-			this.setPassword(password);
-			if (password != null && password.length() > 0) {
-				if (password.startsWith("{MD5}")) {
-					this.password = password.substring(5);
-				}
-				if (this.password.charAt(0) == '{') {
-					throw new DatabaseConfigurationException(
-							"Unrecognized password encoding " + password
-									+ " for user " + name);
-				}
-			}
+			password = attr == null ? null : attr.getValue();
+//			if (password.charAt(0) == '{') {
+//				throw new DatabaseConfigurationException(
+//						"Unrecognized password encoding " + password + " for user " + name);
+//			}
+
 			attr = node.getAttributeNode(DIGEST_PASS);
-			this.digestPassword = attr == null ? null : attr.getValue();
+			digestPassword = attr == null ? null : attr.getValue();
 		}
 		Attr userId = node.getAttributeNode(USER_ID);
 		if (userId == null)
 			throw new DatabaseConfigurationException("attribute id missing");
 		try {
-			uid = Integer.parseInt(userId.getValue());
+			id = Integer.parseInt(userId.getValue());
 		} catch (NumberFormatException e) {
 			throw new DatabaseConfigurationException("illegal user id: "
 					+ userId + " for user " + name);
 		}
 		Attr homeAttr = node.getAttributeNode(HOME);
-		this.home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
+		home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
+		
+		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
+		if (id == 1 && password == null) password = "";
+		
+		AccountImpl new_account = new AccountImpl(realm, id, name, password);
+		new_account.setHome(home);
+		
 		NodeList gl = node.getChildNodes();
 		Node group;
 		for (int i = 0; i < gl.getLength(); i++) {
 			group = gl.item(i);
-			if (group.getNodeType() == Node.ELEMENT_NODE
-					&& group.getLocalName().equals(GROUP))
-				addGroup(group.getFirstChild().getNodeValue());
+			if (group.getNodeType() == Node.ELEMENT_NODE && group.getLocalName().equals(GROUP))
+				new_account.addGroup(group.getFirstChild().getNodeValue());
 		}
 		
-		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
-		if (uid == 1 && password == null) setPassword("");
-		
+		return new_account;
 	}
 	
-    public UserImpl(Realm realm, int id, User from_user) {
-        
-    	this.realm = realm;
+    public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException {
+        super(realm, id, from_user.getName());
 
-        uid = id;
-
-        name = from_user.getName();
         home = from_user.getHome();
         
         defaultRole = from_user.getDefaultGroup();
 
-        if (from_user instanceof UserImpl) {
-			UserImpl user = (UserImpl) from_user;
+        if (from_user instanceof AccountImpl) {
+			AccountImpl user = (AccountImpl) from_user;
 
 	        defaultRole = user.defaultRole;
 	        roles = user.roles;
@@ -291,10 +277,10 @@ public class UserImpl implements User {
 
     }
 
-	public UserImpl(Realm realm, UserImpl from_user, Object credentials) {
-        uid = from_user.uid;
-        name = from_user.name;
-        home = from_user.home;
+	public AccountImpl(AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
+		super(realm, from_user.id, from_user.name);
+
+		home = from_user.home;
         
         defaultRole = from_user.defaultRole;
         roles = from_user.roles;
@@ -307,108 +293,7 @@ public class UserImpl implements User {
         _cred = from_user._cred;
 
         this.realm = realm;
-        
-        authenticate(credentials);
     }
-
-    /*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#addGroup(java.lang.String)
-	 */
-	public final Group addGroup(String name) {
-		Group role = realm.getGroup(name);
-		if (role == null)
-			return null;
-		
-		if (roles == null) {
-			roles = new HashSet<Group>();
-		}
-		
-		roles.add(role);
-		
-		if (SecurityManager.DBA_GROUP.equals(name))
-			hasDbaRole = true;
-		
-		return role;
-	}
-
-	public final Group addGroup(Group group) {
-		return addGroup(group.getName());
-	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#remGroup(java.lang.String)
-	 */
-	public final void remGroup(String group) {
-		for (Group role : roles) {
-			if (role.getName().equals(group)) {
-				roles.remove(role);
-				break;
-			}
-		}
-
-		if (SecurityManager.DBA_GROUP.equals(group))
-			hasDbaRole = false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#setGroups(java.lang.String[])
-	 */
-	public final void setGroups(String[] groups) {
-//		this.groups = groups;
-//		for (int i = 0; i < groups.length; i++)
-//			if (SecurityManager.DBA_GROUP.equals(groups[i]))
-//				hasDbaRole = true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#getGroups()
-	 */
-	public final String[] getGroups() {
-		if (roles == null) return new String[0];
-		
-		int i = 0;
-		String[] names = new String[roles.size()];
-		for (Group role : roles) {
-			names[i] = role.getName();
-			i++;
-		}
-		
-		return names;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#hasDbaRole()
-	 */
-	public final boolean hasDbaRole() {
-		return hasDbaRole;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#getName()
-	 */
-	public final String getName() {
-		return name;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#getUID()
-	 */
-	public final int getUID() {
-		return uid;
-	}
 
 	/**
 	 * Get the user's password
@@ -423,39 +308,6 @@ public class UserImpl implements User {
 	@Deprecated
 	public final String getDigestPassword() {
 		return digestPassword;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#getPrimaryGroup()
-	 */
-	public final String getPrimaryGroup() {
-		if (defaultRole == null) {
-			if (roles == null || roles.size() == 0)
-				return null;
-			
-			return ((Group) roles.toArray()[0]).getName();
-		}
-			
-		return defaultRole.getName();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#hasGroup(java.lang.String)
-	 */
-	public final boolean hasGroup(String group) {
-		if (roles == null)
-			return false;
-		
-		for (Group role : roles) {
-			if (role.getName().equals(group))
-				return true;
-		}
-		
-		return false;
 	}
 
 	/*
@@ -512,41 +364,6 @@ public class UserImpl implements User {
 
 	}
 
-	public final String toString() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("<user name=\"");
-		buf.append(name);
-		buf.append("\" ");
-		buf.append("uid=\"");
-		buf.append(Integer.toString(uid));
-		buf.append("\"");
-		if (password != null) {
-			buf.append(" password=\"");
-			buf.append(_cred.toString());
-			buf.append('"');
-		}
-		if (digestPassword != null) {
-			buf.append(" digest-password=\"");
-			buf.append(digestPassword);
-			buf.append('"');
-		}
-		if (home != null) {
-			buf.append(" home=\"");
-			buf.append(home);
-			buf.append("\">");
-		} else
-			buf.append(">");
-		if (roles != null) {
-			for (Group role : roles) {
-				buf.append("<group>");
-				buf.append(role.getName());
-				buf.append("</group>");
-			}
-		}
-		buf.append("</user>");
-		return buf.toString();
-	}
-
 	/**
 	 * Split up the validate method into two, to make it possible to
 	 * authenticate users, which are not defined in the instance named "exist"
@@ -576,7 +393,7 @@ public class UserImpl implements User {
 
 		if (password == null && digestPassword == null) {
 			return true;
-		} else if (uid == 1 && passwd == null) {
+		} else if (id == 1 && passwd == null) {
 			passwd = "";
 		}
 		if (passwd == null) {
@@ -614,102 +431,5 @@ public class UserImpl implements User {
 		if (passwd == null)
 			return false;
 		return digest(passwd).equals(digestPassword);
-	}
-
-	//switch to protected
-	public void setUID(int uid) {
-		this.uid = uid;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
-	 */
-	public void setHome(XmldbURI homeCollection) {
-		home = homeCollection;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#getHome()
-	 */
-	public XmldbURI getHome() {
-		return home;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		UserImpl other = (UserImpl) obj;
-
-		if (other != null) {
-			return uid == other.uid;
-		} else {
-			return (false);
-		}
-	}
-
-    private Credential _cred;
-
-    @Override
-	public boolean authenticate(Object credentials) {
-    	authenticated = _cred!=null && _cred.check(credentials);
-		return authenticated;
-	}
-
-	@Override
-	public Realm getRealm() {
-		return realm;
-	}
-
-	private boolean authenticated = false;
-	
-	@Override
-	public boolean isAuthenticated() {
-		return authenticated;
-	}
-
-	private Map<String, Object> attributes = new HashMap<String, Object>();
-
-    /**
-     * Add a named attribute.
-     *
-     * @param name
-     * @param value
-     */
-	@Override
-	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
-	}
-
-    /**
-     * Get the named attribute value.
-     *
-     * @param name The String that is the name of the attribute.
-     * @return The value associated with the name or null if no value is associated with the name.
-     */
-	@Override
-	public Object getAttribute(String name) {
-		return attributes.get(name);
-	}
-
-    /**
-     * Returns the set of attributes names.
-     *
-     * @return the Set of attribute names.
-     */
-    @Override
-    public Set<String> getAttributeNames() {
-        return attributes.keySet();
-    }
-
-	@Override
-	public Group getDefaultGroup() {
-		return defaultRole;
 	}
 }

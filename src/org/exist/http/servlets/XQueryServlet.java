@@ -43,8 +43,8 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -122,7 +122,7 @@ public class XQueryServlet extends HttpServlet {
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private User defaultUser = null;
+    private Subject defaultUser = null;
     private XmldbURI collectionURI = null;
     
     private String containerEncoding = null;
@@ -155,12 +155,12 @@ public class XQueryServlet extends HttpServlet {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
         
-		defaultUser = pool.getSecurityManager().getGuestAccount();
+		defaultUser = pool.getSecurityManager().getGuestSubject();
 		
         String username = config.getInitParameter("user");
         if(username != null) {
         	String password = config.getInitParameter("password");
-        	User user;
+        	Subject user;
 			try {
 				user = pool.getSecurityManager().authenticate(username, password);
 	        	if (user != null && user.isAuthenticated())
@@ -311,9 +311,9 @@ public class XQueryServlet extends HttpServlet {
             requestPath = requestPath.substring(0, p);
         String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
 
-        User user = defaultUser;
+        Subject user = defaultUser;
 
-        User requestUser = UserImpl.getUserFromServletRequest(request);
+        Subject requestUser = AccountImpl.getUserFromServletRequest(request);
         if (requestUser != null)
         	user = requestUser;
 
@@ -334,7 +334,7 @@ public class XQueryServlet extends HttpServlet {
             }
 			try {
 				if( username != null && password != null ) {
-					User newUser = pool.getSecurityManager().authenticate(username, password);
+					Subject newUser = pool.getSecurityManager().authenticate(username, password);
 		        	if (newUser != null && newUser.isAuthenticated())
 		        		user = newUser;
 				}

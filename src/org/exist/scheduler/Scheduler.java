@@ -35,7 +35,8 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Account;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
@@ -566,7 +567,7 @@ public class Scheduler
                 } else {
 
                     //create an XQuery job
-                    User guestUser = brokerpool.getSecurityManager().getUser( SecurityManager.GUEST_USER );
+                    Subject guestUser = brokerpool.getSecurityManager().getGuestSubject();
                     job = new UserXQueryJob( jobConfig.getJobName(), jobConfig.getResourceName(), guestUser );
 
                     try {

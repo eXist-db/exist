@@ -55,8 +55,8 @@ import org.exist.http.webdav.methods.Mkcol;
 import org.exist.http.webdav.methods.Move;
 import org.exist.http.webdav.methods.Put;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 import org.exist.security.UUIDGenerator;
-import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -136,7 +136,7 @@ public class WebDAVServlet extends HttpServlet {
 			super(pool);
 		}
 
-		public void process(User user, HttpServletRequest request,
+		public void process(Subject user, HttpServletRequest request,
 				HttpServletResponse response, XmldbURI path)
 				throws ServletException, IOException {
 			XmldbURI filename = path.lastSegment();
@@ -254,7 +254,7 @@ public class WebDAVServlet extends HttpServlet {
 			super(pool);
 		}
 
-		public void process(User user, HttpServletRequest request,
+		public void process(Subject user, HttpServletRequest request,
 				HttpServletResponse response, XmldbURI path)
 				throws ServletException, IOException {
 			super.process(user, request, response, path);
@@ -342,7 +342,7 @@ public class WebDAVServlet extends HttpServlet {
 			super(pool);
 		}
 
-		public void process(User user, HttpServletRequest request,
+		public void process(Subject user, HttpServletRequest request,
 				HttpServletResponse response, XmldbURI path)
 				throws ServletException, IOException {
 			DBBroker broker = null;

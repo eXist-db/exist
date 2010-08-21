@@ -28,13 +28,14 @@ import java.util.StringTokenizer;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Account;
+import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
 
 public class UnixStylePermission implements Permission {
 
     //owner, default to DBA
-    private User owner;
+    private Account owner;
     private Group ownerGroup;
 
     //permissions
@@ -86,7 +87,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The owner value
      */
-    public User getOwner() {
+    public Account getOwner() {
         return owner;
     }
 
@@ -164,7 +165,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( User user ) {
+    public void setOwner( Account user ) {
    		this.owner = user;
     }
 
@@ -285,10 +286,21 @@ public class UnixStylePermission implements Permission {
         return new String(ch);
     }
     
-    public boolean validate( User user, int perm ) {
+    public boolean validate( Subject user, int perm ) {
     	return false;
     }
     
     public void read( DataInput istream ) throws IOException {
     }
+
+
+	@Override
+	public void setGroup(int id) {
+		ownerGroup = new GroupAider(id);
+	}
+
+	@Override
+	public void setOwner(int id) {
+		owner = new UserAider(id);
+	}
 }

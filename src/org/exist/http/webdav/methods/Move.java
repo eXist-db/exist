@@ -25,7 +25,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -56,7 +56,7 @@ public class Move extends AbstractWebDAVMethod {
     /* (non-Javadoc)
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
-    public void process(User user, HttpServletRequest request,
+    public void process(Subject user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
     	DBBroker broker = null;
 		Collection collection = null;
@@ -124,7 +124,7 @@ public class Move extends AbstractWebDAVMethod {
 		}
     }
 
-    private void moveCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
+    private void moveCollection(Subject user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
             Collection collection, XmldbURI destination) throws ServletException, IOException {
         if(collection.getURI().equals(destination)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -183,7 +183,7 @@ public class Move extends AbstractWebDAVMethod {
         }
     }
     
-    private void moveResource(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
+    private void moveResource(Subject user, DBBroker broker, HttpServletRequest request, HttpServletResponse response, 
     		DocumentImpl resource, XmldbURI destination)
     throws ServletException, IOException {
     	XmldbURI docUri = destination.lastSegment();

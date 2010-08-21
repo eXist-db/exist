@@ -3,7 +3,7 @@ package org.exist.xmldb;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.security.internal.aider.UserAider;
@@ -35,7 +35,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                The user to be added
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void addUser(User user) throws XMLDBException {
+	public void addUser(Account user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
@@ -166,7 +166,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.UserManagementService#lockResource(org.xmldb.api.base.Resource, org.exist.security.User)
 	 */
-	public void lockResource(Resource res, User u) throws XMLDBException {
+	public void lockResource(Resource res, Account u) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
 		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
@@ -217,7 +217,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  group               Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void chown(User u, String group) throws XMLDBException {
+	public void chown(Account u, String group) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(4);
 			params.add(parent.getPath());
@@ -238,7 +238,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  group               The owner group
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void chown(Resource res, User u, String group) throws XMLDBException {
+	public void chown(Resource res, Account u, String group) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
 		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
@@ -378,12 +378,12 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@return                     The user value
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public User getUser(String name) throws XMLDBException {
+	public Account getUser(String name) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(name);
 			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getUser", params);
-			User u = new UserAider((String) tab.get("name"));
+			Account u = new UserAider((String) tab.get("name"));
 			Object[] groups = (Object[]) tab.get("groups");
             for (int i = 0; i < groups.length; i++) {
 				u.addGroup((String) groups[i]);
@@ -402,10 +402,10 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@return                     The users value
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public User[] getUsers() throws XMLDBException {
+	public Account[] getUsers() throws XMLDBException {
 		try {
 			Object[] users = (Object[]) parent.getClient().execute("getUsers", new ArrayList<Object>());
-			User[] u = new User[users.length];
+			Account[] u = new Account[users.length];
 			for (int i = 0; i < u.length; i++) {
 				final HashMap<?,?> tab = (HashMap<?,?>) users[i];
 				
@@ -455,7 +455,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  u   User
 	 *@exception  XMLDBException
 	 */
-	public void removeUser(User u) throws XMLDBException {
+	public void removeUser(Account u) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(u.getName());
@@ -501,7 +501,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void updateUser(User user) throws XMLDBException {
+	public void updateUser(Account user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
@@ -524,7 +524,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void addUserGroup(User user) throws XMLDBException {
+	public void addUserGroup(Account user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(3);
 			params.add(user.getName());
@@ -546,7 +546,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  rmgroup             Description of group to remove 
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void removeGroup(User user, String rmgroup) throws XMLDBException {
+	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(user.getName());

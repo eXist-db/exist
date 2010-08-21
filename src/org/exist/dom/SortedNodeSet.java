@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
@@ -33,11 +33,11 @@ public class SortedNodeSet extends AbstractNodeSet {
 	private OrderedLinkedList list = new OrderedLinkedList();	
 	private String sortExpr;
 	private BrokerPool pool;
-	private User user = null;
+	private Subject user = null;
 	private AccessContext accessCtx;
 
 	private SortedNodeSet() {}
-	public SortedNodeSet(BrokerPool pool, User user, String sortExpr, AccessContext accessCtx) {
+	public SortedNodeSet(BrokerPool pool, Subject user, String sortExpr, AccessContext accessCtx) {
 		this.sortExpr = sortExpr;
 		this.pool = pool;
 		this.user = user;

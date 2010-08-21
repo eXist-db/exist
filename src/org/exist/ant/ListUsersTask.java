@@ -24,7 +24,7 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
-import org.exist.security.User;
+import org.exist.security.Account;
 
 import org.xmldb.api.base.XMLDBException;
 
@@ -47,13 +47,13 @@ public class ListUsersTask extends UserTask {
 
         try {
             log("Listing all users", Project.MSG_DEBUG);
-            User[] users = service.getUsers();
+            Account[] users = service.getUsers();
             if (users != null) {
 
                 boolean isFirst=true;
                 StringBuilder buffer = new StringBuilder();
 
-                for (User user : users) {
+                for (Account user : users) {
                     // only insert separator for 2nd or later item
                     if(isFirst){
                         isFirst=false;

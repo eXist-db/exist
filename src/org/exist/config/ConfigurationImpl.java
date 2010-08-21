@@ -21,16 +21,20 @@
  */
 package org.exist.config;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
-import org.w3c.dom.NamedNodeMap;
+import org.exist.security.PermissionDeniedException;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -99,11 +103,19 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	}
 
 	public String getProperty(String name) {
-        return getAttribute(name);
+		if (hasAttribute(name))
+			return getAttribute(name);
+		
+		NodeList nodes = getElementsByTagNameNS(NS, name);
+		if (nodes.getLength() == 1) {
+			return nodes.item(0).getNodeValue();
+		}
+			
+		return null;
     }
     
 	public String getProperty(String name, String default_property) {
-		String property = getAttribute(name);
+		String property = getProperty(name);
 		if (property == null)
 			return default_property;
 		
@@ -111,16 +123,19 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
 	public boolean hasProperty(String name) {
-        return hasAttribute(name);
+        if (hasAttribute(name)) return true;
+
+        return (getElementsByTagName(name).getLength() == 1);
     }
     
     public void setProperty(String name, String value) {
+    	//detect save place: attribute or element's text
         setAttribute(name, value);
     }
 
 	@Override
 	public void setProperty(String property, Integer value) {
-		setAttribute(property, String.valueOf(value));
+		setProperty(property, String.valueOf(value));
 	}
     
     public Object getRuntimeProperty(String name) {
@@ -225,11 +240,25 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
 	
     public Set<String> getProperties() {
-    	NamedNodeMap attrs = getAttributes();
-    	
     	Set<String> properties = new HashSet<String>();
-    	for (int index = 0; index < attrs.getLength(); index++) {
-    		properties.add(attrs.item(index).getLocalName());
+    	
+    	Map<String, Boolean> map = new HashMap<String, Boolean>(); 
+    	
+    	//XXX: detect single element as field value
+    	NodeList children = getChildNodes();
+    	for (int i = 0; i < children.getLength(); i++) {
+    		Node child = children.item(i);
+    		
+    		if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+    			properties.add(child.getNodeName());
+    		} else if (child.getNodeType() == Node.ELEMENT_NODE) {
+       			map.put(child.getNodeName(), map.containsKey(child.getNodeName()));
+    		}
+    	}
+    	
+    	for (Entry<String, Boolean> entry : map.entrySet()) {
+    		if (!entry.getValue())
+    			properties.add(entry.getKey());
     	}
     	
     	return properties;
@@ -258,5 +287,17 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	public void checkForUpdates() {
 		if (configuredObjectReferene != null && configuredObjectReferene.get() != null)
 			Configurator.configure(configuredObjectReferene.get(), this);
+	}
+
+	@Override
+	public void save() throws PermissionDeniedException, EXistException {
+
+		try {
+			
+			Configurator.save(getProxyObject().getDocumentAtExist());
+		
+		} catch (IOException e) {
+			throw new EXistException(e);
+		}
 	}
 }

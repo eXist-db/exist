@@ -25,7 +25,6 @@ package org.exist.dom;
 import org.exist.collections.Collection;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
@@ -92,17 +91,10 @@ public class BinaryDocument extends DocumentImpl {
 		ostream.writeInt(getDocId());
 		ostream.writeUTF(getFileURI().toString());
 		ostream.writeLong(pageNr);
-		SecurityManager secman = getBrokerPool().getSecurityManager();
-		if (secman == null) {
-            //TODO : explain those 2 values -pb
-			ostream.writeInt(1);
-			ostream.writeInt(1);
-		} else {
-			User user = permissions.getOwner();
-			Group group = permissions.getOwnerGroup();
-			ostream.writeInt(user.getUID());
-			ostream.writeInt(group.getId());
-		}
+
+		ostream.writeInt(permissions.getOwner().getId());
+		ostream.writeInt(permissions.getOwnerGroup().getId());
+
 		ostream.writeByte((byte) permissions.getPermissions());
         ostream.writeInt(realSize);
 		getMetadata().write(getBrokerPool(), ostream);

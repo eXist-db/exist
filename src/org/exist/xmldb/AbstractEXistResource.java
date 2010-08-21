@@ -26,7 +26,7 @@ import java.util.Date;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
@@ -40,14 +40,14 @@ import org.xmldb.api.base.XMLDBException;
  */
 public abstract class AbstractEXistResource implements EXistResource {
 
-	protected User user;
+	protected Subject user;
 	protected BrokerPool pool;
 	protected LocalCollection parent;
 	protected XmldbURI docId = null;
 	protected String mimeType = null;
     protected boolean isNewResource = false;
     
-	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, XmldbURI docId, String mimeType) {
+	public AbstractEXistResource(Subject user, BrokerPool pool, LocalCollection parent, XmldbURI docId, String mimeType) {
 		this.user = user;
 		this.pool = pool;
 		this.parent = parent;
@@ -66,7 +66,7 @@ public abstract class AbstractEXistResource implements EXistResource {
 	 * 
 	 * @deprecated Use the XmldbURI constructor instead
 	 */
-	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
+	public AbstractEXistResource(Subject user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
 		this(user, pool, parent, XmldbURI.create(docId), mimeType);
 	}
 	

@@ -25,7 +25,7 @@ import java.util.Collection;
 
 import org.exist.EXistException;
 import org.exist.security.Group;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
 import org.exist.storage.DBBroker;
@@ -38,13 +38,9 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 	
 	public String getId();
 	
-	public Collection<User> getAccounts();
+	public Collection<Account> getAccounts();
 	
 	public Collection<Group> getRoles();
-
-	//possible, internal methods
-	public User getAccount(int id);
-	public Group getGroup(int id);
 
 	public void startUp(DBBroker broker) throws EXistException;
 }

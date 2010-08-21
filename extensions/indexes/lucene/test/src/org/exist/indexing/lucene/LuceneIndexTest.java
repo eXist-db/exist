@@ -205,7 +205,7 @@ public class LuceneIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
@@ -255,7 +255,7 @@ public class LuceneIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             checkIndex(docs, broker, new QName[] { new QName("a", "") }, "x", 1);
@@ -288,7 +288,7 @@ public class LuceneIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
@@ -374,7 +374,7 @@ public class LuceneIndexTest {
 		DocumentSet docs = configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             XQuery xquery = broker.getXQueryService();
@@ -398,7 +398,7 @@ public class LuceneIndexTest {
 		DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             XQuery xquery = broker.getXQueryService();
@@ -535,7 +535,7 @@ public class LuceneIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             checkIndex(docs, broker, new QName[] { new QName("head", "") }, "TITLE", 1);
@@ -570,7 +570,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -602,7 +602,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -651,7 +651,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -693,7 +693,7 @@ public class LuceneIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
@@ -727,7 +727,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -817,7 +817,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -998,7 +998,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -1089,7 +1089,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -1172,7 +1172,7 @@ public class LuceneIndexTest {
         Txn transaction = null;
         MutableDocumentSet docs = new DefaultDocumentSet();
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -1206,7 +1206,7 @@ public class LuceneIndexTest {
         Txn transaction = null;
         MutableDocumentSet docs = new DefaultDocumentSet();
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -1274,7 +1274,7 @@ public class LuceneIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -1309,7 +1309,7 @@ public class LuceneIndexTest {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

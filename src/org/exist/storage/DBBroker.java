@@ -32,7 +32,7 @@ import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.serializers.Serializer;
@@ -105,7 +105,7 @@ public abstract class DBBroker extends Observable {
 
     protected BrokerPool pool;
 
-    private User user = null;
+    private Subject user = null;
 
     protected XQuery xqueryService;
 
@@ -135,7 +135,7 @@ public abstract class DBBroker extends Observable {
 	 *
 	 * @param user
 	 */
-	public void setUser(User user) {
+	public void setUser(Subject user) {
 		this.user = user;
 
 		/*
@@ -147,7 +147,7 @@ public abstract class DBBroker extends Observable {
     /**
 	 * @return The user that is currently using this DBBroker object
 	 */
-	public User getUser() {
+	public Subject getUser() {
 		return user;
 	}
 

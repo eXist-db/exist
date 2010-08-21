@@ -71,7 +71,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 		DBBroker broker = null;
 		try
 		{
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			return findPolicy(broker, context);
 		}
 		catch(EXistException ee)
@@ -128,7 +128,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 		DBBroker broker = null;
 		try
 		{
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			AbstractPolicy policy = pdp.getUtil().findPolicy(broker, idReference, type);
 			return (policy == null) ? new PolicyFinderResult() : new PolicyFinderResult(policy);
 		}

@@ -27,7 +27,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -50,7 +50,7 @@ public class Head extends AbstractWebDAVMethod {
 	/* (non-Javadoc)
 	 * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
 	 */
-	public void process(User user, HttpServletRequest request,
+	public void process(Subject user, HttpServletRequest request,
 			HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
 		DBBroker broker = null;
 		Collection collection = null;

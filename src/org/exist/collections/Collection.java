@@ -40,7 +40,8 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Account;
+import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
@@ -184,7 +185,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
-        	User user = broker.getUser();
+        	Account user = broker.getUser();
             child.setCreationTime(System.currentTimeMillis());
         	child.permissions.setOwner(user);
             CollectionConfiguration config = getConfiguration(broker);
@@ -281,7 +282,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      *
      * @return List
      */
-    public List<Collection> getDescendants(DBBroker broker, User user) {
+    public List<Collection> getDescendants(DBBroker broker, Subject user) {
         final ArrayList<Collection> cl = new ArrayList<Collection>(subcollections.size());
         try {
             getLock().acquire(Lock.READ_LOCK);
@@ -1345,7 +1346,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
-        	User user = broker.getUser();
+        	Account user = broker.getUser();
             metadata.setCreated(System.currentTimeMillis());
             document.getPermissions().setOwner(user);
             String group; 
@@ -1374,7 +1375,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             
             LOG.debug("Found old doc " + oldDoc.getDocId());
             // check if the document is locked by another user
-            User lockUser = oldDoc.getUserLock();
+            Account lockUser = oldDoc.getUserLock();
             if(lockUser != null && !lockUser.equals(broker.getUser()))
                 throw new PermissionDeniedException(
                 		"The document is locked by user " +
@@ -1599,21 +1600,10 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             childColl = i.next();
             ostream.writeUTF(childColl.toString());
         }
-        SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-        if (secman == null) {
-            ostream.writeInt(1);
-            ostream.writeInt(1);
-        } else {
-            User user = permissions.getOwner();
-            Group group = permissions.getOwnerGroup();
-            if (user==null) {
-               throw new IllegalStateException("The user "+permissions.getOwner()+" for the collection cannot be found.");
-            }
-            if (group == null)
-                group = secman.getGroup(SecurityManager.GUEST_GROUP);
-            ostream.writeInt(user.getUID());
-            ostream.writeInt(group.getId());
-        }
+
+        ostream.writeInt(permissions.getOwner().getId());
+        ostream.writeInt(permissions.getOwnerGroup().getId());
+
         ostream.writeInt(permissions.getPermissions());
         ostream.writeLong(created);
     }

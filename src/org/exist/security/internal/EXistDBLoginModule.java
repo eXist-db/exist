@@ -35,7 +35,6 @@ import javax.security.auth.login.LoginException;
 //import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -58,7 +57,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	// the authentication status
 	private boolean succeeded = false;
 	private boolean commitSucceeded = false;
-	private User userPrincipal = null;
+	private org.exist.security.Subject userPrincipal = null;
 
 	/**
 	 * Initialize this <code>LoginModule</code>.

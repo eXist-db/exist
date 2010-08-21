@@ -7,7 +7,7 @@ package org.exist.soap;
 
 import java.io.Serializable;
 
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.xquery.value.Sequence;
 
 public class Session implements Serializable {
@@ -22,18 +22,18 @@ public class Session implements Serializable {
 		}
 	}
 
-	private User user_;
+	private Subject user_;
 	private QueryResult lastQuery_ = null;
 	private long lastAccessTime_ = System.currentTimeMillis();
 	
 	/**
 	 * 
 	 */
-	public Session(User user) {
+	public Session(Subject user) {
 		user_ = user;
 	}
 
-	public User getUser() {
+	public Subject getUser() {
 		return user_;
 	}
 	

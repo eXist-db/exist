@@ -33,7 +33,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -61,7 +61,7 @@ public class Copy extends AbstractWebDAVMethod {
     /* (non-Javadoc)
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
-    public void process(User user, HttpServletRequest request,
+    public void process(Subject user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         DBBroker broker = null;
@@ -141,7 +141,7 @@ public class Copy extends AbstractWebDAVMethod {
         }
     }
     
-    private void copyResource(User user, DBBroker broker,
+    private void copyResource(Subject user, DBBroker broker,
             HttpServletRequest request, HttpServletResponse response,
             Collection sourceCollection, DocumentImpl resource,
             XmldbURI destination)  throws ServletException, IOException {
@@ -206,7 +206,7 @@ public class Copy extends AbstractWebDAVMethod {
         }
     }
     
-    private void copyCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response,
+    private void copyCollection(Subject user, DBBroker broker, HttpServletRequest request, HttpServletResponse response,
             Collection collection, XmldbURI destination)
             throws ServletException, IOException {
 

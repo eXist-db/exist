@@ -37,7 +37,7 @@ import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -67,7 +67,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 	/**
 	 * 
 	 */
-	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, XmldbURI docId) {
+	public LocalBinaryResource(Subject user, BrokerPool pool, LocalCollection collection, XmldbURI docId) {
 		super(user, pool, collection, docId, null);
 	}
 	

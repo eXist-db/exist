@@ -31,7 +31,7 @@ import org.exist.dom.StoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
-import org.exist.security.UserImpl;
+import org.exist.security.internal.AccountImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -101,7 +101,7 @@ public class ConsistencyCheck
      */
     public List<ErrorReport> checkCollectionTree( ProgressCallback callback ) throws TerminatedException
     {
-        UserImpl.enablePasswordChecks( false );
+        AccountImpl.enablePasswordChecks( false );
 
         try {
             List<ErrorReport> errors = new ArrayList<ErrorReport>();
@@ -110,7 +110,7 @@ public class ConsistencyCheck
             return( errors );
         }
         finally {
-            UserImpl.enablePasswordChecks( true );
+            AccountImpl.enablePasswordChecks( true );
         }
     }
 
@@ -150,7 +150,7 @@ public class ConsistencyCheck
     public int getDocumentCount() throws TerminatedException
     {
         if( documentCount == -1 ) {
-            UserImpl.enablePasswordChecks( false );
+            AccountImpl.enablePasswordChecks( false );
 
             try {
                 DocumentCallback cb = new DocumentCallback( null, null, false );
@@ -158,7 +158,7 @@ public class ConsistencyCheck
                 documentCount = cb.docCount;
             }
             finally {
-                UserImpl.enablePasswordChecks( true );
+                AccountImpl.enablePasswordChecks( true );
             }
         }
         return( documentCount );
@@ -194,14 +194,14 @@ public class ConsistencyCheck
      */
     public void checkDocuments( ProgressCallback progress, List<ErrorReport> errorList ) throws TerminatedException
     {
-        UserImpl.enablePasswordChecks( false );
+        AccountImpl.enablePasswordChecks( false );
 
         try {
             DocumentCallback cb = new DocumentCallback( errorList, progress, true );
             broker.getResourcesFailsafe( cb, directAccess );
         }
         finally {
-            UserImpl.enablePasswordChecks( true );
+            AccountImpl.enablePasswordChecks( true );
         }
     }
 

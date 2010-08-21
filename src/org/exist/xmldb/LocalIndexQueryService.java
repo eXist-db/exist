@@ -27,7 +27,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
@@ -47,10 +47,10 @@ public class LocalIndexQueryService implements IndexQueryService {
 
 	private LocalCollection parent = null;
 	private BrokerPool pool = null;
-	private User user;
+	private Subject user;
 	
 	public LocalIndexQueryService(
-		User user,
+		Subject user,
 		BrokerPool pool,
 		LocalCollection parent) {
 		this.user = user;

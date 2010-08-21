@@ -39,7 +39,7 @@ import org.exist.util.SyntaxException;
 public class UnixStylePermission implements Permission {
 
     //owner, default to DBA
-    private User owner;
+    private Account owner;
     private Group ownerGroup;
 
     //permissions
@@ -52,7 +52,7 @@ public class UnixStylePermission implements Permission {
     		throw new IllegalArgumentException("Security manager can't be null");
     	
     	this.sm = sm;
-    	owner = sm.getSystemAccount();
+    	owner = sm.getSystemSubject();
     	ownerGroup = sm.getDBAGroup();
     }
 
@@ -102,7 +102,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return The owner value
      */
-    public User getOwner() {
+    public Account getOwner() {
         return owner;
     }
 
@@ -189,10 +189,10 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( User user ) {
+    public void setOwner( Account user ) {
     	// FIXME: assume guest identity if user gets lost due to a database corruption
     	if(user == null) {
-    		this.owner = sm.getSystemAccount();
+    		this.owner = sm.getSystemSubject();
     	} else
     		this.owner = user;
         //this.ownerGroup = user.getPrimaryGroup();
@@ -323,7 +323,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
-    public boolean validate( User user, int perm ) {
+    public boolean validate( Subject user, int perm ) {
         // group dba has full access
         if ( user.hasDbaRole() )
             return true;
@@ -368,6 +368,26 @@ public class UnixStylePermission implements Permission {
         		
         	throw new IllegalArgumentException("Group was not found."+s);
         }
+	}
+
+
+	@Override
+	public void setGroup(int id) {
+		Group group = sm.getGroup(id);
+		if (group == null)
+			group = sm.getDBAGroup();
+		
+		ownerGroup = group;
+	}
+
+
+	@Override
+	public void setOwner(int id) {
+		Account account = sm.getUser(id);
+		if (account == null)
+			account = sm.getSystemSubject();
+		
+		owner = account;
 	}
 }
 

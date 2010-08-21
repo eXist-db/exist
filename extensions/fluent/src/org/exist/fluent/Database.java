@@ -73,7 +73,7 @@ public class Database {
 	}
 
 	static void configureRootCollection(File configFile) {
-		Database db = new Database(pool.getSecurityManager().getSystemAccount());
+		Database db = new Database(pool.getSecurityManager().getSystemSubject());
 		StringBuilder configXml = new StringBuilder();
 		configXml.append("<collection xmlns='http://exist-db.org/collection-config/1.0'>");
 		configXml.append(ListenerManager.getTriggerConfigXml());
@@ -164,7 +164,7 @@ public class Database {
 	public static void flush() {
 		if (!BrokerPool.isConfigured(dbName)) throw new IllegalStateException("database not started");
 		try {
-			DBBroker broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			try {
 				broker.flush();
 				broker.sync(Sync.MAJOR_SYNC);
@@ -188,7 +188,7 @@ public class Database {
 	public static boolean checkConsistency() {
 		synchronized(pool) {
 			try {
-				DBBroker broker = pool.enterServiceMode(pool.getSecurityManager().getSystemAccount());
+				DBBroker broker = pool.enterServiceMode(pool.getSecurityManager().getSystemSubject());
 				try {
 					List<ErrorReport> errors = new ConsistencyCheck(broker, false).checkAll(NULL_PROGRESS_CALLBACK);
 					if (errors.isEmpty()) return true;
@@ -196,7 +196,7 @@ public class Database {
 					for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));
 					return false;
 				} finally {
-					pool.exitServiceMode(pool.getSecurityManager().getSystemAccount());
+					pool.exitServiceMode(pool.getSecurityManager().getSystemSubject());
 				}
             } catch (TerminatedException e) {
                 throw new DatabaseException(e);
@@ -223,7 +223,7 @@ public class Database {
 	 * @throws DatabaseException if the user could not be logged in
 	 */
 	public static Database login(String username, String password) {
-		User user;
+		Subject user;
 		try {
 			user = pool.getSecurityManager().authenticate(username, password);
 		} catch (AuthenticationException e) {
@@ -255,11 +255,11 @@ public class Database {
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();
 	private static final WeakHashMap<NativeBroker,Boolean> instrumentedBrokers = new WeakHashMap<NativeBroker,Boolean>();
 	
-	private final User user;
+	private final Subject user;
 	private final NamespaceMap namespaceBindings;
 	String defaultCharacterEncoding = "UTF-8";
 	
-	Database(User user) {
+	Database(Subject user) {
 		this.user = user;
 		this.namespaceBindings = new NamespaceMap();
 	}
@@ -562,7 +562,7 @@ public class Database {
 					
 				int count = 0;
 				try {
-					DBBroker broker = pool.get(pool.getSecurityManager().getSystemAccount());
+					DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
 					try {
 						Integer fragmentationLimitObject = broker.getBrokerPool().getConfiguration().getInteger(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
 						int fragmentationLimit = fragmentationLimitObject == null ? 0 : fragmentationLimitObject;

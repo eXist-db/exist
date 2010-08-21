@@ -52,6 +52,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -133,7 +134,7 @@ public class XQueryURLRewrite implements Filter {
 
     private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
 
-    protected User defaultUser = null;
+    protected Subject defaultUser = null;
     protected BrokerPool pool;
 
     // path to the query
@@ -197,9 +198,9 @@ public class XQueryURLRewrite implements Filter {
             }
         }
 
-    	User user = defaultUser;
+        Subject user = defaultUser;
     	
-        User requestUser = UserImpl.getUserFromServletRequest(request);
+        Subject requestUser = AccountImpl.getUserFromServletRequest(request);
         if (requestUser != null)
         	user = requestUser;
 
@@ -426,7 +427,7 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
-    private void checkCache(User user) throws EXistException {
+    private void checkCache(Subject user) throws EXistException {
         if (checkModified) {
             // check if any of the currently used sources has been updated
             // if yes, clear the cache
@@ -541,13 +542,13 @@ public class XQueryURLRewrite implements Filter {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
         
-		defaultUser = pool.getSecurityManager().getGuestAccount();
+		defaultUser = pool.getSecurityManager().getGuestSubject();
 		
 		String username = config.getInitParameter("user");
 		if(username != null) {
 			String password = config.getInitParameter("password");
 			try {
-				User user = pool.getSecurityManager().authenticate(username, password);
+				Subject user = pool.getSecurityManager().authenticate(username, password);
 	        	if (user != null && user.isAuthenticated())
 	        		defaultUser = user;
 			} catch (AuthenticationException e) {

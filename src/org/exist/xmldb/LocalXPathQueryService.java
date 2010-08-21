@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.dom.*;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
@@ -55,7 +55,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
-	protected User user;
+	protected Subject user;
 	protected TreeMap<String, String> namespaceDecls = new TreeMap<String, String>();
 	protected TreeMap<String, Object> variableDecls = new TreeMap<String, Object>();
 	protected boolean xpathCompatible = true;
@@ -71,7 +71,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	private LocalXPathQueryService() {}
 	
 	public LocalXPathQueryService(
-		User user,
+		Subject user,
 		BrokerPool pool,
 		LocalCollection collection,
 		AccessContext accessCtx) {

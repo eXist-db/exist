@@ -31,7 +31,7 @@ import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -68,7 +68,7 @@ public class UserXQueryJob extends UserJob
     private String                JOB_NAME       = "XQuery";
 
     private String                XQueryResource = null;
-    private User                  user           = null;
+    private Subject               user           = null;
 
     /**
      * Default Constructor for Quartz.
@@ -85,7 +85,7 @@ public class UserXQueryJob extends UserJob
      * @param  XQueryResource  DOCUMENT ME!
      * @param  user            DOCUMENT ME!
      */
-    public UserXQueryJob( String jobName, String XQueryResource, User user )
+    public UserXQueryJob( String jobName, String XQueryResource, Subject user )
     {
         this.XQueryResource = XQueryResource;
         this.user           = user;
@@ -125,7 +125,7 @@ public class UserXQueryJob extends UserJob
      *
      * @return  The User for this Job
      */
-    protected User getUser()
+    protected Subject getUser()
     {
         return( user );
     }
@@ -137,7 +137,7 @@ public class UserXQueryJob extends UserJob
         BrokerPool pool           = (BrokerPool)jobDataMap.get( "brokerpool" );
         DBBroker   broker         = null;
         String     xqueryresource = (String)jobDataMap.get( "xqueryresource" );
-        User       user           = (User)jobDataMap.get( "user" );
+        Subject    user           = (Subject)jobDataMap.get( "user" );
         Properties params         = (Properties)jobDataMap.get( "params" );
 		boolean	   unschedule	  = ((Boolean)jobDataMap.get( "unschedule" )).booleanValue();
 

@@ -40,6 +40,7 @@ import org.exist.atom.util.NodeHandler;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.config.ConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeIndexListener;
@@ -942,7 +943,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          collection.getPermissions().setOwner(owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
-            securityMan.addGroup(group);
+			try {
+				securityMan.addGroup(group);
+			} catch (ConfigurationException e) {
+				throw new EXistException(e.getMessage(), e);
+			}
 
          parent.removeChild(element);
       }
@@ -969,7 +974,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          resource.getPermissions().setOwner(owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
-            securityMan.addGroup(group);
+			try {
+				securityMan.addGroup(group);
+			} catch (ConfigurationException e) {
+				throw new EXistException(e.getMessage(), e);
+			}
          
          parent.removeChild(element);
       }

@@ -57,7 +57,8 @@ import org.exist.http.webdav.WebDAV;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Subject;
+import org.exist.security.Account;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -92,9 +93,9 @@ public class AtomServlet extends HttpServlet {
 	 */
 	static class UserXmldbPrincipal implements XmldbPrincipal {
 		int authMethod;
-		User user;
+		Account user;
 
-		UserXmldbPrincipal(int authMethod, User user) {
+		UserXmldbPrincipal(int authMethod, Account user) {
 			this.authMethod = authMethod;
 			this.user = user;
 		}
@@ -162,7 +163,7 @@ public class AtomServlet extends HttpServlet {
 
 	private Authenticator authenticator;
 
-	private User defaultUser;
+	private Subject defaultUser;
 
 	/*
 	 * (non-Javadoc)
@@ -484,7 +485,7 @@ public class AtomServlet extends HttpServlet {
 				return;
 			}
 
-			User user = null;
+			Subject user = null;
 			if (noAuth.get(moduleName) == null) {
 				// Authenticate
 				user = authenticate(request, response);
@@ -567,7 +568,7 @@ public class AtomServlet extends HttpServlet {
 		BrokerPool.stopAll(false);
 	}
 
-	private User authenticate(HttpServletRequest request,
+	private Subject authenticate(HttpServletRequest request,
 			HttpServletResponse response) throws java.io.IOException {
 		// First try to validate the principial if passed from the servlet
 		// engine
@@ -592,7 +593,7 @@ public class AtomServlet extends HttpServlet {
 		return authenticator.authenticate(request, response);
 	}
 
-	private User getDefaultUser() {
+	private Subject getDefaultUser() {
 		if (defaultUsername != null) {
 			try {
 				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);

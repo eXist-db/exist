@@ -22,7 +22,7 @@ import javax.xml.xquery.XQSequenceType;
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.Node;
@@ -90,7 +90,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 			//get the broker pool instance
 			BrokerPool pool = BrokerPool.getInstance();
 			
-			User user;
+			Subject user;
 			//get the user
 			try {
 				user = pool.getSecurityManager().authenticate(username, password);
