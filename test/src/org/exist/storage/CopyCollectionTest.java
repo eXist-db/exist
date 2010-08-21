@@ -54,7 +54,7 @@ public class CopyCollectionTest extends TestCase {
         DBBroker broker = null;
         
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -97,7 +97,7 @@ public class CopyCollectionTest extends TestCase {
         	System.out.println("testRead() ...\n");  
         	pool = startDB();
         	assertNotNull(pool);
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -124,7 +124,7 @@ public class CopyCollectionTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -178,7 +178,7 @@ public class CopyCollectionTest extends TestCase {
         	System.out.println("testReadAborted() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
         	assertNotNull(broker);
         	
             Serializer serializer = broker.getSerializer();

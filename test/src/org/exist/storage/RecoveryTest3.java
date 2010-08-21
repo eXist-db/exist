@@ -67,7 +67,7 @@ public class RecoveryTest3 extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -124,7 +124,7 @@ public class RecoveryTest3 extends TestCase {
         	pool = startDB();
         	assertNotNull(pool);
             
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             BrokerPool.FORCE_CORRUPTION = true;
@@ -192,7 +192,7 @@ public class RecoveryTest3 extends TestCase {
         	System.out.println("testRead2() ...\n");
         	pool = startDB();
         	assertNotNull(pool);        
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             //TODO : do something ?

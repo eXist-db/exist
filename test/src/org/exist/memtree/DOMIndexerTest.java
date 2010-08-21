@@ -33,8 +33,6 @@ import junit.framework.TestCase;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.SecurityManager;
-import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -97,8 +95,7 @@ public class DOMIndexerTest extends TestCase {
     	DBBroker broker = null;    
     	try {
     		pool = BrokerPool.getInstance();
-	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	            
-            broker = pool.get(user);
+            broker = pool.get(pool.getSecurityManager().getGuestSubject());
             Collection collection = broker.getOrCreateCollection(null, TestConstants.TEST_COLLECTION_URI);
             IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
@@ -119,7 +116,7 @@ public class DOMIndexerTest extends TestCase {
     	DBBroker broker = null;  
         try {
         	pool = BrokerPool.getInstance();	         
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
             System.out.println("Found: " + result.getItemCount());

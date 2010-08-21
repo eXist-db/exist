@@ -51,7 +51,7 @@ public class RemoveTest extends AbstractUpdateTest {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             TransactionManager mgr = pool.getTransactionManager();
             assertNotNull(mgr);

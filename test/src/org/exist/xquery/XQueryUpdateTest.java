@@ -48,7 +48,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
         	System.out.println("testAppend() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
             String query =
@@ -92,7 +92,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
         	System.out.println("testAppendAttributes() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
             String query =
@@ -142,7 +142,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testInsertBefore() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
                 "   update insert\n" +
@@ -196,7 +196,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testInsertAfter() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
                 "   update insert\n" +
@@ -251,7 +251,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testUpdate() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             XQuery xquery = broker.getXQueryService();
             
@@ -334,7 +334,7 @@ public class XQueryUpdateTest extends TestCase {
 
         DBBroker broker = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
         	XQuery xquery = broker.getXQueryService();
 
@@ -360,7 +360,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testUpdate() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
 
@@ -394,7 +394,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testReplace() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
 
@@ -435,7 +435,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println("testAttrUpdate() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             store(broker, "test.xml", UPDATE_XML);
 
             String query =
@@ -463,7 +463,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
         	System.out.println("testAppendCDATA() ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
             String query =
@@ -501,7 +501,7 @@ public class XQueryUpdateTest extends TestCase {
         DBBroker broker = null;
         try {
             System.out.println(this.getName()+" ...\n");
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
                 "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
@@ -529,7 +529,7 @@ public class XQueryUpdateTest extends TestCase {
         this.pool = startDB();
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             store(broker, "test.xml", TEST_XML);
         } catch (Exception e) {
         	e.printStackTrace();

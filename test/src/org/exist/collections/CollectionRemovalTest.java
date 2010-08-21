@@ -23,7 +23,7 @@ package org.exist.collections;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -73,7 +73,10 @@ public class CollectionRemovalTest {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
         
-        removeCollection(org.exist.security.SecurityManager.GUEST_USER, TestConstants.TEST_COLLECTION_URI2);
+        removeCollection(
+        		org.exist.security.SecurityManager.GUEST_USER,
+        		org.exist.security.SecurityManager.GUEST_USER,
+        		TestConstants.TEST_COLLECTION_URI2);
         
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI2);
@@ -85,18 +88,21 @@ public class CollectionRemovalTest {
         doQuery(3);
         retrieveDoc(TestConstants.TEST_COLLECTION_URI3);
 
-        removeCollection(org.exist.security.SecurityManager.DBA_USER, TestConstants.TEST_COLLECTION_URI2);
+        removeCollection(
+        		org.exist.security.SecurityManager.DBA_USER,
+        		"",
+        		TestConstants.TEST_COLLECTION_URI2);
 
         doQuery(0);
     }
 
-    private void removeCollection(String user, XmldbURI uri) {
+    private void removeCollection(String user, String password, XmldbURI uri) {
         TransactionManager transact = null;
 		Txn transaction = null;
 		DBBroker broker = null;
         Collection test = null;
         try {
-            User guest = pool.getSecurityManager().getUser(user);
+            Subject guest = pool.getSecurityManager().authenticate(user, password);
             broker = pool.get(guest);
 			transact = pool.getTransactionManager();
 			assertNotNull(transact);
@@ -119,7 +125,7 @@ public class CollectionRemovalTest {
         DBBroker broker = null;
         Collection test = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             assertNotNull(test);
             DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
@@ -180,7 +186,7 @@ public class CollectionRemovalTest {
 			BrokerPool.configure(1, 40, config);
 			pool = BrokerPool.getInstance();
 
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			transact = pool.getTransactionManager();
 			assertNotNull(transact);
 			transaction = transact.beginTransaction();

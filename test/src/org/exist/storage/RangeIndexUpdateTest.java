@@ -91,7 +91,7 @@ public class RangeIndexUpdateTest {
     public void updates() {
         DBBroker broker = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
@@ -186,7 +186,7 @@ public class RangeIndexUpdateTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -232,7 +232,7 @@ public class RangeIndexUpdateTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

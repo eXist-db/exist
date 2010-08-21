@@ -59,7 +59,7 @@ public class DOMFileRecoverTest extends TestCase {
 		NodeIdFactory idFact = pool.getNodeFactory();
 		try {
 			System.out.println("Add some random data and force db corruption ...\n");
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			assertNotNull(broker);
 			//TODO : is this necessary ?
             broker.flush();
@@ -155,7 +155,7 @@ public class DOMFileRecoverTest extends TestCase {
         DBBroker broker = null;
         try {
         	System.out.println("Recover and read the data ...\n");        	
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager mgr = pool.getTransactionManager();
             assertNotNull(mgr);

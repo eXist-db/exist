@@ -50,7 +50,7 @@ public class RemoveRootCollectionTest {
 		Configuration config = new Configuration();
 		BrokerPool.configure(1, 1, config);
 		pool = BrokerPool.getInstance();  assertNotNull(pool);
-		broker = pool.get(pool.getSecurityManager().getSystemAccount());  assertNotNull(broker);
+		broker = pool.get(pool.getSecurityManager().getSystemSubject());  assertNotNull(broker);
 		transact = pool.getTransactionManager();  assertNotNull(transact);
 		root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);  assertNotNull(root);
 	}

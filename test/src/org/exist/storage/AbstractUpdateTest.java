@@ -55,7 +55,7 @@ public abstract class AbstractUpdateTest extends TestCase {
         	System.out.println("testRead() ...\n");  
         	
         	pool = startDB();
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             

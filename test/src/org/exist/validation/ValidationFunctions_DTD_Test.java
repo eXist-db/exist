@@ -85,7 +85,7 @@ public class ValidationFunctions_DTD_Test {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
 
-            broker = pool.get(pool.getSecurityManager().getGuestAccount());
+            broker = pool.get(pool.getSecurityManager().getGuestSubject());
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 

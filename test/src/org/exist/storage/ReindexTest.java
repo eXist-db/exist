@@ -53,7 +53,7 @@ public class ReindexTest {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -111,7 +111,7 @@ public class ReindexTest {
         	pool = startDB();
         	assertNotNull(pool);
 
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             BrokerPool.FORCE_CORRUPTION = true;
@@ -147,7 +147,7 @@ public class ReindexTest {
         	System.out.println("testRead2() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);

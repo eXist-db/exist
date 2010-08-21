@@ -45,7 +45,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -68,7 +68,7 @@ public class NodeTest extends XMLTestCase {
 		DocumentImpl doc = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -115,7 +115,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             System.out.println("testSiblingAxis() ...");
@@ -163,7 +163,7 @@ public class NodeTest extends XMLTestCase {
 		DocumentImpl doc = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -218,7 +218,7 @@ public class NodeTest extends XMLTestCase {
         DocumentImpl doc = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             System.out.println("testVisitor() ...");
@@ -248,7 +248,7 @@ public class NodeTest extends XMLTestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -295,7 +295,7 @@ public class NodeTest extends XMLTestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);

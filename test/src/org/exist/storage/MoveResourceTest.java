@@ -56,7 +56,7 @@ public class MoveResourceTest extends TestCase {
 		try {
 			pool = startDB();
 			assertNotNull(pool);
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			assertNotNull(broker);
 			TransactionManager transact = pool.getTransactionManager();
 			assertNotNull(transact);
@@ -104,7 +104,7 @@ public class MoveResourceTest extends TestCase {
 	    	System.out.println("testRead() ...\n");
 	    	pool = startDB();
 	    	assertNotNull(pool);
-	        broker = pool.get(pool.getSecurityManager().getSystemAccount());
+	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
 	        assertNotNull(broker);
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();
@@ -144,7 +144,7 @@ public class MoveResourceTest extends TestCase {
 
 		DBBroker broker = null;
 		try {
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
 			TransactionManager transact = pool.getTransactionManager();
 			Txn transaction = transact.beginTransaction();
@@ -192,7 +192,7 @@ public void testReadAborted() {
 	    	System.out.println("testRead() ...\n");
 	    	pool = startDB();
 	    	assertNotNull(pool);
-	        broker = pool.get(pool.getSecurityManager().getSystemAccount());
+	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
 	        assertNotNull(broker);
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();

@@ -12,7 +12,6 @@ import junit.framework.TestCase;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -76,12 +75,11 @@ public class LexerTest extends TestCase {
 			e1.printStackTrace();
 			fail(e1.getMessage());
 		}
-		User user = pool.getSecurityManager().getUser("admin");
 		DBBroker broker = null;
 		TransactionManager transact = null;
 		Txn transaction = null;
 		try {
-			broker = pool.get(user);
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			try {
 				// parse the xml source
 				transact = pool.getTransactionManager();
