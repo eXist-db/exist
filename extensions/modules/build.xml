@@ -352,7 +352,7 @@
         </copy>
     </target>
 
-    <target name="jar" depends="compile,svn.resources,xar-math, xar-functx, xar-json">
+    <target name="jar" depends="compile,svn.resources,xar-math, xar-functx, xar-json, xar-myapp">
         <echo message="Creating exist-modules.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
             <manifest>
@@ -390,7 +390,13 @@
         <zip destfile="${top.dir}/webapp/repo/packages/xquery-json-0.1.xar"
              basedir="${top.dir}/webapp/repo/packages/json-example"/>
     </target>
-    
+
+    <target name="xar-myapp" depends="compile,svn.resources">
+        <echo message="Creating myApp-0.1.xar example for package manager ..."/>
+        <zip destfile="${top.dir}/webapp/repo/packages/myApp-0.1.xar"
+             basedir="${top.dir}/webapp/repo/packages/app-example"/>
+    </target>
+
     <target name="clean" depends="clean-xmlcalabash">
         <delete dir="${classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
