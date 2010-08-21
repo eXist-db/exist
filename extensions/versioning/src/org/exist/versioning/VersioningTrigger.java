@@ -111,10 +111,10 @@ public class VersioningTrigger extends FilteringTrigger {
 
         this.broker = broker;
         this.documentPath = documentPath;
-        User activeUser = broker.getUser();
+        Subject activeUser = broker.getUser();
 
         try {
-            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemAccount());
+            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
             if(event == UPDATE_DOCUMENT_EVENT || event == REMOVE_DOCUMENT_EVENT)
             {
@@ -176,10 +176,10 @@ public class VersioningTrigger extends FilteringTrigger {
         if (documentPath.startsWith(VERSIONS_COLLECTION))
             return;
         
-        User activeUser = broker.getUser();
+        Subject activeUser = broker.getUser();
 
         try {
-            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemAccount());
+            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
             if (vDoc != null && !removeLast) {
                 if(!(vDoc instanceof BinaryDocument))
