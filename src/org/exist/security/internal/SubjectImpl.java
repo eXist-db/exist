@@ -265,12 +265,6 @@ public final class SubjectImpl implements Subject {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null) return false;
-		
-		if (obj instanceof AbstractAccount) {
-			return ((AbstractAccount) obj).equals(this);
-		}
-		
-		return false;
+		return account.equals(obj);
 	}
 }
