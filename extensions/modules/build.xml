@@ -366,7 +366,7 @@
 
     <target name="xar-math" depends="compile,svn.resources">
         <echo message="Creating math.xar example for package manager ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/webapp/repo/packages/math-example/math.jar"
+        <jar basedir="${classes}" jarfile="${top.dir}/webapp/repo/packages/math-example/math/math.jar"
              includes="org/exist/xquery/modules/math/**"
                 >
             <manifest>
