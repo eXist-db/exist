@@ -1,0 +1,16 @@
+<package xmlns="http://expath.org/ns/pkg">
+   <module name="json" version="0.1">
+      <meta xmlns="http://exist-db.org/xquery/repo">
+          <author>Priscilla Walmsley</author>
+          <website>http://www.xqueryfunctions.com/</website>
+          <license>GNU-LGPL</license>
+          <copyright>true</copyright>
+          <description></description>
+      </meta>
+      <title>JSON XQuery library</title>
+      <xquery>
+         <namespace>http://www.json.org</namespace>
+         <file>json.xq</file>
+      </xquery>
+   </module>
+</package>

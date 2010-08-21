@@ -1,0 +1,20 @@
+<package xmlns="http://expath.org/ns/pkg">
+   <module name="functx" version="1.0">
+      <meta xmlns="http://exist-db.org/xquery/repo">
+          <author>Priscilla Walmsley</author>
+          <website>http://www.xqueryfunctions.com/</website>
+          <license>GNU-LGPL</license>
+          <copyright>true</copyright>
+          <description></description>
+      </meta>
+      <title>FunctX library</title>
+      <xquery>
+         <namespace>http://www.functx.com</namespace>
+         <file>functx.xql</file>
+      </xquery>
+      <xslt>
+         <import-uri>http://www.functx.com/functx.xsl</import-uri>
+         <file>functx.xsl</file>
+      </xslt>
+   </module>
+</package>
