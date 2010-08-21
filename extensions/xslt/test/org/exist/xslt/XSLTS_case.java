@@ -83,7 +83,7 @@ public class XSLTS_case extends TestCase {
 			
 			DBBroker broker = null;
 			try {	
-				broker = pool.get(pool.getSecurityManager().getSystemAccount());
+				broker = pool.get(pool.getSecurityManager().getSystemSubject());
 				xquery = broker.getXQueryService();
 
 				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
