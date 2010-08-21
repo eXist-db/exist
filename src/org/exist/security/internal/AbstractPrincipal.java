@@ -27,7 +27,8 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Principal;
 import org.exist.security.realm.Realm;
@@ -43,10 +44,10 @@ public abstract class AbstractPrincipal implements Principal {
 
 	protected Realm realm;
 	
-	@ConfigurationField("name")
+	@ConfigurationFieldAsElement("name")
 	protected final String name;
 	
-	@ConfigurationField("id")
+	@ConfigurationFieldAsAttribute("id")
 	protected final int id;
 	
 	protected Configuration configuration = null;

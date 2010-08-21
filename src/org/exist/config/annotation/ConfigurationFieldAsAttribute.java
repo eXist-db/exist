@@ -29,7 +29,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ConfigurationField {
+public @interface ConfigurationFieldAsAttribute {
 	
 	String value();
 

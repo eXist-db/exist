@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -67,13 +67,13 @@ public class TransactionManager {
 
     private Journal journal;
     
-    @ConfigurationField("enabled")
+    @ConfigurationFieldAsAttribute("enabled")
     private boolean enabled;
     
-    @ConfigurationField("group-commit")
+    @ConfigurationFieldAsAttribute("group-commit")
     private boolean groupCommit = false;
 
-    @ConfigurationField("force-restart")
+    @ConfigurationFieldAsAttribute("force-restart")
     private boolean forceRestart = false;
 
     private int activeTransactions = 0;

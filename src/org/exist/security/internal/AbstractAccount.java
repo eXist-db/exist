@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.Credential;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
@@ -39,7 +39,7 @@ import org.exist.xmldb.XmldbURI;
 @ConfigurationClass("account")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
 
-	@ConfigurationField("home")
+	@ConfigurationFieldAsElement("home")
 	protected XmldbURI home = null;
 	
 	protected Group defaultRole = null;
@@ -48,13 +48,13 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	//used for internal locking
 	private final boolean accountLocked = false;
 	
-	@ConfigurationField("expired")
+	@ConfigurationFieldAsElement("expired")
 	private final boolean accountExpired = false;
 	
-	@ConfigurationField("credentials-expired")
+//	@ConfigurationFieldAsElement("credentials-expired")
     private final boolean credentialsExpired = false;
 	
-	@ConfigurationField("enabled")
+    @ConfigurationFieldAsElement("enabled")
     private final boolean enabled = true;
     
 	protected Credential _cred = null;

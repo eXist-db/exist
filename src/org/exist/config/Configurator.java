@@ -47,8 +47,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationField;
-import org.exist.config.annotation.ConfigurationFieldAsNode;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldSettings;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
@@ -84,11 +84,11 @@ public class Configurator {
 			
 		Map<String, Field> link = new HashMap<String, Field>();
     	for (Field field : clazz.getDeclaredFields()) {
-    		if (field.isAnnotationPresent(ConfigurationField.class)) {
-    			link.put(field.getAnnotation(ConfigurationField.class).value(), field);
+    		if (field.isAnnotationPresent(ConfigurationFieldAsAttribute.class)) {
+    			link.put(field.getAnnotation(ConfigurationFieldAsAttribute.class).value(), field);
     		
-    		} else if (field.isAnnotationPresent(ConfigurationFieldAsNode.class)) {
-    			link.put(field.getAnnotation(ConfigurationFieldAsNode.class).value(), field);
+    		} else if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+    			link.put(field.getAnnotation(ConfigurationFieldAsElement.class).value(), field);
     		}
     	}
     	
@@ -323,7 +323,7 @@ public class Configurator {
 				field.setAccessible(true);
 
 				boolean storeAsAttribute = true;
-	    		if (field.isAnnotationPresent(ConfigurationFieldAsNode.class)) {
+	    		if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
 	    			storeAsAttribute = false;
 	    		}
 				
