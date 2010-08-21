@@ -42,6 +42,7 @@ import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.debuggee.Debuggee;
@@ -349,6 +350,8 @@ public class BrokerPool extends Observable {
 		}
 		//Clear the living instances container : they are all sentenced to death...
 		instances.clear();
+		
+		Configurator.clear();
 	}
 
     public static void registerStatusObserver(Observer observer) {

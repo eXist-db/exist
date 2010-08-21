@@ -289,8 +289,10 @@ public class Configurator {
 	}
 
 	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
-		
-		Configuration conf = hotConfigs.get(collection.getURI().append(fileURL));
+		Configuration conf;
+		synchronized (hotConfigs) {
+			conf = hotConfigs.get(collection.getURI().append(fileURL));
+		}
 		if (conf != null) return conf;
 		
 		//XXX: locking required
@@ -520,5 +522,15 @@ public class Configurator {
 			database.release(broker);
 		}
 
+	}
+
+	public static synchronized void clear() {
+		for (Configuration conf : hotConfigs.values()) {
+			if (conf instanceof ConfigurationImpl) {
+				((ConfigurationImpl) conf).configuredObjectReferene = null;
+			}
+		}
+		
+		hotConfigs.clear();
 	}
 }
