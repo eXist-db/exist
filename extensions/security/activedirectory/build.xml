@@ -5,7 +5,11 @@
     <property name="classes" value="./classes"/>
     <property name="top.dir" value="../../.."/>
     
-    <property file="${top.dir}/build.properties"/>
+    <property name="test" value="test"/>
+    <property name="test.classes" value="${test}/classes"/>
+    <property name="test.src" value="${test}/src"/>
+
+	<property file="${top.dir}/build.properties"/>
     
     <property file="../../local.build.properties"/>
     <property file="../../build.properties"/>
@@ -80,4 +84,31 @@
         <delete dir="${classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-security-activedirectory.jar" failonerror="false"/>
     </target>
+	
+    <target name="compile-tests" depends="compile">
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+            destdir="${test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${test.src}"
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="test" depends="compile-tests">
+        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
+    
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+
+            <test name="org.exist.security.realm.activedirectory.ActiveDirectoryRealmTest"
+                todir="${junit.index.reports}"/>
+        </junit>
+    </target>
+
 </project>

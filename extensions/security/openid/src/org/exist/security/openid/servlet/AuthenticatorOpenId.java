@@ -36,8 +36,11 @@ import org.eclipse.jetty.security.DefaultIdentityService;
 import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.exist.config.ConfigurationException;
 import org.exist.security.UserAttributes;
-import org.exist.security.User;
+import org.exist.security.Account;
+import org.exist.security.internal.AbstractRealm;
+import org.exist.security.internal.SubjectImpl;
 import org.exist.security.openid.OpenIDUtility;
 import org.exist.security.openid.SessionAuthentication;
 import org.exist.security.openid.UserImpl;
@@ -65,8 +68,9 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	private static final Log LOG = LogFactory.getLog(AuthenticatorOpenId.class);
 
-    
     public ConsumerManager manager;
+    
+    public final static AbstractRealm openIDrealm = null; //XXX: get one from SM
 
 	public AuthenticatorOpenId() throws ConsumerException {
 	}
@@ -116,7 +120,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 
 	private void processReturn(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		User principal = this.verifyResponse(req);
+		Account principal = this.verifyResponse(req);
 		
 		System.out.println(principal);
         
@@ -267,7 +271,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 	}
 
 	// authentication response
-	public User verifyResponse(HttpServletRequest httpReq)
+	public Account verifyResponse(HttpServletRequest httpReq)
 			throws ServletException {
 
 		try {
@@ -295,7 +299,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 			Identifier verified = verification.getVerifiedId();
 			if (verified != null) {
 				// success
-				User principal = new UserImpl(verified);
+				org.exist.security.Subject principal = new SubjectImpl(new UserImpl(openIDrealm, verified), null);
 				
 				AuthSuccess authSuccess = (AuthSuccess) verification.getAuthResponse();
 				authSuccess.getExtensions();
@@ -331,6 +335,9 @@ public class AuthenticatorOpenId extends HttpServlet {
 			}
 		} catch (OpenIDException e) {
 			// present error to the user
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return null;

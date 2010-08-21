@@ -21,23 +21,18 @@
  */
 package org.exist.security.realm.activedirectory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.SubjectImpl;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.security.realm.ldap.LdapContextFactory;
 
@@ -50,8 +45,8 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
-	public ActiveDirectoryRealm(Configuration config) {
-		super(config);
+	public ActiveDirectoryRealm(SecurityManagerImpl sm, Configuration config) {
+		super(sm, config);
 	}
 
 	protected LdapContextFactory ensureContextFactory() {
@@ -84,48 +79,55 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 * @see org.exist.security.Realm#authenticate(java.lang.String,
 	 * java.lang.Object)
 	 */
-	public User authenticate(String username, Object credentials) throws AuthenticationException {
+	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
 
-		String returnedAtts[] = { "sn", "givenName", "mail" };
-		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
-
-		// Create the search controls
-		SearchControls searchCtls = new SearchControls();
-		searchCtls.setReturningAttributes(returnedAtts);
-
-		// Specify the search scope
-		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
+//		String returnedAtts[] = { "sn", "givenName", "mail" };
+//		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
+//
+//		// Create the search controls
+//		SearchControls searchCtls = new SearchControls();
+//		searchCtls.setReturningAttributes(returnedAtts);
+//
+//		// Specify the search scope
+//		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+//
 		LdapContext ctxGC = null;
-		boolean ldapUser = false;
+//		boolean ldapUser = false;
 
 		try {
 			ctxGC = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
 			// Search objects in GC using filters
-			NamingEnumeration<SearchResult> answer = ctxGC.search(((ContextFactory) ensureContextFactory()).getSearchBase(), searchFilter, searchCtls);
-
-			while (answer.hasMoreElements()) {
-				SearchResult sr = answer.next();
-				Attributes attrs = sr.getAttributes();
-				Map<String, Object> amap = null;
-				if (attrs != null) {
-					amap = new HashMap<String, Object>();
-					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
-					while (ne.hasMore()) {
-						Attribute attr = ne.next();
-						amap.put(attr.getID(), attr.get());
-						ldapUser = true;
-					}
-					ne.close();
-				}
-			}
+//			NamingEnumeration<SearchResult> answer = ctxGC.search(((ContextFactory) ensureContextFactory()).getSearchBase(), searchFilter, searchCtls);
+//
+//			while (answer.hasMoreElements()) {
+//				SearchResult sr = answer.next();
+//				Attributes attrs = sr.getAttributes();
+//				Map<String, Object> amap = null;
+//				if (attrs != null) {
+//					amap = new HashMap<String, Object>();
+//					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
+//					while (ne.hasMore()) {
+//						Attribute attr = ne.next();
+//						amap.put(attr.getID(), attr.get());
+//						ldapUser = true;
+//					}
+//					ne.close();
+//				}
+//			}
 		} catch (NamingException e) {
+			e.printStackTrace();
 			throw new AuthenticationException(
 					AuthenticationException.UNNOWN_EXCEPTION, 
 					e.getMessage());
 		}
 
-		return new UserImpl(this, username);
+		try {
+			return new SubjectImpl(new AccountImpl(this, username), null);
+		} catch (ConfigurationException e) {
+			throw new AuthenticationException(
+					AuthenticationException.UNNOWN_EXCEPTION,
+					e.getMessage(), e);
+		}
 	}
 }

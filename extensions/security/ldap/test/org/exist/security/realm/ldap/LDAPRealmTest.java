@@ -29,7 +29,7 @@ import java.io.InputStream;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -59,7 +59,7 @@ public class LDAPRealmTest {
 		
 		Configuration config = Configurator.parse(is);
 
-		realm = new LDAPRealm(config);
+		realm = new LDAPRealm(null, config);
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class LDAPRealmTest {
 	 */
 	@Test
 	public void testAuthenticate() {
-		User account = null;
+		Account account = null;
 		try {
 			account = realm.authenticate("admin", "passwd");
 		} catch (AuthenticationException e) {

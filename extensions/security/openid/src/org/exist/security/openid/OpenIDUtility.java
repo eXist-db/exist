@@ -24,7 +24,7 @@ package org.exist.security.openid;
 import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.DBSource;
@@ -36,17 +36,6 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XQueryService;
 
 import java.util.Properties;
 
@@ -71,7 +60,7 @@ public class OpenIDUtility {
      * @param principal The OpenID user to be registered in the database.
      * @return true if the resource exists and the script successfully executed.
      */
-    public static boolean registerUser(User principal) {
+    public static boolean registerUser(Subject principal) {
 
         if (principal == null) {
             LOG.error("No principal value exists.  Returning with no actions performed.");

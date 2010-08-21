@@ -29,7 +29,7 @@ import java.io.InputStream;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,9 +43,9 @@ public class ActiveDirectoryRealmTest {
 	private static String config = 
 		"<ActiveDirectory>" +
 		"	<context " +
-		"		principalPattern='CN={0},OU=kjc,OU=institute,DC=ad,DC=uni-heidelberg,DC=de' " +
-		"		searchBase='cn=users,dc=ad,dc=uni-heidelberg,dc=de' " +
-		"		url='ldap://ad.uni-heidelberg.de:389'/>" +
+		"		principalPattern='CN={0},OU=users,DC=localhost' " +
+		"		searchBase='ou=users,dc=localhost' " +
+		"		url='ldap://localhost:389'/>" +
 		"</ActiveDirectory>";
 
 	private static ActiveDirectoryRealm realm;
@@ -59,7 +59,7 @@ public class ActiveDirectoryRealmTest {
 		
 		Configuration config = Configurator.parse(is);
 
-		realm = new ActiveDirectoryRealm(config);
+		realm = new ActiveDirectoryRealm(null, config);
 	}
 
 	/**
@@ -74,15 +74,15 @@ public class ActiveDirectoryRealmTest {
 	 */
 	@Test
 	public void testAuthenticate() {
-		User account = null;
+		Subject currentUser = null;
 		try {
-			account = realm.authenticate("exist", "p2zlw4mg");
+			currentUser = realm.authenticate("HRA eXsit", "OUR_PASSWORD");
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 		
-		assertNotNull(account);
+		assertNotNull(currentUser);
 	}
 
 }

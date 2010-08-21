@@ -26,9 +26,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.security.Group;
 import org.exist.security.UserAttributes;
-import org.exist.security.User;
+import org.exist.security.Account;
+import org.exist.security.internal.AbstractAccount;
+import org.exist.security.internal.AbstractRealm;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 import org.openid4java.discovery.Identifier;
@@ -37,64 +41,13 @@ import org.openid4java.discovery.Identifier;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class UserImpl implements User {
+public class UserImpl extends AbstractAccount {
 
 	Identifier  _identifier = null;
 	
-	public UserImpl(Identifier identifier) {
+	public UserImpl(AbstractRealm realm, Identifier identifier) throws ConfigurationException {
+		super(realm, -1, identifier.getIdentifier());
 		_identifier = identifier;
-	}
-
-	@Override
-	public Group addGroup(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Group addGroup(Group group) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void remGroup(String group) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setGroups(String[] groups) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String[] getGroups() {
-		return new String[0];
-	}
-
-	@Override
-	public boolean hasDbaRole() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int getUID() {
-		return -1;
-	}
-
-	@Override
-	public String getPrimaryGroup() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean hasGroup(String group) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
@@ -102,9 +55,8 @@ public class UserImpl implements User {
 	}
 
 	@Override
-	public void setHome(XmldbURI homeCollection) {
-		// TODO Auto-generated method stub
-		
+	public String getPassword() {
+		return null;
 	}
 
 	@Override
@@ -114,39 +66,12 @@ public class UserImpl implements User {
 	}
 
 	@Override
-	public boolean authenticate(Object credentials) {
-		return false;
-	}
-
-	@Override
-	public boolean isAuthenticated() {
-		return (_identifier != null);
-	}
-
-	@Override
-	public Realm getRealm() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setUID(int uid) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getPassword() {
-		return null;
-	}
-
-	@Override
 	public String getDigestPassword() {
 		return null;
 	}
 
-	@Override
-	public String getName() {
+	//TODO: find a place to construct 'full' name
+	public String getName_() {
 		String name = "";
 		if (attributes.containsKey(UserAttributes.FIRTSNAME)) 
 			name += attributes.get(UserAttributes.FIRTSNAME); 
@@ -198,21 +123,5 @@ public class UserImpl implements User {
 			return _identifier.getIdentifier();
 		
 		return attributes.get(name);
-	}
-
-    /**
-     * Returns the set of attributes names.
-     *
-     * @return the Set of attribute names.
-     */
-    @Override
-    public Set<String> getAttributeNames() {
-        return attributes.keySet();
-    }
-
-	@Override
-	public Group getDefaultGroup() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
