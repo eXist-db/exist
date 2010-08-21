@@ -112,7 +112,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             @SuppressWarnings("unused")
@@ -173,7 +173,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -280,7 +280,7 @@ public class BasicNodeSetTest extends TestCase {
         DBBroker broker = null;
         try {
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -361,7 +361,7 @@ public class BasicNodeSetTest extends TestCase {
 		DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
             Serializer serializer = broker.getSerializer();
@@ -422,7 +422,7 @@ public class BasicNodeSetTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -491,7 +491,7 @@ public class BasicNodeSetTest extends TestCase {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);            
             transact = pool.getTransactionManager();
             assertNotNull(transact);

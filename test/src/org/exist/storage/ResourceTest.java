@@ -75,7 +75,7 @@ public class ResourceTest extends TestCase {
         BrokerPool pool = startDB();
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             TransactionManager transact = pool.getTransactionManager();
             
             Txn transaction = transact.beginTransaction();
@@ -113,7 +113,7 @@ public class ResourceTest extends TestCase {
         byte[] data = null;
         
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             TransactionManager transact = pool.getTransactionManager();            
             Txn transaction = transact.beginTransaction();
@@ -170,7 +170,7 @@ public class ResourceTest extends TestCase {
         byte[] data = null;
         
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             TransactionManager transact = pool.getTransactionManager();            
             Txn transaction = transact.beginTransaction();

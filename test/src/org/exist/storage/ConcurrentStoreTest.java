@@ -80,7 +80,7 @@ public class ConcurrentStoreTest extends TestCase {
         
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
             assertNotNull(test);
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
@@ -102,7 +102,7 @@ public class ConcurrentStoreTest extends TestCase {
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             System.out.println("Transaction started ...");
             
@@ -144,7 +144,7 @@ public class ConcurrentStoreTest extends TestCase {
         public void run() {
             DBBroker broker = null;
             try {
-                broker = pool.get(pool.getSecurityManager().getSystemAccount());
+                broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();
@@ -187,7 +187,7 @@ public class ConcurrentStoreTest extends TestCase {
         public void run() {
             DBBroker broker = null;
             try {
-                broker = pool.get(pool.getSecurityManager().getSystemAccount());
+                broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();

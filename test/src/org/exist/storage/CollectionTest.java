@@ -66,7 +66,7 @@ public class CollectionTest extends TestCase {
         Txn transaction = null;
         TransactionManager transact = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());            
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());            
             transact = pool.getTransactionManager();
             
             transaction = transact.beginTransaction();            
@@ -96,7 +96,7 @@ public class CollectionTest extends TestCase {
         
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             BTree btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             btree.dump(writer);

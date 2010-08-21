@@ -77,7 +77,7 @@ public class DatabaseInsertResources_WithValidation_Test {
             pool = BrokerPool.getInstance();
 
 
-            broker = pool.get(pool.getSecurityManager().getGuestAccount());
+            broker = pool.get(pool.getSecurityManager().getGuestSubject());
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 

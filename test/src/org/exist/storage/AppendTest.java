@@ -47,7 +47,7 @@ public class AppendTest extends AbstractUpdateTest {
         
         try {
         	pool = startDB();
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             TransactionManager mgr = pool.getTransactionManager();
             

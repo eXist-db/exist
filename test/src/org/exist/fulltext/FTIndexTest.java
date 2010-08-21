@@ -106,7 +106,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML, "mixedIndexes.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             Occurrences[] occur = checkIndex(docs, broker, null, "hydraulic", 1);
@@ -139,7 +139,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML, "mixedIndexes.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             Occurrences[] occur = checkIndex(docs, broker, null, "aircraft", 1);
@@ -190,7 +190,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -226,7 +226,7 @@ public class FTIndexTest {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML, "dropDocument.xml");
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
@@ -261,7 +261,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -379,7 +379,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -557,7 +557,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -652,7 +652,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -736,7 +736,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
@@ -812,7 +812,7 @@ public class FTIndexTest {
         Txn transaction = null;
         MutableDocumentSet docs = new DefaultDocumentSet();
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -846,7 +846,7 @@ public class FTIndexTest {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -878,7 +878,7 @@ public class FTIndexTest {
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);

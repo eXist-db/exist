@@ -150,7 +150,7 @@ public class DeadlockTest {
 			BrokerPool.configure(1, 40, config);
 			pool = BrokerPool.getInstance();
 
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			transact = pool.getTransactionManager();
 			assertNotNull(transact);
 			transaction = transact.beginTransaction();
@@ -262,7 +262,7 @@ public class DeadlockTest {
 			Txn transaction = null;
 			DBBroker broker = null;
 			try {
-				broker = pool.get(pool.getSecurityManager().getSystemAccount());
+				broker = pool.get(pool.getSecurityManager().getSystemSubject());
 				transact = pool.getTransactionManager();
 				assertNotNull(transact);
 

@@ -60,7 +60,7 @@ public class BTreeRecoverTest extends TestCase {
         NodeIdFactory idFact = pool.getNodeFactory();
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             broker.flush();
             Txn txn = mgr.beginTransaction();
             System.out.println("Transaction started ...");
@@ -116,7 +116,7 @@ public class BTreeRecoverTest extends TestCase {
         NodeIdFactory idFact = pool.getNodeFactory();
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);

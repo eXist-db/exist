@@ -48,7 +48,7 @@ public class BFileOverflowTest extends TestCase {
         TransactionManager mgr = pool.getTransactionManager();
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
             
@@ -95,7 +95,7 @@ public class BFileOverflowTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             
             Value key = new Value("test".getBytes());

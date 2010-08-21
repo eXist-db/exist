@@ -55,7 +55,7 @@ public class RecoverBinaryTest extends TestCase {
         DBBroker broker = null;
         try {
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -103,7 +103,7 @@ public class RecoverBinaryTest extends TestCase {
         try {
         	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
-        	broker = pool.get(pool.getSecurityManager().getSystemAccount());
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
         	assertNotNull(broker);
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);

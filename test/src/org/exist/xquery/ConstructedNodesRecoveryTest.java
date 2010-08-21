@@ -191,7 +191,7 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	    {
 	    	pool = startDB();
 	    	assertNotNull(pool);
-	        broker = pool.get(pool.getSecurityManager().getSystemAccount());
+	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
 	        
 	        TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);

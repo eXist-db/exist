@@ -88,7 +88,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);                       
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -118,7 +118,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -151,7 +151,7 @@ public class RemoveCollectionTest {
         BrokerPool pool = startDB();
         assertNotNull(pool);
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -234,7 +234,7 @@ public class RemoveCollectionTest {
         try {
         	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemAccount());
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             if (checkResource) {
                 doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), Lock.READ_LOCK);
                 assertNull("Resource should have been removed", doc);

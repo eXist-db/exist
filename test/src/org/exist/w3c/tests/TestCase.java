@@ -43,7 +43,7 @@ import org.exist.Namespaces;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.LocalCollection;
@@ -308,7 +308,7 @@ public abstract class TestCase {
 
 	public Resource getResource(Object r) throws XMLDBException {
 		LocalCollection collection = null;
-		User user = null;
+		Subject user = null;
 		
 		LocalXMLResource res = null;
 		if (r instanceof NodeProxy) {
