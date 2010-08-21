@@ -73,7 +73,14 @@ declare function local:upload() as element()
     <body>
 
     <h1><a href=".">eXist XML Database Public Repository</a></h1>
+    <p> To install packages from this repository you will require:
 
+    <ul>
+        <li>In your eXist repo manager use this uri: http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/</li>
+        <li>access permission to this repository (set by the administrator of this repository)</li>
+    </ul>
+
+    </p>
     {local:process-action()}
     <h2>Package Listing</h2>
     <table border="1">
