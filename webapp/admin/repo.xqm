@@ -264,7 +264,7 @@ declare function repomanager:main() as element() {
                         <td><input type="file" size="30" name="upload"/></td>
                     </tr>
                 </table>
-                <span><i>Note: You can also find example .xar packages located under webapp/repo/packages</i></span>
+                <span><i>Note: You can may example .xar packages located under webapp/repo/packages</i></span>
           </form>
         </div>
 };
