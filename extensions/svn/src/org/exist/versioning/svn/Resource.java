@@ -46,7 +46,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -457,7 +457,7 @@ public class Resource extends File {
     	throw new IOException("this never should happen");
     }
     
-    private User getBrokerUser() throws IOException {
+    private Subject getBrokerUser() throws IOException {
     	DBBroker broker = null; 
 		BrokerPool db = null;
 

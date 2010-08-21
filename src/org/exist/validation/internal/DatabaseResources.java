@@ -23,7 +23,7 @@
 package org.exist.validation.internal;
 
 import org.apache.log4j.Logger;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
 import org.exist.storage.BrokerPool;
@@ -122,7 +122,7 @@ public class DatabaseResources {
     }
     
     
-    public Sequence executeQuery(String queryPath, Map<String,String> params, User user){
+    public Sequence executeQuery(String queryPath, Map<String,String> params, Subject user){
         
         String namespace = params.get(TARGETNAMESPACE);
         String publicId = params.get(PUBLICID);
@@ -188,7 +188,7 @@ public class DatabaseResources {
         
     }
     
-    public String findXSD(String collection, String targetNamespace, User user){
+    public String findXSD(String collection, String targetNamespace, Subject user){
         logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
         
         Map<String,String> params = new HashMap<String,String>();
@@ -200,7 +200,7 @@ public class DatabaseResources {
         return getFirstResult(result);
     }
     
-    public String findCatalogWithDTD(String collection, String publicId, User user){
+    public String findCatalogWithDTD(String collection, String publicId, Subject user){
         logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
         
         Map<String,String> params = new HashMap<String,String>();

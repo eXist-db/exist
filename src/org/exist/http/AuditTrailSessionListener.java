@@ -24,7 +24,7 @@ package org.exist.http;
 import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -96,18 +96,18 @@ public class AuditTrailSessionListener implements HttpSessionListener {
             xqueryResourcePath = xqueryResourcePath.trim();
             BrokerPool pool = null;
             DBBroker broker = null;
-            User principal = null;
+            Subject subject = null;
 
             try {
                 DocumentImpl resource = null;
                 Source source = null;
 
                 pool = BrokerPool.getInstance();
-                principal = pool.getSecurityManager().getSystemAccount();
+                subject = pool.getSecurityManager().getSystemSubject();
 
-                broker = pool.get(principal);
+                broker = pool.get(subject);
                 if (broker == null) {
-                    LOG.error("Unable to retrieve DBBroker for " + principal.getName());
+                    LOG.error("Unable to retrieve DBBroker for " + subject.getName());
                     return;
                 }
 
@@ -162,7 +162,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                 }
 
             } catch (Exception e) {
-                LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + principal.getName(), e);
+                LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + subject.getName(), e);
             }
             finally {
                 if (pool != null)

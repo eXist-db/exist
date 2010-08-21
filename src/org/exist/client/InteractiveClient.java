@@ -83,7 +83,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
@@ -792,7 +792,7 @@ public class InteractiveClient {
             } else if (args[0].equalsIgnoreCase("users")) {
                 UserManagementService mgtService = (UserManagementService) current
                         .getService("UserManagementService", "1.0");
-                User users[] = mgtService.getUsers();
+                Account users[] = mgtService.getUsers();
                 System.out.println("User\t\tGroups");
                 System.out.println("-----------------------------------------");
                 for (int i = 0; i < users.length; i++) {
@@ -817,7 +817,7 @@ public class InteractiveClient {
                 try {
                     UserManagementService mgtService = (UserManagementService) current
                             .getService("UserManagementService", "1.0");
-                    User user = mgtService.getUser(args[1]);
+                    Account user = mgtService.getUser(args[1]);
                     if (user == null) {
                         System.out.println("no such user.");
                         return true;
@@ -887,7 +887,7 @@ public class InteractiveClient {
                 if (temp != null) {
                     UserManagementService mgtService = (UserManagementService) temp
                             .getService("UserManagementService", "1.0");
-                    User u = mgtService.getUser(args[1]);
+                    Account u = mgtService.getUser(args[1]);
                     if (u == null) {
                         System.out.println("unknown user");
                         return true;
@@ -901,7 +901,7 @@ public class InteractiveClient {
                 if (res != null) {
                     UserManagementService mgtService = (UserManagementService) current
                             .getService("UserManagementService", "1.0");
-                    User u = mgtService.getUser(args[1]);
+                    Account u = mgtService.getUser(args[1]);
                     if (u == null) {
                         System.out.println("unknown user");
                         return true;
@@ -921,7 +921,7 @@ public class InteractiveClient {
                 if (res != null) {
                     UserManagementService mgtService = (UserManagementService)
                     current.getService("UserManagementService", "1.0");
-                    User user = mgtService.getUser(properties.getProperty("user", "guest"));
+                    Account user = mgtService.getUser(properties.getProperty("user", "guest"));
                     if(args[0].equalsIgnoreCase("lock"))
                         mgtService.lockResource(res, user);
                     else

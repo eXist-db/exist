@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -101,7 +101,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 
                 // Must actually get a User object for the Permission...
                 Permission perms = PermissionFactory.getPermission(user, group, mode);
-                User usr = ums.getUser(user);
+                Account usr = ums.getUser(user);
                 if (usr == null) {
                     logger.error("Needs a valid user name, not: " + user);
                     

@@ -40,7 +40,7 @@ import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.ClassLoaderSource;
 import org.exist.storage.BrokerPool;
@@ -76,7 +76,7 @@ public class Get extends AbstractWebDAVMethod {
         super(pool);
     }
     
-    public void process(User user, HttpServletRequest request,
+    public void process(Subject user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         

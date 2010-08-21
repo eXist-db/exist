@@ -111,7 +111,7 @@ public class XACMLUtil implements UpdateListener
 		try
 		{
 			BrokerPool pool = pdp.getBrokerPool();
-			broker = pool.get(pool.getSecurityManager().getSystemAccount());
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			initializePolicyCollection(broker);
 		}
 		catch(EXistException ee)

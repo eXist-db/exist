@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,24 +46,21 @@ import javax.xml.parsers.SAXParserFactory;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
+import org.exist.config.annotation.ConfigurationFieldAsNode;
 import org.exist.config.annotation.ConfigurationFieldSettings;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConfigurationHelper;
-import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
@@ -84,18 +83,38 @@ public class Configurator {
 			return map.get(clazz);
 			
 		Map<String, Field> link = new HashMap<String, Field>();
-    	for (Field field : clazz.getDeclaredFields())
+    	for (Field field : clazz.getDeclaredFields()) {
     		if (field.isAnnotationPresent(ConfigurationField.class)) {
     			link.put(field.getAnnotation(ConfigurationField.class).value(), field);
+    		
+    		} else if (field.isAnnotationPresent(ConfigurationFieldAsNode.class)) {
+    			link.put(field.getAnnotation(ConfigurationFieldAsNode.class).value(), field);
     		}
+    	}
     	
     	Class<?> superClass = clazz.getSuperclass();
 		if (superClass.isAnnotationPresent(ConfigurationClass.class)) {
-			if (superClass.getAnnotation(ConfigurationClass.class).value().equals( clazz.getAnnotation(ConfigurationClass.class).value() ))
+			//if (superClass.getAnnotation(ConfigurationClass.class).value().equals( clazz.getAnnotation(ConfigurationClass.class).value() ))
 				link.putAll( getProperyFieldMap(superClass) );
 		}
 
     	return link;
+	}
+	
+	public static Method findSetMethod(Class<?> clazz, Field field) {
+		try {
+			String methodName = "set"+field.getName();
+			methodName = methodName.toLowerCase();
+			
+			for (Method method : clazz.getMethods()) {
+				if (method.getName().toLowerCase().equals(methodName))
+					return method;
+			}
+			
+		} catch (SecurityException e) {
+		}
+		
+		return null;
 	}
 	
 	public static Configuration configure(Configurable instance, Configuration configuration) {
@@ -111,10 +130,13 @@ public class Configurator {
 			
 			if (configurable != null) {
 				if (configurable != instance)
-					throw new IllegalArgumentException("Configuration allready in use by "+impl.configuredObjectReferene.get());
+					throw new IllegalArgumentException(
+							"Configuration can't be used by "+instance+", " +
+							"because allready in use by "+configurable);
 			
 			} else 
 				impl.configuredObjectReferene = new WeakReference<Configurable>(instance);
+			//end (lock issue)
 		}
 		
 		Class<?> clazz = instance.getClass();
@@ -152,7 +174,7 @@ public class Configurator {
 			
 			Field field = properyFieldMap.get(property);
 			field.setAccessible(true);
-
+			
 			Object value = null;
 			String typeName = field.getType().getName();
 			try {
@@ -180,12 +202,30 @@ public class Configurator {
 				} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
 					value = configuration.getPropertyBoolean(property);
 
+				} else if (typeName.equals("java.util.List")) {
+					System.out.println("!!!!!!!!!!! List as property filed !!!!!!!!!!! ");
+					
+				} else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
+					value = org.exist.xmldb.XmldbURI.create(
+								configuration.getProperty(property)
+							);
+					
 				} else {
-					throw new IllegalArgumentException("unsupported configuration value type "+field.getType());
+					System.out.println("skip unsupported configuration value type "+field.getType());
 				}
 			
-				if (value != null && !field.get(instance).equals(value)) {
-					field.set(instance, value);
+				if (value != null && !value.equals( field.get(instance) ) ) {
+					
+					Method method = findSetMethod(instance.getClass(), field);
+					if (method != null) {
+						try {
+							method.invoke(instance, value);
+						} catch (InvocationTargetException e) {
+							method = null;
+						}
+					}
+					if (method == null) 
+						field.set(instance, value);
 				}
 
 			} catch (IllegalArgumentException e) {
@@ -207,11 +247,11 @@ public class Configurator {
 //		throw new ExceptionConfiguration("parser was not implemented");
 //	}
 
-	public static Configuration parse(File file) throws ExceptionConfiguration {
+	public static Configuration parse(File file) throws ConfigurationException {
 		try {
 			return parse(new FileInputStream(file));
 		} catch (FileNotFoundException e) {
-			throw new ExceptionConfiguration(e);
+			throw new ConfigurationException(e);
 		}
 	}
 
@@ -219,7 +259,7 @@ public class Configurator {
 //		throw new ExceptionConfiguration("default configuration parser was not implemented");
 //	}
 
-	public static Configuration parse(InputStream is) throws ExceptionConfiguration {
+	public static Configuration parse(InputStream is) throws ConfigurationException {
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -232,23 +272,23 @@ public class Configurator {
     
 			return new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
 		} catch (ParserConfigurationException e) {
-			throw new ExceptionConfiguration(e);
+			throw new ConfigurationException(e);
 		} catch (SAXException e) {
-			throw new ExceptionConfiguration(e);
+			throw new ConfigurationException(e);
 		} catch (IOException e) {
-			throw new ExceptionConfiguration(e);
+			throw new ConfigurationException(e);
 		}
 	}
 	
-	public static Configuration parseDefault() throws ExceptionConfiguration {
+	public static Configuration parseDefault() throws ConfigurationException {
 		try {
 			return parse(new FileInputStream(ConfigurationHelper.lookup("conf.xml")));
 		} catch (FileNotFoundException e) {
-			throw new ExceptionConfiguration(e);
+			throw new ConfigurationException(e);
 		}
 	}
 
-	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ExceptionConfiguration {
+	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
 		
 		Configuration conf = hotConfigs.get(collection.getURI().append(fileURL));
 		if (conf != null) return conf;
@@ -270,22 +310,44 @@ public class Configurator {
 			//open tag
 			buf.append("<");
 			buf.append(configName);
+			buf.append(" xmlns='"+Configuration.NS+"'");
 			
-			//attributes
+			StringBuilder bufContext = new StringBuilder();
+    		StringBuilder bufferToUse;
+			
+			//store filed's values as attributes or elements depends on annotation
 			Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
 			for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
 
-				buf.append(" ");
-				buf.append(entry.getKey());
-				buf.append("='");
+				final Field field = entry.getValue();
+				field.setAccessible(true);
+
+				boolean storeAsAttribute = true;
+	    		if (field.isAnnotationPresent(ConfigurationFieldAsNode.class)) {
+	    			storeAsAttribute = false;
+	    		}
+				
+	    		if (storeAsAttribute) {
+	    			buf.append(" ");
+	    			buf.append(entry.getKey());
+	    			buf.append("='");
+	    			
+	    			bufferToUse = buf;
+	    		} else {
+	    			bufContext.append("<");
+	    			bufContext.append(entry.getKey());
+	    			bufContext.append(">");
+
+	    			bufferToUse = bufContext;
+	    		}
 				try {
-					final Field field = entry.getValue();
-					
-					field.setAccessible(true);
 					
 					String typeName = field.getType().getName();
 
-					if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+					if (typeName.equals("java.lang.String")) {
+						bufferToUse.append(field.get(instance));
+						
+					} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
 						if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
 			    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
 			    			int radix = 10;
@@ -297,27 +359,49 @@ public class Configurator {
 			    					radix = 10;
 								}
 			    			}
-		    				buf.append(Integer.toString((Integer)field.get(instance), radix) );
+			    			bufferToUse.append(Integer.toString((Integer)field.get(instance), radix) );
 						} else { 
-		    				buf.append(field.get(instance));
+							bufferToUse.append(field.get(instance));
 						}
+					} else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+						bufferToUse.append(field.get(instance));
+
+					} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+						if ((Boolean) field.get(instance)) {
+							bufferToUse.append("true");
+						} else { 
+							bufferToUse.append("false");
+						}
+
+					} else if (typeName.equals("java.util.List")) {
+						System.out.println("!!!!!!!!!! save List property !!!!!!!!!!");
+
 					} else {
-						buf.append(field.get(instance));
+						//unknown type - skip
+						//buf.append(field.get(instance));
 					}
 
 				
 				} catch (IllegalArgumentException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
+					throw new ConfigurationException(e.getMessage(), e);
 
 				} catch (IllegalAccessException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
+					throw new ConfigurationException(e.getMessage(), e);
 				
 				}
-				buf.append("'");
+	    		if (storeAsAttribute) {
+	    			buf.append("'");
+	    		} else {
+	    			bufContext.append("</");
+	    			bufContext.append(entry.getKey());
+	    			bufContext.append(">");
+	    		}
 			}
 
 			buf.append(">");
 
+			buf.append(bufContext);
+			
 			//close tag
 			buf.append("</");
 			buf.append(configName);
@@ -341,9 +425,9 @@ public class Configurator {
 				TransactionManager transact = pool.getTransactionManager();
 				Txn txn = transact.beginTransaction();
 	
-				User currentUser = broker.getUser();
+				Subject currentUser = broker.getUser();
 				try {
-					broker.setUser(pool.getSecurityManager().getSystemAccount());
+					broker.setUser(pool.getSecurityManager().getSystemSubject());
 					
 		            String data = buf.toString();
 		            IndexInfo info = collection.validateXMLResource(txn, broker, fileURL, data);
@@ -358,27 +442,11 @@ public class Configurator {
 					
 					transact.commit(txn);
 	
-				} catch (IOException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
+				} catch (Exception e) {
+					transact.abort(txn);
+					
+					throw new ConfigurationException(e.getMessage(), e);
 	
-				} catch (TriggerException e) {
-		            throw new ExceptionConfiguration(e.getMessage(), e);
-				
-				} catch (SAXException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
-				
-				} catch (PermissionDeniedException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
-				
-				} catch (LockException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
-				
-				} catch (TransactionException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
-				
-				} catch (EXistException e) {
-					throw new ExceptionConfiguration(e.getMessage(), e);
-				
 				} finally {
 					broker.setUser(currentUser);
 				}
@@ -388,7 +456,7 @@ public class Configurator {
 
 				document = collection.getDocument(broker, fileURL);
 				if (document == null)
-					throw new ExceptionConfiguration("The configuration file can't be found, url = "+collection.getURI().append(fileURL));
+					throw new ConfigurationException("The configuration file can't be found, url = "+collection.getURI().append(fileURL));
 			}
 		}
 		
@@ -397,5 +465,60 @@ public class Configurator {
 		hotConfigs.put(document.getURI(), conf);
 		
 		return conf;
+	}
+	
+	public static void save(DocumentAtExist document) throws IOException {
+		BrokerPool database;
+		try {
+			database = BrokerPool.getInstance();
+		} catch (EXistException e) {
+			throw new IOException(e);
+		}
+
+		DBBroker broker = null;
+		try {
+			try {
+				broker = database.get(null);
+			} catch (EXistException e) {
+				throw new IOException(e);
+			}
+			
+			broker.flush();
+			broker.sync(Sync.MAJOR_SYNC);
+	
+			BrokerPool pool = broker.getBrokerPool();
+			TransactionManager transact = pool.getTransactionManager();
+			Txn txn = transact.beginTransaction();
+	
+			Subject currentUser = broker.getUser();
+			try {
+				broker.setUser(pool.getSecurityManager().getSystemSubject());
+				
+				Collection collection = broker.getCollection(document.getURI().removeLastSegment());
+				if (collection == null) throw new IOException("Collection URI = "+document.getURI().removeLastSegment()+" not found.");
+				
+	            IndexInfo info = collection.validateXMLResource(txn, broker, document.getURI().lastSegment(), document);
+	
+	            collection.store(txn, broker, info, document, false);
+				
+				broker.saveCollection(txn, collection);
+				
+				transact.commit(txn);
+	
+			} catch (Exception e) {
+				transact.abort(txn);
+				throw new IOException(e);
+
+			} finally {
+				broker.setUser(currentUser);
+			}
+		
+			broker.flush();
+			broker.sync(Sync.MAJOR_SYNC);
+
+		} finally {
+			database.release(broker);
+		}
+
 	}
 }

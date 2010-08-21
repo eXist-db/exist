@@ -28,16 +28,18 @@ import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
-import org.exist.security.GroupImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.Account;
+import org.exist.security.internal.GroupImpl;
+import org.exist.security.internal.SubjectImpl;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -50,8 +52,8 @@ public class SecurityManagerImpl implements SecurityManager
 {
 
    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
-   protected Map<String, UserImpl> userByNameCache = new HashMap<String, UserImpl>();
-   protected Map<Integer, UserImpl> userByIdCache = new HashMap<Integer, UserImpl>();
+   protected Map<String, AccountImpl> userByNameCache = new HashMap<String, AccountImpl>();
+   protected Map<Integer, AccountImpl> userByIdCache = new HashMap<Integer, AccountImpl>();
    protected Map<String, GroupImpl> groupByNameCache = new HashMap<String, GroupImpl>();
    protected Map<Integer, GroupImpl> groupByIdCache = new HashMap<Integer, GroupImpl>();
    
@@ -213,7 +215,7 @@ public class SecurityManagerImpl implements SecurityManager
       }
    }
 
-   protected UserImpl getUserByName(DirContext context, String username)
+   protected AccountImpl getUserByName(DirContext context, String username)
       throws NamingException
    {
       // Form the dn from the user pattern
@@ -224,7 +226,7 @@ public class SecurityManagerImpl implements SecurityManager
       return getUser(context,dn);
    }
       
-   protected UserImpl getUserById(DirContext context, int uid)
+   protected AccountImpl getUserById(DirContext context, int uid)
       throws NamingException
    {
       LOG.info("Searching for "+uidNumberAttr+"="+uid+" in "+userBase);
@@ -250,7 +252,11 @@ public class SecurityManagerImpl implements SecurityManager
          SearchResult result = groups.next();
          String cn = getAttributeValue(groupNameAttr, result.getAttributes());
          LOG.info("Constructing group "+cn);
-         return new GroupImpl(cn, gid);
+         try {
+			return new GroupImpl(cn, gid);
+		} catch (ConfigurationException e) {
+			return null;
+		}
       }
       return null;
    }
@@ -268,11 +274,12 @@ public class SecurityManagerImpl implements SecurityManager
          int gid = Integer.parseInt(getAttributeValue(gidNumberAttr, attrs));
          return new GroupImpl(cn, gid);
       } catch (NameNotFoundException e) {
-      }
+      } catch (ConfigurationException e) {
+	}
       return null;
    }
    
-   protected UserImpl newUserFromAttributes(DirContext context,Attributes attrs)
+   protected AccountImpl newUserFromAttributes(DirContext context,Attributes attrs)
       throws NamingException
    {
       String username = getAttributeValue(uidAttr,attrs);
@@ -298,8 +305,12 @@ public class SecurityManagerImpl implements SecurityManager
 
       int uid = Integer.parseInt(getAttributeValue(uidNumberAttr, attrs));
       LOG.info("Constructing user "+username+"/"+uid+" in group "+(mainGroup==null ? "<none>" : mainGroup));
-      UserImpl user = new UserImpl((Realm)null, username, null, mainGroup);
-      user.setUID(uid);
+      AccountImpl user;
+	try {
+		user = new AccountImpl(null, uid, username, null, mainGroup);
+	} catch (ConfigurationException e) {
+		throw new NamingException(e.getMessage());
+	}
       if (password!=null) {
          if (password.charAt(0)=='{') {
             int end = password.indexOf('}');
@@ -335,7 +346,7 @@ public class SecurityManagerImpl implements SecurityManager
       return user;
    }
       
-   protected UserImpl getUser(DirContext context, String dn)
+   protected AccountImpl getUser(DirContext context, String dn)
       throws NamingException
    {
       
@@ -374,11 +385,11 @@ public class SecurityManagerImpl implements SecurityManager
    {
    }
 
-   public void deleteUser(User user) throws PermissionDeniedException
+   public void deleteUser(Account user) throws PermissionDeniedException
    {
    }
 
-   public boolean updateAccount(User account) throws PermissionDeniedException {
+   public boolean updateAccount(Account account) throws PermissionDeniedException {
 	   return false;
    }
 
@@ -455,10 +466,10 @@ public class SecurityManagerImpl implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public User getUser(int uid)
+   public Account getUser(int uid)
    {
       Integer iuid = new Integer(uid);
-      UserImpl user = userByIdCache.get(iuid);
+      AccountImpl user = userByIdCache.get(iuid);
       if (user==null) {
          try {
             user = getUserById(context,uid);
@@ -472,9 +483,9 @@ public class SecurityManagerImpl implements SecurityManager
       return user;
    }
 
-   public UserImpl getUser(String name)
+   public AccountImpl getUser(String name)
    {
-      UserImpl user = userByNameCache.get(name);
+      AccountImpl user = userByNameCache.get(name);
       if (user==null) {
          try {
             user = getUserByName(context,name);
@@ -489,14 +500,14 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // This needs to be an enumeration
-   public java.util.Collection<User> getUsers()
+   public java.util.Collection<Account> getUsers()
    {
       try {
          SearchControls constraints = new SearchControls();
 
          constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
          NamingEnumeration<SearchResult> users = context.search(userBase,"(objectClass="+userClassName+")",constraints);
-         List<User> userList = new ArrayList<User>();
+         List<Account> userList = new ArrayList<Account>();
          while (users.hasMore()) {
             SearchResult result = users.next();
             userList.add(newUserFromAttributes(context,result.getAttributes()));
@@ -509,7 +520,7 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // TODO: this shouldn't be in this interface
-   public synchronized boolean hasAdminPrivileges(User user) {
+   public synchronized boolean hasAdminPrivileges(Account user) {
       return user.hasDbaRole();
    }
    
@@ -538,14 +549,15 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // TODO: this should be addUser
-   public void setUser(User user) {
+   public void setUser(Account user) {
    }
 
    @Override
-   public User authenticate(String username, Object credentials) throws AuthenticationException {
-		User user = getUser(username);
+   public Subject authenticate(String username, Object credentials) throws AuthenticationException {
+		Account user = getUser(username);
 		if (user != null) {
-			User newUser = new UserImpl(null, (UserImpl)user, credentials);
+			Subject newUser = new SubjectImpl((AccountImpl)user, credentials);
+
 			if (newUser.isAuthenticated())
 				return newUser;
 
@@ -559,12 +571,12 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
 	@Override
-	public User getSystemAccount() {
+	public Subject getSystemSubject() {
 		return null;
 	}
 	
 	@Override
-	public User getGuestAccount() {
+	public Subject getGuestSubject() {
 		return null;
 	}
 

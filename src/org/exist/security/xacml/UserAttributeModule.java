@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.exist.security.User;
+import org.exist.security.Account;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeDesignator;
@@ -77,7 +77,7 @@ public class UserAttributeModule extends AttributeFinderModule
 			return errorResult("Error finding attribute: Subject-id attribute must be a string.");
 		
 		String uid = ((StringAttribute)value).getValue();
-		User user = pdp.getBrokerPool().getSecurityManager().getUser(uid);
+		Account user = pdp.getBrokerPool().getSecurityManager().getUser(uid);
 		if(user == null)
 			return errorResult("No user exists for UID '" + uid + "'");
 		
@@ -90,7 +90,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	}
 	
 	//gets a bag consisting of the groups of the user
-	private EvaluationResult getGroups(User user)
+	private EvaluationResult getGroups(Account user)
 	{
 		String[] groupArray = user.getGroups();
 		int size = (groupArray == null) ? 0 : groupArray.length;

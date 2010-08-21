@@ -31,7 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.internal.AccountImpl;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -47,7 +48,7 @@ public class DigestAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
-	public UserImpl authenticate(HttpServletRequest request,
+	public Subject authenticate(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 		String credentials = request.getHeader("Authorization");
 		if (credentials == null) {
@@ -57,7 +58,7 @@ public class DigestAuthenticator implements Authenticator {
 		Digest digest = new Digest(request.getMethod());
 		parseCredentials(digest, credentials);
 		SecurityManager secman = pool.getSecurityManager();
-		UserImpl user = (UserImpl)secman.getUser(digest.username);
+		AccountImpl user = (AccountImpl)secman.getUser(digest.username);
 		if (user == null) {
 			// If user does not exist then send a challenge request again
 			sendChallenge(request, response);
@@ -68,7 +69,7 @@ public class DigestAuthenticator implements Authenticator {
 			sendChallenge(request, response);
 			return null;
 		}
-		return user;
+		return (Subject) user; //XXX: digest authenticator
 	}
 
 	public void sendChallenge(HttpServletRequest request,
@@ -164,13 +165,11 @@ public class DigestAuthenticator implements Authenticator {
 				md.update((byte) ':');
 				md.update(nonce.getBytes("ISO-8859-1"));
 				md.update((byte) ':');
-				md.update(MessageDigester.byteArrayToHex(ha2).getBytes(
-						"ISO-8859-1"));
+				md.update(MessageDigester.byteArrayToHex(ha2).getBytes("ISO-8859-1"));
 				byte[] digest = md.digest();
 
 				// check digest
-				return (MessageDigester.byteArrayToHex(digest)
-						.equalsIgnoreCase(response));
+				return (MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response));
 			} catch (NoSuchAlgorithmException e) {
 				throw new RuntimeException("MD5 not supported");
 			} catch (UnsupportedEncodingException e) {

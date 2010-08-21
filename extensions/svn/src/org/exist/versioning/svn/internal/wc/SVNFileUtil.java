@@ -36,7 +36,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.exist.EXistException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.versioning.svn.Resource;
@@ -1457,15 +1457,27 @@ public class SVNFileUtil {
         return outBuf.flip().toString();
     }
 
-    private static User getUser() throws SVNException {
-    	DBBroker broker;
+    private static Subject getUser() throws SVNException {
+    	BrokerPool database;
+    	try {
+			database = BrokerPool.getInstance();
+		} catch (EXistException e) {
+            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
+                    "Cannot get current user: {0}", e.getMessage());
+            SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
+            return null;
+		}
+		
+    	DBBroker broker = null;
 		try {
-			broker = BrokerPool.getInstance().get(null);
+			broker = database.get(null);
 	        return broker.getUser();
 		} catch (EXistException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
                     "Cannot get current user: {0}", e.getMessage());
             SVNErrorManager.error(err, e, Level.FINE, SVNLogType.DEFAULT);
+		} finally {
+			database.release(broker);
 		}
 		
 		return null;

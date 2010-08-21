@@ -46,7 +46,7 @@ public interface Permission {
      *
      * @return The owner value
      */
-    public User getOwner();
+    public Account getOwner();
 
     /**
      * Gets the group 
@@ -86,6 +86,13 @@ public interface Permission {
     public void read(DataInput istream) throws IOException;
     
     /**
+     * Set the owner group by group id
+     *
+     * @param  group  The group id
+     */
+    public void setGroup(int id);
+
+    /**
      * Set the owner group
      *
      * @param  group  The group value
@@ -107,11 +114,18 @@ public interface Permission {
     public void setGroupPermissions(int perm);
 
     /**
+     * Set the owner passed as account id
+     *
+     * @param  user  The new owner id
+     */
+    public void setOwner(int id);
+
+    /**
      * Set the owner passed as User object
      *
      * @param  user  The new owner value
      */
-    public void setOwner(User user);
+    public void setOwner(Account user);
 
     /**
      * Set the owner
@@ -173,5 +187,5 @@ public interface Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
-    public boolean validate(User user, int perm);	
+    public boolean validate(Subject user, int perm);	
 }

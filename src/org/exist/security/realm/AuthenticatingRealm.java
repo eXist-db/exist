@@ -22,7 +22,7 @@
 package org.exist.security.realm;
 
 import org.exist.security.AuthenticationException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,6 +30,6 @@ import org.exist.security.User;
  */
 public interface AuthenticatingRealm {
 
-	User authenticate(String accountName, Object credentials) throws AuthenticationException;
+	Subject authenticate(String accountName, Object credentials) throws AuthenticationException;
 
 }

@@ -62,7 +62,7 @@ import org.exist.indexing.MatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.MimeType;
@@ -174,7 +174,7 @@ public abstract class Serializer implements XMLReader {
     protected Receiver receiver = null;
     protected SAXSerializer xmlout = null;
     protected LexicalHandler lexicalHandler = null;
-    protected User user = null;
+    protected Subject user = null;
     
     protected HttpContext httpContext = null;
     public class HttpContext
@@ -354,14 +354,14 @@ public abstract class Serializer implements XMLReader {
 	 * Set the current User. A valid user is required to
 	 * process XInclude elements.
 	 */
-	public void setUser(User user) {
+	public void setUser(Subject user) {
 		this.user = user;
 	}
 
 	/**
 	 * Get the current User.
 	 */
-	public User getUser() {
+	public Subject getUser() {
 		return user;
 	}
 

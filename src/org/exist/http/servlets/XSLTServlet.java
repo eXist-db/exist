@@ -29,8 +29,9 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.Account;
+import org.exist.security.internal.AccountImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -108,8 +109,6 @@ public class XSLTServlet extends HttpServlet {
 
     private BrokerPool pool;
     
-    private User defaultUser = null;
-
     private final Map<String, CachedStylesheet> cache = new HashMap<String, CachedStylesheet>();
     private Boolean caching = null;
 
@@ -173,9 +172,9 @@ public class XSLTServlet extends HttpServlet {
 			throw new ServletException(e.getMessage(), e);
 		}
 
-		User user = pool.getSecurityManager().getGuestAccount();
+		Subject user = pool.getSecurityManager().getGuestSubject();
 
-        User requestUser = UserImpl.getUserFromServletRequest(request);
+		Subject requestUser = AccountImpl.getUserFromServletRequest(request);
         if (requestUser != null)
         	user = requestUser;
 
@@ -309,7 +308,7 @@ public class XSLTServlet extends HttpServlet {
     /*
      * Please add comments to this method. make assumption clear. These might not be valid.
      */
-    private Templates getSource(User user, HttpServletRequest request, HttpServletResponse response,
+    private Templates getSource(Subject user, HttpServletRequest request, HttpServletResponse response,
                                 SAXTransformerFactory factory, String stylesheet)
         throws ServletException, IOException {
         
@@ -441,7 +440,7 @@ public class XSLTServlet extends HttpServlet {
         Templates templates = null;
         String uri;
 
-        public CachedStylesheet(SAXTransformerFactory factory, User user, String uri, String baseURI) throws ServletException {
+        public CachedStylesheet(SAXTransformerFactory factory, Subject user, String uri, String baseURI) throws ServletException {
             this.factory = factory;
             this.uri = uri;
             if (!baseURI.startsWith("xmldb:exist://")) {
@@ -450,7 +449,7 @@ public class XSLTServlet extends HttpServlet {
             getTemplates(user);
         }
 
-        public Templates getTemplates(User user) throws ServletException {
+        public Templates getTemplates(Subject user) throws ServletException {
             if (uri.startsWith("xmldb:exist://")) {
                 String docPath = uri.substring("xmldb:exist://".length());
                 DocumentImpl doc = null;

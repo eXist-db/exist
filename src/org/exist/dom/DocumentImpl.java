@@ -25,11 +25,10 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
-import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -377,8 +376,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @param user an <code>User</code> value
      */
-    public void setUserLock(User user) {
-	getMetadata().setUserLock(user == null ? 0 : user.getUID());
+    public void setUserLock(Account user) {
+    	getMetadata().setUserLock(user == null ? 0 : user.getId());
     }
 	
     /**
@@ -386,12 +385,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return an <code>User</code> value
      */
-    public User getUserLock() {
-	int lockOwnerId = getMetadata().getUserLock();
-	if(lockOwnerId == 0)
-	    return null;
-	final SecurityManager secman = pool.getSecurityManager();
-	return secman.getUser(lockOwnerId);
+    public Account getUserLock() {
+		int lockOwnerId = getMetadata().getUserLock();
+		if(lockOwnerId == 0)
+		    return null;
+		final SecurityManager secman = pool.getSecurityManager();
+		return secman.getUser(lockOwnerId);
     }
     
     /**
@@ -402,8 +401,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * 
      */
     public int getContentLength() {
-	int length = getMetadata().getPageCount() * pool.getPageSize();
-	return (length<0) ? 0 : length;
+		int length = getMetadata().getPageCount() * pool.getPageSize();
+		return (length<0) ? 0 : length;
     }
     
     /**
@@ -491,37 +490,28 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception IOException if an error occurs
      */
     public void write(VariableByteOutputStream ostream) throws IOException {
-	try {
-	    if (!getCollection().isTempCollection() && !getUpdateLock().isLockedForWrite()) {
-		LOG.warn("document not locked for write !");
-	    }
-            ostream.writeInt(docId);
-            ostream.writeUTF(fileURI.toString());
-            final SecurityManager secman = pool.getSecurityManager();
-            if (secman == null) {
-                //TODO : explain those 2 values -pb
-                ostream.writeInt(1);
-                ostream.writeInt(1);
-            } else {
-                User user = permissions.getOwner();
-                Group group = permissions.getOwnerGroup();
-                if (group == null)
-                    group = secman.getGroup(SecurityManager.GUEST_GROUP);
-                ostream.writeInt(user.getUID());
-                ostream.writeInt(group.getId());
-            }
-            ostream.writeInt(permissions.getPermissions());
-            ostream.writeInt(children);
-            if (children > 0) {
-		for(int i = 0; i < children; i++) {
-		    ostream.writeInt(StorageAddress.pageFromPointer(childAddress[i]));
-		    ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
+		try {
+		    if (!getCollection().isTempCollection() && !getUpdateLock().isLockedForWrite()) {
+		    	LOG.warn("document not locked for write !");
+		    }
+	        ostream.writeInt(docId);
+	        ostream.writeUTF(fileURI.toString());
+	
+	        ostream.writeInt(permissions.getOwner().getId());
+	        ostream.writeInt(permissions.getOwnerGroup().getId());
+	
+	        ostream.writeInt(permissions.getPermissions());
+	        ostream.writeInt(children);
+	        if (children > 0) {
+				for(int i = 0; i < children; i++) {
+				    ostream.writeInt(StorageAddress.pageFromPointer(childAddress[i]));
+				    ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
+				}
+	        }
+	        getMetadata().write(pool, ostream);
+		} catch (IOException e) {
+		    LOG.warn("io error while writing document data", e);
 		}
-	    }
-            getMetadata().write(pool, ostream);
-	} catch (IOException e) {
-	    LOG.warn("io error while writing document data", e);
-	}
     }
 
     /**
@@ -532,33 +522,24 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception EOFException if an error occurs
      */
     public void read(VariableByteInput istream) throws IOException, EOFException {
-	try {
+    	try {
             docId = istream.readInt();
             fileURI = XmldbURI.createInternal(istream.readUTF());
-            final SecurityManager secman = pool.getSecurityManager();
-            final int uid = istream.readInt();
-            final int gid = istream.readInt();
+
+            permissions.setOwner(istream.readInt());
+            permissions.setGroup(istream.readInt());
+
             //TODO : Why such a mask ? -pb
-            final int perm = (istream.readInt() & 0777);
-            if (secman == null) {
-                permissions.setOwner(SecurityManager.DBA_USER);
-                permissions.setGroup(SecurityManager.DBA_GROUP);
-            } else {
-                permissions.setOwner(secman.getUser(uid));
-                Group group = secman.getGroup(gid);
-                if (group != null)
-                    permissions.setGroup(group.getName());
-            }
-            permissions.setPermissions(perm);
+            permissions.setPermissions((istream.readInt() & 0777));
             //Should be > 0 ;-)
             children = istream.readInt();
-        childAddress = new long[children];
-	    for (int i = 0; i < children; i++) { 
-		childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-	    }
-	} catch (IOException e) {
-            LOG.error("IO error while reading document data for document " + fileURI, e);
-	}
+            childAddress = new long[children];
+		    for (int i = 0; i < children; i++) { 
+		    	childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+		    }
+		} catch (IOException e) {
+	            LOG.error("IO error while reading document data for document " + fileURI, e);
+		}
     }
     
     /**

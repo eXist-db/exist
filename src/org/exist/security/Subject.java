@@ -19,29 +19,16 @@
  *  
  *  $Id$
  */
-package org.exist.config;
+package org.exist.security;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ExceptionConfiguration extends Exception {
+public interface Subject extends Account {
 
-	private static final long serialVersionUID = 1441009248525222734L;
+	public boolean authenticate(Object credentials);
 
-	public ExceptionConfiguration() {
-		super();
-	}
+	public boolean isAuthenticated();
 
-	public ExceptionConfiguration(String message) {
-		super(message);
-	}
-
-	public ExceptionConfiguration(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public ExceptionConfiguration(Throwable cause) {
-		super(cause);
-	}
 }

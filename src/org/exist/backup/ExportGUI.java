@@ -452,7 +452,7 @@ public class ExportGUI extends javax.swing.JFrame
         DBBroker broker = null;
 
         try {
-            broker = pool.get( pool.getSecurityManager().getSystemAccount() );
+            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
             SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection( String path )
                 {
@@ -514,7 +514,7 @@ public class ExportGUI extends javax.swing.JFrame
         DBBroker broker = null;
 
         try {
-            broker = pool.get( pool.getSecurityManager().getSystemAccount() );
+            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
             Object[]                                           selected     = directAccessBtn.getSelectedObjects();
             boolean                                            directAccess = ( selected != null ) && ( selected[0] != null );
             ConsistencyCheck                                   checker      = new ConsistencyCheck( broker, directAccess );

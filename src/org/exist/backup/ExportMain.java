@@ -144,7 +144,7 @@ public class ExportMain
         DBBroker broker = null;
 
         try {
-            broker = pool.get( pool.getSecurityManager().getSystemAccount() );
+            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
             ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
             List<ErrorReport> errors  = checker.checkAll( new CheckCallback() );
 

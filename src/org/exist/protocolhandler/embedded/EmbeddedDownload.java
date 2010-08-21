@@ -33,7 +33,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -82,7 +82,7 @@ public class EmbeddedDownload {
      * @param os Stream to which the document is written.
      * @throws IOException
      */
-    public void stream(XmldbURL xmldbURL, OutputStream os, User user) throws IOException {
+    public void stream(XmldbURL xmldbURL, OutputStream os, Subject user) throws IOException {
         LOG.debug("Begin document download");
         
         DocumentImpl resource = null;

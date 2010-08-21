@@ -38,7 +38,7 @@ import org.exist.memtree.AttributeImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -91,12 +91,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected Date datecreated= null;
 	protected Date datemodified= null;
 
-	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
+	public LocalXMLResource(Subject user, BrokerPool pool, LocalCollection parent,
 			XmldbURI did) throws XMLDBException {
 		super(user, pool, parent, did, MimeType.XML_TYPE.getName());
 	}
 
-	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
+	public LocalXMLResource(Subject user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
 		this(user, pool, parent, p.getDocument().getFileURI());
 		this.proxy = p;

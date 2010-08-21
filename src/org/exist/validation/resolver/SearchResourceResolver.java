@@ -31,8 +31,7 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
 import org.xml.sax.InputSource;
@@ -74,7 +73,8 @@ public class SearchResourceResolver implements XMLEntityResolver {
         
         DatabaseResources databaseResources = new DatabaseResources(brokerPool);
         
-        User user = brokerPool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
+        //UNDERSTAND: why using guest account, it can be disabled 
+        Subject user = brokerPool.getSecurityManager().getGuestSubject();
         
         if( xri.getNamespace() !=null ){
             

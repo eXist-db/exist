@@ -30,7 +30,7 @@ import org.exist.dom.QName;
 import org.exist.http.webdav.WebDAV;
 import org.exist.http.webdav.WebDAVUtil;
 import org.exist.security.Permission;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -144,7 +144,7 @@ public class Propfind extends AbstractWebDAVMethod {
         super(pool);
     }
     
-    public void process(User user, HttpServletRequest request, HttpServletResponse response, XmldbURI path)
+    public void process(Subject user, HttpServletRequest request, HttpServletResponse response, XmldbURI path)
     throws ServletException, IOException {
         DBBroker broker = null;
         Collection collection = null;
@@ -272,7 +272,7 @@ public class Propfind extends AbstractWebDAVMethod {
         }
     }
     
-    private void writeCollectionProperties(User user, DBBroker broker, DAVProperties searchedProperties,
+    private void writeCollectionProperties(Subject user, DBBroker broker, DAVProperties searchedProperties,
             int type, Collection collection, SAXSerializer serializer, String servletPath,
             int maxDepth, int currentDepth) throws SAXException {
         if(!collection.getPermissions().validate(user, Permission.READ))
@@ -367,7 +367,7 @@ public class Propfind extends AbstractWebDAVMethod {
         }
     }
     
-    private void writeResourceProperties(User user, DAVProperties searchedProperties,
+    private void writeResourceProperties(Subject user, DAVProperties searchedProperties,
             int type, Collection collection, DocumentImpl resource, SAXSerializer serializer, String servletPath) throws SAXException {
         if(!resource.getPermissions().validate(user, Permission.READ))
             return;

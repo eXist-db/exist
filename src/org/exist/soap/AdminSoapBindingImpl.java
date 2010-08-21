@@ -13,8 +13,9 @@ import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
-import org.exist.security.UserImpl;
+import org.exist.security.Subject;
+import org.exist.security.Account;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
@@ -67,7 +68,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
     	try {
-            User u = pool.getSecurityManager().authenticate(userId, password);
+    		Subject u = pool.getSecurityManager().authenticate(userId, password);
 
             LOG.debug("user " + userId + " connected");
             
@@ -714,7 +715,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         Collection collection = null;
         Collection destination = null;
         try {
-            User user = session.getUser();
+            Subject user = session.getUser();
             broker = pool.get(user);
             // get source document
             collection = broker.openCollection(collectionPath, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
@@ -771,14 +772,14 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         if (password.length() == 0)
             password = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Account user = session.getUser();
         
         org.exist.security.SecurityManager manager = pool.getSecurityManager();
         if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
                 (!manager.hasAdminPrivileges(user)))
             throw new RemoteException(
                     "guest user cannot be modified");
-        User u;
+        Account u;
         if (!manager.hasUser(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new RemoteException(
@@ -791,7 +792,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     .hasAdminPrivileges(user)))
                 throw new RemoteException(
                         "you are not allowed to change this user");
-            ((UserImpl)u).setPasswordDigest(password);
+            ((AccountImpl)u).setPasswordDigest(password);
         }
         for (int i = 0; i < groups.getElements().length; i++ ) {
             if (!u.hasGroup(groups.getElements()[i])) {
@@ -821,15 +822,13 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
         try {
 			manager.setUser(u);
-		} catch (PermissionDeniedException e) {
-    		throw new RemoteException(e.getMessage(), e);
-		} catch (EXistException e) {
+		} catch (Exception e) {
     		throw new RemoteException(e.getMessage(), e);
 		}
     }
     
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
-        User u = pool.getSecurityManager().getUser(user);
+        Account u = pool.getSecurityManager().getUser(user);
         if (u == null)
             throw new RemoteException("user " + user + " does not exist");
         UserDesc desc = new UserDesc();
@@ -848,7 +847,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     public void removeUser(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
-        User user = getSession(sessionId).getUser();
+        Account user = getSession(sessionId).getUser();
         org.exist.security.SecurityManager manager = pool
                 .getSecurityManager();
         if (!manager.hasAdminPrivileges(user))
@@ -857,18 +856,16 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         
         try {
             manager.deleteUser(name);
-        } catch (PermissionDeniedException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (Exception e) {
             throw new RemoteException(e.getMessage());
 		}
     }
     
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {
-    	java.util.Collection<User> users = pool.getSecurityManager().getUsers();
+    	java.util.Collection<Account> users = pool.getSecurityManager().getUsers();
         UserDesc[] r = new UserDesc[users.size()];
         int i = 0;
-        for (User user : users) {
+        for (Account user : users) {
             r[i] = new UserDesc();
             r[i].setName(user.getName());
 /*
@@ -921,7 +918,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void lockResource(java.lang.String sessionId, XmldbURI path, java.lang.String userName) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         DocumentImpl doc = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -940,11 +937,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
                         "to lock the resource for user " + userName);
-            User lockOwner = doc.getUserLock();
+            Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
-            User lo = manager.getUser(userName);
+            Account lo = manager.getUser(userName);
             doc.setUserLock(lo);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);
@@ -971,7 +968,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void unlockResource(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         DocumentImpl doc = null;
         try {
             broker = pool.get(user);
@@ -984,7 +981,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + path);
             org.exist.security.SecurityManager manager = pool.getSecurityManager();
-            User lockOwner = doc.getUserLock();
+            Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
@@ -1015,7 +1012,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public java.lang.String hasUserLock(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         DocumentImpl doc = null;
         try {
             broker = pool.get(user);
@@ -1029,7 +1026,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             if (doc == null)
                 throw new EXistException("Resource " + path + " not found");
-            User u = doc.getUserLock();
+            Account u = doc.getUserLock();
             return u == null ? "" : u.getName();
         } catch (Exception ex) {
             throw new RemoteException(ex.getMessage());
@@ -1050,7 +1047,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, XmldbURI resource) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         try {
             broker = pool.get(user);
             Collection collection = null;
@@ -1099,7 +1096,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, XmldbURI name) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);
@@ -1146,7 +1143,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, XmldbURI name) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);
@@ -1190,7 +1187,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, XmldbURI collectionName, boolean inclusive) throws java.rmi.RemoteException {
         DBBroker broker = null;
         Session session = getSession(sessionId);
-        User user = session.getUser();
+        Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);

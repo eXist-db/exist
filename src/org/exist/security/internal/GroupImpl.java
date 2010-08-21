@@ -19,47 +19,31 @@
  *
  *  $Id$
  */
-package org.exist.security;
+package org.exist.security.internal;
 
+import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.security.Group;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
-public class GroupImpl implements Comparable<Object>, Group {
+@ConfigurationClass("group")
+public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, Group {
 
-	private String name;
-	private int id;
-	
-	public GroupImpl(String name, int id) {
-		this.name = name;
-		this.id = id;
+	public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
+		super(realm, realm.collectionGroups, id, name);
 	}
 
-	public GroupImpl(Element element) throws DatabaseConfigurationException {
-		this.name = element.getAttribute("name");
-		String groupId = element.getAttribute("id");
-		if(groupId == null)
-			throw new DatabaseConfigurationException("attribute id missing");
-		try {
-			this.id = Integer.parseInt(groupId);
-		} catch(NumberFormatException e) {
-			throw new DatabaseConfigurationException("illegal user id: " + groupId);
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.security.Group#getName()
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.security.Group#getId()
-	 */
-	public int getId() {
-		return id;
+	@Deprecated //remove after old LDAP security manager remove
+	public GroupImpl(String name, int id) throws ConfigurationException {
+		super(null, null, id, name);
 	}
 
+	@Deprecated //Old way (version 1.0)
+	public GroupImpl(Element element) throws DatabaseConfigurationException, ConfigurationException {
+		this(element.getAttribute("name"), Integer.parseInt(element.getAttribute("id")));
+	}
+	
 	public int compareTo(Object other) {
 		if(!(other instanceof GroupImpl))
 			throw new IllegalArgumentException("wrong type");

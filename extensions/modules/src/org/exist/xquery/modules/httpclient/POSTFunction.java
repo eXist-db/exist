@@ -212,6 +212,7 @@ public class POSTFunction extends BaseHTTPClientFunction
 
             if( field.hasAttribute( "type" ) && field.getAttribute( "type" ).equals( "file" ) ) {
                 File file = new File( field.getAttribute( "value" ) );
+                //XXX: handle database resources, url starts with xmldb:exist:// 
 
                 try {
                     parts[i] = new FilePart( field.getAttribute( "name" ), file );

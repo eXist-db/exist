@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.exist.security.User;
+import org.exist.security.Subject;
 
 public class SessionManager {
 
@@ -27,7 +27,7 @@ public class SessionManager {
 
 	Map<String, Session> sessions = new TreeMap<String, Session>();
 	
-	public synchronized String createSession(User user) {
+	public synchronized String createSession(Subject user) {
 		Session session = new Session(user);
 		String id = String.valueOf(session.hashCode());
 		sessions.put(id, session);

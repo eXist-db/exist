@@ -28,7 +28,6 @@ import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
-import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
@@ -38,7 +37,6 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
-import org.exist.security.SecurityManager;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
@@ -241,7 +239,7 @@ public class NativeBroker extends DBBroker {
         
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
-		setUser(pool.getSecurityManager().getSystemAccount());
+		setUser(pool.getSecurityManager().getSystemSubject());
         
         readOnly = pool.isReadOnly();
         try {
@@ -577,10 +575,10 @@ public class NativeBroker extends DBBroker {
      */
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException, IOException
     {
-        User u = getUser();
+    	Subject u = getUser();
         try
         {
-            setUser( pool.getSecurityManager().getUser(SecurityManager.DBA_USER) );
+            setUser( pool.getSecurityManager().getSystemSubject() );
             Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
             temp.setPermissions(0771);
             saveCollection(transaction, temp);
@@ -1468,10 +1466,10 @@ public class NativeBroker extends DBBroker {
     public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) throws EXistException, PermissionDeniedException, LockException
     {
         //store the currentUser
-        User currentUser = getUser();
+    	Subject currentUser = getUser();
         
         //elevate getUser() to DBA_USER
-        setUser( pool.getSecurityManager().getUser(SecurityManager.DBA_USER) );
+        setUser( pool.getSecurityManager().getSystemSubject() );
     	
         //start a transaction
     	TransactionManager transact = pool.getTransactionManager();
@@ -2137,7 +2135,7 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Insufficient privileges to move resource " +
 						doc.getFileURI());
       
-        User docUser = doc.getUserLock();
+        Account docUser = doc.getUserLock();
         if (docUser != null) {
         	if(!(getUser().getName()).equals(docUser.getName()))
                 throw new PermissionDeniedException("Cannot move '" + doc.getFileURI() + 

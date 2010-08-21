@@ -32,6 +32,7 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationField;
 import org.exist.security.AuthenticationException;
@@ -40,8 +41,9 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.security.UnixStylePermission;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
@@ -49,6 +51,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -80,22 +83,19 @@ public class SecurityManagerImpl implements SecurityManager {
 	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
 	private BrokerPool pool;
-//	private Int2ObjectHashMap<Group> groups = new Int2ObjectHashMap<Group>(65);
-//	private Int2ObjectHashMap<User> users = new Int2ObjectHashMap<User>(65);
-	protected int nextUserId = 0;
-	protected int nextGroupId = 0;
+
+	protected Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
+	protected Int2ObjectHashMap<Account> usersById = new Int2ObjectHashMap<Account>(65);
+	
+	@ConfigurationField("last-account-id")
+	protected int lastUserId = 0;
+
+	@ConfigurationField("last-group-id")
+	protected int lastGroupId = 0;
 
 	@ConfigurationField("version")
 	private String version = "2.0";
 
-//	@ConfigurationField("default-collection-permissions")
-//	@ConfigurationFieldSettings("radix=8")
-	private int defaultCollectionPermissions = Permission.DEFAULT_PERM;
-	
-//	@ConfigurationField("default-resource-permissions")
-//	@ConfigurationFieldSettings("radix=8")
-    private int defaultResourcePermissions = Permission.DEFAULT_PERM;
-    
 //	@ConfigurationField("enableXACML")
 	private Boolean enableXACML = false;
 
@@ -106,16 +106,17 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private RealmImpl defaultRealm;
     
+    @ConfigurationField("realm")
     private List<Realm> realms = new ArrayList<Realm>();
     
     private Collection collection = null;
     
     private Configuration configuration = null;
     
-    public SecurityManagerImpl(BrokerPool pool) {
+    public SecurityManagerImpl(BrokerPool pool) throws ConfigurationException {
     	this.pool = pool;
     	
-    	defaultRealm = new RealmImpl(this);
+    	defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
     	realms.add(defaultRealm);
 
     	PermissionFactory.sm = this;
@@ -202,13 +203,13 @@ public class SecurityManagerImpl implements SecurityManager {
 				if (next.getTagName().equals("users")) {
 					lastId = next.getAttribute("last-id");
 					try {
-						nextUserId = Integer.parseInt(lastId);
+						lastUserId = Integer.parseInt(lastId);
 					} catch (NumberFormatException e) {
 					}
 				} else if (next.getTagName().equals("groups")) {
 					lastId = next.getAttribute("last-id");
 					try {
-						nextGroupId = Integer.parseInt(lastId);
+						lastGroupId = Integer.parseInt(lastId);
 					} catch (NumberFormatException e) {
 					}
 				}
@@ -230,6 +231,7 @@ public class SecurityManagerImpl implements SecurityManager {
 				transaction.commit(txn);
 			}
 			
+			//XXX: move it to BrokerBool initialization
 	        CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
 			CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
 			collConf.registerTrigger(broker, 
@@ -351,14 +353,16 @@ public class SecurityManagerImpl implements SecurityManager {
 //          e.printStackTrace();
 //          LOG.debug("loading acl failed: " + e.getMessage());
 //       }
+
+		//XXX: move to CollectionManagment
 		// read default collection and resource permissions
-		Integer defOpt = (Integer) broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
-		if (defOpt != null)
-			defaultResourcePermissions = defOpt.intValue();
-		
-		defOpt = (Integer)broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
-		if (defOpt != null)
-			defaultResourcePermissions = defOpt.intValue();
+//		Integer defOpt = (Integer) broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
+//		if (defOpt != null)
+//			defaultResourcePermissions = defOpt.intValue();
+//		
+//		defOpt = (Integer)broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
+//		if (defOpt != null)
+//			defaultResourcePermissions = defOpt.intValue();
 		   
 		enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
 		if(enableXACML != null && enableXACML.booleanValue()) {
@@ -374,7 +378,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		return pdp;
 	}
 	
-	public synchronized boolean updateAccount(User account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
 		return defaultRealm.updateAccount(account);
 	}
 
@@ -386,29 +390,24 @@ public class SecurityManagerImpl implements SecurityManager {
 		deleteUser(getUser(name));
 	}
 	
-	public synchronized void deleteUser(User user) throws PermissionDeniedException, EXistException {
+	public synchronized void deleteUser(Account user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return;
 		
 		defaultRealm.deleteAccount(user);
 	}
 
-	public synchronized User getUser(String name) {
+	public synchronized Account getUser(String name) {
 		for (Realm realm : realms) {
-			User account = realm.getAccount(name);
+			Account account = realm.getAccount(name);
 			if (account != null) return account;
 		}
 		LOG.debug("user " + name + " not found");
 		return null;
 	}
 
-	public synchronized User getUser(int uid) {
-		for (Realm realm : realms) {
-			User account = realm.getAccount(uid);
-			if (account != null) return account;
-		}
-//		LOG.debug("user with uid " + uid + " not found");
-		return null;
+	public final synchronized Account getUser(int id) {
+		return usersById.get(id);
 	}
 	
     public synchronized void addGroup(Group name) throws PermissionDeniedException, EXistException {
@@ -434,15 +433,11 @@ public class SecurityManagerImpl implements SecurityManager {
 		return null;
 	}
 
-	public synchronized Group getGroup(int id) {
-    	for (Realm realm : realms) {
-    		Group role = realm.getGroup(id);
-    		if (role != null) return role;
-    	}
-		return null;
+	public final synchronized Group getGroup(int id) {
+		return groupsById.get(id);
 	}
 	
-	public synchronized boolean hasAdminPrivileges(User user) {
+	public synchronized boolean hasAdminPrivileges(Account user) {
 		return user.hasDbaRole();
 	}
 
@@ -511,7 +506,7 @@ public class SecurityManagerImpl implements SecurityManager {
 //		broker.sync(Sync.MAJOR_SYNC);
 	}
 
-	public synchronized void setUser(User user) throws PermissionDeniedException, EXistException {
+	public synchronized void setUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException {
 		 defaultRealm.addAccount(user);
 		
 //		if (user.getUID() < 0)
@@ -547,35 +542,30 @@ public class SecurityManagerImpl implements SecurityManager {
 //		}
 	}
 	
-	public int getResourceDefaultPerms() {
-		return defaultResourcePermissions;
-	}
-	
-	public int getCollectionDefaultPerms() {
-		return defaultCollectionPermissions;
-	}
-	
-	private void createUserHome(DBBroker broker, Txn transaction, User user) 
-	throws EXistException, PermissionDeniedException, IOException {
+	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
 			return;
 		
-		User currentUser = broker.getUser();
+		Subject currentUser = broker.getUser();
 		
 		try {
-			broker.setUser(getUser(DBA_USER));
+			broker.setUser(getSystemSubject());
 			Collection home = broker.getOrCreateCollection(transaction, user.getHome());
 			home.getPermissions().setOwner(user.getName());
+			
 			CollectionConfiguration config = home.getConfiguration(broker);
 			String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
+			
 			home.getPermissions().setGroup(group);
+			home.getPermissions().setGroup(group);
+			
 			broker.saveCollection(transaction, home);
 		} finally {
 			broker.setUser(currentUser);
 		}
 	}
 
-	public synchronized User authenticate(String username, Object credentials) throws AuthenticationException {
+	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
 		for (Realm realm : realms) {
 			try {
 				return realm.authenticate(username, credentials);
@@ -590,13 +580,13 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
 	@Override
-	public User getSystemAccount() {
-		return defaultRealm.ACCOUNT_SYSTEM;
+	public Subject getSystemSubject() {
+		return new SubjectImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, "");
 	}
 	
 	@Override
-	public User getGuestAccount() {
-		return defaultRealm.ACCOUNT_GUEST;
+	public Subject getGuestSubject() {
+		return new SubjectImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, "");
 	}
 	
 	@Override
@@ -610,15 +600,15 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
 	protected synchronized int getNextGroupId() {
-		return ++nextGroupId; 
+		return ++lastGroupId; 
 	}
 	
 	protected synchronized int getNextAccoutId() {
-		return ++nextUserId; 
+		return ++lastUserId; 
 	}
 
 	@Override
-	public java.util.Collection<User> getUsers() {
+	public java.util.Collection<Account> getUsers() {
 		return defaultRealm.getAccounts();
 	}
 
@@ -631,6 +621,39 @@ public class SecurityManagerImpl implements SecurityManager {
 	public void addGroup(String name) throws PermissionDeniedException, EXistException {
 		addGroup(new GroupAider(name));
 	}
+	
+	protected final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
+		if (account.getRealm() == null) 
+			throw new ConfigurationException("Account must have realm.");
+		
+		if (account.getName() == null || account.getName().isEmpty()) 
+			throw new ConfigurationException("Account must have name.");
+		
+		AbstractRealm registeredRealm = null;
+		for (Realm realm : realms) {
+			if (realm.getId().equals( account.getRealm().getId() )) {
+				registeredRealm = (AbstractRealm)realm;
+				break;
+			}
+		}
+		if (registeredRealm == null) 
+			throw new ConfigurationException("The realm id = '"+account.getRealm().getId()+"' not found.");
+		
+		int id = getNextAccoutId();
+		
+		Account new_account = new AccountImpl(registeredRealm, id, account);
+		
+		usersById.put(id, new_account);
+		registeredRealm.registerAccount(new_account);
+		
+		//XXX: one transaction?
+		configuration.save();
+		new_account.getConfiguration().save();
+		
+		createUserHome(new_account);
+
+		return account;
+	}
 
 	@Override
 	public boolean isConfigured() {
@@ -640,5 +663,71 @@ public class SecurityManagerImpl implements SecurityManager {
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+
+	private void createUserHome(Account account) throws EXistException, PermissionDeniedException {
+		if(account.getHome() == null)
+			return;
+		
+		DBBroker broker = null;
+		TransactionManager transact = getDatabase().getTransactionManager();
+		Txn txn = transact.beginTransaction();
+		try {
+			broker = getDatabase().get(null);
+
+			Subject currentUser = broker.getUser();
+			
+			try {
+		
+				broker.setUser(getSystemSubject());
+	
+				Collection home = broker.getOrCreateCollection(txn, account.getHome());
+				
+				home.getPermissions().setOwner(account);
+				CollectionConfiguration config = home.getConfiguration(broker);
+				String role = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
+				home.getPermissions().setGroup(role);
+				
+				broker.saveCollection(txn, home);
+				
+				transact.commit(txn);
+			
+			} finally {
+				broker.setUser(currentUser);
+			}
+		
+		} catch (IOException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw new EXistException(e);
+		
+		} catch (PermissionDeniedException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw e;
+		
+		} catch (EXistException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw e;
+		
+		} finally {
+			getDatabase().release(broker);
+		}
 	}
 }

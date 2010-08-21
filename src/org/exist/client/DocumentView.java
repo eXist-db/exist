@@ -63,7 +63,7 @@ import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;
@@ -122,7 +122,7 @@ class DocumentView extends JFrame {
 	        // lock the resource for editing
 	        UserManagementService service = (UserManagementService)
 	        client.current.getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-	        User user = service.getUser(properties.getProperty("user")); //$NON-NLS-1$
+	        Account user = service.getUser(properties.getProperty("user")); //$NON-NLS-1$
 	        String lockOwner = service.hasUserLock(resource);
 	        if(lockOwner != null) {
 	            if(JOptionPane.showConfirmDialog(this,

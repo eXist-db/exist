@@ -23,11 +23,14 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 
+import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
-import org.exist.security.User;
-import org.exist.xmldb.UserManagementService;
+import org.exist.security.AuthenticationException;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -154,16 +157,26 @@ public class XMLDBAuthenticate extends BasicFunction {
         }
         
         try {
+        	Subject user;
+        	
+        	try {
+            	SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
+            	user = sm.authenticate(userName, password);
+        	} catch (AuthenticationException e) {
+                logger.error("Unable to authenticate user: "+e.getMessage());
+                throw new XPathException( this, "Unable to authenticate user: "+e.getMessage() );
+			} catch (EXistException e) {
+                logger.error("Unable to authenticate user: "+e.getMessage());
+                throw new XPathException( this, "Unable to authenticate user: "+e.getMessage() );
+			}
             Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
-			
+
             if( root == null ) {
                 logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist");
                 throw( new XPathException( this, "Unable to authenticate user: target collection " + targetColl + " does not exist" ) );
             }
 			
             if( isCalledAs( "login" ) ) {
-                UserManagementService ums = (UserManagementService)root.getService( "UserManagementService", "1.0" );
-                User user = ums.getUser( userName );
                 context.getBroker().setUser( user );
                 
                 /** if there is a http session cache the user in the http session */
@@ -183,7 +196,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 * @param user	The User to cache in the session
 	 * @param createSession	Create session?
 	 */
-	private void cacheUserInHttpSession( User user, boolean createSession ) throws XPathException
+	private void cacheUserInHttpSession( Subject user, boolean createSession ) throws XPathException
 	{
 		Variable var = getSessionVar( createSession );
 		

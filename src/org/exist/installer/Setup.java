@@ -22,7 +22,7 @@
 
 package org.exist.installer;
 
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.DatabaseManager;
@@ -57,7 +57,7 @@ public class Setup {
             Collection root = DatabaseManager.getCollection(URI, "admin", "");
             UserManagementService service =
                     (UserManagementService) root.getService("UserManagementService", "1.0");
-            User admin = service.getUser("admin");
+            Account admin = service.getUser("admin");
             admin.setPassword(adminPass);
             System.out.println("Setting admin user password...");
             service.updateUser(admin);

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.exist.client.ClientFrame;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Collection;
@@ -48,14 +48,14 @@ public class UserAttributeHandler implements AttributeHandler
 		URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE))
 		{
-			User[] users = getUsers();
+			Account[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
-				values.add(new Integer(users[i].getUID()));
+				values.add(new Integer(users[i].getId()));
 			return false;
 		}
 		if(id.equals(XACMLConstants.USER_NAME_ATTRIBUTE))
 		{
-			User[] users = getUsers();
+			Account[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
 				values.add(users[i].getName());
 			return false;
@@ -75,11 +75,11 @@ public class UserAttributeHandler implements AttributeHandler
 		return true;
 	}
 	
-	private User[] getUsers()
+	private Account[] getUsers()
 	{
 		UserManagementService service = getUserService();
 		if(service == null)
-			return new User[0];
+			return new Account[0];
 		try
 		{
 			return service.getUsers();
@@ -87,7 +87,7 @@ public class UserAttributeHandler implements AttributeHandler
 		catch (XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Could not get list of users: user attributes will be invalid", xe);
-			return new User[0];
+			return new Account[0];
 		}
 	}
 	private String[] getGroups()

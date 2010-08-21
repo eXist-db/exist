@@ -29,7 +29,7 @@ import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -63,11 +63,11 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
         checkResultSets();
         XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
-        User user = authenticate(config.getBasicUserName(), config.getBasicPassword());
+        Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
     }
 
-    protected User authenticate(String username, String password) throws XmlRpcException {
+    protected Subject authenticate(String username, String password) throws XmlRpcException {
         // assume guest user if no user is specified
         // set a password for admin to permit this
         if (username == null) {

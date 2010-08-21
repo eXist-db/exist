@@ -21,13 +21,12 @@
  */
 package org.exist.security;
 
-import java.security.Principal;
 import java.util.Set;
 
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
-public interface User extends Principal {
+public interface Account extends Principal {
 
 	public final static int PLAIN_ENCODING = 0;
 	public final static int SIMPLE_MD5_ENCODING = 1;
@@ -64,8 +63,6 @@ public interface User extends Principal {
 
 	public boolean hasDbaRole();
 
-	public int getUID();
-
 	/**
 	 *  Get the primary group this user belongs to
 	 *
@@ -93,14 +90,7 @@ public interface User extends Principal {
 
 	public XmldbURI getHome();
 
-	public boolean authenticate(Object credentials);
-
-	public boolean isAuthenticated();
-
 	public Realm getRealm();
-
-	@Deprecated
-	public void setUID(int uid);
 
 	/**
 	 * Get the user's password
@@ -138,5 +128,40 @@ public interface User extends Principal {
      * @return the Set of attribute names.
      */
     public Set<String> getAttributeNames();
+    
+    /**
+     * Returns the person full name or account name.
+     *
+     * @return the person full name or account name
+     */
+    String getUsername();
+
+    /**
+     * Indicates whether the account has expired. Authentication on an expired account is not possible.
+     *
+     * @return <code>true</code> if the account is valid (ie non-expired), <code>false</code> if no longer valid (ie expired)
+     */
+    boolean isAccountNonExpired();
+
+    /**
+     * Indicates whether the account is locked or unlocked. Authentication on a locked account is not possible.
+     *
+     * @return <code>true</code> if the account is not locked, <code>false</code> otherwise
+     */
+    boolean isAccountNonLocked();
+
+    /**
+     * Indicates whether the account's credentials has expired. Expired credentials prevent authentication.
+     *
+     * @return <code>true</code> if the account's credentials are valid (ie non-expired), <code>false</code> if no longer valid (ie expired)
+     */
+    boolean isCredentialsNonExpired();
+
+    /**
+     * Indicates whether the account is enabled or disabled. Authentication on a disabled account is not possible.
+     *
+     * @return <code>true</code> if the account is enabled, <code>false</code> otherwise
+     */
+    boolean isEnabled();
 
 }

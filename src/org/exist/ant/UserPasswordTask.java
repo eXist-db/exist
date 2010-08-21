@@ -24,7 +24,7 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -48,7 +48,7 @@ public class UserPasswordTask extends UserTask {
 
         try {
             log("Looking up user " + name, Project.MSG_INFO);
-            User usr = service.getUser(name);
+            Account usr = service.getUser(name);
             if (usr != null) {
                 log("Setting password for user " + name, Project.MSG_INFO);
                 if (secret != null) {

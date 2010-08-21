@@ -33,7 +33,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.ExistIOException;
@@ -74,7 +74,7 @@ public class EmbeddedUpload {
      * @param is Stream containing document.
      * @throws IOException
      */
-    public void stream(XmldbURL xmldbURL, InputStream is, User user) throws IOException {
+    public void stream(XmldbURL xmldbURL, InputStream is, Subject user) throws IOException {
         File tmp =null;
         try{
             tmp = File.createTempFile("EMBEDDED", "tmp");
@@ -126,7 +126,7 @@ public class EmbeddedUpload {
      * @param tmp Document that is inserted.
      * @throws IOException
      */
-    public void stream(XmldbURL xmldbURL, File tmp, User user) throws IOException {
+    public void stream(XmldbURL xmldbURL, File tmp, Subject user) throws IOException {
         LOG.debug("Begin document upload");
         
         Collection collection = null;

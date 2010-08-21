@@ -23,7 +23,6 @@
 	import org.exist.dom.DocumentImpl;
 	import org.exist.dom.QName;
 	import org.exist.security.PermissionDeniedException;
-	import org.exist.security.User;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;

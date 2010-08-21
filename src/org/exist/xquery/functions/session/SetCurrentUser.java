@@ -28,7 +28,7 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -94,7 +94,7 @@ public class SetCurrentUser extends BasicFunction {
 			
 			//try and validate the user and password
 			SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
-			User user;
+			Subject user;
 			try {
 				user = security.authenticate(userName, passwd);
 			} catch (AuthenticationException e) {

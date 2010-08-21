@@ -44,9 +44,9 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
-import org.exist.security.UserImpl;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
@@ -869,7 +869,7 @@ public class Configuration implements ErrorHandler
 
             if( encoding != null ) {
                 LOG.info( "db-connection.security.password-encoding: " + config.get( "db-connection.security.password-encoding" ) );
-                UserImpl.setPasswordEncoding( encoding );
+                AccountImpl.setPasswordEncoding( encoding );
 
             } else {
                 LOG.info( "No password encoding set, defaulting." );

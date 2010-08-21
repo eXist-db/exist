@@ -23,7 +23,8 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.User;
+import org.exist.security.Subject;
+import org.exist.security.Account;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -78,7 +79,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 		
         String user = args[0].getStringValue();
         
-        User contextUser = context.getUser();
+        Subject contextUser = context.getUser();
 		if (contextUser.hasDbaRole()) {
 			if (contextUser.getName().equals(user)) {
 				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must not be deleting itself");
@@ -89,7 +90,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 				try {
 		            collection = new LocalCollection(contextUser, context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 					UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-		            User userObj = ums.getUser(user);
+		            Account userObj = ums.getUser(user);
 		            if (null != userObj)
 		                ums.removeUser(userObj);
 				} catch (XMLDBException xe) {

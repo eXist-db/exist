@@ -23,6 +23,7 @@ package org.exist.security;
 
 import org.exist.EXistException;
 import org.exist.config.Configurable;
+import org.exist.config.ConfigurationException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -60,23 +61,23 @@ public interface SecurityManager extends Configurable {
    
    ExistPDP getPDP();
 
-   User getUser(int uid);
+   Account getUser(int id);
 
    boolean hasUser(String name);
 
    // TODO: this should be addUser
-   void setUser(User user) throws PermissionDeniedException, EXistException;
+   void setUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   void deleteUser(String name) throws PermissionDeniedException, EXistException;
-   void deleteUser(User user) throws PermissionDeniedException, EXistException;
+   void deleteUser(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
+   void deleteUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
+   boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   User getUser(String name);
+   Account getUser(String name);
 
-   void addGroup(Group group) throws PermissionDeniedException, EXistException;
+   void addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    @Deprecated
-   void addGroup(String group) throws PermissionDeniedException, EXistException;
+   void addGroup(String group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    boolean hasGroup(String name);
    boolean hasGroup(Group group);
@@ -86,21 +87,16 @@ public interface SecurityManager extends Configurable {
 
    void deleteRole(String name) throws PermissionDeniedException, EXistException;
 
-   boolean hasAdminPrivileges(User user);
+   boolean hasAdminPrivileges(Account user);
 
-   @Deprecated //use CollectionConfiguration one
-   int getResourceDefaultPerms();
-   @Deprecated //use CollectionConfiguration one
-   int getCollectionDefaultPerms();
-	
-   public User authenticate(String username, Object credentials) throws AuthenticationException;
+   public Subject authenticate(String username, Object credentials) throws AuthenticationException;
 
-   public User getSystemAccount();
-   public User getGuestAccount();
+   public Subject getSystemSubject();
+   public Subject getGuestSubject();
    public Group getDBAGroup();
 
    @Deprecated
-   java.util.Collection<User> getUsers();
+   java.util.Collection<Account> getUsers();
 
    @Deprecated
    java.util.Collection<Group> getGroups();

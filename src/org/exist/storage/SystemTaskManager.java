@@ -2,7 +2,7 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.security.User;
+import org.exist.security.Subject;
 import org.exist.storage.sync.Sync;
 
 import java.util.Stack;
@@ -35,11 +35,11 @@ public class SystemTaskManager {
     		return;
         synchronized (waitingSystemTasks) {
             DBBroker broker = null;
-            User oldUser = null;
+            Subject oldUser = null;
     	    try {
                 broker = pool.get(null);
                 oldUser = broker.getUser();
-                broker.setUser(pool.getSecurityManager().getSystemAccount());
+                broker.setUser(pool.getSecurityManager().getSystemSubject());
                 while (!waitingSystemTasks.isEmpty()) {
                     pool.sync(broker, Sync.MAJOR_SYNC);
                     SystemTask task = waitingSystemTasks.pop();

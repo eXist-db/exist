@@ -21,6 +21,7 @@
  */
 package org.exist.security.internal.aider;
 
+import org.exist.config.Configuration;
 import org.exist.security.Group;
 
 /**
@@ -29,12 +30,22 @@ import org.exist.security.Group;
  */
 public class GroupAider implements Group {
 
-	String name;
+	private String name;
+	private int id;
 	
-	public GroupAider(String name) {
-		this.name = name;
+	public GroupAider(int id) {
+		this(id, null);
 	}
 	
+	public GroupAider(String name) {
+		this(-1, name);
+	}
+
+	public GroupAider(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.security.Principal#getName()
 	 */
@@ -48,7 +59,19 @@ public class GroupAider implements Group {
 	 */
 	@Override
 	public int getId() {
-		return -1;
+		return id;
+	}
+
+	@Override
+	public boolean isConfigured() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

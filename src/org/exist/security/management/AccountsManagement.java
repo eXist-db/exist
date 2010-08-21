@@ -22,8 +22,9 @@
 package org.exist.security.management;
 
 import org.exist.EXistException;
+import org.exist.config.ConfigurationException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
+import org.exist.security.Account;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -31,15 +32,15 @@ import org.exist.security.User;
  */
 public interface AccountsManagement {
 	
-	public User addAccount(User account) throws PermissionDeniedException, EXistException;
+	public Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public User getAccount(String name);
+	public Account getAccount(String name);
 
-	public boolean hasAccount(User account);
+	public boolean hasAccount(Account account);
 	public boolean hasAccount(String name);
 
-	public boolean updateAccount(User account) throws PermissionDeniedException, EXistException;
+	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public boolean deleteAccount(User account) throws PermissionDeniedException, EXistException;
+	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
 }

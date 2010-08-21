@@ -36,7 +36,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -414,7 +414,7 @@ class UserDialog extends JFrame {
 			"Remove users", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
 			return;
 		for(int i = 0; i < selected.length; i++) {
-			User user = userModel.users[selected[i]];
+			Account user = userModel.users[selected[i]];
 			try {
 				service.removeUser(user);
 				client.reloadCollection();
@@ -434,7 +434,7 @@ class UserDialog extends JFrame {
 
 	private void tableSelectAction(MouseEvent ev) {
 		int row = users.rowAtPoint(ev.getPoint());
-		User user = userModel.users[row];
+		Account user = userModel.users[row];
 		username.setText(user.getName());
 		groupsModel.clear();
 		password1.setText("");
@@ -456,7 +456,7 @@ class UserDialog extends JFrame {
 
 		private final String[] columnNames = new String[] { "UID", "User", "Groups", "Home" };
 
-		private User users[] = null;
+		private Account users[] = null;
 
 		public UserTableModel(UserManagementService service) throws XMLDBException {
 			super();
@@ -495,7 +495,7 @@ class UserDialog extends JFrame {
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			switch (columnIndex) {
 				case 0 :
-					return new Integer(users[rowIndex].getUID());
+					return new Integer(users[rowIndex].getId());
 				case 1 :
 					return users[rowIndex].getName();
 				case 2 :

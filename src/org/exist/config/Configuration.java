@@ -24,12 +24,17 @@ package org.exist.config;
 import java.util.List;
 import java.util.Set;
 
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface Configuration {
-
+	
+	public String NS = "http://exist-db.org/Configuration";
+	
 	public Configuration getConfiguration(String name);
 	
 	public List<Configuration> getConfigurations(String name);
@@ -53,4 +58,6 @@ public interface Configuration {
 	public String getName();
 
 	public void checkForUpdates();
+
+	public void save() throws PermissionDeniedException, EXistException;
 }

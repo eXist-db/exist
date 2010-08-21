@@ -25,8 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.config.Configuration;
 import org.exist.security.Group;
-import org.exist.security.User;
+import org.exist.security.Account;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -34,20 +35,24 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class UserAider implements User {
+public class UserAider implements Account {
 
 	private String name;
-	private int id = -1;
+	private int id;
 	
 	private Group defaultRole = null;
 	private Map<String, Group> roles = new HashMap<String, Group>();
 	
+	public UserAider(int id) {
+		this(id, null);
+	}
+
 	public UserAider(String name) {
-		this.name = name;
+		this(-1, name);
 	}
 	
 	public UserAider(int id, String name) {
-		this(name);
+		this.name = name;
 		this.id = id;
 	}
 
@@ -121,10 +126,10 @@ public class UserAider implements User {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.security.User#getUID()
+	 * @see org.exist.security.Principal#getId()
 	 */
 	@Override
-	public int getUID() {
+	public int getId() {
 		return id;
 	}
 
@@ -166,22 +171,6 @@ public class UserAider implements User {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.security.User#authenticate(java.lang.Object)
-	 */
-	@Override
-	public boolean authenticate(Object credentials) {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#isAuthenticated()
-	 */
-	@Override
-	public boolean isAuthenticated() {
-		return false;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.exist.security.User#getRealm()
 	 */
 	@Override
@@ -189,15 +178,6 @@ public class UserAider implements User {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setUID(int)
-	 */
-	@Override
-	public void setUID(int uid) {
-		// TODO Auto-generated method stub
-
-	}
-	
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 
 	/* (non-Javadoc)
@@ -265,6 +245,48 @@ public class UserAider implements User {
 	@Override
 	public String getDigestPassword() {
 		return passwordDigest;
+	}
+
+	@Override
+	public boolean isConfigured() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getUsername() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	
