@@ -29,12 +29,12 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -106,7 +106,7 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private RealmImpl defaultRealm;
     
-    @ConfigurationFieldAsAttribute("realm")
+    @ConfigurationFieldAsElement("realm")
     private List<Realm> realms = new ArrayList<Realm>();
     
     private Collection collection = null;
