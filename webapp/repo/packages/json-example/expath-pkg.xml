@@ -1,13 +1,13 @@
 <package xmlns="http://expath.org/ns/pkg">
    <module name="json" version="0.1">
-      <meta xmlns="http://exist-db.org/xquery/repo">
-          <author>Priscilla Walmsley</author>
-          <website>http://www.xqueryfunctions.com/</website>
-          <license>GNU-LGPL</license>
-          <copyright>true</copyright>
-          <description></description>
-      </meta>
-      <title>JSON XQuery library</title>
+      <repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
+          <repo:author>Wolfgang Meier</repo:author>
+          <repo:website>http://www.json.org</repo:website>
+          <repo:license>GNU-LGPL</repo:license>
+          <repo:copyright>true</repo:copyright>
+          <repo:description>XQuery library for generating json from xml and vice versa.</repo:description>
+      </repo:meta>
+       <title>JSON XQuery library</title>
       <xquery>
          <namespace>http://www.json.org</namespace>
          <file>json.xq</file>

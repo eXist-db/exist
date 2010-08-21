@@ -1,0 +1,181 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xml:space="preserve"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>xqDoc -- Module</title><script language="JavaScript"><!--
+        function popUp(URL) {
+                 day = new Date();
+                 id = day.getTime();
+                 eval("page = window.open(URL, 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');")
+                 page.focus();
+        }
+      --></script><script language="JavaScript"><!--
+	    function litePopUp(str) {    
+  		  OpenWindow=window.open('', 'xqdoccode', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=600,height=400,left = 412,top = 334');
+  		  OpenWindow.document.write('<html xmlspace="preserve">');
+  		  OpenWindow.document.write('<head>');
+  		  OpenWindow.document.write('<title>xqDoc - Code Sample</title>');
+  		  OpenWindow.document.write('</head>');  		    		    		  
+  		  OpenWindow.document.write('<body xml:space="preserve">');
+  		  OpenWindow.document.write('<pre>');
+ 		  OpenWindow.document.write(str);
+ 		  OpenWindow.document.write('</pre>');
+  		  OpenWindow.document.write('</body>');
+  		  OpenWindow.document.write('</html>');
+  		  OpenWindow.document.close();
+  		  page.focus();
+        }
+      --></script><style><!--
+body		{
+		font: 80% Verdana;
+		}
+table		{
+		font-size: 100%;
+		}
+h1, h2, h3, h4, h5, h6
+		{
+		clear: both;
+		float: none;
+		}
+h1		{
+		font-size: 100%;
+		margin: 0em;
+		}
+h2		{
+		font-size: 180%;
+		margin-bottom: -1em;
+		margin-top: .3em;
+		}
+h3		{
+		font-size: 150%;
+		}	
+h4		{
+		font-size: 140%;
+		background-color: #ccf;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		}
+h5		{
+		margin: 1em 0em 0em 0em;
+		font-size: 120%;
+		}
+h6		{
+		margin: 0em 0em 0em 3em;
+		font-style: italic;
+		font: bold italic;
+		font-size: 100%;
+		}
+#variables, #methods, #methoddetail
+		{
+		padding-left: 3em;
+		margin-bottom: 1.4em;
+		clear: both;
+		float: none;
+		}
+#methods ul.method, #variables ul.method
+		{
+		margin: 1em 0em 0em;
+		}
+#methoddetail ul.method
+		{
+		margin: 0em;
+		}
+div.inexternal
+		{
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail p
+		{
+		float: none;
+		clear: both;
+		padding-left: 2em;
+		margin-bottom: 1em;
+		}
+div.methoddetail{
+		padding-bottom: 1em;
+		}
+div.methoddetail li
+		{
+		list-style-type: none;
+		font-weight: bold;
+		}
+div.methoddetail li li
+		{
+		list-style-type: circle;
+		font-weight: normal;
+		}
+div.methoddetail li ul
+		{
+		padding-bottom: 0.5em;
+		font-weight: normal;
+		}
+table.inexternal{
+		clear: both;
+		float: none;
+		width: 80%;
+		margin-left: 3em;
+		padding: 0em;
+		
+		}
+table.inexternal th
+		{
+		background-color:#dedede;
+		width: 50%;
+		}			
+td		{
+		vertical-align: top;
+		}
+div.description {
+		margin-top: .5em;
+		font-weight: normal;
+		padding-left: 1em;
+		}
+ul.method	{
+		clear: both;
+		float: none;
+		width: 90%;
+		list-style-type: none;
+		border-top: 1px solid #ccc;
+		}
+ul.method li.left
+		{
+		float: left;
+		clear: none;
+		width: 40%;
+		font-weight: bold;
+		margin-bottom: 2em;
+		}
+ul.method li.right
+		{
+		position: relative;
+            top: 0em;
+		float: left;
+            width: 55%;
+		margin-bottom: 2em;
+		padding-left: 2em;
+		}
+div.home 	{
+		width: 60%;
+		float: left;
+		margin-right: 1%;
+		border: 1px
+		}
+div.home h4	{
+		font-size: 120%;
+		background-color: #fff;
+		border-bottom: 1px solid #99f;
+		width: 100%;
+		margin-bottom: -1em;
+		}
+div.overview p {
+               width: 60%;
+               }
+     
+ --></style></head><body><h4>Module URI</h4><h1>http://www.json.org</h1><h4>Module Description</h4><p>    Transform XML fragments into <a xmlns:xqdoc="http://www.xqdoc.org/1.0" href="http://www.json.org">JSON</a>. The target of this module    is to create a straight-forward Javasript representation of data-centric XML. It does not try to handle    mixed content nodes (with a mix of elements and text).        <h2 xmlns:xqdoc="http://www.xqdoc.org/1.0">Special rules</h2>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">The root element will be absorbed, i.e. &lt;root&gt;text&lt;/root&gt; becomes "text".</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">Child elements with the same name are added to an array.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">If an element has attribute and text content, the text content becomes a       property, e.g. '#text': 'my text'.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">In mixed content nodes, text nodes will be dropped.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">An element with a single text child becomes a property with the value of the text child, i.e.       &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}</p> </p><ul></ul>&nbsp; &nbsp;<h4>Function Summary</h4><div id="methods"><a name="methods"></a><ul class="method"><li class="left"><a href="#contents-to-json">contents-to-json</a><div class="description">   Helper function: output the contents of a node or attribute.</div></li><li class="right">( $node as node())<br><br></li></ul><ul class="method"><li class="left"><a href="#element-helper">element-helper</a><div class="description">   Helper function: output element content for elements with more than one child node or attribute.</div></li><li class="right">( $attribs as attribute()* ,<br>&nbsp; $children as node()*)<br><br></li></ul><ul class="method"><li class="left"><a href="#node-to-json">node-to-json</a><div class="description">    Helper function: convert a node into JSON.</div></li><li class="right">( $node as node()+)<br><br></li></ul><ul class="method"><li class="left"><a href="#xml-to-json">xml-to-json</a><div class="description">    Main entry point of the module.</div></li><li class="right">( $node as node())<br><br></li></ul></div>&nbsp;<h4>Function Detail</h4><div id="methoddetail"><div id="contents-to-json" class="methoddetail"><h5><a name="contents-to-json"></a>contents-to-json</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function json:contents-to-json($node as node()){<br/&gt;    typeswitch ($node)<br/&gt;        case $elem as element() return<br/&gt;            let $children := $elem/node()<br/&gt;            let $attribs := $elem/@*<br/&gt;            return<br/&gt;                 <br/&gt;                if (count($children) eq 0 and count($attribs) eq 0) then<br/&gt;                    &amp;apos;null&amp;apos;<br/&gt;                <br/&gt;                else if (count($children) eq 1 and count($attribs) eq 0 <br/&gt;                    and $children[1] instance of text()) then<br/&gt;                    json:node-to-json($children[1])<br/&gt;                else<br/&gt;                    concat(&amp;apos;{&amp;apos;, json:element-helper($attribs, $children), &amp;apos;}&amp;apos;)<br/&gt;        case $attr as attribute() return<br/&gt;            concat(&amp;apos;&#34;&amp;apos;, string($attr), &amp;apos;&#34;&amp;apos;)<br/&gt;        case $text as text() return<br/&gt;            concat(&amp;apos;&#34;&amp;apos;, $text, &amp;apos;&#34;&amp;apos;)<br/&gt;        default return ()<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $node as node())<br><br></li></ul><p>   Helper function: output the contents of a node or attribute.   Special cases:       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">An element with a single text child becomes a property with the value of the text child, i.e.       &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}</p> </p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://www.w3.org/2005/xpath-functions</td><td>concat</td></tr><tr><td>count</td></tr><tr><td>string</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.json.org</td><td><a href="#element-helper">element-helper</a></td></tr><tr><td><a href="#node-to-json">node-to-json</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.json.org</td><td><a href="#node-to-json">node-to-json</a></td></tr><tr><td><a href="#xml-to-json">xml-to-json</a></td></tr></table></div></div>&nbsp;<div id="element-helper" class="methoddetail"><h5><a name="element-helper"></a>element-helper</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function json:element-helper($attribs as attribute()*, $children as node()*){<br/&gt;    string-join((<br/&gt;        <br/&gt;        for $attr in $attribs<br/&gt;        return<br/&gt;            json:node-to-json($attr),<br/&gt;        if ($children instance of text()+) then<br/&gt;            for $text in $children<br/&gt;            return<br/&gt;                concat(&amp;apos;&#34;#text&#34;: &#34;&amp;apos;, $text, &amp;apos;&#34;&amp;apos;)<br/&gt;        else<br/&gt;            for $name in distinct-values(for $c in $children return node-name($c))<br/&gt;            return<br/&gt;                json:node-to-json($children[node-name(.) = $name])<br/&gt;    ),<br/&gt;    &amp;apos;, &amp;apos;)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $attribs as attribute()* ,<br>&nbsp; $children as node()*)<br><br></li></ul><p>   Helper function: output element content for elements with more than one child node or attribute.   Special cases:       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">Child elements with the same name are added to an array.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">If an element has attribute and text content, the text content becomes a       property, e.g. '#text': 'my text'.</p>       <p xmlns:xqdoc="http://www.xqdoc.org/1.0">In mixed content nodes, text nodes will be dropped.</p> </p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="4">http://www.w3.org/2005/xpath-functions</td><td>concat</td></tr><tr><td>distinct-values</td></tr><tr><td>node-name</td></tr><tr><td>string-join</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.json.org</td><td><a href="#node-to-json">node-to-json</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.json.org</td><td><a href="#contents-to-json">contents-to-json</a></td></tr></table></div></div>&nbsp;<div id="node-to-json" class="methoddetail"><h5><a name="node-to-json"></a>node-to-json</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function json:node-to-json($node as node()+){<br/&gt;    typeswitch ($node)<br/&gt;        case $elem as element() return<br/&gt;            concat(&amp;apos;&#34;&amp;apos;, node-name($elem), &amp;apos;&#34; : &amp;apos;, json:contents-to-json($node))<br/&gt;        <br/&gt;        case $elements as element()+ return<br/&gt;            concat(<br/&gt;                &amp;apos;&#34;&amp;apos;, node-name($elements[1]), &amp;apos;&#34; : [ &amp;apos;,<br/&gt;                string-join(<br/&gt;                    for $e in $elements return json:contents-to-json($e), <br/&gt;                &amp;apos;, &amp;apos;),<br/&gt;                &amp;apos;]&amp;apos;<br/&gt;            )<br/&gt;        case $attr as attribute() return<br/&gt;            concat(&amp;apos;&#34;@&amp;apos;, node-name($attr), &amp;apos;&#34;: &amp;apos;, json:contents-to-json($attr))<br/&gt;        default return<br/&gt;            json:contents-to-json($node)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $node as node()+)<br><br></li></ul><p>    Helper function: convert a node into JSON. </p><ul></ul><div class="methoddetail"><h6>External Functions that are used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="3">http://www.w3.org/2005/xpath-functions</td><td>concat</td></tr><tr><td>node-name</td></tr><tr><td>string-join</td></tr></table></div><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.json.org</td><td><a href="#contents-to-json">contents-to-json</a></td></tr></table></div><div class="methoddetail"><h6>Internal Functions that invoke this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="2">http://www.json.org</td><td><a href="#contents-to-json">contents-to-json</a></td></tr><tr><td><a href="#element-helper">element-helper</a></td></tr></table></div></div>&nbsp;<div id="xml-to-json" class="methoddetail"><h5><a name="xml-to-json"></a>xml-to-json</h5><ul class="method"><li class="left"><a href="javascript:litePopUp('declare function json:xml-to-json($node as node()){<br/&gt;    json:contents-to-json($node)<br/&gt;};<br/&gt;')">
+         view code
+      </a></li><li class="right">( $node as node())<br><br></li></ul><p>    Main entry point of the module. Convert a single node into JSON.    The root element will be absorbed. </p><ul></ul><div class="methoddetail"><h6>Internal Functions used by this Function</h6><table class="inexternal"><tr><th align="left">Module URI</th><th align="left">Function Name</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td rowspan="1">http://www.json.org</td><td><a href="#contents-to-json">contents-to-json</a></td></tr></table></div></div>&nbsp;</div>&nbsp;<div align="left"><i>Created by xqDoc-Lite version 1.0 on Sat Nov 03 20:11:39 CET 2007</i></div></body></html>

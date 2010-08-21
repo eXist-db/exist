@@ -52,7 +52,8 @@ declare function local:upload() as element()
                     (<li>uploaded package: {$docName}</li>,
                    xdb:decode-uri(xs:anyURI(xdb:store($repo-coll, xdb:encode-uri($docName), $file)))
                    ,
-                    let $package := compression:unzip($file, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())//package:package
+                    let $meta := compression:unzip($file, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
+                    let $package := $meta//package:package
                     return
                      xdb:store($repo-coll, concat(substring-before($docName,'.xar'),'.xml'), $package)
                    )
@@ -74,7 +75,10 @@ declare function local:upload() as element()
             <th>Package Name</th>
             <th>Description</th>
             <th>Date Created</th>
-            <th>Status</th>
+            <th>Author</th>
+            <th>License</th>
+            <th>Website</th>
+
      </tr>
      {
      let $files := if (collection($repo-coll)) then collection($repo-coll)/util:document-name(.) else ()
@@ -87,7 +91,10 @@ declare function local:upload() as element()
             <td>{$name}</td>
             <td>{$package//package:title/text()}</td>
             <td>{xmldb:created($repo-coll, $file)}</td>
-            <td></td>
+            <td>{$package//repo:author}</td>
+            <td>{$package//repo:license}</td>
+            <td>{$package//repo:website}</td>
+
         </tr>
 
      }
