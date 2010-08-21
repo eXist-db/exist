@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
@@ -816,7 +818,7 @@ public class BrokerPool extends Observable {
 
         /* initialise required collections if they dont exist yet */
         initialiseSystemCollections(broker);
-
+        
         //TODO : from there, rethink the sequence of calls.
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
@@ -860,6 +862,20 @@ public class BrokerPool extends Observable {
 
         //OK : the DB is repaired; let's make a few RW operations
         signalSystemStatus(SIGNAL_RIDEABLE);
+
+        //initialize configurations wantcher trigger
+        Collection systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+        if (systemCollection != null) {
+        	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+        	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, systemCollection);
+        	try {
+				collConf.registerTrigger(broker, 
+						"store,update,remove", 
+						"org.exist.config.ConfigurationDocumentTrigger", null);
+			} catch (CollectionConfigurationException e) {
+				LOG.error("Configuration changers watcher could not the initialized.", e);
+			}
+        }
 
         // remove temporary docs
         broker.cleanUpTempResources(true);
