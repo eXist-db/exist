@@ -299,14 +299,20 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	@Override
 	public void save() throws PermissionDeniedException, EXistException {
 
-		try {
-			saving = true;
-			Configurator.save(getProxyObject().getDocumentAtExist());
+		//ignore in-memory nodes
+		if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
+			return; 
 		
-		} catch (IOException e) {
-			throw new EXistException(e);
-		} finally {
-			saving = false;
+		synchronized (this) {
+			try {
+				saving = true;
+				Configurator.save(getProxyObject().getDocumentAtExist());
+			
+			} catch (Exception e) {
+				//throw new EXistException(e);
+			} finally {
+				saving = false;
+			}
 		}
 	}
 }
