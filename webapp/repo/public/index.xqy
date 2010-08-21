@@ -66,19 +66,24 @@ declare function local:upload() as element()
 };
 
 <html>
+    <head>
+    <title>eXist XML Database Public Package Repository</title>
+    <link rel="stylesheet" type="text/css" href="../../styles/default-style2.css" />
+    </head>
     <body>
-    <h1><a href=".">Public Repository</a></h1>
+
+    <h1><a href=".">eXist XML Database Public Repository</a></h1>
 
     {local:process-action()}
     <h2>Package Listing</h2>
-    <table>
+    <table border="1">
      <tr>
             <th>Package Name</th>
             <th>Description</th>
             <th>Date Created</th>
             <th>Author</th>
             <th>License</th>
-            <th>Website</th>
+            <th>Type</th>
 
      </tr>
      {
@@ -94,7 +99,7 @@ declare function local:upload() as element()
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
             <td>{$package//repo:license}</td>
-            <td>{$package//repo:website}</td>
+            <td>{if ($package//repo:deploy) then 'application' else 'library'}</td>
 
         </tr>
 
