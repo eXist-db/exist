@@ -11,7 +11,7 @@ declare variable $repomanager:coll := "/db/system/repo";
 declare variable $repomanager:repo-uri := if (request:get-parameter("repository-url", ())) then
               request:get-parameter("repository-url", ())
             else
-            "http://demo.exist-db.org/exist/repo/public/all/";
+              "http://demo.exist-db.org/exist/repo/public/all/";
 
 declare function repomanager:publicrepo() as element()
 {
@@ -145,7 +145,7 @@ declare function repomanager:process-action() as element()*
 };
 
 declare function repomanager:main() as element() {
-    let $action := lower-case(request:get-parameter("action", "refresh"))
+    let $action := lower-case(request:get-parameter("action", "set repository"))
     let $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo')
 
     return
@@ -203,15 +203,9 @@ declare function repomanager:main() as element() {
                <p>    </p>
                 <table>
                     <tr>
-                        <td> Public Repository URL :
-                        </td>
-                        <td><input name="repository-url" size="40" value="{$repomanager:repo-uri}"/></td>
-                        <td><input type="submit" name="action" value="refresh"/></td>
-                    </tr>
-                    <tr>
                         <td><input type="submit" name="action" value="Download from Public Repository"/></td>
                         <td>
-                        <select name="package-url">
+                        <select size="5" width="200" style="width:340px" name="package-url">
                            {
                             let $packages := httpclient:get(xs:anyURI($repomanager:repo-uri),false(),())//httpclient:body/node()
                              return
@@ -222,6 +216,13 @@ declare function repomanager:main() as element() {
                         </select>
                         </td>
                     </tr>
+                    <tr>
+                        <td> <a href="{substring-before($repomanager:repo-uri,'all/')}" target="_repo">Public Repository URL</a> :
+                        </td>
+                        <td><input name="repository-url" size="40" value="{$repomanager:repo-uri}"/></td>
+                        <td><input type="submit" name="action" value="set repository"/></td>
+                    </tr>
+
                 </table>
                 <br/>
                 <table>
