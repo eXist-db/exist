@@ -423,8 +423,8 @@ public class Configurator {
 				
 			} else {
 				//create & save configuration file
-				broker.flush();
-				broker.sync(Sync.MAJOR_SYNC);
+//				broker.flush();
+//				broker.sync(Sync.MAJOR_SYNC);
 	
 				BrokerPool pool = broker.getBrokerPool();
 				TransactionManager transact = pool.getTransactionManager();
@@ -499,8 +499,8 @@ public class Configurator {
 				throw new IOException(e);
 			}
 			
-			broker.flush();
-			broker.sync(Sync.MAJOR_SYNC);
+//			broker.flush();
+//			broker.sync(Sync.MAJOR_SYNC);
 	
 			BrokerPool pool = broker.getBrokerPool();
 			TransactionManager transact = pool.getTransactionManager();
