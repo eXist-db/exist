@@ -223,8 +223,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
         }
     }
     
-    protected boolean checkOwner(Collection collection, Account user) throws XMLDBException {
-        return user.getName().equals(collection.getPermissions().getOwner());
+    protected boolean checkOwner(Collection collection, Account account) throws XMLDBException {
+        return account.equals(collection.getPermissions().getOwner());
     }
     
     protected boolean checkPermissions(Collection collection, int perm) throws XMLDBException {
