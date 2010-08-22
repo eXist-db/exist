@@ -33,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -79,7 +80,7 @@ public class Configurator {
 	private static Map<Class<Configurable>, Map<String, Field>> map = 
 		new HashMap<Class<Configurable>, Map<String, Field>>();
 	
-	private static Map<String, Field> getProperyFieldMap(Class<?> clazz) {
+	protected static Map<String, Field> getProperyFieldMap(Class<?> clazz) {
 		if (map.containsKey(clazz))
 			return map.get(clazz);
 			
@@ -206,7 +207,14 @@ public class Configurator {
 					value = configuration.getPropertyBoolean(property);
 
 				} else if (typeName.equals("java.util.List")) {
-					System.out.println("!!!!!!!!!!! List as property filed !!!!!!!!!!! ");
+					System.out.println("ComponentType = "+field.getType().getComponentType());
+					
+					List<Configuration> confs = configuration.getConfigurations(property);
+					for (Configuration conf : confs) {
+						
+					}
+
+					System.out.println("!!!!!!!!!!! TODO: List as property filed !!!!!!!!!!! ");
 					
 				} else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
 					value = org.exist.xmldb.XmldbURI.create(
@@ -291,6 +299,128 @@ public class Configurator {
 		}
 	}
 
+	protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf) throws ConfigurationException {
+		Class<?> clazz = instance.getClass();
+		instance.getClass().getAnnotations();
+		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+			return; //UNDERSTAND: throw exception
+		}
+		
+		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+
+		//open tag
+		buf.append("<");
+		buf.append(configName);
+		buf.append(" xmlns='"+Configuration.NS+"'");
+		
+		StringBuilder bufContext = new StringBuilder();
+		StringBuilder bufferToUse;
+		boolean simple = true;
+		
+		//store filed's values as attributes or elements depends on annotation
+		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+		for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
+
+			final Field field = entry.getValue();
+			field.setAccessible(true);
+
+			boolean storeAsAttribute = true;
+    		if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+    			storeAsAttribute = false;
+    		}
+			
+    		if (storeAsAttribute) {
+    			buf.append(" ");
+    			buf.append(entry.getKey());
+    			buf.append("='");
+    			
+    			bufferToUse = buf;
+    		} else {
+    			bufferToUse = new StringBuilder();
+    		}
+			try {
+				
+				String typeName = field.getType().getName();
+
+				if (typeName.equals("java.lang.String")) {
+					bufferToUse.append(field.get(instance));
+					
+				} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+					if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
+		    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+		    			int radix = 10;
+		    			if (settings.startsWith("radix=")) {
+		    				try {
+		    					radix = Integer.valueOf(settings.substring(6));
+		    				} catch (Exception e) {
+		    					//UNDERSTAND: ignore, set back to default or throw error? 
+		    					radix = 10;
+							}
+		    			}
+		    			bufferToUse.append(Integer.toString((Integer)field.get(instance), radix) );
+					} else { 
+						bufferToUse.append(field.get(instance));
+					}
+				} else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+					bufferToUse.append(field.get(instance));
+
+				} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+					if ((Boolean) field.get(instance)) {
+						bufferToUse.append("true");
+					} else { 
+						bufferToUse.append("false");
+					}
+
+				} else if (typeName.equals("java.util.List")) {
+					simple = false;
+					
+					List<Configurable> list = (List<Configurable>) field.get(instance);
+					for (Configurable el : list) {
+						asXMLtoBuffer(el, bufferToUse);
+					}
+
+				} else {
+					//unknown type - skip
+					//buf.append(field.get(instance));
+				}
+
+			
+			} catch (IllegalArgumentException e) {
+				throw new ConfigurationException(e.getMessage(), e);
+
+			} catch (IllegalAccessException e) {
+				throw new ConfigurationException(e.getMessage(), e);
+			
+			}
+    		if (storeAsAttribute) {
+    			buf.append("'");
+    		} else if (bufferToUse.length() > 0){
+    			if (simple) {
+    				bufContext.append("<");
+    				bufContext.append(entry.getKey());
+    				bufContext.append(">");
+    			}
+
+    			bufContext.append(bufferToUse);
+    			
+    			if (simple) {
+    				bufContext.append("</");
+    				bufContext.append(entry.getKey());
+    				bufContext.append(">");
+    			}
+    		}
+		}
+
+		buf.append(">");
+
+		buf.append(bufContext);
+		
+		//close tag
+		buf.append("</");
+		buf.append(configName);
+		buf.append(">");
+	}
+	
 	public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
 		Configuration conf;
 		synchronized (hotConfigs) {
@@ -302,168 +432,32 @@ public class Configurator {
 		DocumentAtExist document = collection.getDocument(broker, fileURL);
 		
 		if (document == null) {
-			
-			Class<?> clazz = instance.getClass();
-			instance.getClass().getAnnotations();
-			if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
-				return null; //UNDERSTAND: throw exception
-			}
-			
-			String configName = clazz.getAnnotation(ConfigurationClass.class).value();
-
-			StringBuilder buf = new StringBuilder();
-			//open tag
-			buf.append("<");
-			buf.append(configName);
-			buf.append(" xmlns='"+Configuration.NS+"'");
-			
-			StringBuilder bufContext = new StringBuilder();
-    		StringBuilder bufferToUse;
-			
-			//store filed's values as attributes or elements depends on annotation
-			Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
-			for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
-
-				final Field field = entry.getValue();
-				field.setAccessible(true);
-
-				boolean storeAsAttribute = true;
-	    		if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-	    			storeAsAttribute = false;
-	    		}
-				
-	    		if (storeAsAttribute) {
-	    			buf.append(" ");
-	    			buf.append(entry.getKey());
-	    			buf.append("='");
-	    			
-	    			bufferToUse = buf;
-	    		} else {
-	    			bufContext.append("<");
-	    			bufContext.append(entry.getKey());
-	    			bufContext.append(">");
-
-	    			bufferToUse = bufContext;
-	    		}
-				try {
-					
-					String typeName = field.getType().getName();
-
-					if (typeName.equals("java.lang.String")) {
-						bufferToUse.append(field.get(instance));
-						
-					} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
-						if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
-			    			String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
-			    			int radix = 10;
-			    			if (settings.startsWith("radix=")) {
-			    				try {
-			    					radix = Integer.valueOf(settings.substring(6));
-			    				} catch (Exception e) {
-			    					//UNDERSTAND: ignore, set back to default or throw error? 
-			    					radix = 10;
-								}
-			    			}
-			    			bufferToUse.append(Integer.toString((Integer)field.get(instance), radix) );
-						} else { 
-							bufferToUse.append(field.get(instance));
-						}
-					} else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
-						bufferToUse.append(field.get(instance));
-
-					} else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-						if ((Boolean) field.get(instance)) {
-							bufferToUse.append("true");
-						} else { 
-							bufferToUse.append("false");
-						}
-
-					} else if (typeName.equals("java.util.List")) {
-						System.out.println("!!!!!!!!!! save List property !!!!!!!!!!");
-
-					} else {
-						//unknown type - skip
-						//buf.append(field.get(instance));
-					}
-
-				
-				} catch (IllegalArgumentException e) {
-					throw new ConfigurationException(e.getMessage(), e);
-
-				} catch (IllegalAccessException e) {
-					throw new ConfigurationException(e.getMessage(), e);
-				
-				}
-	    		if (storeAsAttribute) {
-	    			buf.append("'");
-	    		} else {
-	    			bufContext.append("</");
-	    			bufContext.append(entry.getKey());
-	    			bufContext.append(">");
-	    		}
-			}
-
-			buf.append(">");
-
-			buf.append(bufContext);
-			
-			//close tag
-			buf.append("</");
-			buf.append(configName);
-			buf.append(">");
-			
 			if (broker.isReadOnly()) {
 				//database in read-only mode & there no configuration file, 
 				//create in memory document & configuration 
 				try {
+					StringBuilder buf = new StringBuilder();
+
+					asXMLtoBuffer(instance, buf);
+
+					if (buf.length() == 0)
+						return null;
+					
 					return parse( new ByteArrayInputStream(buf.toString().getBytes("UTF-8")) );
 				} catch (UnsupportedEncodingException e) {
 					return null;
 				}
-				
 			} else {
-				//create & save configuration file
-//				broker.flush();
-//				broker.sync(Sync.MAJOR_SYNC);
-	
-				BrokerPool pool = broker.getBrokerPool();
-				TransactionManager transact = pool.getTransactionManager();
-				Txn txn = transact.beginTransaction();
-	
-				Subject currentUser = broker.getUser();
+				
 				try {
-					broker.setUser(pool.getSecurityManager().getSystemSubject());
-					
-		            String data = buf.toString();
-					
-		            txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
-
-					IndexInfo info = collection.validateXMLResource(txn, broker, fileURL, data);
-	
-		            DocumentImpl doc = info.getDocument();
-
-		            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-		            collection.store(txn, broker, info, data, false);
-					doc.setPermissions(0770);
-					
-					broker.saveCollection(txn, doc.getCollection());
-					
-					transact.commit(txn);
-	
-				} catch (Exception e) {
-					transact.abort(txn);
-					
-					throw new ConfigurationException(e.getMessage(), e);
-	
-				} finally {
-					broker.setUser(currentUser);
+					document = save(instance, broker, collection, fileURL);
+				} catch (IOException e) {
+					return null;
 				}
 				
-				broker.flush();
-				broker.sync(Sync.MAJOR_SYNC);
-
-				document = collection.getDocument(broker, fileURL);
 			}
+		} else {
+			System.out.println("Document "+document+" perms "+((DocumentImpl)document).getPermissions());
 		}
 		
 		if (document == null)
@@ -483,7 +477,7 @@ public class Configurator {
 		return conf;
 	}
 	
-	public static void save(DocumentAtExist document) throws IOException {
+	public static DocumentAtExist save(Configurable instance, XmldbURI uri) throws IOException, ConfigurationException {
 		BrokerPool database;
 		try {
 			database = BrokerPool.getInstance();
@@ -493,60 +487,72 @@ public class Configurator {
 
 		DBBroker broker = null;
 		try {
-			try {
-				broker = database.get(null);
-			} catch (EXistException e) {
-				throw new IOException(e);
-			}
+			broker = database.get(null);
+
+			Collection collection = broker.getCollection(uri.removeLastSegment());
+			if (collection == null) throw new IOException("Collection URI = "+uri.removeLastSegment()+" not found.");
+
+			return save(instance, broker, collection, uri);
+		} catch (EXistException e) {
+			throw new IOException(e);
 			
-//			broker.flush();
-//			broker.sync(Sync.MAJOR_SYNC);
-	
-			BrokerPool pool = broker.getBrokerPool();
-			TransactionManager transact = pool.getTransactionManager();
-			Txn txn = transact.beginTransaction();
-	
-			System.out.println("STORING CONFIGURATION url = "+document.getURI());
-
-			Subject currentUser = broker.getUser();
-			try {
-				broker.setUser(pool.getSecurityManager().getSystemSubject());
-				
-				Collection collection = broker.getCollection(document.getURI().removeLastSegment());
-				if (collection == null) throw new IOException("Collection URI = "+document.getURI().removeLastSegment()+" not found.");
-				
-				txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
-				
-	            IndexInfo info = collection.validateXMLResource(txn, broker, document.getURI().lastSegment(), document);
-	
-	            DocumentImpl doc = info.getDocument();
-
-	            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-	            collection.store(txn, broker, info, document, false);
-				doc.setPermissions(0770);
-				
-				broker.saveCollection(txn, doc.getCollection());
-				
-				transact.commit(txn);
-	
-			} catch (Exception e) {
-				transact.abort(txn);
-				
-				e.printStackTrace();
-				
-				throw new IOException(e);
-
-			} finally {
-				broker.setUser(currentUser);
-			}
-		
-			broker.flush();
-			broker.sync(Sync.MAJOR_SYNC);
-
 		} finally {
 			database.release(broker);
 		}
+		
+		
+	}
 
+	public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {
+
+		StringBuilder buf = new StringBuilder();
+		
+		asXMLtoBuffer(instance, buf);
+		
+		if (buf.length() == 0)
+			return null;
+
+		BrokerPool pool = broker.getBrokerPool();
+		TransactionManager transact = pool.getTransactionManager();
+		Txn txn = transact.beginTransaction();
+
+		System.out.println("STORING CONFIGURATION url = "+uri);
+		
+		Subject currentUser = broker.getUser();
+		try {
+			broker.setUser(pool.getSecurityManager().getSystemSubject());
+			
+            String data = buf.toString();
+
+            txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
+
+			IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
+
+            DocumentImpl doc = info.getDocument();
+
+            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
+            collection.store(txn, broker, info, data, false);
+			doc.setPermissions(0770);
+			
+			broker.saveCollection(txn, doc.getCollection());
+			
+			transact.commit(txn);
+			
+		} catch (Exception e) {
+			transact.abort(txn);
+			
+			e.printStackTrace();
+			
+			throw new IOException(e);
+
+		} finally {
+			broker.setUser(currentUser);
+		}
+	
+		broker.flush();
+		broker.sync(Sync.MAJOR_SYNC);
+		
+		return collection.getDocument(broker, uri.lastSegment());
 	}
 
 	public static synchronized void clear() {
