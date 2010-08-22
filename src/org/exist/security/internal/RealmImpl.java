@@ -427,8 +427,8 @@ public class RealmImpl extends AbstractRealm implements Configurable {
             //TODO : unlock the collection here ?
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            sysCollection.store(transaction, broker, info, data, false);
 			doc.setPermissions(0770);
+            sysCollection.store(transaction, broker, info, data, false);
 			broker.saveCollection(transaction, doc.getCollection());
 		} catch (PermissionDeniedException e) {
 			throw e;
