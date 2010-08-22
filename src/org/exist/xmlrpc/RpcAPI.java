@@ -713,10 +713,10 @@ public interface RpcAPI {
 	HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(String name, String passwd, String digestPassword,Vector<String> groups, String home)
+	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean setUser(String name, String passwd, String digestPassword,Vector<String> groups)
+	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups)
@@ -756,11 +756,11 @@ public interface RpcAPI {
 	public String hasUserLock(String path)
 	throws EXistException, PermissionDeniedException, URISyntaxException;
 	
-	HashMap<String, Object> getUser(String name) throws EXistException, PermissionDeniedException;
+	HashMap<String, Object> getAccount(String name) throws EXistException, PermissionDeniedException;
 
-	Vector<HashMap<String, Object>> getUsers() throws EXistException, PermissionDeniedException;
+	Vector<HashMap<String, Object>> getAccounts() throws EXistException, PermissionDeniedException;
 
-	boolean removeUser(String name) throws EXistException, PermissionDeniedException;
+	boolean removeAccount(String name) throws EXistException, PermissionDeniedException;
 
 	Vector<String> getGroups() throws EXistException, PermissionDeniedException;
 

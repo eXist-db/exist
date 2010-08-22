@@ -1684,7 +1684,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public HashMap<String, Object> getUser(String name) throws EXistException,
+    public HashMap<String, Object> getAccount(String name) throws EXistException,
             PermissionDeniedException {
         Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
         if (u == null)
@@ -1708,7 +1708,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public Vector<HashMap<String, Object>> getUsers() throws EXistException,
+    public Vector<HashMap<String, Object>> getAccounts() throws EXistException,
             PermissionDeniedException {
     	java.util.Collection<Account> users = factory.getBrokerPool().getSecurityManager().getUsers();
         Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
@@ -2716,7 +2716,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public boolean removeUser(String name) throws EXistException,
+    public boolean removeAccount(String name) throws EXistException,
             PermissionDeniedException {
         SecurityManager manager = factory.getBrokerPool()
                 .getSecurityManager();
@@ -3495,7 +3495,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    public boolean setUser(String name, String passwd, String passwdDigest,
+    public boolean addAccount(String name, String passwd, String passwdDigest,
             Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
         
     	if (passwd.length() == 0)
@@ -4727,8 +4727,8 @@ public class RpcConnection implements RpcAPI {
         return setPermissions(resource, null, null, permissions);
     }
 
-    public boolean setUser(String name, String passwd, String digestPassword, Vector<String> groups) throws EXistException, PermissionDeniedException {
-        return setUser(name, passwd, digestPassword,groups, null);
+    public boolean addAccount(String name, String passwd, String digestPassword, Vector<String> groups) throws EXistException, PermissionDeniedException {
+        return addAccount(name, passwd, digestPassword,groups, null);
     }
 
     public HashMap<String, Object> querySummary(int resultId) throws EXistException, PermissionDeniedException, XPathException {
