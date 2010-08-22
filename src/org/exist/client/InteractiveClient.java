@@ -783,7 +783,7 @@ public class InteractiveClient {
                             user.addGroup(group);
                     }
                     
-                    mgtService.addUser(user);
+                    mgtService.addAccount(user);
                     System.out.println("user " + user + " created.");
                 } catch (Exception e) {
                     System.out.println("ERROR: " + e.getMessage());
@@ -792,7 +792,7 @@ public class InteractiveClient {
             } else if (args[0].equalsIgnoreCase("users")) {
                 UserManagementService mgtService = (UserManagementService) current
                         .getService("UserManagementService", "1.0");
-                Account users[] = mgtService.getUsers();
+                Account users[] = mgtService.getAccounts();
                 System.out.println("User\t\tGroups");
                 System.out.println("-----------------------------------------");
                 for (int i = 0; i < users.length; i++) {
@@ -831,7 +831,7 @@ public class InteractiveClient {
                         System.out.println("\nentered passwords differ. Try again...");
                     }
                     user.setPassword(p1);
-                    mgtService.updateUser(user);
+                    mgtService.updateAccount(user);
                     properties.setProperty("password", p1);
                 } catch (Exception e) {
                     System.err.println("ERROR: " + e.getMessage());

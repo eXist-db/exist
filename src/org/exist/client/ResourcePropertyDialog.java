@@ -191,7 +191,7 @@ public class ResourcePropertyDialog extends JDialog {
 		getContentPane().add(label);
 
 		Vector<String> ol = new Vector<String>();
-		Account users[] = service.getUsers();
+		Account users[] = service.getAccounts();
 		for (int i = 0; i < users.length; i++) {
 			ol.addElement(users[i].getName());
 		}

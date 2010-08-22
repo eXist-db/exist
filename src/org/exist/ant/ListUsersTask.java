@@ -47,7 +47,7 @@ public class ListUsersTask extends UserTask {
 
         try {
             log("Listing all users", Project.MSG_DEBUG);
-            Account[] users = service.getUsers();
+            Account[] users = service.getAccounts();
             if (users != null) {
 
                 boolean isFirst=true;

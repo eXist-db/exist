@@ -118,7 +118,7 @@ public class XMLDBCreateUser extends BasicFunction {
 	try {
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-	    ums.addUser(userObj);
+	    ums.addAccount(userObj);
 			
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to create user: " + user);

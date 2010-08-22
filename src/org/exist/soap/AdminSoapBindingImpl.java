@@ -780,7 +780,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(
                     "guest user cannot be modified");
         Account u;
-        if (!manager.hasUser(name)) {
+        if (!manager.hasAccount(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new RemoteException(
                         "not allowed to create user");
@@ -821,7 +821,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         	}
         }
         try {
-			manager.setUser(u);
+			manager.addAccount(u);
 		} catch (Exception e) {
     		throw new RemoteException(e.getMessage(), e);
 		}
@@ -855,7 +855,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     "you are not allowed to remove users");
         
         try {
-            manager.deleteUser(name);
+            manager.deleteAccount(name);
         } catch (Exception e) {
             throw new RemoteException(e.getMessage());
 		}

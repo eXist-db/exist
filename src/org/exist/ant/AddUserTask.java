@@ -67,7 +67,7 @@ public class AddUserTask extends UserTask {
             }
 
             log("Adding user " + name, Project.MSG_INFO);
-            service.addUser(usr);
+            service.addAccount(usr);
 
         } catch (XMLDBException e) {
             String msg = "XMLDB exception caught: " + e.getMessage();

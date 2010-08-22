@@ -938,7 +938,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          }
          String owner = element.getAttribute("owner");
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
-         if (!securityMan.hasUser(owner))
+         if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
          collection.getPermissions().setOwner(owner);
          String group = element.getAttribute("group");
@@ -969,7 +969,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          }
          String owner = element.getAttribute("owner");
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
-         if (!securityMan.hasUser(owner))
+         if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
          resource.getPermissions().setOwner(owner);
          String group = element.getAttribute("group");

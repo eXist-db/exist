@@ -519,9 +519,13 @@ public class Configurator {
 				
 	            IndexInfo info = collection.validateXMLResource(txn, broker, document.getURI().lastSegment(), document);
 	
+	            DocumentImpl doc = info.getDocument();
+
+	            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
 	            collection.store(txn, broker, info, document, false);
+				doc.setPermissions(0770);
 				
-				//broker.saveCollection(txn, collection);
+				broker.saveCollection(txn, doc.getCollection());
 				
 				transact.commit(txn);
 	

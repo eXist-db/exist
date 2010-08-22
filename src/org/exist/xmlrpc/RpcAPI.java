@@ -725,7 +725,7 @@ public interface RpcAPI {
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addRole(String name) throws EXistException, PermissionDeniedException;
+	boolean addGroup(String name) throws EXistException, PermissionDeniedException;
 
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;

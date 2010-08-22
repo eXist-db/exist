@@ -390,7 +390,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
 		if(lockOwnerId == 0)
 		    return null;
 		final SecurityManager secman = pool.getSecurityManager();
-		return secman.getUser(lockOwnerId);
+		return secman.getAccount(lockOwnerId);
     }
     
     /**

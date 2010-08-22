@@ -377,15 +377,15 @@ public class SecurityManagerImpl implements SecurityManager
       
    }
 
-   public void deleteRole(String name) throws PermissionDeniedException
+   public void deleteGroup(String name) throws PermissionDeniedException
    {
    }
 
-   public void deleteUser(String name) throws PermissionDeniedException
+   public void deleteAccount(String name) throws PermissionDeniedException
    {
    }
 
-   public void deleteUser(Account user) throws PermissionDeniedException
+   public void deleteAccount(Account user) throws PermissionDeniedException
    {
    }
 
@@ -466,7 +466,7 @@ public class SecurityManagerImpl implements SecurityManager
       return Permission.DEFAULT_PERM;
    }
 
-   public Account getUser(int uid)
+   public Account getAccount(int uid)
    {
       Integer iuid = new Integer(uid);
       AccountImpl user = userByIdCache.get(iuid);
@@ -525,7 +525,7 @@ public class SecurityManagerImpl implements SecurityManager
    }
    
    // TODO: why is this here?
-   public synchronized boolean hasUser(String name) {
+   public synchronized boolean hasAccount(String name) {
       try {
          return getUserByName(context,name)!=null;
       } catch (NamingException ex) {
@@ -549,7 +549,8 @@ public class SecurityManagerImpl implements SecurityManager
    }
 
    // TODO: this should be addUser
-   public void setUser(Account user) {
+   public Account addAccount(Account user) {
+	   return null;
    }
 
    @Override

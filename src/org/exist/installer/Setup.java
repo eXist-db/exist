@@ -60,7 +60,7 @@ public class Setup {
             Account admin = service.getAccount("admin");
             admin.setPassword(adminPass);
             System.out.println("Setting admin user password...");
-            service.updateUser(admin);
+            service.updateAccount(admin);
         } catch (Exception e) {
             System.err.println("Caught an exception while initializing db: " + e.getMessage());
             e.printStackTrace();

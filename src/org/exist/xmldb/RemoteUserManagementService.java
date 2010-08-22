@@ -35,7 +35,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                The user to be added
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void addUser(Account user) throws XMLDBException {
+	public void addAccount(Account user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
@@ -45,7 +45,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.add(gl);
 			if (user.getHome() != null)
 				params.add(user.getHome().toString());
-			parent.getClient().execute("setUser", params);
+			parent.getClient().execute("addAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
@@ -402,9 +402,9 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@return                     The users value
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public Account[] getUsers() throws XMLDBException {
+	public Account[] getAccounts() throws XMLDBException {
 		try {
-			Object[] users = (Object[]) parent.getClient().execute("getUsers", new ArrayList<Object>());
+			Object[] users = (Object[]) parent.getClient().execute("getAccounts", new ArrayList<Object>());
 			Account[] u = new Account[users.length];
 			for (int i = 0; i < u.length; i++) {
 				final HashMap<?,?> tab = (HashMap<?,?>) users[i];
@@ -455,11 +455,11 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  u   User
 	 *@exception  XMLDBException
 	 */
-	public void removeUser(Account u) throws XMLDBException {
+	public void removeAccount(Account u) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(u.getName());
-			parent.getClient().execute("removeUser", params);
+			parent.getClient().execute("removeAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
@@ -501,7 +501,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void updateUser(Account user) throws XMLDBException {
+	public void updateAccount(Account user) throws XMLDBException {
 		try {
             List<Object> params = new ArrayList<Object>(12);
 			params.add(user.getName());
@@ -518,7 +518,7 @@ public class RemoteUserManagementService implements UserManagementService {
     }
 	
 	/**
-	 *  Update the specified user without update user's password
+	 * Update the specified account without update user's password
 	 * Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
 	 *
 	 *@param  user                Description of the Parameter
@@ -532,7 +532,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.add(gl);
 			if (user.getHome() != null)
 				params.add(user.getHome());
-			parent.getClient().execute("setUser", params);
+			parent.getClient().execute("updateAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
