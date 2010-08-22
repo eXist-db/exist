@@ -21,7 +21,6 @@
  */
 package org.exist.config;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -245,7 +244,9 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     	
     	NamedNodeMap attrs = getAttributes();
     	for (int i = 0; i < attrs.getLength(); i++) {
-    		properties.add(attrs.item(i).getNodeName());
+    		//ignore namespace declarations
+    		if (!attrs.item(i).getPrefix().equals("xmlns"))
+    			properties.add(attrs.item(i).getNodeName());
     	}
     	
     	Map<String, Boolean> map = new HashMap<String, Boolean>(); 
