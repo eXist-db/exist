@@ -245,7 +245,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     	NamedNodeMap attrs = getAttributes();
     	for (int i = 0; i < attrs.getLength(); i++) {
     		//ignore namespace declarations
-    		if (!attrs.item(i).getPrefix().equals("xmlns"))
+    		if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
     			properties.add(attrs.item(i).getNodeName());
     	}
     	
