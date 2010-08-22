@@ -350,8 +350,6 @@ public class BrokerPool extends Observable {
 		}
 		//Clear the living instances container : they are all sentenced to death...
 		instances.clear();
-		
-		Configurator.clear();
 	}
 
     public static void registerStatusObserver(Observer observer) {
@@ -1699,6 +1697,8 @@ public class BrokerPool extends Observable {
             shutdownListener = null;
             securityManager = null;
             notificationService = null;
+    		
+    		Configurator.clear();
         }
 	}
 
