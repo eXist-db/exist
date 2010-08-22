@@ -359,7 +359,7 @@ class UserDialog extends JFrame {
 		for (int i = 0; i < groupsModel.size(); i++)
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
-			service.addUser(user);
+			service.addAccount(user);
 			client.reloadCollection();
 			userModel.reload();
 		} catch (XMLDBException e) {
@@ -394,7 +394,7 @@ class UserDialog extends JFrame {
 		for (int i = 0; i < groupsModel.size(); i++)
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
-			service.updateUser(user);
+			service.updateAccount(user);
 			String myUser = client.properties.getProperty("user", "admin");
 			if(name.equals(myUser)) {
 				client.properties.setProperty("password", pass1);
@@ -416,7 +416,7 @@ class UserDialog extends JFrame {
 		for(int i = 0; i < selected.length; i++) {
 			Account user = userModel.users[selected[i]];
 			try {
-				service.removeUser(user);
+				service.removeAccount(user);
 				client.reloadCollection();
 				userModel.reload();
 			} catch (XMLDBException e) {
@@ -464,7 +464,7 @@ class UserDialog extends JFrame {
 		}
 
 		public void reload() throws XMLDBException {
-			users = service.getUsers();
+			users = service.getAccounts();
 			fireTableDataChanged();
 		}
 		

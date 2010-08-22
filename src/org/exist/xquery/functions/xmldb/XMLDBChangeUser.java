@@ -119,7 +119,7 @@ public class XMLDBChangeUser extends BasicFunction {
 	    } else
             user.setHome(oldUser.getHome());
 
-	    ums.updateUser(user);
+	    ums.updateAccount(user);
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to update user " + userName, xe);
 	    throw new XPathException(this, "Failed to update user " + userName, xe);

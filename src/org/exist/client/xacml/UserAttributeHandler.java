@@ -82,7 +82,7 @@ public class UserAttributeHandler implements AttributeHandler
 			return new Account[0];
 		try
 		{
-			return service.getUsers();
+			return service.getAccounts();
 		}
 		catch (XMLDBException xe)
 		{

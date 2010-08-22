@@ -40,24 +40,25 @@ public class LocalUserManagementService implements UserManagementService {
 		this.user = user;
 	}
 
-	public void addUser(Account u) throws XMLDBException {
+	public void addAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				" you are not allowed to change this user");
-		if (manager.hasUser(u.getName()))
+		if (manager.hasAccount(u.getName()))
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"user " + u.getName() + " exists");
 		try {
-			manager.setUser(u);
+			manager.addAccount(u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					e.getMessage(),
 					e);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					e.getMessage(),
@@ -76,7 +77,7 @@ public class LocalUserManagementService implements UserManagementService {
 		if (manager.hasGroup(group.getName()))
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
-				"role " + group.getName() + " exists");
+				"group '" + group.getName() + "' exists");
 		
 		try {
 			manager.addGroup(group);
@@ -86,6 +87,7 @@ public class LocalUserManagementService implements UserManagementService {
 					e.getMessage(),
 					e);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					e.getMessage(),
@@ -369,7 +371,7 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public void chown(Account u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!manager.hasUser(u.getName()))
+		if (!manager.hasAccount(u.getName()))
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
@@ -412,7 +414,7 @@ public class LocalUserManagementService implements UserManagementService {
 	public void chown(Resource res, Account u, String group)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!manager.hasUser(u.getName()))
+		if (!manager.hasAccount(u.getName()))
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
@@ -644,7 +646,7 @@ public class LocalUserManagementService implements UserManagementService {
 		return manager.getAccount(name);
 	}
 
-	public Account[] getUsers() throws XMLDBException {
+	public Account[] getAccounts() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		java.util.Collection<Account> users = manager.getUsers();
 		return users.toArray(new Account[users.size()]);
@@ -671,14 +673,14 @@ public class LocalUserManagementService implements UserManagementService {
 		return "1.0";
 	}
 
-	public void removeUser(Account u) throws XMLDBException {
+	public void removeAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not allowed to remove users");
 		try {
-			manager.deleteUser(u);
+			manager.deleteAccount(u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -699,7 +701,7 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not allowed to remove users");
 		try {
-			manager.deleteRole(role.getName());
+			manager.deleteGroup(role.getName());
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -721,7 +723,7 @@ public class LocalUserManagementService implements UserManagementService {
 		throws XMLDBException {
 	}
 
-	public void updateUser(Account u) throws XMLDBException {
+	public void updateAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DBBroker broker = null;
 		try {

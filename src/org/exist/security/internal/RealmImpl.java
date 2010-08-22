@@ -311,10 +311,10 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		if(user == null)
 			return false;
 		
-		//lock and check for documents & collestions it can be owner
-//		sm.usersById.remove(user.getId());
-//		usersByName.remove(user.getName());
-//
+		//XXX: lock and check for documents & collestions it can be owner
+		sm.usersById.remove(user.getId());
+		usersByName.remove(user.getName());
+
 //		_save();
 		
 		return false;
@@ -324,14 +324,14 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		if(name == null)
 			return false;
 		
-		//lock and check for documents & collestions it can be owner
-//		Group role = groupsByName.get(name);
-//		if (role == null)
-//			return false;
-//		
-//		sm.groupsById.remove(role.getId());
-//		groupsByName.remove(role.getName());
-//
+		//XXX:lock and check for documents & collestions it can be owner
+		Group group = groupsByName.get(name);
+		if (group == null)
+			return false;
+		
+		sm.groupsById.remove(group.getId());
+		groupsByName.remove(group.getName());
+
 //		_save();
 		
 		return false;

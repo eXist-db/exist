@@ -149,21 +149,21 @@ public interface UserManagementService extends Service {
     public void unlockResource(Resource res) throws XMLDBException;
     
     /**
-     *  Add a new user to the database
+     *  Add a new account to the database
      *
-     *@param  user                The feature to be added to the User attribute
+     *@param  account             The feature to be added to the Account
      *@exception  XMLDBException  Description of the Exception
      */
-    public void addUser( Account user ) throws XMLDBException;
+    public void addAccount( Account account ) throws XMLDBException;
 
 
     /**
-     *  Update existing user information
+     *  Update existing account information
      *
-     *@param  user                Description of the Parameter
+     *@param  account             Description of the Parameter
      *@exception  XMLDBException  Description of the Exception
      */
-    public void updateUser( Account user ) throws XMLDBException;
+    public void updateAccount( Account account ) throws XMLDBException;
 
 
     /**
@@ -177,12 +177,12 @@ public interface UserManagementService extends Service {
 
 
     /**
-     *  Retrieve a list of all existing users.
+     *  Retrieve a list of all existing accounts.
      *
-     *@return                     The users value
+     *@return                     The accounts value
      *@exception  XMLDBException  Description of the Exception
      */
-    public Account[] getUsers() throws XMLDBException;
+    public Account[] getAccounts() throws XMLDBException;
 
     public Group getGroup( String name ) throws XMLDBException;
 
@@ -270,7 +270,7 @@ public interface UserManagementService extends Service {
      *@param  user                User
      *@exception  XMLDBException
      */
-    public void removeUser( Account user ) throws XMLDBException;
+    public void removeAccount( Account account ) throws XMLDBException;
     
     public void removeGroup( Group group ) throws XMLDBException;
 

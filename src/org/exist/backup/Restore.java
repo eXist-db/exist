@@ -556,7 +556,7 @@ public class Restore extends DefaultHandler
         UserManagementService mgmt = (UserManagementService)root.getService( "UserManagementService", "1.0" );
         Account                  dba  = mgmt.getAccount( SecurityManager.DBA_USER );
         dba.setPassword( adminPassword );
-        mgmt.updateUser( dba );
+        mgmt.updateAccount( dba );
 
         pass = adminPassword;
     }

@@ -92,7 +92,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 					UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 		            Account userObj = ums.getAccount(user);
 		            if (null != userObj)
-		                ums.removeUser(userObj);
+		                ums.removeAccount(userObj);
 				} catch (XMLDBException xe) {
 					throw new XPathException(this, "Failed to remove user " + user, xe);
 		        } finally {

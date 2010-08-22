@@ -383,7 +383,7 @@ public class UnixStylePermission implements Permission {
 
 	@Override
 	public void setOwner(int id) {
-		Account account = sm.getUser(id);
+		Account account = sm.getAccount(id);
 		if (account == null)
 			account = sm.getSystemSubject();
 		

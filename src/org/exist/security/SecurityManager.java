@@ -61,15 +61,15 @@ public interface SecurityManager extends Configurable {
    
    ExistPDP getPDP();
 
-   Account getUser(int id);
+   Account getAccount(int id);
 
-   boolean hasUser(String name);
+   boolean hasAccount(String name);
 
    // TODO: this should be addUser
-   void setUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   Account addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   void deleteUser(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
-   void deleteUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   void deleteAccount(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
+   void deleteAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
@@ -85,7 +85,7 @@ public interface SecurityManager extends Configurable {
    Group getGroup(String name);
    Group getGroup(int gid);
 
-   void deleteRole(String name) throws PermissionDeniedException, EXistException;
+   void deleteGroup(String name) throws PermissionDeniedException, EXistException;
 
    boolean hasAdminPrivileges(Account user);
 

@@ -742,7 +742,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             permissions.setOwner(SecurityManager.DBA_USER);
             permissions.setGroup(SecurityManager.DBA_GROUP);
         } else {
-            permissions.setOwner(secman.getUser(uid));
+            permissions.setOwner(secman.getAccount(uid));
             Group group = secman.getGroup(gid);
             if (group != null)
                 permissions.setGroup(group.getName());

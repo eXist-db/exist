@@ -217,11 +217,11 @@ public class XMLDBSecurityTest {
 
             UserAider user = new UserAider("test1", group);
             user.setPassword("test1");
-            ums.addUser(user);
+            ums.addAccount(user);
 
             user = new UserAider("test2", group);
             user.setPassword("test2");
-            ums.addUser(user);
+            ums.addAccount(user);
 
             // create a collection /db/securityTest as user "test1"
             CollectionManagementService cms = (CollectionManagementService)
@@ -256,9 +256,9 @@ public class XMLDBSecurityTest {
                 cms.removeCollection("securityTest1");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
             Account test1 = ums.getAccount("test1");
-            if (test1 != null) ums.removeUser(test1);
+            if (test1 != null) ums.removeAccount(test1);
             Account test2 = ums.getAccount("test2");
-            if (test2 != null) ums.removeUser(test2);
+            if (test2 != null) ums.removeAccount(test2);
             Group role = ums.getGroup("users");
             if (role != null) ums.removeGroup(role);
         } catch (XMLDBException e) {

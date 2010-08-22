@@ -375,15 +375,15 @@ public class SecurityManagerImpl implements SecurityManager {
 		return defaultRealm.updateAccount(account);
 	}
 
-	public synchronized void deleteRole(String name) throws PermissionDeniedException, EXistException {
+	public synchronized void deleteGroup(String name) throws PermissionDeniedException, EXistException {
 		defaultRealm.deleteRole(name);
 	}
 
-	public synchronized void deleteUser(String name) throws PermissionDeniedException, EXistException {
-		deleteUser(getAccount(name));
+	public synchronized void deleteAccount(String name) throws PermissionDeniedException, EXistException {
+		deleteAccount(getAccount(name));
 	}
 	
-	public synchronized void deleteUser(Account user) throws PermissionDeniedException, EXistException {
+	public synchronized void deleteAccount(Account user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return;
 		
@@ -399,7 +399,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		return null;
 	}
 
-	public final synchronized Account getUser(int id) {
+	public final synchronized Account getAccount(int id) {
 		return usersById.get(id);
 	}
 	
@@ -434,15 +434,15 @@ public class SecurityManagerImpl implements SecurityManager {
 		return user.hasDbaRole();
 	}
 
-	public synchronized boolean hasUser(String name) {
+	public synchronized boolean hasAccount(String name) {
     	for (Realm realm : realms) {
     		if (realm.hasAccount(name)) return true;
     	}
     	return false;
 	}
 
-	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
-		LOG.debug("storing acl file");
+//	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
+//		LOG.debug("storing acl file");
 //		StringBuffer buf = new StringBuffer();
 //        buf.append("<!-- Central user configuration. Editing this document will cause the security " +
 //                "to reload and update its internal database. Please handle with care! -->");
@@ -497,10 +497,10 @@ public class SecurityManagerImpl implements SecurityManager {
 //		
 //		broker.flush();
 //		broker.sync(Sync.MAJOR_SYNC);
-	}
+//	}
 
-	public synchronized void setUser(Account user) throws PermissionDeniedException, EXistException, ConfigurationException {
-		 defaultRealm.addAccount(user);
+//	public synchronized void addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+//		 defaultRealm.addAccount(account);
 		
 //		if (user.getUID() < 0)
 //			user.setUID(++nextUserId);
@@ -533,7 +533,7 @@ public class SecurityManagerImpl implements SecurityManager {
 //		} finally {
 //			pool.release(broker);
 //		}
-	}
+//	}
 	
 	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
@@ -615,7 +615,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		addGroup(new GroupAider(name));
 	}
 	
-	protected final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
+	public final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
 		if (account.getRealmId() == null) 
 			throw new ConfigurationException("Account must have realm id.");
 		
@@ -630,22 +630,27 @@ public class SecurityManagerImpl implements SecurityManager {
 			}
 		}
 		if (registeredRealm == null) 
-			throw new ConfigurationException("The realm id = '"+account.getRealm().getId()+"' not found.");
+			throw new ConfigurationException("The realm id = '"+account.getRealmId()+"' not found.");
 		
 		int id = getNextAccoutId();
 		
-		Account new_account = new AccountImpl(registeredRealm, id, account);
+		AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
 		
 		usersById.put(id, new_account);
 		registeredRealm.registerAccount(new_account);
 		
 		//XXX: one transaction?
-		configuration.save();
-		new_account.getConfiguration().save();
+		save();
+		new_account.save();
 		
 		createUserHome(new_account);
 
 		return account;
+	}
+	
+	protected void save() throws PermissionDeniedException, EXistException {
+		if (configuration != null)
+			configuration.save();
 	}
 
 	@Override

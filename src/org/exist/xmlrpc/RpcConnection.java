@@ -2724,7 +2724,7 @@ public class RpcConnection implements RpcAPI {
             throw new PermissionDeniedException(
                     "you are not allowed to remove users");
         
-        manager.deleteUser(name);
+        manager.deleteAccount(name);
         return true;
     }
 
@@ -3496,14 +3496,14 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     public boolean setUser(String name, String passwd, String passwdDigest,
-            Vector<String> groups, String home) throws EXistException,
-            PermissionDeniedException {
-        if (passwd.length() == 0)
+            Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
+        
+    	if (passwd.length() == 0)
             passwd = null;
-        SecurityManager manager = factory.getBrokerPool()
-                .getSecurityManager();
+        
+    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
         Account u;
-        if (!manager.hasUser(name)) {
+        if (!manager.hasAccount(name)) {
             if (!manager.hasAdminPrivileges(user))
                 throw new PermissionDeniedException(
                         "not allowed to create user");
@@ -3535,7 +3535,7 @@ public class RpcConnection implements RpcAPI {
         		throw new EXistException("Invalid home URI",e);
         	}
         }
-         manager.setUser(u);
+         manager.addAccount(u);
         return true;
     }
     
@@ -3576,7 +3576,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    public boolean addRole(String name) throws EXistException, PermissionDeniedException {
+    public boolean addGroup(String name) throws EXistException, PermissionDeniedException {
         
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
@@ -3595,13 +3595,13 @@ public class RpcConnection implements RpcAPI {
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      */
-    public boolean setUser(String name, Vector<String> groups) throws EXistException,
+    public boolean updateAccount(String name, Vector<String> groups) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
     	
     	Account u;
-    	if (!manager.hasUser(name)) {
+    	if (!manager.hasAccount(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
@@ -3623,20 +3623,20 @@ public class RpcConnection implements RpcAPI {
     		}
     	}
     	
-    	manager.setUser(u);
+    	manager.addAccount(u);
     	return true;
     }
     
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      */
-    public boolean setUser(String name, Vector<String> groups, String rgroup) throws EXistException,
+    public boolean updateAccount(String name, Vector<String> groups, String rgroup) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
     	
     	Account u;
-    	if (!manager.hasUser(name)) {
+    	if (!manager.hasAccount(name)) {
     		if (!manager.hasAdminPrivileges(user))
     			throw new PermissionDeniedException(
                 	"not allowed to create user");
@@ -3657,7 +3657,7 @@ public class RpcConnection implements RpcAPI {
     			u.remGroup(g);
     		}
     	}
-    	manager.setUser(u);
+    	manager.addAccount(u);
     	return true;
     }
     
