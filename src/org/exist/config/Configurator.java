@@ -44,6 +44,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -75,6 +76,8 @@ import org.xml.sax.XMLReader;
  */
 public class Configurator {
 	
+	protected final static Logger LOG = Logger.getLogger(Configurator.class);
+
 	protected static ConcurrentMap<XmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<XmldbURI, Configuration>();
 	
 	private static Map<Class<Configurable>, Map<String, Field>> map = 
@@ -214,7 +217,7 @@ public class Configurator {
 						
 					}
 
-					System.out.println("!!!!!!!!!!! TODO: List as property filed !!!!!!!!!!! ");
+					LOG.warn("!!!!!!!!!!! TODO: List as property filed !!!!!!!!!!! ");
 					
 				} else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
 					value = org.exist.xmldb.XmldbURI.create(
@@ -222,7 +225,7 @@ public class Configurator {
 							);
 					
 				} else {
-					System.out.println("skip unsupported configuration value type "+field.getType());
+					LOG.warn("skip unsupported configuration value type "+field.getType());
 				}
 			
 				if (value != null && !value.equals( field.get(instance) ) ) {
@@ -240,13 +243,13 @@ public class Configurator {
 				}
 
 			} catch (IllegalArgumentException e) {
-				System.out.println("configuration error: \n" +
+				LOG.error("configuration error: \n" +
 						" config: "+configuration.getName()+"\n" +
 						" property: "+property+"\n" +
 						" message: "+e.getMessage());
 				return null; //XXX: throw configuration error
 			} catch (IllegalAccessException e) {
-				System.out.println("security error: "+e.getMessage());
+				LOG.error("security error: "+e.getMessage());
 				return null; //XXX: throw configuration error
 			}
 		}
@@ -380,7 +383,8 @@ public class Configurator {
 					}
 
 				} else {
-					//unknown type - skip
+					LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
+					//unsupported type - skip
 					//buf.append(field.get(instance));
 				}
 
@@ -456,8 +460,6 @@ public class Configurator {
 				}
 				
 			}
-		} else {
-			System.out.println("Document "+document+" perms "+((DocumentImpl)document).getPermissions());
 		}
 		
 		if (document == null)
@@ -492,7 +494,7 @@ public class Configurator {
 			Collection collection = broker.getCollection(uri.removeLastSegment());
 			if (collection == null) throw new IOException("Collection URI = "+uri.removeLastSegment()+" not found.");
 
-			return save(instance, broker, collection, uri);
+			return save(instance, broker, collection, uri.lastSegment());
 		} catch (EXistException e) {
 			throw new IOException(e);
 			
@@ -516,7 +518,7 @@ public class Configurator {
 		TransactionManager transact = pool.getTransactionManager();
 		Txn txn = transact.beginTransaction();
 
-		System.out.println("STORING CONFIGURATION url = "+uri);
+		LOG.info("STORING CONFIGURATION collection = "+collection.getURI()+" document = "+uri);
 		
 		Subject currentUser = broker.getUser();
 		try {
