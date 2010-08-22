@@ -307,7 +307,12 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 		synchronized (this) {
 			try {
 				saving = true;
-				Configurator.save(getProxyObject().getDocumentAtExist());
+				if (configuredObjectReferene != null && configuredObjectReferene.get() != null)
+					Configurator.save(
+							configuredObjectReferene.get(), 
+							getProxyObject().getDocumentAtExist().getURI());
+				
+				//Configurator.save(getProxyObject().getDocumentAtExist());
 			
 			} catch (Exception e) {
 				//throw new EXistException(e);

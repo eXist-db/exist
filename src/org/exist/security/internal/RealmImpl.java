@@ -94,7 +94,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
     	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "");
     	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
-    	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
+    	//usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
     	//Administrator account
     	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "");
@@ -135,17 +135,23 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 			
 			if (collectionRealm == null || collectionAccounts == null || collectionGroups == null) {
 				txn = transact.beginTransaction();
-				
-				if (collectionRealm == null)
-					collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
-				
-				if (collectionAccounts == null)
-					collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
-				
-				if (collectionGroups == null)
-					collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
 
-				transact.commit(txn);
+				try {
+					if (collectionRealm == null)
+						collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
+					
+					if (collectionAccounts == null)
+						collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
+					
+					if (collectionGroups == null)
+						collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
+	
+					transact.commit(txn);
+				} catch (Exception e) {
+					transact.abort(txn);
+					e.printStackTrace();
+					// LOG.debug("loading acl failed: " + e.getMessage());
+				}
 			}
 			
 			for (Account account : usersByName.values()) {
@@ -215,7 +221,6 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 				}
 			}
 		} catch (Exception e) {
-			transact.abort(txn);
 			e.printStackTrace();
 			// LOG.debug("loading acl failed: " + e.getMessage());
 		}

@@ -31,7 +31,6 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Principal;
-import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
