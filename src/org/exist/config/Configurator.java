@@ -531,8 +531,9 @@ public class Configurator {
             DocumentImpl doc = info.getDocument();
 
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            collection.store(txn, broker, info, data, false);
 			doc.setPermissions(0770);
+
+			collection.store(txn, broker, info, data, false);
 			
 			broker.saveCollection(txn, doc.getCollection());
 			
