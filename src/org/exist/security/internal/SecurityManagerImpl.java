@@ -728,4 +728,12 @@ public class SecurityManagerImpl implements SecurityManager {
 			getDatabase().release(broker);
 		}
 	}
+
+	@Override
+	public Realm getRealm(String id) {
+		for (Realm realm : realms) {
+			if (id.equals(realm.getId())) return realm;
+		}
+		return null;
+	}
 }

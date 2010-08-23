@@ -40,6 +40,7 @@ import org.exist.security.internal.GroupImpl;
 import org.exist.security.internal.SubjectImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -600,6 +601,12 @@ public class SecurityManagerImpl implements SecurityManager
 
 	@Override
 	public Configuration getConfiguration() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Realm getRealm(String iD) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -33,12 +33,6 @@ import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.ldap.LDAPbindSecurityManager;
 import org.exist.storage.BrokerPool;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -58,13 +52,6 @@ import javax.servlet.http.HttpServletRequest;
 public class AccountImpl extends AbstractAccount {
 
 	private final static Logger LOG = Logger.getLogger(AccountImpl.class);
-
-	private final static String GROUP = "group";
-	private final static String NAME = "name";
-	private final static String PASS = "password";
-	private final static String DIGEST_PASS = "digest-password";
-	private final static String USER_ID = "uid";
-	private final static String HOME = "home";
 
 	public static int PASSWORD_ENCODING;
 	public static boolean CHECK_PASSWORDS = true;
@@ -176,72 +163,6 @@ public class AccountImpl extends AbstractAccount {
 		defaultRole = addGroup(primaryGroup);
 	}
 
-	/**
-	 * Read a new user from the given DOM node
-	 * 
-	 *@param node
-	 *            Description of the Parameter
-	 *@exception DatabaseConfigurationException
-	 *                Description of the Exception
-	 * @throws ConfigurationException 
-	 */
-	public static AccountImpl createAccount(AbstractRealm realm, int majorVersion, int minorVersion, Element node)
-			throws DatabaseConfigurationException, ConfigurationException {
-		
-		String password = null;
-		String digestPassword = null;
-		
-		int id = -1;
-		XmldbURI home = null;
-		
-		String name = node.getAttribute(NAME);
-		if (name == null ) //|| name.length() == 0
-			throw new DatabaseConfigurationException("user needs a name");
-		
-		Attr attr;
-		if (majorVersion == 0) {
-			attr = node.getAttributeNode(PASS);
-			digestPassword = attr == null ? null : attr.getValue();
-		} else {
-			attr = node.getAttributeNode(PASS);
-			password = attr == null ? null : attr.getValue();
-//			if (password.charAt(0) == '{') {
-//				throw new DatabaseConfigurationException(
-//						"Unrecognized password encoding " + password + " for user " + name);
-//			}
-
-			attr = node.getAttributeNode(DIGEST_PASS);
-			digestPassword = attr == null ? null : attr.getValue();
-		}
-		Attr userId = node.getAttributeNode(USER_ID);
-		if (userId == null)
-			throw new DatabaseConfigurationException("attribute id missing");
-		try {
-			id = Integer.parseInt(userId.getValue());
-		} catch (NumberFormatException e) {
-			throw new DatabaseConfigurationException("illegal user id: "
-					+ userId + " for user " + name);
-		}
-		Attr homeAttr = node.getAttributeNode(HOME);
-		home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
-		
-		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
-		if (id == 1 && password == null) password = "";
-		
-		AccountImpl new_account = new AccountImpl(realm, id, name, password);
-		new_account.setHome(home);
-		
-		NodeList gl = node.getChildNodes();
-		Node group;
-		for (int i = 0; i < gl.getLength(); i++) {
-			group = gl.item(i);
-			if (group.getNodeType() == Node.ELEMENT_NODE && group.getLocalName().equals(GROUP))
-				new_account.addGroup(group.getFirstChild().getNodeValue());
-		}
-		
-		return new_account;
-	}
-	
     public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException {
         super(realm, id, from_user.getName());
 

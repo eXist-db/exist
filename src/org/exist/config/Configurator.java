@@ -380,6 +380,7 @@ public class Configurator {
 				} else if (typeName.equals("java.util.List")) {
 					simple = false;
 					
+					@SuppressWarnings("unchecked")
 					List<Configurable> list = (List<Configurable>) field.get(instance);
 					for (Configurable el : list) {
 						asXMLtoBuffer(el, bufferToUse);

@@ -164,62 +164,64 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
 			}
 			
+			//XXX: load others principals
+			
 			//1.0 version
-			Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLETION_URI);
-			Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
-			Element docElement = null;
-			if (acl != null)
-				docElement = acl.getDocumentElement();
-
-			if (docElement != null) {
-				// LOG.debug("loading acl");
-				Element root = acl.getDocumentElement();
-				Attr version = root.getAttributeNode("version");
-				int major = 0;
-				int minor = 0;
-				if (version != null) {
-					String[] numbers = version.getValue().split("\\.");
-					major = Integer.parseInt(numbers[0]);
-					minor = Integer.parseInt(numbers[1]);
-				}
-				NodeList nl = root.getChildNodes();
-				
-				Node node;
-				Element next;
-				
-				Account account = null; Group group = null;
-				NodeList ul;
-				
-				for (int i = 0; i < nl.getLength(); i++) {
-					if (nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-						continue;
-					next = (Element) nl.item(i);
-					if (next.getTagName().equals("users")) {
-
-						ul = next.getChildNodes();
-						for (int j = 0; j < ul.getLength(); j++) {
-							node = ul.item(j);
-							if (node.getNodeType() == Node.ELEMENT_NODE
-									&& node.getLocalName().equals("user")) {
-								account = AccountImpl.createAccount(this, major, minor, (Element) node);
-								sm.usersById.put(account.getId(), account);
-								usersByName.put(account.getName(), account);
-							}
-						}
-					} else if (next.getTagName().equals("groups")) {
-						ul = next.getChildNodes();
-						for (int j = 0; j < ul.getLength(); j++) {
-							node = ul.item(j);
-							if (node.getNodeType() == Node.ELEMENT_NODE
-									&& node.getLocalName().equals("group")) {
-								group = new GroupImpl((Element) node);
-								sm.groupsById.put(group.getId(), group);
-								groupsByName.put(group.getName(), group);
-							}
-						}
-					}
-				}
-			}
+//			Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLETION_URI);
+//			Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
+//			Element docElement = null;
+//			if (acl != null)
+//				docElement = acl.getDocumentElement();
+//
+//			if (docElement != null) {
+//				// LOG.debug("loading acl");
+//				Element root = acl.getDocumentElement();
+//				Attr version = root.getAttributeNode("version");
+//				int major = 0;
+//				int minor = 0;
+//				if (version != null) {
+//					String[] numbers = version.getValue().split("\\.");
+//					major = Integer.parseInt(numbers[0]);
+//					minor = Integer.parseInt(numbers[1]);
+//				}
+//				NodeList nl = root.getChildNodes();
+//				
+//				Node node;
+//				Element next;
+//				
+//				Account account = null; Group group = null;
+//				NodeList ul;
+//				
+//				for (int i = 0; i < nl.getLength(); i++) {
+//					if (nl.item(i).getNodeType() != Node.ELEMENT_NODE)
+//						continue;
+//					next = (Element) nl.item(i);
+//					if (next.getTagName().equals("users")) {
+//
+//						ul = next.getChildNodes();
+//						for (int j = 0; j < ul.getLength(); j++) {
+//							node = ul.item(j);
+//							if (node.getNodeType() == Node.ELEMENT_NODE
+//									&& node.getLocalName().equals("user")) {
+//								account = AccountImpl.createAccount(this, major, minor, (Element) node);
+//								sm.usersById.put(account.getId(), account);
+//								usersByName.put(account.getName(), account);
+//							}
+//						}
+//					} else if (next.getTagName().equals("groups")) {
+//						ul = next.getChildNodes();
+//						for (int j = 0; j < ul.getLength(); j++) {
+//							node = ul.item(j);
+//							if (node.getNodeType() == Node.ELEMENT_NODE
+//									&& node.getLocalName().equals("group")) {
+//								group = new GroupImpl((Element) node);
+//								sm.groupsById.put(group.getId(), group);
+//								groupsByName.put(group.getName(), group);
+//							}
+//						}
+//					}
+//				}
+//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			// LOG.debug("loading acl failed: " + e.getMessage());
@@ -259,7 +261,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		return created_group;
 	}
 
-	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException, IOException {
+	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
 		return addGroup(group.getName());
 	}
 
