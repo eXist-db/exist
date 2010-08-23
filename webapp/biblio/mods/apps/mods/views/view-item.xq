@@ -79,7 +79,7 @@ return
 let $content := 
     <div class="content">
     {$edit-controls}
-   {let $item := collection($data-collection)//mods:mods[mods:identifier = $id]
+   {let $item := collection($data-collection)//mods:mods[@ID = $id]
       return
         local:element-to-nested-table($item, 1)
    }
