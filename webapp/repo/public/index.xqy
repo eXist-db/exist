@@ -1,5 +1,7 @@
 xquery version "1.0";
 
+declare namespace repo="http://exist-db.org/xquery/repo";
+
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace package="http://expath.org/ns/pkg";
 
@@ -92,7 +94,6 @@ declare function local:upload() as element()
             <th>Author</th>
             <th>License</th>
             <th>Status</th>
-
      </tr>
      {
      let $files := if (collection($repo-coll)) then collection($repo-coll)/util:document-name(.) else ()
@@ -101,11 +102,11 @@ declare function local:upload() as element()
        let $name := substring-before($file,'.xar')
        let $package := document(concat($repo-coll,'/',$name,'.xml'))
        return
-        if (not($package//repo:deploy)) then
+        if (not($package//repo:type eq 'library')) then
 
         <tr>
             <td><a href="{$package//repo:website}" target="website">{$name}</a><br/>
-            {if ($package//repo:deploy) then 'Application' else 'Library'}
+            {$package//repo:type}
             </td>
             <td>{$package//package:title/text()}</td>
             <td>
@@ -146,7 +147,7 @@ declare function local:upload() as element()
        let $name := substring-before($file,'.xar')
        let $package := document(concat($repo-coll,'/',$name,'.xml'))
        return
-        if ($package//repo:deploy) then
+        if ($package//repo:type eq 'application') then
         <tr>
             <td><a href="{$package//repo:website}" target="website">{$name}</a><br/>
             {if ($package//repo:deploy) then 'Application' else 'Library'}

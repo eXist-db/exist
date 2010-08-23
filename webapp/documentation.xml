@@ -113,7 +113,7 @@
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="repo/repo.xml">Package Repository</ulink>:</td>
-                                <td>Manage or deploy dependencies/applications (.xar) to eXist-db repository.
+                                <td>Manage libraries &amp; application packages (.xar) using eXist-db Package Repository.
                                 </td>
                             </tr>
                             <tr>
