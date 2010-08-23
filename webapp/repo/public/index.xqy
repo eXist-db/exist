@@ -102,7 +102,7 @@ declare function local:upload() as element()
        let $name := substring-before($file,'.xar')
        let $package := document(concat($repo-coll,'/',$name,'.xml'))
        return
-        if (not($package//repo:type eq 'library')) then
+        if ($package//repo:type eq 'library') then
 
         <tr>
             <td><a href="{$package//repo:website}" target="website">{$name}</a><br/>
