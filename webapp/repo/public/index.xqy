@@ -82,7 +82,7 @@ declare function local:upload() as element()
 
     </p>
     {local:process-action()}
-    <h2>Package Listing</h2>
+    <h2>Library Packages</h2>
     <table border="1">
      <tr>
             <th>Package Name</th>
@@ -91,7 +91,7 @@ declare function local:upload() as element()
             <th>Date Created</th>
             <th>Author</th>
             <th>License</th>
-            <th>Type</th>
+            <th>Status</th>
 
      </tr>
      {
@@ -101,8 +101,12 @@ declare function local:upload() as element()
        let $name := substring-before($file,'.xar')
        let $package := document(concat($repo-coll,'/',$name,'.xml'))
        return
+        if (not($package//repo:deploy)) then
+
         <tr>
-            <td><a href="{$package//repo:website}" target="website">{$name}</a></td>
+            <td><a href="{$package//repo:website}" target="website">{$name}</a><br/>
+            {if ($package//repo:deploy) then 'Application' else 'Library'}
+            </td>
             <td>{$package//package:title/text()}</td>
             <td>
             {if ($package//package:java/package:namespace/text()) then (concat('java: ',$package//package:java/package:namespace/text()),<br/>) else () }            
@@ -113,12 +117,58 @@ declare function local:upload() as element()
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
             <td>{$package//repo:license}</td>
-            <td>{if ($package//repo:deploy) then 'Application' else 'Library'}</td>
+            <td></td>
 
         </tr>
+        else
+         ()
 
      }
      
+    </table>
+
+    <h2>Application Packages</h2>
+    <table border="1">
+     <tr>
+            <th>Package Name</th>
+            <th>Description</th>
+            <th>Namespace(s)</th>
+            <th>Date Created</th>
+            <th>Author</th>
+            <th>License</th>
+            <th>Status</th>
+
+     </tr>
+     {
+     let $files := if (collection($repo-coll)) then collection($repo-coll)/util:document-name(.) else ()
+     return
+       for $file in $files[contains(.,'.xar')]
+       let $name := substring-before($file,'.xar')
+       let $package := document(concat($repo-coll,'/',$name,'.xml'))
+       return
+        if ($package//repo:deploy) then
+        <tr>
+            <td><a href="{$package//repo:website}" target="website">{$name}</a><br/>
+            {if ($package//repo:deploy) then 'Application' else 'Library'}
+            </td>
+            <td>{$package//package:title/text()}</td>
+            <td>
+            {if ($package//package:java/package:namespace/text()) then (concat('java: ',$package//package:java/package:namespace/text()),<br/>) else () }
+            {if ($package//package:xquery/package:namespace/text()) then (concat('xquery: ',$package//package:xquery/package:namespace/text()),<br/>) else () }
+            {if ($package//package:xslt/package:import-uri/text()) then (concat('xslt: ',$package//package:xslt/package:import-uri/text()),<br/>) else () }
+            </td>
+
+            <td>{xmldb:created($repo-coll, $file)}</td>
+            <td>{$package//repo:author}</td>
+            <td>{$package//repo:license}</td>
+            <td></td>
+
+        </tr>
+        else
+          ()
+
+     }
+
     </table>
 
     <h2>Add Package</h2>
