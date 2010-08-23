@@ -38,12 +38,12 @@ let $instance-src :=
          let $template := doc($template-path)
          let $new-file-name := concat($id, '.xml')
          (: uncomment the following line in for testing if you are not admin :)
-         let $login := xmldb:login($style:db-path-to-app-data, 'admin', '')
+         let $login := xmldb:login($style:db-path-to-app-data, 'admin', 'admin123')
          let $store := xmldb:store($style:db-path-to-app-data, $new-file-name, $template)
          let $new-file-path := concat($style:db-path-to-app-data, '/', $new-file-name)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
-         let $update-id := update value doc($new-file-path)//*:identifier with $id
+         let $update-id := update value doc($new-file-path)/@ID with $id
          return concat('../data/', $id, '.xml')
          )
       else concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id)

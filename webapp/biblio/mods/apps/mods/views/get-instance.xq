@@ -17,7 +17,8 @@ if (not($id))
     else
       let $app-collection := $style:db-path-to-app
       let $data-collection := concat($app-collection, '/data')
-      let $doc := collection($data-collection)//mods[identifier/text()=$id]
+      let $doc := collection($data-collection)//mods[@ID=$id]
+      
 return
 if ($doc)
   then $doc
