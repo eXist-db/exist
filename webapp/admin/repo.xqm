@@ -211,7 +211,7 @@ declare function repomanager:main() as element() {
                 if($installed) then
 
                     ( <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}">deactivate</a>,
-                      if ($repo//repo:deploy) then 
+                      if ($repo//repo:type eq 'application') then 
                         ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$package-name}">deploy</a> )
                      else
                         ()
