@@ -1,8 +1,0 @@
-<meta xmlns="http://exist-db.org/xquery/repo">
-  <author>James Fuller</author>
-  <website>http://www.webcomposite.com/</website>
-  <license></license>
-  <copyright>true</copyright>
-  <description>Example illustrating how to create packages comprised of full blown applications.</description>
-  <deploy>true</deploy>
-<meta>

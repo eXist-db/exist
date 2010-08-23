@@ -1,9 +1,0 @@
-<package xmlns="http://expath.org/ns/pkg">
-   <module name="myApp" version="0.1">
-       <title>myApp</title>
-      <xquery>
-         <namespace>http://www.webcomposite.com/myApp</namespace>
-         <file>index.xqy</file>
-      </xquery>
-   </module>
-</package>
