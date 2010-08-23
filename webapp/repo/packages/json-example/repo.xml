@@ -1,7 +1,7 @@
-<repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
-  <repo:author>Wolfgang Meier</repo:author>
-  <repo:website>http://www.json.org</repo:website>
-  <repo:license>GNU-LGPL</repo:license>
-  <repo:copyright>true</repo:copyright>
-  <repo:description>XQuery library for generating json from xml and vice versa.</repo:description>
-</repo:meta>
+<meta xmlns="http://exist-db.org/xquery/repo">
+  <author>Wolfgang Meier</author>
+  <website>http://www.json.org</website>
+  <license>GNU-LGPL</license>
+  <copyright>true</copyright>
+  <description>XQuery library for generating json from xml and vice versa.</description>
+</meta>

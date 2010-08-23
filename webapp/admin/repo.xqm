@@ -178,10 +178,9 @@ declare function repomanager:main() as element() {
             <tr>
                 <th/>
                 <th>Name</th>
-                <th>Version</th>
-
-                <th>Date Uploaded</th>
-                <th>Installed</th>
+                <th>Description</th>
+                <th>Date Installed</th>
+                <th>Status</th>
                 <th>Action</th>
             </tr>
         {
@@ -201,15 +200,16 @@ declare function repomanager:main() as element() {
             return
              <tr>
                 <td/>
-                <td><a href="{$repo//repo:website}" target="website">{$package-name}</a></td>
+                <td><a href="{$repo//repo:website}" target="website">{$package-name}</a><br/>
+                {if ($repo//repo:deploy) then 'application' else 'library'}</td>
                 <td>{$repo//repo:description}</td>
 
                 <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
                 <td> 
                 {if ($installed) then
-                    <span style="color:#00FF00">{$installed}</span>
+                    <span style="color:#00FF00">Active</span>
                 else
-                    <span style="color:#FF2400">{$installed}</span>
+                    <span style="color:#FF2400">Inactive</span>
                 }
                 </td>
                 <td>
@@ -232,8 +232,9 @@ declare function repomanager:main() as element() {
              </tr>
             }
                 </table>
-               <br/><br/>
-               <p>    </p>
+
+                <span><i>Important: You must restart eXistdb to pick up any changes in repository.</i></span>
+                <br/><br/>
                 <table>
                     <tr>
                         <td><input type="submit" name="action" value="Download from Public Repository"/></td>
@@ -264,7 +265,7 @@ declare function repomanager:main() as element() {
                         <td><input type="file" size="30" name="upload"/></td>
                     </tr>
                 </table>
-                <span><i>Note: You can may example .xar packages located under webapp/repo/packages</i></span>
+                <span><i>Note: You can upload example .xar packages located under webapp/repo/packages</i></span>
           </form>
         </div>
 };

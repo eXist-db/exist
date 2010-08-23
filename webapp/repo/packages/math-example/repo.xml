@@ -1,7 +1,7 @@
-<repo:meta xmlns:repo="http://exist-db.org/xquery/repo">
-  <repo:author>Dannes Wessels</repo:author>
-  <repo:website>http://exist.sourceforge.net</repo:website>
-  <repo:license>GNU-LGPL</repo:license>
-  <repo:copyright>true</repo:copyright>
-  <repo:description>XQuery math functons.</repo:description>
-</repo:meta>
+<meta xmlns="http://exist-db.org/xquery/repo">
+  <author>Dannes Wessels</author>
+  <website>http://exist.sourceforge.net</website>
+  <license>GNU-LGPL</license>
+  <copyright>true</copyright>
+  <description>XQuery math functons.</description>
+</meta>

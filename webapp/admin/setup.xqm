@@ -12,6 +12,8 @@ declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace system="http://exist-db.org/xquery/system";
 
+declare namespace xproc="http://xproc.net/xproc";
+
 declare function setup:main() as element()
 {
     <div class="panel">
