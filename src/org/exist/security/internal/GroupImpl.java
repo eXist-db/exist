@@ -39,11 +39,6 @@ public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, 
 		super(null, null, id, name);
 	}
 
-	@Deprecated //Old way (version 1.0)
-	public GroupImpl(Element element) throws DatabaseConfigurationException, ConfigurationException {
-		this(element.getAttribute("name"), Integer.parseInt(element.getAttribute("id")));
-	}
-	
 	public int compareTo(Object other) {
 		if(!(other instanceof GroupImpl))
 			throw new IllegalArgumentException("wrong type");

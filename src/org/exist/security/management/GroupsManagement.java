@@ -21,9 +21,8 @@
  */
 package org.exist.security.management;
 
-import java.io.IOException;
-
 import org.exist.EXistException;
+import org.exist.config.ConfigurationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 
@@ -33,15 +32,15 @@ import org.exist.security.PermissionDeniedException;
  */
 public interface GroupsManagement {
 
-	public Group addGroup(Group role) throws PermissionDeniedException, EXistException, IOException;
+	public Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public Group getGroup(String name);
 
-	public boolean hasGroup(Group role);
+	public boolean hasGroup(Group group);
 	public boolean hasGroup(String name);
 
-	public boolean updateGroup(Group role) throws PermissionDeniedException, EXistException;
+	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException;
+	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
 }

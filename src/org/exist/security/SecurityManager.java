@@ -24,6 +24,7 @@ package org.exist.security;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
+import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -100,5 +101,7 @@ public interface SecurityManager extends Configurable {
 
    @Deprecated
    java.util.Collection<Group> getGroups();
+
+   Realm getRealm(String iD);
 
 }
