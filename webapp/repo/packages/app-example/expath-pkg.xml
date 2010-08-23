@@ -1,0 +1,9 @@
+<package xmlns="http://expath.org/ns/pkg">
+   <module name="myapp" version="0.1">
+       <title>Example XQuery library</title>
+      <xquery>
+         <namespace>http://www.webcomposite.com/myapp/util</namespace>
+         <file>lib/util.xqm</file>
+      </xquery>
+   </module>
+</package>
