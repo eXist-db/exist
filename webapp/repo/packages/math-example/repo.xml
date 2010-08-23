@@ -4,4 +4,5 @@
   <license>GNU-LGPL</license>
   <copyright>true</copyright>
   <description>XQuery math functons.</description>
+  <type>library</type>    
 </meta>

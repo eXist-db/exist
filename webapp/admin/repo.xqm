@@ -26,7 +26,6 @@ declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data 
 
 declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
 {
-
 	true()
 };
 
@@ -79,7 +78,6 @@ declare function repomanager:upload() as element()
     </div>
 };
 
-
 declare function repomanager:activate() as element()
 {
     let $name := request:get-parameter("name", ()),
@@ -114,7 +112,6 @@ declare function repomanager:deactivate() as element()
             </ul>
     </div>
 };
-
 
 declare function repomanager:remove() as element()
 {
@@ -168,12 +165,9 @@ declare function repomanager:main() as element() {
 
     return
         <div class="panel">
-            <h1>Package Repository</h1>
-            <form method="POST" enctype="multipart/form-data">
-
-
-         { repomanager:process-action() }
-
+        <h1>Package Repository</h1>
+        <form method="POST" enctype="multipart/form-data">
+        { repomanager:process-action() }
         <table cellspacing="0" cellpadding="5" class="browse">
             <tr>
                 <th/>
@@ -183,7 +177,7 @@ declare function repomanager:main() as element() {
                 <th>Status</th>
                 <th>Action</th>
             </tr>
-        {
+         {
          let $files := if (collection($repomanager:coll)) then collection($repomanager:coll)/util:document-name(.) else ()
          let $repos := repo:list()
          return
@@ -201,7 +195,7 @@ declare function repomanager:main() as element() {
              <tr>
                 <td/>
                 <td><a href="{$repo//repo:website}" target="website">{$package-name}</a><br/>
-                {if ($repo//repo:deploy) then 'application' else 'library'}</td>
+                {$repo//repo:type}</td>
                 <td>{$repo//repo:description}</td>
 
                 <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>

@@ -4,5 +4,6 @@
   <license>GNU-LGPL</license>
   <copyright>true</copyright>
   <description>The FunctX XQuery/XSLT 2.0 function library is a set of reusable functions for XQuery 1.0 and XSLT 2.0. The project itself is an open source application and framework for developers to create function libraries. </description>
+  <type>library</type>
 </meta>
 
