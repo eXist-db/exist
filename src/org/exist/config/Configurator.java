@@ -327,21 +327,24 @@ public class Configurator {
 			final Field field = entry.getValue();
 			field.setAccessible(true);
 
-			boolean storeAsAttribute = true;
-    		if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-    			storeAsAttribute = false;
-    		}
-			
-    		if (storeAsAttribute) {
-    			buf.append(" ");
-    			buf.append(entry.getKey());
-    			buf.append("='");
-    			
-    			bufferToUse = buf;
-    		} else {
-    			bufferToUse = new StringBuilder();
-    		}
 			try {
+				//skip null values
+				if (field.get(instance) == null) continue;
+			
+				boolean storeAsAttribute = true;
+				if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+					storeAsAttribute = false;
+				}
+				
+				if (storeAsAttribute) {
+					buf.append(" ");
+					buf.append(entry.getKey());
+					buf.append("='");
+					
+					bufferToUse = buf;
+				} else {
+					bufferToUse = new StringBuilder();
+				}
 				
 				String typeName = field.getType().getName();
 
@@ -388,7 +391,23 @@ public class Configurator {
 					//buf.append(field.get(instance));
 				}
 
-			
+	    		if (storeAsAttribute) {
+	    			buf.append("'");
+	    		} else if (bufferToUse.length() > 0){
+	    			if (simple) {
+	    				bufContext.append("<");
+	    				bufContext.append(entry.getKey());
+	    				bufContext.append(">");
+	    			}
+	
+	    			bufContext.append(bufferToUse);
+	    			
+	    			if (simple) {
+	    				bufContext.append("</");
+	    				bufContext.append(entry.getKey());
+	    				bufContext.append(">");
+	    			}
+	    		}
 			} catch (IllegalArgumentException e) {
 				throw new ConfigurationException(e.getMessage(), e);
 
@@ -396,23 +415,6 @@ public class Configurator {
 				throw new ConfigurationException(e.getMessage(), e);
 			
 			}
-    		if (storeAsAttribute) {
-    			buf.append("'");
-    		} else if (bufferToUse.length() > 0){
-    			if (simple) {
-    				bufContext.append("<");
-    				bufContext.append(entry.getKey());
-    				bufContext.append(">");
-    			}
-
-    			bufContext.append(bufferToUse);
-    			
-    			if (simple) {
-    				bufContext.append("</");
-    				bufContext.append(entry.getKey());
-    				bufContext.append(">");
-    			}
-    		}
 		}
 
 		buf.append(">");
