@@ -240,7 +240,49 @@ math:pi()
             </ul>
         </para>
         <para>
-            
+            Each package type, will contain both an expath-pkg.xml and repo.xml metadata file. The expath-pkg.xml file contains
+            the information for relating URI namespaces with a specific library. The repo.xml file is an eXistdb specific metadata
+            file which defines if the package is a library or an application.
+
+<example>
+            <title>myapp repo.xml</title>
+            <programlisting>
+            <markup>
+&lt;meta xmlns="http://exist-db.org/xquery/repo"&gt;
+  &lt;author&gt;James Fuller&lt;/author&gt;
+  &lt;website&gt;http://www.webcomposite.com&lt;/website&gt;
+  &lt;license&gt;GNU-LGPL&lt;/license&gt;
+  &lt;copyright&gt;true&lt;/copyright&gt;
+  &lt;description&gt;Example illustrating how to package up applications.&lt;/description&gt;
+  &lt;type&gt;application&lt;/type&gt;
+  &lt;status&gt;experimental&lt;/status&gt;
+&lt;/meta&gt;
+            </markup>
+            </programlisting>
+</example>
+
+
+<para>The myapp-0.1.xar contains an example application which when installed in the repo admin area and activated will offer
+the ability to also deploy the application.</para>
+<example>
+            <title>List contents of myapp Application package</title>
+            <programlisting>
+            <markup>
+drwxr-xr-x         0  24-Aug-2010  13:44:36  myapp/
+drwxr-xr-x         0  24-Aug-2010  11:56:38  myapp/data/
+drwxr-xr-x         0  23-Aug-2010  19:14:30  myapp/lib/
+-rw-r--r--       288  23-Aug-2010  19:14:22  expath-pkg.xml
+-rw-r--r--       115  24-Aug-2010  13:16:50  myapp/data/contact.xml
+-rw-r--r--        94  24-Aug-2010  13:37:04  myapp/index.html
+-rw-r--r--       147  24-Aug-2010  12:50:44  myapp/lib/util.xqm
+-rw-r--r--     17351  24-Aug-2010  13:33:14  myapp/logo.jpg
+-rw-r--r--       250  24-Aug-2010  13:43:30  myapp/test.xqy
+-rw-r--r--       336  24-Aug-2010  12:14:30  repo.xml
+            </markup>
+            </programlisting>
+</example>
+
+         Deployment will copy the 'myapp' directory, inside the .xar, to a collection of the same name inside of the database.   
         </para>
     </section>
 
