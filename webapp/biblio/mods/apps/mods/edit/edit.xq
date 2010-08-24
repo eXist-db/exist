@@ -43,7 +43,7 @@ let $instance-src :=
          let $new-file-path := concat($style:db-path-to-app-data, '/', $new-file-name)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
-         let $update-id := update value doc($new-file-path)/@ID with $id
+         let $update-id := update value doc($new-file-path)/mods:mods/@ID with $id
          return concat('../data/', $id, '.xml')
          )
       else concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id)
@@ -95,8 +95,8 @@ let $model :=
 
 let $content :=
 <div class="content">
-    Loading id: {$id}<br/>
-    Loading tab: {$tab-id}<br/>
+    
+    <a href="../index.xq">Home</a> id: {$id} tab: {$tab-id}<br/>
     
     {mods:tabs($tab-id, $id, $show-all)}
     
@@ -132,8 +132,8 @@ let $content :=
         </xf:output>
     </div>
     
-    <a href="../views/get-instance.xq?id={$id}">View FUll XML</a>
-    <a href="get-instance.xq?id={$id}">View Tab XML</a>
+    <a href="../views/get-instance.xq?id={$id}">View FUll XML</a> -
+    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View Tab XML</a>
 </div>
 
 return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, true())

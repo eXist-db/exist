@@ -23,7 +23,7 @@ declare function mods:simple-tabs($tab-id as xs:string, $id as xs:string) as nod
          <xf:trigger appearance="minimal" class="{$tab/tab-id/text()} {if ($tab-id = $tab/tab-id/text()) then 'selected' else()}">
             <xf:label>{$tab/label/text()}</xf:label>
             <xf:action ev:event="DOMActivate">
-                <xf:send submission="save"/>
+                <xf:send submission="save-submission"/>
                 <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}" show="replace"/>
             </xf:action>
          </xf:trigger>
@@ -52,13 +52,25 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
                  then $category
                  else ()
     
+    (: note that in the submission below that the show-all= URL param is toggled :)
+    
     return
 <div class="tabs">
+    
+    <xf:trigger class="link">
+        <xf:label>
+           {if ($show-all)
+              then 'Show Default'
+              else 'Show All'
+           }
+        </xf:label>
+        <xf:action ev:event="DOMActivate">
+            <xf:send submission="save-submission"></xf:send>
+            <xf:load resource="edit.xq?tab-id={$tab-id}&amp;id={$id}&amp;show-all={not($show-all)}" show="replace">
+            </xf:load>
+        </xf:action>
+    </xf:trigger>
 
-    {if ($show-all)
-          then <a href="edit.xq?show-all=false">Show Default</a>
-          else <a href="edit.xq?show-all=true">Show All</a>
-    }
       
     <table class="tabs">
        <tr>{
@@ -88,7 +100,7 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
              >
                 <xf:label>{$tab/label/text()}</xf:label>
                 <xf:action ev:event="DOMActivate">
-                    <xf:send submission="save"/>
+                    <xf:send submission="save-submission"/>
                     <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}" show="replace"/>
                 </xf:action>
              </xf:trigger>
