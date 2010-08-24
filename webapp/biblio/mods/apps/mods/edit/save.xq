@@ -57,7 +57,7 @@ it that is in the data it does a replace, else it does an insert. :)
 
 let $titleInfo :=
    if ($item/mods:titleInfo)
-   then 
+     then 
         for $new-title-info at $count in $item/mods:titleInfo
            return
               if ($doc/mods:titleInfo[$count])
@@ -67,7 +67,17 @@ let $titleInfo :=
                  update insert $item/mods:titleInfo[2] following $doc/mods:titleInfo[$count -1]
    else ()
 
-let $name := if ($item/mods:name) then update replace $doc/mods:name with $item/mods:name else ()
+let $name :=
+   if ($item/mods:name)
+      then
+         for $new-name-info at $count in $item/mods:name
+           return
+              if ($doc/mods:name[$count])
+              then
+                 update replace $doc/mods:name[$count] with $new-name-info
+              else
+                 update insert $item/mods:name[2] following $doc/mods:name[$count -1]
+      else ()
 
 let $originInfo := if ($item/mods:originInfo) then update replace $doc/mods:originInfo with $item/mods:originInfo else ()
 

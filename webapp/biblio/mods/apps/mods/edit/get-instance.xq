@@ -18,9 +18,10 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 let $id := request:get-parameter('id', '')
 let $new := request:get-parameter('new', '')
 
-(: TODO - check for required id parameter :)
+(: TODO - check for required id parameter.  In this case we need either an id or new. :)
 
-(: this is the ID of the tab but we just use tab in the URL :)
+(: This is the ID of the tab but we just use tab in the URL.  If no tab-id is
+   specified then we use the title tab.  :)
 let $tab-id := request:get-parameter('tab-id', 'title')
 let $debug := request:get-parameter('debug', 'false')
 
@@ -32,7 +33,7 @@ let $data-collection := $style:db-path-to-app-data
 let $full-instance :=
    if ($new = 'true' or $id = 'new')
       then doc(concat($style:db-path-to-app, '/edit/new-instance.xml'))/mods:mods
-      else collection($data-collection)/mods:mods[@ID = $id]
+      else collection($data-collection)//mods:mods[@ID = $id]
 
 (: open the tab databse so for a given tab, we go into the tab database and get the right path :)
 let $tab-data := doc(concat($style:db-path-to-app, '/edit/tab-data.xml'))/tabs

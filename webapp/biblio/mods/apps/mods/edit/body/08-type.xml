@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="language"  tab-id="language">
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="language" tab-id="type">
     <!--DLF/Aquifer: REQUIRED-->
     <!--Cluster: include-->
     <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use in all records of at least one typeOfResource element using the required enumerated values. This element is repeatable. -->
@@ -68,8 +68,7 @@
         <xf:trigger class="add">
             <xf:label>Add Type of Resource</xf:label>
             <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:typeOfResource" at="index('record-content-source-repeat')" position="after"
-                    origin="instance('insert-templates')/mods:typeOfResource"/>
+                <xf:insert nodeset="mods:typeOfResource" at="index('record-content-source-repeat')" position="after" origin="instance('insert-templates')/mods:typeOfResource"/>
                 <xf:setvalue ref="instance('save-data')/mods:typeOfResource[last()]" value="''"/>
             </xf:action>
         </xf:trigger>
