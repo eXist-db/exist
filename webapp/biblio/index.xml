@@ -101,6 +101,9 @@
                         <button name="mylist" type="submit" value="display">Display</button>
                     </p>
                 </form>
+                <form action="user.xql" method="POST">
+                    <button name="export" type="submit" value="export">Export</button>
+                </form>
             </jquery:tab>
         </jquery:tabset>
         <div id="collection-tree">
