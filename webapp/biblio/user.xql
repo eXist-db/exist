@@ -48,9 +48,23 @@ declare function user:personal-list-size() {
         <span>{count($list/listitem)}</span>
 };
 
-let $list := request:get-parameter("list", ())
-return
-    if ($list) then
+declare function user:export-personal-list() as element(mods:modsCollection) {
+    util:declare-option("exist:serialize", "method=xml media-type=application/xml"),
+    
+    response:set-header("Content-Disposition", "attachment; filename=export.mods.xml"),
+    
+    <mods:modsCollection>
+    {
+        session:get-attribute("personal-list")/listitem/mods:mods
+    }
+    </mods:modsCollection>
+};
+
+let $list := request:get-parameter("list", ()),
+$export := request:get-parameter("export", ()) return
+    if($export)then
+        user:export-personal-list()
+    else if ($list) then
         user:personal-list($list)
     else
         user:personal-list-size()
