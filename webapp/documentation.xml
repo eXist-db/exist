@@ -117,7 +117,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="repo/public/all/">Public Repository</ulink>:</td>
+                                <td class="doclink"><ulink url="repo/public/">Public Repository</ulink>:</td>
                                 <td>This instance of eXist XML Database comes with its own public repository you
                                     may use to distribute packages to other eXist XML databases.
                                 </td>

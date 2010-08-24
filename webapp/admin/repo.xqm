@@ -91,7 +91,7 @@ declare function repomanager:upload() as element()
             <h3>Actions:</h3>
             <ul>
                 {
-                if (contains($docName,'.xar')) then
+                if ($docName) then
                     (<li>uploaded package: {$docName}</li>,
 
                     xdb:decode-uri(xs:anyURI(xdb:store($repomanager:coll, xdb:encode-uri($docName), $file)))

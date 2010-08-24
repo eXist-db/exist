@@ -231,8 +231,21 @@ math:pi()
 </para>
     </section>
 
+    <section>
+        <title>Library and Application packages</title>
+        <para>There are two kinds of packages:
+            <ul>
+                <li>Library packages: when you want to distribute and deploy code libraries to eXist XML Database repository</li>
+                <li>Applicaiton packages: when you want to distribute and deploy applications into database itself</li>
+            </ul>
+        </para>
+        <para>
+            
+        </para>
+    </section>
+
      <section>
-        <title>Using Repository from XQuery</title>
+        <title>Interacting with Repository from XQuery</title>
 <para>
  The repository includes an extension module which provides three functions for programmatically controlling repository
     from XQuery

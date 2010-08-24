@@ -4,5 +4,6 @@
   <license>GNU-LGPL</license>
   <copyright>true</copyright>
   <description>XQuery library for generating json from xml and vice versa.</description>
-  <type>library</type>   
+  <type>library</type>
+  <status>stable</status>        
 </meta>
