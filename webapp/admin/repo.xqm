@@ -14,6 +14,31 @@ declare variable $repomanager:repo-uri := if (request:get-parameter("repository-
             else
               "http://demo.exist-db.org/exist/repo/public/all/";
 
+
+declare function local:entry-data-deploy($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
+{
+
+	<entry>
+		{
+		if ($path eq tokenize($path, "/")[last()]) then
+		  (<name>{tokenize($path, "/")[last()]}</name>,
+           <path>{$path}</path>)		  
+		else
+		  (<name>{tokenize($path, "/")[last()]}</name>,
+		  <path>{
+		  let $segments := tokenize($path,"/")[not(position() eq last())]
+		  for $segment in $segments
+		  return
+
+		    <segment>{$segment}</segment>
+
+		  }</path>)
+		}
+		<type>{$type}</type>
+		<data>{$data}</data>
+	</entry>
+};
+
 declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
 {
 
@@ -78,6 +103,52 @@ declare function repomanager:upload() as element()
     </div>
 };
 
+declare function repomanager:deploy() as element()
+{
+    let $name := request:get-parameter("name", ())
+     return
+
+        <div class="process">
+            <h3>Actions:</h3>
+            <ul>
+                <li>deployed application: {$name}</li>
+                {
+                    let $xar := util:binary-doc(concat($repomanager:coll,'/',$name,'.xar'))                
+                    let $application := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data-deploy"), 4), ())
+                    let $repo := $application//repo:meta
+                    (: let $createrootcoll := xmldb:create-collection() :)
+                    return
+                        <ul>
+                        {
+                        for $entry in $application
+                        return
+                         <li>
+                         {if ($entry/type eq 'folder') then
+                            let $p := $entry/path/segment/node()
+                            let $l := $entry/path/segment[last()]/node()
+                            let $p1 := string-join($p,'/')
+                            let $colpath := concat('/db/',$p1)
+                            return
+                                 ('folder created: ',xmldb:create-collection(substring-before($colpath,$l), $l))
+                         else
+                            let $p := $entry/path/segment/node()
+                            let $l := $entry/path/segment[last()]/node()
+                            let $p1 := string-join($p,'/')
+                            let $colpath := concat('/db/',$p1,'/')
+                            return
+                                if ($entry/name eq 'repo.xml' or $entry/name eq 'expath-pkg.xml')then
+                                 ('repo meta file ignored: ', $entry/name)
+                                else
+                                 ('file created: ', xmldb:store($colpath, $entry/name/node(), $entry/data/node()) )
+                        }
+                        </li>
+                        }
+                        </ul>
+                }
+            </ul>
+    </div>
+};
+
 declare function repomanager:activate() as element()
 {
     let $name := request:get-parameter("name", ()),
@@ -95,7 +166,6 @@ declare function repomanager:activate() as element()
             </ul>
     </div>
 };
-
 
 declare function repomanager:deactivate() as element()
 {
@@ -146,6 +216,10 @@ declare function repomanager:process-action() as element()*
             else if($action eq "Upload Package") then
             (
                 repomanager:upload()
+            )
+            else if($action eq "deploy") then
+            (
+                repomanager:deploy()
             )
             else if($action eq "Download from Public Repository") then
             (

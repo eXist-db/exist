@@ -5,4 +5,5 @@
   <copyright>true</copyright>
   <description>Example illustrating how to package up applications.</description>
   <type>application</type>
+  <collection>/db/myapp</collection>
 </meta>
