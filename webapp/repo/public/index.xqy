@@ -74,7 +74,7 @@ declare function local:upload() as element()
     </head>
     <body>
 
-    <h1><a href=".">eXist XML Database Public Repository</a> : http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/</h1>
+    <h1><a href=".">eXist XML Database Public Repository</a>  <span style="position: absolute;top:2;right: 10;">http://{request:get-hostname()}:{request:get-server-port()}/exist/repo/public/all/ <a href="all/?feed=true"><img border="0" width="20" src="atom.png"/></a></span></h1>
     <p> To install packages from this repository you will require:
 
     <ul>
@@ -182,7 +182,7 @@ declare function local:upload() as element()
         <td><input type="file" size="30" name="upload"/></td>
     </tr>
     </table>
+    <span><i>Note: You can upload example .xar packages located under webapp/repo/packages</i></span>
     </form>
-
     </body>
 </html>

@@ -5,4 +5,5 @@
   <copyright>true</copyright>
   <description>XQuery math functons.</description>
   <type>library</type>    
+  <status>experimental</status>
 </meta>
