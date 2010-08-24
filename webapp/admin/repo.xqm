@@ -139,7 +139,13 @@ declare function repomanager:deploy() as element()
                                 if ($entry/name eq 'repo.xml' or $entry/name eq 'expath-pkg.xml')then
                                  ('repo meta file ignored: ', $entry/name)
                                 else
-                                 ('file created: ', xmldb:store($colpath, $entry/name/node(), $entry/data/node()) )
+                                 ('file created: ',
+
+
+                                    xmldb:store($colpath, $entry/name/node(), $entry/data/node())
+                                 )
+
+
                         }
                         </li>
                         }
