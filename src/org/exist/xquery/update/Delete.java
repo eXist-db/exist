@@ -57,6 +57,10 @@ import org.w3c.dom.Node;
 
 public class Delete extends Modification {
 
+	public Delete(XQueryContext context) {
+		super(context);
+	}
+	
 	/**
      * 
      * 
@@ -85,6 +89,15 @@ public class Delete extends Modification {
         
 		Sequence inSeq = select.eval(contextSequence);
 		
+		update(inSeq, null);
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+	}
+
+	public void update(Sequence inSeq, Sequence contentSeq) throws XPathException {
 		//START trap Delete failure
         /* If we try and Delete a node at an invalid location,
          * trap the error in a context variable,
@@ -172,11 +185,6 @@ public class Delete extends Modification {
                 unlockDocuments();
             }
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        
-        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

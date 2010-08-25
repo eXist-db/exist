@@ -58,6 +58,10 @@ import org.w3c.dom.Node;
  */
 public class Rename extends Modification {
 
+	public Rename(XQueryContext context) {
+		super(context);
+	}
+	
 	/**
 	 * @param context
 	 * @param select
@@ -89,7 +93,17 @@ public class Rename extends Modification {
         
         Sequence inSeq = select.eval(contextSequence);
         
-        //START trap Rename failure
+        update(inSeq, contentSeq);
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+	}
+
+	public void update(Sequence inSeq, Sequence contentSeq)
+			throws XPathException {
+		//START trap Rename failure
         /* If we try and Rename a node at an invalid location,
          * trap the error in a context variable,
          * this is then accessible from xquery via. the context extension module - deliriumsky
@@ -182,11 +196,6 @@ public class Rename extends Modification {
                 unlockDocuments();
             }
         }
-
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        
-        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

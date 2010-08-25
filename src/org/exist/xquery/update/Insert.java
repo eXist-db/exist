@@ -64,6 +64,11 @@ public class Insert extends Modification {
 	
     private int mode = INSERT_BEFORE;
 	
+    public Insert(XQueryContext context, int mode) {
+    	super(context);
+    	this.mode = mode;
+    }
+    
 	/**
 	 * @param context
 	 * @param select
@@ -96,7 +101,17 @@ public class Insert extends Modification {
         
         Sequence inSeq = select.eval(contextSequence);      
         
-        //START trap Insert failure
+        update(inSeq, contentSeq);
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+        
+	}
+
+	public void update(Sequence inSeq, Sequence contentSeq) throws XPathException {
+		//START trap Insert failure
         /* If we try and Insert a node at an invalid location,
          * trap the error in a context variable,
          * this is then accessible from xquery via. the context extension module - deliriumsky
@@ -181,12 +196,6 @@ public class Insert extends Modification {
                 context.popInScopeNamespaces();
             }
         }
-
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        
-        return Sequence.EMPTY_SEQUENCE;
-        
 	}
 
 	private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {

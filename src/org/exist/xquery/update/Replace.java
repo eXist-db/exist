@@ -57,6 +57,10 @@ import org.w3c.dom.Node;
  */
 public class Replace extends Modification {
 	
+	public Replace(XQueryContext context) {
+		super(context);
+	}
+	
 	/**
 	 * @param context
 	 */
@@ -82,7 +86,20 @@ public class Replace extends Modification {
 		Sequence inSeq = select.eval(contextSequence);
 		if (inSeq.isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
-				
+		Sequence contentSeq = value.eval(contextSequence);
+		if (contentSeq.isEmpty())
+			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+		
+		update(inSeq, contentSeq);
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+	}
+
+	public void update(Sequence inSeq, Sequence contentSeq)
+			throws XPathException {
 		//START trap Replace failure
         /* If we try and Replace a node at an invalid location,
          * trap the error in a context variable,
@@ -113,9 +130,6 @@ public class Replace extends Modification {
         }
         //END trap Replace failure
 		
-		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.isEmpty())
-			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
 		context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
@@ -185,11 +199,6 @@ public class Replace extends Modification {
             unlockDocuments();
             context.popInScopeNamespaces();
         }
-
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        
-        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

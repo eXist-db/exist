@@ -37,6 +37,7 @@ import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.*;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.memtree.DocBuilder;
 import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -1802,6 +1803,28 @@ public class XQueryContext {
 		return builder;
 	}	
 
+	/**
+	 * Utility method to create a new in-memory document using the
+	 * provided DocBuilder interface.
+	 * 
+	 * @param builder a supplied {@link DocBuilder}
+	 * @return the document element of the created document
+	 */
+	public NodeValue createDocument(DocBuilder builder) {
+		pushDocumentContext();
+		try {
+			MemTreeBuilder treeBuilder = getDocumentBuilder();
+			builder.build(treeBuilder);
+			treeBuilder.endDocument();
+			NodeValue node = (NodeValue) treeBuilder.getDocument().getFirstChild();
+			if (node == null)
+				node = treeBuilder.getDocument().getAttribute(0);
+			return node;
+		} finally {
+			popDocumentContext();
+		}
+	}
+	
     /**
      * Returns the shared name pool used by all in-memory
      * documents which are created within this query context.
