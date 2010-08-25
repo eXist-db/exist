@@ -30,7 +30,7 @@
         <tab-id>part</tab-id>
         <color>lightgreen</color>
         <default-visibility>hide</default-visibility>
-        <path>part</path>
+        <path>relatedItem</path>
     </tab>
     <tab>
         <category>Resource</category>
@@ -130,8 +130,16 @@
     </tab>
     <tab>
         <category>Administrative</category>
-        <label>Location</label>
+        <label>Record Info</label>
         <tab-id>record-info</tab-id>
+        <color>pink</color>
+        <default-visibility>hide</default-visibility>
+        <path>recordInfo</path>
+    </tab>
+    <tab>
+        <category>Administrative</category>
+        <label>Location</label>
+        <tab-id>location</tab-id>
         <color>silver</color>
         <default-visibility>hide</default-visibility>
         <path>location</path>

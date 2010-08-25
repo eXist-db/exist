@@ -101,7 +101,7 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
                 <xf:label>{$tab/label/text()}</xf:label>
                 <xf:action ev:event="DOMActivate">
                     <xf:send submission="save-submission"/>
-                    <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}" show="replace"/>
+                    <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}&amp;show-all={$show-all}" show="replace"/>
                 </xf:action>
              </xf:trigger>
            </td>
