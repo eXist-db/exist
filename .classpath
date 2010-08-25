@@ -26,6 +26,7 @@
 	<classpathentry kind="src" path="extensions/cocoon/src"/>
 	<classpathentry kind="src" path="extensions/svn/src"/>
 	<classpathentry kind="src" path="extensions/svn/test/src"/>
+	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
@@ -153,5 +154,7 @@
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-7.1.5.v20100705.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-websocket-7.1.5.v20100705.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-7.1.5.v20100705.jar"/>
+	<classpathentry kind="lib" path="lib/user/memcached-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/user/ojdbc14.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
