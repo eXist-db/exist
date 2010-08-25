@@ -69,19 +69,7 @@ declare variable $biblio:FIELDS :=
         <field name="Note">mods:mods[ft:query(mods:note, '$q', $options)]</field>
         <field name="Subject">mods:mods[ft:query(mods:subject, '$q', $options)]</field>
         <field name="All Except Date">(
-        mods:mods[ft:query(mods:titleInfo, '$q', $options)]
-                union
-        mods:mods[ft:query(mods:relatedItem/mods:titleInfo, '$q', $options)]
-                union
-		mods:mods[ft:query(mods:name, '$q', $options)]
-                union
-		mods:mods[ft:query(mods:relatedItem/mods:name, '$q', $options)]
-		        union
-		mods:mods[ft:query(mods:abstract, '$q', $options)]
-		        union
-		mods:mods[ft:query(mods:note, '$q', $options)]
-		        union
-		mods:mods[ft:query(mods:subject, '$q', $options)]
+        mods:mods[ft:query(.//*, '$q', $options)]
 		)</field>
         
 	</fields>;
@@ -274,9 +262,7 @@ declare function biblio:process-form() as element(query)? {
                 { biblio:process-form-parameters($fields) }
             </query>
         else
-            <query>
-                <collection>{$collection}</collection>
-            </query>
+            ()
 };
 
 (:~
@@ -524,6 +510,9 @@ declare function biblio:is-collection-owner() as xs:boolean {
 };
 
 declare function biblio:has-collection-write-permissions($collection as xs:string) as xs:boolean {
+	if (empty(collection($collection))) then
+		false()
+	else
     let $user := request:get-attribute("xquery.user"),
     $collection-permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
         if(fn:matches($collection-permissions, ".......w."))then
