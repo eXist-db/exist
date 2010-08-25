@@ -62,6 +62,10 @@ public class Update extends Modification {
 
 	private final static Logger LOG = Logger.getLogger(Update.class);
 	
+	public Update(XQueryContext context) {
+		super(context);
+	}
+	
 	public Update(XQueryContext context, Expression select, Expression value) {
 		super(context, select, value);
 	}
@@ -88,7 +92,17 @@ public class Update extends Modification {
         
         Sequence inSeq = select.eval(contextSequence);
         
-        //START trap Update failure
+        update(inSeq, contentSeq);
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+        
+        return Sequence.EMPTY_SEQUENCE;
+	}
+
+	public void update(Sequence inSeq, Sequence contentSeq)
+			throws XPathException {
+		//START trap Update failure
         /* If we try and Update a node at an invalid location,
          * trap the error in a context variable,
          * this is then accessible from xquery via. the context extension module - deliriumsky
@@ -196,11 +210,6 @@ public class Update extends Modification {
                 context.popInScopeNamespaces();
             }
         }
-
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
-        
-        return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)

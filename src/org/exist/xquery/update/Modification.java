@@ -76,12 +76,16 @@ public abstract class Modification extends AbstractExpression
 	protected final static Logger LOG =
 		Logger.getLogger(Modification.class);
 	
-	protected final Expression select;
-	protected final Expression value;
+	protected Expression select = null;
+	protected Expression value = null;
 	
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap triggers;
+    protected Int2ObjectHashMap triggers = null;
+    
+    public Modification(XQueryContext context) {
+    	super(context);
+    }
     
     /**
 	 * @param context
@@ -93,6 +97,8 @@ public abstract class Modification extends AbstractExpression
         this.triggers = new Int2ObjectHashMap(97);
     }
 
+	public abstract void update(Sequence inSeq, Sequence contentSeq) throws XPathException;
+	
 	public int getCardinality() {
 		return Cardinality.EMPTY;
 	}
@@ -109,7 +115,8 @@ public abstract class Modification extends AbstractExpression
 	 */
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
-		select.resetState(postOptimization);
+		if (select != null)
+			select.resetState(postOptimization);
 		if (value != null)
 			value.resetState(postOptimization);
 	}
@@ -120,7 +127,8 @@ public abstract class Modification extends AbstractExpression
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		contextInfo.setParent(this);
 		contextInfo.addFlag(IN_UPDATE);
-		select.analyze(contextInfo);
+		if (select != null)
+			select.analyze(contextInfo);
 		if (value != null)
 			value.analyze(contextInfo);
 	}
@@ -156,6 +164,8 @@ public abstract class Modification extends AbstractExpression
                 if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                     throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
                 Node n = nv.getNode();
+                if (n == null)
+                	throw new XPathException(this, "Internal error: node to update is null");
                 if (n.getNodeType() == Node.DOCUMENT_NODE)
                     throw new XPathException(this, "Updating the document object is not allowed.");
 				ql[i] = (StoredNode) n;
@@ -212,7 +222,8 @@ public abstract class Modification extends AbstractExpression
             context.addModifiedDoc(doc);
 			finishTrigger(transaction, doc);
 		}
-        triggers.clear();
+		if (triggers != null)
+			triggers.clear();
     }
 
     /**
@@ -338,7 +349,7 @@ public abstract class Modification extends AbstractExpression
 		{
 			context.setBatchTransactionTrigger(doc);
 		}
-		else
+		else if (triggers != null)
 		{
 			//finish the trigger
             DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());

@@ -140,6 +140,10 @@ public class DocumentImpl extends NodeImpl implements Document {
     private final static int REF_SIZE = 8;
     boolean explicitCreation = false;
     
+    public DocumentImpl(XQueryContext context) {
+    	this(context, false);
+    }
+    
     public DocumentImpl(XQueryContext context, boolean explicitCreation) {
         super(null, 0);
         this.context = context;
