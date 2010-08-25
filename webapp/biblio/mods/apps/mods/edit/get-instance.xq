@@ -31,7 +31,7 @@ let $data-collection := $style:db-path-to-app-data
 (: If we are creating a new form, then just get the part of the new-instance.  Else get the data from the correct document
    in the mods data collection that has the correct collection id :)
 let $full-instance :=
-   if ($new = 'true' or $id = 'new')
+   if ($new = 'true' or $id = 'new' or $id='')
       then doc(concat($style:db-path-to-app, '/edit/new-instance.xml'))/mods:mods
       else collection($data-collection)//mods:mods[@ID = $id]
 
