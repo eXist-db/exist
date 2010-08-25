@@ -21,16 +21,15 @@
  */
 package org.exist.security.openid;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
+import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.Account;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 
@@ -107,7 +106,7 @@ public class ReamlImpl implements Realm {
 	 * @see org.exist.security.management.GroupsManagement#addGroup(org.exist.security.Group)
 	 */
 	@Override
-	public Group addGroup(Group role) throws PermissionDeniedException, EXistException, IOException {
+	public Group addGroup(Group role) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return null;
 	}
