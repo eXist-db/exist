@@ -598,4 +598,19 @@ public class Configurator {
 		
 		hotConfigs.clear();
 	}
+
+	public static void unregister(Configuration configuration) {
+		if (configuration == null) return;
+		
+		synchronized (hotConfigs) {
+			if (hotConfigs.containsValue(configuration)) { 
+				for (Entry<XmldbURI, Configuration> entry : hotConfigs.entrySet()) {
+					if (entry.getValue() == configuration) {
+						hotConfigs.remove(entry.getKey());
+						return;
+					}
+				}
+			}
+		}
+	}
 }

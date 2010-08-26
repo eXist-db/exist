@@ -51,6 +51,8 @@ public abstract class AbstractPrincipal implements Principal {
 	@ConfigurationFieldAsAttribute("id")
 	protected final int id;
 	
+	protected boolean removed = false;
+
 	protected Configuration configuration = null;
 	
 	public AbstractPrincipal(AbstractRealm realm, Collection collection, int id, String name) throws ConfigurationException {
@@ -119,9 +121,19 @@ public abstract class AbstractPrincipal implements Principal {
 
 	public final void setCollection(DBBroker broker, Collection collection) throws ConfigurationException {
 		if (collection != null) {
+			Configurator.unregister(configuration);
+
 			Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
 			configuration = Configurator.configure(this, _config_);
 		}
 	}
 
+	public final void setCollection(DBBroker broker, Collection collection, XmldbURI uri) throws ConfigurationException {
+		if (collection != null) {
+			Configurator.unregister(configuration);
+
+			Configuration _config_ = Configurator.parse(this, broker, collection, uri);
+			configuration = Configurator.configure(this, _config_);
+		}
+	}
 }
