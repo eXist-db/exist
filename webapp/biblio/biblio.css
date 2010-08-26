@@ -64,6 +64,10 @@ div.ui-dynatree-container {
     margin-left: 1em;
 }
 
+.search-form .collection-input {
+    border: 0;
+}
+
 #results-head {
     margin-bottom: 10px;
     margin-top: 10px;
@@ -258,11 +262,15 @@ a:hover {
     font-weight: bold;
 }
 
+.actions-toolbar {
+    float: right;
+}
+
 .save {
     vertical-align: top;
 }
 
-.save img {
+.save img, .actions-toolbar img {
     border: 0;
     margin: 0;
 }
