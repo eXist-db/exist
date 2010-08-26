@@ -41,15 +41,24 @@
               </address>
           </affiliation>
       </author>
-       <author>
-          <firstname>James</firstname>
-          <surname>Fuller</surname>
-          <affiliation>
-              <address format="linespecific">
+        <author>
+            <firstname>James</firstname>
+            <surname>Fuller</surname>
+            <affiliation>
+                <address format="linespecific">
                   <email>jim.fuller@webcomposite.com</email>
               </address>
-          </affiliation>
-      </author>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Loren</firstname>
+            <surname>Cahlander</surname>
+            <affiliation>
+                <address format="linespecific">
+                  <email>loren.cahlander@gmail.com</email>
+              </address>
+            </affiliation>
+        </author>
         
     </bookinfo>
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -142,7 +151,7 @@
 
                 <programlisting>
 <markup><![CDATA[<xdb:store xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays"
     createcollection="true">
     <fileset dir="samples/shakespeare"> 
         <include name="*.xml"/>
@@ -150,7 +159,7 @@
     </fileset>
 </xdb:store>
 <xdb:store xmlns:xdb="http://exist-db.org/ant"
-  uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+  uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays"
   createcollection="true" srcfile="samples/shakespeare/hamlet.xml"/>]]></markup></programlisting>
             </example>
 
@@ -217,13 +226,13 @@
               <title>Remove a Resource</title>
               <programlisting>
 <markup><![CDATA[<xdb:remove xmlns:xdb="http://exist-db.org/ant"
-  uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/>]]></markup></programlisting>
+  uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/>]]></markup></programlisting>
           </example>
           <example>
               <title>Remove a Collection</title>
               <programlisting>
 <markup><![CDATA[<xdb:remove xmlns:xdb="http://exist-db.org/ant"
-  uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays"/>]]></markup></programlisting>
+  uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare" collection="plays"/>]]></markup></programlisting>
           </example>
 
             <variablelist>
@@ -250,7 +259,7 @@
             <title>Create a Collection</title>
             <programlisting>
 <markup><![CDATA[<xdb:create xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare" collection="plays"/>]]></markup></programlisting>
         </example>
 
           <variablelist>
@@ -275,7 +284,7 @@
             <programlisting language="xml">
 <![CDATA[<condition property="exists">
     <xdb:exist xmlns:xdb="http://exist-db.org/ant"
-        uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/>
+        uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/>
  </condition>]]></programlisting>
         </example>
 
@@ -297,13 +306,13 @@
             <title>List Resources</title>
             <programlisting>
 <markup><![CDATA[<xdb:list xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resources="true" outputproperty="resources"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resources="true" outputproperty="resources"/>]]></markup></programlisting>
         </example>
         <example>
             <title>List Collections</title>
             <programlisting>
 <markup><![CDATA[<xdb:list xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collections="true" outputproperty="collections"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare" collections="true" outputproperty="collections"/>]]></markup></programlisting>
         </example>
 
           <variablelist>
@@ -341,13 +350,13 @@
             <title>Copy a Resource</title>
             <programlisting>
 <markup><![CDATA[<xdb:copy  xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></markup></programlisting>
         </example>
         <example>
             <title>Copy a Collection</title>
             <programlisting>
 <markup><![CDATA[<xdb:copy  xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/>]]></markup></programlisting>
         </example>
 
           <variablelist>
@@ -385,13 +394,13 @@
             <title>Move a Resource</title>
             <programlisting>
 <markup><![CDATA[<xdb:move xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></markup></programlisting>
         </example>
         <example>
             <title>Move a Collection</title>
             <programlisting>
 <markup><![CDATA[<xdb:move xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/>]]></markup></programlisting>
         </example>
 
           <variablelist>
@@ -436,7 +445,7 @@
                <title>Process an XPath</title>
                <programlisting>
 <markup><![CDATA[<xdb:xpath xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="/example-queries/query"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db" query="/example-queries/query"/>]]></markup></programlisting>
            </example>
            <para>The query task accepts the following attributes:</para>
            <variablelist>
@@ -501,7 +510,7 @@
                 <programlisting>
 <markup><![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
 <xdb:xquery  xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="${xquery}"
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db" query="${xquery}"
     user="guest" password="guest-passwd">
       <variable name="alpha" value="aaa-alep" />
 </xdb:xquery>
@@ -550,13 +559,13 @@
             <title>Extract a Resource</title>
             <programlisting>
 <markup><![CDATA[<xdb:extract xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/>]]></markup></programlisting>
         </example>
         <example>
             <title>Extract a Collection</title>
             <programlisting>
 <markup><![CDATA[<xdb:extract xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/>]]></markup></programlisting>
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc/db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/>]]></markup></programlisting>
         </example>
 
           <variablelist>
@@ -679,7 +688,7 @@
                 <title>Restore a Collection</title>
                 <programlisting>
 <markup><![CDATA[<xdb:restore xmlns:xdb="http://exist-db.org/ant"
-    uri="xmldb:exist://localhost:8080/exist/xmlrpc" user="admin" password=""
+    uri="xmldb:exist://restrict:8080/exist/xmlrpc" user="admin" password=""
     dir="${backup.dir}/db/home"/>]]></markup></programlisting>
             </example>
         </section>
@@ -767,70 +776,114 @@
               </varlistentry>
             </variablelist>
         </section>
-      <section>
+        <section>
             <title>Add User</title>
             <para>
-              This task adds a user.
+                This task adds a user.
             </para>
-
+            
             <example>
                 <title>Add User</title>
                 <programlisting>
 <markup><![CDATA[<xdb:adduser xmlns:xdb="http://exist-db.org/ant"
 uri="${backup.uri}/db" name="guest" secret="ToPSecreT" primaryGroup="users" />]]></markup></programlisting>
             </example>
-
+            
             <variablelist>
-              <varlistentry>
-                  <term>name</term>
-                  <listitem>
-                      <para>Name of the new user.</para>
-                  </listitem>
-              </varlistentry>
-              <varlistentry>
-                  <term>home</term>
-                  <listitem>
-                      <para>Name of collection that is home collection.</para>
-                  </listitem>
-              </varlistentry>
-              <varlistentry>
-                  <term>secret</term>
-                  <listitem>
-                      <para>The password of the new user.</para>
-                  </listitem>
-              </varlistentry>
-              <varlistentry>
-                  <term>primaryGroup</term>
-                  <listitem>
-                      <para>Name of primary group of the new user.</para>
-                  </listitem>
-              </varlistentry>
+                <varlistentry>
+                    <term>name</term>
+                    <listitem>
+                        <para>Name of the new user.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>home</term>
+                    <listitem>
+                        <para>Name of collection that is home collection.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>secret</term>
+                    <listitem>
+                        <para>The password of the new user.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>primaryGroup</term>
+                    <listitem>
+                        <para>Name of primary group of the new user.</para>
+                    </listitem>
+                </varlistentry>
             </variablelist>
-
-           <note>
-            <para> This task does not seem to work currently!</para>
-           </note>
+            
+            <note>
+                <para> This task does not seem to work currently!</para>
+            </note>
         </section>
-      <section>
+        <section>
             <title>Remove User</title>
             <para>
-              This task removes a user.
+                This task removes a user.
             </para>
-
+            
             <example>
                 <title>Remove User</title>
                 <programlisting>
 <markup><![CDATA[<xdb:rmuser xmlns:xdb="http://exist-db.org/ant"
     uri="${backup.uri}/db" name="guest"/>]]></markup></programlisting>
             </example>
-
+            
             <variablelist>
-              <varlistentry>
-                  <term>name</term>
-                  <listitem>
-                      <para>Name of the user to remove.</para>
-                  </listitem>
-              </varlistentry>
+                <varlistentry>
+                    <term>name</term>
+                    <listitem>
+                        <para>Name of the user to remove.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Add Group</title>
+            <para>
+                This task adds a group.
+            </para>
+            
+            <example>
+                <title>Add Group</title>
+                <programlisting>
+<markup><![CDATA[<xdb:addgroup xmlns:xdb="http://exist-db.org/ant"
+uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
+            </example>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>name</term>
+                    <listitem>
+                        <para>Name of the new group.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+        <section>
+            <title>Remove Group</title>
+            <para>
+                This task removes a group.
+            </para>
+            
+            <example>
+                <title>Remove Group</title>
+                <programlisting>
+<markup><![CDATA[<xdb:rmgroup xmlns:xdb="http://exist-db.org/ant"
+    uri="${backup.uri}/db" name="guest"/>]]></markup></programlisting>
+            </example>
+            
+            <variablelist>
+                <varlistentry>
+                    <term>name</term>
+                    <listitem>
+                        <para>Name of the group to remove.</para>
+                    </listitem>
+                </varlistentry>
             </variablelist>
         </section>
         <section>
