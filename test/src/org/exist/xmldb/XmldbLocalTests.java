@@ -22,7 +22,7 @@ public class XmldbLocalTests {
         suite.addTestSuite(XmldbURITest.class);
         suite.addTestSuite(CollectionConfigurationTest.class);
         suite.addTestSuite(CollectionTest.class);
-        suite.addTest(new TestSuite(MultiDBTest.class));
+//        suite.addTest(new TestSuite(MultiDBTest.class));
         //$JUnit-END$
 		return suite;
 	}
