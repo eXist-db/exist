@@ -21,12 +21,13 @@
  */
 package org.exist.xmldb;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import static org.junit.Assert.*;
 import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.SingleInstanceConfiguration;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -42,11 +43,11 @@ import java.io.FileOutputStream;
  * @author wolf
  *
  */
-public class MultiDBTest extends TestCase {
+public class MultiDBTest {
 
-    public static void main(String[] args) {
-        TestRunner.run(MultiDBTest.class);
-    }
+//    public static void main(String[] args) {
+//        TestRunner.run(MultiDBTest.class);
+//    }
     
     private final static int INSTANCE_COUNT = 5;
     
@@ -57,6 +58,8 @@ public class MultiDBTest extends TestCase {
         "   </db-connection>" +
         "</exist>";
     
+    @Ignore
+    @Test
     public void testStore() {
     	try {
 	        for (int i = 0; i < INSTANCE_COUNT; i++) {
