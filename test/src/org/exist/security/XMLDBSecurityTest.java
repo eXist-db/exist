@@ -296,6 +296,7 @@ public class XMLDBSecurityTest {
         } catch (XMLDBException e) {
             e.printStackTrace();
         }
+        System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
     }

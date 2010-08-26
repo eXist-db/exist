@@ -1586,10 +1586,10 @@ public class ClientFrame extends JFrame
         
 		private static final long serialVersionUID = 1L;
 		private final String[] columnNames = new String[]{
-                  Messages.getString("ClientFrame.207")  //$NON-NLS-1$
+                  Messages.getString("ClientFrame.207") //$NON-NLS-1$
                 , Messages.getString("ClientFrame.208") //$NON-NLS-1$
                 , Messages.getString("ClientFrame.209") //$NON-NLS-1$
-                , Messages.getString("ClientFrame.210")   //$NON-NLS-1$
+                , Messages.getString("ClientFrame.210") //$NON-NLS-1$
                 , Messages.getString("ClientFrame.211") //$NON-NLS-1$
                 };
                 
