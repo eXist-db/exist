@@ -85,18 +85,26 @@ public abstract class AbstractRealm implements Realm, Configurable {
 			collectionRemovedAccounts = broker.getCollection(realmCollectionURL.append("accounts").append("removed"));
 			collectionRemovedGroups = broker.getCollection(realmCollectionURL.append("groups").append("removed"));
 			
-			if (collectionRealm == null || collectionAccounts == null || collectionGroups == null) {
+			if (collectionRealm == null || 
+					collectionAccounts == null || collectionGroups == null ||
+					collectionRemovedAccounts == null || collectionRemovedGroups == null) {
 				txn = transact.beginTransaction();
 
 				try {
 					if (collectionRealm == null)
-						collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
+						collectionRealm = Utils.createCollection(broker, txn, realmCollectionURL);
 					
 					if (collectionAccounts == null)
 						collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
 					
 					if (collectionGroups == null)
-						collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
+						collectionGroups = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
+	
+					if (collectionRemovedAccounts == null)
+						collectionRemovedAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts").append("removed"));
+					
+					if (collectionRemovedGroups == null)
+						collectionRemovedGroups = Utils.createCollection(broker, txn, realmCollectionURL.append("groups").append("removed"));
 	
 					transact.commit(txn);
 				} catch (Exception e) {
@@ -128,7 +136,20 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            }
 	        }
 	        
-			//load groups information
+			//load marked for remove accounts information
+	        if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+	            	
+	            	if (!sm.usersById.containsKey(conf.getPropertyInteger("id"))) {
+	            		AccountImpl account = new AccountImpl( this, conf );
+	            		account.removed = true;
+		            	sm.usersById.put(account.getId(), account);
+	            	}
+	            }
+	        }
+
+	        //load groups information
 	        if (collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
 	            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
 	            	Configuration conf = Configurator.parse(i.next());
@@ -137,6 +158,19 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            		GroupImpl group = new GroupImpl(this, conf);
 	            		sm.groupsById.put(group.getId(), group);
 	            		groupsByName.put(group.getName(), group);
+	            	}
+	            }
+	        }
+
+	        //load marked for remove groups information
+	        if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+
+	            	if (!sm.groupsById.containsKey(conf.getPropertyInteger("id"))) {
+	            		GroupImpl group = new GroupImpl(this, conf);
+	            		group.removed = true;
+	            		sm.groupsById.put(group.getId(), group);
 	            	}
 	            }
 	        }

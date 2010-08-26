@@ -21,8 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -30,7 +28,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.Configurator;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
@@ -38,9 +35,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
+import org.exist.security.UUIDGenerator;
 import org.exist.security.realm.Realm;
-import org.exist.security.utils.Utils;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
@@ -119,7 +115,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 	}
 
 	public void startUp(DBBroker broker) throws EXistException {
-			super.startUp(broker);
+		super.startUp(broker);
 	}
 
 	private Group _addGroup(String name) throws ConfigurationException {
@@ -175,8 +171,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 			broker = sm.getDatabase().get(null);
 			Account user = broker.getUser();
 			
-			if ( ! (account.getName().equals(user.getName()) 
-					|| user.hasDbaRole()) )
+			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
 					throw new PermissionDeniedException(
 						" you are not allowed to change '"+account.getName()+"' user");
 	
@@ -196,7 +191,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 						updatingAccount.addGroup(groups[i]);
 					}
 			}
-			//XXX: delete account's group
+			//XXX: delete group from account information
 				
 			updatingAccount.setPassword(account.getPassword());
 	
@@ -212,13 +207,45 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		if(account == null)
 			return false;
 		
-		//XXX: lock and check for documents & collestions it can be owner
-		sm.usersById.remove(account.getId());
-		usersByName.remove(account.getName());
-
-//		_save();
+		AbstractAccount remove_account = (AbstractAccount)usersByName.get(account.getName());
+		if (remove_account == null) return false;
 		
-		return false;
+		DBBroker broker = null;
+		try {
+			broker = sm.getDatabase().get(null);
+			Account user = broker.getUser();
+			
+			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
+					throw new PermissionDeniedException(
+						" you are not allowed to delete '"+account.getName()+"' user");
+
+			remove_account.removed = true;
+			remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
+			
+	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
+	        Txn txn = null;
+	        try {
+				txn = transaction.beginTransaction();
+	
+				collectionAccounts.removeXMLResource(
+						txn, 
+						broker, 
+						XmldbURI.create( remove_account.getName()+".xml" ) );
+
+				transaction.commit(txn);
+	        } catch (Exception e) {
+				transaction.abort(txn);
+				e.printStackTrace();
+				LOG.debug("loading configuration failed: " + e.getMessage());
+			}
+			
+			sm.usersById.put(remove_account.getId(), remove_account);
+			usersByName.remove(remove_account.getName());
+
+			return true;
+		} finally {
+			sm.getDatabase().release(broker);
+		}
 	}
 
 	public synchronized boolean deleteRole(String name) throws PermissionDeniedException, EXistException {
@@ -243,8 +270,49 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		return false;
 	}
 
-	public synchronized boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException {
-		return deleteRole(role.getName());
+	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
+		if(group == null)
+			return false;
+		
+		AbstractPrincipal remove_group = (AbstractPrincipal)groupsByName.get(group.getName());
+		if (remove_group == null) return false;
+		
+		DBBroker broker = null;
+		try {
+			broker = sm.getDatabase().get(null);
+			Account user = broker.getUser();
+			
+			if ( ! ( user.hasDbaRole() ) )
+					throw new PermissionDeniedException(
+						" you are not allowed to delete '"+remove_group.getName()+"' group");
+
+			remove_group.removed = true;
+			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
+			
+	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
+	        Txn txn = null;
+	        try {
+				txn = transaction.beginTransaction();
+	
+				collectionGroups.removeXMLResource(
+						txn, 
+						broker, 
+						XmldbURI.create( remove_group.getName()+".xml" ) );
+
+				transaction.commit(txn);
+	        } catch (Exception e) {
+				transaction.abort(txn);
+				e.printStackTrace();
+				LOG.debug("loading configuration failed: " + e.getMessage());
+			}
+			
+			sm.groupsById.put(remove_group.getId(), (Group)remove_group);
+			groupsByName.remove(remove_group.getName());
+
+			return true;
+		} finally {
+			sm.getDatabase().release(broker);
+		}
 	}
 	
 	@Override

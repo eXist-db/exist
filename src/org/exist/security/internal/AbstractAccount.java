@@ -47,16 +47,16 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	protected Set<Group> roles = null;
 	
 	//used for internal locking
-	private final boolean accountLocked = false;
+	private boolean accountLocked = false;
 	
 	@ConfigurationFieldAsElement("expired")
-	private final boolean accountExpired = false;
+	private boolean accountExpired = false;
 	
 //	@ConfigurationFieldAsElement("credentials-expired")
-    private final boolean credentialsExpired = false;
+    private boolean credentialsExpired = false;
 	
     @ConfigurationFieldAsElement("enabled")
-    private final boolean enabled = true;
+    private boolean enabled = true;
     
 	protected Credential _cred = null;
 
