@@ -310,7 +310,7 @@ public class Restore extends DefaultHandler
                         throw( new SAXException( "Collection not found: " + collUri ) );
                     }
                     UserManagementService service = (UserManagementService)current.getService( "UserManagementService", "1.0" );
-                    Account                  u       = new UserAider( owner, new GroupAider( group ) );
+                    Account                  u    = new UserAider( owner, new GroupAider( group ) );
                     service.chown( u, group );
                     service.chmod( Integer.parseInt( mode, 8 ) );
                 }
