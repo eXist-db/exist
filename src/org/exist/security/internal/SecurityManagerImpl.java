@@ -194,7 +194,10 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized void deleteGroup(String name) throws PermissionDeniedException, EXistException {
-		defaultRealm.deleteRole(name);
+		Group group = defaultRealm.getGroup(name);
+		if (group == null) return;
+		
+		defaultRealm.deleteGroup(group);
 	}
 
 	public synchronized void deleteAccount(String name) throws PermissionDeniedException, EXistException {
