@@ -80,6 +80,16 @@ public abstract class AbstractPrincipal implements Principal {
 		}
 	}
 	
+	public AbstractPrincipal(AbstractRealm realm, Configuration _config_) throws ConfigurationException {
+		this.realm = realm;
+
+		configuration = Configurator.configure(this, _config_);
+
+		this.id = configuration.getPropertyInteger("id");
+		this.name = configuration.getProperty("name");
+		
+	}
+
 	protected void save() throws PermissionDeniedException, EXistException {
 		if (configuration != null)
 			configuration.save();

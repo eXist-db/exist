@@ -21,11 +21,10 @@
  */
 package org.exist.security.internal;
 
+import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.Group;
-import org.exist.util.DatabaseConfigurationException;
-import org.w3c.dom.Element;
 
 @ConfigurationClass("group")
 public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, Group {
@@ -37,6 +36,10 @@ public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, 
 	@Deprecated //remove after old LDAP security manager remove
 	public GroupImpl(String name, int id) throws ConfigurationException {
 		super(null, null, id, name);
+	}
+
+	public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+		super(realm, configuration);
 	}
 
 	public int compareTo(Object other) {

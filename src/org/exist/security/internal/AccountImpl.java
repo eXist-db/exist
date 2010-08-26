@@ -23,6 +23,7 @@ package org.exist.security.internal;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
@@ -213,6 +214,12 @@ public class AccountImpl extends AbstractAccount {
 
         this.realm = realm;
     }
+
+	public AccountImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+		super(
+			realm, 
+			configuration);
+	}
 
 	/**
 	 * Get the user's password
