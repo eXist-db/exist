@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.exist.EXistException;
+import org.exist.dom.DocumentAtExist;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -57,7 +59,7 @@ public interface Configuration {
 
 	public String getName();
 
-	public void checkForUpdates();
+	public void checkForUpdates(DocumentAtExist document);
 
 	public void save() throws PermissionDeniedException, EXistException;
 }
