@@ -772,7 +772,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         if (password.length() == 0)
             password = null;
         Session session = getSession(sessionId);
-        Account user = session.getUser();
+        Subject user = session.getUser();
         
         org.exist.security.SecurityManager manager = pool.getSecurityManager();
         if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
@@ -820,10 +820,16 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         		throw new RemoteException("Invalid collection URI",e);
         	}
         }
+        
+        DBBroker broker = null;
         try {
+        	broker = pool.get(user);
+        	
 			manager.addAccount(u);
 		} catch (Exception e) {
     		throw new RemoteException(e.getMessage(), e);
+		} finally {
+			pool.release(broker);
 		}
     }
     
@@ -847,17 +853,22 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     public void removeUser(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
-        Account user = getSession(sessionId).getUser();
+        Subject user = getSession(sessionId).getUser();
         org.exist.security.SecurityManager manager = pool
                 .getSecurityManager();
         if (!manager.hasAdminPrivileges(user))
             throw new RemoteException(
                     "you are not allowed to remove users");
         
+        DBBroker broker = null;
         try {
+        	broker = pool.get(user);
+        	
             manager.deleteAccount(name);
         } catch (Exception e) {
             throw new RemoteException(e.getMessage());
+		} finally {
+			pool.release(broker);
 		}
     }
     
