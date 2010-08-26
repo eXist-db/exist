@@ -47,7 +47,7 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 
 		Configuration conf = Configurator.hotConfigs.get(documentPath);
 		if (conf != null) 
-			conf.checkForUpdates();
+			conf.checkForUpdates(document);
 		
 		if (documentPath.equals("/db/system/users.xml")) {
 			try {

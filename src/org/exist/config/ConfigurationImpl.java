@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.exist.EXistException;
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.w3c.dom.NamedNodeMap;
@@ -291,10 +292,13 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	}
 
 	private boolean saving = false;
+	
 	@Override
-	public void checkForUpdates() {
-		if (!saving && configuredObjectReferene != null && configuredObjectReferene.get() != null)
+	public void checkForUpdates(DocumentAtExist document) {
+		if (!saving && configuredObjectReferene != null && configuredObjectReferene.get() != null) {
+			setProxyObject((ElementAtExist) document.getDocumentElement());
 			Configurator.configure(configuredObjectReferene.get(), this);
+		}
 	}
 
 	@Override
