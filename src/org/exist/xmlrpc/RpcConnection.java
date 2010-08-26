@@ -2718,14 +2718,21 @@ public class RpcConnection implements RpcAPI {
      */
     public boolean removeAccount(String name) throws EXistException,
             PermissionDeniedException {
-        SecurityManager manager = factory.getBrokerPool()
-                .getSecurityManager();
+        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+        
         if (!manager.hasAdminPrivileges(user))
             throw new PermissionDeniedException(
                     "you are not allowed to remove users");
         
-        manager.deleteAccount(name);
-        return true;
+        DBBroker broker = null;
+        try {
+        	broker = factory.brokerPool.get(user);
+
+        	manager.deleteAccount(name);
+        	return true;
+        } finally {
+        	factory.brokerPool.release(broker);
+        }
     }
 
     public byte[] retrieve(String doc, String id, HashMap<String, Object> parameters)
