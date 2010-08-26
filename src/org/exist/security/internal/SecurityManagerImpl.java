@@ -37,12 +37,10 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
-import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.UnixStylePermission;
 import org.exist.security.Account;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
@@ -53,11 +51,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -70,6 +63,7 @@ import org.w3c.dom.NodeList;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
+//<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
 public class SecurityManagerImpl implements SecurityManager {
 	
@@ -101,9 +95,6 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	private ExistPDP pdp;
     
-	//default UnixStylePermission
-    public final Permission DEFAULT_PERMISSION;
-    
     private RealmImpl defaultRealm;
     
     @ConfigurationFieldAsElement("realm")
@@ -120,9 +111,6 @@ public class SecurityManagerImpl implements SecurityManager {
     	realms.add(defaultRealm);
 
     	PermissionFactory.sm = this;
-       
-    	DEFAULT_PERMISSION = new UnixStylePermission(this);
-    	
     }
 
     /**
@@ -140,19 +128,6 @@ public class SecurityManagerImpl implements SecurityManager {
 
     	this.pool = pool;
     	
-        String COLLECTION_CONFIG =
-            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
-        	"	<exist:triggers>" +
-        	"		<exist:trigger event='store,remove' class='org.exist.examples.triggers.ExampleTrigger'>" +
-        	"		</exist:trigger>" +
-        	"	</exist:triggers>" +
-        	"	<index>" +
-        	"		<fulltext default=\"none\">" +
-        	"		</fulltext>" +
-            "		<create path=\"//user/@uid\" type=\"xs:integer\"/>" +
-            "	</index>" +
-        	"</collection>";
-
         TransactionManager transaction = pool.getTransactionManager();
         Txn txn = null;
 		
@@ -167,53 +142,12 @@ public class SecurityManagerImpl implements SecurityManager {
 				systemCollection.setPermissions(0770);
 				broker.saveCollection(txn, systemCollection);
 
-//				CollectionConfigurationManager mgr = pool.getConfigurationManager();
-//		        mgr.addConfiguration(txn, broker, systemCollection, COLLECTION_CONFIG);
-
 				transaction.commit(txn);
 			}
         } catch (Exception e) {
 			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading acl failed: " + e.getMessage());
-		}
-
-		Document config = systemCollection.getDocument(broker, ACL_FILE_URI);
-		if (config != null) {
-			Element element = config.getDocumentElement();
-
-			Attr version = element.getAttributeNode("version");
-			int major = 0;
-			int minor = 0;
-			if (version!=null) {
-				String [] numbers = version.getValue().split("\\.");
-				major = Integer.parseInt(numbers[0]);
-				minor = Integer.parseInt(numbers[1]);
-			}
-			//check version
-			
-			//load last account & role id
-			NodeList nl = element.getChildNodes();
-			Element next;
-			String lastId;
-			for (int i = 0; i < nl.getLength(); i++) {
-				if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-					continue;
-				next = (Element) nl.item(i);
-				if (next.getTagName().equals("users")) {
-					lastId = next.getAttribute("last-id");
-					try {
-						lastUserId = Integer.parseInt(lastId);
-					} catch (NumberFormatException e) {
-					}
-				} else if (next.getTagName().equals("groups")) {
-					lastId = next.getAttribute("last-id");
-					try {
-						lastGroupId = Integer.parseInt(lastId);
-					} catch (NumberFormatException e) {
-					}
-				}
-			}
 		}
 
         try {
@@ -224,9 +158,6 @@ public class SecurityManagerImpl implements SecurityManager {
 				if (collection == null) return; //throw error???
 				collection.setPermissions(0770);
 				broker.saveCollection(txn, collection);
-
-//				CollectionConfigurationManager mgr = pool.getConfigurationManager();
-//		        mgr.addConfiguration(txn, broker, collection, COLLECTION_CONFIG);
 
 				transaction.commit(txn);
 			}
@@ -243,119 +174,6 @@ public class SecurityManagerImpl implements SecurityManager {
 		for (Realm realm : realms) {
     		realm.startUp(broker);
     	}
-        
-//        
-//		Element docElement = null;
-//		if (new_config != null)
-//			docElement = new_config.getDocumentElement();
-//		if (docElement == null) {
-//			_save();
-//		} else {
-//			
-//		}
-
-//       TransactionManager transact = pool.getTransactionManager();
-//       Txn txn = null;
-//       DBBroker broker = sysBroker;
-//       try {
-//          Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-//          if (sysCollection == null) {
-//             txn = transact.beginTransaction();
-//             sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-//              if (sysCollection == null)
-//                return;
-//             sysCollection.setPermissions(0770);
-//             broker.saveCollection(txn, sysCollection);
-//             transact.commit(txn);
-//          }
-//          Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
-//          Element docElement = null;
-//          if (acl != null)
-//             docElement = acl.getDocumentElement();
-//          if (docElement == null) {
-//             LOG.debug("creating system users");
-//             UserImpl user = new UserImpl(DBA_USER, "");
-//             user.addGroup(DBA_GROUP);
-//             user.setUID(++nextUserId);
-//             users.put(user.getUID(), user);
-//             user = new UserImpl(GUEST_USER, GUEST_USER, GUEST_GROUP);
-//             user.setUID(++nextUserId);
-//             users.put(user.getUID(), user);
-//             newGroup(DBA_GROUP);
-//             newGroup(GUEST_GROUP);
-//             txn = transact.beginTransaction();
-//             save(broker, txn);
-//             transact.commit(txn);
-//          } else {
-//             LOG.debug("loading acl");
-//             Element root = acl.getDocumentElement();
-//             Attr version = root.getAttributeNode("version");
-//             int major = 0;
-//             int minor = 0;
-//             if (version!=null) {
-//                String [] numbers = version.getValue().split("\\.");
-//                major = Integer.parseInt(numbers[0]);
-//                minor = Integer.parseInt(numbers[1]);
-//             }
-//             NodeList nl = root.getChildNodes();
-//             Node node;
-//             Element next;
-//             User user;
-//             NodeList ul;
-//             String lastId;
-//             Group group;
-//             for (int i = 0; i < nl.getLength(); i++) {
-//                if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-//                   continue;
-//                next = (Element) nl.item(i);
-//                if (next.getTagName().equals("users")) {
-//                   lastId = next.getAttribute("last-id");
-//                   try {
-//                      nextUserId = Integer.parseInt(lastId);
-//                   } catch (NumberFormatException e) {
-//                   }
-//                   ul = next.getChildNodes();
-//                   for (int j = 0; j < ul.getLength(); j++) {
-//                      node = ul.item(j);
-//                      if(node.getNodeType() == Node.ELEMENT_NODE &&
-//                              node.getLocalName().equals("user")) {
-//                         user = new UserImpl(major,minor,(Element)node);
-//                         users.put(user.getUID(), user);
-//                      }
-//                   }
-//                } else if (next.getTagName().equals("groups")) {
-//                   lastId = next.getAttribute("last-id");
-//                   try {
-//                      nextGroupId = Integer.parseInt(lastId);
-//                   } catch (NumberFormatException e) {
-//                   }
-//                   ul = next.getChildNodes();
-//                   for (int j = 0; j < ul.getLength(); j++) {
-//                      node = ul.item(j);
-//                      if(node.getNodeType() == Node.ELEMENT_NODE &&
-//                              node.getLocalName().equals("group")) {
-//                         group = new GroupImpl((Element)node);
-//                         groups.put(group.getId(), group);
-//                      }
-//                   }
-//                }
-//             }
-//          }
-//       } catch (Exception e) {
-//          transact.abort(txn);
-//          e.printStackTrace();
-//          LOG.debug("loading acl failed: " + e.getMessage());
-//       }
-
-		//XXX: move to CollectionManagment
-		// read default collection and resource permissions
-//		Integer defOpt = (Integer) broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
-//		if (defOpt != null)
-//			defaultResourcePermissions = defOpt.intValue();
-//		
-//		defOpt = (Integer)broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
-//		if (defOpt != null)
-//			defaultResourcePermissions = defOpt.intValue();
 		   
 		enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
 		if(enableXACML != null && enableXACML.booleanValue()) {

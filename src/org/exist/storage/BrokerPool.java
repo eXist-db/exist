@@ -864,7 +864,7 @@ public class BrokerPool extends Observable {
         //OK : the DB is repaired; let's make a few RW operations
         signalSystemStatus(SIGNAL_RIDEABLE);
 
-        //initialize configurations wantcher trigger
+        //initialize configurations watcher trigger
         Collection systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
         if (systemCollection != null) {
         	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
