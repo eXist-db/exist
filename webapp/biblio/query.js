@@ -33,7 +33,7 @@ function initCollectionTree() {
             var key = dtnode.data.key;
             var form = $('#simple-search-form');
             $('input[name = collection]', form).val(key);
-            form.submit();
+//            form.submit();
         }
     });
     $('#toggle-collection-tree').click(function () {
@@ -219,7 +219,7 @@ function resultsLoaded(options) {
     $('#filters').css('display', 'block');
     $('#filters .include-target').empty();
     $('#filters .expand').removeClass('expanded');
-    $('.actions .save', this).click(function (ev) {
+    $('.actions-toolbar .save', this).click(function (ev) {
         var img = $('img', this);
         var pos = this.hash.substring(1);
         if (img.hasClass('stored')) {
@@ -233,17 +233,19 @@ function resultsLoaded(options) {
             $.get('user.xql', { list: 'add', pos: pos });
         }
         $('#personal-list-size').load('user.xql', { action: 'count' });
+        return false;
     });
     
     /** add remove resource action */
-    $('#remove-resource').click(function() {{
+    $('.actions-toolbar .remove-resource', this).click(function() {{
+    	alert("FOUND");
         $('#remove-resource-id').val($('#' + this.id).attr('href').substr(1));
         $('#remove-resource-dialog').dialog('open');
         return false;
     }});
     
     /** add move resource action */
-    $('#move-resource').click(function() {{
+    $('.actions-toolbar .move-resource', this).click(function() {{
         $('#move-resource-id').val($('#' + this.id).attr('href').substr(1));
         $('#move-resource-dialog').dialog('open');
         return false;

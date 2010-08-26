@@ -37,26 +37,40 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
             return
                 <tr>
                     <td class="current">{$currentPos}</td>
-                    <td class="actions">
-                        <a id="save_{$id}" href="#{$currentPos}" class="save">
-                            <img title="save to my list" 
-                                src="{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
-                                class="{if ($saved) then 'stored' else ''}"/>
-                        </a>
-                        {
-                            if($count eq 1)then(
-                                <a id="remove-resource" href="#{$id}"><img title="delete" src="img/delete.png"/></a>,
-                                <a id="move-resource" href="#{$id}"><img title="move" src="img/shape_move_front.png"/></a>
-                            )else()
-                        }
-                    </td>
+                    {
+                        if ($count gt 1) then
+                            <td class="actions">
+                                <a id="save_{$id}" href="#{$currentPos}" class="save">
+                                    <img title="save to my list" 
+                                        src="{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
+                                        class="{if ($saved) then 'stored' else ''}"/>
+                                </a>
+                            </td>
+                        else
+                            ()
+                    }
                     <td>
                         <img title="{$item/mods:typeOfResource/string()}" 
                           src="img/{mods:return-type(string($currentPos), $item)}.png"/>
                     </td>
                     {
                         if ($count eq 1) then
-                            <td class="detail-view">{mods:format-full(string($currentPos), $item)}</td>
+                            <td class="detail-view">
+                                <div class="actions-toolbar">
+                                    <a id="save_{$id}" href="#{$currentPos}" class="save">
+                                       <img title="save to my list" 
+                                           src="{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
+                                           class="{if ($saved) then 'stored' else ''}"/>
+                                   </a>
+                                   {
+                                       if($count eq 1)then(
+                                           <a class="remove-resource" href="#{$id}"><img title="delete" src="img/delete.png"/></a>,
+                                           <a class="move-resource" href="#{$id}"><img title="move" src="img/shape_move_front.png"/></a>
+                                       )else()
+                                   }
+                                </div>
+                                { mods:format-full(string($currentPos), $item) }
+                            </td>
                         else
                             <td class="pagination-toggle"><a>{mods:format-short(string($currentPos), $item)}</a></td>
                     }

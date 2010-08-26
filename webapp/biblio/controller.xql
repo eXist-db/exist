@@ -47,23 +47,7 @@ else if ($exist:resource eq 'index.xml') then
             <forward url="search.xql">
                 <!-- Errors should be passed through instead of terminating the request -->
         		<set-attribute name="xquery.report-errors" value="yes"/>
-        		<set-attribute name="xquery.attribute" value="model"/>
             </forward>
-            <forward servlet="XSLTServlet">
-    			<set-attribute name="xslt.input"
-    				value="model"/>
-    			<set-attribute name="xslt.stylesheet" 
-    				value="../stylesheets/db2xhtml.xsl"/>
-    			<set-attribute name="xslt.syntax-highlight" value="no"/>
-    			<set-attribute name="xslt.output.media-type"
-                        value="application/xhtml+xml"/>
-                <set-attribute name="xslt.output.doctype-public"
-                	    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
-                <set-attribute name="xslt.output.doctype-system"
-                    value="resources/xhtml1-transitional.dtd"/>
-                <set-attribute name="xslt.output.enforce-xhtml"
-                    value="yes"/>
-    		</forward>
 		</view>
 	</dispatch>
 (:  Retrieve an item from the query results stored in the HTTP session. The

@@ -27,7 +27,7 @@ import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql"
 import module namespace sort="http://exist-db.org/xquery/sort"
 	at "java:org.exist.xquery.modules.sort.SortModule";
 	
-declare option exist:serialize "media-type=text/xml omit-xml-declaration=no";
+declare option exist:serialize "method=xhtml media-type=application/xhtml+xml omit-xml-declaration=no enforce-xhtml=yes";
 
 declare variable $biblio:CREDENTIALS := ("biblio", "mods");
 
@@ -262,7 +262,9 @@ declare function biblio:process-form() as element(query)? {
                 { biblio:process-form-parameters($fields) }
             </query>
         else
-            ()
+            <query>
+                <collection>{$collection}</collection>
+            </query>
 };
 
 (:~
@@ -412,10 +414,8 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             biblio:query-history()
         case element(biblio:collection-path) return
             let $collection := request:get-parameter("collection", $biblio:COLLECTION)
-            return (
-                <span class="collection-path">{$collection}</span>,
-                <input type="hidden" name="collection" value="{$collection}"/>
-            )
+            return
+                <input class="collection-input" type="text" name="collection" value="{$collection}" readonly="true"/>
         case element(biblio:form-select-current-user-groups) return
             biblio:form-select-current-user-groups($node/@name)
         case element(biblio:current-user) return
@@ -601,7 +601,7 @@ let $results :=
         biblio:eval-query($queryAsXML)
 (:  Process the HTML template received as input :)
 let $output :=
-    jquery:process-templates(
+    jquery:process(
         biblio:process-templates(if ($queryAsXML//field) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
     )
 return
