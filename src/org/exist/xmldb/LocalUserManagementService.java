@@ -50,8 +50,13 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"user " + u.getName() + " exists");
+		
+		DBBroker broker = null;
 		try {
-			manager.addAccount(u);
+	        broker = pool.get(user);
+
+	        manager.addAccount(u);
+
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -63,6 +68,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.UNKNOWN_ERROR,
 					e.getMessage(),
 					e);
+		} finally {
+			pool.release(broker);
 		}
 	}
 
@@ -79,8 +86,12 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.VENDOR_ERROR,
 				"group '" + group.getName() + "' exists");
 		
+		DBBroker broker = null;
 		try {
-			manager.addGroup(group);
+	        broker = pool.get(user);
+
+        	manager.addGroup(group);
+	        
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
@@ -92,6 +103,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.UNKNOWN_ERROR,
 					e.getMessage(),
 					e);
+		} finally {
+			pool.release(broker);
 		}
 	}
 
@@ -643,30 +656,86 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public Account getAccount(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		return manager.getAccount(name);
+		
+		DBBroker broker = null;
+		try {
+	        broker = pool.get(user);
+
+	        return manager.getAccount(name);
+
+		} catch (EXistException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
+		} finally {
+			pool.release(broker);
+		}
 	}
 
 	public Account[] getAccounts() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		java.util.Collection<Account> users = manager.getUsers();
-		return users.toArray(new Account[users.size()]);
+
+		DBBroker broker = null;
+		try {
+	        broker = pool.get(user);
+	        
+	        java.util.Collection<Account> users = manager.getUsers();
+	        return users.toArray(new Account[users.size()]);
+	        
+		} catch (EXistException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
+		} finally {
+			pool.release(broker);
+		}
 	}
 
 	public Group getGroup(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		return manager.getGroup(name);
+
+		DBBroker broker = null;
+		try {
+	        broker = pool.get(user);
+	        
+	        return manager.getGroup(name);
+
+		} catch (EXistException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
+		} finally {
+			pool.release(broker);
+		}
 	}
 
 	public String[] getGroups() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		java.util.Collection<Group> roles = manager.getGroups();
-		String[] res = new String[roles.size()];
-		int i = 0;
-		for (Group role : roles) {
-			res[i] = role.getName();
-			i++;
+
+		DBBroker broker = null;
+		try {
+	        broker = pool.get(user);
+	        
+			java.util.Collection<Group> roles = manager.getGroups();
+			String[] res = new String[roles.size()];
+			int i = 0;
+			for (Group role : roles) {
+				res[i] = role.getName();
+				i++;
+			}
+			return res;
+
+		} catch (EXistException e) {
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
+		} finally {
+			pool.release(broker);
 		}
-		return res;
 	}
 
 	public String getVersion() {
@@ -679,7 +748,11 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not allowed to remove users");
+
+		DBBroker broker = null;
 		try {
+	        broker = pool.get(user);
+	        
 			manager.deleteAccount(u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
@@ -691,6 +764,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.VENDOR_ERROR,
 					e.getMessage(),
 					e);
+		} finally {
+			pool.release(broker);
 		}
 	}
 
@@ -700,7 +775,11 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				"you are not allowed to remove users");
+
+		DBBroker broker = null;
 		try {
+	        broker = pool.get(user);
+	        
 			manager.deleteGroup(role.getName());
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
@@ -712,6 +791,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.VENDOR_ERROR,
 					e.getMessage(),
 					e);
+		} finally {
+			pool.release(broker);
 		}
 	}
 
@@ -725,9 +806,11 @@ public class LocalUserManagementService implements UserManagementService {
 
 	public void updateAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+		
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
+		
 			manager.updateAccount(u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
