@@ -21,7 +21,7 @@
  */
 package org.exist.security.internal;
 
-import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -30,6 +30,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Configurator;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
@@ -46,11 +47,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -83,7 +79,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 
 		//Build-in accounts
 		GROUP_UNKNOW = new GroupImpl(this, -1, "");
-    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", null);
+    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", (String)null);
     	ACCOUNT_UNKNOW.addGroup(GROUP_UNKNOW);
 
     	//DBA group & account
@@ -123,110 +119,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 	}
 
 	public void startUp(DBBroker broker) throws EXistException {
-
-		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());
-		
-		BrokerPool pool = broker.getBrokerPool();
-		TransactionManager transact = pool.getTransactionManager();
-		Txn txn = null;
-		try {
-			collectionRealm = broker.getCollection(realmCollectionURL);
-			collectionAccounts = broker.getCollection(realmCollectionURL.append("accounts"));
-			collectionGroups = broker.getCollection(realmCollectionURL.append("groups"));
-			
-			if (collectionRealm == null || collectionAccounts == null || collectionGroups == null) {
-				txn = transact.beginTransaction();
-
-				try {
-					if (collectionRealm == null)
-						collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
-					
-					if (collectionAccounts == null)
-						collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
-					
-					if (collectionGroups == null)
-						collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
-	
-					transact.commit(txn);
-				} catch (Exception e) {
-					transact.abort(txn);
-					e.printStackTrace();
-					// LOG.debug("loading acl failed: " + e.getMessage());
-				}
-			}
-			
-			for (Account account : usersByName.values()) {
-				if (account.getId() > 0)
-					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
-			}
-			
-			for (Group group : groupsByName.values()) {
-				if (group.getId() > 0)
-					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
-			}
-			
-			//XXX: load others principals
-			
-			//1.0 version
-//			Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLETION_URI);
-//			Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
-//			Element docElement = null;
-//			if (acl != null)
-//				docElement = acl.getDocumentElement();
-//
-//			if (docElement != null) {
-//				// LOG.debug("loading acl");
-//				Element root = acl.getDocumentElement();
-//				Attr version = root.getAttributeNode("version");
-//				int major = 0;
-//				int minor = 0;
-//				if (version != null) {
-//					String[] numbers = version.getValue().split("\\.");
-//					major = Integer.parseInt(numbers[0]);
-//					minor = Integer.parseInt(numbers[1]);
-//				}
-//				NodeList nl = root.getChildNodes();
-//				
-//				Node node;
-//				Element next;
-//				
-//				Account account = null; Group group = null;
-//				NodeList ul;
-//				
-//				for (int i = 0; i < nl.getLength(); i++) {
-//					if (nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-//						continue;
-//					next = (Element) nl.item(i);
-//					if (next.getTagName().equals("users")) {
-//
-//						ul = next.getChildNodes();
-//						for (int j = 0; j < ul.getLength(); j++) {
-//							node = ul.item(j);
-//							if (node.getNodeType() == Node.ELEMENT_NODE
-//									&& node.getLocalName().equals("user")) {
-//								account = AccountImpl.createAccount(this, major, minor, (Element) node);
-//								sm.usersById.put(account.getId(), account);
-//								usersByName.put(account.getName(), account);
-//							}
-//						}
-//					} else if (next.getTagName().equals("groups")) {
-//						ul = next.getChildNodes();
-//						for (int j = 0; j < ul.getLength(); j++) {
-//							node = ul.item(j);
-//							if (node.getNodeType() == Node.ELEMENT_NODE
-//									&& node.getLocalName().equals("group")) {
-//								group = new GroupImpl((Element) node);
-//								sm.groupsById.put(group.getId(), group);
-//								groupsByName.put(group.getName(), group);
-//							}
-//						}
-//					}
-//				}
-//			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			// LOG.debug("loading acl failed: " + e.getMessage());
-		}
+			super.startUp(broker);
 	}
 
 	private Group _addGroup(String name) throws ConfigurationException {

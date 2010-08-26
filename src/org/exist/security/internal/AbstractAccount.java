@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
@@ -70,6 +71,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, realm.collectionAccounts, id, name);
 	}
 	
+	public AbstractAccount(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+		super(realm, configuration);
+	}
+
 	public final Group addGroup(Group group) {
 		return addGroup(group.getName());
 	}

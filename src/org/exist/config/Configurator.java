@@ -477,10 +477,38 @@ public class Configurator {
 		
 		conf = new ConfigurationImpl(confElement);
 		
-		hotConfigs.put(document.getURI(), conf);
+		synchronized (hotConfigs) {
+			hotConfigs.put(document.getURI(), conf);
+		}
 		
 		return conf;
 	}
+	
+	public static Configuration parse(DocumentAtExist document) throws ConfigurationException {
+		if (document == null) return null;
+		
+		Configuration conf;
+		synchronized (hotConfigs) {
+			conf = hotConfigs.get(document.getURI());
+		}
+		
+		if (conf != null) return conf;
+		
+		ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+
+		if (confElement == null)
+			return null; //possible on corrupted database, find better solution (recovery flag?)
+			//throw new ConfigurationException("The configuration file is empty, url = "+collection.getURI().append(fileURL));
+		
+		conf = new ConfigurationImpl(confElement);
+		
+		synchronized (hotConfigs) {
+			hotConfigs.put(document.getURI(), conf);
+		}
+		
+		return conf;
+	}
+
 	
 	public static DocumentAtExist save(Configurable instance, XmldbURI uri) throws IOException, ConfigurationException {
 		BrokerPool database;

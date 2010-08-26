@@ -23,6 +23,7 @@ package org.exist.security.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.exist.EXistException;
@@ -30,10 +31,18 @@ import org.exist.collections.Collection;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Account;
+import org.exist.security.SecurityManager;
 import org.exist.security.realm.Realm;
+import org.exist.security.utils.Utils;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -49,13 +58,92 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	protected Configuration configuration;
 	
 	protected Collection collectionRealm = null;
-	public Collection collectionAccounts = null;
+	protected Collection collectionAccounts = null;
 	protected Collection collectionGroups = null;
+	protected Collection collectionRemovedAccounts = null;
+	protected Collection collectionRemovedGroups = null;
 	
 	public AbstractRealm(SecurityManagerImpl sm, Configuration config) {
 		this.sm = sm;
 		
 		configuration = Configurator.configure(this, config);
+	}
+	
+	public void startUp(DBBroker broker) throws EXistException {
+
+		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());
+		
+		BrokerPool pool = broker.getBrokerPool();
+		TransactionManager transact = pool.getTransactionManager();
+		Txn txn = null;
+		try {
+			collectionRealm = broker.getCollection(realmCollectionURL);
+			
+			collectionAccounts = broker.getCollection(realmCollectionURL.append("accounts"));
+			collectionGroups = broker.getCollection(realmCollectionURL.append("groups"));
+
+			collectionRemovedAccounts = broker.getCollection(realmCollectionURL.append("accounts").append("removed"));
+			collectionRemovedGroups = broker.getCollection(realmCollectionURL.append("groups").append("removed"));
+			
+			if (collectionRealm == null || collectionAccounts == null || collectionGroups == null) {
+				txn = transact.beginTransaction();
+
+				try {
+					if (collectionRealm == null)
+						collectionRealm    = Utils.createCollection(broker, txn, realmCollectionURL);
+					
+					if (collectionAccounts == null)
+						collectionAccounts = Utils.createCollection(broker, txn, realmCollectionURL.append("accounts"));
+					
+					if (collectionGroups == null)
+						collectionGroups   = Utils.createCollection(broker, txn, realmCollectionURL.append("groups"));
+	
+					transact.commit(txn);
+				} catch (Exception e) {
+					transact.abort(txn);
+					e.printStackTrace();
+				}
+			}
+			
+			for (Account account : usersByName.values()) {
+				if (account.getId() > 0)
+					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
+			}
+			
+			for (Group group : groupsByName.values()) {
+				if (group.getId() > 0)
+					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
+			}
+			
+			//load accounts information
+	        if (collectionAccounts != null && collectionAccounts.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+	            	
+	            	if (!usersByName.containsKey(conf.getProperty("name"))) {
+	            		AccountImpl account = new AccountImpl( this, conf );
+		            	sm.usersById.put(account.getId(), account);
+		            	usersByName.put(account.getName(), account);
+	            	}
+	            }
+	        }
+	        
+			//load groups information
+	        if (collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+
+	            	if (!groupsByName.containsKey(conf.getProperty("name"))) {
+	            		GroupImpl group = new GroupImpl(this, conf);
+	            		sm.groupsById.put(group.getId(), group);
+	            		groupsByName.put(group.getName(), group);
+	            	}
+	            }
+	        }
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void save() throws PermissionDeniedException, EXistException, IOException {
