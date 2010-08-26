@@ -1612,9 +1612,9 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         if (!collectionConfEnabled)
             return null;
 
-        //System collection has no configuration
-        if (DBBroker.SYSTEM_COLLECTION.equals(getURI().getRawCollectionPath()))
-            return null;
+//        //System collection has no configuration
+//        if (DBBroker.SYSTEM_COLLECTION.equals(getURI().getRawCollectionPath()))
+//            return null;
 
         CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
         if (manager == null)
