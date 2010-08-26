@@ -248,23 +248,6 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		}
 	}
 
-	public synchronized boolean deleteRole(String name) throws PermissionDeniedException, EXistException {
-		if(name == null)
-			return false;
-		
-		//XXX:lock and check for documents & collestions it can be owner
-		Group group = groupsByName.get(name);
-		if (group == null)
-			return false;
-		
-		sm.groupsById.remove(group.getId());
-		groupsByName.remove(group.getName());
-
-//		_save();
-		
-		return false;
-	}
-
 	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
 		//nothing to do: the name or id can't be changed
 		return false;
