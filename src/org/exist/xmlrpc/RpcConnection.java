@@ -3361,7 +3361,6 @@ public class RpcConnection implements RpcAPI {
                     broker.flush();
                     return true;
                 }
-                transact.abort(transaction);
                 throw new PermissionDeniedException("not allowed to change permissions");
             }
         } catch (SyntaxException e) {
@@ -3470,7 +3469,6 @@ public class RpcConnection implements RpcAPI {
                 broker.flush();
                 return true;
             }
-            transact.abort(transaction);
             throw new PermissionDeniedException("not allowed to change permissions");
 
         } catch (PermissionDeniedException e) {
