@@ -213,9 +213,9 @@ public class Configurator {
 					System.out.println("ComponentType = "+field.getType().getComponentType());
 					
 					List<Configuration> confs = configuration.getConfigurations(property);
-					for (Configuration conf : confs) {
-						
-					}
+					if (confs != null)
+						for (Configuration conf : confs) {
+						}
 
 					LOG.warn("!!!!!!!!!!! TODO: List as property filed !!!!!!!!!!! ");
 					
