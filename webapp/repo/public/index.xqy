@@ -118,7 +118,7 @@ declare function local:upload() as element()
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
             <td>{$package//repo:license}</td>
-            <td></td>
+            <td>{$package//repo:status}</td>
 
         </tr>
         else
@@ -162,7 +162,7 @@ declare function local:upload() as element()
             <td>{xmldb:created($repo-coll, $file)}</td>
             <td>{$package//repo:author}</td>
             <td>{$package//repo:license}</td>
-            <td></td>
+            <td>{$package//repo:status}</td>
 
         </tr>
         else
