@@ -38,6 +38,7 @@ import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.security.realm.Realm;
+import org.exist.security.utils.Utils;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
@@ -314,13 +315,13 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		}
 	}
 
-	public synchronized boolean deleteAccount(Account user) throws PermissionDeniedException, EXistException {
-		if(user == null)
+	public synchronized boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
+		if(account == null)
 			return false;
 		
 		//XXX: lock and check for documents & collestions it can be owner
-		sm.usersById.remove(user.getId());
-		usersByName.remove(user.getName());
+		sm.usersById.remove(account.getId());
+		usersByName.remove(account.getName());
 
 //		_save();
 		
@@ -344,9 +345,9 @@ public class RealmImpl extends AbstractRealm implements Configurable {
 		return false;
 	}
 
-	public synchronized boolean updateGroup(Group role) throws PermissionDeniedException {
-		throw new PermissionDeniedException("not implemented");
-		//TODO: code
+	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
+		//nothing to do: the name or id can't be changed
+		return false;
 	}
 
 	public synchronized boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException {

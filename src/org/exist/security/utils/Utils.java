@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security.utils;
 
 import java.io.IOException;
 
