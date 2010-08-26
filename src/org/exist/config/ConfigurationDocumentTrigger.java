@@ -21,9 +21,12 @@
  */
 package org.exist.config;
 
+import org.exist.EXistException;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.utils.ConverterFrom1_0;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -45,6 +48,17 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 		Configuration conf = Configurator.hotConfigs.get(documentPath);
 		if (conf != null) 
 			conf.checkForUpdates();
+		
+		if (documentPath.equals("/db/system/users.xml")) {
+			try {
+				ConverterFrom1_0.convert(
+						broker.getBrokerPool().getSecurityManager(),
+						document);
+			} catch (PermissionDeniedException e) {
+			} catch (EXistException e) {
+			}
+		}
+
 	}
 
 }
