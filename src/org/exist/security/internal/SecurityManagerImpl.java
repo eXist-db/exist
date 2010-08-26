@@ -160,16 +160,16 @@ public class SecurityManagerImpl implements SecurityManager {
 				broker.saveCollection(txn, collection);
 
 				transaction.commit(txn);
-			}
-			
-			Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
-			configuration = Configurator.configure(this, _config_);
-
+			} 
         } catch (Exception e) {
 			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading configuration failed: " + e.getMessage());
 		}
+			
+		Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+		configuration = Configurator.configure(this, _config_);
+
 
 		for (Realm realm : realms) {
     		realm.startUp(broker);
