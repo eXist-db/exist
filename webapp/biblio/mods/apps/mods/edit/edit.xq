@@ -74,6 +74,8 @@ let $model :=
        
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}"/>
        
+       <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>
+       
        <xf:instance xmlns="" id="save-results">
           <data>
              <message>Form loaded OK.</message>
