@@ -20,7 +20,25 @@
     color: blue;
     /* this keeps the tabs on a single line.  */
     /* white-space:nowrap; */
-    
+}
+
+.block-form {
+   /* border: solid blue 1px; */
+   margin: 0 10px;
+}
+
+.block-form xf|label {
+    display: inline-block;
+    width: 15ex; /* fix the width of all the labels in the block form */
+    margin-right: 3px; /* marging to the right of the colon before the input area */
+    text-align: right; /* right justification makes the text easier to read */
+    /* border: solid orange 1px; */
+}
+
+.repeat-seperator {
+    color: silver;
+    background-color: silver;
+    height: 2px;
 }
 
 fieldset {
@@ -35,7 +53,12 @@ legend {
 
 .legend {
   background: white;
-  margin: 2px 4px;  
+  margin: 2px 6px;  
 }
+
+.title-field .xforms-value {width: 100ex;}
+
+.text_50 .xforms-value {width: 50ex;}
+.text_150 .xforms-value {width: 150ex;}
 
 </css>
