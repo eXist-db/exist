@@ -67,6 +67,7 @@ public class XQTS_case extends TestCase {
 	private static Map<String, String> sources = null;
 	private static Map<String, String> moduleSources = null;
 	
+	@Override
 	public void loadTS() throws Exception {
 		testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
 		if (testCollection == null) {
@@ -370,12 +371,11 @@ public class XQTS_case extends TestCase {
 					}
 
 					StringBuilder message = new StringBuilder();
-					message.append("expected \n[");
-					message.append(exp);
-					message.append("]\n, get \n[");
-					message.append(res);
-					message.append("]");
-					message.append("\nsctipt:\n");
+					message.append("expected \n");
+					message.append("[" + exp + "]\n");
+					message.append("got \n");
+					message.append("[" + res + "]\n");
+					message.append("script:\n");
 					message.append(readFileAsString(caseScript));
 					message.append("\ndata:\n");
 					message.append(data);
