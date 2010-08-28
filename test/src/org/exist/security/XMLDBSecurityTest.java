@@ -212,7 +212,14 @@ public class XMLDBSecurityTest {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-            GroupAider group = new GroupAider("exist","users");
+            Account test1 = ums.getAccount("test1");
+            if (test1 != null) ums.removeAccount(test1);
+            Account test2 = ums.getAccount("test2");
+            if (test2 != null) ums.removeAccount(test2);
+            Group group = ums.getGroup("users");
+            if (group != null) ums.removeGroup(group);
+
+            group = new GroupAider("exist","users");
             ums.addGroup(group);
 
             UserAider user = new UserAider("test1", group);
@@ -229,7 +236,7 @@ public class XMLDBSecurityTest {
             Collection test = cms.createCollection("securityTest1");
             ums = (UserManagementService) test.getService("UserManagementService", "1.0");
             // pass ownership to test1
-            Account test1 = ums.getAccount("test1");
+            test1 = ums.getAccount("test1");
             ums.chown(test1, "users");
             // full permissions for user and group, none for world
             ums.chmod(0770);
@@ -259,8 +266,8 @@ public class XMLDBSecurityTest {
             if (test1 != null) ums.removeAccount(test1);
             Account test2 = ums.getAccount("test2");
             if (test2 != null) ums.removeAccount(test2);
-            Group role = ums.getGroup("users");
-            if (role != null) ums.removeGroup(role);
+            Group group = ums.getGroup("users");
+            if (group != null) ums.removeGroup(group);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -270,15 +277,15 @@ public class XMLDBSecurityTest {
     @BeforeClass
     public static void startServer() {
         try {
-            Class<?> cl = Class.forName(DB_DRIVER);
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-            assertNotNull(root);
+//            Class<?> cl = Class.forName(DB_DRIVER);
+//            Database database = (Database) cl.newInstance();
+//            database.setProperty("create-database", "true");
+//            DatabaseManager.registerDatabase(database);
+//            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+//            assertNotNull(root);
             
-            server = new JettyStart();
             System.out.println("Starting standalone server...");
+            server = new JettyStart();
             server.run();
         } catch (Exception e) {
             e.printStackTrace();
@@ -288,14 +295,14 @@ public class XMLDBSecurityTest {
 
     @AfterClass
     public static void stopServer() {
-        try {
-         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-            DatabaseInstanceManager mgr =
-                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-        }
+//        try {
+//         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
+//            DatabaseInstanceManager mgr =
+//                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+//            mgr.shutdown();
+//        } catch (XMLDBException e) {
+//            e.printStackTrace();
+//        }
         System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
