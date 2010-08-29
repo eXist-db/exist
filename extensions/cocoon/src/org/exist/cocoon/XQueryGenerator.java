@@ -54,7 +54,7 @@ import org.apache.excalibur.source.SourceValidity;
 import org.apache.excalibur.source.impl.validity.AggregatedValidity;
 import org.apache.excalibur.source.impl.validity.ExpiresValidity;
 import org.exist.http.Descriptor;
-import org.exist.source.CocoonSource;
+import org.exist.cocoon.source.CocoonSource;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;

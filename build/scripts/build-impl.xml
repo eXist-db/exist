@@ -109,9 +109,9 @@
         <classpath refid="classpath.core"/>
     </taskdef>
 
-    <taskdef name="cocoon" classname="org.apache.cocoon.CocoonTask">
+    <!--taskdef name="cocoon" classname="org.apache.cocoon.CocoonTask">
         <classpath refid="classpath.core"/>
-    </taskdef>
+    </taskdef-->
 
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->

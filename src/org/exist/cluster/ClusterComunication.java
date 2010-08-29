@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.exist.cluster.cocoon.ConsoleInfo;
+//import org.exist.cluster.cocoon.ConsoleInfo;
 import org.exist.cluster.journal.JournalIdGenerator;
 import org.exist.cluster.journal.JournalManager;
 import org.exist.util.Configuration;
@@ -484,16 +484,16 @@ public class ClusterComunication implements MembershipListener {
         return new int[]{journalManager.getLastIdSaved(),journalManager.getMaxIdSaved(),journalManager.getCounter()};
     }
 
-    public ConsoleInfo getConsoleProperties() throws ClusterException{
-        String port = System.getProperty("jetty.port");
-
-        if(port==null)
-            port = "8080";   //TODO ... verify how to retrieve default port
-
-        ConsoleInfo info = new ConsoleInfo();
-        info.setProperty("port",port);
-        return info;
-    }
+//    public ConsoleInfo getConsoleProperties() throws ClusterException{
+//        String port = System.getProperty("jetty.port");
+//
+//        if(port==null)
+//            port = "8080";   //TODO ... verify how to retrieve default port
+//
+//        ConsoleInfo info = new ConsoleInfo();
+//        info.setProperty("port",port);
+//        return info;
+//    }
 
 
     public void stop() {
