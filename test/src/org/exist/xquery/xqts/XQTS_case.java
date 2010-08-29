@@ -371,13 +371,15 @@ public class XQTS_case extends TestCase {
 					}
 
 					StringBuilder message = new StringBuilder();
-					message.append("expected \n");
-					message.append("[" + exp + "]\n");
-					message.append("got \n");
+					message.append("\n");
+					message.append("expected ");
+					message.append("[" + exp + "]");
+					message.append(" got ");
 					message.append("[" + res + "]\n");
 					message.append("script:\n");
 					message.append(readFileAsString(caseScript));
-					message.append("\ndata:\n");
+					message.append("\n");
+					message.append("data:\n");
 					message.append(data);
 					
 					Assert.fail(message.toString());
@@ -403,7 +405,7 @@ public class XQTS_case extends TestCase {
 					else if (error.indexOf("FODC0002") != -1)
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 				} 
 				else if (expectedError.equals("FORG0006")) {
 					if (error.indexOf(expectedError) != -1)
@@ -411,7 +413,7 @@ public class XQTS_case extends TestCase {
 					else if (error.indexOf("XPTY0004") != -1)
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 				} 
 				else if (expectedError.equals("XPDY0002")) {
 					if (error.indexOf(expectedError) != -1)
@@ -419,7 +421,7 @@ public class XQTS_case extends TestCase {
 					else if (error.indexOf("XPTY0002") != -1)
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 				}	
 				else if (expectedError.equals("XPTY0020")) {
 					if (error.indexOf(expectedError) != -1)
@@ -427,7 +429,7 @@ public class XQTS_case extends TestCase {
 					else if (error.indexOf("cannot convert ") != -1)
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 
 				} else if (expectedError.equals("XPTY0004")) {
 					if (error.indexOf(expectedError) != -1)
@@ -441,7 +443,7 @@ public class XQTS_case extends TestCase {
 					else if (error.indexOf("Type error: ") != -1)
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 
 				} else if (expectedError.equals("XPST0003")) {
 					if (error.indexOf(expectedError) != -1)
@@ -451,14 +453,14 @@ public class XQTS_case extends TestCase {
 					else if (error.startsWith("unexpected char: "))
 						;
 					else
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 				
 				} else {
 
 					if (error.startsWith("err:")) error = error.substring(4);
 					
 					if (error.indexOf(expectedError) == -1)
-						Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+						Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
