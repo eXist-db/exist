@@ -22,20 +22,10 @@
  */
 package org.exist.xmldb;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Date;
-
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -49,7 +39,8 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import java.io.*;
+import java.util.Date;
 
 /**
  * @author wolf
@@ -335,10 +326,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		try {
 			broker = pool.get(user);
 			BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
-			if (!blob.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(
-						ErrorCodes.PERMISSION_DENIED,
-				"permission denied to read resource");
 			return new Date(blob.getMetadata().getCreated());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
@@ -357,10 +344,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		try {
 			broker = pool.get(user);
 			BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
-			if (!blob.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(
-						ErrorCodes.PERMISSION_DENIED,
-				"permission denied to read resource");
 			return new Date(blob.getMetadata().getLastModified());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
@@ -379,10 +362,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         try {
             broker = pool.get(user);
             BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
-            if (!blob.getPermissions().validate(user, Permission.READ))
-                throw new XMLDBException(
-                        ErrorCodes.PERMISSION_DENIED,
-                "permission denied to read resource");
             mimeType = blob.getMetadata().getMimeType();
             return mimeType;
         } catch (EXistException e) {
@@ -420,9 +399,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		try {
 			broker = pool.get(user);
 			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"permission denied to read resource");
 			return document.getContentLength();
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),

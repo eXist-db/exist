@@ -21,15 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.xml.transform.TransformerException;
-
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -58,16 +49,20 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * Local implementation of XMLResource.
@@ -328,9 +323,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		try {
 			broker = pool.get(user);
 			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"permission denied to read resource");
 			return new Date(document.getMetadata().getCreated());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
@@ -345,9 +337,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		try {
 			broker = pool.get(user);
 			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"permission denied to read resource");
 			return new Date(document.getMetadata().getLastModified());
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
@@ -365,9 +354,6 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		try {
 			broker = pool.get(user);
 			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
-			if (!document.getPermissions().validate(user, Permission.READ))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"permission denied to read resource");
 			return document.getContentLength();
 		} catch (EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
