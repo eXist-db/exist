@@ -41,11 +41,13 @@ import org.junit.Test;
 public class ActiveDirectoryRealmTest {
 
 	private static String config = 
-		"<ActiveDirectory>" +
-		"	<context " +
-		"		principalPattern='CN={0},OU=users,DC=localhost' " +
-		"		searchBase='ou=users,dc=localhost' " +
-		"		url='ldap://localhost:389'/>" +
+		"<ActiveDirectory xmlns='http://exist-db.org/Configuration'>" +
+		"	<context>" +
+//		"		principalPattern='CN={0},OU=users,DC=bnb,DC=bulungur,dc=nb' " +
+//		"		searchBase='ou=users,dc=bnb,dc=bulungur,dc=nb' " +
+		"		<url>ldap://bulungur.nb:389</url>" +
+//		"		<authentication>strong</authentication>" +
+		"	</context>" +
 		"</ActiveDirectory>";
 
 	private static ActiveDirectoryRealm realm;
@@ -76,7 +78,7 @@ public class ActiveDirectoryRealmTest {
 	public void testAuthenticate() {
 		Subject currentUser = null;
 		try {
-			currentUser = realm.authenticate("HRA eXsit", "OUR_PASSWORD");
+			currentUser = realm.authenticate("accounter@bulungur", "password");
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

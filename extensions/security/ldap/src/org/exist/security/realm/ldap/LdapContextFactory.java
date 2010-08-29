@@ -35,7 +35,7 @@ import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -48,13 +48,14 @@ public class LdapContextFactory implements Configurable {
 
 	protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
 
+	@ConfigurationFieldAsElement("authentication")
 	protected String authentication = "simple";
 
-	@ConfigurationFieldAsAttribute("principalPattern")
+	@ConfigurationFieldAsElement("principalPattern")
 	protected String principalPattern = null;
 	protected MessageFormat principalPatternFormat;
 
-	@ConfigurationFieldAsAttribute("url")
+	@ConfigurationFieldAsElement("url")
 	protected String url = null;
 
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
@@ -88,7 +89,7 @@ public class LdapContextFactory implements Configurable {
 			username = principalPatternFormat.format(new String[] { username });
 		}
 
-		Hashtable<String, String> env = new Hashtable<String, String>();
+		Hashtable<String, Object> env = new Hashtable<String, Object>();
 
 		env.put(Context.SECURITY_AUTHENTICATION, authentication);
 		if (username != null) {
@@ -99,6 +100,9 @@ public class LdapContextFactory implements Configurable {
 		}
 		env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
 		env.put(Context.PROVIDER_URL, url);
+		
+		// the following is helpful in debugging errors
+		//env.put("com.sun.jndi.ldap.trace.ber", System.err);
 
 		// Only pool connections for system contexts
 		if (usePooling && username != null && username.equals(systemUsername)) {
