@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.exist.EXistException;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -36,6 +35,9 @@ import org.exist.security.PermissionDeniedException;
 public interface Configuration {
 	
 	public String NS = "http://exist-db.org/Configuration";
+	public String NS_SUB = "http://exist-db.org/Configuration/Sub";
+	
+	public String ID = "id";
 	
 	public Configuration getConfiguration(String name);
 	
@@ -59,7 +61,9 @@ public interface Configuration {
 
 	public String getName();
 
-	public void checkForUpdates(DocumentAtExist document);
+	public ElementAtExist getElement();
+
+	public void checkForUpdates(ElementAtExist document);
 
 	public void save() throws PermissionDeniedException, EXistException;
 }

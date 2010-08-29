@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.exist.EXistException;
-import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.w3c.dom.NamedNodeMap;
@@ -60,6 +59,11 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 		this();
 		setProxyObject(element);
 	}
+	
+	@Override
+	public ElementAtExist getElement() {
+		return getProxyObject();
+	}
 
 	@Override
 	public String getName() {
@@ -86,7 +90,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 		if (configs.containsKey(name))
 			return configs.get(name);
 		
-		NodeList nodes = getElementsByTagName(name);
+		NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
 
 		if (nodes.getLength() > 0) { 
 			List<Configuration> list = new ArrayList<Configuration>();
@@ -294,9 +298,9 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	private boolean saving = false;
 	
 	@Override
-	public void checkForUpdates(DocumentAtExist document) {
+	public void checkForUpdates(ElementAtExist element) {
 		if (!saving && configuredObjectReferene != null && configuredObjectReferene.get() != null) {
-			setProxyObject((ElementAtExist) document.getDocumentElement());
+			setProxyObject(element);
 			Configurator.configure(configuredObjectReferene.get(), this);
 		}
 	}

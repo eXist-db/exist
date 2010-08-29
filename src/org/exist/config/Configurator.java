@@ -29,10 +29,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -173,6 +178,7 @@ public class Configurator {
 			return configuration;
 		}
 		
+		//process simple types: String, int, long, boolean
 		for (String property : properties) {
 			if (!properyFieldMap.containsKey(property)) {
 				System.out.println("unused property "+property+" @"+configuration.getName());
@@ -210,14 +216,7 @@ public class Configurator {
 					value = configuration.getPropertyBoolean(property);
 
 				} else if (typeName.equals("java.util.List")) {
-					System.out.println("ComponentType = "+field.getType().getComponentType());
-					
-					List<Configuration> confs = configuration.getConfigurations(property);
-					if (confs != null)
-						for (Configuration conf : confs) {
-						}
-
-					LOG.warn("!!!!!!!!!!! TODO: List as property filed !!!!!!!!!!! ");
+					//skip, it will be processed as structure
 					
 				} else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
 					value = org.exist.xmldb.XmldbURI.create(
@@ -252,6 +251,122 @@ public class Configurator {
 				LOG.error("security error: "+e.getMessage());
 				return null; //XXX: throw configuration error
 			}
+		}
+		
+		//process simple structures: List
+		try {
+			for (Field field : properyFieldMap.values()) {
+				String typeName = field.getType().getName();
+	
+				if (typeName.equals("java.util.List")) {
+					System.out.print("Field: " + field.getName() + " - ");
+				    Type type = field.getGenericType();
+				    if (type instanceof ParameterizedType) {
+				        ParameterizedType pType = (ParameterizedType)type;
+				        System.out.print("Raw type: " + pType.getRawType() + " - ");
+				        System.out.println("Type args: " + pType.getActualTypeArguments()[0]);
+				    } else {
+				        System.out.println("Type: " + field.getType());
+				    }
+					
+					if (!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+						LOG.warn("Wrong annotation for strucure: "+field.getName()+", list can't be configurated throw attribute.");
+						continue;
+					}
+						
+					String property = field.getAnnotation(ConfigurationFieldAsElement.class).value();
+					
+					field.setAccessible(true);
+					List<Configurable> list = (List<Configurable>) field.get(instance);
+					
+					List<Configuration> confs = configuration.getConfigurations(property);
+
+					if (list == null) {
+						list = new ArrayList<Configurable>(confs.size());
+						field.set(instance, list);
+					}
+					
+					if (confs != null) {
+						//remove & update
+						for (Iterator<Configurable> iterator = list.iterator() ; iterator.hasNext() ; ) {
+							Configurable obj = iterator.next();
+							Configuration current_conf = obj.getConfiguration();
+							if (current_conf == null) {
+								//skip internal staff
+								if (obj instanceof org.exist.security.internal.RealmImpl) {
+									//TODO: static list
+									continue;
+								} else {
+									LOG.warn("Unconfigured instance ["+obj+"], remove the object.");
+									iterator.remove();
+									continue;
+								}
+							}
+							
+							String id = current_conf.getProperty(Configuration.ID);
+							if (id == null) {
+								LOG.warn("Subconfiguration must have id ["+obj+"], remove the object.");
+								iterator.remove();
+								continue;
+							}
+							
+							for (Iterator<Configuration> i = confs.iterator() ; i.hasNext() ;) {
+								Configuration conf = i.next();
+								if (id.equals( conf.getProperty(Configuration.ID) )) {
+									current_conf.checkForUpdates(conf.getElement());
+									i.remove();
+									break;
+								}
+							}
+							
+							LOG.info("Configuration was removed, remove the object ["+obj+"].");
+							iterator.remove();
+						}
+
+						//create
+						for (Configuration conf : confs) {
+							String id = conf.getProperty(Configuration.ID);
+							if (id == null) {
+								LOG.warn("Subconfiguration must have id ["+conf+"], skip instance creation.");
+								continue;
+							}
+							
+							String clazzName = "org.exist.security.realm."+id.toLowerCase()+"."+id+"Realm";
+							Class<?> clazz;
+							try {
+								clazz = Class.forName(clazzName);
+								Constructor<Configurable> constructor = 
+									(Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
+								
+								list.add( constructor.newInstance(instance, conf) );
+							
+							} catch (ClassNotFoundException e) {
+								LOG.warn("Class ["+clazzName+"] not found, skip instance creation.");
+								continue;
+							} catch (SecurityException e) {
+								LOG.warn("Security exception on class ["+clazzName+"] creation, skip instance creation.");
+								continue;
+							} catch (NoSuchMethodException e) {
+								LOG.warn("Class ["+clazzName+"] not found, skip instance creation.");
+								continue;
+							} catch (InstantiationException e) {
+								LOG.warn("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");
+								continue;
+							} catch (InvocationTargetException e) {
+								LOG.warn("Invocation target exception on class ["+clazzName+"] creation, skip instance creation.");
+								continue;
+							}
+							
+						}
+					}
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return null;
 		}
 		
 		return configuration;
