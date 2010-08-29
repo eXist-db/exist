@@ -418,7 +418,7 @@ public class XmlRpcTest {
     }
 
     @Test
-    public void testSetUser() {
+    public void testAddAccount() {
         try {
             String user = "rudi";
             String passwd = "pass";
@@ -430,7 +430,7 @@ public class XmlRpcTest {
 			params.add(digest);
 			params.add(new String[] { "guest" });
             XmlRpcClient xmlrpc = getClient();
-			xmlrpc.execute("setUser", params);
+			xmlrpc.execute("addAccount", params);
 
             XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) xmlrpc.getClientConfig();
             config.setBasicUserName("admin");
