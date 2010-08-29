@@ -88,11 +88,6 @@
 
         <xsl:text>
     </xsl:text>
-
-    </xsl:template>
-
-    <xsl:template match="/webxml:web-app/webxml:servlet-mapping[last()]">
-        <xsl:copy-of select="."/>
         <xsl:text>
     </xsl:text><xsl:comment>betterFORM Flux Servlet Mapping</xsl:comment>
         <xsl:text>
@@ -112,7 +107,6 @@
                <servlet-name>XQueryServlet</servlet-name>
                <url-pattern>*.xql</url-pattern>
         </servlet-mapping>
-
     </xsl:template>
 
 
