@@ -166,12 +166,13 @@ public class UnixStylePermission implements Permission {
      *
      *@param  group  The new group value
      */
-    public void setGroup( String group ) {
-        ownerGroup = sm.getGroup(group);
+    public void setGroup( String groupName ) {
+        Group group = sm.getGroup(groupName);
+        if (group != null) ownerGroup = group;
     }
 
     public void setGroup( Group group ) {
-        ownerGroup = group;
+    	if (group != null) ownerGroup = group;
     }
 
     /**
@@ -189,12 +190,12 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( Account user ) {
+    public void setOwner( Account account ) {
     	// FIXME: assume guest identity if user gets lost due to a database corruption
-    	if(user == null) {
+    	if(account == null) {
     		this.owner = sm.getSystemSubject();
     	} else
-    		this.owner = user;
+    		this.owner = account;
         //this.ownerGroup = user.getPrimaryGroup();
     }
 
@@ -205,7 +206,8 @@ public class UnixStylePermission implements Permission {
      *@param  name  The new owner value
      */
     public void setOwner( String name ) {
-        owner = sm.getAccount( name );
+    	Account account = sm.getAccount( name );
+    	if (account != null) owner = account; 
     }
 
     /**
