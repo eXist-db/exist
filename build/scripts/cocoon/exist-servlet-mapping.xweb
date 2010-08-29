@@ -1,6 +1,7 @@
 <xweb xpath="/web-app"
       unless="comment()[contains(., 'Servlet mapping for eXist')]"
-      insert-after="servlet-mapping[position() = 1]">
+      insert-after="servlet-mapping[position() = 1]"
+      remove="/web-app/servlet-mapping[servlet-name='Xindice']">
 
     <!-- Servlet mapping for eXist -->
     

@@ -1,6 +1,7 @@
 <xweb xpath="/web-app"
       unless="comment()[contains(., 'Definition and configuration of eXist')]"
-      insert-after="servlet[servlet-name = 'Cocoon']">
+      insert-after="servlet[servlet-name = 'Cocoon']"
+      remove="/web-app/servlet[servlet-name='Xindice']">
 
     <!-- Definition and configuration of eXist servlets. -->
 

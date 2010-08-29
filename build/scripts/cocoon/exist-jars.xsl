@@ -72,6 +72,14 @@
                     <homepage>http://exist-db.org</homepage>
                 </file>
                 <file>
+                    <title>exist-cocoon</title>
+                    <description>Optional libraries for the eXist native XML db:
+                        lucene index module.</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/exist-cocoon.jar</lib>
+                    <homepage>http://exist-db.org</homepage>
+                </file>
+                <file>
                     <title>XML:DB APIs</title>
                     <description>The XML:DB APIs</description>
                     <used-by>exist</used-by>
@@ -151,10 +159,66 @@
                         searching of documents.
                     </description>
                     <used-by>exist</used-by>
-                    <lib>optional/lucene-regex-2.4.1.jar</lib>
+                    <!-- RvdB: updated lucene-regex version number -->
+                    <lib>optional/lucene-regex-2.9.2.jar</lib>
                     <homepage>http://lucene.apache.org/</homepage>
                 </file>
-                
+                <!--  MDH: Patch for adding file(s) omitted from eXist's exist-jars.xsl file. -->
+                <file>
+                    <title>Sun XACML</title>
+                    <description>
+                        Java implementation of eXtensible Access Control Markup Language from Sun.
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/sunxacml-1.2.jar</lib>
+                    <homepage>http://sunxacml.sourceforge.net/</homepage>
+                </file>
+                <file>
+                    <title>Jakarta Commons Util</title>
+                    <description>
+                        Utility classes for high performance XML processing based on SAX
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/ws-commons-util-1.0.2.jar</lib>
+                    <homepage>http://ws.apache.org/commons/util/</homepage>
+                </file>
+                <!-- RvdB: patch to include references to necessary libraries for explicit validation in eXist -->
+                <file>
+                    <title>isorelax</title>
+                    <description>
+                        Used by JARV, an implementation-independent interface set for validators developed by the RELAX community.
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/isorelax-20041111.jar</lib>
+                    <homepage>http://iso-relax.sourceforge.net/</homepage>
+                </file>
+                <file>
+                    <title>JAX-RPC</title>
+                    <description>
+                        JAX-RPC
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/jaxrpc-1.1.jar</lib>
+                    <homepage>https://jax-rpc.dev.java.net/</homepage>
+                </file>
+                <file>
+                    <title>SOAP with Attachments API for Java</title>
+                    <description>
+                        The SOAP with Attachments API for JavaTM (SAAJ) 1.3 provides the API for creating and sending SOAP messages.
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/saaj-1.2.jar</lib>
+                    <homepage>https://saaj.dev.java.net/</homepage>
+                </file>
+                <file>
+                    <title>expath package repository manager</title>
+                    <description>
+                        expath package repository manager
+                    </description>
+                    <used-by>exist</used-by>
+                    <lib>optional/pkg-repo.jar</lib>
+                    <homepage>https://saaj.dev.java.net/</homepage>
+                </file>
             </xsl:if>
         </jars>
     </xsl:template>
@@ -176,12 +240,16 @@
     </xsl:template>
     
     <xsl:template match="file[title = 'Search engine']/lib">
-        <lib>optional/lucene-core-2.4.1.jar</lib>
+        <lib>optional/lucene-core-2.9.2.jar</lib>
     </xsl:template>
     
     <!-- Use patched jar for XML-RPC -->
     <xsl:template match="file[title = 'Log4j']/lib">
         <lib>core/log4j-1.2.16.jar</lib>
+    </xsl:template>
+
+    <xsl:template match="file[title = 'Jing']/lib">
+        <lib>optional/jing-20091111.jar</lib>
     </xsl:template>
 
     <xsl:template match="*|@*|node()|comment()">
