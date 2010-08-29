@@ -238,7 +238,7 @@
                                     fragments from within an XQuery.</td>
                             </tr>
                             <tr>
-                                <td><ulink url="debugger.xml">XQuery Debugger</ulink></td>
+                                <td class="doclink"><ulink url="debugger.xml">XQuery Debugger</ulink></td>
                                 <td>Since version 1.4, eXist provides a debugging interface to debug
                                     XQuery code on the server. The feature basically works, though
                                     it is currently still incomplete, in particular with respect to
@@ -266,6 +266,11 @@
                                     repository.</td>
                             </tr>
                             <tr>
+                                <td class="doclink"><ulink url="devguide_codereview.xml">Code Review
+                                        Guide</ulink>:</td>
+                                <td>a few notes on reviewing code during development ...</td>
+                            </tr>
+                            <tr>
                                 <td class="doclink"><ulink url="devguide_indexes.xml">Developer's
                                         Guide to Modularized Indexes</ulink>:</td>
                                 <td>describes, through a use case, how modularized indexes
@@ -283,9 +288,8 @@
                                 <td>a few notes on how use Log4J within eXist code ...</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="devguide_codereview.xml">Code Review
-                                        Guide</ulink>:</td>
-                                <td>a few notes on reviewing code during development ...</td>
+                                <td class="doclink"><ulink url="testing/testing.xml">Test Guide</ulink>:</td>
+                                <td>Perform XQuery tests with the XQuery unit test suite.</td>
                             </tr>
                         </tbody>
                     </tgroup>
