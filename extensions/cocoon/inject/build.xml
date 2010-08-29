@@ -2,18 +2,21 @@
     Inject eXist as a Cocoon block into the Cocoon source distribution.
     Execute this script with
 
-    build.sh -f build/scripts/cocoon/build.xml
+    build.sh -f extensions/cocoon/inject/build.xml
 
-    BEFORE compiling Cocoon.
+		Sequence:
+			- compile cocoon
+			- run this script
+			- recompile cocoon with injected modifications
 
     Based on the original exist-as-block distribution created by
     Bruce Robertson (http://heml.mta.ca)
 -->
 <project name="exist_block" default="all" basedir=".">
 
-	<property file="build.properties" />
+	<property file="../build.properties" />
 
-	<property name="exist.home" value="../.." />
+	<property name="exist.home" value="../../.." />
 
 	<property name="cocoon.libs" value="${cocoon.home}/lib" />
 	<property name="cocoon.blocks" value="${cocoon.home}/src/blocks" />
@@ -64,7 +67,7 @@
 				<include name="*.xmap" />
 			</fileset>
 		</copy>
-		<xslt in="${exist.home}/conf.xml" out="${exist.deploy}/WEB-INF/conf.xml" style="../dist-war-conf.xsl" />
+		<xslt in="${exist.home}/conf.xml" out="${exist.deploy}/WEB-INF/conf.xml" style="${exist.home}/build/scripts/dist-war-conf.xsl" />
 	</target>
 
 	<target description="Copy jars" name="copy-jars">
@@ -129,8 +132,8 @@
 		<copy todir="${cocoon.libs}/optional" overwrite="yes">
 			<fileset dir="${exist.home}/extensions/indexes/lucene/lib">
 				<!-- RvdB: updated lucene* version numbers -->
-				<include name="lucene-core-2.9.2.jar" />
-				<include name="lucene-regex-2.9.2.jar" />
+				<include name="lucene-core-*.jar" />
+				<include name="lucene-regex-*.jar" />
 			</fileset>
 		</copy>
 		<copy todir="${cocoon.libs}/core" overwrite="yes">

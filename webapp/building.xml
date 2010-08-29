@@ -14,10 +14,23 @@
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
             </affiliation>
         </author>
+<author>
+            <firstname>Dannes</firstname>
+            <surname>Wessels</surname>
+            <affiliation>
+                <address format="linespecific"><email>dannes at exist-db.org</email></address>
+            </affiliation>
+        </author><author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation>
+        </author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Quick Instructions</title>
+        <title>Building eXist-db</title>
 
         <section id="war">
             <title>Building a WAR from the Standard Distribution</title>
@@ -107,7 +120,7 @@
         </section>
 
 
-        <section>
+        <section id="build-system">
             <title>Using the Build System</title>
 
             <para>You can rebuild all eXist packages from the standard distribution or the subversion repository. You
@@ -357,7 +370,7 @@
             </note>
         </section>
 
-        <section>
+        <section id="svn-repo">
             <title>Using the Subversion Repository</title>
 
             <para>Since spring 2006, the entire code base of eXist is managed by the <ulink
@@ -434,7 +447,7 @@
             </section>
         </section>
 
-        <section>
+        <section id="cocoon-block">
             <title>Building eXist as a Cocoon Block</title>
 
             <note>
@@ -442,22 +455,20 @@
                     Cocoon user to help us updating the scripts.</para>
             </note>
 
-            <para>The standard eXist distribution already ships with Apache Cocoon. However, the included version may
-                not be up to date and it offers only a subset of the Cocoon modules available. If you work a lot with
-                Cocoon, you might prefer to have eXist integrated into a full Cocoon build. This is possible and we
+            <para>The standard eXist distribution does not ship with a full Apache Cocoon distribution as of eXist-db version 1.5. 
+								You might still prefer to have eXist integrated into a full Cocoon build, we therefore
                 provide a set of build scripts to "inject" eXist into a downloaded Cocoon source distribution. </para>
 
             <para>Cocoon has a modular architecture. Most of the advanced features are provided via so-called "blocks".
                 eXist's ant scripts patch the Cocoon source tree to add a new eXist block. </para>
 
             <note>
-                <para>The build scripts were tested with Cocoon version 2.1.9 and a clean Cocoon source tree.</para>
+                <para>The build scripts were tested with Cocoon version 2.1.11 and a clean Cocoon source tree.</para>
 
-                <para>Unfortunately, patching Cocoon isn't that easy. Cocoon ships with a few libraries, which are
-                    incompatible with the ones used in eXist. This applies in particular to the XML:DB API sources.
-                    eXist uses the latest sources from CVS while Cocoon has jars built from an older version. Also, in
+                <para>Unfortunately, patching Cocoon isn't that easy. Note that in
                     order to run the webstart Java client, we need to sign a few jars.</para>
-                <para>I don't think the patches will break any existing functionality in Cocoon. So far, I have not
+
+                <para>We don't think the patches will break any existing functionality in Cocoon. So far, we have not
                     encountered any problems. However, it might not be possible to use XIndice and eXist at the same
                     time, due to the XML:DB incompatibilities.</para>
             </note>
@@ -467,30 +478,40 @@
             <procedure>
                 <step>
                     <para>Download the latest and greatest Cocoon source distribution from the Apache <ulink
-                            url="http://cocoon.apache.org">website</ulink>. Do not compile Cocoon - you have to prepare
-                        it first! </para>
+                            url="http://cocoon.apache.org">website</ulink>.</para>
                 </step>
 
                 <step>
-                    <para>Unzip or untar the downloaded file into a directory of your choice.</para>
+                    <para>Unzip or untar the downloaded file into a directory of your choice (referred to as COCOON_HOME in the following).</para>
+                </step>
+
+                <step>
+                    <para>Disable the blocks lucene and querybean in COCOON_HOME/local.blocks.properties. E.g. exclude.block.lucene=true exclude.block.querybean=true</para>
+                </step>
+
+               <step>
+                    <para>Build Cocoon as instructed, the cocoon.jar is generated into COCOON_HOME/build/cocoon/.</para>
                 </step>
 
                 <step>
                     <para>Change back to the directory where you installed eXist (referred to as EXIST_HOME in the
-                        following). Open <filename>build/scripts/cocoon/build.properties</filename> with a text editor.
-                        Change the property <option>cocoon.home</option> to point to the directory where you unpacked
+                        following). Open <filename>extensions/local.build.properties</filename> with a text editor and enable the include.feature.cocoon property.</para>
+                </step>
+								<step>
+                    <para>Open <filename>extensions/cocoon/build.properties</filename> with a text editor and
+                        change the property <option>cocoon.home</option> to point to the directory where you unpacked
                         Cocoon (use / to separate path components, not \). </para>
                 </step>
-
                 <step>
                     <para>From inside the top directory of the eXist distribution (EXIST_HOME), launch the following
-                        command:</para>
+                        commands:</para>
+                    <synopsis>./build.sh</synopsis>
 
-                    <synopsis>./build.sh -f build/scripts/cocoon/build.xml</synopsis>
+                    <synopsis>./build.sh -f extensions/cocoon/inject/build.xml</synopsis>
 
-                    <para>on Unix or</para>
-
-                    <synopsis>build.bat -f build/scripts/cocoon/build.xml</synopsis>
+                    <para>on Unix, or</para>
+										<synopsis>build.bat</synopsis>
+                    <synopsis>build.bat -f extensions\cocoon\inject\build.xml</synopsis>
 
                     <para>on Windows.</para>
                 </step>
@@ -501,7 +522,7 @@
 
                     <screen>
 [echo] Cocoon has been prepared. You may now change to
-[echo] /home/wolf/IDEA/cocoon-2.1.9
+[echo] /home/wolf/IDEA/cocoon-2.1.11
 [echo] and call build.sh or build.bat to build Cocoon.
 
 BUILD SUCCESSFULL
