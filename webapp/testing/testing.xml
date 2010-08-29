@@ -200,10 +200,6 @@ public class UtilTests extends TestRunner {
         <section>
               <title>Other</title>
             <section>
-                <title>Testing Java</title>
-                <para>Check <a href="/exist/developper.html">here</a>.</para>
-            </section>
-            <section>
                   <title>Functional Testing with XProc</title>
                 <para>TBA</para>
             </section>
