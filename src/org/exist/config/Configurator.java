@@ -590,13 +590,16 @@ public class Configurator {
 	}
 
 	public static synchronized void clear() {
-		for (Configuration conf : hotConfigs.values()) {
-			if (conf instanceof ConfigurationImpl) {
-				((ConfigurationImpl) conf).configuredObjectReferene = null;
+		synchronized (hotConfigs) {
+			for (Configuration conf : hotConfigs.values()) {
+				if (conf instanceof ConfigurationImpl) {
+					((ConfigurationImpl) conf).configuredObjectReferene = null;
+				}
 			}
+			
+			hotConfigs.clear();
 		}
-		
-		hotConfigs.clear();
+		map.clear();
 	}
 
 	public static void unregister(Configuration configuration) {
