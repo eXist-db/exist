@@ -111,7 +111,7 @@ public class Configurator {
     	return link;
 	}
 	
-	public static Method findSetMethod(Class<?> clazz, Field field) {
+	public static Method searchForSetMethod(Class<?> clazz, Field field) {
 		try {
 			String methodName = "set"+field.getName();
 			methodName = methodName.toLowerCase();
@@ -122,6 +122,7 @@ public class Configurator {
 			}
 			
 		} catch (SecurityException e) {
+		} catch (NoClassDefFoundError e) {
 		}
 		
 		return null;
@@ -229,7 +230,7 @@ public class Configurator {
 			
 				if (value != null && !value.equals( field.get(instance) ) ) {
 					
-					Method method = findSetMethod(instance.getClass(), field);
+					Method method = searchForSetMethod(instance.getClass(), field);
 					if (method != null) {
 						try {
 							method.invoke(instance, value);
