@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.utils.ConverterFrom1_0;
 import org.exist.storage.DBBroker;
@@ -47,7 +48,7 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 
 		Configuration conf = Configurator.hotConfigs.get(documentPath);
 		if (conf != null) 
-			conf.checkForUpdates(document);
+			conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
 		
 		if (documentPath.equals("/db/system/users.xml")) {
 			try {
