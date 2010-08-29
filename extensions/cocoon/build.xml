@@ -11,8 +11,13 @@
 
     <property name="build.compiler" value="modern"/>
 
+    <!-- find cocoon path -->
+    <property file="build.properties"/>
+    
+    <!-- generic build properties-->
     <property file="${top.dir}/build.properties"/>
 
+    <!-- extensions properties -->
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
 
@@ -39,7 +44,10 @@
         <fileset dir="${top.dir}/${lib.extensions}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${lib}">
+        <fileset dir="${cocoon.home}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${cocoon.home}/build/cocoon">
             <include name="*.jar"/>
         </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
@@ -49,6 +57,7 @@
     </path>
    
 
+    
     <target name="prepare">
         <mkdir dir="${cocoon.classes}"/>
     </target>

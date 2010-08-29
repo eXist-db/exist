@@ -22,6 +22,8 @@
 
 package org.exist.security.xacml;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 import org.exist.source.*;
@@ -38,8 +40,8 @@ public class XACMLSource
 	private final String type;
 	private final String key;
 	
-	private XACMLSource() { this(null, null); }
-	private XACMLSource(String type, String key)
+	public XACMLSource() { this(null, null); }
+	public XACMLSource(String type, String key)
 	{
 		this.type = type;
 		this.key = key;
@@ -79,11 +81,28 @@ public class XACMLSource
 		}
 		if(source instanceof StringSource || source instanceof StringSourceWithMapKey)
 			return new XACMLSource(XACMLConstants.STRING_SOURCE_TYPE, XACMLConstants.STRING_SOURCE_TYPE);
-		if(source instanceof CocoonSource)
-		{
-			String key = ((CocoonSource)source).getWrappedSource().getURI();
+
+        // Cocoon classes are not on classpath during compile time.
+        Class<?> class1;
+        try {
+            class1 = Class.forName("org.exist.source.CocoonSource");
+            Method method1 = class1.getMethod("getInstance", org.exist.source.Source.class);
+            Object o1 = method1.invoke(null, source);
+
+            Method method2 = class1.getMethod("getKey", (java.lang.Class<?>[]) null);
+            Object o2 = method2.invoke(o1, (Object[])null);
+
+
+            String key = (String) o2;
+            System.out.println("Found CocoonSource with key "+key);
+
 			return new XACMLSource(XACMLConstants.COCOON_SOURCE_TYPE, key);
-		}
+
+        } catch (Exception e) {
+            // just continue
+        } 
+
+        
 		if(source instanceof DBSource)
 		{
 			XmldbURI key = ((DBSource)source).getDocumentPath();

@@ -20,7 +20,7 @@
  * 
  *  $Id$
  */
-package org.exist.source;
+package org.exist.cocoon.source;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +31,7 @@ import org.apache.excalibur.source.Source;
 import org.apache.excalibur.source.SourceValidity;
 import org.exist.storage.DBBroker;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.source.AbstractSource;
 
 /**
  * A source that wraps around a Cocoon source object.
