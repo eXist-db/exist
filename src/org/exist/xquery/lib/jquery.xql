@@ -85,8 +85,7 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
                     else
                         "var options = null;"
                 return
-                    <script type="text/javascript">
-                    $(function() {{
+                    <jquery:script>
                         { $options }
                         var tabs = $("#{$id}").tabs(options);
                         { 
@@ -95,8 +94,7 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
                             else
                                 ()
                         }
-                    }});
-                    </script>
+                    </jquery:script>
             }
         </div>
 };
@@ -132,15 +130,13 @@ declare function jquery:form-repeat($config as element(jquery:form-repeat)) as e
     let $delete := $config/@delete/string()
     let $onReady := $config/@on-ready/string()
     return
-        <script type="text/javascript">
-        $(document).ready(function() {{
+        <jquery:script>
             var options = {{
                 deleteTrigger: '{$delete}',
                 onReady: { if ($onReady) then $onReady else 'new function() {}' }
             }};
             $('{$formSelector}').repeat('{$trigger}', options);
-        }});
-        </script>
+        </jquery:script>
 };
 
 (:~
@@ -174,8 +170,7 @@ declare function jquery:toggle($config as element(jquery:toggle)) as element()+ 
         if (empty($id0)) then
             <div id="{$id}" class="include-target"></div>
         else (),
-        <script type="text/javascript">
-        $(document).ready(function(ev) {{
+        <jquery:script>
             $('#{$id}').css('display', 'none');
             $('{$trigger}').click(function(ev) {{
                 if ($(this).hasClass('expanded')) {{
@@ -209,8 +204,7 @@ declare function jquery:toggle($config as element(jquery:toggle)) as element()+ 
                 $(this).toggleClass('expanded');
                 ev.preventDefault();
             }});
-        }});
-        </script>
+        </jquery:script>
     )
 };
 
@@ -224,16 +218,14 @@ declare function jquery:paginate($config as element(jquery:paginate)) as element
     let $onReady := $config/@on-ready/string()
     return (
         <div id="{$id}"/>,
-        <script type="text/javascript">
-        $(document).ready(function(ev) {{
+        <jquery:script>
             $('#{$id/string()}').pagination('{$config/@href/string()}', {{
                     totalItems: {count($hits)},
                     itemsPerPage: 10,
                     navContainer: '{$config/@navcontainer/string()}'
                     { if ($onReady) then (", readyCallback: ", $onReady) else () }
             }});
-        }});
-        </script>
+        </jquery:script>
     )
 };
 
@@ -272,8 +264,7 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
             let $matchContains := if ($auto/@matchContains) then $auto/@matchContains/string() else "false"
             let $minLength := if ($auto/@minLength) then $auto/@minLength/string() else "3"
             return
-                <script type="text/javascript">
-                    $(function() {{
+                <jquery:script>
                         $('#{$id}').autocomplete({{
                             source: function(request, response) {{
                                 var data = {{ term: request.term }};
@@ -294,8 +285,7 @@ declare function jquery:input-field($node as element(jquery:input)) as element()
                             minLength: { $minLength },
                             delay: 700
                         }});
-                    }});
-                </script>
+                </jquery:script>
         else
             (),
         <input>
@@ -354,9 +344,9 @@ declare function jquery:button($node as element(jquery:button)) as element()+ {
     let $id := if ($node/@id) then $node/@id/string() else util:uuid()
     return (
         <button id="{$id}">{$node/@*[not(local-name(.) = 'id')], $node/node()}</button>,
-        <script type="text/javascript">
-        $(document).ready(function(ev) {{ $('#{$id}').button(); }});
-        </script>
+        <jquery:script>
+        $('#{$id}').button();
+        </jquery:script>
     )
 };
 
@@ -377,8 +367,7 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
             )
         }
         </div>,
-        <script type="text/javascript">
-        $(document).ready(function(ev) {{
+        <jquery:script>
             var actions = {{}};
             {
                 for $panel in $config/jquery:panel
@@ -404,8 +393,7 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
                         panel.load(action);
                 }}
             }});
-        }});
-        </script>
+        </jquery:script>
     )
 };
 
@@ -429,8 +417,7 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
     return
         <div>
             { $id, for $child in $config/*[not(self::jquery:*)] return jquery:process-templates($child) }
-            <script type="text/javascript">
-                $(document).ready(function(ev) {{
+            <jquery:script>
                     $('#{$id/string()}').dialog({{
                         modal: { if ($modal) then 'true' else 'false' },
                         autoOpen: false,
@@ -444,7 +431,7 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
                                         concat($attr/local-name(), ": ", $attr/string())
                                     else if ($attr/local-name() = ("title", "position", 
                                         "dialogClass", "closeText")) then
-                                        concat($attr/local-name(), ": '", $attr/string(), "'")
+                                        concat($attr/local-name(), ': "', $attr/string(), '"')
                                     else
                                         ()
                             return
@@ -454,19 +441,18 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
                                     ()
                         }
                     }});
-                }});
-            </script>
+            </jquery:script>
             {
                 if($trigger)then
                 (
-                    <script type="text/javascript">
+                    <jquery:script>
                         var trigger = '{$trigger/string()}';
                         if (trigger != '')
                             $(trigger).click(function() {{
                                 $('#{$id/string()}').dialog('open');
                                 return false;
                             }});
-                    </script>
+                    </jquery:script>
                 )else()
             }
         </div>
@@ -507,4 +493,39 @@ declare function jquery:process-templates($node as node()) as node()* {
             }
         default return
             $node
+};
+
+declare function jquery:process($node as node()) as node()* {
+    jquery:cleanup-javascript(
+        jquery:process-templates($node)
+    )
+};
+
+declare function jquery:cleanup-javascript($node as node(), $scripts as element()*) {
+    typeswitch ($node)
+        case element(jquery:javascript) return
+            <script type="text/javascript">
+            /*
+             * Generated code
+             * by jQuery XQuery module
+             */
+            $(function() {{
+                { $scripts/text() }
+            }});
+            </script>
+        case element(jquery:script) return
+            ()
+        case element() return
+            element { node-name($node) } {
+                $node/@*,
+                for $child in $node/node() return jquery:cleanup-javascript($child, $scripts)
+            }
+        default return
+            $node
+};
+
+declare function jquery:cleanup-javascript($root as element()) {
+    let $scripts := $root//jquery:script
+    return
+        jquery:cleanup-javascript($root, $scripts)
 };
