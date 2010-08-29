@@ -51,8 +51,6 @@ public class LDAPRealm extends AbstractRealm {
 
 	protected LdapContextFactory ldapContextFactory = null;
 
-	protected Configuration configuration = null;
-
 	public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
 	}

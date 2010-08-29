@@ -126,8 +126,23 @@ public class Configurator {
 		
 		if (configuration == null) return null;
 		
-		if (configuration instanceof ConfigurationImpl) {
-			ConfigurationImpl impl = (ConfigurationImpl) configuration;
+		Class<?> clazz = instance.getClass();
+		instance.getClass().getAnnotations();
+		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+			//LOG.info("no configuration name at "+instance.getClass());
+			return null;
+		}
+		
+		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+		
+		Configuration config = configuration.getConfiguration(configName);
+		if (config == null) {
+			System.out.println("no configuration ["+configName+"]");
+			return null;
+		}
+		
+		if (config instanceof ConfigurationImpl) {
+			ConfigurationImpl impl = (ConfigurationImpl) config;
 			
 			//XXX: lock issue here, fix it
 			Configurable configurable = null;
@@ -144,21 +159,6 @@ public class Configurator {
 			} else 
 				impl.configuredObjectReferene = new WeakReference<Configurable>(instance);
 			//end (lock issue)
-		}
-		
-		Class<?> clazz = instance.getClass();
-		instance.getClass().getAnnotations();
-		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
-			//LOG.info("no configuration name at "+instance.getClass());
-			return null;
-		}
-		
-		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
-		
-		Configuration config = configuration.getConfiguration(configName);
-		if (config == null) {
-			System.out.println("no configuration ["+configName+"]");
-			return null;
 		}
 		
 		return configureByCurrent(instance, config);
