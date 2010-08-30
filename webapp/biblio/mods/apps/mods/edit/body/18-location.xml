@@ -1,55 +1,39 @@
- <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="access-condition" tab-id="access-condition">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="location" tab-id="location">
     <!-- Holding Simple is a set of internally defined elements and corresponds roughly to summary holdings information. If more granularity is required, Holding External may be used in lieu of Holding Simple with elements from an external schema. Holding Simple consists of a single subelement, Copy Information, which has several subelements. Holding Simple is not repeatable; if additional holdings statements are needed for the resource, repeat Location with appropriate subelements. -->
-    <!-- Use of at least one location element with the subelement url is required by these guidelines. It is required that one and only one location/url must include the usage attribute value "primary display". Many aggregators may include only one URL in their brief display. Use of usage=”primary display” allows aggregators to easily identify which URL to display for their users. If a record describes multiple items (a multi-volume set, for example), these guidelines strongly recommend identifying a primary entry point for these. These guidelines also recommend that the "access" attribute with the appropriate value also be used. Best practice is that the "primary display" URL is a link to the resource with its contextual material (for example metadata, navigation to the collection homepage). If the primary link to a resource is to a stand alone version of the resource (such as a JPEG image only), an end user will have no context except for the metadata on the service provider’s site. At minimum, the URL should point to a page that contains the resource and a navigation bar that allows user to reach the collection homepage. It is highly desirable that this page also include the descriptive metadata for the resource. -->
-    <fieldset>
-        <legend>Location</legend>
-        <xf:hint> Location identifies the institution or repository holding the resource, or a remote location in the form of a URL where it is available. In
+    <!-- Use of at least one location element with the subelement url is required by these guidelines. It is required that one and only one location/url must include the usage attribute value "primary display". Many aggregators may include only one URL in their brief display. Use of usage=”primary display” allows aggregators to easily identify which URL to display for their users. If a record describes multiple items (a multi-volume set, for example), these guidelines strongly recommend identifying a primary entry point for these. These guidelines also recommend that the "access" attribute with the appropriate value also be used. Best practice is that the "primary display" URL is a link to the resource with its contextual material (for example metadata, navigation to the collection homepage). If the primary link to a resource is to a stand alone version of the resource (such as a JPEG image only), an end user will have no context except for the metadata on the service provider’s site. At minimum, the URL should point to a page that contains the resource and a navigation bar that allows user to reach the collection homepage. It is highly desirable that this page also include the descriptive metadata for the resource. --><fieldset><legend>Location</legend><xf:hint> Location identifies the institution or repository holding the resource, or a remote location in the form of a URL where it is available. In
             the case of a physical resource, information is noted about what the institution identified in Physical Location holds of the resource and its
             specific location within the institution.<br/> Holdings information consists of copy-specific information about the resource, information about the
             specific location within an institution, version information, and other information that is peculiar to the institution. </xf:hint>
-        <!--location repeat begins-->
-        <xf:repeat nodeset="instance('save-data')/mods:location" id="location-repeat">
+        <!--location repeat begins--><xf:repeat nodeset="instance('save-data')/mods:location" id="location-repeat">
             <!--location input begins-->
             <!--no input-->
             <!--location input ends-->
             <!--physicalLocation begins-->
             <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: include-->
-            <fieldset>
-                <legend>
-                    <span class="legend">Physical Location</span>
-                </legend>
-                <xf:hint> The institution or repository that holds the resource or where it is available. Physical Location may be expressed as text and/or as a
+            <!--Cluster: include--><fieldset><legend><span class="legend">Physical Location</span></legend><xf:hint> The institution or repository that holds the resource or where it is available. Physical Location may be expressed as text and/or as a
                     code. Use the authority attribute to designate the source of the code. Physical Location typically includes specific information used to
                     locate a resource within a collection, such as the name or code of an institution/repository, and perhaps subcollection. A shelf number is
                     given in Shelf Locator. </xf:hint>
-                <!--physicalLocation repeat begins-->
-                <xf:repeat nodeset="./mods:physicalLocation" id="physical-location-repeat">
-                    <div class="block-form">
+                <!--physicalLocation repeat begins--><xf:repeat nodeset="./mods:physicalLocation" id="physical-location-repeat"><div class="block-form">
                         <!--physicalLocation input begins-->
                         <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                        <!--Cluster: omit-->
-                        <!-- <xf:input ref="./@xlink" class="text_150"> <xf:label>XLink: </xf:label> <xf:hint> The xlink attribute is used to reference an external resource, such as a second metadata record, such as a Related Item or a Table Of Contents. </xf:hint> </xf:input> <br/> -->
+                        <!--Cluster: omit--><xf:input ref="./@xlink" class="text_150"><xf:label>XLink: </xf:label><xf:hint>
+                                The XLink attribute is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.</xf:hint></xf:input><br/>
                         <!--DLF/Aquifer: N/A-->
                         <!--Cluster: omit-->
                         <!-- <xf:select1 ref="./@type" selection="open"> <xf:label>Type:</xf:label> <xf:hint> This attribute is used to indicate different kinds of locations, e.g. current, discovery, former, creation. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='physical-location-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
                         <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                        <!--Cluster: include-->
-                        <xf:select1 ref="./@authority" selection="open">
-                            <xf:label>Authority:</xf:label>
-                            <xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='recordcontentsource-authority-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <br/>
+                        <!--Cluster: include--><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='record-content-source-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
                         <!--DLF/Aquifer: N/A-->
                         <!--Cluster: omit-->
                         <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint> Hint </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
                         <!--DLF/Aquifer: NOT RECOMMENDED-->
-                        <!--Cluster: omit-->
-                        <!-- <xf:select1 ref="./@xml:lang"> <xf:label>xml:lang:</xf:label> <xf:hint> Hint </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+                        <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
+                                This attribute is used to specify the language used within an element, using specifications in RFC 3066. 
+                                RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                                <br/>
+                                The recommendation is not to use xml:lang, but to use the above Language attribute.
+                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
                         <!--DLF/Aquifer: N/A-->
                         <!--Cluster: omit-->
                         <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint> Hint </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
@@ -58,173 +42,62 @@
                         <!-- <xf:select1 ref="./@transliteration" selection="open"> <xf:label>Transliteration:</xf:label> <xf:hint> Hint </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
                         <!--DLF/Aquifer: OPTIONAL-->
                         <!--Cluster: omit-->
-                        <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint> Hint </xf:hint> </xf:input> -->
-                        <br/>
-                        <xf:input ref="." class="text_50">
-                            <xf:label>Physical Location: </xf:label>
-                            <xf:hint> The institution or repository that holds the resource or where it is available. Physical Location may be expressed as text
+                        <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint> Hint </xf:hint> </xf:input> --><br/><xf:input ref="." class="text_50"><xf:label>Physical Location: </xf:label><xf:hint> The institution or repository that holds the resource or where it is available. Physical Location may be expressed as text
                                 and/or as a code. Use the authority attribute to designate the source of the code. Physical Location typically includes specific
                                 information used to locate a resource within a collection, such as the name or code of an institution/repository, and perhaps
-                                subcollection. A shelf number is given in Shelf Locator. </xf:hint>
-                        </xf:input>
+                                subcollection. A shelf number is given in Shelf Locator. </xf:hint></xf:input>
                         <!--physicalLocation input ends-->
-                        <!--physicalLocation delete begins-->
-                    </div>
-                    <br/>
-                    <xf:trigger ref="self::node()[count(../mods:physicalLocation) &gt; 1]">
-                        <xf:label>Delete This Physical Location</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:physicalLocation"
-                            at="index('physical-location-repeat')"/>
-                    </xf:trigger>
-                    <!--physicalLocation delete ends-->
-                    <div class="hr"/>
-                </xf:repeat>
+                        <!--physicalLocation delete begins--></div><br/><xf:trigger ref="self::node()[count(../mods:physicalLocation) &gt; 1]"><xf:label>Delete This Physical Location</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:physicalLocation" at="index('physical-location-repeat')"/></xf:trigger>
+                    <!--physicalLocation delete ends--><div class="hr"/></xf:repeat>
                 <!--physicalLocation repeat ends-->
-                <!--physicalLocation add begins-->
-                <xf:trigger class="add">
-                    <xf:label>Add Physical Location</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="mods:physicalLocation" at="index('physical-location-repeat')" position="after"
-                            origin="instance('insert-templates')/mods:location/mods:physicalLocation"/>
-                        <xf:setvalue ref="instance('save-data')/mods:physicalLocation[last()]" value="''"/>
-                    </xf:action>
-                </xf:trigger>
-                <!--physicalLocation add ends-->
-            </fieldset>
+                <!--physicalLocation add begins--><xf:trigger class="add"><xf:label>Add Physical Location</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:physicalLocation" at="index('physical-location-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:physicalLocation"/><xf:setvalue ref="instance('save-data')/mods:physicalLocation[last()]" value="''"/></xf:action></xf:trigger>
+                <!--physicalLocation add ends--></fieldset>
             <!--physicalLocation ends-->
             <!--shelfLocator begins-->
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include-->
-            <fieldset>
-                <legend>
-                    <span class="legend">Shelf Locator</span>
-                </legend>
-                <xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
-                <!--shelfLocator repeat begins-->
-                <xf:repeat nodeset="./mods:shelfLocator" id="shelf-locator-repeat">
-                    <div class="block-form">
-                        <!--shelfLocator input begins-->
-                        <xf:input ref="." class="text_50">
-                            <xf:label>Shelf Locator: </xf:label>
-                            <xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
-                        </xf:input>
+            <!--Cluster: include--><fieldset><legend><span class="legend">Shelf Locator</span></legend><xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
+                <!--shelfLocator repeat begins--><xf:repeat nodeset="./mods:shelfLocator" id="shelf-locator-repeat"><div class="block-form">
+                        <!--shelfLocator input begins--><xf:input ref="." class="text_50"><xf:label>Shelf Locator: </xf:label><xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint></xf:input>
                         <!--shelfLocator input ends-->
-                        <!--shelfLocator delete begins-->
-                    </div>
-                    <br/>
-                    <xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]">
-                        <xf:label>Delete This Shelf Locator</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:shelfLocator" at="index('shelf-locator-repeat')"/>
-                    </xf:trigger>
-                    <!--shelfLocator delete ends-->
-                    <div class="hr"/>
-                </xf:repeat>
+                        <!--shelfLocator delete begins--></div><br/><xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]"><xf:label>Delete This Shelf Locator</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:shelfLocator" at="index('shelf-locator-repeat')"/></xf:trigger>
+                    <!--shelfLocator delete ends--><div class="hr"/></xf:repeat>
                 <!--title repeat ends-->
-                <!--shelfLocator add begins-->
-                <xf:trigger class="add">
-                    <xf:label>Add Shelf Locator</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="mods:shelfLocator" at="index('shelf-locator-repeat')" position="after"
-                            origin="instance('insert-templates')/mods:location/mods:shelfLocator"/>
-                        <xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/>
-                    </xf:action>
-                </xf:trigger>
-                <!--shelfLocator add ends-->
-            </fieldset>
+                <!--shelfLocator add begins--><xf:trigger class="add"><xf:label>Add Shelf Locator</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:shelfLocator" at="index('shelf-locator-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:shelfLocator"/><xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/></xf:action></xf:trigger>
+                <!--shelfLocator add ends--></fieldset>
             <!--shelfLocator ends-->
             <!--url begins-->
             <!--DLF/Aquifer: REQUIRED-->
-            <!--Cluster: include-->
-            <fieldset>
-                <legend>
-                    <span class="legend">URL</span>
-                </legend>
-                <xf:hint> The Uniform Resource Locator (URL) of the resource for a networked location. </xf:hint>
-                <!--url repeat begins-->
-                <xf:repeat nodeset="./mods:url" id="location-url-repeat">
-                    <div class="block-form">
+            <!--Cluster: include--><fieldset><legend><span class="legend">URL</span></legend><xf:hint> The Uniform Resource Locator (URL) of the resource for a networked location. </xf:hint>
+                <!--url repeat begins--><xf:repeat nodeset="./mods:url" id="location-url-repeat"><div class="block-form">
                         <!--url input begins-->
                         <!--DLF/Aquifer: N/A-->
-                        <!--Cluster: include-->
-                        <xf:input ref="./@dateLastAccessed" class="text_50">
-                            <xf:label>Date Last Accessed: </xf:label>
-                            <xf:hint> This attribute is intended to express the date that a digital resource has been accessed remotely. This may be useful to a
+                        <!--Cluster: include--><xf:input ref="./@dateLastAccessed" class="text_50"><xf:label>Date Last Accessed: </xf:label><xf:hint> This attribute is intended to express the date that a digital resource has been accessed remotely. This may be useful to a
                                 user trying to access the site because of the volatility of Web content. There is no encoding scheme specified for use with this
-                                attribute, however, a structured date of the form "2010-08-12" is recommended. </xf:hint>
-                        </xf:input>
-                        <br/>
+                                attribute, however, a structured date of the form "2010-08-12" is recommended. </xf:hint></xf:input><br/>
                         <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                        <!--Cluster: include-->
-                        <xf:select1 ref="./@access" selection="open">
-                            <xf:label>Access:</xf:label>
-                            <xf:hint> This attribute indicates the type of resource that the user or aggregator will access when following the URL link. If at
+                        <!--Cluster: include--><xf:select1 ref="./@access" selection="open"><xf:label>Access:</xf:label><xf:hint> This attribute indicates the type of resource that the user or aggregator will access when following the URL link. If at
                                 all possible, refer in URL to an object in context, i.e. an object in the context of a web page, with access to metadata and
                                 possibilities for navigation.
-                                <!--It is particularly useful to provide a flag in the context of OAI service providers harvesting metadata.-->
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-access-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <br/>
+                                <!--It is particularly useful to provide a flag in the context of OAI service providers harvesting metadata.--></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-access-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
                         <!--DLF/Aquifer: REQUIRED-->
-                        <!--Cluster: include-->
-                        <xf:select1 ref="./@usage">
-                            <xf:label>Usage:</xf:label>
-                            <xf:hint> This attribute indicates how the object represented by the link will be used. There is only one possible value, "primary
-                                display", which indicates that the link is the most appropriate to display for end users. </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-usage-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <br/>
+                        <!--Cluster: include--><xf:select1 ref="./@usage"><xf:label>Usage:</xf:label><xf:hint> This attribute indicates how the object represented by the link will be used. There is only one possible value, "primary
+                                display", which indicates that the link is the most appropriate to display for end users. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='url-usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
                         <!--DLF/Aquifer: OPTIONAL-->
                         <!--Cluster: omit-->
                         <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint> This attribute is intended to be used when additional text associated with the URL is needed for display. </xf:hint> </xf:input> <br/> -->
                         <!--DLF/Aquifer: OPTIONAL-->
-                        <!--Cluster: include-->
-                        <xf:textarea ref="./@note" class="textarea">
-                            <xf:label>Note: </xf:label>
-                            <xf:hint> This attribute is intended to be used when additional text associated with the URL is needed for display. Include the text
-                                preferred and capitalization, but do not include delimiters such as colons. </xf:hint>
-                        </xf:textarea>
-                        <div class="hr"/>
-                        <xf:input ref="." class="text_150">
-                            <xf:label>URL: </xf:label>
-                            <xf:hint> The Uniform Resource Locator (URL) of the resource for a networked location. </xf:hint>
-                        </xf:input>
+                        <!--Cluster: include--><xf:textarea ref="./@note" class="textarea"><xf:label>Note: </xf:label><xf:hint> This attribute is intended to be used when additional text associated with the URL is needed for display. Include the text
+                                preferred and capitalization, but do not include delimiters such as colons. </xf:hint></xf:textarea><div class="hr"/><xf:input ref="." class="text_150"><xf:label>URL: </xf:label><xf:hint> The Uniform Resource Locator (URL) of the resource for a networked location. </xf:hint></xf:input>
                         <!--url input ends-->
-                        <!--url delete begins-->
-                    </div>
-                    <br/>
-                    <xf:trigger ref="self::node()[count(../mods:url) &gt; 1]">
-                        <xf:label>Delete This URL</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:url" at="index('location-url-repeat')"/>
-                    </xf:trigger>
-                    <!--url delete ends-->
-                    <div class="hr"/>
-                </xf:repeat>
+                        <!--url delete begins--></div><br/><xf:trigger ref="self::node()[count(../mods:url) &gt; 1]"><xf:label>Delete This URL</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:url" at="index('location-url-repeat')"/></xf:trigger>
+                    <!--url delete ends--><div class="hr"/></xf:repeat>
                 <!--url repeat ends-->
-                <!--url add begins-->
-                <xf:trigger class="add">
-                    <xf:label>Add URL</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="mods:url" at="index('location-url-repeat')" position="after"
-                            origin="instance('insert-templates')/mods:location/mods:url"/>
-                        <xf:setvalue ref="instance('save-data')/mods:url[last()]" value="''"/>
-                    </xf:action>
-                </xf:trigger>
-                <!--url add ends-->
-            </fieldset>
+                <!--url add begins--><xf:trigger class="add"><xf:label>Add URL</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:url" at="index('location-url-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:url"/><xf:setvalue ref="instance('save-data')/mods:url[last()]" value="''"/></xf:action></xf:trigger>
+                <!--url add ends--></fieldset>
             <!--url ends-->
             <!--location/holdingSimple begins-->
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: hide-->
-            <fieldset>
-                <legend>Holdings Simple</legend>
-                <xf:hint> General information about what the institution identified in Physical Location holds of the resource and its specific location within
+            <!--Cluster: hide--><fieldset><legend>Holdings Simple</legend><xf:hint> General information about what the institution identified in Physical Location holds of the resource and its specific location within
                     the institution. General information about what the institution identified in physicalLocation holds of the resource and its specific
                     location. Holdings information consists of copy-specific information about the resource, information about the specific location within an
                     institution, version information, and other information that is peculiar to the institution. Holding Simple is a set of MODS internally
@@ -232,361 +105,118 @@
                     lieu of Holding Simple with elements from an external schema. Holding Simple consists of a single subelement, Copy Information which has
                     several subelements. Holding Simple is not repeatable; if additional holdings statements are needed for the resource, repeat Location with
                     appropriate subelements. For more information see MODS Holdings Information. </xf:hint>
-                <!--location/holdingSimple repeat begins-->
-                <xf:repeat nodeset="./mods:holdingSimple" id="location-holdingSimple-repeat">
+                <!--location/holdingSimple repeat begins--><xf:repeat nodeset="./mods:holdingSimple" id="location-holdingSimple-repeat">
                     <!--location/holdingSimple input begins-->
                     <!--no attributes-->
                     <!--location/holdingSimple input ends-->
-                    <!--location/copyInformation begins-->
-                    <fieldset>
-                        <legend>Copy Information</legend>
-                        <xf:hint> Information about a specific tangible instance of a bibliographic resource or set which comprises one or more pieces via
+                    <!--location/copyInformation begins--><fieldset><legend>Copy Information</legend><xf:hint> Information about a specific tangible instance of a bibliographic resource or set which comprises one or more pieces via
                             indication of sublocation and/or locator. </xf:hint>
-                        <!--location/copyInformation repeat begins-->
-                        <xf:repeat nodeset="./mods:copyInformation" id="location-copyInformation-repeat">
+                        <!--location/copyInformation repeat begins--><xf:repeat nodeset="./mods:copyInformation" id="location-copyInformation-repeat">
                             <!--location/copyInformation input begins-->
                             <!--no attributes-->
                             <!--no input-->
-                            <!--location/form begins-->
-                            <fieldset>
-                                <legend>Form</legend>
-                                <xf:hint> The designation of a particular physical presentation of a resource. </xf:hint>
-                                <!--location/form repeat begins-->
-                                <xf:repeat nodeset="./mods:form" id="location-form-repeat">
-                                    <!--location/form input begins-->
-                                    <xf:select1 ref="./@authority">
-                                        <xf:label>Authority:</xf:label>
-                                        <xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <br/>
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Form:</xf:label>
-                                        <xf:hint> The designation of a particular physical presentation of a resource. This is equivalent to MODS Physical
+                            <!--location/form begins--><fieldset><legend>Form</legend><xf:hint> The designation of a particular physical presentation of a resource. </xf:hint>
+                                <!--location/form repeat begins--><xf:repeat nodeset="./mods:form" id="location-form-repeat">
+                                    <!--location/form input begins--><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint> The name of the authoritative list for a controlled value is recorded here. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Form:</xf:label><xf:hint> The designation of a particular physical presentation of a resource. This is equivalent to MODS Physical
                                             Description/Form. It may be included under Copy Information when the MODS record refers to multiple forms and there
                                             is different detailed holdings information associated with each form. Otherwise, use Physical Description/Form.<br/>
                                             Form is not repeatable; repeat Copy Information within Holding Simple for multiple forms of the same resource.
-                                        </xf:hint>
-                                    </xf:input>
-                                    <!--location/form input ends-->
-                                    <br/>
+                                        </xf:hint></xf:input>
+                                    <!--location/form input ends--><br/>
                                     <!--location/form delete begins-->
-                                    <!-- <xf:trigger ref="self::node()[count(../mods:form) &gt; 1]"> <xf:label>Delete This Form</xf:label> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:name/mods:form" at="index('location-form-repeat')"/> </xf:trigger> -->
-                                    <!--location/form delete ends-->
-                                    <br/>
-                                </xf:repeat>
+                                    <!-- <xf:trigger ref="self::node()[count(../mods:form) > 1]"> <xf:label>Delete This Form</xf:label> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:name/mods:form" at="index('location-form-repeat')"/> </xf:trigger> -->
+                                    <!--location/form delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/form repeat ends-->
                                 <!--location/form add begins-->
                                 <!-- <xf:trigger class="add"> <xf:label>Add Form</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="mods:form" at="index('location-form-repeat')" position="after" origin="instance('insert-templates')/mods:form"/> <xf:setvalue ref="instance('save-data')/mods:form[last()]" value="''"/> </xf:action> </xf:trigger> -->
-                                <!--location/form add ends-->
-                            </fieldset>
+                                <!--location/form add ends--></fieldset>
                             <!--location/form ends-->
-                            <!--location/sublocation begins-->
-                            <fieldset>
-                                <legend>Sublocation</legend>
-                                <xf:hint> Department, division or section of an institution holding a copy of the resource. </xf:hint>
-                                <!--location/sublocation repeat begins-->
-                                <xf:repeat nodeset="./mods:sublocation " id="location-sublocation-repeat">
-                                    <!--location/sublocation input begins-->
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Sublocation:</xf:label>
-                                        <xf:hint> Department, division or section of an institution holding a copy of the resource. </xf:hint>
-                                    </xf:input>
-                                    <!--location/sublocation input ends-->
-                                    <br/>
-                                    <!--location/sublocation delete begins-->
-                                    <xf:trigger ref="self::node()[count(../mods:sublocation) &gt; 1]">
-                                        <xf:label>Delete This Sublocation</xf:label>
-                                        <xf:delete ev:event="DOMActivate"
-                                            nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:sublocation"
-                                            at="index('location-sublocation-repeat')"/>
-                                    </xf:trigger>
-                                    <!--location/sublocation delete ends-->
-                                    <div class="hr"/>
-                                </xf:repeat>
+                            <!--location/sublocation begins--><fieldset><legend>Sublocation</legend><xf:hint> Department, division or section of an institution holding a copy of the resource. </xf:hint>
+                                <!--location/sublocation repeat begins--><xf:repeat nodeset="./mods:sublocation " id="location-sublocation-repeat">
+                                    <!--location/sublocation input begins--><xf:input ref="." class="text_50"><xf:label>Sublocation:</xf:label><xf:hint> Department, division or section of an institution holding a copy of the resource. </xf:hint></xf:input>
+                                    <!--location/sublocation input ends--><br/>
+                                    <!--location/sublocation delete begins--><xf:trigger ref="self::node()[count(../mods:sublocation) &gt; 1]"><xf:label>Delete This Sublocation</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:sublocation" at="index('location-sublocation-repeat')"/></xf:trigger>
+                                    <!--location/sublocation delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/sublocation repeat ends-->
-                                <!--location/sublocation add begins-->
-                                <xf:trigger class="add">
-                                    <xf:label>Add Sublocation</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:sublocation" at="index('location-sublocation-repeat')" position="after"
-                                            origin="instance('insert-templates')/mods:sublocation"/>
-                                        <xf:setvalue ref="instance('save-data')/mods:sublocation[last()]" value="''"/>
-                                    </xf:action>
-                                </xf:trigger>
-                                <!--location/sublocation add ends-->
-                            </fieldset>
+                                <!--location/sublocation add begins--><xf:trigger class="add"><xf:label>Add Sublocation</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:sublocation" at="index('location-sublocation-repeat')" position="after" origin="instance('insert-templates')/mods:sublocation"/><xf:setvalue ref="instance('save-data')/mods:sublocation[last()]" value="''"/></xf:action></xf:trigger>
+                                <!--location/sublocation add ends--></fieldset>
                             <!--location/sublocation ends-->
-                            <!--location/shelfLocator begins-->
-                            <fieldset>
-                                <legend>Shelf Locator</legend>
-                                <xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
-                                <!--location/shelfLocator repeat begins-->
-                                <xf:repeat nodeset="./mods:shelfLocator " id="location-shelfLocator-repeat">
-                                    <!--location/shelfLocator input begins-->
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Shelf Locator:</xf:label>
-                                        <xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
-                                    </xf:input>
-                                    <!--location/shelfLocator input ends-->
-                                    <br/>
-                                    <!--location/shelfLocator delete begins-->
-                                    <xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]">
-                                        <xf:label>Delete This Shelf Locator</xf:label>
-                                        <xf:delete ev:event="DOMActivate"
-                                            nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:shelfLocator"
-                                            at="index('location-shelfLocator-repeat')"/>
-                                    </xf:trigger>
-                                    <!--location/shelfLocator delete ends-->
-                                    <div class="hr"/>
-                                </xf:repeat>
+                            <!--location/shelfLocator begins--><fieldset><legend>Shelf Locator</legend><xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint>
+                                <!--location/shelfLocator repeat begins--><xf:repeat nodeset="./mods:shelfLocator " id="location-shelfLocator-repeat">
+                                    <!--location/shelfLocator input begins--><xf:input ref="." class="text_50"><xf:label>Shelf Locator:</xf:label><xf:hint> Shelfmark or other shelving designation that indicates the location identifier for a copy. </xf:hint></xf:input>
+                                    <!--location/shelfLocator input ends--><br/>
+                                    <!--location/shelfLocator delete begins--><xf:trigger ref="self::node()[count(../mods:shelfLocator) &gt; 1]"><xf:label>Delete This Shelf Locator</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:shelfLocator" at="index('location-shelfLocator-repeat')"/></xf:trigger>
+                                    <!--location/shelfLocator delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/shelfLocator repeat ends-->
-                                <!--location/shelfLocator add begins-->
-                                <xf:trigger class="add">
-                                    <xf:label>Add Shelf Locator</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:shelfLocator" at="index('location-shelfLocator-repeat')" position="after"
-                                            origin="instance('insert-templates')/mods:shelfLocator"/>
-                                        <xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/>
-                                    </xf:action>
-                                </xf:trigger>
-                                <!--location/shelfLocator add ends-->
-                            </fieldset>
+                                <!--location/shelfLocator add begins--><xf:trigger class="add"><xf:label>Add Shelf Locator</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:shelfLocator" at="index('location-shelfLocator-repeat')" position="after" origin="instance('insert-templates')/mods:shelfLocator"/><xf:setvalue ref="instance('save-data')/mods:shelfLocator[last()]" value="''"/></xf:action></xf:trigger>
+                                <!--location/shelfLocator add ends--></fieldset>
                             <!--location/shelfLocator ends-->
-                            <!--location/electronicLocator begins-->
-                            <fieldset>
-                                <legend>Electronic Locator</legend>
-                                <xf:hint> Uniform Resource Location of the resource. </xf:hint>
-                                <!--location/electronicLocator repeat begins-->
-                                <xf:repeat nodeset="./mods:electronicLocator " id="location-electronicLocator-repeat">
-                                    <!--location/electronicLocator input begins-->
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Electronic Locator:</xf:label>
-                                        <xf:hint> Uniform Resource Location of the resource. </xf:hint>
-                                    </xf:input>
-                                    <!--location/electronicLocator input ends-->
-                                    <br/>
-                                    <!--location/electronicLocator delete begins-->
-                                    <xf:trigger ref="self::node()[count(../mods:electronicLocator) &gt; 1]">
-                                        <xf:label>Delete This Electronic Locator</xf:label>
-                                        <xf:delete ev:event="DOMActivate"
-                                            nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:electronicLocator"
-                                            at="index('location-electronicLocator-repeat')"/>
-                                    </xf:trigger>
-                                    <!--location/electronicLocator delete ends-->
-                                    <div class="hr"/>
-                                </xf:repeat>
+                            <!--location/electronicLocator begins--><fieldset><legend>Electronic Locator</legend><xf:hint> Uniform Resource Location of the resource. </xf:hint>
+                                <!--location/electronicLocator repeat begins--><xf:repeat nodeset="./mods:electronicLocator " id="location-electronicLocator-repeat">
+                                    <!--location/electronicLocator input begins--><xf:input ref="." class="text_50"><xf:label>Electronic Locator:</xf:label><xf:hint> Uniform Resource Location of the resource. </xf:hint></xf:input>
+                                    <!--location/electronicLocator input ends--><br/>
+                                    <!--location/electronicLocator delete begins--><xf:trigger ref="self::node()[count(../mods:electronicLocator) &gt; 1]"><xf:label>Delete This Electronic Locator</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:electronicLocator" at="index('location-electronicLocator-repeat')"/></xf:trigger>
+                                    <!--location/electronicLocator delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/electronicLocator repeat ends-->
-                                <!--location/electronicLocator add begins-->
-                                <xf:trigger class="add">
-                                    <xf:label>Add Electronic Locator</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:electronicLocator" at="index('location-electronicLocator-repeat')" position="after"
-                                            origin="instance('insert-templates')/mods:electronicLocator"/>
-                                        <xf:setvalue ref="instance('save-data')/mods:electronicLocator[last()]" value="''"/>
-                                    </xf:action>
-                                </xf:trigger>
-                                <!--location/electronicLocator add ends-->
-                            </fieldset>
+                                <!--location/electronicLocator add begins--><xf:trigger class="add"><xf:label>Add Electronic Locator</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:electronicLocator" at="index('location-electronicLocator-repeat')" position="after" origin="instance('insert-templates')/mods:electronicLocator"/><xf:setvalue ref="instance('save-data')/mods:electronicLocator[last()]" value="''"/></xf:action></xf:trigger>
+                                <!--location/electronicLocator add ends--></fieldset>
                             <!--location/electronicLocator ends-->
-                            <!--location/note begins-->
-                            <fieldset>
-                                <legend>Note</legend>
-                                <xf:hint> Note relating to a specific copy of a document. </xf:hint>
-                                <!--location/note repeat begins-->
-                                <xf:repeat nodeset="./mods:note " id="location-note-repeat">
+                            <!--location/note begins--><fieldset><legend>Note</legend><xf:hint> Note relating to a specific copy of a document. </xf:hint>
+                                <!--location/note repeat begins--><xf:repeat nodeset="./mods:note " id="location-note-repeat">
                                     <!--location/note input begins-->
                                     <!-- <xf:input ref="./@type" class="text_50"> <xf:label>Type:</xf:label> <xf:hint> This attribute is not controlled by a list and thus is open-ended. </xf:hint> </xf:input> -->
-                                    <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label:</xf:label> <xf:hint> This attribute is intended to be used when additional text associated with the note is necessary for display. </xf:hint> </xf:input> <br/> -->
-                                    <xf:textarea ref="." class="textarea">
-                                        <xf:label>Note:</xf:label>
-                                        <xf:hint> Note relating to a specific copy of a document. </xf:hint>
-                                    </xf:textarea>
-                                    <!--location/note input ends-->
-                                    <br/>
-                                    <!--location/note delete begins-->
-                                    <xf:trigger ref="self::node()[count(../mods:note) &gt; 1]">
-                                        <xf:label>Delete This Note</xf:label>
-                                        <xf:delete ev:event="DOMActivate"
-                                            nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:note"
-                                            at="index('location-note-repeat')"/>
-                                    </xf:trigger>
-                                    <!--location/note delete ends-->
-                                    <div class="hr"/>
-                                </xf:repeat>
+                                    <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label:</xf:label> <xf:hint> This attribute is intended to be used when additional text associated with the note is necessary for display. </xf:hint> </xf:input> <br/> --><xf:textarea ref="." class="textarea"><xf:label>Note:</xf:label><xf:hint> Note relating to a specific copy of a document. </xf:hint></xf:textarea>
+                                    <!--location/note input ends--><br/>
+                                    <!--location/note delete begins--><xf:trigger ref="self::node()[count(../mods:note) &gt; 1]"><xf:label>Delete This Note</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:note" at="index('location-note-repeat')"/></xf:trigger>
+                                    <!--location/note delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/note repeat ends-->
-                                <!--location/note add begins-->
-                                <xf:trigger class="add">
-                                    <xf:label>Add Note</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:note" at="index('location-note-repeat')" position="after"
-                                            origin="instance('insert-templates')/mods:note"/>
-                                        <xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/>
-                                    </xf:action>
-                                </xf:trigger>
-                                <!--location/note add ends-->
-                            </fieldset>
+                                <!--location/note add begins--><xf:trigger class="add"><xf:label>Add Note</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:note" at="index('location-note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/><xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/></xf:action></xf:trigger>
+                                <!--location/note add ends--></fieldset>
                             <!--location/note ends-->
-                            <!--location/enumerationAndChronology begins-->
-                            <fieldset>
-                                <legend>Enumeration And Chronology</legend>
-                                <xf:hint> Alpha-numeric identification, such as a volume or issue, and an indication of the date of publication or date of issue
+                            <!--location/enumerationAndChronology begins--><fieldset><legend>Enumeration And Chronology</legend><xf:hint> Alpha-numeric identification, such as a volume or issue, and an indication of the date of publication or date of issue
                                     of a component of a multi-part resource, distinguishing it from other components of the same resource. </xf:hint>
-                                <!--location/enumerationAndChronology repeat begins-->
-                                <xf:repeat nodeset="./mods:enumerationAndChronology " id="location-enumerationAndChronology-repeat">
-                                    <!--location/enumerationAndChronology input begins-->
-                                    <xf:select1 ref="./@unitType">
-                                        <xf:label>Type:</xf:label>
-                                        <xf:hint> The category of bibliographic entity for which enumerationAndChronology is given, i.e. basic bibliographic
-                                            unit, supplement, or index. </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='location-unittype-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <br/>
-                                    <xf:textarea ref="." class="textarea">
-                                        <xf:label>Enumeration And Chronology:</xf:label>
-                                        <xf:hint> Alpha-numeric identification, such as a volume or issue, and an indication of the date of publication or date
+                                <!--location/enumerationAndChronology repeat begins--><xf:repeat nodeset="./mods:enumerationAndChronology " id="location-enumerationAndChronology-repeat">
+                                    <!--location/enumerationAndChronology input begins--><xf:select1 ref="./@unitType"><xf:label>Type:</xf:label><xf:hint> The category of bibliographic entity for which enumerationAndChronology is given, i.e. basic bibliographic
+                                            unit, supplement, or index. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='location-unittype-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:textarea ref="." class="textarea"><xf:label>Enumeration And Chronology:</xf:label><xf:hint> Alpha-numeric identification, such as a volume or issue, and an indication of the date of publication or date
                                             of issue of a component of a multi-part resource, distinguishing it from other components of the same resource.
-                                        </xf:hint>
-                                    </xf:textarea>
-                                    <!--location/enumerationAndChronology input ends-->
-                                    <br/>
-                                    <!--location/enumerationAndChronology delete begins-->
-                                    <xf:trigger ref="self::node()[count(../mods:enumerationAndChronology) &gt; 1]">
-                                        <xf:label>Delete This Enumeration And Chronology</xf:label>
-                                        <xf:delete ev:event="DOMActivate"
-                                            nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:enumerationAndChronology"
-                                            at="index('location-enumerationAndChronology-repeat')"/>
-                                    </xf:trigger>
-                                    <!--location/enumerationAndChronology delete ends-->
-                                    <div class="hr"/>
-                                </xf:repeat>
+                                        </xf:hint></xf:textarea>
+                                    <!--location/enumerationAndChronology input ends--><br/>
+                                    <!--location/enumerationAndChronology delete begins--><xf:trigger ref="self::node()[count(../mods:enumerationAndChronology) &gt; 1]"><xf:label>Delete This Enumeration And Chronology</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation/mods:enumerationAndChronology" at="index('location-enumerationAndChronology-repeat')"/></xf:trigger>
+                                    <!--location/enumerationAndChronology delete ends--><div class="hr"/></xf:repeat>
                                 <!--location/enumerationAndChronology repeat ends-->
-                                <!--location/enumerationAndChronology add begins-->
-                                <xf:trigger class="add">
-                                    <xf:label>Add Enumeration And Chronology</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:enumerationAndChronology" at="index('location-enumerationAndChronology-repeat')"
-                                            position="after" origin="instance('insert-templates')/mods:enumerationAndChronology"/>
-                                        <xf:setvalue ref="instance('save-data')/mods:enumerationAndChronology[last()]" value="''"/>
-                                    </xf:action>
-                                </xf:trigger>
-                                <!--location/enumerationAndChronology add ends-->
-                            </fieldset>
+                                <!--location/enumerationAndChronology add begins--><xf:trigger class="add"><xf:label>Add Enumeration And Chronology</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:enumerationAndChronology" at="index('location-enumerationAndChronology-repeat')" position="after" origin="instance('insert-templates')/mods:enumerationAndChronology"/><xf:setvalue ref="instance('save-data')/mods:enumerationAndChronology[last()]" value="''"/></xf:action></xf:trigger>
+                                <!--location/enumerationAndChronology add ends--></fieldset>
                             <!--location/enumerationAndChronology ends-->
-                            <!--location/copyInformation input ends-->
-                            <br/>
-                            <!--location/copyInformation delete begins-->
-                            <xf:trigger ref="self::node()[count(../mods:copyInformation) &gt; 1]">
-                                <xf:label>Delete This Copy Information</xf:label>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation"
-                                    at="index('location-copyInformation-repeat')"/>
-                            </xf:trigger>
-                            <!--location/copyInformation delete ends-->
-                            <div class="hr"/>
-                        </xf:repeat>
+                            <!--location/copyInformation input ends--><br/>
+                            <!--location/copyInformation delete begins--><xf:trigger ref="self::node()[count(../mods:copyInformation) &gt; 1]"><xf:label>Delete This Copy Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingSimple/mods:copyInformation" at="index('location-copyInformation-repeat')"/></xf:trigger>
+                            <!--location/copyInformation delete ends--><div class="hr"/></xf:repeat>
                         <!--location/copyInformation repeat ends-->
-                        <!--location/copyInformation add begins-->
-                        <xf:trigger class="add">
-                            <xf:label>Add Copy Information</xf:label>
-                            <xf:action ev:event="DOMActivate">
-                                <xf:insert nodeset="mods:copyInformation" at="index('location-copyInformation-repeat')" position="after"
-                                    origin="instance('insert-templates')/mods:copyInformation"/>
-                                <xf:setvalue ref="instance('save-data')/mods:copyInformation[last()]" value="''"/>
-                            </xf:action>
-                        </xf:trigger>
-                        <!--location/copyInformation add ends-->
-                    </fieldset>
-                    <!--location/copyInformation ends-->
-                    <br/>
-                    <!--location/holdingSimple delete begins-->
-                    <xf:trigger ref="self::node()[count(../mods:holdingSimple) &gt; 1]">
-                        <xf:label>Delete This Holding Simple</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location//mods:holdingSimple"
-                            at="index('location-holdingSimple-repeat')"/>
-                    </xf:trigger>
-                    <!--location/holdingSimple delete ends-->
-                    <div class="hr"/>
-                </xf:repeat>
+                        <!--location/copyInformation add begins--><xf:trigger class="add"><xf:label>Add Copy Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyInformation" at="index('location-copyInformation-repeat')" position="after" origin="instance('insert-templates')/mods:copyInformation"/><xf:setvalue ref="instance('save-data')/mods:copyInformation[last()]" value="''"/></xf:action></xf:trigger>
+                        <!--location/copyInformation add ends--></fieldset>
+                    <!--location/copyInformation ends--><br/>
+                    <!--location/holdingSimple delete begins--><xf:trigger ref="self::node()[count(../mods:holdingSimple) &gt; 1]"><xf:label>Delete This Holding Simple</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location//mods:holdingSimple" at="index('location-holdingSimple-repeat')"/></xf:trigger>
+                    <!--location/holdingSimple delete ends--><div class="hr"/></xf:repeat>
                 <!--location/holdingSimple repeat ends-->
-                <!--location/holdingSimple add begins-->
-                <xf:trigger class="add">
-                    <xf:label>Add Holding Simple</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="mods:holdingSimple" at="index('location-holdingSimple-repeat')" position="after"
-                            origin="instance('insert-templates')/mods:holdingSimple"/>
-                        <xf:setvalue ref="instance('save-data')/mods:holdingSimple[last()]" value="''"/>
-                    </xf:action>
-                </xf:trigger>
-                <!--location/holdingSimple add ends-->
-            </fieldset>
+                <!--location/holdingSimple add begins--><xf:trigger class="add"><xf:label>Add Holding Simple</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:holdingSimple" at="index('location-holdingSimple-repeat')" position="after" origin="instance('insert-templates')/mods:holdingSimple"/><xf:setvalue ref="instance('save-data')/mods:holdingSimple[last()]" value="''"/></xf:action></xf:trigger>
+                <!--location/holdingSimple add ends--></fieldset>
             <!--location/holdingSimple ends-->
             <!--holdingExternal begins-->
-            <!--Cluster: omit-->
-            <fieldset>
-                <legend>
-                    <span class="legend">Holding External</span>
-                </legend>
-                <xf:hint> Holdings information that uses a schema defined externally to MODS. Holding External may include more detailed holdings information
+            <!--Cluster: omit--><fieldset><legend><span class="legend">Holding External</span></legend><xf:hint> Holdings information that uses a schema defined externally to MODS. Holding External may include more detailed holdings information
                     than that accommodated by the MODS schema. Holding External may include more detailed holdings information than that accommodated by the
                     MODS schema. An example is ISO 20775 and its accompanying schema. </xf:hint>
-                <!--holdingExternal repeat begins-->
-                <xf:repeat nodeset="./mods:holdingExternal" id="holding-external-repeat">
-                    <div class="block-form">
-                        <!--holdingExternal input begins-->
-                        <xf:textarea ref="." class="textarea">
-                            <xf:hint> Holdings information that uses a schema defined externally to MODS. Holding External may include more detailed holdings
+                <!--holdingExternal repeat begins--><xf:repeat nodeset="./mods:holdingExternal" id="holding-external-repeat"><div class="block-form">
+                        <!--holdingExternal input begins--><xf:textarea ref="." class="textarea"><xf:hint> Holdings information that uses a schema defined externally to MODS. Holding External may include more detailed holdings
                                 information than that accommodated by the MODS schema. Holding External may include more detailed holdings information than that
-                                accommodated by the MODS schema. An example is ISO 20775 and its accompanying schema. </xf:hint>
-                        </xf:textarea>
-                        <!--holdingExternal input ends-->
-                        <br/>
-                        <!--holdingExternal delete begins-->
-                    </div>
-                    <xf:trigger ref="self::node()[count(../mods:holdingExternal) &gt; 1]">
-                        <xf:label>Delete This Holding External</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingExternal"
-                            at="index('holding-external-repeat')"/>
-                    </xf:trigger>
-                    <!--holdingExternal delete ends-->
-                    <div class="hr"/>
-                </xf:repeat>
+                                accommodated by the MODS schema. An example is ISO 20775 and its accompanying schema. </xf:hint></xf:textarea>
+                        <!--holdingExternal input ends--><br/>
+                        <!--holdingExternal delete begins--></div><xf:trigger ref="self::node()[count(../mods:holdingExternal) &gt; 1]"><xf:label>Delete This Holding External</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location/mods:holdingExternal" at="index('holding-external-repeat')"/></xf:trigger>
+                    <!--holdingExternal delete ends--><div class="hr"/></xf:repeat>
                 <!--holdingExternal repeat ends-->
-                <!--holdingExternal add begins-->
-                <xf:trigger class="add">
-                    <xf:label>Add Holding External</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:insert nodeset="mods:holdingExternal" at="index('holding-external-repeat')" position="after"
-                            origin="instance('insert-templates')/mods:location/mods:holdingExternal"/>
-                        <xf:setvalue ref="instance('save-data')/mods:holdingExternal[last()]" value="''"/>
-                    </xf:action>
-                </xf:trigger>
-                <!--holdingExternal add ends-->
-            </fieldset>
-            <!--holdingExternal ends-->
-            <br/>
-            <!--location delete begins-->
-            <xf:trigger ref="self::node()[count(../mods:location) &gt; 1]">
-                <xf:label>Delete This Location</xf:label>
-                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location" at="index('location-repeat')"/>
-            </xf:trigger>
-            <!--location delete ends-->
-            <div class="hr"/>
-        </xf:repeat>
+                <!--holdingExternal add begins--><xf:trigger class="add"><xf:label>Add Holding External</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:holdingExternal" at="index('holding-external-repeat')" position="after" origin="instance('insert-templates')/mods:location/mods:holdingExternal"/><xf:setvalue ref="instance('save-data')/mods:holdingExternal[last()]" value="''"/></xf:action></xf:trigger>
+                <!--holdingExternal add ends--></fieldset>
+            <!--holdingExternal ends--><br/>
+            <!--location delete begins--><xf:trigger ref="self::node()[count(../mods:location) &gt; 1]"><xf:label>Delete This Location</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:location" at="index('location-repeat')"/></xf:trigger>
+            <!--location delete ends--><div class="hr"/></xf:repeat>
         <!--location repeat ends-->
-        <!--location add begins-->
-        <xf:trigger class="add">
-            <xf:label>Add Location</xf:label>
-            <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:location" at="index('location-repeat')" position="after" origin="instance('insert-templates')/mods:location"/>
-                <xf:setvalue ref="instance('save-data')/mods:location[last()]" value="''"/>
-            </xf:action>
-        </xf:trigger>
-        <!--location add ends-->
-    </fieldset>
-</div>
+        <!--location add begins--><xf:trigger class="add"><xf:label>Add Location</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:location" at="index('location-repeat')" position="after" origin="instance('insert-templates')/mods:location"/><xf:setvalue ref="instance('save-data')/mods:location[last()]" value="''"/></xf:action></xf:trigger>
+        <!--location add ends--></fieldset></div>
