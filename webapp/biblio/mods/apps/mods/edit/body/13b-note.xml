@@ -1,15 +1,11 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="note" tab-id="note">
     <!--note begins-->
     <!--DLF/Aquifer: RECOMMENDED OF APPLICABLE-->
-    <!--Cluster: include-->
-    <fieldset>
-        <legend>
-            <span class="legend">Note</span>
-        </legend>
-        <xf:hint>General information relating to a resource.<br/> Note should be used only for information that cannot be encoded in another, more specific,
-            ways. </xf:hint>
-        <!--note repeat begins-->
-        <xf:repeat nodeset="instance('save-data')/mods:note" id="note-repeat">
+    <!--Cluster: include--><fieldset><legend><span class="legend">Note</span></legend><xf:hint>
+            General information relating to a resource.<br/>
+            Note should be used only for information that cannot be encoded in another, more specific, ways.
+        </xf:hint>
+        <!--note repeat begins--><xf:repeat nodeset="instance('save-data')/mods:note" id="note-repeat">
             <!--note input begins-->
             <!--DLF/Aquifer: OPTIONAL-->
             <!--Cluster: omit-->
@@ -21,8 +17,12 @@
             <!--Cluster: omit-->
             <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
             <!--DLF/Aquifer: NOT RECOMMENDED-->
-            <!--Cluster: omit-->
-            <!-- <xf:select1 ref="./@xml:lang"> <xf:label>xml:lang:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
+                    This attribute is used to specify the language used within an element, using specifications in RFC 3066. 
+                    RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                    <br/>
+                    The recommendation is not to use xml:lang, but to use the above Language attribute.
+                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
             <!--DLF/Aquifer: N/A-->
             <!--Cluster: omit-->
             <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
@@ -31,29 +31,11 @@
             <!-- <xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint>Hint</xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
             <!--DLF/Aquifer: OPTIONAL-->
             <!--Cluster: omit-->
-            <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint>General information relating to a resource.</xf:hint> </xf:input> <br/> -->
-            <xf:textarea ref="." class="textarea">
-                <xf:hint>Hint</xf:hint>
-            </xf:textarea>
+            <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint>General information relating to a resource.</xf:hint> </xf:input> <br/> --><xf:textarea ref="." class="textarea"><xf:hint>Hint</xf:hint></xf:textarea>
             <!--note input ends-->
-            <!--note delete begins-->
-            <xf:trigger ref="self::node()[count(../mods:note) &gt; 1]">
-                <xf:label>Delete This Note</xf:label>
-                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:note" at="index('note-repeat')"/>
-            </xf:trigger>
-            <!--note delete ends-->
-            <div class="hr"/>
-        </xf:repeat>
+            <!--note delete begins--><xf:trigger ref="self::node()[count(../mods:note) &gt; 1]"><xf:label>Delete This Note</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:note" at="index('note-repeat')"/></xf:trigger>
+            <!--note delete ends--><div class="hr"/></xf:repeat>
         <!--note repeat ends-->
-        <!--note add begins-->
-        <xf:trigger class="add">
-            <xf:label>Add Note</xf:label>
-            <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:note" at="index('note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/>
-                <xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/>
-            </xf:action>
-        </xf:trigger>
-        <!--note add ends-->
-    </fieldset>
-    <!--note ends-->
-</div>
+        <!--note add begins--><xf:trigger class="add"><xf:label>Add Note</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:note" at="index('note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/><xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/></xf:action></xf:trigger>
+        <!--note add ends--></fieldset>
+    <!--note ends--></div>

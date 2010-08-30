@@ -1,23 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<code-table>
-    <code-table-name>transliteration-code</code-table-name>
-    <status>dummy</status>
-    <form/>
-    <basis/>
-    <description/>
-    <notes/>
-    <items>
-        <item>
-            <label>(none selected)</label>
-            <value/>
+<code-table><code-table-name>transliteration-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/catdir/cpso/roman.html</basis><description>ALA-LC Romanization Tables: Transliteration Schemes for Non-Roman Scripts, approved by the Library of Congress and the American Library Association</description><notes>not in language-3:
+        Greek
+        Khmer
+        Lepcha
+        Limbu
+        Moplah
+        Non-Slavic Languages (in Cyrillic Script)
+    </notes><items><item><label>(none selected)</label><value/></item><item><label>Amharic</label><value>ala-lc</value></item><item><label>Arabic</label><value>ala-lc</value></item><item><label>Armenian</label><value>ala-lc</value></item><item><label>Assamese</label><value>ala-lc</value></item><item><label>Azerbaijani</label><value>ala-lc</value></item><item><label>Balinese</label><value>ala-lc</value></item><item><label>Belarusian</label><value>ala-lc</value></item><item><label>Bengali</label><value>ala-lc</value></item><item><label>Bulgarian</label><value>ala-lc</value></item><item><label>Burmese</label><value>ala-lc</value></item><item><label>Chinese</label><value>ala-lc</value></item><item><label>Church Slavic</label><value>ala-lc</value></item><item><label>Divehi</label><value>ala-lc</value></item><item><label>Georgian</label><value>ala-lc</value></item><item><label>Greek</label><value>ala-lc</value></item><item><label>Gujarati</label><value>ala-lc</value></item><item><label>Hebrew</label><value>ala-lc</value></item><item><label>Hindi</label><value>ala-lc</value></item><item><label>Inuktitut</label><value>ala-lc</value></item><item><label>Japanese</label><value>ala-lc</value></item><item><label>Javanese</label><value>ala-lc</value></item><item><label>Kannada</label><value>ala-lc</value></item><item><label>Kashmiri</label><value>ala-lc</value></item><item><label>Kurdish</label><value>ala-lc</value></item><item><label>Khmer</label><value>ala-lc</value></item><item><label>Korean</label><value>ala-lc</value></item><item><label>Ladino</label><value>ala-lc</value></item><item><label>Lao</label><value>ala-lc</value></item>
+        <!-- <item>
+            <label>Lepcha</label>
+            <value>ala-lc</value>
         </item>
+        -->
+        <!-- 
         <item>
-            <label>pinyin</label>
-            <value>pinyin</value>
+            <label>Limbu</label>
+            <value>ala-lc</value>
         </item>
+        --><item><label>Macedonian</label><value>ala-lc</value></item><item><label>Madurese</label><value>ala-lc</value></item><item><label>Malay</label><value>ala-lc</value></item><item><label>Malayalam</label><value>ala-lc</value></item><item><label>Marathi</label><value>ala-lc</value></item><item><label>Mongolian</label><value>ala-lc</value></item>
+        <!-- 
         <item>
-            <label>romaji</label>
-            <value>romaji</value>
+            <label>Moplah</label>
+            <value>ala-lc</value>
         </item>
-    </items>
-</code-table>
+        -->
+        <!-- 
+        <item>
+            <label>Non-Slavic Languages
+                (in Cyrillic Script)</label>
+            <value>ala-lc</value>
+        </item>
+        --><item><label>Oriya</label><value>ala-lc</value></item><item><label>Ottoman Turkish</label><value>ala-lc</value></item><item><label>Pali</label><value>ala-lc</value></item><item><label>Panjabi</label><value>ala-lc</value></item><item><label>Persian</label><value>ala-lc</value></item><item><label>Prakrit</label><value>ala-lc</value></item><item><label>Pushto</label><value>ala-lc</value></item><item><label>Russian</label><value>ala-lc</value></item><item><label>Sanskrit</label><value>ala-lc</value></item><item><label>Santali</label><value>ala-lc</value></item><item><label>Serbian</label><value>ala-lc</value></item><item><label>Sindhi</label><value>ala-lc</value></item><item><label>Sinhalese</label><value>ala-lc</value></item><item><label>Sundanese</label><value>ala-lc</value></item><item><label>Tamil</label><value>ala-lc</value></item><item><label>Telugu</label><value>ala-lc</value></item><item><label>Thai</label><value>ala-lc</value></item><item><label>Yiddish</label><value>ala-lc</value></item></items></code-table>

@@ -1,77 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="language" tab-id="type">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="type" tab-id="type">
     <!--DLF/Aquifer: REQUIRED-->
     <!--Cluster: include-->
-    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use in all records of at least one typeOfResource element using the required enumerated values. This element is repeatable. -->
-    <fieldset>
-        <legend>Type of Resource</legend>
-        <xf:hint> A term that specifies the characteristics and general type of content of the resource. This element includes a high-level type that
-            categorizes the material in a general way. More specific typing is done in the Genre element. Information in Type Of Resource is about the original
-            item. For example, in the case of a digitised photograph, Type Of Resource would apply to the analog original; in born-digital materials, it would
-            apply to the original digital format. Type of Resource, Genre, Form under Physical Description overlap to some degree. </xf:hint>
-        <!--typeOfResource repeat begins-->
-        <xf:repeat nodeset="instance('save-data')/mods:typeOfResource" id="type-of-resource-repeat">
+    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use in all records of at least one typeOfResource element using the required enumerated values. This element is repeatable. --><fieldset><legend>Type of Resource</legend><xf:hint>
+            A term that specifies the characteristics and general type of the content of the resource being catalogued.
+            This element includes a high-level type that categorizes the material in a general way. 
+            More specific typing is done in the Genre element.
+            <br/>
+            Information in Type Of Resource is about the original item. For example, in the case of a digitized photograph, Type Of Resource would apply to the analog original; in born-digital materials, it wouldapply to the original digital format.
+            <br/>            
+            Type of Resource, Genre, and Form (under Physical Description) overlap to some extent.
+        </xf:hint>
+        <!--typeOfResource repeat begins--><xf:repeat nodeset="instance('save-data')/mods:typeOfResource" id="type-of-resource-repeat">
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include-->
-            <xf:select1 ref="./@collection">
-                <xf:label>Collection:</xf:label>
-                <xf:hint> "Yes" indicates that the resource is a collection. <br/> A collection is defined as a multi-part group of resources. One example would
+            <!--Cluster: include--><xf:select1 ref="./@collection"><xf:label>Collection:</xf:label><xf:hint> "Yes" indicates that the resource is a collection. <br/> A collection is defined as a multi-part group of resources. One example would
                     be an anthology. If there are multiple resource types within the collection, these should be enumerated in separate Type Of Resource
                     elements. <br/> Collection and Manuscript are associated with a specific value used in Type Of Resource. <br/> For example, an object which
                     consists of a collection of maps with associated text would be represented by two instances of Type Of Resource. The first would be
-                    "Cartographic" with Collection "yes," and the second would be "Text" with Collection "No". </xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-no-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <br/>
+                    "Cartographic" with Collection "yes," and the second would be "Text" with Collection "No". </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-empty-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include-->
-            <xf:select1 ref="./@manuscript">
-                <xf:label>Manuscript:</xf:label>
-                <xf:hint> "Yes" indicates that the resource is handwritten or typescript. <br/> The attributes "collection" and "manuscript" are associated with
+            <!--Cluster: include--><xf:select1 ref="./@manuscript"><xf:label>Manuscript:</xf:label><xf:hint> "Yes" indicates that the resource is handwritten or typescript. <br/> The attributes "collection" and "manuscript" are associated with
                     a specific value used in Type Of Resource. <br/> For example, an object which consists of a collection of maps with associated text would be
                     represented by two instances of Type Of Resource. <br/> The first would be "Cartographic" with Collection "yes," and the second would be
-                    "text" with Collection "No". </xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-no-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <br/>
+                    "text" with Collection "No". </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-empty-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include-->
-            <xf:select1 ref=".">
-                <xf:label>Type of Resource:</xf:label>
-                <xf:hint> This element includes a high-level type that categorises the material in a general way. More specific typing is done in the Genre
+            <!--Cluster: include--><xf:select1 ref="."><xf:label>Type of Resource:</xf:label><xf:hint> This element includes a high-level type that categorises the material in a general way. More specific typing is done in the Genre
                     element. There may be no value given for Type Of Resource if the Collection or Manuscript attribute is used and none of the enumerated
                     values is appropriate. Information in Type Of Resource is about the original item. For example, in the case of a digitised photograph, Type
-                    Of Resource would apply to the analog original; in born-digital materials, it would apply to the original digital format. </xf:hint>
-                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='type-of-resource-code']/items/item">
-                    <xf:label ref="label"/>
-                    <xf:value ref="value"/>
-                </xf:itemset>
-            </xf:select1>
-            <!--typeOfResource input ends-->
-            <br/>
-            <!--typeOfResource delete begins-->
-            <xf:trigger ref="self::node()[count(../mods:typeOfResource) &gt; 1]">
-                <xf:label>Delete This Type Of Resource</xf:label>
-                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:typeOfResource" at="index('type-of-resource-repeat')"/>
-            </xf:trigger>
-            <!--typeOfResource delete ends-->
-            <div class="hr"/>
-        </xf:repeat>
+                    Of Resource would apply to the analog original; in born-digital materials, it would apply to the original digital format. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='type-of-resource-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+            <!--typeOfResource input ends--><br/>
+            <!--typeOfResource delete begins--><xf:trigger ref="self::node()[count(../mods:typeOfResource) &gt; 1]"><xf:label>Delete This Type Of Resource</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:typeOfResource" at="index('type-of-resource-repeat')"/></xf:trigger>
+            <!--typeOfResource delete ends--><div class="hr"/></xf:repeat>
         <!--typeOfResource repeat ends-->
-        <!--typeOfResource add begins-->
-        <xf:trigger class="add">
-            <xf:label>Add Type of Resource</xf:label>
-            <xf:action ev:event="DOMActivate">
-                <xf:insert nodeset="mods:typeOfResource" at="index('record-content-source-repeat')" position="after" origin="instance('insert-templates')/mods:typeOfResource"/>
-                <xf:setvalue ref="instance('save-data')/mods:typeOfResource[last()]" value="''"/>
-            </xf:action>
-        </xf:trigger>
-        <!--typeOfResource add ends-->
-    </fieldset>
-</div>
+        <!--typeOfResource add begins--><xf:trigger class="add"><xf:label>Add Type of Resource</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:typeOfResource" at="index('record-content-source-repeat')" position="after" origin="instance('insert-templates')/mods:typeOfResource"/><xf:setvalue ref="instance('save-data')/mods:typeOfResource[last()]" value="''"/></xf:action></xf:trigger>
+        <!--typeOfResource add ends--></fieldset></div>

@@ -1,15 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<code-table>
-    <code-table-name>issuance-code</code-table-name>
-    <status>unfinished</status>
-    <form/>
-    <basis/>
-    <description/>
-    <notes/>
-    <items>
-        <item>
-            <label>(none selected)</label>
-            <value/>
-        </item>
-    </items>
-</code-table>
+<code-table><code-table-name>issuance-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#issuance</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>continuing</label><value>continuing</value></item><item><label>monographic</label><value>monographic</value></item></items></code-table>

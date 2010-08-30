@@ -1,15 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<code-table>
-    <code-table-name>frequency-code</code-table-name>
-    <status>unfinished</status>
-    <form/>
-    <basis/>
-    <description></description>
-    <notes></notes>
-    <items>
-        <item>
-            <label>(none selected)</label>
-            <value/>
-        </item>
-    </items>
-</code-table>
+<code-table><code-table-name>frequency-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/standards/valuelist/marcfrequency.html</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>continuously updated </label><value>continuously updated </value></item><item><label>daily</label><value>daily</value></item><item><label>semiweekly</label><value>semiweekly</value></item><item><label>three times a week</label><value>three times a week</value></item><item><label>weekly</label><value>weekly</value></item><item><label>daily</label><value>daily</value></item><item><label>biweekly</label><value>biweekly</value></item><item><label>three times a month</label><value>three times a month </value></item><item><label>semimonthly</label><value>semimonthly</value></item><item><label>monthly</label><value>monthly</value></item><item><label>bimonthly</label><value>bimonthly</value></item><item><label>quarterly</label><value>quarterly</value></item><item><label>three times a year</label><value>three times a year</value></item><item><label>semiannual</label><value>semiannual</value></item><item><label>annual</label><value>annual</value></item><item><label>biennial</label><value>biennial</value></item><item><label>triennial</label><value>triennial</value></item><item><label>completely irregular</label><value>completely irregular</value></item></items></code-table>
