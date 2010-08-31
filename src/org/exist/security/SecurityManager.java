@@ -49,6 +49,7 @@ public interface SecurityManager extends Configurable {
    public final static XmldbURI SECURITY_COLLETION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("security");
    public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
 
+   public final static String SYSTEM = "SYSTEM";
    public final static String DBA_GROUP = "dba";
    public final static String DBA_USER = "admin";
    public final static String GUEST_GROUP = "guest";

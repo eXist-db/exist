@@ -43,9 +43,9 @@ public class LDAPRealmTest {
 
 	private static String config = 
 		"<LDAP>" +
-		"	<context " +
-		"		principalPattern='cn={0},dc=local' " +
-		"		url='ldap://localhost:389'/>" +
+		"	<context>" +
+		"		<principalPattern>cn={0},dc=local</principalPattern>" +
+		"		<url>ldap://localhost:389</url>" +
 		"</LDAP>";
 
 	private static LDAPRealm realm;

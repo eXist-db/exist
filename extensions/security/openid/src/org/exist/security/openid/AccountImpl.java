@@ -24,16 +24,11 @@ package org.exist.security.openid;
 import java.lang.Override;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.security.Group;
 import org.exist.security.UserAttributes;
-import org.exist.security.Account;
 import org.exist.security.internal.AbstractAccount;
 import org.exist.security.internal.AbstractRealm;
-import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 import org.openid4java.discovery.Identifier;
 
@@ -41,11 +36,11 @@ import org.openid4java.discovery.Identifier;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class UserImpl extends AbstractAccount {
+public class AccountImpl extends AbstractAccount {
 
 	Identifier  _identifier = null;
 	
-	public UserImpl(AbstractRealm realm, Identifier identifier) throws ConfigurationException {
+	public AccountImpl(AbstractRealm realm, Identifier identifier) throws ConfigurationException {
 		super(realm, -1, identifier.getIdentifier());
 		_identifier = identifier;
 	}

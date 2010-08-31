@@ -30,8 +30,9 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
+import org.exist.security.internal.AbstractAccount;
 import org.exist.security.internal.SecurityManagerImpl;
-import org.exist.security.internal.SubjectImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.security.realm.ldap.LdapContextFactory;
@@ -70,7 +71,8 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 */
 	@Override
 	public String getId() {
-		return "ActiveDirectory@" + ((ContextFactory) ensureContextFactory()).getDomain();
+		String domain = ((ContextFactory) ensureContextFactory()).getDomain();
+		return "ActiveDirectory@" + domain;
 	}
 
 	/*
@@ -123,7 +125,13 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		}
 
 		try {
-			return new SubjectImpl(new AccountImpl(this, username), null);
+			AbstractAccount account = (AbstractAccount) getAccount(username);
+			if (account == null) {
+				account = new AccountImpl(this, username);
+				//TODO: addAccount(account);
+			}
+
+			return new SubjectAccreditedImpl(account, ctxGC);
 		} catch (ConfigurationException e) {
 			throw new AuthenticationException(
 					AuthenticationException.UNNOWN_EXCEPTION,
