@@ -25,23 +25,27 @@ package org.exist.security.internal;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public final class SubjectImpl extends AbstractSubject {
+public final class SubjectAccreditedImpl extends AbstractSubject {
 
-	public SubjectImpl(AbstractAccount account, Object credentials) {
+	private final Object letterOfCredit;
+	
+	/**
+	 * 
+	 * @param account
+	 * @param letterOfCredit: the object the prove authentication
+	 */
+	public SubjectAccreditedImpl(AbstractAccount account, Object letterOfCredit) {
 		super(account);
 		
-		authenticate(credentials);
+		this.letterOfCredit = letterOfCredit;
 	}
-	
-	private boolean authenticated = false;
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.Subject#authenticate(java.lang.Object)
 	 */
 	@Override
 	public boolean authenticate(Object credentials) {
-    	authenticated = account._cred!=null && account._cred.check(credentials);
-		return authenticated;
+		return false;
 	}
 
 	/* (non-Javadoc)
@@ -49,6 +53,7 @@ public final class SubjectImpl extends AbstractSubject {
 	 */
 	@Override
 	public boolean isAuthenticated() {
-		return authenticated;
+		return (letterOfCredit != null);
 	}
+
 }
