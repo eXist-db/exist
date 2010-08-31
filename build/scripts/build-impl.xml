@@ -11,9 +11,6 @@
     <!-- setup properties -->
     <property file="${basedir}/build.properties" />
 
-    <property file="${basedir}/extensions/local.build.properties"/>
-    <property file="${basedir}/extensions/build.properties"/>
-    
     <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
     <property name="src.webapp" value="./webapp"/>
@@ -54,10 +51,6 @@
     <available file="${catalina.home}/bin" property="catalina.present"/>
     <available file="key.store" property="key.store.present"/>
 
-    <condition property="include.feature.netedit.config">
-        <istrue value="${include.feature.netedit}"/>
-    </condition>
-    
     <!-- check build file for index extensions -->
     <uptodate property="extensions.uptodate" srcfile="${build.extensions.indexes}/modules.xml"
         targetfile="${build.extensions.indexes}/build.xml"/>
@@ -739,7 +732,7 @@
         <echo message="!! Signing jar files ..."/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-sign-exist"/>
-        
+
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f build\scripts\jarsigner.xml&apos; "/>
         <echo message="!! once manually to use a default keystore to sign the core jars or put !!"/>
@@ -748,30 +741,9 @@
 
         <!-- the core jars can NOT be signed in this build.xml file because -->
         <!-- the jars are some how locked by ant (classpath.core)-->
-        
-        <antcall target="sign-netedit"/>
-        
+
     </target>
-    
-    <!-- ============================================================================ -->
-    <!-- Sign jar files for netedit client                                            -->
-    <!--                                                                              -->
-    <!-- ============================================================================ -->
-    <target name="sign-netedit" if="include.feature.netedit.config">
-        
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Signing jar files ..."/>
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <ant antfile="extensions/netedit/jarsigner.xml" dir="." target="jnlp-sign-netedit"/>
-        
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f extensions\netedit\jarsigner.xml&apos; "/>
-        <echo message="!! once manually to use a default keystore to sign the required jars or put !!"/>
-        <echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling netedit client !!"/>
-        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        
-    </target>
-    
+
     <!-- ====================================================== -->
     <!-- Generate build files for index extensions -->
     <!-- ====================================================== -->
