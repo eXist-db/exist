@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.DocumentImpl;
@@ -48,7 +47,7 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class RealmImpl extends AbstractRealm implements Configurable {
+public class RealmImpl extends AbstractRealm {
 	
 	public static String ID = "exist"; //TODO: final "eXist-db";
 
@@ -87,7 +86,7 @@ public class RealmImpl extends AbstractRealm implements Configurable {
     	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "");
     	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
-    	//usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
+    	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
     	//Administrator account
     	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "");
