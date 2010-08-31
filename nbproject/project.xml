@@ -15,7 +15,6 @@
                 <root id="src.src4.dir" name="Index Lucene"/>
                 <root id="src.src5.dir" name="Versioning"/>
                 <root id="eXist-1.33.dir" name="Fluent"/>
-                <root id="src.src7.dir" name="Cocoon"/>
                 <root id="src.src6.dir" name="Wrapper"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
