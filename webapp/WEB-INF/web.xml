@@ -3,21 +3,20 @@
 <!--+
     | Configuration file for the web application. 
     |
-    | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
-    | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
+    | The URL mapping for rest, xmlrpc, soap etc are handled now by the
+    | XQueryURLRewrite servlet filter. See for details below.
     |
     | $Id$
     +-->
 
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
-    
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
 
     <!-- 
-        Initialize Log4j using a servlet.
+        Log4jInit initializes Log4j.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
     -->
     <servlet>
@@ -28,7 +27,7 @@
             <param-name>log4j-init-file</param-name>
             <param-value>WEB-INF/log4j.xml</param-value>
         </init-param>
-        
+
         <init-param>
             <param-name>log4j-log-dir</param-name>
             <param-value>WEB-INF/logs</param-value>
@@ -38,28 +37,28 @@
     </servlet>
 
     <!--
-        RpcServlet provides XML-RPC access to eXist
+        RpcServlet provides XML-RPC access.
     -->
     <servlet>
         <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
         <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
         <init-param>
-          <param-name>enabledForExtensions</param-name>
-          <param-value>true</param-value>
+            <param-name>enabledForExtensions</param-name>
+            <param-value>true</param-value>
         </init-param>
     </servlet>
 
     <!-- 
-        DatabaseAdminServlet: this servlet can be used to ensure that
-        eXist is running in the background. Just set the start-parameter 
-        to true and load-on-startup to 1 
+        EXistServlet is a helper servlet that is used to ensure that
+        eXist is running in the background. 
+        Set the start-parameter to true and load-on-startup a low value e.g. 2. 
     -->
     <servlet>
         <servlet-name>EXistServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
-    
+
         <!--
-            where to find eXist's configuration file relative to the basedir 
+            Location of eXist's configuration file relative to the basedir 
             of the web-application.
         -->
         <init-param>
@@ -85,7 +84,7 @@
     </servlet>
 
     <!-- 
-        Servlet that enables webDAV 
+        WebDAVServlet provides WebDAV access.
     -->
     <servlet>
         <servlet-name>WebDAVServlet</servlet-name>
@@ -124,38 +123,47 @@
             <param-value>UTF-8</param-value>
         </init-param>
     </servlet>
-	
+
+    <!-- 
+        XQueryURLRewrite, servlet filter for URL rewriting and redirection.
+    -->
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
 
-        <!-- Defines the location of the controller-config.xml file, which defines
-             the root mappings. -->
+        <!-- Defines the location of the controller-config.xml file, 
+             which defines the root mappings. -->
         <init-param>
             <param-name>config</param-name>
             <param-value>WEB-INF/controller-config.xml</param-value>
         </init-param>
-        
-        <!-- This could also be stored inside the db: -->
-		<!--init-param>
+
+        <!-- The controller-config.xml file could also be stored inside the db: -->
+        <!--
+        <init-param>
 			<param-name>config</param-name>
 			<param-value>xmldb:exist:///db/controller-config.xml</param-value>
-		</init-param-->
+		</init-param>
+        -->
 
-		<!--init-param>
+        <!--
+        <init-param>
 			<param-name>compiled-cache</param-name>
 			<param-value>false</param-value>
-		</init-param-->
+		</init-param>
+        -->
     </filter>
-    
+
+    <!--
+        XSLTServlet applies an XSLT transformation to its input stream.        
+    -->
     <servlet>
         <servlet-name>XSLTServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
     </servlet>
 
-	<!--
-        Configure the Axis servlets. 
-        Axis provides eXist's web-services via SOAP.
+    <!--
+        Axis provides SOAP access eXist's web-services.
     -->
     <servlet>
         <servlet-name>AxisServlet</servlet-name>
@@ -168,63 +176,81 @@
         <load-on-startup>100</load-on-startup>
     </servlet>
 
-    <!-- Atom Atom Publishing Protocol -->
+    <!-- 
+        Atom Publishing Protocol.
+    -->
     <servlet>
         <servlet-name>AtomServlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
-    
+
     <!--
-        Register Webstart servlet
+        Webstart servlet, provides access to the java client.
     -->
     <servlet>
         <servlet-name>jnlp</servlet-name>
         <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
     </servlet>
-    
-    
-    <!-- ====================== URL space mappings ======================= -->
-    
-    <!-- IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
-         entry point into the web application. All eXist-related URL
-         mappings are handled by XQueryURLRewrite (see controller-config.xml). 
+
+
+    <!-- 
+        ====================== URL space mappings ======================= 
+    -->
+
+    <!-- 
+         IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
+         entry point into the web application. All eXist-related URL  mappings are 
+         handled by XQueryURLRewrite (see controller-config.xml).
+         
          The servlet mappings below are thus commented out. We keep them here 
          for documentation purposes. If you need to switch to the old setup, 
-         you can re-enable the mappings below and disable them in 
-         controller-config.xml. However, please note that some features of the
-         website will only work if XQueryURLRewrite controls the /rest servlet
-         (EXistServlet). -->
+         you can re-enable the mappings below and disable them in controller-config.xml. 
+         
+         However, please note that some features of the website will only work if 
+         XQueryURLRewrite controls the /rest servlet  (EXistServlet). 
+    -->
+    
+    <!-- XQuery URL rewriter -->
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
+
     <!-- XMLRPC -->
-    <!--servlet-mapping>
+    <!--
+    <servlet-mapping>
         <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
         <url-pattern>/xmlrpc</url-pattern>
-    </servlet-mapping-->
-    
-    <!-- REST new mapping-->
-    <!--servlet-mapping>
+    </servlet-mapping>
+    -->
+
+    <!-- REST -->
+    <!--
+    <servlet-mapping>
         <servlet-name>EXistServlet</servlet-name>
         <url-pattern>/rest/*</url-pattern>
-    </servlet-mapping-->
-    
-    <!-- webDAV -->
-    <!--servlet-mapping>
+    </servlet-mapping>
+    -->
+
+    <!-- WebDAV -->
+    <!--
+    <servlet-mapping>
         <servlet-name>WebDAVServlet</servlet-name>
         <url-pattern>/webdav/*</url-pattern>
-    </servlet-mapping-->
-    
-    <!-- XQuery (not for database stored queries) -->
-    <!--servlet-mapping>
+    </servlet-mapping>
+    -->
+
+    <!-- XQuery (Note: not for database stored queries) -->
+    <!--
+    <servlet-mapping>
         <servlet-name>XQueryServlet</servlet-name>
         <url-pattern>*.xql</url-pattern>
-    </servlet-mapping-->
-    
+    </servlet-mapping>
+    -->
+
     <!-- SOAP (Apache Axis) -->
-    <!--servlet-mapping>
+    <!--
+    <servlet-mapping>
         <servlet-name>AxisServlet</servlet-name>
         <url-pattern>/axis-servlet/AxisServlet</url-pattern>
     </servlet-mapping>
@@ -242,9 +268,12 @@
     <servlet-mapping>
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/axis-servlet/AdminServlet</url-pattern>
-    </servlet-mapping-->
-    
-    <!-- ==================== various MIME type mappings ================== -->
+    </servlet-mapping>
+    -->
+
+    <!-- 
+        ==================== various MIME type mappings ================== 
+    -->
 
     <mime-mapping>
         <extension>css</extension>
@@ -289,17 +318,17 @@
         </taglib>
     </jsp-config>
     -->
-    
-    <login-config>
-	<auth-method>FORM</auth-method>
-	<realm-name>JAASLoginService</realm-name>
-		<form-login-config>
-		<form-login-page>/login/login</form-login-page>
-		<form-error-page>/login/error</form-error-page>
-		</form-login-config>
-	</login-config>
 
-<!-- 
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>JAASLoginService</realm-name>
+        <form-login-config>
+            <form-login-page>/login/login</form-login-page>
+            <form-error-page>/login/error</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <!-- 
     <filter>
         <filter-name>GzipFilter</filter-name>
         <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
@@ -330,5 +359,5 @@
         <filter-name>GzipFilter</filter-name>
         <url-pattern>*</url-pattern>
     </filter-mapping>
- -->    
+ -->
 </web-app>
