@@ -172,7 +172,7 @@ public class UnixStylePermission implements Permission {
     }
 
     public void setGroup( Group group ) {
-    	if (group != null) ownerGroup = group;
+    	if (group != null) setGroup(group.getName());
     }
 
     /**
@@ -191,12 +191,11 @@ public class UnixStylePermission implements Permission {
      *@param  user  The new owner value
      */
     public void setOwner( Account account ) {
-    	// FIXME: assume guest identity if user gets lost due to a database corruption
+    	//assume SYSTEM identity if user gets lost due to a database corruption
     	if(account == null) {
     		this.owner = sm.getSystemSubject();
     	} else
-    		this.owner = account;
-        //this.ownerGroup = user.getPrimaryGroup();
+    		setOwner(account.getName());
     }
 
 
