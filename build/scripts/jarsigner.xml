@@ -119,6 +119,13 @@
             <fileset dir="lib/core">
                 <include name="*.jar"/>
             </fileset>
+            <fileset dir="lib/extensions">
+                <include name="exist-netedit.jar"/>
+            </fileset>
+            <fileset dir="lib/optional">
+                <include name="commons-codec-*.jar"/>
+                <include name="commons-httpclient-*.jar"/>
+            </fileset>
         </unsignjar>
     </target>
     
