@@ -38,7 +38,7 @@
         <pathelement path="${top.dir}/start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
-    
+	
     <target name="prepare">
         <mkdir dir="${classes}"/>
     </target>
@@ -71,10 +71,16 @@
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
         </jar>
+        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
+        <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f extensions\netedit\jarsigner.xml&apos; "/>
+        <echo message="!! once manually to use a default keystore to sign the required jars or put !!"/>
+        <echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling netedit client !!"/>
+        <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
     </target>
     
     <target name="clean">
         <delete dir="${classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-netedit.jar" failonerror="false"/>
     </target>
+	
 </project>
