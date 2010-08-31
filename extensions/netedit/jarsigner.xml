@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="../.." default="jnlp-sign-netedit-all" name="sign netedit">
+    
+    <property file="build.properties"/>
+
+    <property file="extensions/local.build.properties"/>
+    <property file="extensions/build.properties"/>
+    
+    <condition property="include.feature.netedit.config">
+        <istrue value="${include.feature.netedit}"/>
+    </condition>
+    
+	
+    <import file="${basedir}/build/scripts/jarsigner.xml"/>
+    
+	<target name="jnlp-sign-netedit" depends="jnlp-prepare,jnlp-keygen" if="include.feature.netedit.config">
+		<echo message="Signing exist-netedit.jar ..."/>
+        <signjar alias="${keystore.alias}" storepass="${keystore.password}"
+                 keystore="${keystore.file}">
+        	
+            <fileset dir="${lib.extensions}">
+                <include name="exist-netedit.jar"/>
+            </fileset>
+        </signjar>
+	</target>
+    
+	<target name="jnlp-sign-netedit-required" depends="jnlp-prepare,jnlp-keygen" if="include.feature.netedit.config">
+		<echo message="Signing exist-netedit required jars ..."/>
+        <signjar alias="${keystore.alias}" storepass="${keystore.password}"
+                 keystore="${keystore.file}">
+        	
+	        <fileset dir="${lib.core}">
+	            <include name="commons-logging-*.jar"/>
+	        </fileset>
+	        <fileset dir="${lib.optional}">
+	            <include name="commons-codec-*.jar"/>
+                <include name="commons-httpclient-*.jar"/>
+            </fileset>
+        </signjar>
+	</target>
+		
+    <target name="jnlp-sign-netedit-all" 
+        depends="jnlp-prepare,jnlp-keygen,jnlp-sign-netedit,jnlp-sign-netedit-required" 
+        if="include.feature.netedit.config"/>
+	
+    
+</project>
