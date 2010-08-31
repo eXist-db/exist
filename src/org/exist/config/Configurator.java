@@ -33,8 +33,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -260,16 +258,6 @@ public class Configurator {
 				String typeName = field.getType().getName();
 	
 				if (typeName.equals("java.util.List")) {
-					System.out.print("Field: " + field.getName() + " - ");
-				    Type type = field.getGenericType();
-				    if (type instanceof ParameterizedType) {
-				        ParameterizedType pType = (ParameterizedType)type;
-				        System.out.print("Raw type: " + pType.getRawType() + " - ");
-				        System.out.println("Type args: " + pType.getActualTypeArguments()[0]);
-				    } else {
-				        System.out.println("Type: " + field.getType());
-				    }
-					
 					if (!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
 						LOG.warn("Wrong annotation for strucure: "+field.getName()+", list can't be configurated throw attribute.");
 						continue;

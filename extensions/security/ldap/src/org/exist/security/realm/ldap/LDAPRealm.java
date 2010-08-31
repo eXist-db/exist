@@ -34,9 +34,10 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.internal.AbstractAccount;
 import org.exist.security.internal.AbstractRealm;
 import org.exist.security.internal.SecurityManagerImpl;
-import org.exist.security.internal.SubjectImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.storage.DBBroker;
 
@@ -48,6 +49,8 @@ import org.exist.storage.DBBroker;
 public class LDAPRealm extends AbstractRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+
+	public static String ID = "LDAP";
 
 	protected LdapContextFactory ldapContextFactory = null;
 
@@ -71,20 +74,12 @@ public class LDAPRealm extends AbstractRealm {
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
+		return ID;
 	}
 
 	@Override
 	public void startUp(DBBroker broker) throws EXistException {
-		// TODO Auto-generated method stub
-
+		super.startUp(broker);
 	}
 
 	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
@@ -99,9 +94,15 @@ public class LDAPRealm extends AbstractRealm {
 		} finally {
 			LdapUtils.closeContext(ctx);
 		}
-
+		
 		try {
-			return new SubjectImpl(new AccountImpl(this, username), null);
+			AbstractAccount account = (AbstractAccount) getAccount(username);
+			if (account == null) {
+				account = new AccountImpl(this, username);
+				//TODO: addAccount(account);
+			}
+
+			return new SubjectAccreditedImpl(account, ctx);
 		} catch (ConfigurationException e) {
 			throw new AuthenticationException(
 					AuthenticationException.UNNOWN_EXCEPTION,
@@ -127,25 +128,31 @@ public class LDAPRealm extends AbstractRealm {
 	}
 
 	@Override
+	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
 	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public Group addGroup(Group role) throws PermissionDeniedException, EXistException {
+	public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean updateGroup(Group role) throws PermissionDeniedException, EXistException {
+	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean deleteGroup(Group role) throws PermissionDeniedException, EXistException {
+	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
 		// TODO Auto-generated method stub
 		return false;
 	}

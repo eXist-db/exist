@@ -40,10 +40,11 @@ import org.exist.config.ConfigurationException;
 import org.exist.security.UserAttributes;
 import org.exist.security.Account;
 import org.exist.security.internal.AbstractRealm;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.SubjectImpl;
 import org.exist.security.openid.OpenIDUtility;
 import org.exist.security.openid.SessionAuthentication;
-import org.exist.security.openid.UserImpl;
+import org.exist.security.openid.AccountImpl;
 import org.exist.xquery.util.HTTPUtils;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
@@ -299,7 +300,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 			Identifier verified = verification.getVerifiedId();
 			if (verified != null) {
 				// success
-				org.exist.security.Subject principal = new SubjectImpl(new UserImpl(openIDrealm, verified), null);
+				org.exist.security.Subject principal = new SubjectAccreditedImpl(new AccountImpl(openIDrealm, verified), verified);
 				
 				AuthSuccess authSuccess = (AuthSuccess) verification.getAuthResponse();
 				authSuccess.getExtensions();
