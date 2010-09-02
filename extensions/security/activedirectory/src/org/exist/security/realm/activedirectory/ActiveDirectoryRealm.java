@@ -54,6 +54,8 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
+	public static String ID = "ActiveDirectory";
+
 	public ActiveDirectoryRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
 	}
@@ -79,8 +81,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 */
 	@Override
 	public String getId() {
-		String domain = ((ContextFactory) ensureContextFactory()).getDomain();
-		return "ActiveDirectory@" + domain;
+		return ID;
 	}
 
 	/*
