@@ -20,10 +20,13 @@ public class GuestFilter implements Filter {
 
     private final static Logger LOG = Logger.getLogger(GuestFilter.class);
 
-    private FilterConfig filterConfig;
+    private String sslPort = null;
+
+    private FilterConfig filterConfig = null;
 
     public void init(FilterConfig filterConfig) throws ServletException {
         LOG.info("Starting GuestFilter");
+        setFilterConfig(filterConfig);
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -42,11 +45,8 @@ public class GuestFilter implements Filter {
         }
 
         String username = httpServletRequest.getRemoteUser();
-        String requestURI = httpServletRequest.getRequestURI();
+        String requestURI = httpServletRequest.getRequestURI().trim();
         String sessionID = httpServletRequest.getRequestedSessionId();
-        LOG.info("username [" + username + "]");
-        LOG.info("requestURI [" + requestURI + "]");
-        LOG.info("sessionID [" + sessionID + "]");
 
         HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {
@@ -57,23 +57,33 @@ public class GuestFilter implements Filter {
                 String key = (String) enumeration.nextElement();
                 Object value = session.getAttribute(key);
                 LOG.info("session attribute [" + key + "][" + value.toString() + "]");
+                if (key.equalsIgnoreCase("_eXist_xmldb_user")) {
+                    username = ((org.exist.security.internal.SubjectImpl)value).getUsername();
+                    LOG.info("username [" + username + "]");
+                }
             }
         } else {
             LOG.info("No valid session");
         }
 
-        if (requestURI.startsWith("/webdav") || requestURI.startsWith("/xmlrpc")) {
+        LOG.info("username [" + username + "]");
+        LOG.info("requestURI [" + requestURI + "]");
+
+        if (requestURI.startsWith("/webdav") || requestURI.startsWith("/xmlrpc") ) {
             if (username != null && username.equalsIgnoreCase("guest")) {
+                LOG.info("Permission denied to : " + requestURI);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
             } else if (!httpServletRequest.isSecure()) {
                 String serverName = httpServletRequest.getServerName();
                 String path = httpServletRequest.getRequestURI();
-                String newpath = "https://" + serverName + path;
+                String newpath = "https://" + serverName + ":" + sslPort + path;
                 LOG.info("Redirecting to SSL: " + newpath);
                 httpServletResponse.sendRedirect(newpath);
-                return;
+            } else if (httpServletRequest.isSecure()) {
+                LOG.info("Request is appropriate");
+                filterChain.doFilter(servletRequest, servletResponse);
             }
+            return;
         }
         filterChain.doFilter(servletRequest, servletResponse);
 
@@ -89,5 +99,21 @@ public class GuestFilter implements Filter {
 
     public void setFilterConfig(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
+        Enumeration initParams = filterConfig.getInitParameterNames();
+
+        // no initial parameters, so invoke the next filter in the chain
+        if (initParams != null) {
+            sslPort = "443";
+            while (initParams.hasMoreElements()) {
+                String name = (String) initParams.nextElement();
+                String value = filterConfig.getInitParameter(name);
+
+                LOG.info("Parameter [" + name + "][" + value + "]");
+
+                if (name.equalsIgnoreCase("sslport")) {
+                    sslPort = value;
+                }
+            }
+        }
     }
 }
