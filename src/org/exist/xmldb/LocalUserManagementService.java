@@ -10,6 +10,8 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.User;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -385,7 +387,7 @@ public class LocalUserManagementService implements UserManagementService {
 	public void chown(Account u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAccount(u.getName()))
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown account '"+u.getName()+"'.");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -428,7 +430,7 @@ public class LocalUserManagementService implements UserManagementService {
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAccount(u.getName()))
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown user");
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unknown account '"+u.getName()+"'");
 		if (!manager.hasAdminPrivileges(user))
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -826,6 +828,37 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 	
 	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
+		
+	}
+
+	@Override
+	public void addUser(User user) throws XMLDBException {
+		Account account = new UserAider(user.getName());
+		addAccount(account);
+	}
+
+	@Override
+	public void updateUser(User user) throws XMLDBException {
+		Account account = new UserAider(user.getName());
+		account.setPassword(user.getPassword());
+		//TODO: groups
+		updateAccount(account);
+	}
+
+	@Override
+	public User getUser(String name) throws XMLDBException {
+		return getAccount(name);
+	}
+
+	@Override
+	public User[] getUsers() throws XMLDBException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeUser(User user) throws XMLDBException {
+		// TODO Auto-generated method stub
 		
 	}
 }

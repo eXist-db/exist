@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  $Id$
+ *  $Id: Account.java 12494 2010-08-21 12:40:10Z shabanovd $
  */
 package org.exist.security;
 
@@ -26,7 +26,8 @@ import java.util.Set;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
-public interface Account extends Principal, User {
+@Deprecated //use Account
+public interface User extends Principal {
 
 	public final static int PLAIN_ENCODING = 0;
 	public final static int SIMPLE_MD5_ENCODING = 1;
