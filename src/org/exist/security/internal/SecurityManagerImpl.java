@@ -381,6 +381,10 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
 		for (Realm realm : realms) {
+			
+			if (LOG.isDebugEnabled())
+				LOG.debug("authenticating '"+username+"' with realm '"+realm.getId()+"'...");
+			
 			try {
 				return realm.authenticate(username, credentials);
 			} catch (AuthenticationException e) {
