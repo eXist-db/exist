@@ -388,10 +388,18 @@ public class SecurityManagerImpl implements SecurityManager {
 			try {
 				return realm.authenticate(username, credentials);
 			} catch (AuthenticationException e) {
-				if (e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND)
+				if (e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
+					if (LOG.isDebugEnabled())
+						LOG.debug("Realm '"+realm.getId()+"' throw exception for account '"+username+"'. ["+e.getMessage()+"]");
+
 					throw e;
+				}
 			}
 		}
+		
+		if (LOG.isDebugEnabled())
+			LOG.debug("Account '"+username+"' not found, throw error");
+
 		throw new AuthenticationException(
 				AuthenticationException.ACCOUNT_NOT_FOUND,
 				"User [" + username + "] not found");
