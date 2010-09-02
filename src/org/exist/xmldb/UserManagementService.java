@@ -3,6 +3,7 @@ package org.exist.xmldb;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.Account;
+import org.exist.security.User;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
@@ -295,6 +296,21 @@ public interface UserManagementService extends Service {
 
 
 	public void addGroup(Group group) throws XMLDBException;
+
+	@Deprecated
+	public void addUser( User user ) throws XMLDBException;
+	
+	@Deprecated
+	public void updateUser( User user ) throws XMLDBException;
+
+	@Deprecated
+	public User getUser( String name ) throws XMLDBException;
+	
+	@Deprecated
+	public User[] getUsers() throws XMLDBException;
+	
+	@Deprecated
+	public void removeUser( User user ) throws XMLDBException;
 }
 
 

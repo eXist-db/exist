@@ -4,6 +4,7 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.Account;
+import org.exist.security.User;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.security.internal.aider.UserAider;
@@ -574,6 +575,37 @@ public class RemoteUserManagementService implements UserManagementService {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
+
+	@Override
+	public void addUser(User user) throws XMLDBException {
+		Account account = new UserAider(user.getName());
+		addAccount(account);
+	}
+
+	@Override
+	public void updateUser(User user) throws XMLDBException {
+		Account account = new UserAider(user.getName());
+		account.setPassword(user.getPassword());
+		//TODO: groups
+		updateAccount(account);
+	}
+
+	@Override
+	public User getUser(String name) throws XMLDBException {
+		return getAccount(name);
+	}
+
+	@Override
+	public User[] getUsers() throws XMLDBException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeUser(User user) throws XMLDBException {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
 // -- end class UserManagementServiceImpl
