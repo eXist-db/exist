@@ -21,7 +21,15 @@
  */
 package org.exist.security.realm.activedirectory;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
@@ -83,40 +91,40 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 */
 	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
 
-//		String returnedAtts[] = { "sn", "givenName", "mail" };
-//		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
-//
-//		// Create the search controls
-//		SearchControls searchCtls = new SearchControls();
-//		searchCtls.setReturningAttributes(returnedAtts);
-//
-//		// Specify the search scope
-//		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-//
+		String returnedAtts[] = { "sn", "givenName", "mail" };
+		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
+
+		// Create the search controls
+		SearchControls searchCtls = new SearchControls();
+		searchCtls.setReturningAttributes(returnedAtts);
+
+		// Specify the search scope
+		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
 		LdapContext ctxGC = null;
-//		boolean ldapUser = false;
+		boolean ldapUser = false;
 
 		try {
 			ctxGC = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
 			// Search objects in GC using filters
-//			NamingEnumeration<SearchResult> answer = ctxGC.search(((ContextFactory) ensureContextFactory()).getSearchBase(), searchFilter, searchCtls);
-//
-//			while (answer.hasMoreElements()) {
-//				SearchResult sr = answer.next();
-//				Attributes attrs = sr.getAttributes();
-//				Map<String, Object> amap = null;
-//				if (attrs != null) {
-//					amap = new HashMap<String, Object>();
-//					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
-//					while (ne.hasMore()) {
-//						Attribute attr = ne.next();
-//						amap.put(attr.getID(), attr.get());
-//						ldapUser = true;
-//					}
-//					ne.close();
-//				}
-//			}
+			NamingEnumeration<SearchResult> answer = ctxGC.search(((ContextFactory) ensureContextFactory()).getSearchBase(), searchFilter, searchCtls);
+
+			while (answer.hasMoreElements()) {
+				SearchResult sr = answer.next();
+				Attributes attrs = sr.getAttributes();
+				Map<String, Object> amap = null;
+				if (attrs != null) {
+					amap = new HashMap<String, Object>();
+					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
+					while (ne.hasMore()) {
+						Attribute attr = ne.next();
+						amap.put(attr.getID(), attr.get());
+						ldapUser = true;
+					}
+					ne.close();
+				}
+			}
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new AuthenticationException(
@@ -124,18 +132,22 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 					e.getMessage());
 		}
 
-		try {
-			AbstractAccount account = (AbstractAccount) getAccount(username);
-			if (account == null) {
-				account = new AccountImpl(this, username);
-				//TODO: addAccount(account);
+		if (ldapUser) {
+			try {
+				AbstractAccount account = (AbstractAccount) getAccount(username);
+				if (account == null) {
+					account = new AccountImpl(this, username);
+					//TODO: addAccount(account);
+				}
+	
+				return new SubjectAccreditedImpl(account, ctxGC);
+			} catch (ConfigurationException e) {
+				throw new AuthenticationException(
+						AuthenticationException.UNNOWN_EXCEPTION,
+						e.getMessage(), e);
 			}
-
-			return new SubjectAccreditedImpl(account, ctxGC);
-		} catch (ConfigurationException e) {
-			throw new AuthenticationException(
-					AuthenticationException.UNNOWN_EXCEPTION,
-					e.getMessage(), e);
 		}
+		
+		return null;
 	}
 }
