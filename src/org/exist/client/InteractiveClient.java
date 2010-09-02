@@ -99,6 +99,7 @@ import org.exist.util.GZIPInputSource;
 import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.CollectionImpl;
 
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -341,15 +342,18 @@ public class InteractiveClient {
                 cols[2] = perm.getOwnerGroup().getName();
                 cols[3] = URIUtils.urlDecodeUtf8(childCollections[i]);
                 resources[i] = 'd' + formatString(cols, colSizes);
-            } else
+            } else {
                 resources[i] = URIUtils.urlDecodeUtf8(childCollections[i]);
-            
+            }
+
+            Date created = ((CollectionImpl)child).getCreationTime();
+
             if (startGUI) {
                 tableData.add( new ResourceDescriptor.Collection(
                         XmldbURI.create(childCollections[i]),
                         perm.getOwner().getName(),
                         perm.getOwnerGroup().getName(),
-                        perm.toString(), null /*lastModificationTime*/ ) );
+                        perm.toString(), created ) );
             }
             completitions.add(childCollections[i]);
         }
