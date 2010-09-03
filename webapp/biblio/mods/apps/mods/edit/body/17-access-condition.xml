@@ -1,45 +1,45 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="access-condition" tab-id="access-condition">
     <!--DLF/Aquifer: REQUIRED-->
     <!--Cluster: include--><fieldset><legend><span class="legend">Access Condition</span></legend><xf:hint>
-            Information about restrictions imposed on access to a resource is noted here.
-            <br/>
-            Use Access Condition to indicate rights relating to access and use of digital resources. 
-            State clearly any restrictions on use of the digital resource, including explicitly mentioning lack of copyright restrictions when the digital resource is in the public domain. 
-            Also provide contact information for use by end users who wish to pursue required permissions for publication, exhibit, or other types of dissemination.
-            <br/>
-            If you maintain rights information relating to specific digital resources on a web site, you may wish to provide a URL for that web site in lieu of a textual rights statement. 
-            When doing so, you should provide enough textual explanation, along with the URL, to make the purpose of the URL clear to end users. 
-            <br/>
-            Whenever possible, consider using a standard license such as Creative Commons and/or a rights expression language such as the Open Digital Rights Language (ODRL) specification.
-        </xf:hint>
+        Information about restrictions imposed on access to a resource is noted here.
+        <br/>
+        Use Access Condition to indicate rights relating to access and use of digital resources. 
+        State clearly any restrictions on use of the digital resource, including explicitly mentioning lack of copyright restrictions when the digital resource is in the public domain. 
+        Also provide contact information for use by end users who wish to pursue required permissions for publication, exhibit, or other types of dissemination.
+        <br/>
+        If you maintain rights information relating to specific digital resources on a web site, you may wish to provide a URL for that web site in lieu of a textual rights statement. 
+        When doing so, you should provide enough textual explanation, along with the URL, to make the purpose of the URL clear to end users. 
+        <br/>
+        Whenever possible, consider using a standard license such as Creative Commons and/or a rights expression language such as the Open Digital Rights Language (ODRL) specification.
+    </xf:hint>
         <!--accessCondition repeat begins--><xf:repeat nodeset="instance('save-data')/mods:accessCondition" id="accessCondition-repeat"><div class="block-form">
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit--><xf:input ref="./@xlink" class="text_150"><xf:label>XLink: </xf:label><xf:hint>
-                        The xlink attribute is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
-                    </xf:hint></xf:input><br/><xf:select1 ref="./@type" selction="open"><xf:label>Type:</xf:label><xf:hint> There is no controlled list of types for Access Condition. Suggested values are: restriction on access and use and reproduction.
-                        Choose the value appropriate for your note or enter a type of your own. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='access-condition-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@authority" selection="open"> <xf:label>Authority:</xf:label> <xf:hint> The name of the authoritative list for a controlled value is recorded here. An authority attribute may be used to indicate that a title is controlled by a record in an authority file (e.g. authority="naf"). </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit: follows languageOfCataloging-->
-                <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint> This attribute is used to specify the language used within individual elements, using the codes from ISO 639-2/b. This is equivalent to authority="iso639-2b" used with Language (which gives a language of the resource described in the record), but is applied to the language used as content of the metadata elements. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
-                <!--DLF/Aquifer: NOT RECOMMENDED-->
-                <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
-                        This attribute is used to specify the language used within an element, using specifications in RFC 3066. 
-                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                        <br/>
-                        The recommendation is not to use xml:lang, but to use the above Language attribute.
-                    </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint> This attribute specifies the script used within individual elements, using codes from ISO 15924 (Code for the representation of names of scripts). </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@transliteration" selection="open"> <xf:label>Transliteration:</xf:label> <xf:hint> It specifies the transliteration technique used within individual elements. There is no standard list of transliteration schemes available, although one may be developed. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
-                <!--DLF/Aquifer: OPTIONAL]-->
-                <!--Cluster: omit-->
-                <!-- <xf:input ref="./@displayLabel" class="text_150"> <xf:label>Display Label: </xf:label> <xf:hint> This attribute is intended to be used when additional text associated with the title is needed for display. </xf:hint> </xf:input> --><div class="hr-small"/><xf:input ref="." class="text_150"><xf:label>Access Condition: </xf:label><xf:hint> Information about restrictions imposed on access to a resource. </xf:hint></xf:input></div><br/>
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit--><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint>
+                The xlink attribute is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
+            </xf:hint></xf:input><br/><xf:select1 ref="./@type" selction="open"><xf:label>Type:</xf:label><xf:hint> There is no controlled list of types for Access Condition. Suggested values are: restriction on access and use and reproduction.
+                Choose the value appropriate for your note or enter a type of your own. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='access-condition-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@authority" selection="open"> <xf:label>Authority:</xf:label> <xf:hint> The name of the authoritative list for a controlled value is recorded here. An authority attribute may be used to indicate that a title is controlled by a record in an authority file (e.g. authority="naf"). </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit: follows languageOfCataloging-->
+            <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint> This attribute is used to specify the language used within individual elements, using the codes from ISO 639-2/b. This is equivalent to authority="iso639-2b" used with Language (which gives a language of the resource described in the record), but is applied to the language used as content of the metadata elements. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: NOT RECOMMENDED-->
+            <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
+                This attribute is used to specify the language used within an element, using specifications in RFC 3066. 
+                RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                <br/>
+                The recommendation is not to use xml:lang, but to use the above Language attribute.
+            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint> This attribute specifies the script used within individual elements, using codes from ISO 15924 (Code for the representation of names of scripts). </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--DLF/Aquifer: N/A-->
+            <!--Cluster: omit-->
+            <!-- <xf:select1 ref="./@transliteration" selection="open"> <xf:label>Transliteration:</xf:label> <xf:hint> It specifies the transliteration technique used within individual elements. There is no standard list of transliteration schemes available, although one may be developed. </xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> <br/> -->
+            <!--DLF/Aquifer: OPTIONAL]-->
+            <!--Cluster: omit-->
+            <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label: </xf:label> <xf:hint> This attribute is intended to be used when additional text associated with the title is needed for display. </xf:hint> </xf:input> --><div class="hr-small"/><xf:input ref="." class="text_50"><xf:label>Access Condition: </xf:label><xf:hint> Information about restrictions imposed on access to a resource. </xf:hint></xf:input></div><br/>
             <!--accessCondition delete begins--><xf:trigger ref="self::node()[count(../mods:accessCondition) &gt; 1]"><xf:label>Delete This Access Condition</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:accessCondition" at="index('accessCondition-repeat')"/></xf:trigger>
             <!--accessCondition delete ends--><div class="hr"/></xf:repeat>
         <!--accessCondition repeat ends-->
