@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-(: XQuery script to save a new MODS record from an incomming HTTP POST :)
+(: XQuery script to save a new MODS record from an incoming HTTP POST :)
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
   
@@ -11,8 +11,8 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 
 let $title := 'MODS Record Save'
 
-(: this service takes an incomming POST and saves the appropriate records :)
-(: note that in this version, the incomming @ID is required :)
+(: this service takes an incoming POST and saves the appropriate records :)
+(: note that in this version, the incoming @ID is required :)
 (: the user must have write and update access to the data collection :)
 
 let $app-collection := $style:db-path-to-app
@@ -21,12 +21,12 @@ let $data-collection := $style:db-path-to-app-data
 (: this is where the form "POSTS" documents to this XQuery using the POST method of a submission :)
 let $item := request:get-data()
 
-(: check to see if we have an indentifier in the incomming post :)
-let $incomming-id := $item/@ID
+(: check to see if we have an indentifier in the incoming post :)
+let $incoming-id := $item/@ID
 
 (: if we do not have an ID then throw an error :) 
 return
-if ( string-length($incomming-id) = 0 )
+if ( string-length($incoming-id) = 0 )
    then
         <error>
           <message class="warning">ERROR! Attempted to save a record with no ID specified.</message>
@@ -35,7 +35,7 @@ if ( string-length($incomming-id) = 0 )
 
 (: else we are doing an update to an existing file :)
 
-let $file-to-update := concat($incomming-id, '.xml')
+let $file-to-update := concat($incoming-id, '.xml')
 let $file-path := concat($data-collection, '/', $file-to-update)
 
 (: uncomment the following line in for testing if you have not run the security setup tools :)
@@ -52,26 +52,22 @@ when doing an update.  :)
 
 (: TODO figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
 
-(: this checks to see if we have a titleInfo in the save.  If we do then it goes through each one and
-   it that is in the data it does a replace, else it does an insert. :)
+(: This checks to see if we have a titleInfo in the saved document.  
+If we do then it first deletes the titleInfo in the saved document.
+Next it goes through each titleInfo in the incoming record and inserts it in the saved document. 
+If name (the "next" element in the canonical order) occurs in the saved document, the titleInfo is inserted before name, maintaining order in the document.
+If name does not occur, titleInfo is inserted at the end of the saved document.:)
 
 let $titleInfo :=
-   (: test to see if the incomming item has a title :)
    if ($item/mods:titleInfo)
      then
         (
-            (: first delete all current on-disk titles :)
-            update delete $doc/mods:titleInfo,
-            
-            (: now we insert all the net titles :)
-            for $new-title-info at $count in $item/mods:titleInfo
-               return
-                  (: if we have an existing title then we just append after the previous, else we place it before the next item :)
-                  if ($doc/mods:titleInfo)
-                  then 
-                     update insert $new-title-info following $doc/mods:titleInfo[$count - 1]
-                  else 
-                     update insert $new-title-info preceding $doc/mods:name
+        update delete $doc/mods:titleInfo,
+            if ($doc/mods:name)
+            then
+                update insert $item/mods:titleInfo preceding $doc/mods:name
+            else
+                update insert $item/mods:titleInfo into $doc
          )
    else ()
 
@@ -80,13 +76,11 @@ let $name :=
       then
         (
         update delete $doc/mods:name,
-        for $new-name-info at $count in $item/mods:name
-           return
-              if ($doc/mods:name)
+              if ($doc/mods:originInfo)
               then
-                 update insert $new-name-info following $doc/mods:name[$count - 1]
+                 update insert $item/mods:name preceding $doc/mods:originInfo
               else
-                 update insert $new-name-info preceding $doc/mods:originInfo
+                 update insert $item/mods:name into $doc
          )
       else ()
       
@@ -95,13 +89,24 @@ let $originInfo :=
       then
         (
         update delete $doc/mods:originInfo,
-        for $new-item at $count in $item/mods:originInfo
-           return
-              if ($doc/mods:originInfo)
+              if ($doc/mods:part)
               then
-                 update insert $new-item following $doc/mods:originInfo[$count - 1]
+                 update insert $item/mods:originInfo preceding $doc/mods:part
               else
-                 update insert $new-item preceding $doc/mods:physicalDescription
+                 update insert $item/mods:originInfo into $doc
+         )
+      else ()
+
+let $part :=
+   if ($item/mods:part)
+      then
+        (
+        update delete $doc/mods:part,
+              if ($doc/mods:physicalDescription)
+              then
+                 update insert $item/mods:part preceding $doc/mods:physicalDescription
+              else
+                 update insert $item/mods:part into $doc
          )
       else ()
 
@@ -110,13 +115,11 @@ let $physicalDescription :=
       then
         (
         update delete $doc/mods:physicalDescription,
-        for $new-item at $count in $item/mods:physicalDescription
-           return
-              if ($doc/mods:physicalDescription)
+              if ($doc/mods:targetAudience)
               then
-                 update insert $new-item following $doc/mods:physicalDescription[$count - 1]
+                 update insert $item/mods:physicalDescription preceding $doc/mods:targetAudience
               else
-                 update insert $new-item preceding $doc/mods:targetAudience
+                 update insert $item/mods:physicalDescription into $doc
          )
       else ()
 
@@ -126,13 +129,11 @@ let $targetAudience :=
       then
         (
         update delete $doc/mods:targetAudience,
-        for $new-item at $count in $item/mods:targetAudience
-           return
-              if ($doc/mods:targetAudience)
+              if ($doc/mods:language)
               then
-                 update insert $new-item following $doc/mods:targetAudience[$count - 1]
+                 update insert $item/mods:targetAudience preceding $doc/mods:language
               else
-                 update insert $new-item preceding $doc/mods:language
+                 update insert $item/mods:targetAudience into $doc
          )
       else ()
       
@@ -141,13 +142,11 @@ let $language :=
       then
         (
         update delete $doc/mods:language,
-        for $new-item at $count in $item/mods:language
-           return
-              if ($doc/mods:language)
+              if ($doc/mods:typeOfResource)
               then
-                 update insert $new-item following $doc/mods:language[$count - 1]
+                 update insert $item/mods:language preceding $doc/mods:typeOfResource
               else
-                 update insert $new-item preceding $doc/mods:typeOfResource
+                 update insert $item/mods:language into $doc
          )
       else ()
 
@@ -156,13 +155,11 @@ let $typeOfResource :=
       then
         (
         update delete $doc/mods:typeOfResource,
-        for $new-item at $count in $item/mods:typeOfResource
-           return
-              if ($doc/mods:typeOfResource)
+              if ($doc/mods:genre)
               then
-                 update insert $new-item following $doc/mods:typeOfResource[$count - 1]
+                 update insert $item/mods:typeOfResource preceding $doc/mods:genre
               else
-                 update insert $new-item preceding $doc/mods:genre
+                 update insert $item/mods:typeOfResource into $doc
          )
       else ()
 
@@ -171,13 +168,11 @@ let $genre :=
       then
         (
         update delete $doc/mods:genre,
-        for $new-item at $count in $item/mods:genre
-           return
-              if ($doc/mods:genre)
+              if ($doc/mods:subject)
               then
-                 update insert $new-item following $doc/mods:genre[$count - 1]
+                 update insert $item/mods:genre preceding $doc/mods:subject
               else
-                 update insert $new-item preceding $doc/mods:subject
+                 update insert $item/mods:genre into $doc
          )
       else ()
 
@@ -186,13 +181,11 @@ let $subject :=
       then
         (
         update delete $doc/mods:subject,
-        for $new-item at $count in $item/mods:subject
-           return
-              if ($doc/mods:subject)
+              if ($doc/mods:classification)
               then
-                 update insert $new-item following $doc/mods:subject[$count - 1]
+                 update insert $item/mods:subject preceding $doc/mods:classification
               else
-                 update insert $new-item preceding $doc/mods:classification
+                 update insert $item/mods:subject into $doc
          )
       else ()      
 
@@ -202,13 +195,11 @@ let $classification :=
       then
         (
         update delete $doc/mods:classification,
-        for $new-item at $count in $item/mods:classification
-           return
-              if ($doc/mods:classification)
+              if ($doc/mods:abstract)
               then
-                 update insert $new-item following $doc/mods:classification[$count - 1]
+                 update insert $item/mods:classification preceding $doc/mods:abstract
               else
-                 update insert $new-item preceding $doc/mods:abstract
+                 update insert $item/mods:classification into $doc
          )
       else ()      
 
@@ -218,28 +209,24 @@ let $abstract :=
       then
         (
         update delete $doc/mods:abstract,
-        for $new-item at $count in $item/mods:abstract
-           return
-              if ($doc/mods:abstract)
+              if ($doc/mods:tableOfContents)
               then
-                 update insert $new-item following $doc/mods:abstract[$count - 1]
+                 update insert $item/mods:abstract preceding $doc/mods:tableOfContents
               else
-                 update insert $new-item preceding $doc/mods:table-of-contents
+                 update insert $item/mods:abstract into $doc
          )
       else ()      
 
-let $table-of-contents :=
-   if ($item/mods:table-of-contents)
+let $tableOfContents :=
+   if ($item/mods:tableOfContents)
       then
         (
-        update delete $doc/mods:table-of-contents,
-        for $new-item at $count in $item/mods:table-of-contents
-           return
-              if ($doc/mods:table-of-contents)
+        update delete $doc/mods:tableOfContents,
+              if ($doc/mods:note)
               then
-                 update insert $new-item following $doc/mods:table-of-contents[$count - 1]
+                 update insert $item/mods:tableOfContents preceding $doc/mods:note
               else
-                 update insert $new-item preceding $doc/mods:note
+                 update insert $item/mods:tableOfContents into $doc
          )
       else ()      
 
@@ -249,28 +236,24 @@ let $note :=
       then
         (
         update delete $doc/mods:note,
-        for $new-item at $count in $item/mods:note
-           return
-              if ($doc/mods:note)
+              if ($doc/mods:relatedItem)
               then
-                 update insert $new-item following $doc/mods:note[$count - 1]
+                 update insert $item/mods:note preceding $doc/mods:relatedItem
               else
-                 update insert $new-item preceding $doc/mods:related
+                 update insert $item/mods:note into $doc
          )
       else ()
 
-let $related :=
-   if ($item/mods:related)
+let $relatedItem :=
+   if ($item/mods:relatedItem)
       then
         (
-        update delete $doc/mods:related,
-        for $new-item at $count in $item/mods:related
-           return
-              if ($doc/mods:related)
+        update delete $doc/mods:relatedItem,
+              if ($doc/mods:identifier)
               then
-                 update insert $new-item following $doc/mods:related[$count - 1]
+                 update insert $item/mods:relatedItem preceding $doc/mods:identifier
               else
-                 update insert $new-item preceding $doc/mods:identifier
+                 update insert $item/mods:relatedItem into $doc
          )
       else ()
 
@@ -280,44 +263,46 @@ let $identifier :=
       then
         (
         update delete $doc/mods:identifier,
-        for $new-item at $count in $item/mods:identifier
-           return
-              if ($doc/mods:identifier)
+              if ($doc/mods:recordInfo)
               then
-                 update insert $new-item following $doc/mods:identifier[$count - 1]
+                 update insert $item/mods:identifier preceding $doc/mods:recordInfo
               else
-                 update insert $new-item preceding $doc/mods:record-info
+                 update insert $item/mods:identifier into $doc
          )
       else ()
 
-let $record-info :=
-   if ($item/mods:record-info)
+let $recordInfo :=
+   if ($item/mods:recordInfo)
       then
         (
-        update delete $doc/mods:record-info,
-        for $new-item at $count in $item/mods:record-info
-           return
-              if ($doc/mods:record-info)
+        update delete $doc/mods:recordInfo,
+              if ($doc/mods:accessCondition)
               then
-                 update insert $new-item following $doc/mods:record-info[$count - 1]
+                 update insert $item/mods:recordInfo preceding $doc/mods:location
               else
-                 update insert $new-item preceding $doc/mods:access-condition
+                 update insert $item/mods:recordInfo into $doc
          )
       else ()
 
-let $access-condition :=
-   if ($item/mods:access-condition)
+let $location :=
+   if ($item/mods:location)
       then
         (
-        update delete $doc/mods:access-condition,
-        for $new-item at $count in $item/mods:access-condition
-           return
-              if ($doc/mods:access-condition)
+        update delete $doc/mods:location,
+              if ($doc/mods:location)
               then
-                 update insert $new-item following $doc/mods:access-condition[$count - 1]
+                 update insert $item/mods:location preceding $doc/mods:accessCondition 
               else
-                 (: update it into the very end of the document :)
-                 update insert $new-item into $doc
+                 update insert $item/mods:location into $doc
+         )
+      else ()
+
+let $accessCondition :=
+   if ($item/mods:accessCondition)
+      then
+        (
+        update delete $doc/mods:accessCondition,
+                 update insert $item/mods:accessCondition into $doc
          )
       else ()
 
