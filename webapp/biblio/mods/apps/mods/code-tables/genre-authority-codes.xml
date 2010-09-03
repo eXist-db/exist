@@ -1,4 +1,4 @@
-<code-table><code-table-name>genre-authority-code</code-table-name><status>finished</status><form/><basis>http://www.loc.gov/standards/sourcelist/genre-form.html</basis><description/><notes>terms with asterix have links</notes><items><item><label>(none selected)</label><value/></item>
+<code-table><code-table-name>genre-authority-code</code-table-name><status>finished</status><form/><basis>http://www.loc.gov/standards/sourcelist/genre-form.html</basis><description/><notes>terms with asterix have links. should be called genre-form-authority-code</notes><items><item><label>(none selected)</label><value/></item>
         <!--
             <item>
             <label>Audiovisual material glossary</label>
