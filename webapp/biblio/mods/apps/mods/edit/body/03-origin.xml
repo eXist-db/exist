@@ -1,7 +1,7 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin" tab-id="origin">
     <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. place, publisher, and edition are recommended if applicable. These guidelines make no recommendation on the use of the elements issuance and frequency. --><fieldset><legend>Origin Information</legend><xf:hint> Information about the origin of the resource, including place of origin or publication, publisher/originator, and dates associated with the
             resource. </xf:hint>
-        <!--originInfo repeat begins--><xf:repeat nodeset="mods:originInfo" id="origininfo-repeat">
+        <!--originInfo repeat begins--><xf:repeat nodeset="mods:originInfo" id="origininfo-repeat"><div class="block-form">
             <!--originInfo input begins-->
             <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
             <!--DLF/Aquifer: N/A-->
@@ -54,7 +54,7 @@
                                     Names of countries (and US states) according to the marccountry standard list.
                                 </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='marc-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref=".[(@type='code') and (@authority='iso3166')]"><xf:label>Place Term:</xf:label><xf:hint>
                                     Names of countries according to the iso3166 standard list.
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='iso3166-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref=".[@type='text']" class="text_150"><xf:label>Place Term: </xf:label><xf:hint>
+                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='iso3166-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref=".[@type='text']" class="text_50"><xf:label>Place Term: </xf:label><xf:hint>
                                     Uncoded place terms, i.e. place terms that have not been chosen in an authority file.
                                 </xf:hint></xf:input>
                             <!--placeTerm input ends--><br/>
@@ -76,7 +76,7 @@
                     The name of the entity that is the originator for a resource, i.e. that has published, printed, distributed, released, issued, or produced it.
                 </xf:hint>
                 <!--publisher repeat begins--><xf:repeat nodeset="./mods:publisher" id="publisher-repeat">
-                    <!--publisher input begins--><xf:input ref="." class="text_150"><xf:label>Publisher: </xf:label><xf:hint>
+                    <!--publisher input begins--><xf:input ref="." class="text_50"><xf:label>Publisher: </xf:label><xf:hint>
                             The name of the entity that is the originator for a resource, i.e. that has published, printed, distributed, released, issued, or produced it.        
                             Information about an institution responsible for digitising and delivering online a previously published resource should be included in Note, rather than Publisher. 
                         </xf:hint></xf:input>
@@ -93,7 +93,7 @@
                     Information identifying the version of the resource.
                     Resources that constitute the same edition generally embody essentially the same content. 
                     If no edition statement applies to the resource, leave Edition empty.
-                </xf:hint>
+                    </xf:hint><br/>
                 <!--edition input begins--><xf:input ref="./mods:edition" class="text_50"><xf:label>Edition: </xf:label><xf:hint>
                         Information identifying the version of the resource.
                     </xf:hint></xf:input>
@@ -321,6 +321,7 @@
                         <!--dateValid delete begins--><xf:trigger ref="self::node()[count(../mods:dateValid) &gt; 1]"><xf:label>Delete This Date Valid</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateValid" at="index('date-valid-repeat')"/></xf:trigger>
                         <!--dateValid delete ends--><div class="hr"/></xf:repeat>
                     <!--dateValid repeat ends--><br/>
+                        
                     <!--dateValid add begins--><xf:trigger class="add"><xf:label>Add Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('date-valid-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateValid"/><xf:setvalue ref="instance('save-data')/mods:dateValid[last()]" value="''"/></xf:action></xf:trigger>
                     <!--dateValid add ends--></fieldset>
                 <!--dateValid ends-->
@@ -452,7 +453,7 @@
                 <!--dateOther ends--></fieldset>
             <!--dates ends--><br/>
             <!--originInfo delete begins--><xf:trigger ref="self::node()[count(../mods:originInfo) &gt; 1]"><xf:label>Delete This Origin Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo" at="index('origininfo-repeat')"/></xf:trigger>
-            <!--originInfo delete ends--><div class="hr"/></xf:repeat>
+            <!--originInfo delete ends--><div class="hr"/></div></xf:repeat>
         <!--originInfo repeat ends--><br/>
         <!--originInfo add begins--><xf:trigger class="add"><xf:label>Add Origin Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:originInfo" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo"/><xf:setvalue ref="instance('save-data')/mods:originInfo[last()]" value="''"/></xf:action></xf:trigger>
         <!--originInfo add ends--></fieldset></div>

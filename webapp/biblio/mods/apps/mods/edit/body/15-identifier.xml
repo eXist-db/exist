@@ -1,41 +1,41 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="identifier" tab-id="identifier"><fieldset><legend><span class="legend">Identifier</span></legend><xf:hint> Identifier contains a unique standard number or code that distinctively identifies a resource. Use this field to register ISBN, ISSN, DOI and
-            similar unique identifiers. Identifier should be repeated for each applicable identifier
-            recorded<!--Cluster delete:, including invalid and canceled identifiers-->. </xf:hint>
-        <!--DLF/Aquifer: The identifier element is recommended in these guidelines and refers to the digital resource being described or to its analog equivalent. In the shared metadata context, the identifier should identify the object universally; local call numbers or other identifiers, therefore, are not generally suitable. However, if a local identifier is used, it should be indicated as such using the type attribute. identifier has no subelements, but does require the type attribute. Repeat this element as required. This element is repeatable. -->
-        <!-- NB: Does this mean that the choice of this field for the record's UUID is wrong? The value "local" has to be removed from the Type list; it should be impossible for the user to employ this value. The value "local" should not show; it should impossible for the user to alter this value. -->
-        <!--mapping: The MODS identifier element, along with the location/URL subelement, are both mapped to dc:identifier in the MODS to Dublin Core Metadata Element Set Mapping Version 3.0 (June 7, 2005). -->
-        <!--identifier repeat begins--><xf:repeat nodeset="instance('save-data')/mods:identifier" id="identifier-repeat"><div class="block-form">
-                <!--DLF/Aquifer: REQUIRED-->
-                <!--Cluster: REQUIRE IF .--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='identifier-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: omit-->
-                <!-- 
-                <xf:select1 ref="./@invalid">
-                    <xf:label>Invalid Identifier:</xf:label>
-                    <xf:hint> This attribute signifies a canceled or invalid identifier. It should be used with the value Yes. This value is used only when
-                        recording a canceled or invalid identifier. If Invalid= "Yes" is not present, the identifier is assumed to be valid. </xf:hint>
-                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-empty-code']/items/item">
-                        <xf:label ref="label"/>
-                        <xf:value ref="value"/>
-                    </xf:itemset>
-                </xf:select1>
-                <br/>
-                -->
-                <!--DLF/Aquifer: OPTIONAL-->
-                <!--Cluster: omit-->
-                <!-- 
-                <xf:input ref="./@displayLabel" class="text_50">
-                    <xf:label>Display Label: </xf:label>
-                    <xf:hint> This attribute is used when additional text associated with the identifier is necessary for display. The Display Label attribute
-                        may be used to indicate the preferred labeling when displayed by a metadata aggregator. Include the text preferred and capitalisation,
-                        but do not include delimiters such as colons. </xf:hint>
-                </xf:input>
-                <br/>
-                -->
-                <!--DLF/Aquifer: Recommended-->
-                <!--Cluster: include--><xf:input ref="./[not(@type='local')]" class="text_150"><xf:label>Identifier: </xf:label><xf:hint> Hint </xf:hint></xf:input></div><br/>
-            <!--identifier delete begins--><xf:trigger ref="self::node()[count(../mods:identifier) &gt; 1]"><xf:label>Delete This Identifier</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:identifier" at="index('identifier-repeat')"/></xf:trigger>
-            <!--identifier delete ends--><div class="hr"/></xf:repeat>
-        <!--identifier repeat ends-->
-        <!--identifier add begins--><xf:trigger class="add"><xf:label>Add Identifier</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:identifier" at="index('identifier-repeat')" position="after" origin="instance('insert-templates')/mods:identifier"/></xf:action></xf:trigger>
-        <!--identifier add ends--></fieldset></div>
+    similar unique identifiers. Identifier should be repeated for each applicable identifier
+    recorded<!--Cluster delete:, including invalid and canceled identifiers-->. </xf:hint>
+    <!--DLF/Aquifer: The identifier element is recommended in these guidelines and refers to the digital resource being described or to its analog equivalent. In the shared metadata context, the identifier should identify the object universally; local call numbers or other identifiers, therefore, are not generally suitable. However, if a local identifier is used, it should be indicated as such using the type attribute. identifier has no subelements, but does require the type attribute. Repeat this element as required. This element is repeatable. -->
+    <!-- NB: Does this mean that the choice of this field for the record's UUID is wrong? The value "local" has to be removed from the Type list; it should be impossible for the user to employ this value. The value "local" should not show; it should impossible for the user to alter this value. -->
+    <!--mapping: The MODS identifier element, along with the location/URL subelement, are both mapped to dc:identifier in the MODS to Dublin Core Metadata Element Set Mapping Version 3.0 (June 7, 2005). -->
+    <!--identifier repeat begins--><xf:repeat nodeset="instance('save-data')/mods:identifier" id="identifier-repeat"><div class="block-form"><div class="block-form">
+        <!--DLF/Aquifer: REQUIRED-->
+        <!--Cluster: REQUIRE IF .--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='identifier-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+        <!--Cluster: omit-->
+        <!-- 
+            <xf:select1 ref="./@invalid">
+            <xf:label>Invalid Identifier:</xf:label>
+            <xf:hint> This attribute signifies a canceled or invalid identifier. It should be used with the value Yes. This value is used only when
+            recording a canceled or invalid identifier. If Invalid= "Yes" is not present, the identifier is assumed to be valid. </xf:hint>
+            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-empty-code']/items/item">
+            <xf:label ref="label"/>
+            <xf:value ref="value"/>
+            </xf:itemset>
+            </xf:select1>
+            <br/>
+        -->
+        <!--DLF/Aquifer: OPTIONAL-->
+        <!--Cluster: omit-->
+        <!-- 
+            <xf:input ref="./@displayLabel" class="text_50">
+            <xf:label>Display Label: </xf:label>
+            <xf:hint> This attribute is used when additional text associated with the identifier is necessary for display. The Display Label attribute
+            may be used to indicate the preferred labeling when displayed by a metadata aggregator. Include the text preferred and capitalisation,
+            but do not include delimiters such as colons. </xf:hint>
+            </xf:input>
+            <br/>
+        -->
+        <!--DLF/Aquifer: Recommended-->
+        <!--Cluster: include--><xf:input ref="./[not(@type='local')]" class="text_50"><xf:label>Identifier: </xf:label><xf:hint> Hint </xf:hint></xf:input></div><br/>
+        <!--identifier delete begins--><xf:trigger ref="self::node()[count(../mods:identifier) &gt; 1]"><xf:label>Delete This Identifier</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:identifier" at="index('identifier-repeat')"/></xf:trigger>
+        <!--identifier delete ends--><div class="hr"/></div></xf:repeat>
+    <!--identifier repeat ends-->
+    <!--identifier add begins--><xf:trigger class="add"><xf:label>Add Identifier</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:identifier" at="index('identifier-repeat')" position="after" origin="instance('insert-templates')/mods:identifier"/></xf:action></xf:trigger>
+    <!--identifier add ends--></fieldset></div>
