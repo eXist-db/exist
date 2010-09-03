@@ -1,5 +1,6 @@
 package org.exist.indexing.lucene;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -24,6 +25,8 @@ public class LuceneIndexConfig {
     private final static String INLINE_ELEMENT = "inline";
 
     private String analyzerId = null;
+    // save Analyzer for later use in LuceneMatchListener
+    private Analyzer analyzer = null;
 
     private QName qname = null;
 
@@ -45,11 +48,17 @@ public class LuceneIndexConfig {
             qname = path.getComponent(path.length() - 1);
         }
         String id = config.getAttribute(ANALYZER_ID_ATTR);
+    	// save Analyzer for later use in LuceneMatchListener
         if (id != null && id.length() > 0) {
-            if (analyzers.getAnalyzerById(id) == null)
+        	analyzer = analyzers.getAnalyzerById(id);
+            if (analyzer == null)
                 throw new DatabaseConfigurationException("No analyzer configured for id " + id);
             analyzerId = id;
+        } else {
+        	analyzer = analyzers.getDefaultAnalyzer();
         }
+        
+        
         String boostAttr = config.getAttribute(BOOST_ATTRIB);
         if (boostAttr != null && boostAttr.length() > 0) {
             try {
@@ -84,6 +93,11 @@ public class LuceneIndexConfig {
             }
             child = child.getNextSibling();
         }
+    }
+
+    // return saved Analyzer for use in LuceneMatchListener
+    public Analyzer getAnalyzer() {
+        return analyzer;
     }
 
     public String getAnalyzerId() {

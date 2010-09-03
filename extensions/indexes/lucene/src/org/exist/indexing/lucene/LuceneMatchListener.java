@@ -22,6 +22,7 @@
 package org.exist.indexing.lucene;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
@@ -190,8 +191,15 @@ public class LuceneMatchListener extends AbstractMatchListener {
         } catch (XMLStreamException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
-        // Use Lucene's analyzer to tokenize the text and find matching query terms
-        TokenStream tokenStream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(extractor.getText().toString()));
+        
+        // retrieve the Analyzer for the NodeProxy that was used for indexing and querying
+        Analyzer analyzer = idxConf.getAnalyzer();
+        if (analyzer == null) {
+        	// otherwise use system default Lucene analyzer (from conf.xml) to tokenize the text and find matching query terms
+        	analyzer = index.getDefaultAnalyzer();
+        }
+        LOG.debug("Analyzer: " + analyzer + " for path: " + path);
+        TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(extractor.getText().toString()));
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         Token token;
         try {
