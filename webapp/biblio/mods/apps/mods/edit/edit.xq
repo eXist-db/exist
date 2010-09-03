@@ -21,7 +21,7 @@ let $new := if ($id-param = '' or $id-param = 'new')
         then true()
         else false()
         
-(: if we do not have an incomming ID or it the ID is new then create one to use 
+(: if we do not have an incoming ID or it the ID is new then create one to use 
    Note that for testing you can use the first five chars of the UUID substring(util:uuid(), 1, 5)
 :)
 let $id :=
@@ -134,7 +134,7 @@ let $content :=
         </xf:output>
     </div>
     
-    <a href="../views/get-instance.xq?id={$id}">View FUll XML</a> -
+    <a href="../views/get-instance.xq?id={$id}">View Full XML</a> -
     <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View Tab XML</a>
 </div>
 
