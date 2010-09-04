@@ -11,7 +11,7 @@
            <text qname="mods:dateCreated"/>
            <text qname="mods:dateIssued"/>
        </lucene>
-       <create path="mods:namePart" type="xs:string"/>
+       <create qname="mods:namePart" type="xs:string"/>
        <create qname="@ID" type="xs:string"/>
        <!--create qname="@type" type="xs:string"/>
        <create qname="@lang" type="xs:string"/-->
