@@ -316,7 +316,8 @@ public class Resource extends File {
             tm.commit(transaction);
             return true;
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
+    		tm.abort(transaction);
             return false;
             
         } finally {
