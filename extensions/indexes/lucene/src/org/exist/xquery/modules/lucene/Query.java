@@ -13,24 +13,11 @@ import org.apache.lucene.queryParser.ParseException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.DynamicTypeCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
@@ -142,26 +129,32 @@ public class Query extends Function implements Optimizable {
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
-                    if (!test.isWildcardTest() && test.getName() != null) {
+                    if (test.getName() == null)
+                        contextQName = new QName(null, null, null);
+                    else if (test.isWildcardTest())
+                        contextQName = test.getName();
+                    else
                         contextQName = new QName(test.getName());
-                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            contextQName.setNameType(ElementValue.ATTRIBUTE);
-                        contextStep = firstStep;
-                        axis = outerStep.getAxis();
-                        optimizeSelf = true;
-                    }
+                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    contextStep = firstStep;
+                    axis = outerStep.getAxis();
+                    optimizeSelf = true;
                 }
             } else {
                 NodeTest test = lastStep.getTest();
-                if (!test.isWildcardTest() && test.getName() != null) {
+                if (test.getName() == null)
+                    contextQName = new QName(null, null, null);
+                else if (test.isWildcardTest())
+                    contextQName = test.getName();
+                else
                     contextQName = new QName(test.getName());
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
-                    axis = firstStep.getAxis();
-                    optimizeChild = steps.size() == 1 &&
-                        (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
-                    contextStep = lastStep;
-                }
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                axis = firstStep.getAxis();
+                optimizeChild = steps.size() == 1 &&
+                    (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
+                contextStep = lastStep;
             }
         }
     }
@@ -206,6 +199,9 @@ public class Query extends Function implements Optimizable {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.debug("Lucene query took " + (System.currentTimeMillis() - start));
+        if( context.getProfiler().traceFunctions() ) {
+            context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+        }
         return preselectResult;
     }
 
@@ -216,8 +212,9 @@ public class Query extends Function implements Optimizable {
 
         NodeSet result;
         if (preselectResult == null) {
+            long start = System.currentTimeMillis();
             Sequence input = getArgument(0).eval(contextSequence);
-            if (input.isEmpty())
+            if (!(input instanceof VirtualNodeSet) && input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
                 NodeSet inNodes = input.toNodeSet();
@@ -243,6 +240,9 @@ public class Query extends Function implements Optimizable {
                 } catch (ParseException e) {
                     throw new XPathException(this, e.getMessage());
                 }
+            }
+            if( context.getProfiler().traceFunctions() ) {
+                context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
             }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);

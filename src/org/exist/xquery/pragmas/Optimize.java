@@ -246,7 +246,7 @@ public class Optimize extends Pragma {
     }
 
     private void addOptimizable(Optimizable optimizable) {int axis = optimizable.getOptimizeAxis();
-        if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+        if (!(axis == Constants.CHILD_AXIS || axis == Constants.SELF_AXIS || axis == Constants.DESCENDANT_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
                 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
             // reverse axes cannot be optimized

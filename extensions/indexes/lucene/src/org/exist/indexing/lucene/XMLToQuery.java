@@ -27,6 +27,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.regex.RegexQuery;
+import org.apache.lucene.search.regex.SpanRegexQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.search.spans.SpanQuery;
@@ -172,6 +173,8 @@ public class XMLToQuery {
                     list.add(nearQuery(field, (Element) child, analyzer));
                 else if ("first".equals(child.getLocalName()))
                     list.add(getSpanFirst(field, (Element) child, analyzer));
+                else if ("regex".equals(child.getLocalName()))
+                	list.add(getSpanRegex(field, (Element) child, analyzer));
                 else
                     throw new XPathException("Unknown query element: " + child.getNodeName());
             }
@@ -186,6 +189,11 @@ public class XMLToQuery {
     		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
+    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) throws XPathException {
+    	String regex = getText(node);
+    	return new SpanRegexQuery(new Term(field, regex));
+    }
+    
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
     	int slop = getSlop(node);
         if (slop < 0)
