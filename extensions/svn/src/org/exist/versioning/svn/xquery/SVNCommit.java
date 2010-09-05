@@ -22,40 +22,41 @@
 package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.WorkingCopy;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
-import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 /**
- * Created by IntelliJ IDEA.
- * User: lcahlander
- * Date: Apr 22, 2010
- * Time: 9:48:14 AM
- * To change this template use File | Settings | File Templates.
+ * Commits files or directories into repository.
+ * 
+ * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class SVNCommit extends BasicFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("commit", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Commits a resource to a subversion repository.\n\nThis is a stub and currently does nothing.",
+			"Commits files or directories into repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
+                new FunctionParameterSequenceType("login", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user login."),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user password."),
                 new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
                 new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message.")
             },
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "The commit information."));
+			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the revision number the repository was committed to"));
 
     /**
      *
@@ -64,6 +65,7 @@ public class SVNCommit extends BasicFunction {
     public SVNCommit(XQueryContext context) {
         super(context, signature);
     }
+    
     /**
      * Process the function. All arguments are passed in the array args. The number of
      * arguments, their type and cardinality have already been checked to match
@@ -73,19 +75,28 @@ public class SVNCommit extends BasicFunction {
      * @param contextSequence
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-//        DAVRepositoryFactory.setup();
-//        SVNRepositoryFactoryImpl.setup();
-        String uri = args[0].getStringValue();
-//        try {
-//            SVNRepository repo =
-//                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
-//            ISVNAuthenticationManager authManager =
-//                    SVNWCUtil.createDefaultAuthenticationManager(args[1].getStringValue(), args[2].getStringValue());
-//            repo.setAuthenticationManager(authManager);
-//
-//        } catch (SVNException e) {
-//            throw new XPathException(this, e.getMessage(), e);
-//        }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        String user = args[0].getStringValue();
+        String password = args[1].getStringValue();
+        String wcDir = args[2].getStringValue();
+        String comment = args[3].getStringValue();
+        
+        SVNCommitInfo info = null;
+        
+        try {
+        	WorkingCopy wc = new WorkingCopy(user, password);
+
+        	info = wc.commit(new Resource(wcDir), false, comment);
+		} catch (SVNException svne) {
+			svne.printStackTrace();
+			throw new XPathException(this,
+					"error while commiting a working copy to the repository '"
+                    + wcDir + "'", svne);
+		}
+
+		if (info == null)
+			return new IntegerValue(-1);
+		
+		return new IntegerValue(info.getNewRevision());
     }
 }

@@ -22,40 +22,35 @@
 package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
+import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.WorkingCopy;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
-import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 /**
- * Created by IntelliJ IDEA.
- * User: lcahlander
- * Date: Apr 22, 2010
- * Time: 9:48:14 AM
- * To change this template use File | Settings | File Templates.
+ * Updates a working copy (brings changes from the repository into the working copy). Like 'svn update PATH' command.
+ *  
+ * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
  */
 public class SVNUpdate extends BasicFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("update", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Updates a resource from a subversion repository.\n\nThis is a stub and currently does nothing.",
+			"Updates a working copy (brings changes from the repository into the working copy). Like 'svn update PATH' command.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
-                new FunctionParameterSequenceType("revision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The revision number to update to.  An empty value updates to the latest revision.")
+                new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "a working copy entry that is to be updated")
             },
-			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "The commit information."));
+			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "revision to which revision was resolved"));
 
     /**
      *
@@ -64,6 +59,7 @@ public class SVNUpdate extends BasicFunction {
     public SVNUpdate(XQueryContext context) {
         super(context, signature);
     }
+    
     /**
      * Process the function. All arguments are passed in the array args. The number of
      * arguments, their type and cardinality have already been checked to match
@@ -73,19 +69,18 @@ public class SVNUpdate extends BasicFunction {
      * @param contextSequence
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-//        DAVRepositoryFactory.setup();
-//        SVNRepositoryFactoryImpl.setup();
-//        String uri = args[0].getStringValue();
-//        try {
-//            SVNRepository repo =
-//                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
-//            ISVNAuthenticationManager authManager =
-//                    SVNWCUtil.createDefaultAuthenticationManager(args[1].getStringValue(), args[2].getStringValue());
-//            repo.setAuthenticationManager(authManager);
-//
-//        } catch (SVNException e) {
-//            throw new XPathException(this, e.getMessage(), e);
-//        }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    	String uri = args[0].getStringValue();
+    	
+    	WorkingCopy wc = new WorkingCopy("", "");
+    	
+    	long update = -1;
+    	
+    	try {
+    		update = wc.update(new Resource(uri), SVNRevision.HEAD, true);
+    	} catch (SVNException e) {
+			e.printStackTrace();
+		}
+		
+    	return new IntegerValue(update);
     }
 }
