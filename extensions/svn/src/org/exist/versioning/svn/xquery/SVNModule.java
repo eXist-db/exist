@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-09 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id$
  */
 package org.exist.versioning.svn.xquery;
 
@@ -27,8 +27,8 @@ import org.exist.xquery.FunctionDef;
 /**
  * Module function definitions for subversion (svn) module.
  *
- * @author wolf
- * @author ljo
+ * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class SVNModule extends AbstractInternalModule {
@@ -42,12 +42,15 @@ public class SVNModule extends AbstractInternalModule {
 
 	private final static FunctionDef[] functions = {
             new FunctionDef(SVNCleanup.signature, SVNCleanup.class),
+            new FunctionDef(SVNCheckOut.signature, SVNCheckOut.class),
             new FunctionDef(SVNCommit.signature, SVNCommit.class),
-            new FunctionDef(SVNConnect.signature, SVNConnect.class),
-            new FunctionDef(SVNDisconnect.signature, SVNDisconnect.class),
+            new FunctionDef(SVNInfo.signature, SVNInfo.class),
             new FunctionDef(SVNLatestRevision.signature, SVNLatestRevision.class),
+            new FunctionDef(SVNList.signature, SVNList.class),
             new FunctionDef(SVNLock.signature, SVNLock.class),
             new FunctionDef(SVNLog.signature, SVNLog.class),
+            new FunctionDef(SVNSynchronize.signature, SVNSynchronize.class),
+            new FunctionDef(SVNStatus.signature, SVNStatus.class),
             new FunctionDef(SVNUnlock.signature, SVNUnlock.class),
             new FunctionDef(SVNUpdate.signature, SVNUpdate.class)
 	};
