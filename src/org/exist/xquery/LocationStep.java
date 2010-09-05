@@ -593,7 +593,7 @@ public class LocationStep extends Step {
 				return contextSet.directSelectAttribute(context.getBroker(),
 						test, contextId);
 		}
-		if (test.isWildcardTest()) {
+		if (!hasPreloadedData() && test.isWildcardTest()) {
 			NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			((VirtualNodeSet) result)
@@ -683,7 +683,7 @@ public class LocationStep extends Step {
 		NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
-		if (test.isWildcardTest()
+		if ((!hasPreloadedData() && test.isWildcardTest())
 				|| test.getType() == Type.PROCESSING_INSTRUCTION) {
 			// test is one out of *, text(), node() including
 			// processing-instruction(targetname)
@@ -770,7 +770,7 @@ public class LocationStep extends Step {
 		NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
-		if (test.isWildcardTest()
+		if ((!hasPreloadedData() && test.isWildcardTest())
 				|| test.getType() == Type.PROCESSING_INSTRUCTION) {
 			// test is one out of *, text(), node() including
 			// processing-instruction(targetname)

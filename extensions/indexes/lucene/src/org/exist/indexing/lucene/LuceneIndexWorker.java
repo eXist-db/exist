@@ -332,8 +332,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
         List<QName> qnames, String queryStr, int axis, Properties options)
         throws IOException, ParseException {
-        if (qnames == null || qnames.isEmpty())
-            qnames = getDefinedIndexes();
+        qnames = getDefinedIndexes(qnames);
         NodeSet resultSet = new NewArrayNodeSet();
         boolean returnAncestor = axis == NodeSet.ANCESTOR;
         IndexSearcher searcher = null;
@@ -407,8 +406,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
                          List<QName> qnames, Element queryRoot, int axis, Properties options)
             throws IOException, ParseException, XPathException {
-        if (qnames == null || qnames.isEmpty())
-            qnames = getDefinedIndexes();
+        qnames = getDefinedIndexes(qnames);
         NodeSet resultSet = new NewArrayNodeSet();
         boolean returnAncestor = axis == NodeSet.ANCESTOR;
         IndexSearcher searcher = null;
@@ -539,16 +537,32 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return List of QName objects on which indexes are defined
      */
-    private List<QName> getDefinedIndexes() {
+    private List<QName> getDefinedIndexes(List<QName> qnames) {
         List<QName> indexes = new ArrayList<QName>(20);
+        if (qnames != null && !qnames.isEmpty()) {
+            for (QName qname : qnames) {
+                if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
+                    getDefinedIndexesFor(qname, indexes);
+                else
+                    indexes.add(qname);
+            }
+            return indexes;
+        } else {
+            return getDefinedIndexesFor(null, indexes);
+        }
+    }
+
+    private List<QName> getDefinedIndexesFor(QName qname, List<QName> indexes) {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            java.util.Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
-            for (Iterator<?> i = fields.iterator(); i.hasNext(); ) {
-                String field = (String) i.next();
-                if (!FIELD_DOC_ID.equals(field))
-                    indexes.add(decodeQName(field));
+            java.util.Collection<String> fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
+            for (String field: fields) {
+                if (!FIELD_DOC_ID.equals(field)) {
+                    QName name = decodeQName(field);
+                    if (qname == null || matchQName(qname, name))
+                        indexes.add(name);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -556,6 +570,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseReader(reader);
         }
         return indexes;
+    }
+
+    private static boolean matchQName(QName qname, QName candidate) {
+        boolean match = true;
+        if (qname.getLocalName() != null)
+            match = qname.getLocalName().equals(candidate.getLocalName());
+        if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
+            match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
+        return match;
     }
 
     private Analyzer getAnalyzer(QName qname, DBBroker broker, DocumentSet docs) {
@@ -580,8 +603,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
-        if (qnames == null || qnames.isEmpty())
-            qnames = getDefinedIndexes();
+        qnames = getDefinedIndexes(qnames);
         //Expects a StringValue
         String start = null, end = null;
         long max = Long.MAX_VALUE;

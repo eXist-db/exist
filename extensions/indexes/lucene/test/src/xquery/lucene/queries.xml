@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TestSet>
+<TestSet xmlns:stats="http://exist-db.org/xquery/profiling">
     <testName>Lucene indexing tests</testName>
     <description>
         <p>Tests for the Lucene extensions</p>
@@ -20,17 +20,38 @@
 						<analyzer id="stop" class="org.apache.lucene.analysis.StopAnalyzer"/>
 						<text qname="p"/>
 						<text qname="para" analyzer="stop"/>
+						<text qname="b"/>
+						<text xmlns:t="urn:test" qname="t:note"/>
+						<text qname="z"/>
 					</lucene>
 				</index>
 			</collection>
 		</store>
         <create-collection parent="/db" name="test"/>
         <store collection="/db/test" name="text1.xml">
-			<test>
+			<test xmlns:tt="urn:test">
 				<p>Eins zwei drei vier zwei fünf sechs.</p>
 				<p>Sieben acht <b>neun</b> zehn acht.</p>
 				<para>The stopwords should not be indexed.</para>
+				<tt:note>Note using different namespace.</tt:note>
+				<x><y>Nested <z>nodes</z></y></x>
 			</test>
+		</store>
+		<store collection="/db/test" name="text2.xml">
+		  <test>
+		    <div>
+		      <head>Div1</head>
+		      <p>First level</p>
+		      <div>
+		        <head>Div2</head>
+		        <p>Second level</p>
+		        <div>
+		          <head>Div3</head>
+		          <p>Third level</p>
+		        </div>
+		      </div>
+		    </div>
+		  </test>
 		</store>
     </setup>
     <tearDown>
@@ -210,7 +231,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 12: regex</task>
+		<task>XML query test 13: regex</task>
 		<code><![CDATA[
 			let $qu := <query><term>eins</term><regex>sech.*</regex></query>
 			for $hit in doc("/db/test/text1.xml")//p[ft:query(., $qu)]
@@ -220,6 +241,143 @@
 		<expected>
 			<p>Eins zwei drei vier zwei fünf sechs.</p>
 		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 14: wildcard context</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(*, "acht")]
+		</code>
+		<xpath>$output/p</xpath>
+	</test>
+	
+	<test output="xml">
+		<task>XML query test 15: wildcard context</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(*, "should")]
+		</code>
+		<xpath>$output/p</xpath>
+	</test>
+	<test output="xml">
+		<task>XML query test 16: wildcard context</task>
+		<code>
+			doc("/db/test/text1.xml")/test/p[ft:query(*, "neun")]
+		</code>
+		<expected>
+			<p>Sieben acht <b>neun</b> zehn acht.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>XML query test 17: wildcard context, no match</task>
+		<code>
+			doc("/db/test/text1.xml")/test/p[ft:query(*, "acht")]
+		</code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, no match in nested</task>
+		<code>
+			doc("/db/test/text1.xml")/test/x[ft:query(*, "nodes")]
+		</code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Query test: wildcard context, match in nested</task>
+		<code>
+			doc("/db/test/text1.xml")/test//y[ft:query(*, "nodes")]
+		</code>
+		<expected><y>Nested <z>nodes</z></y></expected>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, match on descendant</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(.//*, "neun")]
+		</code>
+		<xpath>$output/p</xpath>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, match on self/child</task>
+		<code>
+			doc("/db/test/text1.xml")//p[ft:query(./*, "neun")]
+		</code>
+		<expected><p>Sieben acht <b>neun</b> zehn acht.</p></expected>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, match descendant</task>
+		<code>
+			doc("/db/test/text1.xml")/x[ft:query(.//*, "nodes")]
+		</code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, long path</task>
+		<code>
+			doc("/db/test/text1.xml")/x[ft:query(./y/*, "nodes")]
+		</code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test: wildcard context, no match in child</task>
+		<code>
+			doc("/db/test/text1.xml")/x[ft:query(./*, "nodes")]
+		</code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>Query test: wildcard context with prefix wildcard</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(*:p, "acht")]
+		</code>
+		<xpath>$output/p</xpath>
+	</test>
+	<test output="xml">
+		<task>Query test: wildcard context with prefix wildcard 2</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(*:note, "namespace")]
+		</code>
+		<xpath>$output/p</xpath>
+	</test>
+	<test output="xml">
+		<task>Query test: wildcard context with namespace</task>
+		<code>
+			declare namespace tt="urn:test";
+			doc("/db/test/text1.xml")/test[ft:query(tt:*, "namespace")]/tt:note
+		</code>
+		<expected><tt:note xmlns:tt="urn:test">Note using different namespace.</tt:note></expected>
+	</test>
+	<test output="xml" trace="yes">
+		<task>Query test: optimizer test, query on element</task>
+		<code>
+			doc("/db/test/text1.xml")//p[ft:query(b, "neun")]
+		</code>
+		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+	</test>
+	<test output="xml" trace="yes">
+		<task>Query test: optimizer test, query on self</task>
+		<code>
+			doc("/db/test/text1.xml")//p[ft:query(., "acht")]
+		</code>
+		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+	</test>
+	<test output="xml" trace="yes">
+		<task>Query test: optimizer test, query on wildcard</task>
+		<code>
+			doc("/db/test/text1.xml")/test[ft:query(*, "acht")]
+		</code>
+		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+	</test>
+	<test output="xml" trace="yes">
+		<task>Optimizer test: wildcard context, self/descendant</task>
+		<code>
+			doc("/db/test/text1.xml")//x[ft:query(.//*, "nodes")]
+		</code>
+		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+	</test>
+	<test output="xml" trace="yes">
+		<task>Optimizer test: wildcard context, long path</task>
+		<code>
+			doc("/db/test/text1.xml")//x[ft:query(./y/*, "nodes")]
+		</code>
+		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
 	</test>
     <test output="xml">
         <task>Phrase highlighting 1</task>
@@ -370,15 +528,19 @@
 		<expected>
 			<terms>
 				<t>acht</t>
-				<t>drei</t>
-				<t>eins</t>
-				<t>fünf</t>
-				<t>neun</t>
-				<t>sechs</t>
-				<t>sieben</t>
-				<t>vier</t>
-				<t>zehn</t>
-				<t>zwei</t>
+        <t>drei</t>
+        <t>eins</t>
+        <t>first</t>
+        <t>fünf</t>
+        <t>level</t>
+        <t>neun</t>
+        <t>sechs</t>
+        <t>second</t>
+        <t>sieben</t>
+        <t>third</t>
+        <t>vier</t>
+        <t>zehn</t>
+        <t>zwei</t>
 			</terms>
 		</expected>
 	</test>
@@ -399,7 +561,8 @@
 		<expected>
 			<terms>
 				<t>sechs</t>
-				<t>sieben</t>
+        <t>second</t>
+        <t>sieben</t>
 			</terms>
 		</expected>
 	</test>
@@ -531,4 +694,163 @@
 			<para>The stopwords should not be indexed.</para>
 		</expected>
 	</test>
+	<!--  Nested elements -->
+	<test output="xml">
+    <task>Query test: nested elements 1</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(div/p, "second")]
+    </code>
+    <expected>
+      <div>
+			  <head>Div1</head>
+			  <p>First level</p>
+			  <div>
+			    <head>Div2</head>
+			    <p>Second level</p>
+			    <div>
+			      <head>Div3</head>
+			      <p>Third level</p>
+			    </div>
+			  </div>
+			</div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements 2</task>
+    <code>
+      doc("/db/test/text2.xml")/test/div[ft:query(div/div/p, "third")]
+    </code>
+    <expected>
+      <div>
+        <head>Div1</head>
+        <p>First level</p>
+        <div>
+          <head>Div2</head>
+          <p>Second level</p>
+          <div>
+            <head>Div3</head>
+            <p>Third level</p>
+          </div>
+        </div>
+      </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements 3</task>
+    <code>
+      doc("/db/test/text2.xml")/div[ft:query(div/div/p, "second")]
+    </code>
+    <expected/>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements 4</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(div/p, "third")]
+    </code>
+    <expected>
+       <div>
+         <head>Div2</head>
+         <p>Second level</p>
+         <div>
+           <head>Div3</head>
+           <p>Third level</p>
+         </div>
+       </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 1</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(div/*, "third")]
+    </code>
+    <expected>
+       <div>
+         <head>Div2</head>
+         <p>Second level</p>
+         <div>
+           <head>Div3</head>
+           <p>Third level</p>
+         </div>
+       </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 2</task>
+    <code>
+      doc("/db/test/text2.xml")/test/div[ft:query(div/div/*, "third")]
+    </code>
+    <expected>
+       <div>
+        <head>Div1</head>
+        <p>First level</p>
+        <div>
+          <head>Div2</head>
+          <p>Second level</p>
+          <div>
+            <head>Div3</head>
+            <p>Third level</p>
+          </div>
+        </div>
+      </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 3</task>
+    <code>
+      doc("/db/test/text2.xml")/div[ft:query(div/div/*, "second")]
+    </code>
+    <expected/>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 4</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(div/*, "second")]
+    </code>
+    <expected>
+      <div>
+        <head>Div1</head>
+        <p>First level</p>
+        <div>
+          <head>Div2</head>
+          <p>Second level</p>
+          <div>
+            <head>Div3</head>
+            <p>Third level</p>
+          </div>
+        </div>
+      </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 5</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(div/*, "third")]
+    </code>
+    <expected>
+        <div>
+          <head>Div2</head>
+          <p>Second level</p>
+          <div>
+            <head>Div3</head>
+            <p>Third level</p>
+          </div>
+        </div>
+    </expected>
+  </test>
+  <test output="xml">
+    <task>Query test: nested elements with wildcard 6</task>
+    <code>
+      doc("/db/test/text2.xml")//div[ft:query(./div/*, "third")]
+    </code>
+    <expected>
+        <div>
+          <head>Div2</head>
+          <p>Second level</p>
+          <div>
+            <head>Div3</head>
+            <p>Third level</p>
+          </div>
+        </div>
+    </expected>
+  </test>
 </TestSet>
