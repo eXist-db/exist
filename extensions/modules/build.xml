@@ -70,9 +70,12 @@
     </condition>
     <condition property="include.module.memcached.config">
         <istrue value="${include.module.memcached}"/>
-    </condition>
+    </condition>   
 	<condition property="include.module.oracle.config">
-        <istrue value="${include.module.oracle}"/>
+	    <and>
+            <istrue value="${include.module.oracle}"/>
+            <available classname="oracle.jdbc.OracleTypes"/>
+        </and>
     </condition>
     <condition property="include.module.scheduler.config">
         <istrue value="${include.module.scheduler}"/>
