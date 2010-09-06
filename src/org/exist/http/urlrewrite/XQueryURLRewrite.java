@@ -634,11 +634,24 @@ public class XQueryURLRewrite implements Filter {
     private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) throws ServletException {
         String requestURI = request.getRequestURI();
         String path = requestURI.substring(request.getContextPath().length());
-        if (path.startsWith("/"))
-            path = path.substring(1);
+        LOG.trace("basePath=" + basePath);
+        LOG.trace("request path=" + path);
+        if(path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
+            path = path.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
+        }
+        else if(path.startsWith("/db/")) {
+            path = path.substring(4);
+        }
+
+        if(path.startsWith("/")) {
+             path = path.substring(1);
+        }
+        LOG.trace("adjusted request path=" + path);
+
         String[] components = path.split("/");
         SourceInfo sourceInfo = null;
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+            LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
             try {
                 XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
                 Collection collection = broker.openCollection(locationUri, Lock.READ_LOCK);
@@ -653,8 +666,11 @@ public class XQueryURLRewrite implements Filter {
                     DocumentImpl doc = null;
                     try {
                         if (components[i].length() > 0 && subColl.hasChildCollection(XmldbURI.createInternal(components[i]))) {
-                            subColl = broker.openCollection(subColl.getURI().append(components[i]), Lock.READ_LOCK);
+                            XmldbURI newSubCollURI = subColl.getURI().append(components[i]);
+                            LOG.trace("Inspecting sub-collection: " + newSubCollURI);
+                            subColl = broker.openCollection(newSubCollURI, Lock.READ_LOCK);
                             if (subColl != null) {
+                                LOG.trace("Looking for controller.xql in " + subColl.getURI());
                                 XmldbURI docUri = subColl.getURI().append("controller.xql");
                                 doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
                                 if (doc != null)
@@ -692,6 +708,11 @@ public class XQueryURLRewrite implements Filter {
                     LOG.warn("XQueryURLRewrite controller could not be found");
                     return null;
                 }
+
+                if(LOG.isTraceEnabled()) {
+                    LOG.trace("Found controller file: " + controllerDoc.getURI());
+                }
+
                 try {
                     if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                                 !controllerDoc.getMetadata().getMimeType().equals("application/xquery")) {
@@ -714,6 +735,7 @@ public class XQueryURLRewrite implements Filter {
                 return null;
             }
         } else {
+            LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
             String realPath = config.getServletContext().getRealPath(basePath);
             File baseDir = new File(realPath);
             if (!baseDir.isDirectory()) {
