@@ -13,8 +13,16 @@ body {
    padding:0; 
 }
 
+.container {
+    background-color: white;
+    border: solid blue 1px;
+    padding-left: 20px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+
 .content {
-    background-color: #DDD;
+    margin-left: 10px;
 }
 
 #breadcrumb {
