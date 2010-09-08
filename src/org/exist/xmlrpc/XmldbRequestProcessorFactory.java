@@ -43,6 +43,8 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     
     public final static int CHECK_INTERVAL = 2000;
 
+    protected boolean useDefaultUser = true;
+
     protected BrokerPool brokerPool;
 
     protected int connections = 0;
@@ -54,7 +56,8 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     /** id of the database registred against the BrokerPool */
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
-    public XmldbRequestProcessorFactory(String databaseid) throws EXistException {
+    public XmldbRequestProcessorFactory(String databaseid, boolean useDefaultUser) throws EXistException {
+        this.useDefaultUser = useDefaultUser;
         if (databaseid != null && !"".equals(databaseid))
             this.databaseid = databaseid;
         brokerPool = BrokerPool.getInstance(this.databaseid);
@@ -73,6 +76,12 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
         if (username == null) {
             username = SecurityManager.GUEST_USER;
             password = username;
+        }
+
+        if (!useDefaultUser && username.equalsIgnoreCase(SecurityManager.GUEST_USER)) {
+            String message = "The user " + SecurityManager.GUEST_USER + " is prohibited from logging in through XML-RPC.";
+            LOG.debug(message);
+            throw new XmlRpcException(0, message);
         }
         // check user
         try {

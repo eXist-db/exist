@@ -21,12 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcHandler;
 import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
@@ -38,9 +32,24 @@ import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 public class RpcServlet extends XmlRpcServlet {
 
 	private static final long serialVersionUID = -1003413291835771186L;
+
+    private static boolean useDefaultUser = true;
+
+    public static boolean isUseDefaultUser() {
+        return useDefaultUser;
+    }
+
+    public static void setUseDefaultUser(boolean useDefaultUser) {
+        RpcServlet.useDefaultUser = useDefaultUser;
+    }
 
 	@Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -78,7 +87,7 @@ public class RpcServlet extends XmlRpcServlet {
         public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
             try {
                 if (instance == null)
-                    instance = new XmldbRequestProcessorFactory("exist");
+                    instance = new XmldbRequestProcessorFactory("exist", useDefaultUser);
                 return instance;
             } catch (EXistException e) {
                 throw new XmlRpcException("Failed to initialize XMLRPC interface: " + e.getMessage(), e);
