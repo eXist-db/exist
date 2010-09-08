@@ -366,7 +366,7 @@ public class Configurator {
 								LOG.warn("Security exception on class ["+clazzName+"] creation, skip instance creation.");
 								continue;
 							} catch (NoSuchMethodException e) {
-								LOG.warn("Class ["+clazzName+"] consctuctor not found, skip instance creation.");
+								LOG.warn("Class ["+clazzName+"] constructor not found, skip instance creation.");
 								continue;
 							} catch (InstantiationException e) {
 								LOG.warn("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");
