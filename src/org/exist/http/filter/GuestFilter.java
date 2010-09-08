@@ -69,7 +69,7 @@ public class GuestFilter implements Filter {
         LOG.info("username [" + username + "]");
         LOG.info("requestURI [" + requestURI + "]");
 
-        if (requestURI.startsWith("/webdav") || requestURI.startsWith("/xmlrpc") ) {
+        if (requestURI.indexOf("/webdav/") >= 0) {
             if (username != null && username.equalsIgnoreCase("guest")) {
                 LOG.info("Permission denied to : " + requestURI);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
