@@ -126,6 +126,26 @@ public class Configurator {
 		return null;
 	}
 	
+	public static Method searchForAddMethod(Class<?> clazz, Field field) {
+		try {
+			String methodName = "add"+field.getName();
+			methodName = methodName.toLowerCase();
+			
+			for (Method method : clazz.getMethods()) {
+				if (method.getName().toLowerCase().equals(methodName)
+						&& method.getParameterTypes().length == 1
+						&& method.getParameterTypes()[0].getName().equals("org.exist.config.Configuration"))
+					
+					return method;
+			}
+			
+		} catch (SecurityException e) {
+		} catch (NoClassDefFoundError e) {
+		}
+		
+		return null;
+	}
+
 	public static Configuration configure(Configurable instance, Configuration configuration) {
 		
 		if (configuration == null) return null;
@@ -314,6 +334,16 @@ public class Configurator {
 
 						//create
 						for (Configuration conf : confs) {
+							Method method = searchForAddMethod(instance.getClass(), field);
+							if (method != null) {
+								try {
+									method.invoke(instance, conf);
+									continue;
+								} catch (InvocationTargetException e) {
+									method = null;
+								}
+							}
+							
 							String id = conf.getProperty(Configuration.ID);
 							if (id == null) {
 								LOG.warn("Subconfiguration must have id ["+conf+"], skip instance creation.");
@@ -336,7 +366,7 @@ public class Configurator {
 								LOG.warn("Security exception on class ["+clazzName+"] creation, skip instance creation.");
 								continue;
 							} catch (NoSuchMethodException e) {
-								LOG.warn("Class ["+clazzName+"] not found, skip instance creation.");
+								LOG.warn("Class ["+clazzName+"] consctuctor not found, skip instance creation.");
 								continue;
 							} catch (InstantiationException e) {
 								LOG.warn("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");
@@ -428,6 +458,8 @@ public class Configurator {
 		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
 		for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
 
+			simple = true;
+			
 			final Field field = entry.getValue();
 			field.setAccessible(true);
 
