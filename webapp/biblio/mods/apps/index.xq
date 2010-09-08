@@ -18,7 +18,7 @@ let $view-code := request:get-parameter('view-code', 'icons')
 let $sort := request:get-parameter('sort', 'app-name')
 let $debug := xs:boolean(request:get-parameter('debug', false()))
 
-(: you can change the number of images per row but the default is six :)
+(: you can change the number of images per row but the default is five :)
 let $images-per-row := xs:positiveInteger(request:get-parameter('images-per-row', 5))
 
 
@@ -69,10 +69,10 @@ let $content :=
                                 if (string-length($custom-image) > 0) then 
                                     concat($app-base, '/', $custom-image)
                                 else 
-                                    concat('/rest', $image-base, '/app-icon.png')
+                                    concat($style:context, '/rest', $image-base, '/app-icon.png')
                             return
                                 <td align="center" class="app">
-                                    <a href="/rest{$app-home}" title="{$app-title}">
+                                    <a href="{$style:context}/rest{$app-home}" title="{$app-title}">
                                         <img src="{$image}" height="60px"/>
                                         <br/>
                                         <span class="app-name">{$app-name}</span>
@@ -116,7 +116,7 @@ let $content :=
                 order by $app-name
                 return
                     <tr class="details-row">
-                        <td><a href="/rest{$app-home}index.xq">{$app/xrx:app-name/text()}</a></td>
+                        <td><a href="{$style:context}/rest{$app-home}index.xq">{$app/xrx:app-name/text()}</a></td>
                         <td>{$app/xrx:app-description-text/text()}</td>
                         <td>{$app/xrx:app-version-id/text()}</td>
                     </tr>

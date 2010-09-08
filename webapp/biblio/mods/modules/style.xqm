@@ -6,7 +6,7 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xrx="http://code.google.com/p/xrx";
 
-
+declare variable $style:context := request:get-context-path();
 declare variable $style:site-home := '/';
 declare variable $style:web-path-to-site := '/db/org/library';
 declare variable $style:web-path-to-app := style:substring-before-last-slash(style:substring-before-last-slash(substring-after(request:get-uri(), '/rest')));
@@ -70,9 +70,9 @@ as element() {
 
 declare function style:breadcrumbs() as node() {
    <div class="breadcrumbs">
-      <a href="/rest/db/org/library/index.xq">Library Home</a> &gt;
-      <a href="/rest/db/org/library/apps/index.xq">Library Apps</a> &gt;
-      <a href="/rest/db/org/library/apps/mods/index.xq">MODS Editor</a>
+      <a href="{$style:context}/rest/db/org/library/index.xq">Library Home</a> &gt;
+      <a href="{$style:context}/rest/db/org/library/apps/index.xq">Library Apps</a> &gt;
+      <a href="{$style:context}/rest/db/org/library/apps/mods/index.xq">MODS Editor</a>
    </div>
 };
 
