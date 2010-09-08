@@ -163,7 +163,8 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }
     
@@ -184,7 +185,8 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }
     
@@ -271,7 +273,8 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage()); 
         } finally {
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }
   
@@ -370,7 +373,8 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }
     
@@ -725,8 +729,9 @@ public class GMLIndexTest extends TestCase {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage()); 
-        } finally {	
-            pool.release(broker);
+        } finally {
+            if (pool !=null)
+                pool.release(broker);
         }
     }
     
@@ -993,7 +998,8 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage()); 
         } finally {	
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }    
 
@@ -1040,10 +1046,12 @@ public class GMLIndexTest extends TestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            pool.release(broker);
+            if (pool !=null)
+                pool.release(broker);
         }
     }
 
+    @Override
     protected void setUp() {
         try {
             // initialize driver
@@ -1078,6 +1086,7 @@ public class GMLIndexTest extends TestCase {
         }
     }
 
+    @Override
     protected void tearDown() {	
         try {
             DatabaseManager.deregisterDatabase(database);
