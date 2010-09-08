@@ -57,6 +57,8 @@ public class DynamicNameCheck extends AbstractExpression {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        try{
         
 		Sequence seq = expression.eval(contextSequence, contextItem);		
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
@@ -86,10 +88,14 @@ public class DynamicNameCheck extends AbstractExpression {
 						getPrefixedNodeName(node));
 		}
         
-        if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", seq);  
-        
-		return seq;
+                if (context.getProfiler().isEnabled()){
+                    context.getProfiler().end(this, "", seq);
+                }
+
+                return seq;
+            } catch(IllegalArgumentException iae) {
+                throw new XPathException(expression, iae.getMessage(), iae);
+            }
 	}
 
     private String getPrefixedNodeName(Node node) {
