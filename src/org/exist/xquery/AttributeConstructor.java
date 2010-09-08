@@ -168,7 +168,8 @@ public class AttributeConstructor extends NodeConstructor {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */
-	public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 
 		for(Object object : contents) {
