@@ -352,6 +352,8 @@ public class Type {
 	 * 
 	 * @param subtype
 	 * @param supertype
+         *
+         * @throws IllegalArgumentException When the type is invalid
 	 */
 	public final static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
