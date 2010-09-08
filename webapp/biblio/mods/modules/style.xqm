@@ -44,7 +44,7 @@ as element() {
             { $style }
         </head>
         <body>
-            <div class="container">
+            <div class="container span-24 last">
                 { style:header() } 
                 { $breadcrumbs }
                 <div class="inner">
@@ -171,7 +171,7 @@ as node()+ {
        
         <link rel="stylesheet" href="{$style:site-css}/blueprint/screen.css" type="text/css" media="screen, projection" />,
         <link rel="stylesheet" href="{$style:site-css}/blueprint/print.css" type="text/css" media="print" />,<!--[if IE ]><link rel="stylesheet" href="{$style:site-css}/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->,
-        <link rel="stylesheet" href="{$style:site-css}/styles.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="{$style:site-css}/style.css" type="text/css" media="screen, projection" />
 
     )
     else if ($page-type eq 'xforms') then 
