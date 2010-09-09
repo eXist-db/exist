@@ -24,7 +24,15 @@ let $content :=
               </li>
               
               <li>
+                  <a href="edit/edit.xq?id=new&amp;user=dan">New in {xmldb:get-current-user()} Home</a> Create a new MODS record using user data collection
+              </li>
+              
+              <li>
                   <a href="edit/edit.xq?id=new&amp;show-all=true">New Full</a> Create a new MODS record will all tabs
+              </li>
+              
+              <li>
+                  <a href="views/document-types.xq">Create From Template</a> Create a new MODS record using a predefined template
               </li>
           </ol>
           
@@ -61,6 +69,12 @@ let $content :=
               </li>
               <li>
                   <a href="analysis/tabs-for-code-table.xq">All Tabs Used By A Code Table</a> Analysis of each tab body and the code tables that use it.
+              </li>
+              <li>
+                  <a href="views/missing-ids.xq">Missing IDs</a> All MODS records that do not have an ID.
+              </li>
+              <li>
+                  <a href="views/missing-titles.xq">Missing Titles</a> All MODS records that do not have at lease one title.
               </li>
          </ol>
          
