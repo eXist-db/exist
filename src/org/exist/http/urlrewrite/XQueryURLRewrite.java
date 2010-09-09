@@ -631,12 +631,9 @@ public class XQueryURLRewrite implements Filter {
 		}
     }
 
-    private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) throws ServletException {
-        String requestURI = request.getRequestURI();
-        String path = requestURI.substring(request.getContextPath().length());
-        LOG.trace("basePath=" + basePath);
+    protected String adjustPathForSourceLookup(String basePath, String path) {
         LOG.trace("request path=" + path);
-        if(path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
+        if(basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
             path = path.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
         }
         else if(path.startsWith("/db/")) {
@@ -647,6 +644,16 @@ public class XQueryURLRewrite implements Filter {
              path = path.substring(1);
         }
         LOG.trace("adjusted request path=" + path);
+
+        return path;
+    }
+
+    private SourceInfo findSource(HttpServletRequest request, DBBroker broker, String basePath) throws ServletException {
+        String requestURI = request.getRequestURI();
+        String path = requestURI.substring(request.getContextPath().length());
+        LOG.trace("basePath=" + basePath);
+
+        path = adjustPathForSourceLookup(basePath, path);
 
         String[] components = path.split("/");
         SourceInfo sourceInfo = null;
