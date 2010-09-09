@@ -607,6 +607,11 @@ public class RemoteUserManagementService implements UserManagementService {
 		
 	}
 
+	@Override
+	public void lockResource(Resource res, User u) throws XMLDBException {
+		Account account = new UserAider(u.getName());
+		lockResource(res, account);
+	}
 }
 // -- end class UserManagementServiceImpl
 

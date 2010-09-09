@@ -297,20 +297,24 @@ public interface UserManagementService extends Service {
 
 	public void addGroup(Group group) throws XMLDBException;
 
-	@Deprecated
+	@Deprecated //it'll removed after 1.6
 	public void addUser( User user ) throws XMLDBException;
 	
-	@Deprecated
+	@Deprecated //it'll removed after 1.6
 	public void updateUser( User user ) throws XMLDBException;
 
-	@Deprecated
+	@Deprecated //it'll removed after 1.6
 	public User getUser( String name ) throws XMLDBException;
 	
-	@Deprecated
+	@Deprecated //it'll removed after 1.6
 	public User[] getUsers() throws XMLDBException;
 	
-	@Deprecated
+	@Deprecated //it'll removed after 1.6
 	public void removeUser( User user ) throws XMLDBException;
+
+	@Deprecated //it'll removed after 1.6
+    public void lockResource(Resource res, User u) throws XMLDBException;
+
 }
 
 

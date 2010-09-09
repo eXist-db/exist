@@ -861,5 +861,11 @@ public class LocalUserManagementService implements UserManagementService {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void lockResource(Resource res, User u) throws XMLDBException {
+		Account account = new UserAider(u.getName());
+		lockResource(res, account);
+	}
 }
 
