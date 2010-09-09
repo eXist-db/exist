@@ -16,37 +16,52 @@ let $show-all := if ($show-all-string = 'true') then true() else false()
 (: if no tab is specified, we default to the title tab :)
 let $tab-id := request:get-parameter('tab-id', 'title')
 
+(: if document type is specified then we will need to use that instance as the template :)
+let $type := request:get-parameter('type', 'default')
+
+(: look for an alternate data collection in the URL, else use the default mods data collection :)
+let $user := request:get-parameter('user', 'dan')
+let $data-collection := concat('/db/home/', $user, '/apps/mods/data')
+
 (: check to see if we have a  :)
 let $new := if ($id-param = '' or $id-param = 'new')
         then true()
         else false()
         
-(: if we do not have an incoming ID or it the ID is new then create one to use 
+(: if we do not have an incomming ID or it the ID is new then create one to use 
    Note that for testing you can use the first five chars of the UUID substring(util:uuid(), 1, 5)
 :)
 let $id :=
    if ($new)
-        then util:uuid()
+        then substring(util:uuid(), 5)
         else $id-param
 
 (: if we are creating a new record then we need to call get-instance.xq with new=true to tell it to get the entire template :)
-let $instance-src :=
+let $create-new-from-template :=
    if ($new)
       then (
          (: copy the template into data and update it with a new UUID :)
-         let $template-path := concat($style:db-path-to-app, '/edit/new-instance.xml')
+         let $template-path :=
+            if ($type='default')
+               then concat($style:db-path-to-app, '/edit/new-instance.xml')
+               else concat($style:db-path-to-app, '/edit/instances/', $type, '.xml')
          let $template := doc($template-path)
          let $new-file-name := concat($id, '.xml')
+         
          (: uncomment the following line in for testing if you are not admin :)
-         let $login := xmldb:login($style:db-path-to-app-data, 'admin', 'admin123')
-         let $store := xmldb:store($style:db-path-to-app-data, $new-file-name, $template)
-         let $new-file-path := concat($style:db-path-to-app-data, '/', $new-file-name)
+         let $login := xmldb:login($data-collection, 'admin', 'admin123')
+         
+         (: store it in the right location :)
+         let $store := xmldb:store($data-collection, $new-file-name, $template)
+         let $new-file-path := concat($data-collection, '/', $new-file-name)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
-         let $update-id := update value doc($new-file-path)/mods:mods/@ID with $id
-         return concat('../data/', $id, '.xml')
+         return update value doc($new-file-path)/mods:mods/@ID with $id
          )
-      else concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id)
+      else ()
+
+(: this is the string we pass to instance id='save-data' src attribute :)
+let $instance-src :=  concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $data-collection)
 
 let $user := xmldb:get-current-user()
 
@@ -68,6 +83,8 @@ let $style :=
 
 let $model :=
     <xf:model>
+       <xf:instance xmlns="" id="config" src="config.xml"/>
+       
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="{$instance-src}" id="save-data"/>
 
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates'/>
@@ -134,7 +151,7 @@ let $content :=
         </xf:output>
     </div>
     
-    <a href="../views/get-instance.xq?id={$id}">View Full XML</a> -
+    <a href="../views/get-instance.xq?id={$id}">View FUll XML</a> -
     <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View Tab XML</a>
 </div>
 
