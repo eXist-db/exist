@@ -72,9 +72,9 @@
                 <include name="*.jar"/>
             </lib>
             <!-- Include cocoon jars -->
-            <lib dir="extensions/cocoon/lib">
+            <!-- lib dir="extensions/cocoon/lib">
                 <include name="*.jar"/>
-            </lib>
+            </lib -->
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
