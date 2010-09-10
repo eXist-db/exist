@@ -24,6 +24,7 @@ import module namespace grammar="http://exist-db.org/xquery/admin-interface/gram
 import module namespace install="http://exist-db.org/xquery/install-tools" at "install.xqm";
 import module namespace fundocs="http://exist-db.org/xquery/admin/fundocs" at "fundocs.xqm";
 import module namespace repomanager="http://exist-db.org/xquery/admin-interface/repo" at "repo.xqm";
+import module namespace indexes="http://exist-db.org/xquery/admin-interface/indexes" at "indexes.xqm";
 
 declare option exist:serialize "method=xhtml media-type=text/html";
 
@@ -96,6 +97,10 @@ declare function admin:panel() as element()
         else if ($panel eq "install") then
         (
             install:main()
+        )
+        else if ($panel eq "indexes") then
+        (
+            indexes:main()
         )
         else
         (
@@ -230,6 +235,7 @@ return (
                                 <li><a href="{$link}?panel=trace">Query Profiling</a></li>
                                 <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
                                 <li><a href="{$link}?panel=repo">Package Repository</a></li>
+                                <li><a href="{$link}?panel=indexes">Browse Indexes</a></li>
                                 <li><a href="{$link}?panel=shutdown">Shutdown</a></li>
                                 <li><a href="{$link}?logout=yes">Logout</a></li>
                             </ul>
