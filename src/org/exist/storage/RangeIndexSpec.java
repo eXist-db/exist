@@ -43,20 +43,17 @@ public abstract class RangeIndexSpec {
 	public static final int FLOAT = 4;
 	public static final int BOOLEAN = 5;
 	public static final int DATE_TIME = 6;
-    public static final int DATE = 7;
+        public static final int DATE = 7;
+        public static final int DECIMAL = 8;
 
-    /**
-	 * Indicates that the node has a qname-value index defined
-	 * on it.
-	 */
-	public static final int QNAME_INDEX = 8;
+        public static final int QNAME_INDEX = 0x10; // Indicates that the node has a qname-value index defined on it.
 	
 	/**
 	 * Bit mask to extract the type of the range index.
 	 */
-	public static final int RANGE_INDEX_MASK = 0x07;
+	private static final int RANGE_INDEX_MASK = 0x0F;
 
-    public static final int HAS_VALUE_OR_MIXED_INDEX_MASK = 0x0F;
+        private static final int HAS_VALUE_OR_MIXED_INDEX_MASK = 0x18;
 
     private static final int[] xpathTypes = {
             Type.ITEM,
@@ -65,8 +62,9 @@ public abstract class RangeIndexSpec {
             Type.DOUBLE,
             Type.FLOAT,
             Type.BOOLEAN,
-			Type.DATE_TIME,
-      Type.DATE
+            Type.DATE_TIME,
+            Type.DATE,
+            Type.DECIMAL
 	};
 	
 	protected static final int[] indexTypes = new int[64];
@@ -79,6 +77,7 @@ public abstract class RangeIndexSpec {
         indexTypes[Type.BOOLEAN] = BOOLEAN;
         indexTypes[Type.DATE_TIME] = DATE_TIME;
         indexTypes[Type.DATE] = DATE;
+        indexTypes[Type.DECIMAL] = DECIMAL;
     }
 
 	/**
