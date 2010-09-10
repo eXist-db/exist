@@ -23,6 +23,7 @@
 package org.exist.storage;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -121,6 +122,19 @@ public class ValueIndexFactory {
 			float f = Float.intBitsToFloat(bits);
 			return new FloatValue(f);
 		}
+
+                /* xs:decimal */
+                else if (type == Type.DECIMAL) {
+                    //actually loaded from string data due to the uncertain length
+                    String s;
+                    try {
+                        s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE), len - (ValueIndexFactory.LENGTH_VALUE_TYPE), "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        LOG.error(e);
+                        throw new EXistException(e);
+                    }
+                    return new DecimalValue(new BigDecimal(s));
+                }
 
 		/* xs:boolean */
 		else if (type == Type.BOOLEAN) {
@@ -224,6 +238,16 @@ public class ValueIndexFactory {
 			data[offset + ValueIndexFactory.LENGTH_VALUE_TYPE] = (byte) (((BooleanValue) value).getValue() ? 1 : 0);
 			return data;
 		}
+
+                else if(value.getType() == Type.DECIMAL) {
+                        //actually stored as string data due to variable length
+			BigDecimal dec = ((DecimalValue)value).getValue();
+                        String val = dec.toString();
+                        final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
+			data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
+			UTF8.encode(val, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
+			return data;
+                }
 
 		/* unknown! */
 		else {
