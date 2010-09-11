@@ -44,9 +44,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
     private DocumentSet[] contextDocs = null;
     
-    private boolean inRecursion = false;
-
     private boolean bodyAnalyzed = false;
+    
+    protected FunctionCall call;
     
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -80,8 +80,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		if(!inRecursion) {
-			inRecursion = true;
+		if(!call.isRecursive) {
 			// Save the local variable stack
 			LocalVariable mark = context.markLocalVariables(true);
 			try {
@@ -100,7 +99,6 @@ public class UserDefinedFunction extends Function implements Cloneable {
 				// restore the local variable stack
 				context.popLocalVariables(mark);
 			}
-			inRecursion = false;
 		}
 	}
 	
@@ -191,11 +189,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	public void resetState(boolean postOptimization) {
         // Question: understand this test. Why not reset even is not in recursion ?
 		// Answer: would lead to an infinite loop if the function is recursive.
-		if(!inRecursion) {
-			inRecursion = true;
+		if(!call.isRecursive) {
             bodyAnalyzed = false;
 			body.resetState(postOptimization);
-			inRecursion = false;
 		}
         if (!postOptimization) {
             currentArguments = null;
