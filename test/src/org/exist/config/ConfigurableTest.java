@@ -44,11 +44,12 @@ public class ConfigurableTest {
 
 	String config1 = "<instance xmlns='http://exist-db.org/Configuration' " +
 			"valueString=\"a\" " +
-			"valueInteger=\"5\" " +
 			"valueInt=\"5\" " +
 			"valueboolean=\"true\" " +
 			"valueBoolean=\"false\" " +
-			"></instance>";
+			">" +
+			"<valueInteger>5</valueInteger> " +
+			"</instance>";
 	String config2 = "<config xmlns='http://exist-db.org/Configuration' valueString=\"b\"><instance valueString=\"a\" valueInteger=\"5\"></instance></config>";
 	
 	@Test
