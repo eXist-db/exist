@@ -35,7 +35,6 @@ import org.exist.security.PermissionDeniedException;
 public interface Configuration {
 	
 	public String NS = "http://exist-db.org/Configuration";
-	public String NS_SUB = "http://exist-db.org/Configuration/Sub";
 	
 	public String ID = "id";
 	
@@ -43,7 +42,7 @@ public interface Configuration {
 	
 	public List<Configuration> getConfigurations(String name);
 
-    public Set<String> getProperties();
+	public Set<String> getProperties();
 	
 	public boolean hasProperty(String name);
 

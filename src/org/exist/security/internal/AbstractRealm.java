@@ -123,38 +123,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
 					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
 			}
 			
-			//load accounts information
-	        if (collectionAccounts != null && collectionAccounts.getDocumentCount() > 0) {
-	            for(Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
-	            	Configuration conf = Configurator.parse(i.next());
-	            	
-	            	if (!usersByName.containsKey(conf.getProperty("name"))) {
-	            		AccountImpl account = new AccountImpl( this, conf );
-		            	sm.usersById.put(account.getId(), account);
-		            	usersByName.put(account.getName(), account);
-	            	}
-	            }
-	        }
-	        
-			//load marked for remove accounts information
-	        if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount() > 0) {
-	            for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
-	            	Configuration conf = Configurator.parse(i.next());
-	            	
-	            	if (!sm.usersById.containsKey(conf.getPropertyInteger("id"))) {
-	            		AccountImpl account = new AccountImpl( this, conf );
-	            		account.removed = true;
-		            	sm.usersById.put(account.getId(), account);
-	            	}
-	            }
-	        }
-
 	        //load groups information
 	        if (collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
 	            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
 	            	Configuration conf = Configurator.parse(i.next());
 
-	            	if (!groupsByName.containsKey(conf.getProperty("name"))) {
+	            	String name = conf.getProperty("name");
+	            	if (name != null && !groupsByName.containsKey(name)) {
 	            		GroupImpl group = new GroupImpl(this, conf);
 	            		sm.groupsById.put(group.getId(), group);
 	            		groupsByName.put(group.getName(), group);
@@ -167,13 +142,43 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            for(Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
 	            	Configuration conf = Configurator.parse(i.next());
 
-	            	if (!sm.groupsById.containsKey(conf.getPropertyInteger("id"))) {
+	            	Integer id = conf.getPropertyInteger("id");
+	            	if (id != null && !sm.groupsById.containsKey(id)) {
 	            		GroupImpl group = new GroupImpl(this, conf);
 	            		group.removed = true;
 	            		sm.groupsById.put(group.getId(), group);
 	            	}
 	            }
 	        }
+
+	        //load accounts information
+	        if (collectionAccounts != null && collectionAccounts.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+	            	
+	            	String name = conf.getProperty("name");
+	            	if (name != null && !usersByName.containsKey(name)) {
+	            		AccountImpl account = new AccountImpl( this, conf );
+		            	sm.usersById.put(account.getId(), account);
+		            	usersByName.put(account.getName(), account);
+	            	}
+	            }
+	        }
+	        
+			//load marked for remove accounts information
+	        if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount() > 0) {
+	            for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
+	            	Configuration conf = Configurator.parse(i.next());
+	            	
+	            	Integer id = conf.getPropertyInteger("id");
+	            	if (id != null && !sm.usersById.containsKey(id)) {
+	            		AccountImpl account = new AccountImpl( this, conf );
+	            		account.removed = true;
+		            	sm.usersById.put(account.getId(), account);
+	            	}
+	            }
+	        }
+
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -23,6 +23,7 @@ package org.exist.security.internal;
 
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.Group;
 
@@ -40,6 +41,10 @@ public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, 
 
 	public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
 		super(realm, configuration);
+		
+		//it require, because class's fields initializing after super constructor
+		if (this.configuration != null)
+			this.configuration = Configurator.configure(this, this.configuration);
 	}
 
 	public int compareTo(Object other) {

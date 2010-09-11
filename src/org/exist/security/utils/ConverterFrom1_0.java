@@ -33,14 +33,12 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.Realm;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.EXistInputSource;
-import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmldb.api.base.Resource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

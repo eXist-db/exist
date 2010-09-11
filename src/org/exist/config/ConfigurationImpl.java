@@ -33,6 +33,7 @@ import java.util.Set;
 import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
+import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -47,8 +48,6 @@ import org.w3c.dom.NodeList;
 public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements Configuration {
 	
 	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
-	
-	private Map<String, List<Configuration>> configs = new HashMap<String, List<Configuration>>();
 	
 	protected WeakReference<Configurable> configuredObjectReferene = null;
 	
@@ -87,24 +86,18 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 	}
 
 	public List<Configuration> getConfigurations(String name) {
-		if (configs.containsKey(name))
-			return configs.get(name);
-		
 		NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
 
+		List<Configuration> list = new ArrayList<Configuration>();
 		if (nodes.getLength() > 0) { 
-			List<Configuration> list = new ArrayList<Configuration>();
 		
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
 				list.add(config);
 			}
-			
-			configs.put(name, list);
-			return list;
 		}
 		
-		return null;
+		return list;
 	}
 
 	public String getProperty(String name) {
@@ -328,5 +321,48 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 				saving = false;
 			}
 		}
+	}
+	
+	public boolean equals(Object obj) {
+		if (obj instanceof ConfigurationImpl) {
+			ConfigurationImpl conf = (ConfigurationImpl) obj;
+
+			if (!(getName().equals( conf.getName() )))
+					return false;
+			
+//			if ( conf.getNamespaceURI().equals(Configuration.NS_REF) ) {
+//
+//				NamedNodeMap attrs = conf.getAttributes();
+//				if (attrs.getLength() != 1)
+//					return false;
+//				
+//				Attr attr = (Attr) attrs.item(0);
+//				
+//				if (attr.getValue().equals( getProperty(attr.getLocalName()) ))
+//					return true;
+//				
+//			} else if ( getNamespaceURI().equals(Configuration.NS_REF) ) {
+//
+//				NamedNodeMap attrs = getAttributes();
+//				if (attrs.getLength() != 1)
+//					return false;
+//				
+//				Attr attr = (Attr) attrs.item(0);
+//				
+//				if (attr.getValue().equals( conf.getProperty(attr.getLocalName()) ))
+//					return true;
+//				
+//			} else {
+				String id = getProperty(Configuration.ID);
+				if (id == null) {
+					//LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
+					return false;
+				}
+				
+				if ( id.equals( conf.getProperty( Configuration.ID ) ) ) 
+					return true;
+//			}
+		}
+		return false;
 	}
 }

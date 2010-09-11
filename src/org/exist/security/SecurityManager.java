@@ -67,7 +67,6 @@ public interface SecurityManager extends Configurable {
 
    boolean hasAccount(String name);
 
-   // TODO: this should be addUser
    Account addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    void deleteAccount(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
