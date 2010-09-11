@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>document-type-code</code-table-name>
+    <items>
+        <item>
+            <label>Latin Monograph</label>
+            <value>latin-monograph</value>
+        </item>
+        <item>
+            <label>Latin Anthology</label>
+            <value>latin-anthology</value>
+        </item>
+        <item>
+            <label>Transliteration Monograph</label>
+            <value>transliteration-monograph</value>
+        </item>
+    </items>
+</code-table>
