@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 (:
-    Module: Browse Indexes: See an overview of .xconf files stored in /db/config, 
+    Module: Browse Indexes: See an overview of .xconf files stored in /db/system/config, 
     and browse the associated index keys.
 :)
 
@@ -17,7 +17,7 @@ declare option exist:serialize "method=xhtml media-type=text/html omit-xml-decla
 declare variable $indexes:start-value := request:get-parameter('start-value', '');
 declare variable $indexes:callback := util:function(xs:QName("indexes:term-callback"), 2);
 declare variable $indexes:max-number-returned := xs:integer(request:get-parameter('max', 100));
-declare variable $indexes:index := request:get-parameter('index', 'lucene-index');
+declare variable $indexes:index := request:get-parameter('index', '');
 declare variable $indexes:sortby := request:get-parameter('sortby', 'term');
 declare variable $indexes:sortorder := request:get-parameter('sortorder', 'ascending');
 declare variable $indexes:node-name := request:get-parameter('node-name', '');
@@ -37,7 +37,7 @@ declare variable $indexes:qname :=
         else 
             xs:QName($indexes:node-name)
     else ();
-declare variable $indexes:show-keys-by := request:get-parameter('show-keys-by', 'qname');
+declare variable $indexes:show-keys-by := request:get-parameter('show-keys-by', '');
 declare variable $indexes:index-names :=
     <code-table>
         <name>Index Types</name>
@@ -258,6 +258,7 @@ declare function indexes:analyze-lucene-indexes($xconf) {
     let $lucene := $xconf/cc:index/cc:lucene 
     return if (not($lucene) or not($lucene/cc:text)) then () else 
         (
+        (: TODO: complete report of default/other Lucene analyzers :)
         (:let $analyzers := $lucene/cc:analyzer
         return 
             if ($analyzers) then 
@@ -288,7 +289,7 @@ declare function indexes:analyze-lucene-indexes($xconf) {
                         {if ($qname) then $qname else $match} 
                         {if ($text/@boost) then concat(' (boost: ', $text/@boost/string(), ')') else ()}
                         {if ($text/cc:ignore) then (<br/>, concat('(ignore: ', string-join(for $ignore in $text/cc:ignore return $ignore/@qname/string(), ', '), ')')) else ()}</td>
-                    <td>{$index-label} {if ($qname) then ' QName' else ' Match'} {if ($id) then concat(' (', $id, ')') else ' (default analyzer)'}</td>
+                    <td>{$index-label} {if ($qname) then ' QName' else ' Match'} {if ($id) then concat(' (', $id, ')') else ' (default analyzer)' (: TODO: complete report of default/other Lucene analyzers :)}</td>
                     <td>{count($nodeset)}</td>
                     <td>{
                         if (empty($nodeset)) then ()
