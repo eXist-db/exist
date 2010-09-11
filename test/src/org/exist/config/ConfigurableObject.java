@@ -23,6 +23,7 @@ package org.exist.config;
 
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,7 +35,7 @@ public class ConfigurableObject implements Configurable {
 	@ConfigurationFieldAsAttribute("valueString")
 	protected String some = "default";
 
-	@ConfigurationFieldAsAttribute("valueInteger")
+	@ConfigurationFieldAsElement("valueInteger")
 	protected Integer someInteger = 7;
 
 	@ConfigurationFieldAsAttribute("valueInt")
