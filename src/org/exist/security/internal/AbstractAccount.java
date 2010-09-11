@@ -21,8 +21,9 @@
  */
 package org.exist.security.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.Credential;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
@@ -43,8 +45,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	@ConfigurationFieldAsElement("home")
 	protected XmldbURI home = null;
 	
-	protected Group defaultRole = null;
-	protected Set<Group> roles = null;
+	@ConfigurationFieldAsElement("group")
+	@ConfigurationReferenceBy("name")
+	protected List<Group> groups = null;
 	
 	//used for internal locking
 	private boolean accountLocked = false;
@@ -79,37 +82,44 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return addGroup(group.getName());
 	}
 
-    /*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.exist.security.User#addGroup(java.lang.String)
-	 */
 	public final Group addGroup(String name) {
-		Group role = realm.getGroup(name);
-		if (role == null)
+		Group group = realm.getGroup(name);
+		if (group == null)
 			return null;
 		
-		if (roles == null) {
-			roles = new HashSet<Group>();
+		if (groups == null) {
+			groups = new ArrayList<Group>();
 		}
 		
-		roles.add(role);
+		if (!groups.contains(group)) {
+			groups.add(group);
 		
-		if (SecurityManager.DBA_GROUP.equals(name))
-			hasDbaRole = true;
+			if (SecurityManager.DBA_GROUP.equals(name))
+				hasDbaRole = true;
+		}
 		
-		return role;
+		return group;
 	}
 
-	public final void remGroup(String group) {
-		for (Group role : roles) {
-			if (role.getName().equals(group)) {
-				roles.remove(role);
+	//this method used by Configurator
+	protected final Group addGroup(Configuration conf) {
+		if (conf == null) return null;
+		
+		String name = conf.getProperty("name");
+		if (name == null) return null;
+		
+		return addGroup(name);
+	}
+	
+	public final void remGroup(String name) {
+		for (Group group : groups) {
+			if (group.getName().equals(name)) {
+				groups.remove(group);
 				break;
 			}
 		}
 
-		if (SecurityManager.DBA_GROUP.equals(group))
+		if (SecurityManager.DBA_GROUP.equals(name))
 			hasDbaRole = false;
 	}
 
@@ -121,11 +131,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
 	public final String[] getGroups() {
-		if (roles == null) return new String[0];
+		if (groups == null) return new String[0];
 		
 		int i = 0;
-		String[] names = new String[roles.size()];
-		for (Group role : roles) {
+		String[] names = new String[groups.size()];
+		for (Group role : groups) {
 			names[i] = role.getName();
 			i++;
 		}
@@ -134,10 +144,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
 	public final boolean hasGroup(String group) {
-		if (roles == null)
+		if (groups == null)
 			return false;
 		
-		for (Group role : roles) {
+		for (Group role : groups) {
 			if (role.getName().equals(group))
 				return true;
 		}
@@ -150,14 +160,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
 	public final String getPrimaryGroup() {
-		if (defaultRole == null) {
-			if (roles == null || roles.size() == 0)
-				return null;
-			
-			return ((Group) roles.toArray()[0]).getName();
-		}
-			
-		return defaultRole.getName();
+		if (groups != null && groups.size() > 0)
+			return groups.get(0).getName();
+
+		return null;
 	}
 
 	public final String toString() {
@@ -174,8 +180,8 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 			buf.append("\">");
 		} else
 			buf.append(">");
-		if (roles != null) {
-			for (Group role : roles) {
+		if (groups != null) {
+			for (Group role : groups) {
 				buf.append("<group>");
 				buf.append(role.getName());
 				buf.append("</group>");
@@ -247,7 +253,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
 	@Override
 	public Group getDefaultGroup() {
-		return defaultRole;
+		if (groups != null && groups.size() > 0)
+			return groups.get(0);
+
+		return null;
 	}
 
 	public void setHome(XmldbURI homeCollection) {

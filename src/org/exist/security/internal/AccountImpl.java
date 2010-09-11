@@ -25,8 +25,10 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.security.Group;
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -161,7 +164,7 @@ public class AccountImpl extends AbstractAccount {
 	 */
 	public AccountImpl(AbstractRealm realm, int id, String name, String password, String primaryGroup) throws ConfigurationException {
 		this(realm, id, name, password);
-		defaultRole = addGroup(primaryGroup);
+		addGroup(primaryGroup);
 	}
 
     public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException {
@@ -169,13 +172,10 @@ public class AccountImpl extends AbstractAccount {
 
         home = from_user.getHome();
         
-        defaultRole = from_user.getDefaultGroup();
-
         if (from_user instanceof AccountImpl) {
 			AccountImpl user = (AccountImpl) from_user;
 
-	        defaultRole = user.defaultRole;
-	        roles = user.roles;
+	        groups = new ArrayList<Group>(user.groups);
 
 	        password = user.password;
 	        digestPassword = user.digestPassword;
@@ -193,8 +193,10 @@ public class AccountImpl extends AbstractAccount {
 
 	        setPassword(user.getPassword());
 	        digestPassword = user.getDigestPassword();
+		} else { 
+	        addGroup(from_user.getDefaultGroup());
+	        //TODO: groups 
 		}
-
     }
 
 	public AccountImpl(AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
@@ -202,8 +204,7 @@ public class AccountImpl extends AbstractAccount {
 
 		home = from_user.home;
         
-        defaultRole = from_user.defaultRole;
-        roles = from_user.roles;
+        groups = from_user.groups;
 
         password = from_user.password;
         digestPassword = from_user.digestPassword;
@@ -216,9 +217,11 @@ public class AccountImpl extends AbstractAccount {
     }
 
 	public AccountImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
-		super(
-			realm, 
-			configuration);
+		super( realm, configuration );
+		
+		//it require, because class's fields initializing after super constructor
+		if (this.configuration != null)
+			this.configuration = Configurator.configure(this, this.configuration);
 	}
 
 	/**

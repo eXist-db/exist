@@ -55,6 +55,7 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldSettings;
+import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
@@ -126,15 +127,17 @@ public class Configurator {
 		return null;
 	}
 	
-	public static Method searchForAddMethod(Class<?> clazz, Field field) {
+	public static Method searchForAddMethod(Class<?> clazz, String property) {
 		try {
-			String methodName = "add"+field.getName();
+			String methodName = "add"+property;
 			methodName = methodName.toLowerCase();
 			
 			for (Method method : clazz.getMethods()) {
 				if (method.getName().toLowerCase().equals(methodName)
 						&& method.getParameterTypes().length == 1
-						&& method.getParameterTypes()[0].getName().equals("org.exist.config.Configuration"))
+						&& method.getParameterTypes()[0].getName().equals("java.lang.String")
+//						&& method.getParameterTypes()[0].getName().equals("org.exist.config.Configuration")
+					)
 					
 					return method;
 			}
@@ -283,12 +286,20 @@ public class Configurator {
 						continue;
 					}
 						
-					String property = field.getAnnotation(ConfigurationFieldAsElement.class).value();
+					String confName = field.getAnnotation(ConfigurationFieldAsElement.class).value();
 					
 					field.setAccessible(true);
 					List<Configurable> list = (List<Configurable>) field.get(instance);
 					
-					List<Configuration> confs = configuration.getConfigurations(property);
+					String referenceBy;
+					List<Configuration> confs;
+					if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+						confs = configuration.getConfigurations(confName);
+						referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
+					} else {
+						confs = configuration.getConfigurations(confName);
+						referenceBy = null;
+					}
 
 					if (list == null) {
 						list = new ArrayList<Configurable>(confs.size());
@@ -312,16 +323,9 @@ public class Configurator {
 								}
 							}
 							
-							String id = current_conf.getProperty(Configuration.ID);
-							if (id == null) {
-								LOG.warn("Subconfiguration must have id ["+obj+"], remove the object.");
-								iterator.remove();
-								continue;
-							}
-							
 							for (Iterator<Configuration> i = confs.iterator() ; i.hasNext() ;) {
 								Configuration conf = i.next();
-								if (id.equals( conf.getProperty(Configuration.ID) )) {
+								if (current_conf.equals( conf )) {
 									current_conf.checkForUpdates(conf.getElement());
 									i.remove();
 									break;
@@ -334,14 +338,21 @@ public class Configurator {
 
 						//create
 						for (Configuration conf : confs) {
-							Method method = searchForAddMethod(instance.getClass(), field);
-							if (method != null) {
-								try {
-									method.invoke(instance, conf);
-									continue;
-								} catch (InvocationTargetException e) {
-									method = null;
+							if (referenceBy != null) {
+								String value = conf.getProperty(referenceBy);
+								if (value != null) {
+									Method method = searchForAddMethod(instance.getClass(), confName);
+									if (method != null) {
+										try {
+											method.invoke(instance, value);
+											continue;
+										} catch (Exception e) {
+											method = null;
+										}
+									}
 								}
+							} else {
+								//TODO: AddMethod with Configuration argument
 							}
 							
 							String id = conf.getProperty(Configuration.ID);
@@ -436,6 +447,58 @@ public class Configurator {
 		}
 	}
 
+	protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf, String referenceBy) throws ConfigurationException {
+		Class<?> clazz = instance.getClass();
+		instance.getClass().getAnnotations();
+		if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+			return; //UNDERSTAND: throw exception
+		}
+		
+		Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+
+		final Field field = properyFieldMap.get(referenceBy);
+		if (field == null) {
+			LOG.warn("Reference field '"+referenceBy+"' can't be found for class '"+clazz+"'");
+			return;
+		}
+		field.setAccessible(true);
+
+		Object value;
+		try {
+			if (field.get(instance) == null) {
+				LOG.warn("Reference field '"+referenceBy+"' for class '"+clazz+"' is NULL");
+				return;
+			}
+		
+			if (field.getType().getName().equals("java.lang.String")) {
+				value = field.get(instance);
+			} else {
+				LOG.warn("Unsupported reference field type '"+field.getType().getName()+"'");
+				return;
+			}
+		} catch (IllegalArgumentException e) {
+			LOG.warn(e);
+			return;
+		} catch (IllegalAccessException e) {
+			LOG.warn(e);
+			return;
+		}
+
+		String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+
+		//open tag
+		buf.append("<");
+		buf.append(configName);
+//		buf.append(" xmlns='");
+//		buf.append(Configuration.NS_REF);
+//		buf.append("'");
+		buf.append(" ");
+		buf.append(referenceBy);
+		buf.append("='");
+		buf.append(value);
+		buf.append("'/>");
+	}
+
 	protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf) throws ConfigurationException {
 		Class<?> clazz = instance.getClass();
 		instance.getClass().getAnnotations();
@@ -448,7 +511,9 @@ public class Configurator {
 		//open tag
 		buf.append("<");
 		buf.append(configName);
-		buf.append(" xmlns='"+Configuration.NS+"'");
+		buf.append(" xmlns='");
+		buf.append(Configuration.NS);
+		buf.append("'");
 		
 		StringBuilder bufContext = new StringBuilder();
 		StringBuilder bufferToUse;
@@ -472,6 +537,11 @@ public class Configurator {
 					storeAsAttribute = false;
 				}
 				
+				String referenceBy = null;
+				if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+					referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
+				}
+
 				if (storeAsAttribute) {
 					buf.append(" ");
 					buf.append(entry.getKey());
@@ -519,7 +589,7 @@ public class Configurator {
 					@SuppressWarnings("unchecked")
 					List<Configurable> list = (List<Configurable>) field.get(instance);
 					for (Configurable el : list) {
-						asXMLtoBuffer(el, bufferToUse);
+						asXMLtoBuffer(el, bufferToUse, referenceBy);
 					}
 
 				} else {
