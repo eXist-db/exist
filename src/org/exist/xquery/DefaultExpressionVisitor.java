@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire
@@ -31,8 +30,6 @@ import java.util.Stack;
  * events they need.
  */
 public class DefaultExpressionVisitor extends BasicExpressionVisitor {
-
-    private Stack<UserDefinedFunction> functionStack = new Stack<UserDefinedFunction>();
 
     public void visitPathExpr(PathExpr expression) {
         for (int i = 0; i < expression.getLength(); i++) {
@@ -42,11 +39,9 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitUserFunction(UserDefinedFunction function) {
-        if (functionStack.contains(function))
+        if (function.call.isRecursive)
             return;
-        functionStack.push(function);
         function.getFunctionBody().accept(this);
-        functionStack.pop();
     }
 
     public void visitBuiltinFunction(Function function) {
@@ -77,7 +72,6 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         conditional.getThenExpr().accept(this);
         conditional.getElseExpr().accept(this);
     }
-
 
     public void visitLocationStep(LocationStep locationStep) {
         List<Predicate> predicates = locationStep.getPredicates();
