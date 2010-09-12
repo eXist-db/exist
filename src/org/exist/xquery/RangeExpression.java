@@ -30,7 +30,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 /**
  * An XQuery range expression, like "1 to 10".
@@ -124,11 +123,13 @@ public class RangeExpression extends PathExpr {
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'");
 	        	}        	
-	        	result = new ValueSequence();
-				for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
-					i <= ((IntegerValue)valueEnd.convertTo(Type.INTEGER)).getLong(); i++) {
-					result.add(new IntegerValue(i));
-				}
+//	        	result = new ValueSequence();
+//				for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
+//					i <= ((IntegerValue)valueEnd.convertTo(Type.INTEGER)).getLong(); i++) {
+//					result.add(new IntegerValue(i));
+//				}
+				result = new RangeSequence((IntegerValue)valueStart.convertTo(Type.INTEGER), 
+							(IntegerValue)valueEnd.convertTo(Type.INTEGER));
 	        } else {
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
@@ -144,10 +145,11 @@ public class RangeExpression extends PathExpr {
 							endSeq.itemAt(0).getStringValue() + ")'");
 	        	IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
 	        	IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
-	       		result = new ValueSequence();
-				for(long i = valueStart.getLong();	i <= valueEnd.getLong(); i++) {
-					result.add(new IntegerValue(i));
-				}        	
+//	       		result = new ValueSequence();
+//				for (long i = valueStart.getLong();	i <= valueEnd.getLong(); i++) {
+//					result.add(new IntegerValue(i));
+//				}
+	        	result = new RangeSequence(valueStart, valueEnd);
 	        }
         }
 		return result;
