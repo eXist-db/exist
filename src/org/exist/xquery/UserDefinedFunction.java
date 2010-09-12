@@ -219,6 +219,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
     		
     		clone.currentArguments = null;
     		clone.contextDocs = null;
+    		
+    		clone.body = this.body; // so body will be analyzed and optimized for all calls of such functions in recursion.  
     	    
     	    return clone;
     	} catch (CloneNotSupportedException e) {
