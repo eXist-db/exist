@@ -54,7 +54,7 @@ public class FunctionCall extends Function {
 	private QName name = null;
 	private List<Expression> arguments = null;
 	
-	protected boolean isRecursive = false;
+	private boolean isRecursive = false;
 
     private VariableReference varDeps[];
 
@@ -73,7 +73,7 @@ public class FunctionCall extends Function {
 		this.functionDef = (UserDefinedFunction) functionDef.clone();
 		this.mySignature = this.functionDef.getSignature();
 		this.expression = this.functionDef;
-		this.functionDef.call = this;
+		this.functionDef.setCaller(this);
 		SequenceType returnType = this.functionDef.getSignature().getReturnType();
 		// add return type checks
 		if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE)
@@ -363,5 +363,9 @@ public class FunctionCall extends Function {
             }
         }
         
+    }
+    
+    public boolean isRecursive(){
+    	return isRecursive;
     }
 }
