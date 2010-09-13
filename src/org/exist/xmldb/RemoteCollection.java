@@ -665,5 +665,16 @@ public class RemoteCollection implements CollectionImpl {
     public boolean isRemoteCollection() throws XMLDBException {
         return true;
     }
+
+	public void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException {
+        List<String> params = new ArrayList<String>(2);
+        params.add(this.getPath());
+        params.add(Boolean.toString(triggersEnabled));
+        try {
+			rpcClient.execute("setTriggersEnabled", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
+		}
+	}
 }
 
