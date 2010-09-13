@@ -539,6 +539,7 @@ public class Restore extends DefaultHandler
                 current = c;
             }
         }
+        ((CollectionImpl)current).setTriggersEnabled(false);
         return( (CollectionImpl)current );
     }
 

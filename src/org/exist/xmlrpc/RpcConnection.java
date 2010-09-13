@@ -4901,7 +4901,23 @@ public class RpcConnection implements RpcAPI {
     public byte[] getDocument(String name, String encoding, int prettyPrint) throws EXistException, PermissionDeniedException {
         return getDocument(name, encoding, prettyPrint, null);
     }
-
+    
+    public boolean setTriggersEnabled(String path, String value){
+    	DBBroker broker = null;
+    	boolean triggersEnabled = Boolean.parseBoolean(value); 
+		try {
+			broker = factory.getBrokerPool().get(user);
+	    	Collection collection = broker.getCollection(XmldbURI.create(path));
+	    	collection.setTriggersEnabled(triggersEnabled);
+		} catch (EXistException e) {
+            LOG.warn(triggersEnabled ? "Enable" : "Disable" + " triggers failed", e);
+            return false;
+		} finally {
+			factory.getBrokerPool().release(broker);
+		}
+    	return true;
+    }
+    
     public boolean shutdown() throws PermissionDeniedException {
         return shutdown(0);
     }

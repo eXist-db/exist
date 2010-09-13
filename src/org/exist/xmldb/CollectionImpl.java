@@ -48,5 +48,6 @@ public interface CollectionImpl extends Collection {
 	
 	public XmldbURI getPathURI();
 	
+	public void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException;
 	
 }

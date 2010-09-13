@@ -840,4 +840,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
             return null;
         }
     }
+	
+	public void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException {
+		Collection collection = getCollection();
+		collection.setTriggersEnabled(triggersEnabled);
+	}
 }
