@@ -156,6 +156,11 @@ public class GlobToRegex {
                     }
                     break;
                 case '[':
+                if (inCharSet) {
+                    buffer.append("\\[");
+                    break;
+                }
+
                     inCharSet = true;
                     buffer.append(c);
 
@@ -167,7 +172,7 @@ public class GlobToRegex {
                                 ++ch;
                                 continue;
                             case ']':
-                                buffer.append(']');
+                        buffer.append("]");
                                 ++ch;
                                 continue;
                         }
