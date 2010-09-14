@@ -205,7 +205,7 @@ public class Restore extends DefaultHandler
                         }
                         catch( SAXException e ) {
                             dialog.displayMessage( e.getMessage() );
-                        }
+                        } 
                     }
                     if (errors.size() > 0) {
                     	ClientFrame.showErrorMessage(formatErrors(), null);
@@ -235,13 +235,13 @@ public class Restore extends DefaultHandler
                 contents = stack.pop();
                 EXistInputSource is = contents.getInputSource();
                 is.setEncoding( "UTF-8" );
-
                 //restoring sysId
                 reader.parse( is );
             }
             if (errors.size() > 0)
             	System.err.println(formatErrors());
         }
+
     }
 
 
@@ -253,6 +253,7 @@ public class Restore extends DefaultHandler
         if( namespaceURI.equals( Namespaces.EXIST_NS ) ) {
 
             if( localName.equals( "collection" ) ) {
+            	
                 final String name       = atts.getValue( "name" );
                 final String owner      = atts.getValue( "owner" );
                 final String group      = atts.getValue( "group" );
@@ -302,13 +303,13 @@ public class Restore extends DefaultHandler
                         catch( XPathException e2 ) {
                         }
                     }
-
-
+                    
                     current = mkcol( collUri, date_created );
 
                     if( current == null ) {
                         throw( new SAXException( "Collection not found: " + collUri ) );
                     }
+                    
                     UserManagementService service = (UserManagementService)current.getService( "UserManagementService", "1.0" );
                     Account                  u    = new UserAider( owner, new GroupAider( group ) );
                     service.chown( u, group );
@@ -400,6 +401,9 @@ public class Restore extends DefaultHandler
                         if( dialog != null ) {
                             dialog.setResource( name );
                         }
+                        
+                        current.setTriggersEnabled(false);
+                        
                         Resource res = current.createResource( docUri.toString(), type );
 
                         if( mimetype != null ) {
@@ -438,8 +442,7 @@ public class Restore extends DefaultHandler
 									listener.warn("Illegal modification date. Skipping ...");
 								}
 							}
-							current.storeResource(res, date_created,
-									date_modified);
+							current.storeResource(res, date_created, date_modified);
 							if ((publicid != null) || (systemid != null)) {
 								DocumentType doctype = new DocumentTypeImpl(
 										namedoctype, publicid, systemid);
@@ -450,8 +453,7 @@ public class Restore extends DefaultHandler
 									e1.printStackTrace();
 								}
 							}
-							UserManagementService service = (UserManagementService) current
-									.getService("UserManagementService", "1.0");
+							UserManagementService service = (UserManagementService) current.getService("UserManagementService", "1.0");
 							Account u = new UserAider(owner, new GroupAider(group));
 							try {
 								service.chown(res, u, group);
@@ -460,6 +462,9 @@ public class Restore extends DefaultHandler
 										+ name + "'; skipping ...");
 							}
 							service.chmod(res, Integer.parseInt(perms, 8));
+							
+	                    	current.setTriggersEnabled(true);
+
 						} else {
 	                    	listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + 
 	                    			"'. The resource is empty.");
@@ -485,8 +490,10 @@ public class Restore extends DefaultHandler
                         Collection child = current.getChildCollection( name );
 
                         if( child != null ) {
+                        	current.setTriggersEnabled(false);
                             CollectionManagementService cmgt = (CollectionManagementService)current.getService( "CollectionManagementService", "1.0" );
                             cmgt.removeCollection( name );
+                        	current.setTriggersEnabled(true);
                         }
                     }
                     catch( XMLDBException e ) {
@@ -498,7 +505,9 @@ public class Restore extends DefaultHandler
                         Resource resource = current.getResource( name );
 
                         if( resource != null ) {
+                        	current.setTriggersEnabled(false);
                             current.removeResource( resource );
+                        	current.setTriggersEnabled(true);
                         }
                     }
                     catch( XMLDBException e ) {
@@ -514,7 +523,7 @@ public class Restore extends DefaultHandler
     {
         XmldbURI[]                      segments   = collPath.getPathSegments();
         CollectionManagementServiceImpl mgtService;
-        Collection                      c;
+        CollectionImpl                  c;
         XmldbURI                        dbUri;
 
         if( !uri.endsWith( DBBroker.ROOT_COLLECTION ) ) {
@@ -522,25 +531,22 @@ public class Restore extends DefaultHandler
         } else {
             dbUri = XmldbURI.xmldbUriFor( uri );
         }
-        Collection current = DatabaseManager.getCollection( dbUri.toString(), username, pass );
-        XmldbURI   p       = XmldbURI.ROOT_COLLECTION_URI;
+        CollectionImpl current = (CollectionImpl)DatabaseManager.getCollection( dbUri.toString(), username, pass );
+        XmldbURI       p       = XmldbURI.ROOT_COLLECTION_URI;
 
         for( int i = 1; i < segments.length; i++ ) {
             p = p.append( segments[i] );
             XmldbURI xmldbURI = dbUri.resolveCollectionPath( p );
-            c = DatabaseManager.getCollection( xmldbURI.toString(), username, pass );
-
+            c = (CollectionImpl)DatabaseManager.getCollection( xmldbURI.toString(), username, pass );
             if( c == null ) {
+            	current.setTriggersEnabled(false);
                 mgtService = (CollectionManagementServiceImpl)current.getService( "CollectionManagementService", "1.0" );
-
-                //current = mgtService.createCollection(token);
-                current    = mgtService.createCollection( segments[i], created );
-            } else {
-                current = c;
+                c = (CollectionImpl)mgtService.createCollection( segments[i], created );
+                current.setTriggersEnabled(true);
             }
+            current = c;
         }
-        ((CollectionImpl)current).setTriggersEnabled(false);
-        return( (CollectionImpl)current );
+        return current;
     }
 
 
