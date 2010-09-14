@@ -90,13 +90,16 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import javax.xml.transform.OutputKeys;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -594,11 +597,11 @@ public class XQueryURLRewrite implements Filter {
         }
 
         XQuery xquery = broker.getXQueryService();
-		XQueryPool pool = xquery.getXQueryPool();
+        XQueryPool xqyPool = xquery.getXQueryPool();
 		
-		CompiledXQuery compiled = null;
-		if (compiledCache)
-			compiled = pool.borrowCompiledXQuery(broker, sourceInfo.source);
+        CompiledXQuery compiled = null;
+        if (compiledCache)
+			compiled = xqyPool.borrowCompiledXQuery(broker, sourceInfo.source);
 		
         XQueryContext queryContext;
         if (compiled == null) {
@@ -627,7 +630,7 @@ public class XQueryURLRewrite implements Filter {
         try {
 			return xquery.execute(compiled, null, outputProperties);
 		} finally {
-			pool.returnCompiledXQuery(sourceInfo.source, compiled);
+			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
 		}
     }
 
@@ -909,7 +912,7 @@ public class XQueryURLRewrite implements Filter {
 
     public static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
-        Map<String, String[]> addedParams = new HashMap<String, String[]>();
+        Map<String, List<String>> addedParams = new HashMap<String, List<String>>();
 
         Map attributes = new HashMap();
         
@@ -924,14 +927,30 @@ public class XQueryURLRewrite implements Filter {
         String servletPath;
         String basePath = null;
 
-        private RequestWrapper(HttpServletRequest request) {
+        private void addNameValue(String name, String value, Map<String, List<String>> map) {
+            List<String> values = map.get(name);
+            if(values == null) {
+                values = new ArrayList<String>();
+            }
+            values.add(value);
+            map.put(name, values);
+        }
+
+        protected RequestWrapper(HttpServletRequest request) {
             super(request);
+
             // copy parameters
-            for (Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
+            for(Map.Entry<String, String[]> param : (Set<Map.Entry<String, String[]>>)request.getParameterMap().entrySet()) {
+                for(String paramValue : param.getValue()) {
+                    addNameValue(param.getKey(), paramValue, addedParams);
+                }
+            }
+            /*for(Enumeration<String> e = request.getParameterNames(); e.hasMoreElements(); ) {
+
                 String key = e.nextElement();
                 String[] value = request.getParameterValues(key);
                 addedParams.put(key, value);
-            }
+            }*/
 
             contentType = request.getContentType();
         }
@@ -1021,34 +1040,45 @@ public class XQueryURLRewrite implements Filter {
         }
 
         public void addParameter(String name, String value) {
-            addedParams.put(name, new String[] { value });
+            addNameValue(name, value, addedParams);
         }
 
         @Override
         public String getParameter(String name) {
-            String[] param = addedParams.get(name);
-            if (param != null && param.length > 0)
-                return param[0];
+            List<String> paramValues = addedParams.get(name);
+            if (paramValues != null && paramValues.size() > 0)
+                return paramValues.get(0);
             return null;
         }
 
         @Override
         public Map<String, String[]> getParameterMap() {
-            return addedParams;
+            Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+            for(Entry<String, List<String>> param : addedParams.entrySet()) {
+                List<String> values = param.getValue();
+                if(values != null) {
+                    parameterMap.put(param.getKey(), values.toArray(new String[values.size()]));
+                } else {
+                    parameterMap.put(param.getKey(), new String[]{});
+                }
+            }
+            return parameterMap;
         }
 
         @Override
         public Enumeration<String> getParameterNames() {
-            Vector<String> v = new Vector<String>();
-            for (String key : addedParams.keySet()) {
-                v.addElement(key);
-            }
-            return v.elements();
+            return Collections.enumeration(addedParams.keySet());
         }
 
         @Override
-        public String[] getParameterValues(String s) {
-            return addedParams.get(s);
+        public String[] getParameterValues(String name) {
+            List<String> values = addedParams.get(name);
+
+            if(values != null) {
+                return values.toArray(new String[values.size()]);
+            } else {
+                return null;
+            }
         }
 
         @Override

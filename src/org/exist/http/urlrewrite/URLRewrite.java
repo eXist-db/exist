@@ -34,19 +34,21 @@ import java.util.Map;
 import java.util.HashMap;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for all rewritten URLs.
  */
 public abstract class URLRewrite {
 
-    private final static String UNSET = new String();
+    private final static String UNSET = "";
     
     protected String uri;
     protected String target;
     protected String prefix = null;
     protected Map<String, String> attributes = null;
-    protected Map<String, String> parameters = null;
+    protected Map<String, List<String>> parameters = null;
     protected Map<String, String> headers = null;
 
     protected URLRewrite(Element config, String uri) {
@@ -110,26 +112,39 @@ public abstract class URLRewrite {
     }
 
     private void setHeader(String key, String value) {
-        if (headers == null)
+        if(headers == null) {
             headers = new HashMap<String, String>();
+        }
         headers.put(key, value);
     }
 
+    private void addNameValue(String name, String value, Map<String, List<String>> map) {
+        List<String> values = map.get(name);
+        if(values == null) {
+            values = new ArrayList<String>();
+        }
+        values.add(value);
+        map.put(name, values);
+    }
+
     private void addParameter(String name, String value) {
-        if (parameters == null)
-            parameters = new HashMap<String, String>();
-        parameters.put(name, value);
+        if(parameters == null){
+            parameters = new HashMap<String, List<String>>();
+        }
+        addNameValue(name, value, parameters);
     }
 
     private void setAttribute(String name, String value) {
-        if (attributes == null)
+        if(attributes == null) {
             attributes = new HashMap<String, String>();
+        }
         attributes.put(name, value);
     }
 
     private void unsetAttribute(String name) {
-        if (attributes == null)
+        if(attributes == null){
             attributes = new HashMap<String, String>();
+        }
         attributes.put(name, UNSET);
     }
     
@@ -164,17 +179,20 @@ public abstract class URLRewrite {
 
     public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                request.addParameter(entry.getKey().toString(), entry.getValue());
+            for(Map.Entry<String, List<String>> param : parameters.entrySet()) {
+                for(String paramValue : param.getValue()) {
+                    request.addParameter(param.getKey().toString(), paramValue);
+                }
             }
         }
         if (attributes != null) {
             for (Map.Entry<String, String> entry : attributes.entrySet()) {
             	String value = entry.getValue();
-                if (value == UNSET)
+                if(value.equals(UNSET)) {
                     request.removeAttribute(entry.getKey().toString());
-                else
+                } else {
                     request.setAttribute(entry.getKey().toString(), entry.getValue());
+                }
             }
         }
     }
