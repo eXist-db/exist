@@ -21,8 +21,14 @@
  */
 package org.exist.dom;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.exist.numbering.NodeId;
-import org.exist.xquery.Constants;
 
 /**
  * Used to track fulltext matches throughout the query.
@@ -47,7 +53,7 @@ public abstract class Match implements Comparable<Match> {
 	
     public final static class Offset implements Comparable<Offset> {
         private int offset;
-        private int length;
+        private final int length;
         
         public Offset(int offset, int length) {
             this.offset = offset;
@@ -66,15 +72,20 @@ public abstract class Match implements Comparable<Match> {
             return length;
         }
         
+        @Override
         public int compareTo(Offset other) {
-            final int otherOffset = other.offset;
-            return offset == otherOffset ? Constants.EQUAL : (offset < otherOffset ? Constants.INFERIOR : Constants.SUPERIOR);
+            return this.offset - other.offset;
+        }
+
+        public boolean overlaps(Offset other) {
+            return ((other.offset >= offset) && (other.offset < offset + length))
+                || ((offset >= other.offset) && (offset < other.offset + other.length));
         }
     }
 
-    private int context;
+    private final int context;
     protected NodeId nodeId;
-    private String matchTerm;
+    private final String matchTerm;
     
     private int[] offsets;
     private int[] lengths;
@@ -140,22 +151,239 @@ public abstract class Match implements Comparable<Match> {
         lengths[currentOffset++] = length;
     }
     
+    private void addOffset(Offset offset) {
+        addOffset(offset.offset, offset.length);
+    }
+
+    private void addOffsets(Collection<Offset> offsets) {
+        for (Offset o : offsets)
+            addOffset(o);
+    }
+
     public Offset getOffset(int pos) {
         return new Offset(offsets[pos], lengths[pos]);
     }
 
-    public Match isAfter(Match other) {
-        Match m = null;
+    public List<Offset> getOffsets() {
+        List<Offset> result = new ArrayList<Offset>(currentOffset);
+        for (int i = 0; i < currentOffset; i++) {
+            result.add(getOffset(i));
+        }
+        return result;
+    }
+
+    /**
+     * Constructs a match starting with this match and continued by the other match if possible
+     *
+     * @param other
+     *            a match continuing this match
+     * @return a match starting with this match and continued by the other match if such a match exists or null if no
+     *         continuous match found
+     */
+    public Match continuedBy(final Match other) {
+        return followedBy(other, 0, 0);
+    }
+
+    /**
+     * Constructs a match starting with this match and followed by the other match if possible
+     *
+     * @param other
+     *            a match following this match
+     * @param minDistance
+     *            the minimum distance between this and the other match
+     * @param maxDistance
+     *            the maximum distance between this and the other match
+     * @return a match starting with this match and followed by the other match in the specified distance range if such
+     *         a match exists or null if no such match found
+     */
+    public Match followedBy(final Match other, final int minDistance, final int maxDistance) {
+        List<Offset> newMatchOffsets = new LinkedList<Offset>();
+
         for (int i = 0; i < currentOffset; i++) {
             for (int j = 0; j < other.currentOffset; j++) {
-                if (other.offsets[j] > offsets[i] && other.offsets[j] <= offsets[i] + lengths[i]) {
-                    if (m == null)
-                        m = createInstance(context, nodeId, matchTerm + other.matchTerm);
-                    m.addOffset(offsets[i], lengths[i] + other.lengths[j]);
+                int distance = other.offsets[j] - (offsets[i] + lengths[i]);
+                if (distance >= minDistance && distance <= maxDistance) {
+                    newMatchOffsets.add(new Offset(offsets[i], lengths[i] + distance + other.lengths[j]));
                 }
             }
+                }
+
+        if (newMatchOffsets.isEmpty())
+            return null;
+
+        int wildCardSize = newMatchOffsets.get(0).length - matchTerm.length() - other.matchTerm.length();
+        StringBuilder matched = new StringBuilder(matchTerm);
+        for (int ii = 0; ii < wildCardSize; ii++) {
+            matched.append('?');
         }
-        return m;
+        matched.append(other.matchTerm);
+        Match result = createInstance(context, nodeId, matched.toString());
+
+        result.addOffsets(newMatchOffsets);
+
+        return result;
+    }
+
+    /**
+     * Expand the match backwards by at least minExpand up to maxExpand characters. The match is expanded as much as
+     * possible.
+     *
+     * @param minExpand
+     *            the minimum number of characters to expand this match by
+     * @param maxExpand
+     *            the maximum number of characters to expand this match by
+     * @return the expanded match if possible, or null if no offset is far enough from the start.
+     */
+    public Match expandBackward(final int minExpand, final int maxExpand) {
+        Match result = null;
+        for (int i = 0; i < currentOffset; i++) {
+            if (offsets[i] - minExpand >= 0) {
+                if (result == null) {
+                    StringBuilder matched = new StringBuilder();
+                    for (int ii = 0; ii < minExpand; ii++) {
+                        matched.append('?');
+            }
+                    matched.append(matchTerm);
+                    result = createInstance(context, nodeId, matched.toString());
+                }
+                int expand = Math.min(offsets[i], maxExpand);
+                result.addOffset(offsets[i] - expand, lengths[i] + expand);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Expand the match forward by at least minExpand up to maxExpand characters. The match is expanded as much as
+     * possible.
+     *
+     * @param minExpand
+     *            the minimum number of characters to expand this match by
+     * @param maxExpand
+     *            the maximum number of characters to expand this match by
+     * @param dataLength
+     *            the length of the valued of the node, limiting the expansion
+     * @return the expanded match if possible, or null if no offset is far enough from the end.
+     */
+    public Match expandForward(final int minExpand, final int maxExpand, final int dataLength) {
+        Match result = null;
+        for (int i = 0; i < currentOffset; i++) {
+            if (offsets[i] + lengths[i] + minExpand <= dataLength) {
+                int expand = Math.min(dataLength - offsets[i] - lengths[i], maxExpand);
+
+                if (result == null) {
+                    StringBuilder matched = new StringBuilder(matchTerm);
+                    for (int ii = 0; ii < expand; ii++) {
+                        matched.append('?');
+        }
+                    result = createInstance(context, nodeId, matched.toString());
+                }
+
+                result.addOffset(offsets[i], lengths[i] + expand);
+            }
+        }
+
+        return result;
+    }
+
+    private interface F<A, B> {
+        B f(A a);
+    }
+
+    private Match filterOffsets(F<Offset, Boolean> predicate) {
+        Match result = createInstance(context, nodeId, matchTerm);
+
+        for (Offset o : getOffsets()) {
+            if (predicate.f(o).booleanValue())
+                result.addOffset(o);
+        }
+
+        if (result.currentOffset == 0)
+            return null;
+        else
+            return result;
+    }
+
+    /**
+     * Creates a match containing only those offsets starting at the given position.
+     *
+     * @param pos
+     *            required offset
+     * @return a match containing only offsets starting at the given position, or null if no such offset exists.
+     */
+    public Match filterOffsetsStartingAt(final int pos) {
+        return filterOffsets(new F<Offset, Boolean>() {
+
+            @Override
+            public Boolean f(Offset a) {
+                return (a.offset == pos);
+            }
+        });
+    }
+
+    /**
+     * Creates a match containing only those offsets ending at the given position.
+     *
+     * @param pos
+     *            required position of the end of the matches
+     * @return a match containing only offsets ending at the given position, or null if no such offset exists.
+     */
+    public Match filterOffsetsEndingAt(final int pos) {
+        return filterOffsets(new F<Offset, Boolean>() {
+
+            @Override
+            public Boolean f(Offset a) {
+                return (a.offset + a.length == pos);
+            }
+        });
+    }
+
+    /**
+     * Creates a match containing only non-overlapping offsets, preferring longer matches, and then matches from left to
+     * right.
+     *
+     * @return a match containing only non-overlapping offsets
+     */
+    public Match filterOutOverlappingOffsets() {
+
+        if (currentOffset == 0)
+            return newCopy();
+
+        List<Offset> newMatchOffsets = getOffsets();
+
+        Collections.sort(newMatchOffsets, new Comparator<Offset>() {
+
+            // Sort by descending length to get greedier matches first, then position for left to right matching
+            @Override
+            public int compare(Offset o1, Offset o2) {
+                int lengthDiff = o2.length - o1.length;
+                if (lengthDiff != 0)
+                    return lengthDiff;
+                else
+                    return o1.offset - o2.offset;
+            }
+        });
+
+        List<Offset> nonOverlappingMatchOffsets = new LinkedList<Offset>();
+        nonOverlappingMatchOffsets.add(newMatchOffsets.remove(0));
+
+        for (Offset o : newMatchOffsets) {
+            boolean overlapsExistingOffset = false;
+            for (Offset eo : nonOverlappingMatchOffsets) {
+                if (eo.overlaps(o)) {
+                    overlapsExistingOffset = true;
+                    break;
+                }
+            }
+
+            if (!overlapsExistingOffset)
+                nonOverlappingMatchOffsets.add(o);
+        }
+
+        Match result = createInstance(context, nodeId, matchTerm);
+        result.addOffsets(nonOverlappingMatchOffsets);
+        return result;
     }
 
     /**
@@ -198,6 +426,7 @@ public abstract class Match implements Comparable<Match> {
 		return nextMatch;
 	}
 
+    @Override
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
 			return false;
@@ -220,10 +449,12 @@ public abstract class Match implements Comparable<Match> {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(Match other) {
         return matchTerm.compareTo(other.matchTerm);
 	}
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(matchTerm);
         for (int i = 0; i < currentOffset; i++) {
