@@ -21,9 +21,33 @@
  */
 package org.exist.indexing.ngram;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
@@ -68,18 +92,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
-
 /**
  *
  * Each index entry maps a key (collectionId, ngram) to a list of occurrences, which has the
@@ -91,7 +103,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(NGramIndexWorker.class);
 
-    private final static String INDEX_ELEMENT = "ngram";
+    private static final String INDEX_ELEMENT = "ngram";
     private static final String QNAME_ATTR = "qname";
 
     private static final byte IDX_QNAME = 0;
@@ -99,15 +111,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	private static final byte IDX_GENERIC = 1;
 
     private int mode = 0;
-    private org.exist.indexing.ngram.NGramIndex index;
+    private final org.exist.indexing.ngram.NGramIndex index;
     private char[] buf = new char[1024];
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
-    private DBBroker broker;
+    private final DBBroker broker;
     @SuppressWarnings("unused")
 	private IndexController controller;
-    private Map<QNameTerm, OccurrenceList> ngrams = new TreeMap<QNameTerm, OccurrenceList>();
-    private VariableByteOutputStream os = new VariableByteOutputStream(7);
+    private final Map<QNameTerm, OccurrenceList> ngrams = new TreeMap<QNameTerm, OccurrenceList>();
+    private final VariableByteOutputStream os = new VariableByteOutputStream(7);
 
     private NGramMatchListener matchListener = null;
 
@@ -117,10 +129,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         Arrays.fill(buf, ' ');
     }
 
+    @Override
     public String getIndexId() {
         return org.exist.indexing.ngram.NGramIndex.ID;
     }
     
+    @Override
     public String getIndexName() {
         return index.getIndexName();
     }
@@ -133,6 +147,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getN();
     }
 
+    @Override
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         // We use a map to store the QNames to be indexed
@@ -155,6 +170,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return map;
     }
 
+    @Override
     public void flush() {
         switch (mode) {
             case StreamListener.STORE :
@@ -336,6 +352,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         ngrams.clear();
     }
 
+    @Override
     public void removeCollection(Collection collection, DBBroker broker) {
         if (LOG.isDebugEnabled())
             LOG.debug("Dropping NGram index for collection " + collection.getURI());
@@ -357,7 +374,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet search(int contextId, DocumentSet docs, List<QName> qnames, String query, String ngram, XQueryContext context, NodeSet contextSet, int axis)
-        throws TerminatedException {
+ throws XPathException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
         final NodeSet result = new ExtArrayNodeSet(docs.getDocumentCount(), 250);
@@ -383,6 +400,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
+
+        result.iterate(); // ensure result is ready to use
+
         return result;
     }
 
@@ -402,8 +422,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (idxConf != null) {
                 Map<?,?> config = (Map<?,?>) idxConf.getCustomIndexSpec(NGramIndex.ID);
                 if (config != null) {
-                    for (Iterator<?> ci = config.keySet().iterator(); ci.hasNext();) {
-                        QName qn = (QName) ci.next();
+                    for (Object name : config.keySet()) {
+                        QName qn = (QName) name;
                         indexes.add(qn);
                     }
                 }
@@ -412,10 +432,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return indexes;
     }
     
+    @Override
     public boolean checkIndex(DBBroker broker) {
     	return true;
     }
 
+    @Override
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         //Expects a StringValue
@@ -468,12 +490,14 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     //This listener is always the same whatever the document and the mode
     //It should thus be declared static
-    private StreamListener listener = new NGramStreamListener();
+    private final StreamListener listener = new NGramStreamListener();
 
+    @Override
     public StreamListener getListener() {
         return listener;
     }
 
+    @Override
     public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
         return getMatchListener(broker, proxy, null);
     }
@@ -498,6 +522,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return matchListener;
     }
 
+    @Override
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
@@ -535,7 +560,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public String[] tokenize(CharSequence text) {
         int len = text.length();
         int gramSize = index.getN();
-        String ngrams[] = new String[len];
+        String[] ngrams = new String[len];
         int next = 0;
         for (int i = 0; i < len; i++) {
             checkBuffer();
@@ -549,38 +574,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return ngrams;
     }
 
-    /**
-     * Split the specified string into a sequence of ngrams to be used
-     * for querying the index. For example, if we have a 3-gram index, the
-     * string 'distinct' will be split into the ngrams 'dis', 'tin' and 'ct'.
-     *
-     * @param text the character sequence to split
-     * @return a sequence of ngrams. the last item might be shorter than n.
-     */
-    public String[] getDistinctNGrams(CharSequence text) {
-        int ngramSize = index.getN();
-        int count = text.length() / ngramSize;
-        int remainder = text.length() % ngramSize;
-        String[] n = new String[(remainder > 0 ? count + 1 : count)];
-        int pos = 0;
-        for (int i = 0; i < count; i++) {
-            char ch[] = new char[ngramSize];
-            for (int j = 0; j < ngramSize; j++) {
-                ch[j] = Character.toLowerCase(text.charAt(pos++));
-            }
-            n[i] = new String(ch);
-        }
-        if (remainder > 0) {
-            char ch[] = new char[remainder];
-            for (int i = 0; i < remainder; i++)
-                ch[i] = Character.toLowerCase(text.charAt(pos++));
-            n[count] = new String(ch);
-        }
-        return n;
-    }
-
     private void indexText(NodeId nodeId, QName qname, CharSequence text) {
-        String ngram[] = tokenize(text);
+        String[] ngram = tokenize(text);
         int len = ngram.length;
         for (int i = 0; i < len; i++) {
             QNameTerm key = new QNameTerm(qname, ngram[i]);
@@ -606,31 +601,36 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Map<QName, ?> config;
     private Stack<XMLString> contentStack = null;
 
+    @Override
     public void setDocument(DocumentImpl document) {
     	setDocument(document, StreamListener.UNKNOWN);
     }
 
+    @Override
     public void setMode(int newMode) {
         // wolf: unnecessary call to setDocument?
 //    	setDocument(currentDoc, newMode);
         mode = newMode;
     }
     
+    @Override
     public DocumentImpl getDocument() {
     	return currentDoc;
     }
     
+    @Override
     public int getMode() {
     	return mode;
     }    
     
+    @Override
     public void setDocument(DocumentImpl document, int newMode) {
     	currentDoc = document;
         //config = null;
         contentStack = null;
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
-            config = (Map) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
+            config = (Map<QName, ?>) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
         mode = newMode;
     }
 
@@ -639,6 +639,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public NGramStreamListener() {
         }
 
+        @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
                 if (contentStack == null) contentStack = new Stack<XMLString>();
@@ -648,6 +649,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.startElement(transaction, element, path);
         }
 
+        @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             if (config != null && config.get(attrib.getQName()) != null) {
                 indexText(attrib.getNodeId(), attrib.getQName(), attrib.getValue());
@@ -655,6 +657,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.attribute(transaction, attrib, path);
         }
 
+        @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
                 XMLString content = contentStack.pop();
@@ -663,6 +666,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.endElement(transaction, element, path);
         }
 
+        @Override
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (XMLString next : contentStack) {
@@ -672,6 +676,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.characters(transaction, text, path);
         }
 
+        @Override
         public IndexWorker getWorker() {
         	return NGramIndexWorker.this;
         }
@@ -739,6 +744,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
 
+        @Override
         public void startElement(QName qname, AttrList attribs) throws SAXException {
             Match nextMatch = match;
             // check if there are any matches in the current element
@@ -756,6 +762,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.startElement(qname, attribs);
         }
 
+        @Override
         public void endElement(QName qname) throws SAXException {
             Match nextMatch = match;
             // check if we need to pop the stack
@@ -769,6 +776,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.endElement(qname);
         }
 
+        @Override
         public void characters(CharSequence seq) throws SAXException {
             List<Match.Offset> offsets = null;    // a list of offsets to process
             if (offsetStack != null) {
@@ -864,6 +872,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.term = term;
         }
 
+        @Override
         public int compareTo(QNameTerm other) {
             int cmp = qname.compareTo(other.qname);
             if (cmp == 0)
@@ -875,11 +884,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static class NGramQNameKey extends Value {
 
-        private final static int COLLECTION_ID_OFFSET = 1;
-        private final static int NAMETYPE_OFFSET = COLLECTION_ID_OFFSET + Collection.LENGTH_COLLECTION_ID;   // 5
-        private final static int NAMESPACE_OFFSET = NAMETYPE_OFFSET + ElementValue.LENGTH_TYPE; // 6
-        private final static int LOCALNAME_OFFSET = NAMESPACE_OFFSET + SymbolTable.LENGTH_NS_URI; // 8
-        private final static int NGRAM_OFFSET = LOCALNAME_OFFSET + SymbolTable.LENGTH_LOCAL_NAME; // 10
+        private static final int COLLECTION_ID_OFFSET = 1;
+        private static final int NAMETYPE_OFFSET = COLLECTION_ID_OFFSET + Collection.LENGTH_COLLECTION_ID; // 5
+        private static final int NAMESPACE_OFFSET = NAMETYPE_OFFSET + ElementValue.LENGTH_TYPE; // 6
+        private static final int LOCALNAME_OFFSET = NAMESPACE_OFFSET + SymbolTable.LENGTH_NS_URI; // 8
+        private static final int NGRAM_OFFSET = LOCALNAME_OFFSET + SymbolTable.LENGTH_LOCAL_NAME; // 10
 
         public NGramQNameKey(int collectionId) {
             len = Collection.LENGTH_COLLECTION_ID + 1;
@@ -918,15 +927,15 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final class SearchCallback implements BTreeCallback {
 
-        private int contextId;
+        private final int contextId;
         @SuppressWarnings("unused")
-		private String query;
-        private String ngram;
-        private DocumentSet docs;
-        private NodeSet contextSet;
-        private XQueryContext context;
-        private NodeSet resultSet;
-        private boolean returnAncestor;
+		private final String query;
+        private final String ngram;
+        private final DocumentSet docs;
+        private final NodeSet contextSet;
+        private final XQueryContext context;
+        private final NodeSet resultSet;
+        private final boolean returnAncestor;
 
         public SearchCallback(int contextId, String query, String ngram, DocumentSet docs, NodeSet contextSet,
                               XQueryContext context, NodeSet result, boolean returnAncestor) {
@@ -940,6 +949,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.returnAncestor = returnAncestor;
         }
 
+        @Override
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String ngram;
             try {
@@ -1007,7 +1017,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private void readMatches(String current, VariableByteInput is, NodeId nodeId, int freq, NodeProxy parentNode) throws IOException {
             int diff = 0;
             if (current.length() > ngram.length())
-                diff = current.indexOf(ngram);
+                diff = current.lastIndexOf(ngram);
             Match match = new NGramMatch(contextId, nodeId, ngram, freq);
             for (int n = 0; n < freq; n++) {
                 int offset = is.readInt();
@@ -1021,9 +1031,9 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final class IndexScanCallback implements BTreeCallback {
 
-		private DocumentSet docs;
+		private final DocumentSet docs;
 		private NodeSet contextSet;
-		private Map<String, Occurrences> map = new TreeMap<String, Occurrences>();
+		private final Map<String, Occurrences> map = new TreeMap<String, Occurrences>();
 
 		@SuppressWarnings("unused")
 		IndexScanCallback(DocumentSet docs) {
@@ -1038,6 +1048,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 		/* (non-Javadoc)
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
+        @Override
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String term;
             try {
@@ -1117,14 +1128,17 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super(match);
         }
 
+        @Override
         public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
             return new NGramMatch(contextId, nodeId, matchTerm);
         }
 
+        @Override
         public Match newCopy() {
             return new NGramMatch(this);
         }
 
+        @Override
         public String getIndexId() {
             return org.exist.indexing.ngram.NGramIndex.ID;
         }

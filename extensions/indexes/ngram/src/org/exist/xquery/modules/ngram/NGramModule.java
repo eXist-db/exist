@@ -43,6 +43,7 @@ public class NGramModule extends AbstractInternalModule {
         new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[1], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[2], NGramSearch.class),
+        new FunctionDef(NGramSearch.signatures[3], NGramSearch.class),
         new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
     };
 
@@ -50,18 +51,22 @@ public class NGramModule extends AbstractInternalModule {
         super(functions, false);
     }
 
+    @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
 
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getDescription() {
         return "A module for NGram-based indexed searching.";
     }
 
+   @Override
    public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
