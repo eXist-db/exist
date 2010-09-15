@@ -1709,17 +1709,18 @@ public class RESTServer {
 
 			// set output headers
 			String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-			String mimeType = outputProperties
-					.getProperty(OutputKeys.MEDIA_TYPE);
-			if (mimeType != null) {
-				int semicolon = mimeType.indexOf(';');
-				if (semicolon != Constants.STRING_NOT_FOUND) {
-					mimeType = mimeType.substring(0, semicolon);
+			if (!response.containsHeader("Content-Type")){
+				String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+				if (mimeType != null) {
+					int semicolon = mimeType.indexOf(';');
+					if (semicolon != Constants.STRING_NOT_FOUND) {
+						mimeType = mimeType.substring(0, semicolon);
+					}
+	                if (wrap) {
+	                    mimeType = "application/xml";
+	                }
+					response.setContentType(mimeType + "; charset=" + encoding);
 				}
-                if (wrap) {
-                    mimeType = "application/xml";
-                }
-				response.setContentType(mimeType + "; charset=" + encoding);
 			}
             if (wrap)
                 outputProperties.setProperty("method", "xml");
