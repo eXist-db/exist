@@ -189,6 +189,7 @@ public class UserDefinedFunction extends Function {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
         // Question: understand this test. Why not reset even is not in recursion ?
 		// Answer: would lead to an infinite loop if the function is recursive.
 		if(!inRecursion) {
