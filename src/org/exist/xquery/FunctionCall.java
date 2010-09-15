@@ -108,6 +108,7 @@ public class FunctionCall extends Function {
                     if (replacementFunctionDef != null) {
                         expression = functionDef = (UserDefinedFunction) replacementFunctionDef.clone();
                 		mySignature = functionDef.getSignature();
+                		functionDef.setCaller(this);
                     }
                 }
 			}
