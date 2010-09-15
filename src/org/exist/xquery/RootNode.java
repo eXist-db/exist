@@ -166,6 +166,7 @@ public class RootNode extends Step {
      * @see org.exist.xquery.Step#resetState()
      */
     public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
         cached = null;
         cachedDocs = null;
     }

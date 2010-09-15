@@ -251,6 +251,7 @@ public class ExtCollection extends Function {
      * @see org.exist.xquery.PathExpr#resetState()
      */
     public void resetState(boolean postOptimization) {
+    	super.resetState(postOptimization);
         cached = null;
         cachedArgs = null;
     }
