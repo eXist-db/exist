@@ -163,17 +163,17 @@ public class XMLDBAuthenticate extends BasicFunction {
             	SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
             	user = sm.authenticate(userName, password);
         	} catch (AuthenticationException e) {
-                logger.error("Unable to authenticate user: "+e.getMessage());
-                throw new XPathException( this, "Unable to authenticate user: "+e.getMessage() );
+                logger.error("Unable to authenticate user: "+userName);
+                return BooleanValue.FALSE;
 			} catch (EXistException e) {
-                logger.error("Unable to authenticate user: "+e.getMessage());
-                throw new XPathException( this, "Unable to authenticate user: "+e.getMessage() );
+                logger.error("Unable to authenticate user: "+userName);
+	            return BooleanValue.FALSE;
 			}
             Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
 
             if( root == null ) {
                 logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist");
-                throw( new XPathException( this, "Unable to authenticate user: target collection " + targetColl + " does not exist" ) );
+	            return BooleanValue.FALSE;
             }
 			
             if( isCalledAs( "login" ) ) {
