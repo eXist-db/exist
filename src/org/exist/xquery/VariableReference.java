@@ -168,6 +168,7 @@ public class VariableReference extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState(boolean postOptimization) {
+		super.resetState(postOptimization);
 	}
 
     public void accept(ExpressionVisitor visitor) {
