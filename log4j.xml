@@ -30,7 +30,16 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-    
+
+    <appender name="exist.betterform" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/betterform.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/exist.log"/>
         <param name="MaxFileSize" value="5MB"/>
@@ -214,6 +223,15 @@
     <category name="org.quartz" additivity="false">
         <priority value="info"/>
         <appender-ref ref="exist.scheduler"/>
+    </category>
+
+    <!--
+         betterFORM extension
+    -->
+    <category name="de.betterform" additivity="false">
+        <priority value="warn"/>
+        <appender-ref ref="exist.betterform"/>
+        <!--<appender-ref ref="console"/>-->
     </category>
 
     <!-- Section: ROOT logger -->
