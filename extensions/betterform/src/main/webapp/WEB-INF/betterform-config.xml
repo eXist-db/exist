@@ -5,6 +5,9 @@
     <properties>
         <property name="xforms.schema" value="XFormsDatatypes11.xsd"
                   description="XForms Schema holding Simple Type Declarations"/>
+        
+        <property name="initLogging" value="false" description="'true' if logging should be initialized by betterform, false otherwise"/>
+
 
         <property name="log4j.file" value="WEB-INF/log4j.xml"
                   description="the location of the log4j configuration file relative to context"/>
