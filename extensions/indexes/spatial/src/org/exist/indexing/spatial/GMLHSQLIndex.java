@@ -42,225 +42,232 @@ import org.w3c.dom.Element;
 /**
  */
 public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
-	
-	private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);	
-	
+
+    private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);
+
     public static String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)
-    public static String TABLE_NAME = "SPATIAL_INDEX_V1";    
+    public static String TABLE_NAME = "SPATIAL_INDEX_V1";
     private DBBroker connectionOwner = null;
     private long connectionTimeout = 100000L;
     
-    public GMLHSQLIndex() {    	
+    public GMLHSQLIndex() {
+        //Nothing to do ;-)
     }
     
+    @Override
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-    	super.configure(pool, dataDir, config);
-    	String param = ((Element)config).getAttribute("connectionTimeout");
+        super.configure(pool, dataDir, config);
+        String param = config.getAttribute("connectionTimeout");
         if (param != null) {
-        	try {
-        		connectionTimeout = Long.parseLong(param);
-        	} catch (NumberFormatException e) {
-        		LOG.error("Invalid value for 'connectionTimeout'", e);
-        	}
-        }	    	
-        
-        param = ((Element)config).getAttribute("max_docs_in_context_to_refine_query");
-        if (param != null) {
-        	try {
-        		max_docs_in_context_to_refine_query = Integer.parseInt(param);
-        	} catch (NumberFormatException e) {
-        		LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:" + max_docs_in_context_to_refine_query, e);
-        	}
+            try {
+                connectionTimeout = Long.parseLong(param);
+            } catch (NumberFormatException e) {
+                LOG.error("Invalid value for 'connectionTimeout'", e);
+            }
         }
-        
-        if (LOG.isDebugEnabled()) 
-        	LOG.debug("max_docs_in_context_to_refine_query = " + max_docs_in_context_to_refine_query);
+
+        param = config.getAttribute("max_docs_in_context_to_refine_query");
+        if (param != null) {
+            try {
+                max_docs_in_context_to_refine_query = Integer.parseInt(param);
+            } catch (NumberFormatException e) {
+                LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:" + max_docs_in_context_to_refine_query, e);
+            }
+        }
+
+        if (LOG.isDebugEnabled())
+            LOG.debug("max_docs_in_context_to_refine_query = " + max_docs_in_context_to_refine_query);
     }
-    
+
+    @Override
     public IndexWorker getWorker(DBBroker broker) {
-    	AbstractGMLJDBCIndexWorker worker = workers.get(broker);    	
-    	if (worker == null) {
-    		worker = new GMLHSQLIndexWorker(this, broker);
-    		workers.put(broker, worker);
-    	}
-    	return worker;
-    }     
-  
-    protected void checkDatabase() throws ClassNotFoundException, SQLException {
-    	//Test to see if we have a HSQL driver in the classpath
-    	Class.forName("org.hsqldb.jdbcDriver");		
+        AbstractGMLJDBCIndexWorker worker = workers.get(broker);
+        if (worker == null) {
+            worker = new GMLHSQLIndexWorker(this, broker);
+            workers.put(broker, worker);
+        }
+        return worker;
     }
-    
+
+    @Override
+    protected void checkDatabase() throws ClassNotFoundException, SQLException {
+        //Test to see if we have a HSQL driver in the classpath
+        Class.forName("org.hsqldb.jdbcDriver");
+    }
+
+    @Override
     protected void shutdownDatabase() throws DBException {
-		try {
-			//No need to shutdown if we haven't opened anything
-			if (conn != null) {
-				Statement stmt = conn.createStatement();				
-				stmt.executeQuery("SHUTDOWN");
-				stmt.close();
-				conn.close();				
-				if (LOG.isDebugEnabled()) 
-	                LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + " closed");
-			}
+        try {
+            //No need to shutdown if we have opened something
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                stmt.executeQuery("SHUTDOWN");
+                stmt.close();
+                conn.close();
+                if (LOG.isDebugEnabled())
+                    LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + " closed");
+            }
         } catch (SQLException e) {
-        	throw new DBException(e.getMessage()); 
+            throw new DBException(e.getMessage());
         } finally {
-        	conn = null;
+            conn = null;
         }
     }
     
+    @Override
     protected void deleteDatabase() throws DBException {
-    	File directory = new File(getDataDir());
-		File[] files = directory.listFiles( 
-				new FilenameFilter() {
-					public boolean accept(File dir, String name) {
-						return name.startsWith(db_file_name_prefix);
-					}
-				}
-			);
-		boolean deleted = true;
-		for (int i = 0; i < files.length ; i++) {
-			deleted &= files[i].delete();
-		}
-		//TODO : raise an error if deleted == false ?
+        File directory = new File(getDataDir());
+        File[] files = directory.listFiles( 
+            new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(db_file_name_prefix);
+                }
+            }
+        );
+        boolean deleted = true;
+        for (int i = 0; i < files.length ; i++) {
+            deleted &= files[i].delete();
+        }
+        //TODO : raise an error if deleted == false ?
     }
-    
+
+    @Override
     protected void removeIndexContent() throws DBException {
-		try {
-			//Let's be lazy here : we only delete the index content if we have a connection
-			//deleteDatabase() should be far more efficient ;-)
-			if (conn != null) {
-				Statement stmt = conn.createStatement(); 
-		        int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");       
-		        stmt.close();
-		        if (LOG.isDebugEnabled()) 
-		            LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
-			}	     
-	    } catch (SQLException e) {
-	    	throw new DBException(e.getMessage()); 
-	    } 
-    }    
-    
-    //Horrible "locking" mechanism
-    protected Connection acquireConnection(DBBroker broker) throws SQLException {
-    	synchronized (this) {	
-    		if (connectionOwner == null) {
-    			connectionOwner = broker;
-    			if (conn == null)
-    				initializeConnection();
-    	    	return conn;
-    		} else {    
-	    		long timeOut_ = connectionTimeout;
-	    		long waitTime = timeOut_;
-				long start = System.currentTimeMillis();
-				try {
-					for (;;) {
-						wait(waitTime);  
-						if (connectionOwner == null) {			    			
-							connectionOwner = broker;			    			
-			    			if (conn == null)
-			    				//We should never get there since the connection should have been initialized
-			    				//by the first request from a worker
-			    				initializeConnection();			    			
-			    	    	return conn; 			
-			    		} else {
-							waitTime = timeOut_ - (System.currentTimeMillis() - start);
-							if (waitTime <= 0) {
-								LOG.error("Time out while trying to get connection");
-							}
-			    		}
-					}
-				} catch (InterruptedException ex) {
-					notify();
-					throw new RuntimeException("interrupted while waiting for lock");
-				}
-    		}
-    	}
+        try {
+            //Let's be lazy here : we only delete the index content if we have a connection
+            //deleteDatabase() should be far more efficient ;-)
+            if (conn != null) {
+                Statement stmt = conn.createStatement(); 
+                int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");
+                stmt.close();
+                if (LOG.isDebugEnabled())
+                    LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
+            }
+        } catch (SQLException e) {
+            throw new DBException(e.getMessage());
+        }
     }
-    
+
+    @Override
+    protected Connection acquireConnection(DBBroker broker) throws SQLException {
+        //Horrible "locking" mechanism
+        synchronized (this) {
+            if (connectionOwner == null) {
+                connectionOwner = broker;
+                if (conn == null)
+                    initializeConnection();
+                return conn;
+            } else {
+                long timeOut_ = connectionTimeout;
+                long waitTime = timeOut_;
+                long start = System.currentTimeMillis();
+                try {
+                    for (;;) {
+                        wait(waitTime);
+                        if (connectionOwner == null) {
+                            connectionOwner = broker;
+                            if (conn == null)
+                                //We should never get there since the connection should have been initialized
+                                //by the first request from a worker
+                                initializeConnection();
+                            return conn;
+                        } else {
+                            waitTime = timeOut_ - (System.currentTimeMillis() - start);
+                            if (waitTime <= 0) {
+                                LOG.error("Time out while trying to get connection");
+                            }
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    notify();
+                    throw new RuntimeException("interrupted while waiting for lock");
+                }
+            }
+        }
+    }
+
+    @Override
     protected synchronized void releaseConnection(DBBroker broker) throws SQLException {   
-    	if (connectionOwner == null)
-    		throw new SQLException("Attempted to release a connection that wasn't acquired");
-    	connectionOwner = null;
-    }  
-    
+        if (connectionOwner == null)
+            throw new SQLException("Attempted to release a connection that wasn't acquired");
+        connectionOwner = null;
+    }
+
     private void initializeConnection() throws SQLException {
-    	System.setProperty("hsqldb.cache_scale", "11");
-		System.setProperty("hsqldb.cache_size_scale", "12");
-		System.setProperty("hsqldb.default_table_type", "cached");
-		//Get a connection to the DB... and keep it
-		this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
-		if (LOG.isDebugEnabled())
-			LOG.debug("Connected to GML index: " + getDataDir() + "/" + db_file_name_prefix);
-		ResultSet rs = null;
-		try {
-        	rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
-        	rs.last(); 
-        	if (rs.getRow() == 1) {
-	            if (LOG.isDebugEnabled()) 
-	                LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix); 
-	        //Create the data structure if it doesn't exist
-        	} else if (rs.getRow() == 0) {
-	        	Statement stmt = conn.createStatement();
-	        	stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
-	        			/*1*/ "DOCUMENT_URI VARCHAR, " +        		
-	        			/*2*/ "NODE_ID_UNITS INTEGER, " + 
-	        			/*3*/ "NODE_ID BINARY, " +        			
-	        			/*4*/ "GEOMETRY_TYPE VARCHAR, " +
-	        			/*5*/ "SRS_NAME VARCHAR, " +
-	        			/*6*/ "WKT VARCHAR, " +
-	        			/*7*/ "WKB BINARY, " +
-	        			/*8*/ "MINX DOUBLE, " +
-	        			/*9*/ "MAXX DOUBLE, " +
-	        			/*10*/ "MINY DOUBLE, " +
-	        			/*11*/ "MAXY DOUBLE, " +
-	        			/*12*/ "CENTROID_X DOUBLE, " +
-	        			/*13*/ "CENTROID_Y DOUBLE, " +
-	        			/*14*/ "AREA DOUBLE, " +
-	        			//Boundary ?
-	        			/*15*/ "EPSG4326_WKT VARCHAR, " +
-	        			/*16*/ "EPSG4326_WKB BINARY, " +
-	        			/*17*/ "EPSG4326_MINX DOUBLE, " +
-	        			/*18*/ "EPSG4326_MAXX DOUBLE, " +
-	        			/*19*/ "EPSG4326_MINY DOUBLE, " +
-	        			/*20*/ "EPSG4326_MAXY DOUBLE, " +
-	        			/*21*/ "EPSG4326_CENTROID_X DOUBLE, " +
-	        			/*22*/ "EPSG4326_CENTROID_Y DOUBLE, " +
-	        			/*23*/ "EPSG4326_AREA DOUBLE, " +
-	        			//Boundary ?
-	        			/*24*/ "IS_CLOSED BOOLEAN, " +
-	        			/*25*/ "IS_SIMPLE BOOLEAN, " +
-	        			/*26*/ "IS_VALID BOOLEAN, " +
-	        			//Enforce uniqueness
-	        			"UNIQUE (" +
-	        				"DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-	        			")" +
-	        		")"
-        		);
-	        	stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
-	        	stmt.executeUpdate("CREATE INDEX NODE_ID ON " + TABLE_NAME + " (NODE_ID);");
-	        	stmt.executeUpdate("CREATE INDEX GEOMETRY_TYPE ON " + TABLE_NAME + " (GEOMETRY_TYPE);");
-	        	stmt.executeUpdate("CREATE INDEX SRS_NAME ON " + TABLE_NAME + " (SRS_NAME);");
-	        	stmt.executeUpdate("CREATE INDEX WKB ON " + TABLE_NAME + " (WKB);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_WKB ON " + TABLE_NAME + " (EPSG4326_WKB);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINX ON " + TABLE_NAME + " (EPSG4326_MINX);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_MAXX ON " + TABLE_NAME + " (EPSG4326_MAXX);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINY ON " + TABLE_NAME + " (EPSG4326_MINY);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_MAXY ON " + TABLE_NAME + " (EPSG4326_MAXY);");        	
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_X ON " + TABLE_NAME + " (EPSG4326_CENTROID_X);");
-	        	stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_Y ON " + TABLE_NAME + " (EPSG4326_CENTROID_Y);");
-	        	//AREA ?
-	        	stmt.close();        	
-	            if (LOG.isDebugEnabled()) 
-	                LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);  
-        	} else {
-        		throw new SQLException("2 tables with the same name ?"); 
-        	}
-		} finally {
-			if (rs != null)
-				rs.close();    				
-    	}        
-    }    
-     
+        System.setProperty("hsqldb.cache_scale", "11");
+        System.setProperty("hsqldb.cache_size_scale", "12");
+        System.setProperty("hsqldb.default_table_type", "cached");
+        //Get a connection to the DB... and keep it
+        this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+        if (LOG.isDebugEnabled())
+            LOG.debug("Connected to GML index: " + getDataDir() + "/" + db_file_name_prefix);
+        ResultSet rs = null;
+        try {
+            rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
+            rs.last();
+            if (rs.getRow() == 1) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix);
+            //Create the data structure if it doesn't exist
+            } else if (rs.getRow() == 0) {
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
+                    /*1*/ "DOCUMENT_URI VARCHAR, " +
+                    /*2*/ "NODE_ID_UNITS INTEGER, " +
+                    /*3*/ "NODE_ID BINARY, " +
+                    /*4*/ "GEOMETRY_TYPE VARCHAR, " +
+                    /*5*/ "SRS_NAME VARCHAR, " +
+                    /*6*/ "WKT VARCHAR, " +
+                    /*7*/ "WKB BINARY, " +
+                    /*8*/ "MINX DOUBLE, " +
+                    /*9*/ "MAXX DOUBLE, " +
+                    /*10*/ "MINY DOUBLE, " +
+                    /*11*/ "MAXY DOUBLE, " +
+                    /*12*/ "CENTROID_X DOUBLE, " +
+                    /*13*/ "CENTROID_Y DOUBLE, " +
+                    /*14*/ "AREA DOUBLE, " +
+                    //Boundary ?
+                    /*15*/ "EPSG4326_WKT VARCHAR, " +
+                    /*16*/ "EPSG4326_WKB BINARY, " +
+                    /*17*/ "EPSG4326_MINX DOUBLE, " +
+                    /*18*/ "EPSG4326_MAXX DOUBLE, " +
+                    /*19*/ "EPSG4326_MINY DOUBLE, " +
+                    /*20*/ "EPSG4326_MAXY DOUBLE, " +
+                    /*21*/ "EPSG4326_CENTROID_X DOUBLE, " +
+                    /*22*/ "EPSG4326_CENTROID_Y DOUBLE, " +
+                    /*23*/ "EPSG4326_AREA DOUBLE, " +
+                    //Boundary ?
+                    /*24*/ "IS_CLOSED BOOLEAN, " +
+                    /*25*/ "IS_SIMPLE BOOLEAN, " +
+                    /*26*/ "IS_VALID BOOLEAN, " +
+                    //Enforce uniqueness
+                    "UNIQUE (" +
+                        "DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+                    ")" +
+                ")");
+                stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
+                stmt.executeUpdate("CREATE INDEX NODE_ID ON " + TABLE_NAME + " (NODE_ID);");
+                stmt.executeUpdate("CREATE INDEX GEOMETRY_TYPE ON " + TABLE_NAME + " (GEOMETRY_TYPE);");
+                stmt.executeUpdate("CREATE INDEX SRS_NAME ON " + TABLE_NAME + " (SRS_NAME);");
+                stmt.executeUpdate("CREATE INDEX WKB ON " + TABLE_NAME + " (WKB);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_WKB ON " + TABLE_NAME + " (EPSG4326_WKB);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_MINX ON " + TABLE_NAME + " (EPSG4326_MINX);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_MAXX ON " + TABLE_NAME + " (EPSG4326_MAXX);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_MINY ON " + TABLE_NAME + " (EPSG4326_MINY);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_MAXY ON " + TABLE_NAME + " (EPSG4326_MAXY);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_X ON " + TABLE_NAME + " (EPSG4326_CENTROID_X);");
+                stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_Y ON " + TABLE_NAME + " (EPSG4326_CENTROID_Y);");
+                //AREA ?
+                stmt.close();
+                if (LOG.isDebugEnabled()) 
+                    LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);
+            } else {
+                throw new SQLException("2 tables with the same name ?"); 
+            }
+        } finally {
+            if (rs != null)
+                rs.close();
+        }
+    }
 }
