@@ -24,15 +24,14 @@
 package org.exist.indexing.spatial;
 
 public class SpatialIndexException extends Exception {
-	
-	private static final long serialVersionUID = 7991787594779565819L;
 
-	SpatialIndexException(String message) {
-		super(message);
-	}
-	
-	SpatialIndexException(Exception e) {
-		super(e);
-	}
+    private static final long serialVersionUID = 7991787594779565819L;
 
+    SpatialIndexException(String message) {
+        super(message);
+    }
+	
+    SpatialIndexException(Exception e) {
+        super(e);
+    }
 }
