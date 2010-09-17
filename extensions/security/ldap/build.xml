@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="jar" name="openid">
+<project basedir="." default="jar" name="ldap">
     
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>

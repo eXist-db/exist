@@ -388,7 +388,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-xslt,extension-svn,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -603,6 +603,8 @@
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/betterform" target="uninstall" inheritall="false"/>
@@ -690,6 +692,14 @@
         <ant antfile="build.xml" dir="extensions/security/openid" inheritall="false"/>
     </target>
     
+    <target name="extension-security-ldap" depends="jar">
+        <ant antfile="build.xml" dir="extensions/security/ldap" inheritall="false"/>
+    </target>
+
+    <target name="extension-security-activedirectory" depends="jar">
+        <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
+    </target>
+
     <target name="extension-xqdoc" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/xqdoc" inheritall="false"/>
     </target>
