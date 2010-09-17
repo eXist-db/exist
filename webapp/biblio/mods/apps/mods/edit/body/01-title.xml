@@ -1,175 +1,188 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="title" tab-id="title"><fieldset><legend>
-    Title Information
-</legend><xf:hint>
-    At least one Title inside a Title Information is required. 
-    Title Information can be repeated for alternative, translated, transliterated or uniform titles. 
-    These values are chosen in Type. 
-    For the basic Title Information entry, use the default value "Basic Title Information". 
-    If, in addition to the basic title, there is also an alternative, translated, transliterated or
-    uniform title, add a Title Information and choose the relevant Type. 
-    Repeat Title Information as many times as necessary.
-    <br/>
-    A Title Information consists of a main Title, plus a number of supplementary fields that relate to it.
-    A Title may have a Subtitle, usually an expansion of the Title proper.
-    If the Title begins with a word according to which it should not be sorted (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title.
-    If a publication consists of several parts, parts that are either numbered or named, use Part Number and/or Part Name.
-    "A History of Philosophy" may have several numbered parts, such as "Part One. Ancient Greek Philosophy."
-    Enter "Part One" in Part Number and "Ancient Greek Philosophy" in Part Name.            
-    <br/>
-    When no title appears on the item being described, a title should be supplied. 
-    Use the Display Label to indicate that the title is supplied, by giving it the value "Supplied Title". 
-    A supplied title should be created in accordance with an established standard, and describe, as concisely as possible, the content of the resource in question. 
-    If no standards apply, consider carefully the expectations users have for the naming of similar resources.
-    <br/>
-    If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information.
-    <br/>
-    If a uniform or an abbreviated title is recorded, choose the appropriate value in Type and note in which authority file the uniform or abbreviated title in Authority has been found. 
-    Authority files are only used in connection with uniform and abbreviated titles.
-    <br/>
-    Record the language of the Title Information by choosing the Language used in the resource, if this is different from the language noted in Language of Resource, a field describing the language of the resource as a whole.
-</xf:hint>
-    <!--titleInfo repeat begins--><xf:repeat nodeset="instance('save-data')/mods:titleInfo" id="titleinfo-repeat"><div class="block-form">
-        <!--titleInfo input begins-->
-        <!--DLF/Aquifer: OPTIONAL-->
-        <!--Cluster: omit--><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint>
-            ID is used to link among records inside the database and to reference an element inside the database from the outside.
-        </xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: omit--><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint>
-            The XLink attribute is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
-        </xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>
-            This attribute identifies what type of Title Information is recorded. 
-            The default is Basic Title Information. 
-            The following values may be used in addition to this: Abbreviated, Translated, Transliterated <!--NB: addition to MODS!!!-->, Alternative, and Uniform.
-            <br/>                        
-            When an abbreviated title is present, an Authority must be chosen. 
-            An alternative title may be a parallel title found in the authoritative title information (in written works, typically the title page) or a title that does not occur in the authoritative title information, e.g. a title found on a cover. 
-            If the alternative title does not occur in the authoritative title information, indicate in Display Label where
-            the information comes from (e.g., "Cover Title"). 
-            If the alternative title occurs in the authoritative title information, it can e.g. be a translation or a transliteration of the main title information. 
-            If a translated or a transliterated title occurs in the authoritative title information of the work being catalogued, choose
-            "Alternative" for Type and note the language, transliteration and script of the title information, as appropriate, if this is different from the language noted in Language of Resource. 
-            If this is not the case and you have e.g. supplied the translation or transliteration yourself, choose "Translated" or "Transliterated" for Type and note the language, transliteration and script of the title information, as appropriate.
-            <br/>
-            A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare or the Bible. 
-            When a uniform title is present, an Authority for its selection must be chosen.
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-        <!--NB: does not work--><xf:trigger ref="self::node()[not(@type)]"><xf:label>Add Type</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="@type" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@type"/><xf:setvalue ref="instance('save-data')/mods:titleInfo/@type[last()]" value="''"/></xf:action></xf:trigger><br/>
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include--><xf:select1 ref=".[@type='abbreviated']/@authority"><xf:label>Authority:</xf:label><xf:hint>
-            The name of the authoritative list for an abbreviated title is recorded here. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='abbreviated-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-        <!--Cluster: include--><xf:select1 ref=".[@type='uniform']/@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint>
-            The name of the authoritative list for a uniform title is recorded here.
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-        <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-        <!--Cluster: include--><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint>
-            The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. 
-            The most common languages have been moved to the top of the list.
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-        <!--DLF/Aquifer: NOT RECOMMENDED]-->
-        <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
-            The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
-            xml:lang is used to specify the language used within an element, using specifications in RFC 3066. 
-            RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-            <br/>
-            The recommendation is not to use xml:lang, but to use the above Language attribute.
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include--><xf:select1 ref=".[@type='transliterated']/@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint>
-            This attribute specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
-            When specificing the transliteration used, also specify the language employed. 
-            There is at present no standard list of transliteration schemes available.
-            If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
-            In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
-            If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
-            The following transliteration schemes are authorised by <!--NB-->:
-            Chinese: pinyin
-            Japanese: (modified) Hepburn
-            Korean: <!--NB-->
-            Russian: <!--NB-->
-            Sanskrit: <!--NB-->
-            If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include--><xf:select1 ref=".[not(@type='transliterated')]/@script"><xf:label>Script:</xf:label><xf:hint>
-            This attribute specifies the script used within individual elements. 
-            The use of Latin script is not noted.
-            "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". 
-            If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. 
-        </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-        <!--DLF/Aquifer: OPTIONAL]]-->
-        <!--Cluster: hide--><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint>
-            This attribute is intended to be used when additional text associated with the title is needed for display. 
-            The Display Label attribute may be used whenever appropriate to indicate the preferred labeling when displayed. 
-            Appropriate cases include titles other than the primary title or subtitle. 
-            Include the text preferred and capitalisation, but do not include delimiters such as colons.
-        </xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
-        <!--Cluster: hide--><xf:input ref="./mods:nonSort" class="text_50"><xf:label>Non Sort: </xf:label><xf:hint> Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that appear
-            at the beginning of a title that should be ignored when indexing and sorting.
-        </xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: [REQUIRED]-->
-        <!--Cluster: require--><xf:input ref="./mods:title" class="text_50"><xf:label>Title: </xf:label><xf:hint>
-            Title contains the core title of the resource catalogued.
-            <br/>
-            At least one Title is required. 
-            When no title appears on the item being described, a title should be supplied.
-            <br/>
-            Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name.
-            <br/>
-            Dates may be recorded under Title or Subtitle only if they are part of the title.
-            Publication dates are included under Origin Information.
-            <br/>
-            For parallel titles, i.e., equivalent titles in different languages that have not been translated by the cataloguer, add a Title Information and enter the Title there with the Type attribute "Alternative" for each parallel title. 
-            Note the language, script and transliteration of each title.
-            <br/>
-            For a title translated or transcribed by the cataloguer, add a Title Information and enter the Title there with the Type attribute "Translated" or "Transliterated" for each title. 
-            Note the language, script and transliteration of each title added in this way.
-            <br/>
-            For abbreviated titles, add a Title Information block and enter the Title there with the Type attribute "Abbreviated" for each parallel title. 
-            <br/>
-            For uniform titles, i.e., titles with various renderings that are unified by an authority file, add a Title Information and enter the Title there with the Type attribute "Uniform". 
-            Under each uniform title, state the Authority according to which the uniform title has been selected.
-        </xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: include--><xf:input ref="./mods:subTitle" class="text_50"><xf:label>Subtitle: </xf:label><xf:hint> Subtitle is used to record a part of a title deemed secondary to the core title.
-            <br/>
-            Use Subtitle whenever a subtitle is present, rather than including the subtitle in Title.
-            <br/>
-            When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title. 
-            <br/>
-            If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in Subtitle, with appropriate punctuation. 
-            <!--NB: What are the rules here? Should subTitle repeat?-->
-            Every part of the title that do not belong in Title, Part Number or Part Name, belong in Subtitle.
-        </xf:hint></xf:input><xf:trigger ref="self::node()[count(mods:subTitle) = 0]"><xf:label>Add Subtitle</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:subTitle" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:subTitle"/><xf:setvalue ref="instance('save-data')/mods:titleInfo/mods:subTitle[last()]" value="''"/></xf:action></xf:trigger><br/>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: hide--><xf:input ref="./mods:partNumber" class="text_50"><xf:label>Part Number: </xf:label><xf:hint>
-            Part Number is used for a part or section number in a title.
-            <br/>
-            Use Part Number when a part number is present, rather than including the part number in the text of the Title.
-            <br/>
-            A Part Number does not have to be a digit, i.e. "First Part" may be the contents of the Part Number field if this is how it occurs on the title page. 
-            <br/>
-            Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip).
-            <br/>
-            When using Part Number, do not include punctuation at the end of the preceding element intended to separate the part number from previous parts of the title. 
-            <br/></xf:hint></xf:input><br/>
-        <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-        <!--Cluster: hide--><xf:input ref="./mods:partName" class="text_50"><xf:label>Part Name: </xf:label><xf:hint>
-            Part Name is used for a part or section name of a title. 
-            Use Part Name when a part name is present, rather than including the part name in the text of Title. 
-            Use Part Name to describe the section or division titles of a digital object (for example, a chapter title, episode name, or an audio or video clip).
-            <br/>
-            If a resource has multiple parts, each with its own Part Name, the work should be catalogued in as many records as there are Part Names.
-            <!--NB: not implemented: Multiple Part Name elements may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks. --><br/>
-            When representing the Part Name, do not include punctuation at the end of the preceding element intended to separate the part name from previous parts of the title. 
-            <br/>
-            <!--Multiple parts of an item should appear in separate records or as Related Items.--></xf:hint></xf:input>
-        <!--titleInfo input ends-->
-        <!--titleInfo delete begins--></div><xf:trigger ref="self::node()[count(../mods:titleInfo) &gt; 1]"><xf:label>Delete This Title Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo" at="index('titleinfo-repeat')"/></xf:trigger>
-        <!--titleInfo delete ends--><div class="hr"/></xf:repeat>
-    <!--title repeat ends-->
-    <!--titleInfo add begins--><xf:trigger class="add"><xf:label>Add Title Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:titleInfo" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo"/><xf:setvalue ref="instance('save-data')/mods:titleInfo[last()]" value="''"/></xf:action></xf:trigger></fieldset></div>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="title" tab-id="title"><div class="block-form"><xf:group appearance="full"><fieldset><legend>
+            Title Information
+        </legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="legend-label">Introduction</span><div class="xforms-hint-value"><p> At least one Title inside a Title Information is required. Title Information can be repeated for alternative, translated, transliterated or uniform titles. These values are chosen in Type. For the basic Title Information entry, use the default value "Basic Title Information". If, in addition to the basic title, there is also an alternative, translated, transliterated or uniform title, add a Title Information and choose the relevant Type. Repeat Title Information as many times as necessary. </p><p> A Title Information consists of a main Title, plus a number of supplementary fields that relate to it. A Title may have a Subtitle, usually an expansion of the Title proper. If the Title begins with a word according to which it should not be sorted (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title. If a publication consists of several parts, parts that are either numbered or named, use Part Number and/or Part Name. "A History of Philosophy" may have several numbered parts, such as "Part One. Ancient Greek Philosophy." Enter "Part One" in Part Number and "Ancient Greek Philosophy" in Part Name. </p><p> When no title appears on the item being described, a title should be supplied. Use the Display Label to indicate that the title is supplied, by giving it the value "Supplied Title". A supplied title should be created in accordance with an established standard, and describe, as concisely as possible, the content of the resource in question. If no standards apply, consider carefully the expectations users have for the naming of similar resources. </p><p> If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information. </p><p> If a uniform or an abbreviated title is recorded, choose the appropriate value in Type and note in which authority file the uniform or abbreviated title in Authority has been found. Authority files are only used in connection with uniform and abbreviated titles. </p><p> Record the language of the Title Information by choosing the * used in the resource, if this is different from the language noted in Language of Resource, a field describing the language of the resource as a whole. </p></div></span>
+
+        <!--titleInfo repeat begins--><xf:repeat nodeset="instance('save-data')/mods:titleInfo" id="titleinfo-repeat">
+            
+                    <!--titleInfo input begins-->
+                <!--DLF/Aquifer: OPTIONAL-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@ID]" appearance="full"><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint><p> ID is used to link among records inside the database and to reference a field inside the database from the outside. </p></xf:hint></xf:input>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@ID" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@xlink]" appearance="full"><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> XLink is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
+                                </p></xf:hint></xf:input>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@xlink" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include--><xf:group ref="self::node()[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p> Type identifies what type of Title Information is recorded. The default is Basic Title Information. The following values may
+                                    be used in addition to this: Abbreviated, Translated, Transliterated <!--NB: addition to MODS!!!-->, Alternative, and
+                                    Uniform. </p><p> When an abbreviated title is present, an Authority must be chosen. An alternative title may be a parallel title found in the
+                                    authoritative title information (in written works, typically the title page) or a title that does not occur in the
+                                    authoritative title information, e.g. a title found on a cover. If the alternative title does not occur in the authoritative
+                                    title information, indicate in Display Label where the information comes from (e.g., "Cover Title"). If the alternative
+                                    title occurs in the authoritative title information, it can e.g. be a translation or a transliteration of the main title
+                                    information. If a translated or a transliterated title occurs in the authoritative title information of the work being
+                                    catalogued, choose "Alternative" for Type and note the language, transliteration and script of the title information, as
+                                    appropriate, if this is different from the language noted in Language of Resource. If this is not the case and you have e.g.
+                                    supplied the translation or transliteration yourself, choose "Translated" or "Transliterated" for Type and note the
+                                    language, transliteration and script of the title information, as appropriate. </p><p> A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare or
+                                    the Bible. When a uniform title is present, an Authority for its selection must be chosen. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include--><xf:group ref=".[@type='abbreviated']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for an abbreviated title is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='abbreviated-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@authority" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                <!--Cluster: include--><xf:group ref=".[@type='uniform']" appearance="full"><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a uniform title is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@authority" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
+                <!--Cluster: include--><xf:group ref="self::node()[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
+                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. 
+                        The most common languages have been moved to the top of the list.
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@lang" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
+                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
+                        xml:lang is used to specify the language used within a field, using specifications in RFC 3066. 
+                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                            </p><p>
+                            The recommendation is not to use xml:lang, but to use the Language.
+                        </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@xml:lang" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include--><xf:group ref="self::node()[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                        Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
+                        When specificing the transliteration used, also specify the language employed. 
+                        There is at present no standard list of transliteration schemes available.
+                        If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
+                        In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
+                        If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
+                        The following transliteration schemes are authorised by <!--NB-->:
+                        Chinese: pinyin
+                        Japanese: (modified) Hepburn
+                        Korean: <!--NB-->
+                        Russian: <!--NB-->
+                        Sanskrit: <!--NB-->
+                        If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@transliteration" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
+                                    (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji,
+                                    Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@script" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: OPTIONAL]]-->
+                <!--Cluster: hide--><xf:group ref="self::node()[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p>
+                        Display Label is intended to be used when additional text associated with the title is needed for display. 
+                        Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. 
+                        Appropriate cases include titles other than the primary title or subtitle. 
+                        Include the text preferred and capitalisation, but do not include delimiters such as colons.
+                    </p></xf:hint></xf:input>
+                        <!-- 
+                        <xf:trigger>
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@displayLabel" at="index('titleinfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
+                <!--Cluster: hide--><xf:group ref="self::node()[mods:nonSort]" appearance="full"><xf:input ref="./mods:nonSort" class="text_50"><xf:label>Non Sort: </xf:label><xf:hint><p> Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that appear
+                        at the beginning of a title that should be ignored when indexing and sorting.
+                    </p></xf:hint></xf:input><xf:trigger><xf:label class="xforms-label-small">-</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:nonSort" at="index('titleinfo-repeat')"/></xf:trigger></xf:group>
+                <!--DLF/Aquifer: [REQUIRED]-->
+                <!--Cluster: require--><xf:group><xf:input ref="./mods:title" class="text_50"><xf:label>Title: </xf:label><xf:hint><p>
+                        Title contains the core title of the resource catalogued.
+                        </p><p>
+                        At least one Title is required. 
+                        When no title appears on the item being described, a title should be supplied.
+                        </p><p>
+                        Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name.
+                        </p><p>
+                        Dates may be recorded under Title or Subtitle only if they are part of the title.
+                        Publication dates are included under Origin Information.
+                        </p><p>
+                        For parallel titles, i.e., equivalent titles in different languages that have not been translated by the cataloguer, add a Title Information and enter the Title there with the Type "Alternative" for each parallel title. 
+                        Note the language, script and transliteration of each title.
+                        </p><p>
+                        For a title translated or transcribed by the cataloguer, add a Title Information and enter the Title there with the Type "Translated" or "Transliterated" for each title. 
+                        Note the language, script and transliteration of each title added in this way.
+                        </p><p>
+                        For abbreviated titles, add a Title Information block and enter the Title there with the Type "Abbreviated" for each parallel title. 
+                        </p><p>
+                        For uniform titles, i.e., titles with various renderings that are unified by an authority file, add a Title Information and enter the Title there with the Type "Uniform". 
+                        Under each uniform title, state the Authority according to which the uniform title has been selected.
+                    </p></xf:hint></xf:input></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: include--><xf:group ref="self::node()[mods:subTitle]" appearance="full"><xf:input ref="./mods:subTitle" class="text_50"><xf:label>Subtitle: </xf:label><xf:hint><p> Subtitle is used to record a part of a title deemed secondary to the core title. </p><p> Use Subtitle whenever a subtitle is present, rather than including the subtitle in Title. </p><p> When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title. </p><p> If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in
+                                    Subtitle, with appropriate punctuation. <!--NB: What are the rules here? Should subTitle repeat?--></p><p> Every part of the title that do not belong in Title, Part Number or Part Name, belongs in Subtitle. </p></xf:hint></xf:input><xf:trigger><xf:label class="xforms-label-small">-</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:subTitle" at="index('titleinfo-repeat')"/></xf:trigger></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: hide--><xf:group ref="self::node()[mods:partNumber]" appearance="full"><xf:input ref="./mods:partNumber" class="text_50"><xf:label>Part Number: </xf:label><xf:hint><p> Part Number is used for a part or section number in a title. </p><p> Use Part Number when a part number is present, rather than including the part number in the text of the Title. </p><p> A Part Number does not have to be a digit, i.e. "First Part" may be the contents of the Part Number field if this is how it
+                                    occurs on the title page. </p><p> Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip). </p><p> When using Part Number, do not include punctuation at the end of the preceding field intended to separate the part number
+                                    from previous parts of the title. </p></xf:hint></xf:input><xf:trigger><xf:label class="xforms-label-small">-</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partNumber" at="index('titleinfo-repeat')"/></xf:trigger></xf:group>
+                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                <!--Cluster: hide--><xf:group ref="self::node()[mods:partName]" appearance="full"><xf:input ref="./mods:partName" class="text_50"><xf:label>Part Name: </xf:label><xf:hint><p> Part Name is used for a part or section name of a title. Use Part Name when a part name is present, rather than including
+                                    the part name in the text of Title. Use Part Name to describe the section or division titles of a digital object (for
+                                    example, a chapter title, episode name, or an audio or video clip). </p><p> If a resource has multiple parts, each with its own Part Name, the work should be catalogued in as many records as there are
+                                    Part Names.
+                                    <!--NB: not implemented: Multiple Part Name fields may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks. --></p><p> When representing the Part Name, do not include punctuation at the end of the preceding field intended to separate the
+                                    part name from previous parts of the title.
+                                    <!--Multiple parts of an item should appear in separate records or as Related Items.--></p></xf:hint></xf:input><xf:trigger><xf:label class="xforms-label-small">-</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partName" at="index('titleinfo-repeat')"/></xf:trigger></xf:group>
+                <!--titleInfo input ends-->
+                    
+                <!--titleInfo node-add begins-->
+                <!--NB: attributes do not work--><xf:group appearance="full" ref="self::node()[not(mods:nonSort)] | self::node()[not(mods:title)] | self::node()[not(mods:subTitle)] | self::node()[not(mods:partNumber)] | self::node()[not(mods:partName)]"><xf:switch><xf:case id="titleInfo-add-node-hide"><div class="node-adds-title"><xf:trigger><xf:label class="xforms-group-label-centered node-adds-title">Show Missing Fields</xf:label><xf:toggle case="titleInfo-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="titleInfo-add-node-unhide"><div class="node-adds-title"><xf:trigger><xf:label class="xforms-group-label-centered node-adds-title">Hide Missing Fields</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="titleInfo-add-node-recommended" ref="self::node()[not(mods:nonSort)] | self::node()[not(mods:title)] | self::node()[not(mods:subTitle)] | self::node()[not(mods:partNumber)] | self::node()[not(mods:partName)]" appearance="full"><xf:label class="xforms-group-label-centered node-adds-title">Recommended Fields</xf:label>
+                                        <!-- <xf:trigger ref="self::node()[not(@type)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title" class="xforms-group-label-centered node-adds-title">Add Type</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@type" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@type"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@authority)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@authority" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@authority"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@lang)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add Language</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@language" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@lang"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@transliteration)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add Transliteration</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@transliteration" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@transliteration"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@script)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add Script</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@script" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@script"/> </xf:action> </xf:trigger> --><xf:group appearance="full"><xf:trigger ref="self::node()[not(mods:nonSort)]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Non Sort</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:nonSort" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:nonSort"/></xf:action></xf:trigger></xf:group><xf:group appearance="full"><xf:trigger ref="self::node()[not(mods:title)]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Title</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:title" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:title"/></xf:action></xf:trigger></xf:group><xf:group appearance="full"><xf:trigger ref="self::node()[not(mods:subTitle)]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Subtitle</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:subTitle" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:subTitle"/></xf:action></xf:trigger></xf:group><xf:group appearance="full"><xf:trigger ref="self::node()[not(mods:partNumber)]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Part Number</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:partNumber" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partNumber"/></xf:action></xf:trigger></xf:group><xf:group appearance="full"><xf:trigger ref="self::node()[not(mods:partName)]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Part Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:partName" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partName"/></xf:action></xf:trigger></xf:group></xf:group>
+                                    <!-- <xf:group id="titleInfo-add-node-optional"> <xf:label class="xforms-group-label-centered node-adds-title">Optional Fields</xf:label> <xf:trigger ref="self::node()[not(@displayLabel)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add Display Label</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@displayLabel" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> -->
+                                    <!-- <xf:group id="titleInfo-add-node-not-recommended"> <xf:label class="xforms-group-label-centered node-adds-title">Deprecated Fields</xf:label> <xf:trigger ref="self::node()[not(@ID)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add ID</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@ID" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@xlink)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add XLink</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xlink" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@xlink"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@xml:lang)]" class="add-button"> <xf:label class="xforms-group-label-centered node-adds-title">Add xml:lang</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xml:lang" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> </xf:group> --></div></xf:case></xf:switch></xf:group>
+                    <!--titleInfo node-add ends-->
+            
+            <!--titleInfo delete begins--><xf:trigger ref="self::node()[count(../mods:titleInfo) &gt; 1]" class="delete-button"><xf:label>Delete This Title Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo" at="index('titleinfo-repeat')"/></xf:trigger>
+            <!--titleInfo delete ends--><div class="hr"/></xf:repeat>
+        <!--title repeat ends-->
+        <!--titleInfo add begins--><xf:trigger ref="self::node()[count(mods:titleInfo) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered node-adds-title">Add Another Title Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:titleInfo" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo"/></xf:action></xf:trigger></fieldset></xf:group></div></div>

@@ -29,14 +29,14 @@
 
 .block-form xf|label {
     display: inline-block;
-    width: 15ex; /* fix the width of all the labels in the block form */
+    width: 25ex; /* fix the width of all the labels in the block form */
     margin-right: 3px; /* margin to the right of the colon before the input area */
     text-align: right; /* right justification makes the text easier to read */
     /* border: solid orange 1px; */
 }
 
 .repeat-seperator {
-    color: silver;
+/*color: silver;*/    
     background-color: silver;
     height: 2px;
 }
@@ -56,8 +56,73 @@ legend {
 
 .title-field .xforms-value {width: 100ex;}
 
-.text_50 .xforms-value {width: 100ex;}
+.text_50 .xforms-value {width: 50ex;}
+.text_100 .xforms-value {width: 100ex;}
 .text_150 .xforms-value {width: 150ex;}
-.textarea .xforms-value {width: 100ex; height: 10ex}
+.textarea .xforms-value {width: 150ex; height: 10ex}
 
+.legend-label {color: blue;}
+
+/*.xforms-repeat-item-selected {background-color: silver;}*/
+
+div.xforms-help-value, div.xforms-alert-value, div.xforms-hint-value { 
+	display				: none;
+	background-color	: #ffffee;
+	position			: absolute;
+	
+	border				: black 1px solid; 
+	width				: 100ex;
+	margin-top			: 16px;
+	margin-left			: -16px;
+	padding				: 1ex;
+	-moz-box-sizing		: border-box;
+	box-sizing			: border-box;
+}
+
+.xforms-value {
+    padding-left: .5ex;
+}
+
+.hr {
+    border: #ccc 1px solid;
+    margin:1em;
+}
+
+fieldset {
+margin:.5em 1em .5em 1em;}
+
+.xforms-required-icon, .xforms-alert-icon {display:none}
+.value {width: 1em;}
+
+.block-form .xforms-label-small {
+    display: inline-block;
+    margin: 0px;
+    text-align: center;
+    width: 2ex;
+}
+
+.node-adds {
+    padding: 1ex;
+    margin: 1ex;
+    border: #ccc 1px solid;
+}
+
+
+.node-adds-title {
+    padding: 1ex;
+    margin: 1ex;
+    border: 0;
+}
+
+.block-form .xforms-group-label-centered {
+    display: inline-block;
+    text-align: center;
+    padding: 0ex;
+}
+
+button {
+    margin: .25ex;
+    padding: 0ex;
+    
+}
 </css>
