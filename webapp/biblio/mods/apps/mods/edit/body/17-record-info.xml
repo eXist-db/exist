@@ -1,0 +1,249 @@
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="record-info" tab-id="record-info"><div class="block-form">
+        <!-- Definition: information about the metadata record. Application: "recordInfo" is a wrapper element that contains subelements relating to information necessary for managing metadata. Data is only input within each subelement. -->
+    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of one recordInfo element with the subelement languageOfCataloging to record the language of the text in the MODS record. recordInfo is not repeatable. -->
+    <!--NB: at save time, the recordContentSource element should be populated with the current user id and/or the formal name of the Cluster, the recordCreationDate element should be populated with the current time, and the first recordChangeDate element should be populated with the current time. --><fieldset><legend><span class="legend">Record Information</span></legend><xf:hint><p>
+            Information about the metadata record.
+            This type of administrative information can help establish the provenance of a metadata record and may enable better interpretation of the content of the record. 
+            Record Information may also include information that is relevant only to the creating or managing institution. This type of administrative information can help establish the provenance of a metadata record and may enable better interpretation of the content of the record. 
+        </p></xf:hint>
+        <!--recordInfo repeat begins-->
+        <!--NB repeat not used--><xf:repeat nodeset="instance('save-data')/mods:recordInfo" id="recordinfo-repeat"><div class="block-form">
+                <!--DLF/Aquifer: N/A-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
+                        The language used within Record Information is specified here. 
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--DLF/Aquifer: NOT RECOMMENDED-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
+                                    This attribute is used to specify the language used within a field, using specifications in RFC 3066. 
+                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                            </p><p>
+                        The recommendation is not to use xml:lang, but to use the above Language attribute.
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--DLF/Aquifer: N/A-->
+                <!--Cluster: omit--><xf:group ref="self::node()[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
+                                    This attribute specifies the script used within individual fields. 
+                        The use of Latin script is not noted.
+                        "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". 
+                        If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. 
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--DLF/Aquifer: N/A-->
+                <!--Cluster: omit--><xf:group ref="self::node()[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                        This attribute specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
+                        When specificing the transliteration used, also specify the language employed. 
+                        There is at present no standard list of transliteration schemes available.
+                        If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
+                        In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
+                        If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
+                        The following transliteration schemes are authorised by <!--NB-->:
+                        Chinese: pinyin
+                        Japanese: (modified) Hepburn
+                        Korean: <!--NB-->
+                        Russian: <!--NB-->
+                        Sanskrit: <!--NB-->
+                        If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group id="add-node-recommended">
+                        <!-- 
+                            <xf:trigger ref="self::node()[not(@lang)]" class="add-button">
+                            <xf:label>Add Language</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="@language" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@lang"/>
+                            </xf:action>
+                            </xf:trigger>
+                            <xf:trigger ref="self::node()[not(@transliteration)]" class="add-button">
+                            <xf:label>Add Transliteration</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="@transliteration" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@transliteration"/>
+                            </xf:action>
+                            </xf:trigger>
+                            <xf:trigger ref="self::node()[not(@script)]" class="add-button">
+                            <xf:label>Add Script</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="@script" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@script"/>
+                            </xf:action>
+                            </xf:trigger>
+                        --></xf:group><xf:group id="add-node-optional"/><xf:group id="add-node-not-recommended">
+                        <!-- 
+                        <xf:trigger ref="self::node()[not(@xlink)]" class="add-button">
+                            <xf:label>Add XLink</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                                <xf:insert nodeset="@xlink" at="index('titleinfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/@xlink"/>
+                            </xf:action>
+                        </xf:trigger>
+                        --></xf:group>
+                <!--DLF/Aquifer: RECOMMENDED-->
+                <!--recordInfo/recordContentSource begins--><xf:group id="fieldset-recordContentSource" ref="self::node()[mods:recordContentSource]"><fieldset><legend>Record Content Source</legend><xf:hint><p>
+                        The code or name of the organization that either created or modified the original record.
+                        This information can be useful to trace the provenance of a particular metadata record.
+                        The name or code should be pulled from an authoritative list and indicated in Authority.
+                        Record Content Source should be repeated for each code or name recorded.
+                    </p></xf:hint>
+                    <!--recordContentSource repeat begins--><xf:repeat nodeset="./mods:recordContentSource" id="record-content-source-repeat">
+                        <!--DLF/Aquifer: RECOMMENDED-->
+                        <!--Cluster: default: blank-->
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit--><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p>
+                                The name of the authoritative list for a controlled value is recorded here.
+                                If Authority is empty, the value is presumed to be textual, i.e. to contain the name of an institution and not its abbreviation.
+                                Consult <a href="http://www.loc.gov/marc/organizations/org-search.php">MARC Code List for Organizations</a> and <a href="http://www.oclc.org/contacts/libraries/">OCLC Participating Institutions</a></p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='record-content-source-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: RECOMMENDED-->
+                        <!--Cluster: default: Cluster formal name-->
+                        <!--recordInfo/recordContentSource input begins--><xf:input ref="." class="text_100"><xf:label>Record Content Source:</xf:label><xf:hint><p>
+                                The code or name of the organization that either created or modified the original record.
+                            </p></xf:hint></xf:input>
+                        <!--recordInfo/recordContentSource input ends-->
+                        <!--recordInfo/recordContentSource delete begins--><xf:trigger ref="self::node()[count(../mods:recordContentSource) &gt; 1]" class="delete-button"><xf:label>Delete This Record Content Source</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordContentSource" at="index('record-content-source-repeat')"/></xf:trigger>
+                        <!--recordContentSource delete ends--><div class="hr"/></xf:repeat>
+                    <!--recordInfo/recordContentSource repeat ends-->
+                    <!--recordInfo/recordContentSource add begins--><xf:trigger ref="self::node()[count(mods:recordContentSource) &gt; 0]" class="add-button"><xf:label>Add Record Content Source</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:recordContentSource" at="index('record-content-source-repeat')" position="after" origin="instance('insert-templates')/mods:recordContentSource"/><xf:setvalue ref="instance('save-data')/mods:recordContentSource[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--recordInfo/recordContentSource add ends--></fieldset></xf:group>
+                <!--recordInfo/recordContentSource ends-->
+                    
+                <!--recordInfo/recordCreationDate begins-->
+                
+                <!--DLF/Aquifer: OPTIONAL-->
+                <!--Cluster: default-->
+                <!-- If either or both of the subelements recordCreationDate and recordChangeDate is used, follow the guidelines outlined in the date section of the originInfo element. The one exception is that neither of these subelements should be identified as the keyDate. -->
+                <!--Cluster: these values should be entered automatically and be read-only.--><xf:group id="fieldset-recordCreationDate" ref="self::node()[mods:recordCreationDate]"><fieldset><legend>Record Creation Date</legend><xf:hint><p>The date on which the record was first created.</p></xf:hint>
+                    <!--recordInfo/recordCreationDate repeat begins-->
+                    <!--NB: repeat not used--><xf:repeat nodeset="./mods:recordCreationDate" id="record-creation-date-repeat">
+                        <!--recordInfo/recordCreationDate input begins-->
+                        <!--DLF/Aquifer: OPTIONAL-->
+                        <!--Cluster: default: w3cdtf-->
+                        <!--NB: default entry of date--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p>
+                                Encoding is used to note the encoding followed in the date notation.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: OPTIONAL-->
+                        <!--Cluster: default: omit--><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Used to note whether the date noted is a start point or an end point. If no point attribute is specified, date is assumed
+                                to be a single date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: omit--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> If "Date is Key Date" is chosen, the date is distinguished among several dates. Thus for example, when sorting records by
+                                date, a date with this value would be the date to sort on. It should occur only for one date at most in a given block. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: omit--><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p>
+                                This attribute is used to note if the date noted is approximate, inferred or questionable.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:input ref="." class="text_50"><xf:label>Record Creation Date:</xf:label><xf:hint><p>The date on which the record was first created.</p></xf:hint></xf:input>
+                        <!--recordInfo/recordCreationDate input ends-->
+                                
+                        <!--recordInfo/recordCreationDate delete begins-->
+                        <!-- 
+                            <xf:trigger ref="self::node()[count(../mods:recordCreationDate) > 1]" class="delete-button">
+                            <xf:label>Delete This Record Creation Date</xf:label>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordCreationDate" at="index('record-creation-date-repeat')"/>
+                        </xf:trigger>
+                        -->
+                        <!--recordCreationDate delete ends--><div class="hr"/></xf:repeat>
+                    <!--recordInfo/recordCreationDate repeat ends-->
+                    <!--recordCreationDate add begins-->
+                    <!--<xf:trigger ref="self::node()[count(mods:recordCreationDate) > 0]" class="add-button">
+                        <xf:label>Add Record Creation Date</xf:label>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:recordCreationDate" at="index('record-creation-date-repeat')" position="after"
+                                origin="instance('insert-templates')/mods:recordCreationDate"/>
+                            <xf:setvalue ref="instance('save-data')/mods:recordCreationDate[last()]" value="''"/>
+                        </xf:action>
+                    </xf:trigger>
+                    -->
+                    <!--recordInfo/recordCreationDate add ends--></fieldset></xf:group>
+                        <!--recordInfo/recordCreationDate ends-->
+                
+                <!--recordChangeDate begins--><xf:group id="fieldset-recordChangeDate" ref="self::node()[mods:recordChangeDate]"><fieldset><legend>Record Change Date</legend><xf:hint><p>The date(s) on which the record has been changed.</p></xf:hint>
+                    <!--recordChangeDate repeat begins--><xf:repeat nodeset="./mods:recordChangeDate" id="record-change-date-repeat">
+                        <!--recordChangeDate input begins-->
+                        <!--DLF/Aquifer: OPTIONAL-->
+                        <!--Cluster: default: w3cdtf--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p>Used to note the encoding followed in the date notation.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: OPTIONAL-->
+                        <!--Cluster: default: omit--><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p>Used to note whether the date noted is a start point or an end point. If no point attribute is specified, date is assumed
+                                to be a single date.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: default: omit--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> If you choose "Date is Key Date", the date is distinguished among several dates. Thus for example, when sorting records by
+                                date, a date with this value would be the date to sort on. It should occur only for one date at most in a given block. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                                
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: omit--><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p>
+                                This attribute is used to note if the date noted is approximate, inferred or questionable.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><div class="hr"/><xf:input ref="." class="text_50"><xf:label>Record Change Date:</xf:label><xf:hint><p>
+                                The date(s) on which the record has been changed.
+                            </p></xf:hint></xf:input>
+                        <!--recordChangeDate input ends-->
+                        <!--recordChangeDate delete begins--><xf:trigger ref="self::node()[count(../mods:recordChangeDate) &gt; 1]" class="delete-button"><xf:label>Delete This Record Change Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:recordInfo/mods:recordChangeDate" at="index('record-change-date-repeat')"/></xf:trigger>
+                        <!--recordChangeDate delete ends--><div class="hr"/></xf:repeat>
+                    <!--recordChangeDate repeat ends-->
+                    <!--recordChangeDate add begins--><xf:trigger ref="self::node()[count(mods:recordChangeDate) &gt; 0]" class="add-button"><xf:label>Add Record Change Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:recordChangeDate" at="index('record-change-date-repeat')" position="after" origin="instance('insert-templates')/mods:recordChangeDate"/><xf:setvalue ref="instance('save-data')/mods:recordChangeDate[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--recordChangeDate add ends--></fieldset></xf:group>
+                        <!--recordChangeDate ends-->
+                
+                <!--recordIdentifier begins-->
+                <!--DLF/Aquifer: OPTIONAL-->
+                <!--Cluster: include--><xf:group id="fieldset-recordIdentifier" ref="self::node()[mods:recordIdentifier]"><fieldset><legend>Record Identifier</legend><xf:hint><p>
+                        Record Identifier is used to record the system control number assigned by the organization creating, using, or distributing the record.
+                        Consult <a href="http://www.loc.gov/marc/organizations/org-search.php">MARC Code List for Organizations</a> and <a href="http://www.oclc.org/contacts/libraries/">OCLC Participating Institutions</a></p></xf:hint>
+                            
+                    <!--recordIdentifier input begins-->
+                    <!--DLF/Aquifer: RECOMMENDED-->
+                    <!--Cluster: default: default--><xf:select1 ref="./mods:recordIdentifier/@source"><xf:label>Source:</xf:label><xf:hint><p>
+                            This attribute contains the code or name of the organization whose system control number is located in Record Identifier.
+                            Consult <a href="http://www.loc.gov/marc/organizations/org-search.php">MARC Code List for Organizations</a> and <a href="http://www.oclc.org/contacts/libraries/">OCLC Participating Institutions</a></p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='record-content-source-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                            
+                    <!--DLF/Aquifer: OPTIONAL-->
+                    <!--Cluster: default: default--><xf:input ref="./mods:recordIdentifier" class="text_100"><xf:label>Record Identifier: </xf:label><xf:hint><p>Used to record the system control number assigned by the organization creating, using, or distributing the record.</p></xf:hint></xf:input>
+                    <!--recordIdentifier input ends--></fieldset></xf:group>
+                        <!--recordIdentifier ends-->
+                
+                <!--recordOrigin begins-->
+                <!--DLF/Aquifer: RECOMMENDED-->
+                <!--Cluster: default: include-->
+                <!-- Use this subelement to record information about the origin, or provenance of the MODS record including how it was generated and what transformations have been applied. The information here can be useful for a service provider to understand specific encoding conventions within element values or why certain types of information appear in certain places (for example, if the MODS record was transformed from a MARC record using the standard Library of Congress stylesheet). These guidelines recommend using free text with the stipulation that values be understandable outside of the local context of the creating institution. Institutions may include as much or as little detail as desired in this element; however, information such as whether a transformation was done by machine or by hand, and if a standard set of transformation rules was used are useful to service providers --><xf:group id="fieldset-recordOrigin" ref="self::node()[mods:recordOrigin]"><fieldset>
+                    <!--DLF/Aquifer: RECOMMENDED-->
+                    <!--Cluster: default: default in case of imports--><legend>Record Origin</legend><xf:hint><p> Record Origin is intended to show the origin, or provenance of the record. Note the original format and transformation process if
+                        the record has been transformed from a record in another format. </p></xf:hint>
+                            
+                    <!--recordOrigin input begins--><xf:input ref="./mods:recordOrigin" class="text_100"><xf:label>Record Origin: </xf:label><xf:hint><p>Record Origin is intended to show the origin, or provenance of the record.</p></xf:hint></xf:input>
+                    <!--recordOrigin input ends--></fieldset></xf:group>
+                        <!--recordOrigin ends-->
+                
+                <!--languageOfCataloging begins-->
+                <!--DLF/Aquifer: REQUIRED-->
+                <!--Cluster: default-->
+                <!-- These guidelines require one pair of languageTerm elements representing the primary language of the text wrapped in a single language element. One of these languageTerm elements should carry the attribute type="text" and the other should have type="code". Additional pairs of languageTerm elements representing secondary languages may be included in separate language elements. --><xf:group id="fieldset-languageOfCataloging" ref="self::node()[mods:languageOfCataloging]"><fieldset><legend>Cataloging Language</legend><xf:hint><p>
+                                Note here the language used in cataloging the current record. 
+                                Use both Text and Code input.
+                            </p></xf:hint><fieldset><legend>Cataloging Language, Type Text</legend>
+                                <!--languageOfCataloging input begins-->
+                    <!--DLF/Aquifer: N/A: both coded and textual input is required-->
+                    <!--Cluster: default: text-->
+                    <!-- <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/@type"> <xf:label>Type:</xf:label> <xf:hint><p> This attribute is used to express whether the Cataloging Language value is in textual or coded form. </p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1>  -->
+                    <!--DLF/Aquifer: REQUIRED IF APPLICABLE: only required if type="code"-->
+                    <!--Cluster: default: blank-->
+                    <!-- <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/[@type='text']/mods:languageTerm/@authority" selection="open"> <xf:label>Authority:</xf:label> <xf:hint><p> The name of the authoritative list for the uniform title is recorded here. </p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> --><xf:input ref="./mods:languageOfCataloging/mods:languageTerm[@type='text']" class="text_50"><xf:label>Cataloging Language:</xf:label><xf:hint><p>
+                                    Note here the language used in cataloging the current record. 
+                                    Use Text input.
+                                </p></xf:hint></xf:input>
+                    <!--languageOfCataloging input ends--></fieldset><fieldset><legend>Cataloging Language, Type Code</legend>
+                    <!--languageOfCataloging input begins-->
+                    <!--DLF/Aquifer: N/A: both coded and textual input is required-->
+                    <!--Cluster: default: code-->
+                    <!-- <xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/@type"> <xf:label>Type:</xf:label> <xf:hint><p> This attribute is used to express whether the Cataloging Language value is in textual or coded form. </p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1>  -->
+                    <!--DLF/Aquifer: REQUIRED IF APPLICABLE: required if type="code"-->
+                    <!--Cluster: default: iso639-2b--><xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm/@authority"><xf:label>Authority:</xf:label><xf:hint><p>
+                                    The name of the authoritative list for a controlled value is recorded here.
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:select1 ref="./mods:languageOfCataloging/mods:languageTerm[@type='code']"><xf:label>Cataloging Language:</xf:label><xf:hint><p>
+                                    Note here the language used in cataloging the current record. 
+                                    Use Code input.
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                    <!--languageOfCataloging input ends--></fieldset></fieldset></xf:group>
+                        <!--languageOfCataloging ends-->
+                
+                <!--descriptionStandard begins-->
+                <!--DLF/Aquifer: N/A-->
+                <!--Cluster: omit--><xf:group id="fieldset-descriptionStandard" ref="self::node()[mods:descriptionStandard]"><fieldset><legend>Description Standard</legend><xf:hint><p>Here are noted any specific rules used for the description.</p></xf:hint>
+                            
+                    <!--descriptionStandard input begins--><xf:select1 ref="./mods:descriptionStandard/@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='description-standard-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:input ref="./mods:descriptionStandard" class="text_100"><xf:label>Description Standard: </xf:label><xf:hint><p>Here are noted any specific rules used for the description.</p></xf:hint></xf:input>
+                    <!--descriptionStandard input ends--></fieldset></xf:group>
+                        <!--descriptionStandard ends--></div></xf:repeat>
+        <!--recordInfo repeat ends--></fieldset></div></div>
