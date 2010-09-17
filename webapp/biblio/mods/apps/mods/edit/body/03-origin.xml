@@ -1,459 +1,528 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin" tab-id="origin">
-    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. place, publisher, and edition are recommended if applicable. These guidelines make no recommendation on the use of the elements issuance and frequency. --><fieldset><legend>Origin Information</legend><xf:hint> Information about the origin of the resource, including place of origin or publication, publisher/originator, and dates associated with the
-            resource. </xf:hint>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="origin" tab-id="origin"><div class="block-form"><xf:group appearance="full">
+        <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one originInfo element with at least one date subelement in every record, one of which must be marked as a key date. place, publisher, and edition are recommended if applicable. These guidelines make no recommendation on the use of the elements issuance and frequency. --><fieldset><legend>Origin Information</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="legend-label">Introduction</span><div class="xforms-hint-value"><p>
+                        Information about the origin of the resource, including its place of origin or publication, publisher/originator, and the dates associated with the resource.
+                    </p></div></span>
         <!--originInfo repeat begins--><xf:repeat nodeset="mods:originInfo" id="origininfo-repeat"><div class="block-form">
             <!--originInfo input begins-->
             <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: omit--><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint>
+            <!--Cluster: omit--><xf:group ref="./@lang and string-length(instance('save-data')/mods:language/mods:languageTerm) &gt; 1" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
                     The language used within Origin Information is specified here, if this language is different from the language noted in Language of Resource. 
                     The most common languages have been moved to the top of the list.
-                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+                    </p><p>
+                    Language can be applied the Origin Information as a whole. 
+                    Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                    If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: NOT RECOMMENDED-->
-            <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>    
-                    This attribute is used to specify the language used within an element, using specifications in RFC 3066.
+            <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>    
+                                        This field is used to specify the language used within a field, using specifications in RFC 3066.
                     RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                    <br/>
+                            </p><p>
                     The recommendation is not to use xml:lang, but to use Language.
-                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+                            </p><p>
+                    Language can be applied the Origin Information as a whole. 
+                    Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                    If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include--><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint>
-                    If the Origin Information is in a non-Latin script, note here the script utilised. 
-                    As transliterations use the Latin script, the Transliteration attribute becomes unneccesary when Latin script is chosen.
-                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
+            <!--Cluster: include--><xf:group appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
+                        If the Origin Information is in a non-Latin script, note here the script utilised. 
+                        As transliterations use the Latin script, the Transliteration field becomes unneccesary when Latin script is chosen. 
+                            </p><p>
+                        Script can be applied the Origin Information as a whole. 
+                        Do this if you are using only one Script value for all Place Terms, for Publisher and for Edition. 
+                        If you are using different Script values inside Origin Information, apply Script to each field and leave Script empty under Origin Information. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include--><xf:select1 ref=".[not(@script='Latn')]/@transliteration"><xf:label>Transliteration:</xf:label><xf:hint> If the Origin Information is transliterated, note here the transliteration scheme utilised. As transliterations are romanisations, the
-                    Script attribute becomes unneccesary. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-            <!--originInfo input ends-->
-            
-            <!--place begins-->
+            <!--Cluster: include--><xf:group ref=".[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                        If the Origin Information is transliterated, note here the transliteration scheme utilised. 
+                        As transliterations are romanisations, the Script field becomes unneccesary.
+                            </p><p>
+                        Transliteration can be applied the Origin Information as a whole. 
+                        Do this if you are using only one Transliteration value for all Place Terms, for Publisher and for Edition.
+                        If you are using different Transliteration values inside Origin Information, apply Transliteration to each field and leave Transliteration empty under Origin Information.                        
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--originInfo input ends-->
+                <!--originInfo node-add begins-->
+                <!--NB: attributes do not work--><div class="node-adds"><xf:group id="originInfo-add-node-recommended" appearance="full"><xf:group ref="self::node()[count(mods:place) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Place</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:place" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:place"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:place[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:publisher) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Publisher</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:publisher" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:publisher"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:publisher[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:dateIssued) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Issued</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateIssued" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateIssued"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateIssued[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()/mods:role[count(mods:dateCreated) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Created</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCreated" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCreated"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateCreated[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:dateCaptured) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Captured</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCaptured" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCaptured"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateCaptured[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:dateValid) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateValid"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateValid[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:dateModified) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Modified</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateModified" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateModified"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateModified[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:copyrightDate) = 0]" appearance="full"><xf:trigger class="add"><xf:label>Add Copyright Date </xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyrightDate" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:copyrightDate"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:copyrightDate[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:dateOther) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Date Other</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateOther" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateOther"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:dateOther[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:edition) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Edition</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:edition" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:edition"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:edition[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:issuance) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Issuance</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:issuance" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:issuance"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:issuance[last()]" value="''"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[count(mods:frequency) = 0]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Frequency</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:frequency" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:frequency"/><xf:setvalue ref="instance('save-data')/mods:originInfo/mods:frequency[last()]" value="''"/></xf:action></xf:trigger></xf:group></xf:group></div>
+                        <!--originInfo node-add ends-->
+                        <!--place begins-->
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include--><fieldset><legend>Place</legend><xf:hint>
-                    Record in Place the place names associated with the origin of a resource, i.e., its creation, publication, issuance, etc.
-                    Place should be omitted if no information about the originating place of the resource is known. 
-                    Input in Place is performed through Place Terms. 
-                    If one Place has several Place Terms, e.g. the name of a country and the name of a city, repeat Place Term as necessary.
-                    If a resource has several places of origin, repeat Place.                    
-                </xf:hint>
+            <!--Cluster: include--><xf:group id="fieldset-place" ref="self::node()[mods:place]" appearance="full"><fieldset><legend>Place</legend><xf:hint><p>
+                        Record in Place the place names associated with the origin of a resource, i.e., its creation, publication, issuance, etc.
+                        Place should be omitted if no information about the originating place of the resource is known. 
+                        Input in Place is performed through Place Terms. 
+                        If one Place has several Place Terms, e.g. the name of a country and the name of a city, repeat Place Term as necessary.
+                        If a resource has several places of origin, repeat Place.                    
+                </p></xf:hint>
                 <!--place repeat begins--><xf:repeat nodeset="./mods:place" id="place-repeat">
                     <!--no place input-->
                     
                     <!--placeTerm begins-->
                     <!--DLF/Aquifer: REQUIRED-->
-                    <!--Cluster: include--><fieldset><legend>Place Term</legend><xf:hint>
+                    <!--Cluster: include--><xf:group id="fieldset-placeTerm" ref="self::node()[mods:placeTerm]" appearance="full"><fieldset><legend>Place Term</legend><xf:hint><p>
                             Use Place Term to record the textual or code form of the place. 
                             If the place is a country, the name of the country can be selected from the MARC country code list or the ISO3166 standard list of country names. 
                             If the place is not a country, add Place Term and write the place name (e.g. city name) with Type set to "Text". 
-                        </xf:hint>
+                        </p></xf:hint>
                         <!--placeTerm repeat begins--><xf:repeat nodeset="./mods:placeTerm" id="place-term-repeat">
-                            <!--placeTerm input begins--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>
+                            <!--placeTerm input begins-->
+                                <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
+                                        The language used within Origin Information is specified here, if this language is different from the language noted in Language of Resource. 
+                                        The most common languages have been moved to the top of the list.
+                                                    </p><p>
+                                        Language can be applied the Origin Information as a whole. 
+                                        Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                                        If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--DLF/Aquifer: NOT RECOMMENDED-->
+                                <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>    
+                                                                This field is used to specify the language used within a field, using specifications in RFC 3066.
+                                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                                                    </p><p>
+                                        The recommendation is not to use xml:lang, but to use Language.
+                                                    </p><p>
+                                        Language can be applied the Origin Information as a whole. 
+                                        Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                                        If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: include--><xf:group appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
+                                        If the Origin Information is in a non-Latin script, note here the script utilised. 
+                                        As transliterations use the Latin script, the Transliteration field becomes unneccesary when Latin script is chosen.
+                                                    </p><p>
+                                        Script can be applied the Origin Information as a whole. 
+                                        Do this if you are using only one Script value for all Place Terms, for Publisher and for Edition.
+                                        If you are using different Script values inside Origin Information, apply Script to each field and leave Script empty under Origin Information.
+                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: include--><xf:group ref=".[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                                        If the Origin Information is transliterated, note here the transliteration scheme utilised. As transliterations are romanisations, the
+                                        Script field becomes unneccesary.
+                                                    </p><p>
+                                        Transliteration can be applied the Origin Information as a whole. 
+                                        Do this if you are using only one Transliteration value for all Place Terms, for Publisher and for Edition.
+                                        If you are using different Transliteration values inside Origin Information, apply Transliteration to each field and leave Transliteration empty under Origin Information.                                
+                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>
                                     Type indicates whether the place is expressed in a coded or textual form.
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref=".[@type='code']/@authority"><xf:label>Authority:</xf:label><xf:hint>
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type='code']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p>
                                     The name of the authoritative list for a controlled value is recorded here.
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='place-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref=".[(@type='code') and (@authority='marccountry')]"><xf:label>Place Term:</xf:label><xf:hint>
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='place-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[(@type='code') and (@authority='marccountry')]" appearance="full"><xf:select1 ref="."><xf:label>Place Term:</xf:label><xf:hint><p>
                                     Names of countries (and US states) according to the marccountry standard list.
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='marc-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref=".[(@type='code') and (@authority='iso3166')]"><xf:label>Place Term:</xf:label><xf:hint>
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='marc-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[(@type='code') and (@authority='iso3166')]" appearance="full"><xf:select1 ref="."><xf:label>Place Term:</xf:label><xf:hint><p>
                                     Names of countries according to the iso3166 standard list.
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='iso3166-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref=".[@type='text']" class="text_50"><xf:label>Place Term: </xf:label><xf:hint>
-                                    Uncoded place terms, i.e. place terms that have not been chosen in an authority file.
-                                </xf:hint></xf:input>
-                            <!--placeTerm input ends--><br/>
-                            <!--placeTerm delete begins--><xf:trigger ref="self::node()[count(../mods:placeTerm) &gt; 1]"><xf:label>Delete This Place Term</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place/mods:placeTerm" at="index('place-term-repeat')"/></xf:trigger>
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='iso3166-country-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type='text']" appearance="full"><xf:input ref="." class="text_50"><xf:label>Place Term: </xf:label><xf:hint><p>
+                                            Uncoded place terms, i.e. place terms that have not been chosen in an authority file.
+                                        </p></xf:hint></xf:input></xf:group>
+                            <!--placeTerm input ends-->
+                                            
+                            <!--placeTerm delete begins--><xf:trigger ref="self::node()[count(../mods:placeTerm) &gt; 1]" class="delete-button"><xf:label>Delete This Place Term</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place/mods:placeTerm" at="index('place-term-repeat')"/></xf:trigger>
                             <!--placeTerm delete ends--><div class="hr"/></xf:repeat>
-                        <!--placeTerm repeat ends--><br/>
-                        <!--placeTerm add begins--><xf:trigger class="add"><xf:label>Add Place Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after" origin="instance('insert-templates')/mods:placeTerm"/><xf:setvalue ref="instance('save-data')/mods:placeTerm[last()]" value="''"/></xf:action></xf:trigger>
-                        <!--placeTerm add ends--></fieldset><br/>
+                        <!--placeTerm repeat ends-->
+                                        
+                        <!--placeTerm add begins--><xf:trigger ref="self::node()[count(mods:placeTerm) &gt; 0]" class="add-button"><xf:label>Add Place Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after" origin="instance('insert-templates')/mods:placeTerm"/><xf:setvalue ref="instance('save-data')/mods:placeTerm[last()]" value="''"/></xf:action></xf:trigger>
+                        <!--placeTerm add ends--></fieldset></xf:group>
                     <!--placeTerm ends-->
                     
-                    <!--place delete begins--><xf:trigger ref="self::node()[count(../mods:place) &gt; 1]"><xf:label>Delete This Place</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place" at="index('place-repeat')"/></xf:trigger>
+                    <!--place delete begins--><xf:trigger ref="self::node()[count(../mods:place) &gt; 1]" class="delete-button"><xf:label>Delete This Place</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place" at="index('place-repeat')"/></xf:trigger>
                     <!--place delete ends--><div class="hr"/></xf:repeat>
                 <!--place repeat ends-->
-                <!--place add begins--><xf:trigger class="add"><xf:label>Add Place</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:place" at="index('place-repeat')" position="after" origin="instance('insert-templates')/mods:place"/><xf:setvalue ref="instance('save-data')/mods:place[last()]" value="''"/></xf:action></xf:trigger>
-                <!--place add ends--></fieldset>
-            <!--place ends-->
+                <!--place add begins--><xf:trigger ref="self::node()[count(mods:place) &gt; 0]" class="add-button"><xf:label>Add Place</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:place" at="index('place-repeat')" position="after" origin="instance('insert-templates')/mods:place"/><xf:setvalue ref="instance('save-data')/mods:place[last()]" value="''"/></xf:action></xf:trigger>
+                <!--place add ends--></fieldset></xf:group>
+                <!--place ends-->
             
-            <!--publisher begins--><fieldset><legend>Publisher</legend><xf:hint>
+            <!--publisher begins--><xf:group id="fieldset-publisher" ref="self::node()[mods:publisher]" appearance="full"><fieldset><legend>Publisher</legend><xf:hint><p>
                     The name of the entity that is the originator for a resource, i.e. that has published, printed, distributed, released, issued, or produced it.
-                </xf:hint>
+                </p></xf:hint>
                 <!--publisher repeat begins--><xf:repeat nodeset="./mods:publisher" id="publisher-repeat">
-                    <!--publisher input begins--><xf:input ref="." class="text_50"><xf:label>Publisher: </xf:label><xf:hint>
+                    <!--publisher input begins-->
+                        <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
+                                The language used within Origin Information is specified here, if this language is different from the language noted in Language of Resource. 
+                                The most common languages have been moved to the top of the list.
+                                        </p><p>
+                                Language can be applied the Origin Information as a whole. 
+                                Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                                If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>    
+                                                    This field is used to specify the language used within a field, using specifications in RFC 3066.
+                                RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                                        </p><p>
+                                The recommendation is not to use xml:lang, but to use Language.
+                                        </p><p>
+                                Language can be applied the Origin Information as a whole. 
+                                Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                                If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: include--><xf:group appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
+                                If the Origin Information is in a non-Latin script, note here the script utilised. 
+                                As transliterations use the Latin script, the Transliteration field becomes unneccesary when Latin script is chosen.
+                                        </p><p>
+                                Script can be applied the Origin Information as a whole. 
+                                Do this if you are using only one Script value for all Place Terms, for Publisher and for Edition.
+                                If you are using different Script values inside Origin Information, apply Script to each field and leave Script empty under Origin Information.
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: include--><xf:group ref=".[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                                If the Origin Information is transliterated, note here the transliteration scheme utilised. As transliterations are romanisations, the
+                                Script field becomes unneccesary.
+                                        </p><p>
+                                Transliteration can be applied the Origin Information as a whole. 
+                                Do this if you are using only one Transliteration value for all Place Terms, for Publisher and for Edition.
+                                If you are using different Transliteration values inside Origin Information, apply Transliteration to each field and leave Transliteration empty under Origin Information.                                
+                            </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Publisher: </xf:label><xf:hint><p>
                             The name of the entity that is the originator for a resource, i.e. that has published, printed, distributed, released, issued, or produced it.        
                             Information about an institution responsible for digitising and delivering online a previously published resource should be included in Note, rather than Publisher. 
-                        </xf:hint></xf:input>
-                    <!--publisher input ends--><br/>
-                    <!--publisher delete begins--><xf:trigger ref="self::node()[count(../mods:publisher) &gt; 1]"><xf:label>Delete This Publisher</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:publisher" at="index('publisher-repeat')"/></xf:trigger>
+                            </p></xf:hint></xf:input></xf:group>
+                    <!--publisher input ends-->
+                                
+                    <!--publisher delete begins--><xf:trigger ref="self::node()[count(../mods:publisher) &gt; 1]" class="delete-button"><xf:label>Delete This Publisher</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:publisher" at="index('publisher-repeat')"/></xf:trigger>
                     <!--publisher delete ends--><div class="hr"/></xf:repeat>
-                <!--publisher repeat ends--><br/>
-                <!--publisher add begins--><xf:trigger class="add"><xf:label>Add Publisher</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:publisher" at="index('publisher-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:publisher"/><xf:setvalue ref="instance('save-data')/mods:publisher[last()]" value="''"/></xf:action></xf:trigger>
-                <!--publisher add ends--></fieldset>
-            <!--publisher ends-->
+                <!--publisher repeat ends-->
+                            
+                <!--publisher add begins--><xf:trigger ref="self::node()[count(mods:publisher) &gt; 0]" class="add-button"><xf:label>Add Publisher</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:publisher" at="index('publisher-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:publisher"/><xf:setvalue ref="instance('save-data')/mods:publisher[last()]" value="''"/></xf:action></xf:trigger>
+                <!--publisher add ends--></fieldset></xf:group>
+                <!--publisher ends-->
 
             <!--edition begins-->
-            <!--NB: according to schema, edition should repeat, but it does not make any sense--><fieldset><legend>Edition</legend><xf:hint>
+            <!--NB: according to schema, edition should repeat, but it does not make any sense--><xf:group id="fieldset-edition" ref="self::node()[mods:edition]" appearance="full"><fieldset><legend>Edition</legend><xf:hint><p>
                     Information identifying the version of the resource.
                     Resources that constitute the same edition generally embody essentially the same content. 
                     If no edition statement applies to the resource, leave Edition empty.
-                    </xf:hint><br/>
-                <!--edition input begins--><xf:input ref="./mods:edition" class="text_50"><xf:label>Edition: </xf:label><xf:hint>
+                    </p></xf:hint>
+                            
+                <!--edition input begins-->
+                    <!-- NB: while it does seem reasonable to hold that origin info occurs in a certain script or transliteration, it may not make much sense to say that a name is in a certain language. What about Beijing/Peking? Are they in different languages? Basically originInfo consists of place names, publishers, and dates. -->
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
+                            The language used within Origin Information is specified here, if this language is different from the language noted in Language of Resource. 
+                            The most common languages have been moved to the top of the list.
+                                    </p><p>
+                            Language can be applied the Origin Information as a whole. 
+                            Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                            If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                        </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: NOT RECOMMENDED-->
+                    <!--Cluster: omit--><xf:group appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>    
+                                                This field is used to specify the language used within a field, using specifications in RFC 3066.
+                            RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
+                                    </p><p>
+                            The recommendation is not to use xml:lang, but to use Language.
+                                    </p><p>
+                            Language can be applied the Origin Information as a whole. 
+                            Do this if you are using only one Language value for all Place Terms, for Publisher and for Edition.
+                            If you are using different Language values inside Origin Information, apply Language to each field and leave Language empty under Origin Information.
+                        </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: include--><xf:group appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
+                            If the Origin Information is in a non-Latin script, note here the script utilised. 
+                            As transliterations use the Latin script, the Transliteration field becomes unneccesary when Latin script is chosen.
+                                    </p><p>
+                            Script can be applied the Origin Information as a whole. 
+                            Do this if you are using only one Script value for all Place Terms, for Publisher and for Edition.
+                            If you are using different Script values inside Origin Information, apply Script to each field and leave Script empty under Origin Information.
+                        </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: include--><xf:group ref=".[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                            If the Origin Information is transliterated, note here the transliteration scheme utilised. As transliterations are romanisations, the
+                            Script field becomes unneccesary.
+                                    </p><p>
+                            Transliteration can be applied the Origin Information as a whole. 
+                            Do this if you are using only one Transliteration value for all Place Terms, for Publisher and for Edition.
+                            If you are using different Transliteration values inside Origin Information, apply Transliteration to each field and leave Transliteration empty under Origin Information.                                
+                        </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="./mods:edition" class="text_50"><xf:label>Edition: </xf:label><xf:hint><p>
                         Information identifying the version of the resource.
-                    </xf:hint></xf:input>
-                <!--edition input ends--></fieldset>
-            <!--edition ends-->
+                    </p></xf:hint></xf:input></xf:group>
+                <!--edition input ends--></fieldset></xf:group>
+                <!--edition ends-->
             
             <!--issuance begins-->
             <!--DLF/Aquifer: -->
-            <!--Cluster: include--><fieldset><legend>Issuance</legend><xf:hint>
+            <!--Cluster: include--><xf:group id="fieldset-issuance" ref="self::node()[mods:issuance]" appearance="full"><fieldset><legend>Issuance</legend><xf:hint><p>
                 In Issuance one records how the resource is issued.
                 It may be used with the following values: continuing and monographic.
-                <br/>
+                            </p><p>
                 A continuing resource is issued over time with no predetermined conclusion. 
                 Continuing resources include serials/periodicals and ongoing integrating resources, i.e. those that are continuously updated.
                 A monographic resource is either complete in one part or intended to be completed in a finite number of separate parts.
-            </xf:hint>
+            </p></xf:hint>
             <!--issuance repeat begins--><xf:repeat nodeset="./mods:issuance" id="issuance-repeat">
-                <!--issuance input begins--><xf:select1 ref="."><xf:label>Issuance:</xf:label><xf:hint>Issuance records how the resource is issued.
+                <!--issuance input begins--><xf:group appearance="full"><xf:select1 ref="."><xf:label>Issuance:</xf:label><xf:hint><p>Issuance records how the resource is issued.
                         It may be used with the following values: continuing and monographic.
-                    </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='issuance-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                <!--issuance input ends--><br/>
-                <!--issuance delete begins--><xf:trigger ref="self::node()[count(../mods:issuance) &gt; 1]"><xf:label>Delete This Issuance</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:issuance" at="index('issuance-repeat')"/></xf:trigger>
+                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='issuance-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--issuance input ends-->
+                                
+                <!--issuance delete begins--><xf:trigger ref="self::node()[count(../mods:issuance) &gt; 1]" class="delete-button"><xf:label>Delete This Issuance</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:issuance" at="index('issuance-repeat')"/></xf:trigger>
                 <!--issuance delete ends--><div class="hr"/></xf:repeat>
-            <!--issuance repeat ends--><br/>
+            <!--issuance repeat ends-->
+                            
             <!--issuance add begins-->
-                <!--NB: do we really want to repeat issuance?--><xf:trigger class="add"><xf:label>Add Issuance</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:issuance" at="index('issuance-repeat')" position="after" origin="instance('insert-templates')/mods:issuance"/><xf:setvalue ref="instance('save-data')/mods:issuance[last()]" value="''"/></xf:action></xf:trigger>
-            <!--issuance add ends--></fieldset>
-    <!--issuance ends-->
+                <!--NB: do we really want to repeat issuance?--><xf:trigger ref="self::node()[count(mods:issuance) &gt; 0]" class="add-button"><xf:label>Add Issuance</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:issuance" at="index('issuance-repeat')" position="after" origin="instance('insert-templates')/mods:issuance"/><xf:setvalue ref="instance('save-data')/mods:issuance[last()]" value="''"/></xf:action></xf:trigger>
+            <!--issuance add ends--></fieldset></xf:group>
+                <!--issuance ends-->
     
     <!--frequency begins-->
     <!--DLF/Aquifer: -->
-    <!--Cluster: include--><fieldset><legend>Frequency</legend><xf:hint>
+    <!--Cluster: include--><xf:group id="fieldset-frequency" ref="self::node()[mods:frequency]" appearance="full"><fieldset><legend>Frequency</legend><xf:hint><p>
         Frequency is used to define the publication pattern of the item.
-    </xf:hint>
+    </p></xf:hint>
     <!--frequency repeat begins--><xf:repeat nodeset="./mods:frequency" id="frequency-repeat">
-        <!--frequency input begins--><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint>
-                The name of the authoritative list for a controlled value is recorded here.
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='frequency-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="."><xf:label>Frequency:</xf:label><xf:hint>
-                Frequency is used to define the publication pattern of the item.
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='frequency-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-        <!--frequency input ends--><br/>
-        <!--frequency delete begins--><xf:trigger ref="self::node()[count(../mods:frequency) &gt; 1]"><xf:label>Delete This Frequency</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:frequency" at="index('frequency-repeat')"/></xf:trigger>
+        <!--frequency input begins--><xf:group appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p>
+                                    The name of the authoritative list for a controlled value is recorded here.
+                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='frequency-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="."><xf:label>Frequency:</xf:label><xf:hint><p> Frequency is used to define the publication pattern of the item. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='frequency-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+        <!--frequency input ends-->
+        
+        <!--frequency delete begins--><xf:trigger ref="self::node()[count(../mods:frequency) &gt; 1]" class="delete-button"><xf:label>Delete This Frequency</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:frequency" at="index('frequency-repeat')"/></xf:trigger>
         <!--frequency delete ends--><div class="hr"/></xf:repeat>
-    <!--frequency repeat ends--><br/>
+    <!--frequency repeat ends-->
+                            
     <!--frequency add begins-->
-        <!--NB: do we really want to repeat frequency?--><xf:trigger class="add"><xf:label>Add Frequency</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:frequency" at="index('frequency-repeat')" position="after" origin="instance('insert-templates')/mods:frequency"/><xf:setvalue ref="instance('save-data')/mods:frequency[last()]" value="''"/></xf:action></xf:trigger>
-    <!--frequency add ends--></fieldset>
-    <!--frequency ends-->
+        <!--NB: do we really want to repeat frequency?--><xf:trigger ref="self::node()[count(mods:frequency) &gt; 0]" class="add-button"><xf:label>Add Frequency</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:frequency" at="index('frequency-repeat')" position="after" origin="instance('insert-templates')/mods:frequency"/><xf:setvalue ref="instance('save-data')/mods:frequency[last()]" value="''"/></xf:action></xf:trigger>
+    <!--frequency add ends--></fieldset></xf:group>
+                <!--frequency ends-->
     
-            <!--dates begins--><fieldset><legend>Dates</legend><xf:hint>
+            <!--dates begins--><xf:group id="fieldset-dates" appearance="full"><fieldset><legend>Dates</legend><xf:hint><p>
                     Dates can be expressed in several different formats.
                     The following values are used with the Encoding: w3cdtf, iso8601, marc.
                     The recommended encoding is w3cdtf.
-                    <br/>
+                            </p><p>
                     In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
                     According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
                     If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                    <br/>
+                            </p><p>
                     If Encoding is not given any value, the input is assumed to be textual.
                     This means that any way of noting time can be used.
                     If possible, use a coded value.
-                </xf:hint>
+                </p></xf:hint>
                 
-                <!--dateIssued begins--><fieldset><legend>Date Issued</legend><xf:hint>
+                <!--dateIssued begins--><xf:group id="fieldset-dateIssued" ref="self::node()[mods:dateIssued]" appearance="full"><fieldset><legend>Date Issued</legend><xf:hint><p>
                         The date that the resource was published, released, or issued.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateIssued repeat begins--><xf:repeat nodeset="./mods:dateIssued" id="date-issued-repeat">
-                        <!--dateIssued input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint>
-                                When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint>
-                                The date that the resource was published, released, or issued.
-                            </xf:hint></xf:input>
-                        <!--dateIssued input ends--><br/>
-                        <!--dateIssued delete begins--><xf:trigger ref="self::node()[count(../mods:dateIssued) &gt; 1]"><xf:label>Delete This Date Issued</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateIssued" at="index('date-issued-repeat')"/></xf:trigger>
+                        <!--dateIssued input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>
+                        <!--dateIssued input ends-->
+                                        
+                        <!--dateIssued delete begins--><xf:trigger ref="self::node()[count(../mods:dateIssued) &gt; 1]" class="delete-button"><xf:label>Delete This Date Issued</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateIssued" at="index('date-issued-repeat')"/></xf:trigger>
                         <!--dateIssued delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateIssued repeat ends--><br/>
-                    <!--dateIssued add begins--><xf:trigger class="add"><xf:label>Add Date Issued</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateIssued" at="index('date-issued-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateIssued"/><xf:setvalue ref="instance('save-data')/mods:dateIssued[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateIssued add ends--></fieldset>
-                <!--dateIssued ends-->
+                    <!--dateIssued repeat ends-->
+                                    
+                    <!--dateIssued add begins--><xf:trigger ref="self::node()[count(mods:dateIssued) &gt; 0]" class="add-button"><xf:label>Add Date Issued</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateIssued" at="index('date-issued-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateIssued"/><xf:setvalue ref="instance('save-data')/mods:dateIssued[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateIssued add ends--></fieldset></xf:group>
+                    <!--dateIssued ends-->
                 
-                <!--dateCreated begins--><fieldset><legend>Date Created</legend><xf:hint>
+                <!--dateCreated begins--><xf:group id="fieldset-dateCreated" ref="self::node()[mods:dateCreated]" appearance="full"><fieldset><legend>Date Created</legend><xf:hint><p>
                         The date of creation of the resource.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateCreated repeat begins--><xf:repeat nodeset="./mods:dateCreated" id="date-created-repeat">
-                        <!--dateCreated input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Date Created: </xf:label><xf:hint>
-                                The date of creation of the resource.
-                            </xf:hint></xf:input>
-                        <!--dateCreated input ends--><br/>
-                        <!--dateCreated delete begins--><xf:trigger ref="self::node()[count(../mods:dateCreated) &gt; 1]"><xf:label>Delete This Date Created</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCreated" at="index('date-created-repeat')"/></xf:trigger>
+                        <!--dateCreated input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>
+                        <!--dateCreated input ends-->
+                                        
+                        <!--dateCreated delete begins--><xf:trigger ref="self::node()[count(../mods:dateCreated) &gt; 1]" class="delete-button"><xf:label>Delete This Date Created</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCreated" at="index('date-created-repeat')"/></xf:trigger>
                         <!--dateCreated delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateCreated repeat ends--><br/>
-                    <!--dateCreated add begins--><xf:trigger class="add"><xf:label>Add Date Created</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCreated" at="index('date-created-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCreated"/><xf:setvalue ref="instance('save-data')/mods:dateCreated[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateCreated add ends--></fieldset>
-                <!--dateCreated ends-->
+                    <!--dateCreated repeat ends-->
+                                    
+                    <!--dateCreated add begins--><xf:trigger ref="self::node()[count(mods:dateCreated) &gt; 0]" class="add-button"><xf:label>Add Date Created</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCreated" at="index('date-created-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCreated"/><xf:setvalue ref="instance('save-data')/mods:dateCreated[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateCreated add ends--></fieldset></xf:group>
+                    <!--dateCreated ends-->
 
-                <!--dateCaptured begins--><fieldset><legend>Date Captured</legend><xf:hint>
+                <!--dateCaptured begins--><xf:group id="fieldset-dateCaptured" ref="self::node()[mods:dateCaptured]" appearance="full"><fieldset><legend>Date Captured</legend><xf:hint><p>
                         The date on which a digital resource was digitized or a subsequent snapshot was taken.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateCaptured repeat begins--><xf:repeat nodeset="./mods:dateCaptured" id="date-captured-repeat">
-                        <!--dateCaptured input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Date Captured: </xf:label><xf:hint>
-                                The date on which a digital resource was digitized or a subsequent snapshot was taken.
-                            </xf:hint></xf:input>
-                        <!--dateCaptured input ends--><br/>
-                        <!--dateCaptured delete begins--><xf:trigger ref="self::node()[count(../mods:dateCaptured) &gt; 1]"><xf:label>Delete This Date Captured</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCaptured" at="index('date-captured-repeat')"/></xf:trigger>
+                        <!--dateCaptured input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>                            
+                        <!--dateCaptured input ends-->
+                                        
+                        <!--dateCaptured delete begins--><xf:trigger ref="self::node()[count(../mods:dateCaptured) &gt; 1]" class="delete-button"><xf:label>Delete This Date Captured</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCaptured" at="index('date-captured-repeat')"/></xf:trigger>
                         <!--dateCaptured delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateCaptured repeat ends--><br/>
-                    <!--dateCaptured add begins--><xf:trigger class="add"><xf:label>Add Date Captured</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCaptured" at="index('date-captured-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCaptured"/><xf:setvalue ref="instance('save-data')/mods:dateCaptured[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateCaptured add ends--></fieldset>
-                <!--dateCaptured ends-->
+                    <!--dateCaptured repeat ends-->
+                                    
+                    <!--dateCaptured add begins--><xf:trigger ref="self::node()[count(mods:dateCaptured) &gt; 0]" class="add-button"><xf:label>Add Date Captured</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCaptured" at="index('date-captured-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCaptured"/><xf:setvalue ref="instance('save-data')/mods:dateCaptured[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateCaptured add ends--></fieldset></xf:group>
+                    <!--dateCaptured ends-->
                 
-                <!--dateValid begins--><fieldset><legend>Date Valid</legend><xf:hint>
+                    <!--fieldset-dateValid begins--><xf:group id="fieldset-dateValid" ref="self::node()[mods:dateValid]" appearance="full"><fieldset><legend>Date Valid</legend><xf:hint><p>
                         A date in which the content of a resource is valid.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateValid repeat begins--><xf:repeat nodeset="./mods:dateValid" id="date-valid-repeat">
-                        <!--dateValid input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Date Valid: </xf:label><xf:hint>
-                                A date in which the content of a resource is valid.
-                            </xf:hint></xf:input>
-                        <!--dateValid input ends--><br/>
-                        <!--dateValid delete begins--><xf:trigger ref="self::node()[count(../mods:dateValid) &gt; 1]"><xf:label>Delete This Date Valid</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateValid" at="index('date-valid-repeat')"/></xf:trigger>
+                        <!--dateValid input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>
+                            <!--dateValid input ends-->
+                                        
+                        <!--dateValid delete begins--><xf:trigger ref="self::node()[count(../mods:dateValid) &gt; 1]" class="delete-button"><xf:label>Delete This Date Valid</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateValid" at="index('date-valid-repeat')"/></xf:trigger>
                         <!--dateValid delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateValid repeat ends--><br/>
+                    <!--dateValid repeat ends-->
                         
-                    <!--dateValid add begins--><xf:trigger class="add"><xf:label>Add Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('date-valid-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateValid"/><xf:setvalue ref="instance('save-data')/mods:dateValid[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateValid add ends--></fieldset>
-                <!--dateValid ends-->
+                    <!--dateValid add begins--><xf:trigger ref="self::node()[count(mods:dateValid) &gt; 0]" class="add-button"><xf:label>Add Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('date-valid-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateValid"/><xf:setvalue ref="instance('save-data')/mods:dateValid[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateValid add ends--></fieldset></xf:group>
+                    <!--dateValid ends-->
 
-                <!--dateModified begins--><fieldset><legend>Date Modified</legend><xf:hint>
+                    <!--fieldset-dateModified begins--><xf:group id="fieldset-dateModified" ref="self::node()[mods:dateModified]" appearance="full"><fieldset><legend>Date Modified</legend><xf:hint><p>
                         The date in which a resource is modified or changed.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateModified repeat begins--><xf:repeat nodeset="./mods:dateModified" id="date-modified-repeat">
-                        <!--dateModified input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Date Modified: </xf:label><xf:hint>
-                                The date in which a resource is modified or changed.
-                            </xf:hint></xf:input>
-                        <!--dateModified input ends--><br/>
-                        <!--dateModified delete begins--><xf:trigger ref="self::node()[count(../mods:dateModified) &gt; 1]"><xf:label>Delete This Date Modified</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateModified" at="index('date-modified-repeat')"/></xf:trigger>
+                        <!--dateModified input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>
+                            <!--dateModified input ends-->
+                                        
+                        <!--dateModified delete begins--><xf:trigger ref="self::node()[count(../mods:dateModified) &gt; 1]" class="delete-button"><xf:label>Delete This Date Modified</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateModified" at="index('date-modified-repeat')"/></xf:trigger>
                         <!--dateModified delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateModified repeat ends--><br/>
-                    <!--dateModified add begins--><xf:trigger class="add"><xf:label>Add Date Modified</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateModified" at="index('date-modified-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateModified"/><xf:setvalue ref="instance('save-data')/mods:dateModified[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateModified add ends--></fieldset>
-                <!--dateModified ends-->
+                    <!--dateModified repeat ends-->
+                                    
+                    <!--dateModified add begins--><xf:trigger ref="self::node()[count(mods:dateModified) &gt; 0]" class="add-button"><xf:label>Add Date Modified</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateModified" at="index('date-modified-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateModified"/><xf:setvalue ref="instance('save-data')/mods:dateModified[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateModified add ends--></fieldset></xf:group>
+                    <!--dateModified ends-->
 
-                <!--copyrightDate begins--><fieldset><legend>Copyright Date</legend><xf:hint>
+                <!--copyrightDate begins--><xf:group id="fieldset-copyrightDate" ref="self::node()[mods:copyrightDate]" appearance="full"><fieldset><legend>Copyright Date</legend><xf:hint><p>
                         A date in which a resource is copyrighted.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--copyrightDate repeat begins--><xf:repeat nodeset="./mods:copyrightDate" id="copyright-date-repeat">
-                        <!--copyrightDate input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Copyright Date: </xf:label><xf:hint>
-                                A date in which a resource is copyrighted.
-                            </xf:hint></xf:input>
-                        <!--copyrightDate input ends--><br/>
-                        <!--copyrightDate delete begins--><xf:trigger ref="self::node()[count(../mods:copyrightDate) &gt; 1]"><xf:label>Delete This Copyright Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:copyrightDate" at="index('copyright-date-repeat')"/></xf:trigger>
+                        <!--copyrightDate input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                    iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                            fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                            relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>                            
+                        <!--copyrightDate input ends-->
+                                        
+                        <!--copyrightDate delete begins--><xf:trigger ref="self::node()[count(../mods:copyrightDate) &gt; 1]" class="delete-button"><xf:label>Delete This Copyright Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:copyrightDate" at="index('copyright-date-repeat')"/></xf:trigger>
                         <!--copyrightDate delete ends--><div class="hr"/></xf:repeat>
-                    <!--copyrightDate repeat ends--><br/>
-                    <!--copyrightDate add begins--><xf:trigger class="add"><xf:label>Add Copyright Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyrightDate" at="index('copyright-date-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:copyrightDate"/><xf:setvalue ref="instance('save-data')/mods:copyrightDate[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--copyrightDate repeat ends-->
+                                    
+                    <!--copyrightDate add begins--><xf:trigger ref="self::node()[count(mods:copyrightDate) &gt; 0]" class="add-button"><xf:label>Add Copyright Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyrightDate" at="index('copyright-date-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:copyrightDate"/><xf:setvalue ref="instance('save-data')/mods:copyrightDate[last()]" value="''"/></xf:action></xf:trigger>
                     <!--copyrightDate add ends--></fieldset>
-                <!--copyrightDate ends-->
-
-                <!--dateOther begins--><fieldset><legend>Other Date</legend><xf:hint>
+                    <!--</xf:group>-->
+                    <!--copyrightDate ends-->
+                    
+                    <!--dateOther begins--><xf:group id="fieldset-dateOther" ref="self::node()[mods:dateOther]" appearance="full"><fieldset><legend>Other Date</legend><xf:hint><p>
                         A date that does not fall into another category but is important to record.
-                    </xf:hint>
+                    </p></xf:hint>
                     <!--dateOther repeat begins--><xf:repeat nodeset="./mods:dateOther" id="date-other-repreat">
-                        <!--dateOther input begins--><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint>
-                                Dates can be expressed in several different formats.
-                                The following values are used with the Encoding: w3cdtf, iso8601, marc.
-                                The recommended encoding is w3cdtf.
-                                <br/>
-                                In all three encodings, a specific year (e.g. "1938") is encoded in the same way; the three standards differ in how to encode time points of time year.
-                                According to w3cdtf dates follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months two and all days two digits. 
-                                If hours, minutes, and seconds are needed, the following pattern is used: YYYY-MM-DDThh:mm:ss.
-                                <br/>
-                                If Encoding is not given any value, the input is assumed to be textual.
-                                This means that any way of noting time can be used.
-                                If possible, use a coded value.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint>
-                                Use Point if you wish to record a span of time, e.g. 1912-1914.
-                                The following values are used with Point: start, end.
-                                Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates in the two date fields.
-                                <br/>
-                                If no point attribute is specified, a date noted in Date is assumed to be a single date.
-                                <br/></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                        <!--Cluster: hide--><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint>
-                                One can record different events that may be important in the life of a resource in a number of different date elements. 
-                                When multiple date elements apply but would contain identical data, one may choose to use only one of the relevant date elements. 
-                                In this case, mark one and only one such date element as a key date by choosing "date is key date" in Key Date.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><xf:hint>
-                                    When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than inserting characters such as "ca.", brackets, or a question mark as part of the date string. 
-                                    When only a decade is known, enter a date range for the entire decade and mark the date as questionable. 
-                                    When only a century is known, enter a date range for the entire century and mark the date as questionable.
-                                </xf:hint></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:input ref="." class="text_50"><xf:label>Other Date: </xf:label><xf:hint>
-                                A date that does not fall into another category but is important to record.
-                            </xf:hint></xf:input>
-                        <!--dateOther input ends--><br/>
-                        <!--dateOther delete begins--><xf:trigger ref="self::node()[count(../mods:dateOther) &gt; 1]"><xf:label>Delete This Other Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateOther" at="index('date-other-repreat')"/></xf:trigger>
+                        <!--dateOther input begins--><xf:group appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> Dates can be expressed in several different formats. The following values are used with the Encoding: w3cdtf,
+                                                        iso8601, marc. The recommended encoding is w3cdtf. </p><p> In all three encodings, a specific year (e.g. "1938") is
+                                        encoded in the same way; the three standards differ in how to encode time points of time year. According to w3cdtf dates
+                                        follow the pattern: YYYY-MM-DD, i.e. with dashes between year, month and day, and with all years have four, all months
+                                        two and all days two digits. If hours, minutes, and seconds are needed, the following pattern is used:
+                                        YYYY-MM-DDThh:mm:ss. </p><p> If Encoding is not given any value, the input is assumed to be textual. This means that any
+                                        way of noting time can be used. If possible, use a coded value. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Use Point if you wish to record a span of time, e.g. 1912-1914. The following values are used with Point: start,
+                                        end. Repeat the date field and choose "start" in one and "end" in the other repetition, and enter the appropriate dates
+                                        in the two date fields. </p><p> If no point is specified, a date noted in Date is assumed to be a single date.
+                                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                            <!--Cluster: hide--><xf:group appearance="full"><xf:select1 ref="./@keyDate"><xf:label>Key Date:</xf:label><xf:hint><p> One can record different events that may be important in the life of a resource in a number of different date
+                                                                fields. When multiple date fields apply but would contain identical data, one may choose to use only one of the
+                                                                relevant date fields. In this case, mark one and only one such date field as a key date by choosing "date is key
+                                        date" in Key Date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-keydate-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> When a date is uncertain or supplied by the cataloger, indicate this through the use of Qualifier rather than
+                                        inserting characters such as "ca.", brackets, or a question mark as part of the date string. When only a decade is
+                                        known, enter a date range for the entire decade and mark the date as questionable. When only a century is known, enter a
+                                        date range for the entire century and mark the date as questionable. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-qualifier-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group appearance="full"><xf:input ref="." class="text_50"><xf:label>Date Issued: </xf:label><xf:hint><p> The date that the resource was published, released, or issued. </p></xf:hint></xf:input></xf:group>
+                            <!--dateOther input ends-->
+                                            
+                        <!--dateOther delete begins--><xf:trigger ref="self::node()[count(../mods:dateOther) &gt; 1]" class="delete-button"><xf:label>Delete This Other Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateOther" at="index('date-other-repreat')"/></xf:trigger>
                         <!--dateOther delete ends--><div class="hr"/></xf:repeat>
-                    <!--dateOther repeat ends--><br/>
-                    <!--dateOther add begins--><xf:trigger class="add"><xf:label>Add Other Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateOther" at="index('date-other-repreat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateOther"/><xf:setvalue ref="instance('save-data')/mods:dateOther[last()]" value="''"/></xf:action></xf:trigger>
-                    <!--dateOther add ends--></fieldset>
-                <!--dateOther ends--></fieldset>
-            <!--dates ends--><br/>
-            <!--originInfo delete begins--><xf:trigger ref="self::node()[count(../mods:originInfo) &gt; 1]"><xf:label>Delete This Origin Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo" at="index('origininfo-repeat')"/></xf:trigger>
+                    <!--dateOther repeat ends-->
+                                        
+                    <!--dateOther add begins--><xf:trigger ref="self::node()[count(mods:dateOther) &gt; 0]" class="add-button"><xf:label>Add Other Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateOther" at="index('date-other-repreat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateOther"/><xf:setvalue ref="instance('save-data')/mods:dateOther[last()]" value="''"/></xf:action></xf:trigger>
+                    <!--dateOther add ends--></fieldset></xf:group></xf:group>
+                    <!--dateOther ends--></fieldset></xf:group>
+                <!--dates ends-->
+                    
+            <!--originInfo delete begins--><xf:trigger ref="self::node()[count(../mods:originInfo) &gt; 1]" class="delete-button"><xf:label>Delete This Origin Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo" at="index('origininfo-repeat')"/></xf:trigger>
             <!--originInfo delete ends--><div class="hr"/></div></xf:repeat>
-        <!--originInfo repeat ends--><br/>
-        <!--originInfo add begins--><xf:trigger class="add"><xf:label>Add Origin Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:originInfo" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo"/><xf:setvalue ref="instance('save-data')/mods:originInfo[last()]" value="''"/></xf:action></xf:trigger>
-        <!--originInfo add ends--></fieldset></div>
+        <!--originInfo repeat ends-->
+            
+        <!--originInfo add begins--><xf:trigger ref="self::node()[count(mods:originInfo) &gt; 0]" class="add-button"><xf:label>Add Origin Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:originInfo" at="index('origininfo-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo"/><xf:setvalue ref="instance('save-data')/mods:originInfo[last()]" value="''"/></xf:action></xf:trigger>
+        <!--originInfo add ends--></fieldset></xf:group></div></div>

@@ -1,198 +1,128 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="name" tab-id="name">
-    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records requires the use of at least one name element to describe the creator of the intellectual content of the resource, if available. The guidelines recommend the use of the type attribute with all name elements whenever possible for greater control and interoperability. In addition, they require the use of namePart as a subelement of name. This element is repeatable. --><fieldset><legend>Names</legend><xf:hint>In Names are catalogued the names of the persons, organisations, or events (conferences, meetings, etc.) that are associated with the resource
-        being catalogued. These relationship between these named entities and the resource is described in Role. 
-        <br/>
-        Include as many Names blocks as needed.
-        <br/>
-        In addition to describing named entities associated with the creation of a resource, Names is also used as a kind of Subject. For names
-        used as subjects, to note that the resource is about a named entity, see the Subjects tab.
-        <br/>
-        For textual materials, include the names of all known authors, translators, compilers, and editors.
-        <br/>
-        For images, include the name of the creator of the original intellectual content (the original photographer, painter, architect, etc.) and the name of
-        anyone capturing that content in a new medium (for a photograph of a building, include both the architect and the photographer).
-        <br/>
-        If no known person or organisation etc. is known to be associated with the resource, or if the person or organisation etc. is anonymous, do not use "unknown," "anonymous," or similar annotations; rather, leave the Names block empty.</xf:hint>
-        <!--name repeat begins--><xf:repeat nodeset="mods:name" id="name-repeat"><div class="block-form">
-            <!--name input begins-->
-            <!--DLF/Aquifer: RECOMMENDED-->
-            <!--Cluster: warn--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>
-                The type attribute can take the following values: personal, corporate, conference. Use it to indicate whether the name is the name of
-                a person (or a family), the name of a corporation or the name of a conference (or an event similar to a conference).
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: omit--><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint>Hint</xf:hint></xf:input><br/>
-            <!--DLF/Aquifer: RECOMMENDED-->
-            <!--Cluster: include--><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint>
-                The name of an authoritative list for a controlled value in Name is recorded here.
-                <br/>
-                If you render the name as it occurs in the resource, you may leave the Authority attribute value blank. If you normalize the name, you should indicate according to which authority you
-                are altering it. Use the value "Local" if a locally-developed name authority file is used to catalogue the Name in question.
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: omit--><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint>
-                The XLink attribute is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
-            </xf:hint></xf:input><br/>
-            <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include?-->
-            <!-- NB: while it does seem reasonable to hold that a name occurs in a certain script or transliteration, it does not in most cases make sense to say that a name is in a certain language. What about William the Conqueror? --><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: NOT RECOMMENDED]-->
-            <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>
-                This attribute is used to specify the language used within an element, using specifications in RFC 3066. 
-                RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                <br/>
-                The recommendation is not to use xml:lang, but to use the above Language attribute.
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include--><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint>
-                Use Script to record the script in which the name in rendered.
-            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: N/A-->
-            <!--Cluster: include--><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint> If the name is rendered in transliterated form, register the transliteration scheme followed here. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-            <!--DLF/Aquifer: OPTIONAL]]-->
-            <!--Cluster: omit--><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint>
-                This attribute is used when additional text associated with the title is needed for display. 
-                Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. 
-                Include the text and capitalization preferred, but do not include delimiters such as colons or semicolons.
-            </xf:hint></xf:input><br/>
-            <!--name input ends-->
-            <!--namePart begins--><fieldset><legend>Name Part</legend>
-                <!--namePart repeat begins--><xf:repeat nodeset="./mods:namePart" id="name-part-repeat">
-                    <!--namePart input begins-->
-                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                    <!--Cluster: warn--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint> Name Part includes each part of the name. Parsing is used to parse parts of a personal name into family/surname and given
-                        name/forename, as well as terms of address, but it is also used to indicate a date associated with the name and to parse the parts of a corporate name. 
-                        <br/>
-                        The parsing performed is indicated by the Type attribute. 
-                        This attribute takes the following values: Date, Family, Given, Terms Of Address.
-                        <br/>
-                        Date is used to note dates that are not integral parts of a name. For dates within e.g. a conference name, do not use this attribute to separate the date, since it is an integral part of the name of the conference. 
-                        The birthdate associated with a personal name, however, is not an integral part of the name, but can be added to distinguish the name from others, so it does include a separate Name Part with a Type of "Date". 
-                        <br/>
-                        "Family" is used for the family name or surname of a person.
-                        <br/>
-                        "Given" is used for the given name or forename of a person.
-                        <br/>
-                        "Terms Of Address" is used to record titles and enumeration associated with a name, such as "Jr.", "II", etc.
-                        <br/>
-                        If you do not know how to break up a name or if a name is not constructed according to the family name/given name pattern, leave the Type of the Name Part blank and enter the whole name as it occurs.
-                    </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-part-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/>
-                    <!--DLF/Aquifer: REQUIRED-->
-                    <!--Cluster: require--><xf:input ref="." class="text_50"><xf:label>Name Part:</xf:label><xf:hint>
-                        The name itself is always entered into a Name Part.
-                        This is the case even if it is not possible to parse the name into separate units.
-                    </xf:hint></xf:input>
-                    <!--namePart input ends--><br/>
-                    <!--namePart delete begins--><xf:trigger ref="self::node()[count(../mods:namePart) &gt; 1]"><xf:label>Delete This Name Part</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:namePart" at="index('name-part-repeat')"/></xf:trigger>
-                    <!--namePart delete ends--><div class="hr"/></xf:repeat>
-                <!--namePart repeat ends-->
-                <!--namePart add begins--><xf:trigger class="add"><xf:label>Add Name Part</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:namePart" at="index('name-part-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:namePart"/><xf:setvalue ref="instance('save-data')/mods:namePart[last()]" value="''"/></xf:action></xf:trigger>
-                <!--namePart add ends--></fieldset>
-            <!--namePart ends-->
-            <!--role begins--><fieldset><legend>Role</legend><xf:hint>
-                Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the
-                resource being catalogued. 
-                Repeat Role for each new role played by the the person, corporation or conference.
-            </xf:hint>
-                <!--role repeat begins--><xf:repeat nodeset="./mods:role" id="role-repeat">
-                    <!--role input begins-->
-                    <!--DLF/Aquifer: RECOMMENDED]-->
-                    <!--Cluster: warn-->
-                    <!--roleTerm begins-->
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="name" tab-id="name"><div class="block-form"><xf:group appearance="full">
+            <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records requires the use of at least one name element to describe the creator of the intellectual content of the resource, if available. The guidelines recommend the use of the type attribute with all name elements whenever possible for greater control and interoperability. In addition, they require the use of namePart as a subelement of name. This element is repeatable. --><fieldset><legend>Names</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="legend-label">Introduction</span><div class="xforms-hint-value"><p> In Names are catalogued the names of the persons, organisations, or events (conferences, meetings, etc.) that are associated with the resource being catalogued. These relationship between these named entities and the resource is described in Role. </p><p>Include as many Names blocks as needed. </p><p> In addition to describing named entities associated with the creation of a resource, Names is also used as a kind of Subject. For names used as subjects, to note that the resource is about a named entity, see the Subjects tab. </p><p> For textual materials, include the names of all known authors, translators, compilers, and editors. </p><p> For images, include the name of the creator of the original intellectual content (the original photographer, painter, architect, etc.) and the name of anyone capturing that content in a new medium (for a photograph of a building, include both the architect and the photographer). </p><p> If no known person or organisation etc. is known to be associated with the resource, or if the person or organisation etc. is anonymous, do not use "unknown," "anonymous," or similar annotations; rather, leave the Names block empty. </p></div></span>
+                <!--name repeat begins--><xf:repeat nodeset="mods:name" id="name-repeat">
+                    <!--name input begins-->
                     <!--DLF/Aquifer: OPTIONAL-->
-                    <!--Cluster: include--><fieldset><legend>Role Term</legend><xf:hint>
-                        Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the 
-                        An authority should be indicated if using a coded form for role.
-                        <br/>
-                        Coded input is preselected as Type.
-                        The MARC Code List for Relators is preselected as Authority, with the most common
-                        roles placed at the top.
-                        <br/>
-                        If both a coded term and a textual term are given that represent the same role, use one Role and
-                        two occurrences of Role Term.
-                        <br/></xf:hint>
-                        <!--roleTerm input begins-->
-                        <!--roleTerm repeat begins--><xf:repeat nodeset="./mods:roleTerm" id="roleTerm-repeat">
-                            <!--roleTerm input begins-->
-                            <!--DLF/Aquifer: RECOMMENDED]-->
-                            <!--Cluster: warn--><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint>
-                                Type is used to express whether the Role Term has textual or coded form.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><br/><xf:select1 ref=".[@type='code']/@authority"><xf:label>Authority:</xf:label><xf:hint>
-                                If the Type is in coded form, the authority file followed must be indicated.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-role-relator-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                            <!--DLF/Aquifer: REQUIRED]-->
-                            <!--Cluster: require--><br/><xf:select1 ref=".[@type='code' and @authority ='marcrelator']"><xf:label>Role Term (code):</xf:label><xf:hint>
-                                Select a Role Term from the list.
-                                <br/>
-                                Note that "Author" is primarily used in connection with printed resources, whereas "Creator" is primarily used in connection with other resources.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='role-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:input ref=".[@type='code' and not(@authority ='marcrelator')]" selection="open"><xf:label>Role Term (code):</xf:label><xf:hint> Select a term from the list.
-                                <br/>
-                                Note that "Author" is primarily used in connection with printed resources, whereas "Creator" is primarily used in connection with other resources.
-                            </xf:hint></xf:input><xf:select1 ref=".[not(@type='code')]" selection="open"><xf:label>Role Term (text):</xf:label><xf:hint>
-                                Select a term from the list.
-                                <br/>
-                                The list of terms given if "Text" is chosen for Type is the same as the list given if "Code" is chosen for Type and Authority is MARC Code List for Relators. 
-                                However, the values entered into the database are different. 
-                                If Code is chosen, "aut" will e.g be input, whereas "Author" will be input if "Text" is chosen. 
-                                It is recomended to input each role in both coded and textual form.
-                                <br/>
-                                If "Text" is chosen, you can also input a term not on the list.
-                            </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='role-code']/items/item"><xf:label ref="label"/><xf:value ref="label"/></xf:itemset></xf:select1>
-                            <!--roleTerm input ends--><br/>
-                            <!--roleTerm delete begins--><xf:trigger ref="self::node()[count(../mods:roleTerm) &gt; 1]"><xf:label>Delete This Role Term</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:role/mods:roleTerm" at="index('roleTerm-repeat')"/></xf:trigger>
-                            <!--roleTerm delete ends--><div class="hr"/></xf:repeat>
-                        <!--roleTerm repeat ends-->
-                        <!--roleTerm add begins--><xf:trigger class="add"><xf:label>Add Role Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:roleTerm" at="index('roleTerm-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:roleTerm"/><xf:setvalue ref="instance('save-data')/mods:roleTerm[last()]" value="''"/></xf:action></xf:trigger>
-                        <!--roleTerm add ends--></fieldset>
-                    <!--roleTerm ends-->
-                    <!--role input ends-->
-                    <!--role delete begins--><xf:trigger ref="self::node()[count(../mods:role) &gt; 1]"><xf:label>Delete This Role</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:role" at="index('role-repeat')"/></xf:trigger>
-                    <!--role delete ends--><div class="hr"/></xf:repeat>
-                <!--role repeat ends-->
-                <!--role add begins--><xf:trigger class="add"><xf:label>Add Role</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:role" at="index('role-repeat')" position="after" origin="instance('insert-templates')/mods:role"/><xf:setvalue ref="instance('save-data')/mods:role[last()]" value="''"/></xf:action></xf:trigger>
-                <!--role add ends--></fieldset>
-            <!--role ends-->
-            <!--displayForm begins-->
-            <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
-            <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: omit--><fieldset><legend>Display Form</legend><xf:hint> The Display Form element makes it possible to display personal names in unstructured form. It typically renders a name as given on the
-                resource.<br/> For some applications, contractual agreements require that the form of the name provided on the resource be provided. </xf:hint>
-                <!--displayForm input begins--><br/><xf:input ref="./mods:displayForm" class="text_50"><xf:label>Display Form: </xf:label><xf:hint>
-                    Display Form makes it possible to display personal names in unstructured form. 
-                    It typically renders a name as given on the resource.
-                </xf:hint></xf:input>
-                <!--displayForm input ends--></fieldset>
-            <!--displayForm ends-->
-            <!--affiliation begins-->
-            <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
-            <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: include--><fieldset><legend>Affiliation</legend><xf:hint>
-                Affiliation contains the name, address, etc. of an organisation with which the person in Name was associated when the resource was
-                created.
-                <br/>
-                If the information is readily available, it may be included.
-            </xf:hint>
-                <!--affiliation input begins--><br/><xf:input ref="./mods:affiliation" class="text_50"><xf:label>Affiliation: </xf:label><xf:hint>
-                    Affiliation contains the name, address, etc. of an organisation with which the person in Name was associated when the resource was
-                    created.
-                    <br/>
-                    If the information is readily available, it may be included.
-                </xf:hint></xf:input>
-                <!--affiliation input ends--></fieldset>
-            <!--affiliation ends-->
-            <!--description begins-->
-            <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
-            <!--DLF/Aquifer: NOT RECOMMENDED-->
-            <!--Cluster: omit--><fieldset><legend>Description</legend><xf:hint>
-                Description contains A textual description for a name when necessary, for example, to distinguish from other names.
-            </xf:hint>
-                <!--description input begins--><br/><xf:input ref="./mods:description" class="text_50"><xf:label>Description: </xf:label><xf:hint>
-                    Description contains A textual description for a name when necessary, for example, to distinguish from other names.
-                </xf:hint></xf:input>
-                <!--description input ends--></fieldset>
-            <!--description ends-->
-            <!--name delete begins--><xf:trigger ref="self::node()[count(../mods:name) &gt; 1]"><xf:label>Delete This Name</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name" at="index('name-repeat')"/></xf:trigger>
-            <!--name delete ends--><div class="hr"/></div></xf:repeat>
-        <!--name repeat ends-->
-        <!--name add begins--><xf:trigger class="add"><xf:label>Add Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name"/><xf:setvalue ref="instance('save-data')/mods:name[last()]" value="''"/></xf:action></xf:trigger>
-        <!--name add ends--></fieldset></div>
+                    <!--Cluster: omit--><xf:group ref="self::node()[@ID]" appearance="full"><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint><p>ID is used to link among records inside the database and to reference a field inside the database from the outside.</p></xf:hint></xf:input></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                    <!--Cluster: omit--><xf:group ref="self::node()[@xlink]" appearance="full"><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p>The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.</p></xf:hint></xf:input></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED-->
+                    <!--Cluster: warn--><xf:group ref="self::node()[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>The Type field can take the following values: personal, corporate, conference. Use it to indicate whether the name is the name of a person (or a family), the name of a corporation or the name of a conference (or an event similar to a conference).</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED-->
+                    <!--Cluster: include--><xf:group ref="self::node()[@authority]" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of an authoritative list for a controlled value in Name is recorded here. </p><p> If you render the name as it occurs in the resource, you may leave the Authority field value blank. If you normalize the name, you should indicate according to which authority you are altering it. Use the value "Local" if a locally-developed name authority file is used to catalogue the Name in question. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: include?-->
+                    <!-- NB: while it does seem reasonable to hold that a name occurs in a certain script or transliteration, it does not in most cases make sense to say that a name is in a certain language. What about William the Conqueror? --><xf:group ref="self::node()[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. The most common languages have been moved to the top of the list. </p><p> Language can be applied the Name as a whole. Do this if you are using only one Language value for all Name Parts. If you are using different values for different Name Parts, apply Language to each Name Part and leave Language empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                    <!--Cluster: omit--><xf:group ref="self::node()[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> This field is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. The recommendation is not to use xml:lang, but to use the above Language field. </p><p> Language can be applied the Name as a whole. Do this if you are using only one Language value for all Name Parts. If you are using different values for different Name Parts, apply Language to each Name Part and leave Language empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: include--><xf:group ref="self::node()[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Use Script to record the script in which the name in rendered. </p><p>Script can be applied the Name as a whole. Do this if you are using only one Script value for all Name Parts. If you are using different values for different Name Parts, apply Script to each Name Part and leave Script empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: N/A-->
+                    <!--Cluster: include--><xf:group ref=".[not(@script='Latn')]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p> This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p><p> Script can be applied the Name as a whole. Do this if you are using only one Script value for all Name Parts. If you are using different values for different Name Parts, apply Script to each Name Part and leave Script empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: OPTIONAL]]-->
+                    <!--Cluster: omit--><xf:group ref="self::node()[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p>This field is used when additional text associated with the title is needed for display. Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Include the text and capitalization preferred, but do not include delimiters such as colons or semicolons.</p></xf:hint></xf:input></xf:group>
+                    <!--name input ends-->
+                    <!--name node-add begins--><div class="node-adds">
+                        <!--NB: attributes do not work-->
+                        <!--elements--><xf:group id="name-add-node-recommended" appearance="full"><xf:group ref="self::node()[not(mods:namePart)]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Name Part</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:namePart" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:namePart"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[not(mods:displayForm)]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Display Form</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:displayForm" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:displayForm"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[not(mods:affiliation)]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Affiliation</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:affiliation" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:affiliation"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[not(mods:role)]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Role</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:role" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:role"/></xf:action></xf:trigger></xf:group><xf:group ref="self::node()[not(mods:description)]" appearance="full"><xf:trigger class="add-button"><xf:label>Add Description</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:description" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:description"/></xf:action></xf:trigger></xf:group>
+                            <!-- <xf:group ref="self::node()[not(@type)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Type</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@type" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@type"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@authority)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@authority" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@authority"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@lang)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Language</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@language" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@lang"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@transliteration)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Transliteration</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@transliteration" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@transliteration"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@script)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Script</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@script" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@script"/> </xf:action> </xf:trigger> </xf:group> --></xf:group><xf:group id="name-add-node-optional" ref="self::node()[not(@xlink)] or self::node()[not(@displayLabel)]" appearance="full">
+                            <!-- <xf:trigger class="add-button"> <xf:label>Add XLink</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xlink" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@xlink"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@displayLabel)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add Display Label</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@displayLabel" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> --></xf:group><xf:group id="name-add-node-not-recommended" ref="self::node()[not(@ID)] or self::node()[not(@xml:lang)]" appearance="full">
+                            <!-- <xf:group ref="self::node()[not(@ID)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add ID</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@ID" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> <xf:group ref="self::node()[not(@xml:lang)]" appearance="full"> <xf:trigger class="add-button"> <xf:label>Add xml:lang</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xml:lang" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> --></xf:group></div>
+                    <!--name node-add ends-->
+                    <!--namePart begins--><xf:group id="fieldset-namePart" ref="self::node()[(mods:namePart)]" appearance="full"><fieldset><legend>Name Part</legend>
+                            <!--namePart repeat begins--><xf:repeat nodeset="./mods:namePart" id="name-part-repeat">
+                                <!--namePart input begins-->
+                                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                                <!--Cluster: warn--><xf:group ref="self::node()[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>Name Part includes each part of the name. Parsing is used to parse parts of a personal name into family/surname and given name/forename, as well as terms of address, but it is also used to indicate a date associated with the name and to parse the parts of a corporate name. </p><p> The parsing performed is indicated by the Type field. This field takes the following values: Date, Family, Given, Terms Of Address. </p><p> Date is used to note dates that are not integral parts of a name. For dates within e.g. a conference name, do not use this field to separate the date, since it is an integral part of the name of the conference. The birthdate associated with a personal name, however, is not an integral part of the name, but can be added to distinguish the name from others, so it does include a separate Name Part with a Type of "Date". </p><p> "Family" is used for the family name or surname of a person. </p><p> "Given" is used for the given name or forename of a person. </p><p> "Terms Of Address" is used to record titles and enumeration associated with a name, such as "Jr.", "II", etc. </p><p> If you do not know how to break up a name or if a name is not constructed according to the family name/given name pattern, leave the Type of the Name Part blank and enter the whole name as it occurs. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-part-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Schema: added in accordance with 3.4-->
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: include?-->
+                                <!-- NB: while it does seem reasonable to hold that a name occurs in a certain script or transliteration, it does not in most cases make sense to say that a name is in a certain language. What about William the Conqueror? --><xf:group ref="self::node()[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. The most common languages have been moved to the top of the list. </p><p> Language can be applied the Name as a whole. Do this if you are using only one Language value for all Name Parts. If you are using different values for different Name Parts, apply Language to each Name Part and leave Language empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Schema: added in accordance with 3.4-->
+                                <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                                <!--Cluster: omit--><xf:group ref="self::node()[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>This field is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the above Language field. </p><p> Language can be applied the Name as a whole. Do this if you are using only one Language value for all Name Parts. If you are using different values for different Name Parts, apply Language to each Name Part and leave Language empty under Name as a whole. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Schema: added in accordance with 3.4-->
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: include--><xf:group ref="self::node()[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>Use Script to record the script in which the name in rendered. </p><p> Script can be applied the Name as a whole. Do this if you are using only one Script value for all Name Parts. If you are using different values for different Name Parts, apply Script to each Name Part and leave Script empty under Name as a whole.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Schema: added in accordance with 3.4-->
+                                <!--DLF/Aquifer: N/A-->
+                                <!--Cluster: include--><xf:group ref="self::node()[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p><p> Script can be applied the Name as a whole. Do this if you are using only one Script value for all Name Parts. If you are using different values for different Name Parts, apply Script to each Name Part and leave Script empty under Name as a whole.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--DLF/Aquifer: REQUIRED-->
+                                <!--Cluster: require--><xf:group ref="self::node()" appearance="full"><xf:input ref="." class="text_50"><xf:label>Name Part:</xf:label><xf:hint><p>The name itself is always entered into a Name Part. This is the case even if it is not possible to parse the name into separate units.</p></xf:hint></xf:input></xf:group>
+                                <!--namePart input ends-->
+                                <!--namePart node-add begins--><div class="node-adds">
+                                    <!--NB: attributes do not work--><xf:group id="namePart-add-node-recommended" appearance="full">
+                                        <!-- <xf:trigger ref="self::node()[not(@type)]" class="add-button"> <xf:label>Add Type</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@type" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@type"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@authority)]" class="add-button"> <xf:label>Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@authority" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@authority"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@lang)]" class="add-button"> <xf:label>Add Language</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@language" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@lang"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@transliteration)]" class="add-button"> <xf:label>Add Transliteration</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@transliteration" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@transliteration"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@script)]" class="add-button"> <xf:label>Add Script</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@script" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@script"/> </xf:action> </xf:trigger> --></xf:group><xf:group id="namePart-add-node-optional" appearance="full">
+                                        <!-- <xf:trigger ref="self::node()[not(@xlink)]" class="add-button"> <xf:label>Add XLink</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xlink" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@xlink"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@displayLabel)]" class="add-button"> <xf:label>Add Display Label</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@displayLabel" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> --></xf:group><xf:group id="namePart-add-node-not-recommended" appearance="full">
+                                        <!-- <xf:trigger ref="self::node()[not(@ID)]" class="add-button"> <xf:label>Add ID</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@ID" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> <xf:trigger ref="self::node()[not(@xml:lang)]" class="add-button"> <xf:label>Add xml:lang</xf:label> <xf:action ev:event="DOMActivate"> <xf:insert nodeset="@xml:lang" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/@displayLabel"/> </xf:action> </xf:trigger> --></xf:group></div>
+                                <!--namePart node-add ends-->
+                                <!--namePart delete begins--><xf:group appearance="full"><xf:trigger class="delete-button"><xf:label>Delete This Name Part</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:namePart" at="index('name-part-repeat')"/></xf:trigger></xf:group>
+                                <!--namePart delete ends--><div class="hr"/></xf:repeat>
+                            <!--namePart repeat ends-->
+                            <!--namePart add begins--><xf:group appearance="full"><xf:trigger ref="self::node()[mods:namePart]" class="add-button"><xf:label>Add Another Name Part</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:namePart" at="index('name-part-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:namePart"/></xf:action></xf:trigger></xf:group>
+                            <!--namePart add ends--></fieldset></xf:group>
+                    <!--namePart ends-->
+                    <!--role begins--><xf:group id="fieldset-role" ref="self::node()[(mods:role)]" appearance="full"><fieldset><legend>Role</legend><xf:hint><p>Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the resource being catalogued. Repeat Role for each new role played by the the person, corporation or conference.</p></xf:hint>
+                            <!--role repeat begins--><xf:repeat nodeset="./mods:role" id="role-repeat">
+                                <!--role input begins-->
+                                <!--DLF/Aquifer: RECOMMENDED]-->
+                                <!--Cluster: warn-->
+                                <!--roleTerm begins-->
+                                <!--DLF/Aquifer: OPTIONAL-->
+                                <!--Cluster: include-->
+                                <!--role node-add begins--><xf:group id="fieldset-roleTerm" ref="self::node()[(mods:roleTerm)]" appearance="full"><fieldset><legend>Role Term</legend><xf:hint><p>Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the An authority should be indicated if using a coded form for role. </p><p> Coded input is preselected as Type. The MARC Code List for Relators is preselected as Authority, with the most common roles placed at the top. </p><p> If both a coded term and a textual term are given that represent the same role, use one Role and two occurrences of Role Term.</p></xf:hint>
+                                        <!--roleTerm input begins-->
+                                        <!--roleTerm repeat begins--><xf:repeat nodeset="./mods:roleTerm" id="roleTerm-repeat">
+                                            <!--roleTerm input begins-->
+                                            <!--DLF/Aquifer: RECOMMENDED]-->
+                                            <!--Cluster: warn--><xf:group ref="self::node()[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>Type is used to express whether the Role Term has textual or coded form.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref="self::node()[@type='code']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p>If the Type is in coded form, the authority file followed must be indicated.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-role-relator-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                            <!--DLF/Aquifer: REQUIRED]-->
+                                            <!--Cluster: require--><xf:group ref="self::node()[@type='code' and @authority ='marcrelator']" appearance="full"><xf:select1 ref="."><xf:label>Role Term (code):</xf:label><xf:hint><p>Select a Role Term from the list. </p><p> Note that "Author" is primarily used in connection with printed resources, whereas "Creator" is primarily used in connection with other resources.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='role-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref="self::node()" appearance="full"><xf:input ref="." selection="open"><xf:label>Role Term (code):</xf:label><xf:hint><p>Select a term from the list. </p><p> Note that "Author" is primarily used in connection with printed resources, whereas "Creator" is primarily used in connection with other resources.</p></xf:hint></xf:input></xf:group><xf:group ref="self::node()[not(@type='code')]" appearance="full"><xf:select1 ref="." selection="open"><xf:label>Role Term (text):</xf:label><xf:hint><p>Select a term from the list. </p><p> The list of terms given if "Text" is chosen for Type is the same as the list given if "Code" is chosen for Type and Authority is MARC Code List for Relators. However, the values entered into the database are different. If Code is chosen, "aut" will e.g be input, whereas "Author" will be input if "Text" is chosen. It is recomended to input each role in both coded and textual form. </p><p> If "Text" is chosen, you can also input a term not on the list.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='role-code']/items/item"><xf:label ref="label"/><xf:value ref="label"/></xf:itemset></xf:select1></xf:group>
+                                            <!--roleTerm input ends-->
+                                            <!--roleTerm delete begins--><xf:group appearance="full"><xf:trigger ref="self::node()[../mods:roleTerm]" class="delete-button"><xf:label>Delete This Role Term</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:role/mods:roleTerm" at="index('roleTerm-repeat')"/></xf:trigger></xf:group>
+                                            <!--roleTerm delete ends--><div class="hr"/></xf:repeat>
+                                        <!--roleTerm repeat ends-->
+                                        <!--roleTerm add begins--><xf:group appearance="full"><xf:trigger ref="self::node()[mods:roleTerm]" class="add-button"><xf:label>Add Another Role Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:roleTerm" at="index('roleTerm-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:roleTerm"/></xf:action></xf:trigger></xf:group>
+                                        <!--roleTerm add ends--></fieldset></xf:group>
+                                <!--roleTerm ends-->
+                                <!--role input ends-->
+                                <!--role node-add begins--><div class="node-adds"><xf:group id="role-add-node-recommended" appearance="full"><xf:trigger ref="self::node()[not(mods:roleTerm)]" class="add-button"><xf:label>Add Role Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:roleTerm" at="index('role-term-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:role/mods:roleTerm"/></xf:action></xf:trigger></xf:group></div>
+                                <!--role node-add ends-->
+                                <!--role delete begins--><xf:group appearance="full"><xf:trigger class="delete-button"><xf:label>Delete This Role</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:role" at="index('role-repeat')"/></xf:trigger></xf:group>
+                                <!--role delete ends--><div class="hr"/></xf:repeat>
+                            <!--role repeat ends-->
+                            <!--role add begins--><xf:group appearance="full"><xf:trigger ref="self::node()[(mods:role)]" class="add-button"><xf:label>Add Another Role</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:role" at="index('role-repeat')" position="after" origin="instance('insert-templates')/mods:role"/></xf:action></xf:trigger></xf:group>
+                            <!--role add ends--></fieldset></xf:group>
+                    <!--role ends-->
+                    <!--displayForm begins-->
+                    <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
+                    <!--DLF/Aquifer: OPTIONAL-->
+                    <!--Cluster: omit--><xf:group id="fieldset-displayForm" ref="self::node()[mods:displayForm]" appearance="full"><fieldset><legend>Display Form</legend><xf:hint><p>The Display Form field makes it possible to display personal names in unstructured form. It typically renders a name as given on the resource. </p><p> For some applications, contractual agreements require that the form of the name provided on the resource be provided.</p></xf:hint>
+                            <!--displayForm input begins--><xf:group ref="self::node()[mods:displayForm]" appearance="full"><xf:input ref="./mods:displayForm" class="text_100"><xf:label>Display Form: </xf:label><xf:hint><p>Display Form makes it possible to display personal names in unstructured form. It can be used to render a name in the exact form given on the resource.</p></xf:hint></xf:input></xf:group>
+                            <!--displayForm input ends-->
+                            <!--displayForm delete begins--><xf:group appearance="full"><xf:trigger class="delete-button"><xf:label>Delete This Display Form</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:displayForm" at="index('name-repeat')"/></xf:trigger></xf:group>
+                            <!--displayForm delete ends--></fieldset></xf:group>
+                    <!--displayForm ends-->
+                    <!--affiliation begins-->
+                    <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
+                    <!--DLF/Aquifer: OPTIONAL-->
+                    <!--Cluster: include--><xf:group id="fieldset-affiliation" ref="self::node()[mods:affiliation]" appearance="full"><fieldset><legend>Affiliation</legend><xf:hint><p>Affiliation contains the name, address, etc. of an organisation with which the person in Name was associated when the resource was created. </p><p> If the information is readily available, it may be included.</p></xf:hint>
+                            <!--affiliation input begins--><xf:group ref="self::node()[mods:affiliation]" appearance="full"><xf:input ref="./mods:affiliation" class="text_100"><xf:label>Affiliation: </xf:label><xf:hint><p>Affiliation contains the name, address, etc. of an organisation with which the person in Name was associated when the resource was created. </p><p> If the information is readily available, it may be included.</p></xf:hint></xf:input></xf:group>
+                            <!--affiliation input ends-->
+                            <!--affiliation delete begins--><xf:group appearance="full"><xf:trigger class="delete-button"><xf:label>Delete This Affiliation</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:affiliation" at="index('name-repeat')"/></xf:trigger></xf:group>
+                            <!--affiliation delete ends--></fieldset></xf:group>
+                    <!--affiliation ends-->
+                    <!--description begins-->
+                    <!--NB: this can be repeated according to schema 3.3 and 3.4.-->
+                    <!--DLF/Aquifer: NOT RECOMMENDED-->
+                    <!--Cluster: omit--><xf:group id="fieldset-description" ref="self::node()[mods:description]" appearance="full"><fieldset><legend>Description</legend><xf:hint><p>Description contains a textual description for a name when this is necessary, for example, to distinguish it from other names.</p></xf:hint>
+                            <!--description input begins--><xf:group ref="self::node()[mods:description]" appearance="full"><xf:input ref="./mods:description" class="text_100"><xf:label>Description: </xf:label><xf:hint><p>Description contains a textual description for a name when this is necessary, for example, to distinguish it from other names.</p></xf:hint></xf:input></xf:group>
+                            <!--description input ends-->
+                            <!--description delete begins--><xf:group appearance="full"><xf:trigger class="delete-button"><xf:label>Delete This Description</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/mods:description" at="index('name-repeat')"/></xf:trigger></xf:group>
+                            <!--description delete ends--></fieldset></xf:group>
+                    <!--description ends-->
+                    <!--name delete begins--><xf:group appearance="full"><xf:trigger ref="self::node()[count(../mods:name) &gt; 1]" class="delete-button"><xf:label>Delete This Name</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name" at="index('name-repeat')"/></xf:trigger></xf:group>
+                    <!--name delete ends--><div class="hr"/></xf:repeat>
+                <!--name repeat ends-->
+                <!--name add begins--><xf:trigger ref="self::node()[count(mods:name) &gt; 0]" class="add-button"><xf:label>Add Another Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name"/></xf:action></xf:trigger>
+                <!--name add ends--></fieldset></xf:group></div></div>

@@ -20,8 +20,16 @@ let $tab-id := request:get-parameter('tab-id', 'title')
 let $type := request:get-parameter('type', 'default')
 
 (: look for an alternate data collection in the URL, else use the default mods data collection :)
-let $user := request:get-parameter('user', 'dan')
-let $data-collection := concat('/db/home/', $user, '/apps/mods/data')
+let $user := request:get-parameter('user', '')
+
+let $collection := request:get-parameter('collection', '')
+
+let $data-collection :=
+   if ($collection)
+   then $collection
+      else if ($user)
+         then concat('/db/home/', $user, '/apps/mods/data')
+         else '/db/org/library/apps/mods/data'
 
 (: check to see if we have a  :)
 let $new := if ($id-param = '' or $id-param = 'new')
@@ -49,7 +57,7 @@ let $create-new-from-template :=
          let $new-file-name := concat($id, '.xml')
          
          (: uncomment the following line in for testing if you are not admin :)
-         let $login := xmldb:login($data-collection, 'admin', 'admin123')
+         let $login := xmldb:login($data-collection, 'admin', 'his2RIen')
          
          (: store it in the right location :)
          let $store := xmldb:store($data-collection, $new-file-name, $template)
@@ -83,7 +91,6 @@ let $style :=
 
 let $model :=
     <xf:model>
-       <xf:instance xmlns="" id="config" src="config.xml"/>
        
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="{$instance-src}" id="save-data"/>
 
@@ -92,6 +99,10 @@ let $model :=
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}"/>
        
        <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>
+       
+       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:languageOfCataloging/mods:languageTerm" required="true()"/>
+       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:languageOfCataloging/mods:languageTerm/@authority" required="true()"/>
+       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:accessCondition/@type" required="true()"/>
        
        <xf:instance xmlns="" id="save-results">
           <data>
