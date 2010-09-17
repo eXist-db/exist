@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="jar" name="openid">
+<project basedir="." default="jar" name="activedirectory">
     
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
@@ -40,6 +40,7 @@
         <fileset dir="${top.dir}/extensions">
             <include name="**/lib/*.jar"/>
         </fileset>
+        <pathelement path="${top.dir}/lib/extensions/exist-security-ldap.jar"/>
         <pathelement path="${top.dir}/exist.jar"/>
         <pathelement path="${top.dir}/exist-optional.jar"/>
         <pathelement path="${top.dir}/start.jar"/>
