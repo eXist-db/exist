@@ -22,7 +22,7 @@
  *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  *  @author ljo
  */
-package org.exist.xquery.modules.spatial;        
+package org.exist.xquery.modules.spatial;
 
 import org.apache.log4j.Logger;
 
@@ -50,8 +50,8 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
     protected static final FunctionParameterSequenceType NODES_PARAMETER = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes");
-	protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
-	protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
+    protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
+    protected static final Logger logger = Logger.getLogger(FunSpatialSearch.class);
     boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
@@ -102,75 +102,74 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             "Returns the nodes in $nodes that contain a geometry which overlaps geometry $geometry",
             new SequenceType[] { NODES_PARAMETER, GEOMETRY_PARAMETER },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the nodes in $nodes that contain a geometry which overlaps geometry $geometry")
-        )                
-	};    
-   
+        )
+    };
 
     public FunSpatialSearch(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+        super(context, signature);
+    }
 
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Sequence result = null;
-    	Sequence nodes = args[0];
+        Sequence nodes = args[0];
 
         if (nodes.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-	}
-        else if (args[1].isEmpty())
-        	//TODO : to be discussed. We could also return an empty sequence here        	
-        	result = nodes;
-        else {
-        	try {
-	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)        	
-		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-		        if (indexWorker == null) {
-			    logger.error("Unable to find a spatial index worker");
-			    throw new XPathException("Unable to find a spatial index worker");
-			}
-		        Geometry EPSG4326_geometry = null;
-		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
-				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
-					//Get the geometry from the index if available
-					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
-		        if (EPSG4326_geometry == null) {
-		        	String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
-		        	Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);	            
-		        	EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
-		        }
-	        	if (EPSG4326_geometry == null) {
-			    logger.error("Unable to get a geometry from the node");
-			    throw new XPathException("Unable to get a geometry from the node");
-			} 
-		        int spatialOp = SpatialOperator.UNKNOWN;
-		        if (isCalledAs("equals"))
-		        	spatialOp = SpatialOperator.EQUALS;
-		        else if (isCalledAs("disjoint"))
-		        	spatialOp = SpatialOperator.DISJOINT;
-		        else if (isCalledAs("intersects"))
-		        	spatialOp = SpatialOperator.INTERSECTS;	 
-		        else if (isCalledAs("touches"))
-		        	spatialOp = SpatialOperator.TOUCHES;
-		        else if (isCalledAs("crosses"))
-		        	spatialOp = SpatialOperator.CROSSES;	   
-		        else if (isCalledAs("within"))
-		        	spatialOp = SpatialOperator.WITHIN;		
-		        else if (isCalledAs("contains"))
-		        	spatialOp = SpatialOperator.CONTAINS;		
-		        else if (isCalledAs("overlaps"))
-		        	spatialOp = SpatialOperator.OVERLAPS;
-		        //Search the EPSG:4326 in the index
-		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
-		        hasUsedIndex = true;	        	
-        	} catch (SpatialIndexException e) {
-		    logger.error(e.getMessage(), e);
-		    throw new XPathException(e);
-        	}
+        } else if (args[1].isEmpty()) {
+            //TODO : to be discussed. We could also return an empty sequence here
+            result = nodes;
+        } else {
+            try {
+                AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+                    context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+                if (indexWorker == null) {
+                    logger.error("Unable to find a spatial index worker");
+                    throw new XPathException("Unable to find a spatial index worker");
+                }
+                Geometry EPSG4326_geometry = null;
+                NodeValue geometryNode = (NodeValue) args[1].itemAt(0);
+                if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
+                    //Get the geometry from the index if available
+                    EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
+                if (EPSG4326_geometry == null) {
+                    String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+                    Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+                    EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
+                }
+                if (EPSG4326_geometry == null) {
+                    logger.error("Unable to get a geometry from the node");
+                    throw new XPathException("Unable to get a geometry from the node");
+                }
+                int spatialOp = SpatialOperator.UNKNOWN;
+                if (isCalledAs("equals"))
+                    spatialOp = SpatialOperator.EQUALS;
+                else if (isCalledAs("disjoint"))
+                    spatialOp = SpatialOperator.DISJOINT;
+                else if (isCalledAs("intersects"))
+                    spatialOp = SpatialOperator.INTERSECTS;
+                else if (isCalledAs("touches"))
+                    spatialOp = SpatialOperator.TOUCHES;
+                else if (isCalledAs("crosses"))
+                    spatialOp = SpatialOperator.CROSSES;
+                else if (isCalledAs("within"))
+                    spatialOp = SpatialOperator.WITHIN;
+                else if (isCalledAs("contains"))
+                    spatialOp = SpatialOperator.CONTAINS;
+                else if (isCalledAs("overlaps"))
+                    spatialOp = SpatialOperator.OVERLAPS;
+                //Search the EPSG:4326 in the index
+                result = indexWorker.search(context.getBroker(), nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
+                hasUsedIndex = true;
+            } catch (SpatialIndexException e) {
+                logger.error(e.getMessage(), e);
+                throw new XPathException(e);
+            }
         }
         return result;
     }
-    
+
     public boolean hasUsedIndex() {
         return hasUsedIndex;
-    }     
+    }
 }
