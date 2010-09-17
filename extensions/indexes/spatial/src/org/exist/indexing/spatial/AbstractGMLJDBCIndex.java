@@ -41,20 +41,22 @@ import org.w3c.dom.Element;
 /**
  */
 public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
-	
-	
-	/**
-	 * Holds the index ID. Notice that we delegate this task to the abstract JDBC class,
-	 * not to the concrete HSQL (or whatever) one. This allows spatial functions to use
-	 * the available JDBC index, whatever its underlying engine is.
-	 */
-	public final static String ID = AbstractGMLJDBCIndex.class.getName();	
-	@SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
+
+    /**
+     * Holds the index ID. Notice that we delegate this task to the abstract JDBC class,
+     * not to the concrete HSQL (or whatever) one. This allows spatial functions to use
+     * the available JDBC index, whatever its underlying engine is.
+     */
+    public final static String ID = AbstractGMLJDBCIndex.class.getName();	
+
+    @SuppressWarnings("unused")
+    private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
+
     /**
      * An IndexWorker "pool"
      */
     protected HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<DBBroker, AbstractGMLJDBCIndexWorker>();
+
     /**
      * The connection to the DB that will be needed for global operations 
      */
@@ -62,89 +64,97 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     /**
      * The spatial operators to test spatial relationshipds beween geometries.
-     * See http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf (chapter 11).   
+     * See http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf (chapter 11).
      */
     public interface SpatialOperator { 
-    	public static int UNKNOWN = -1;
-	    public static int EQUALS = 1;
-	    public static int DISJOINT = 2;
-	    public static int INTERSECTS = 3;
-	    public static int TOUCHES = 4;
-	    public static int CROSSES = 5;
-	    public static int WITHIN = 6;
-	    public static int CONTAINS = 7;
-	    public static int OVERLAPS = 8;
+        public static int UNKNOWN = -1;
+        public static int EQUALS = 1;
+        public static int DISJOINT = 2;
+        public static int INTERSECTS = 3;
+        public static int TOUCHES = 4;
+        public static int CROSSES = 5;
+        public static int WITHIN = 6;
+        public static int CONTAINS = 7;
+        public static int OVERLAPS = 8;
     }
-    
-    protected int max_docs_in_context_to_refine_query = 10;    
-    
-    public AbstractGMLJDBCIndex() {    	
-    }  
-    
+
+    protected int max_docs_in_context_to_refine_query = 10;
+
+    public AbstractGMLJDBCIndex() {
+        //Nothing to do here
+    }
+
+    @Override
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {        
-    	super.configure(pool, dataDir, config);
-    	try {
-        	checkDatabase();
+        super.configure(pool, dataDir, config);
+        try {
+            checkDatabase();
         } catch (ClassNotFoundException e) {
-        	throw new DatabaseConfigurationException(e.getMessage()); 
+            throw new DatabaseConfigurationException(e.getMessage());
         } catch (SQLException e) {
-        	throw new DatabaseConfigurationException(e.getMessage()); 
+            throw new DatabaseConfigurationException(e.getMessage());
         }
     }
-    
-    public int getMaxDocsInContextToRefineQuery() {
-    	return max_docs_in_context_to_refine_query;
-    }    
 
+    public int getMaxDocsInContextToRefineQuery() {
+        return max_docs_in_context_to_refine_query;
+    }
+
+    @Override
     public void open() throws DatabaseConfigurationException {
         //Nothing particular to do : the connection will be opened on request      
     }
 
+    @Override
     public void close() throws DBException {
-    	Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
-    	while (i.hasNext()) {
-    		AbstractGMLJDBCIndexWorker worker = i.next();
-    		//Flush any pending stuff 
-			worker.flush();
-			//Reset state
-			worker.setDocument(null, StreamListener.UNKNOWN);
-    	}
-    	shutdownDatabase();
+        Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
+        while (i.hasNext()) {
+            AbstractGMLJDBCIndexWorker worker = i.next();
+            //Flush any pending stuff 
+            worker.flush();
+            //Reset state
+            worker.setDocument(null, StreamListener.UNKNOWN);
+        }
+        shutdownDatabase();
     }
 
     //Seems to never be used
+    @Override
     public void sync() throws DBException {
-    	//TODO : something useful here
-    	/*
-    	try { 
-    		if (conn != null)
-    			conn.commit();
+        //TODO : something useful here
+        /*
+        try {
+            if (conn != null)
+                conn.commit();
         } catch (SQLException e) {
-        	throw new DBException(e.getMessage()); 
+            throw new DBException(e.getMessage());
         }
         */
     }
-    
+
+    @Override
     public void remove() throws DBException {
-    	Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
-    	while (i.hasNext()) {
-    		AbstractGMLJDBCIndexWorker worker = i.next();
-    		//Flush any pending stuff 
-			worker.flush();
-			//Reset state
-			worker.setDocument(null, StreamListener.UNKNOWN);
-    	}
-    	removeIndexContent();
+        Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
+        while (i.hasNext()) {
+            AbstractGMLJDBCIndexWorker worker = i.next();
+            //Flush any pending stuff
+            worker.flush();
+            //Reset state
+            worker.setDocument(null, StreamListener.UNKNOWN);
+        }
+        removeIndexContent();
         shutdownDatabase();
         deleteDatabase();
     }
-    
+
+    @Override
     public boolean checkIndex(DBBroker broker) {
-    	return getWorker(broker).checkIndex(broker);
-    } 
-    
+        return getWorker(broker).checkIndex(broker);
+    }
+
+    @Override
     public abstract IndexWorker getWorker(DBBroker broker);
-    
+
     /**
      * Checks if the JDBC database that contains the indexed spatial data is available an reachable.
      * Creates it if necessary.
@@ -153,28 +163,28 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * @throws SQLException if the database is not reachable
      */
     protected abstract void checkDatabase() throws ClassNotFoundException, SQLException;
-    
+
     /**
      * Shuts down the JDBC database that contains the indexed spatial data.
      * 
      * @throws DBException
      */
     protected abstract void shutdownDatabase() throws DBException;
-    
+
     /**
      * Deletes the JDBC database that contains the indexed spatial data.
      * 
      * @throws DBException
      */
     protected abstract void deleteDatabase() throws DBException;
-    
+
     /**
      * Deletes the spatial data contained in the JDBC database.
      * 
      * @throws DBException
      */
     protected abstract void removeIndexContent() throws DBException;
-    
+
     /**
      * Convenience method that can be used by the IndexWorker to acquire a connection 
      * to the JDBC database that contains the indexed spatial data.
@@ -183,7 +193,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * @return the connection
      */
     protected abstract Connection acquireConnection(DBBroker broker) throws SQLException;
-    
+
     /**
      * Convenience method that can be used by the IndexWorker to release a connection 
      * to the JDBC database that contains the indexed spatial data. This connection should have been
@@ -191,6 +201,6 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * 
      * @param broker the broker that will use th connection
      * 
-     */    
+     */
     protected abstract void releaseConnection(DBBroker broker) throws SQLException;
 }

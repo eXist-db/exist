@@ -22,7 +22,7 @@
  *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  *  @author ljo
  */
-package org.exist.xquery.modules.spatial;        
+package org.exist.xquery.modules.spatial;
 
 import org.apache.log4j.Logger;
 
@@ -59,9 +59,9 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 
     protected WKTWriter wktWriter = new WKTWriter();
     protected WKBWriter wkbWriter = new WKBWriter();
-	
+
     public final static FunctionSignature[] signatures = {
-    	new FunctionSignature(
+        new FunctionSignature(
             new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $geometry",
             new SequenceType[]{
@@ -69,142 +69,142 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the WKT representation of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getWKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the WKB representation of geometry $geometry",
+        new FunctionSignature(
+            new QName("getWKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the WKB representation of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry")
-        ),        
-    	new FunctionSignature(
-    		new QName("getMinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal X of geometry $geometry",
-            new SequenceType[]{
-                FunSpatialSearch.GEOMETRY_PARAMETER
-            },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry")
+            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getMaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal X of geometry $geometry",
+        new FunctionSignature(
+            new QName("getMinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the minimal X of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maxmal X of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getMinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal Y of geometry $geometry",
+        new FunctionSignature(
+            new QName("getMaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the maximal X of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maxmal X of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getMaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal Y of geometry $geometry",
+        new FunctionSignature(
+            new QName("getMinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the minimal Y of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getCentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the X of centroid of geometry $geometry",
+        new FunctionSignature(
+            new QName("getMaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the maximal Y of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getCentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the Y of centroid of geometry $geometry",
+        new FunctionSignature(
+            new QName("getCentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the X of centroid of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getArea", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the area of geometry $geometry",
+        new FunctionSignature(
+            new QName("getCentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the Y of centroid of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry")
         ),
-    	new FunctionSignature(
-			new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-			"Returns the WKT representation of geometry $geometry in the EPSG:4326 SRS",
-			new SequenceType[]{
-				FunSpatialSearch.GEOMETRY_PARAMETER
-			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the WKT representation of geometry $geometry in the EPSG:4326 SRS")
-		),
-    	new FunctionSignature(
-    		new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the WKB representation of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getArea", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the area of geometry $geometry",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry in the EPSG:4326 SRS")
-        ),         
-    	new FunctionSignature(
-    		new QName("getEPSG4326MinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal X of geometry $geometry in the EPSG:4326 SRS",
-            new SequenceType[]{
-                FunSpatialSearch.GEOMETRY_PARAMETER
-            },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326MaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal X of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326WKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the WKT representation of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal X of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the WKT representation of geometry $geometry in the EPSG:4326 SRS")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326MinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal Y of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the WKB representation of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the WKB representation of geometry $geometry in the EPSG:4326 SRS")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326MaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal Y of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326MinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the minimal X of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal X of geometry $geometry in the EPSG:4326 SRS")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326CentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the X of centroid of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326MaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the maximal X of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal X of geometry $geometry in the EPSG:4326 SRS")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326CentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the Y of centroid of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326MinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the minimal Y of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry in the EPSG:4326 SRS")
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the minimal Y of geometry $geometry in the EPSG:4326 SRS")
         ),
-    	new FunctionSignature(
-    		new QName("getEPSG4326Area", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the area of geometry $geometry in the EPSG:4326 SRS",
+        new FunctionSignature(
+            new QName("getEPSG4326MaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the maximal Y of geometry $geometry in the EPSG:4326 SRS",
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry in the EPSG:4326 SRS")
-        ),            
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the maximal Y of geometry $geometry in the EPSG:4326 SRS")
+        ),
+        new FunctionSignature(
+            new QName("getEPSG4326CentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the X of centroid of geometry $geometry in the EPSG:4326 SRS",
+            new SequenceType[]{
+                FunSpatialSearch.GEOMETRY_PARAMETER
+            },
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the X of centroid of geometry $geometry in the EPSG:4326 SRS")
+        ),
+        new FunctionSignature(
+            new QName("getEPSG4326CentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the Y of centroid of geometry $geometry in the EPSG:4326 SRS",
+            new SequenceType[]{
+                FunSpatialSearch.GEOMETRY_PARAMETER
+            },
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the Y of centroid of geometry $geometry in the EPSG:4326 SRS")
+        ),
+        new FunctionSignature(
+            new QName("getEPSG4326Area", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the area of geometry $geometry in the EPSG:4326 SRS",
+            new SequenceType[]{
+                FunSpatialSearch.GEOMETRY_PARAMETER
+            },
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the area of geometry $geometry in the EPSG:4326 SRS")
+        ),
         new FunctionSignature(
             new QName("getSRS", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the spatial reference system of geometry $geometry",
@@ -248,161 +248,155 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
    	};
 
     public FunGeometricProperties(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+        super(context, signature);
+    }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) 
-	throws XPathException {
-    	Sequence result = null;
-    	Sequence nodes = args[0];        
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        Sequence result = null;
+        Sequence nodes = args[0];
 
         if (nodes.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-	    try {
-		Geometry geometry = null;
-		String sourceCRS = null;
-		AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
-		    context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
-		if (indexWorker == null) {
-		    logger.error("Unable to find a spatial index worker");
-		    throw new XPathException("Unable to find a spatial index worker");
-		}
-		String propertyName = null;
-		if (isCalledAs("getWKT")) {
-		    propertyName = "WKT";
-		} else if (isCalledAs("getWKB")) {
-		    propertyName = "WKB";
-		} else if (isCalledAs("getMinX")) {
-		    propertyName = "MINX";
-		} else if (isCalledAs("getMaxX")) {
-		    propertyName = "MAXX";
-		} else if (isCalledAs("getMinY")) {
-		    propertyName = "MINY";
-		} else if (isCalledAs("getMaxY")) {
-		    propertyName = "MAXY";
-		} else if (isCalledAs("getCentroidX")) {
-		    propertyName = "CENTROID_X";
-		} else if (isCalledAs("getCentroidY")) {
-		    propertyName = "CENTROID_Y";
-		} else if (isCalledAs("getArea")) {
-		    propertyName = "AREA";
-		} else if (isCalledAs("getEPSG4326WKT")) {
-		    propertyName = "EPSG4326_WKT";
-		} else if (isCalledAs("getEPSG4326WKB")) {
-		    propertyName = "EPSG4326_WKB";
-		} else if (isCalledAs("getEPSG4326MinX")) {
-		    propertyName = "EPSG4326_MINX";
-		} else if (isCalledAs("getEPSG4326MaxX")) {
-		    propertyName = "EPSG4326_MAXX";
-		} else if (isCalledAs("getEPSG4326MinY")) {
-		    propertyName = "EPSG4326_MINY";
-		} else if (isCalledAs("getEPSG4326MaxY")) {
-		    propertyName = "EPSG4326_MAXY";
-		} else if (isCalledAs("getEPSG4326CentroidX")) {
-		    propertyName = "EPSG4326_CENTROID_X";
-		} else if (isCalledAs("getEPSG4326CentroidY")) {
-		    propertyName = "EPSG4326_CENTROID_Y";
-		} else if (isCalledAs("getEPSG4326Area")) {
-		    propertyName = "EPSG4326_AREA";
-		} else if (isCalledAs("getSRS")) {
-		    propertyName = "SRS_NAME";
-		} else if (isCalledAs("getGeometryType")) {
-		    propertyName = "GEOMETRY_TYPE";
-		} else if (isCalledAs("isClosed")) {
-		    propertyName = "IS_CLOSED";
-		} else if (isCalledAs("isSimple")) {
-		    propertyName = "IS_SIMPLE";
-		} else if (isCalledAs("isValid")) {
-		    propertyName = "IS_VALID";
-		} else {
-		    logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
-			    
-		    throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
-		}
-		NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
-		if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-		    //The node should be indexed : get its property
-		    result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
-		    hasUsedIndex = true;
-		} else {
-		    //builds the geometry
-		    if (geometry == null) {
-			sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
-			geometry = indexWorker.streamNodeToGeometry(context, geometryNode);		            	
-		    }					
-		    if (geometry == null) {
-			logger.error("Unable to get a geometry from the node");
-
-			throw new XPathException("Unable to get a geometry from the node");
-		    }
-		    //Transform the geometry to EPSG:4326 if relevant
-		    if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
-			geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
-			if (isCalledAs("getEPSG4326WKT")) {
-			    result = new StringValue(wktWriter.write(geometry));
-			} else if (isCalledAs("getEPSG4326WKB")) {
-			    result = new Base64Binary(wkbWriter.write(geometry));
-			} else if (isCalledAs("getEPSG4326MinX")) {
-			    result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
-			} else if (isCalledAs("getEPSG4326MaxX")) {
-			    result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
-			} else if (isCalledAs("getEPSG4326MinY")) {
-			    result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
-			} else if (isCalledAs("getEPSG4326MaxY")) {
-			    result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
-			} else if (isCalledAs("getEPSG4326CentroidX")) {
-			    result = new DoubleValue(geometry.getCentroid().getX());
-			} else if (isCalledAs("getEPSG4326CentroidY")) {
-			    result = new DoubleValue(geometry.getCentroid().getY());
-			} else if (isCalledAs("getEPSG4326Area")) {
-			    result = new DoubleValue(geometry.getArea());
-			}
-		    } else if (isCalledAs("getWKT")) {						
-			result = new StringValue(wktWriter.write(geometry));
-		    } else if (isCalledAs("getWKB")) {
-			result = new Base64Binary(wkbWriter.write(geometry));
-		    } else if (isCalledAs("getMinX")) {
-			result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
-		    } else if (isCalledAs("getMaxX")) {
-			result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
-		    } else if (isCalledAs("getMinY")) {
-			result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
-		    } else if (isCalledAs("getMaxY")) {
-			result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
-		    } else if (isCalledAs("getCentroidX")) {
-			result = new DoubleValue(geometry.getCentroid().getX());
-		    } else if (isCalledAs("getCentroidY")) {
-			result = new DoubleValue(geometry.getCentroid().getY());
-		    } else if (isCalledAs("getArea")) {
-			result = new DoubleValue(geometry.getArea());
-		    } else if (isCalledAs("getSRS")) {
-			result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
-		    } else if (isCalledAs("getGeometryType")) {
-			result = new StringValue(geometry.getGeometryType());
-		    } else if (isCalledAs("isClosed")) {
-			result = new BooleanValue(!geometry.isEmpty());
-		    } else if (isCalledAs("isSimple")) {
-			result = new BooleanValue(geometry.isSimple());
-		    } else if (isCalledAs("isValid")) {
-			result = new BooleanValue(geometry.isValid());
-		    } else {
-			logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
-
-			throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
-		    }
-		}
-	    } catch (SpatialIndexException e) {
-		logger.error(e.getMessage());
-
-		throw new XPathException(e);
-	    }
+            try {
+                Geometry geometry = null;
+                String sourceCRS = null;
+                AbstractGMLJDBCIndexWorker indexWorker = 
+                    (AbstractGMLJDBCIndexWorker)context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+                if (indexWorker == null) {
+                    logger.error("Unable to find a spatial index worker");
+                    throw new XPathException("Unable to find a spatial index worker");
+                }
+                String propertyName = null;
+                if (isCalledAs("getWKT")) {
+                    propertyName = "WKT";
+                } else if (isCalledAs("getWKB")) {
+                    propertyName = "WKB";
+                } else if (isCalledAs("getMinX")) {
+                    propertyName = "MINX";
+                } else if (isCalledAs("getMaxX")) {
+                    propertyName = "MAXX";
+                } else if (isCalledAs("getMinY")) {
+                    propertyName = "MINY";
+                } else if (isCalledAs("getMaxY")) {
+                    propertyName = "MAXY";
+                } else if (isCalledAs("getCentroidX")) {
+                    propertyName = "CENTROID_X";
+                } else if (isCalledAs("getCentroidY")) {
+                    propertyName = "CENTROID_Y";
+                } else if (isCalledAs("getArea")) {
+                    propertyName = "AREA";
+                } else if (isCalledAs("getEPSG4326WKT")) {
+                    propertyName = "EPSG4326_WKT";
+                } else if (isCalledAs("getEPSG4326WKB")) {
+                    propertyName = "EPSG4326_WKB";
+                } else if (isCalledAs("getEPSG4326MinX")) {
+                    propertyName = "EPSG4326_MINX";
+                } else if (isCalledAs("getEPSG4326MaxX")) {
+                    propertyName = "EPSG4326_MAXX";
+                } else if (isCalledAs("getEPSG4326MinY")) {
+                    propertyName = "EPSG4326_MINY";
+                } else if (isCalledAs("getEPSG4326MaxY")) {
+                    propertyName = "EPSG4326_MAXY";
+                } else if (isCalledAs("getEPSG4326CentroidX")) {
+                    propertyName = "EPSG4326_CENTROID_X";
+                } else if (isCalledAs("getEPSG4326CentroidY")) {
+                    propertyName = "EPSG4326_CENTROID_Y";
+                } else if (isCalledAs("getEPSG4326Area")) {
+                    propertyName = "EPSG4326_AREA";
+                } else if (isCalledAs("getSRS")) {
+                    propertyName = "SRS_NAME";
+                } else if (isCalledAs("getGeometryType")) {
+                    propertyName = "GEOMETRY_TYPE";
+                } else if (isCalledAs("isClosed")) {
+                    propertyName = "IS_CLOSED";
+                } else if (isCalledAs("isSimple")) {
+                    propertyName = "IS_SIMPLE";
+                } else if (isCalledAs("isValid")) {
+                    propertyName = "IS_VALID";
+                } else {
+                    logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
+                    throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+                }
+                NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
+                if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    //The node should be indexed : get its property
+                    result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+                    hasUsedIndex = true;
+                } else {
+                    //builds the geometry
+                    sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+                    geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+                    if (geometry == null) {
+                        logger.error("Unable to get a geometry from the node");
+                        throw new XPathException("Unable to get a geometry from the node");
+                    }
+                    //Transform the geometry to EPSG:4326 if relevant
+                    if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+                        geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
+                        if (isCalledAs("getEPSG4326WKT")) {
+                            result = new StringValue(wktWriter.write(geometry));
+                        } else if (isCalledAs("getEPSG4326WKB")) {
+                            result = new Base64Binary(wkbWriter.write(geometry));
+                        } else if (isCalledAs("getEPSG4326MinX")) {
+                            result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+                        } else if (isCalledAs("getEPSG4326MaxX")) {
+                            result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+                        } else if (isCalledAs("getEPSG4326MinY")) {
+                            result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+                        } else if (isCalledAs("getEPSG4326MaxY")) {
+                            result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+                        } else if (isCalledAs("getEPSG4326CentroidX")) {
+                            result = new DoubleValue(geometry.getCentroid().getX());
+                        } else if (isCalledAs("getEPSG4326CentroidY")) {
+                            result = new DoubleValue(geometry.getCentroid().getY());
+                        } else if (isCalledAs("getEPSG4326Area")) {
+                            result = new DoubleValue(geometry.getArea());
+                        }
+                    } else if (isCalledAs("getWKT")) {
+                        result = new StringValue(wktWriter.write(geometry));
+                    } else if (isCalledAs("getWKB")) {
+                        result = new Base64Binary(wkbWriter.write(geometry));
+                    } else if (isCalledAs("getMinX")) {
+                        result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+                    } else if (isCalledAs("getMaxX")) {
+                        result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+                    } else if (isCalledAs("getMinY")) {
+                        result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+                    } else if (isCalledAs("getMaxY")) {
+                        result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+                    } else if (isCalledAs("getCentroidX")) {
+                        result = new DoubleValue(geometry.getCentroid().getX());
+                    } else if (isCalledAs("getCentroidY")) {
+                        result = new DoubleValue(geometry.getCentroid().getY());
+                    } else if (isCalledAs("getArea")) {
+                        result = new DoubleValue(geometry.getArea());
+                    } else if (isCalledAs("getSRS")) {
+                        result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
+                    } else if (isCalledAs("getGeometryType")) {
+                        result = new StringValue(geometry.getGeometryType());
+                    } else if (isCalledAs("isClosed")) {
+                        result = new BooleanValue(!geometry.isEmpty());
+                    } else if (isCalledAs("isSimple")) {
+                        result = new BooleanValue(geometry.isSimple());
+                    } else if (isCalledAs("isValid")) {
+                        result = new BooleanValue(geometry.isValid());
+                    } else {
+                        logger.error("Unknown spatial property: " + mySignature.getName().getLocalName());
+                        throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+                    }
+                }
+            } catch (SpatialIndexException e) {
+                logger.error(e.getMessage());
+                throw new XPathException(e);
+            }
         }
         return result;
     }
-    
+
     public boolean hasUsedIndex() {
         return hasUsedIndex;
-    }    
-    
+    }
+
 }
