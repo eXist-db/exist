@@ -40,12 +40,24 @@ declare function security:login($user as xs:string, $password as xs:string?) as 
         false()
 };
 
+(:~
+: Stores a users credentials for the mods app into the http session
+:
+: @param user The username
+: @param password The password
+:)
 declare function security:store-user-credential-in-session($user as xs:string, $password as xs:string?) as empty()
 {
     session:set-attribute($security:SESSION_USER_ATTRIBUTE, $user),
     session:set-attribute($security:SESSION_PASSWORD_ATTRIBUTE, $password)
 };
 
+(:~
+: Retrieves a users credentials for the mods app from the http session
+: 
+: @return The sequence (username as xs:string, password as xs:string)
+: If there is no entry in the session, then the guest account credentials are returned
+:)
 declare function security:get-user-credential-from-session() as xs:string+
 {
     let $user := session:get-attribute($security:SESSION_USER_ATTRIBUTE) return
