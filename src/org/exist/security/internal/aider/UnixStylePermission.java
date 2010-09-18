@@ -285,6 +285,42 @@ public class UnixStylePermission implements Permission {
         };
         return new String(ch);
     }
+
+    public static UnixStylePermission fromString(String permissionString) throws SyntaxException {
+        if(permissionString == null || permissionString.length() != 9){
+            throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
+        }
+
+        int permission = 0;
+        int factor = 64;
+        int val = 0;
+        for(int i = 0; i < 9; i++) {
+            char c = permissionString.charAt(i);
+            switch(c){
+                case 'r':
+                    val += 4;
+                    break;
+                case 'w':
+                    val += 2;
+                    break;
+                case 'u':
+                    val += 1;
+                    break;
+                case '-':
+                    break;
+                default:
+                    throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
+            }
+
+            if((i + 1) % 3 == 0) {
+                permission += (val * factor);
+                factor = factor / 8;
+                val = 0;
+            }
+        }
+
+        return new UnixStylePermission(permission);
+    }
     
     public boolean validate( Subject user, int perm ) {
     	return false;
