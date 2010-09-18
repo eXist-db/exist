@@ -5,29 +5,38 @@ import module namespace security="http://exist-db.org/mods/security" at "securit
 declare namespace request = "http://exist-db.org/xquery/request";
 declare namespace response = "http://exist-db.org/xquery/response";
 
-declare function local:authenticate() as element()
+declare function local:authenticate($user as xs:string, $password as xs:string?) as element()
 {
-    let $user := request:get-parameter("user", ()),
-    $password := request:get-parameter("password", ()) return
-        if(security:login($user, $password))then(
-            <ok/>
-        )
-        else (
-            response:set-status-code(403),
-            <span>Wrong user or password.</span>
-        )
+    if(security:login($user, $password))then(
+        <ok/>
+    )
+    else (
+        response:set-status-code(403),
+        <span>Wrong user or password.</span>
+    )
+};
+
+declare function local:user-can-write-collection($user as xs:string, $collection as xs:string) as element(result)
+{
+    <result>{security:can-write-collection($user, $collection)}</result>
+};
+
+declare function local:user-is-collection-owner($user as xs:string, $collection as xs:string) as element(result)
+{
+    <result>{security:is-collection-owner($user, $collection)}</result>
 };
 
 if(request:get-parameter("action",()))then
 (
     if(request:get-parameter("action",()) eq "can-write-collection")then
     (
-        <result>{security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))}</result>
+        local:user-can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
     )
     else if(request:get-parameter("action",()) eq "is-collection-owner")then
     (
-        <result>{security:is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))}</result>
-    )else
+        local:user-is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
+    )
+    else
     (
         response:set-status-code(403),
         <unknown/>
@@ -35,5 +44,5 @@ if(request:get-parameter("action",()))then
 )
 else
 (
-    local:authenticate()  
+    local:authenticate(request:get-parameter("user", ()), request:get-parameter("password", ()))  
 )
