@@ -77,7 +77,15 @@ declare function security:get-user-credential-from-session() as xs:string+
 :)
 declare function security:home-collection-exists($user as xs:string) as xs:boolean
 {
-   xmldb:collection-available(fn:concat($security:users-collection, "/", $user))
+   xmldb:collection-available(security:get-home-collection-uri($user))
+};
+
+(:~
+: Get the URI of a users mods home collection
+:)
+declare function security:get-home-collection-uri($user as xs:string) as xs:string
+{
+    fn:concat($security:users-collection, "/", $user)
 };
 
 (:~
