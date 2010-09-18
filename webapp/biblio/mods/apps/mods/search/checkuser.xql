@@ -5,9 +5,8 @@ import module namespace security="http://exist-db.org/mods/security" at "securit
 declare namespace request = "http://exist-db.org/xquery/request";
 declare namespace response = "http://exist-db.org/xquery/response";
 
-let $user := request:get-parameter("user", ())
-let $password := request:get-parameter("password", ())
-return
+let $user := request:get-parameter("user", ()),
+$password := request:get-parameter("password", ()) return
     if(security:login($user, $password))then(
         <ok/>
     )
