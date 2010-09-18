@@ -105,7 +105,7 @@ declare function setup:importLocal() as element()+
                 setup:create-collection("/db/mods", "users"),
                 setup:create-group("biblio.users"),
                 setup:set-collection-group("/db/mods/users", "biblio.users"),
-                setup:set-collection-group-writable("/db/mods/users"),
+                setup:set-collection-permissions("/db/mods/users", "rwurwu---"),
                 setup:store-files("/db/mods/samples", $dir, "mods/*.xml", "text/xml"),
                 setup:store-files("/db/mods/eXist", $dir, "mods/eXist/*.xml", "text/xml"),
                 setup:store-files("/db", $dir, "*.xml", "text/xml"),
@@ -265,13 +265,9 @@ declare function setup:set-collection-group($collection as xs:string, $group as 
         <li class="high">Set collection '{$collection}' group to '{$group}'</li>
 };
 
-declare function setup:set-collection-group-writable($collection as xs:string) as element() {
-
-    let $current-permissions := xdb:get-permissions($collection),
-    $new-permissions := xdb:string-to-permissions(replace(xdb:permissions-to-string($current-permissions), "(.{3}).{2}(.{4})", "$1rw$2")) return
-
-        let $null := xdb:set-collection-permissions($collection, xdb:get-owner($collection), xdb:get-group($collection), $new-permissions) return
-            <li class="high">Made collection '{$collection}' group writable.</li>
+declare function setup:set-collection-permissions($collection as xs:string, $permissions as xs:string) as element() {
+        let $null := xdb:set-collection-permissions($collection, xdb:get-owner($collection), xdb:get-group($collection), xdb:string-to-permissions($permissions)) return
+            <li class="high">Set collection '{$collection}' permissions '{$permissions}'.</li>
 };
 
 declare function setup:select() as element()
