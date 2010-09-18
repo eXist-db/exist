@@ -4,46 +4,70 @@
 
 	<property name="server.dir" value="../.."/>
 	<property name="mods.dir" value="mods"/>
-			
+	<property name="scripts.dir" value="../scripts"/>
+	<property name="styles.dir" value="../styles"/>
+	
 	<path id="classpath.core">
 		<fileset dir="${server.dir}/lib/core">
-			<include name="*.jar" />
+			<include name="*.jar"/>
 		</fileset>
-		<pathelement path="${server.dir}/exist.jar" />
-		<pathelement path="${server.dir}/exist-optional.jar" />
+		<pathelement path="${server.dir}/exist.jar"/>
+		<pathelement path="${server.dir}/exist-optional.jar"/>
 	</path>
 
 	<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-		<classpath refid="classpath.core" />
+		<classpath refid="classpath.core"/>
 	</typedef>
 
 	<target name="load-mods" xmlns:xdb="http://exist-db.org/ant">
 		<echo message="Removing old MODS application from eXist database"/>
 		<xdb:remove user="${public.xmldb.username}" password="${public.xmldb.password}"
-            uri="${server-uri}" collection="${mods-collection}"
-            failonerror="false"/>
-            	
+			uri="${server-uri}" collection="${mods-collection}" failonerror="false"/>
+
 		<echo message="Loading new MODS database into eXist database"/>
 		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-            uri="${server-uri}/${mods-collection}" 
-            createcollection="true" createsubcollections="true" failonerror="false">
+			uri="${server-uri}/${mods-collection}" createcollection="true"
+			createsubcollections="true" failonerror="false">
 			<fileset dir="${mods.dir}" id="id">
-				<include name="**/*.xq" />
-				<include name="**/*.xsl" />
-        <include name="**/*.xqm" />
-        <include name="**/*.css" />
-        <include name="**/*.js" />
-        <include name="**/*.png" />
-        <include name="**/*.gif" />
-        <include name="**/*.properties" />
+				<include name="**/*.xq"/>
+				<include name="**/*.xql"/>
+				<include name="**/*.xml"/>
+				<include name="**/*.xsl"/>
+				<include name="**/*.xqm"/>
+				<include name="**/*.css"/>
+				<include name="**/*.js"/>
+				<include name="**/*.png"/>
+				<include name="**/*.gif"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.properties"/>
 			</fileset>
 		</xdb:store>
 
-    <xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-      uri="${server-uri}/xforms"
-      createcollection="true" createsubcollections="true" failonerror="false">
-      <fileset dir="${xslt-forms}"/>
-    </xdb:store>
+		<echo message="Storing XSLTForms"/>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/xforms" createcollection="true" createsubcollections="true"
+			failonerror="false">
+			<fileset dir="${xslt-forms}"/>
+		</xdb:store>
+		
+		<echo message="Storing jQuery scripts"/>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${mods-collection}/scripts" createcollection="true" createsubcollections="true"
+			failonerror="false">
+			<fileset dir="${scripts.dir}">
+				<include name="jquery/**"/>
+				<exclude name="**/.svn"/>
+			</fileset>
+		</xdb:store>
+		
+		<echo message="Storing global CSS styles"/>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${mods-collection}/styles" createcollection="true" createsubcollections="true"
+			failonerror="false">
+			<fileset dir="${styles.dir}">
+				<include name="default-style2.css"/>
+			</fileset>
+		</xdb:store>
 	</target>
 
 </project>
