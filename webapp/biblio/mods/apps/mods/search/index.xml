@@ -156,6 +156,13 @@
                                         <img src="../../../resources/images/folder_delete.png" title="Remove Folder"/>
                                     </a>
                                 </li>
+                            </biblio:result>
+                        </biblio:conditional>
+                        <biblio:conditional>
+                            <biblio:test>
+                                <biblio:is-collection-owner/>
+                            </biblio:test>
+                            <biblio:result>
                                 <li>
                                     <a href="#" id="collection-permissions">
                                         <img src="../../../resources/images/user_edit.png" title="Edit Folder Permissions"

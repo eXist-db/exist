@@ -109,18 +109,19 @@ declare function security:create-home-collection($user as xs:string) as xs:strin
 : @param user The username
 : @param collection The path of the collection
 :)
-declare function security:can-read-collection($user as xs:string, $collection as xs:string) as xs:boolean {
+declare function security:can-read-collection($user as xs:string, $collection as xs:string) as xs:boolean
+{
     let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
     let $owner := xmldb:get-owner($collection)
     let $group := xmldb:get-group($collection)
     let $users-groups := xmldb:get-user-groups($user)
     return
         if ($owner eq $user) then
-            substring($permissions, 1, 1) eq 'r'
+            fn:substring($permissions, 1, 1) eq 'r'
         else if ($group = $users-groups) then
-            substring($permissions, 4, 1) eq 'r'
+            fn:substring($permissions, 4, 1) eq 'r'
         else
-            substring($permissions, 7, 1) eq 'r'
+            fn:substring($permissions, 7, 1) eq 'r'
 };
 
 (:~
@@ -129,16 +130,29 @@ declare function security:can-read-collection($user as xs:string, $collection as
 : @param user The username
 : @param collection The path of the collection
 :)
-declare function security:can-write-collection($user as xs:string, $collection as xs:string) as xs:boolean {
+declare function security:can-write-collection($user as xs:string, $collection as xs:string) as xs:boolean
+{
     let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
     let $owner := xmldb:get-owner($collection)
     let $group := xmldb:get-group($collection)
     let $users-groups := xmldb:get-user-groups($user)
     return
         if ($owner eq $user) then
-            substring($permissions, 2, 1) eq 'w'
+            fn:substring($permissions, 2, 1) eq 'w'
         else if ($group = $users-groups) then
-            substring($permissions, 5, 1) eq 'w'
+            fn:substring($permissions, 5, 1) eq 'w'
         else
-            substring($permissions, 8, 1) eq 'w'
+            fn:substring($permissions, 8, 1) eq 'w'
+};
+
+(:~
+: Determines if the user is the collection owner
+:
+: @param user The username
+: @param collection The path of the collection
+:)
+declare function security:is-collection-owner($user as xs:string, $collection as xs:string) as xs:boolean
+{
+    let $owner := xmldb:get-owner($collection) return
+        $user eq $owner
 };
