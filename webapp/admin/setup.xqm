@@ -102,6 +102,10 @@ declare function setup:importLocal() as element()+
                 setup:create-collection("/db", "mods"),
                 setup:create-collection("/db/mods", "eXist"),
                 setup:create-collection("/db/mods", "samples"),
+                setup:create-collection("/db/mods", "users"),
+                setup:create-group("biblio.users"),
+                setup:set-collection-group("/db/mods/users", "biblio.users"),
+                setup:set-collection-group-writable("/db/mods/users"),
                 setup:store-files("/db/mods/samples", $dir, "mods/*.xml", "text/xml"),
                 setup:store-files("/db/mods/eXist", $dir, "mods/eXist/*.xml", "text/xml"),
                 setup:store-files("/db", $dir, "*.xml", "text/xml"),
@@ -246,6 +250,29 @@ declare function setup:create-collection($parent as xs:string, $name as xs:strin
         <li class="high">Created collection: {$col}</li>
 };
 
+declare function setup:create-group($group as xs:string) as element()
+{
+    let $result := xdb:create-group($group) return
+        if($result)then (
+            <li class="high">Created group: {$group}</li>
+        ) else (
+            <li class="error">Failed to create group: {$group}</li>
+        )
+};
+
+declare function setup:set-collection-group($collection as xs:string, $group as xs:string) as element() {
+    let $null := xdb:set-collection-permissions($collection, xdb:get-owner($collection), $group, xdb:get-permissions($collection)) return
+        <li class="high">Set collection '{$collection}' group to '{$group}'</li>
+};
+
+declare function setup:set-collection-group-writable($collection as xs:string) as element() {
+
+    let $current-permissions := xdb:get-permissions($collection),
+    $new-permissions := xdb:string-to-permissions(replace(xdb:permissions-to-string($current-permissions), "(.{3}).{2}(.{4})", "$1rw$2")) return
+
+        let $null := xdb:set-collection-permissions($collection, xdb:get-owner($collection), xdb:get-group($collection), $new-permissions) return
+            <li class="high">Made collection '{$collection}' group writable.</li>
+};
 
 declare function setup:select() as element()
 {
