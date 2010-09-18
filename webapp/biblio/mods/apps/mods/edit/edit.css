@@ -123,6 +123,14 @@ margin:.5em 1em .5em 1em;}
 button {
     margin: .25ex;
     padding: 0ex;
-    
 }
+.container {
+    padding-left: 20px;
+    padding-right: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    }    
+
+.float-right {float:right; margin-right: 2px;}
+
 </css>
