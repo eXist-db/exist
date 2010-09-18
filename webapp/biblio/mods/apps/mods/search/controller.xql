@@ -1,6 +1,9 @@
 xquery version "1.0";
 
-declare variable $local:CREDENTIALS := ("guest", "guest");
+import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
 
 declare function local:logout() {
     let $logout := request:get-parameter("logout", ())
@@ -27,8 +30,8 @@ declare function local:set-user() {
             <set-attribute name="xquery.user" value="{$sessionUser}"/>,
             <set-attribute name="xquery.password" value="{session:get-attribute('biblio.password')}"/>
         ) else (
-            <set-attribute name="xquery.user" value="{$local:CREDENTIALS[1]}"/>,
-            <set-attribute name="xquery.password" value="{$local:CREDENTIALS[2]}"/>
+            <set-attribute name="xquery.user" value="{$security:GUEST_CREDENTIALS[1]}"/>,
+            <set-attribute name="xquery.password" value="{$security:GUEST_CREDENTIALS[2]}"/>
         )
 };
 
