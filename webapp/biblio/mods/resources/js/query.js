@@ -6,17 +6,13 @@ $(function() {
     initCollectionTree();
 });
 
-/* collection permissions toggles for user groups */
+
+/* collection action buttons */
 $(document).ready(function(){ 
-    $('#collection-restrict-all').click(function(){
-        $('#collection-restrict-user-group').hide();
-    });
-    $('#collection-restrict-user').click(function(){
-        $('#collection-restrict-user-group').hide();
-    });
-    $('#collection-restrict-group').click(function(){
-        $('#collection-restrict-user-group').show();
-    });
+    $('#collection-create-folder').hide();
+    $('#collection-move-folder').hide();
+    $('#collection-remove-folder').hide();
+    $('#collection-permissions').hide();
 });
 
 /*
@@ -33,6 +29,9 @@ function initCollectionTree() {
             var key = dtnode.data.key;
             var form = $('#simple-search-form');
             $('input[name = collection]', form).val(key);
+            showHideCollectionWriteableControls();
+            showHideCollectionOwnerControls();
+            
 //            form.submit();
         }
     });
@@ -64,6 +63,34 @@ function initCollectionTree() {
         return false;
     });
 }
+
+function showHideCollectionWriteableControls() {
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: "can-write-collection", collection: collection };
+    $.get("checkuser.xql", params, function(data) {
+        if($(data).text() == 'true') {
+            $('#collection-create-folder').show();
+            $('#collection-move-folder').show();
+            $('#collection-remove-folder').show();
+        } else {
+            $('#collection-create-folder').hide();
+            $('#collection-move-folder').hide();
+            $('#collection-remove-folder').hide();
+        }
+    });
+};
+
+function showHideCollectionOwnerControls() {
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: "is-collection-owner", collection: collection };
+    $.get("checkuser.xql", params, function(data) {
+        if($(data).text() == 'true') {
+            $('#collection-permissions').show();
+        } else {
+            $('#collection-permissions').hide();
+        }
+    });
+};
 
 /*
     Called when the user clicks on the "remove" button in the remove resource dialog

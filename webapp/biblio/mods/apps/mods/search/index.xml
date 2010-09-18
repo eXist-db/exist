@@ -136,41 +136,28 @@
                                 <img src="../../../resources/images/arrow_refresh.png" title="Reload"/>
                             </a>
                         </li>
-                        <biblio:conditional>
-                            <biblio:test>
-                                <biblio:has-collection-write-permissions/>
-                            </biblio:test>
-                            <biblio:result>
-                                <li>
-                                    <a href="#" id="collection-create-folder">
-                                        <img src="../../../resources/images/folder_add.png" title="Create Folder"/>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" id="collection-move-folder">
-                                        <img src="../../../resources/images/folder_go.png" title="Move Folder"/>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" id="collection-remove-folder">
-                                        <img src="../../../resources/images/folder_delete.png" title="Remove Folder"/>
-                                    </a>
-                                </li>
-                            </biblio:result>
-                        </biblio:conditional>
-                        <biblio:conditional>
-                            <biblio:test>
-                                <biblio:is-collection-owner/>
-                            </biblio:test>
-                            <biblio:result>
-                                <li>
-                                    <a href="#" id="collection-permissions">
-                                        <img src="../../../resources/images/user_edit.png" title="Edit Folder Permissions"
-                                        />
-                                    </a>
-                                </li>
-                            </biblio:result>
-                        </biblio:conditional>
+                        <!-- hidden by default -->
+                        <li>
+                            <a href="#" id="collection-create-folder">
+                                <img src="../../../resources/images/folder_add.png" title="Create Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-move-folder">
+                                <img src="../../../resources/images/folder_go.png" title="Move Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-remove-folder">
+                                <img src="../../../resources/images/folder_delete.png" title="Remove Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-permissions">
+                                <img src="../../../resources/images/user_edit.png" title="Edit Folder Permissions"/>
+                            </a>
+                        </li>
+                        <!-- end hidden by default -->
                     </ul>
                     <div id="collection-tree-tree"> </div>
                 </div>
