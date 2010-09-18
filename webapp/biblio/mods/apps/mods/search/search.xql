@@ -21,17 +21,17 @@ import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:
 
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
 
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace session="http://exist-db.org/xquery/session";
+declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
-import module namespace sort="http://exist-db.org/xquery/sort"
-	at "java:org.exist.xquery.modules.sort.SortModule";
+import module namespace sort="http://exist-db.org/xquery/sort" at "java:org.exist.xquery.modules.sort.SortModule";
+import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
 	
 declare option exist:serialize "method=xhtml media-type=application/xhtml+xml omit-xml-declaration=no enforce-xhtml=yes";
-
-declare variable $biblio:CREDENTIALS := ("biblio", "mods");
-
-declare variable $biblio:COLLECTION := "/db/mods";
 
 (:~
     Simple mapping from field names to an XPath expression
@@ -80,7 +80,7 @@ declare variable $biblio:FIELDS :=
 :)
 declare variable $biblio:TEMPLATE_QUERY :=
     <query>
-        <collection>{$biblio:COLLECTION}</collection>
+        <collection>{$config:mods-root}</collection>
         <and>
             <field m="1" name="All"></field>
         </and>
@@ -243,7 +243,7 @@ declare function biblio:process-form-parameters($params as xs:string*) as elemen
     the query. Filter out empty parameters and take care of boolean operators.
 :)
 declare function biblio:process-form() as element(query)? {
-    let $collection := request:get-parameter("collection", $biblio:COLLECTION)
+    let $collection := request:get-parameter("collection", $config:mods-root)
     let $fields :=
         (:  Get a list of all input parameters which are not empty,
             ordered by input name. :)
@@ -413,7 +413,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:query-history) return
             biblio:query-history()
         case element(biblio:collection-path) return
-            let $collection := request:get-parameter("collection", $biblio:COLLECTION)
+            let $collection := request:get-parameter("collection", $config:mods-root)
             return
                 <input class="collection-input" type="text" name="collection" value="{$collection}" readonly="true"/>
         case element(biblio:form-select-current-user-groups) return
@@ -429,9 +429,9 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                 )
                 else()
         case element(biblio:is-collection-owner) return
-            biblio:is-collection-owner()
+            security:is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
         case element(biblio:has-collection-write-permissions) return
-            biblio:has-collection-write-permissions(request:get-parameter("collection", $biblio:COLLECTION))
+            security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
         case element(biblio:form-select-collection) return
             biblio:form-select-collection($node/@name)
         case element() return
@@ -456,11 +456,11 @@ declare function biblio:form-select-current-user-groups($select-name as xs:strin
 
 declare function biblio:form-select-collection($select-name as xs:string) as element(select) {
 
-    let $current-collection := request:get-parameter("collection", $biblio:COLLECTION) return
+    let $current-collection := request:get-parameter("collection", $config:mods-root) return
 
         <select name="{$select-name}">
         {
-            if(biblio:has-collection-write-permissions("/db"))then
+            if(security:can-write-collection(security:get-user-credential-from-session()[1], "/db"))then
             (
                 element option {
                     if("/db" eq $current-collection)then
@@ -488,7 +488,8 @@ declare function biblio:get-writeable-subcollection-paths($path as xs:string) {
 	for $sub in xmldb:get-child-collections($path)
 	let $col := concat($path, "/", $sub) return
 		(
-			if(biblio:has-collection-write-permissions($col))then(
+			if(security:can-write-collection(security:get-user-credential-from-session()[1], $col))then
+			(
 			 $col
 			)else(),
 			biblio:get-writeable-subcollection-paths($col)
@@ -503,12 +504,15 @@ declare function biblio:conditional($node as element(biblio:conditional)) {
         )else()
 };
 
+(:
 declare function biblio:is-collection-owner() as xs:boolean {
     let $user := request:get-attribute("xquery.user"),
-    $collection-owner := xmldb:get-owner(request:get-parameter("collection", $biblio:COLLECTION)) return
+    $collection-owner := xmldb:get-owner(request:get-parameter("collection", $config:mods-root)) return
         $user eq $collection-owner
 };
+:)
 
+(:
 declare function biblio:has-collection-write-permissions($collection as xs:string) as xs:boolean {
 	if (empty(collection($collection))) then
 		false()
@@ -535,6 +539,7 @@ declare function biblio:has-collection-write-permissions($collection as xs:strin
             false()
         )
 };
+:)
 
 (:~
     Filter an existing result set by applying an additional
