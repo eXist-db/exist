@@ -19,16 +19,15 @@ declare function local:set-user() {
     local:logout(),
     let $user := request:get-parameter("user", ())
     let $password := request:get-parameter("password", ())
-    let $sessionUser := session:get-attribute("biblio.user")
+    let $session-user-credential := security:get-user-credential-from-session()
     return
         if ($user) then (
-            session:set-attribute("biblio.user", $user),
-            session:set-attribute("biblio.password", $password),
+            security:store-user-credential-in-session($user, $password),
             <set-attribute name="xquery.user" value="{$user}"/>,
             <set-attribute name="xquery.password" value="{$password}"/>
-        ) else if ($sessionUser != '') then (
-            <set-attribute name="xquery.user" value="{$sessionUser}"/>,
-            <set-attribute name="xquery.password" value="{session:get-attribute('biblio.password')}"/>
+        ) else if ($session-user-credential != '') then (
+            <set-attribute name="xquery.user" value="{$session-user-credential[1]}"/>,
+            <set-attribute name="xquery.password" value="{$session-user-credential[2]}"/>
         ) else (
             <set-attribute name="xquery.user" value="{$security:GUEST_CREDENTIALS[1]}"/>,
             <set-attribute name="xquery.password" value="{$security:GUEST_CREDENTIALS[2]}"/>

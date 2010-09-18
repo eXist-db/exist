@@ -1,10 +1,11 @@
 xquery version "1.0";
 
+import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
+declare namespace session = "http://exist-db.org/xquery/session";
+declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
+
 declare option exist:serialize "method=text media-type=text/javascript";
-
-declare variable $local:user := if (session:get-attribute("biblio.user")) then session:get-attribute("biblio.user") else "guest";
-
-declare variable $local:COLLECTION := "/db/mods";
 
 declare function local:sub-collections($root as xs:string, $children as xs:string*) {
     string-join(
@@ -15,42 +16,14 @@ declare function local:sub-collections($root as xs:string, $children as xs:strin
     )
 };
 
-declare function local:canRead($collection as xs:string) as xs:boolean {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner := xmldb:get-owner($collection)
-    let $group := xmldb:get-group($collection)
-    let $groups := xmldb:get-user-groups($local:user)
-    return
-        if ($owner eq $local:user) then
-            substring($permissions, 1, 1) eq 'r'
-        else if ($group = $groups) then
-            substring($permissions, 4, 1) eq 'r'
-        else
-            substring($permissions, 7, 1) eq 'r'
-};
-
-declare function local:canWrite($collection as xs:string) as xs:boolean {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner := xmldb:get-owner($collection)
-    let $group := xmldb:get-group($collection)
-    let $groups := xmldb:get-user-groups($local:user)
-    return
-        if ($owner eq $local:user) then
-            substring($permissions, 2, 1) eq 'w'
-        else if ($group = $groups) then
-            substring($permissions, 5, 1) eq 'w'
-        else
-            substring($permissions, 8, 1) eq 'w'
-};
-
 declare function local:collections($root as xs:string) {
     let $children := xmldb:get-child-collections($root)
-    let $canWrite := local:canWrite($root)
+    let $can-write := security:can-write-collection(security:get-user-credential-from-session()[1], $root)
     return
-        if (local:canRead($root)) then
+        if (security:can-read-collection(security:get-user-credential-from-session()[1], $root)) then
             <s>{{ "title": "{substring-after($root, '/db/')}", "isFolder": true, "key": "{$root}",
-                "writable": {if ($canWrite) then 'true' else 'false' },
-                "addClass": "{if ($canWrite) then 'writable' else 'readable'}"
+                "writable": {if ($can-write) then 'true' else 'false' },
+                "addClass": "{if ($can-write) then 'writable' else 'readable'}"
                 {
                     if (exists($children)) then
                         <s>, "children": [
@@ -67,4 +40,4 @@ declare function local:collections($root as xs:string) {
             ()
 };
 
-<s>[{local:collections($local:COLLECTION)}]</s>
+<s>[{local:collections($config:mods-root)}]</s>
