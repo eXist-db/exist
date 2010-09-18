@@ -16,6 +16,10 @@ let $show-all := if ($show-all-string = 'true') then true() else false()
 (: if no tab is specified, we default to the title tab :)
 let $tab-id := request:get-parameter('tab-id', 'title')
 
+(: display the label attached to the tab to the user :)
+let $tab-data := concat($style:db-path-to-app, '/edit/tab-data.xml')
+let $tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label 
+
 (: if document type is specified then we will need to use that instance as the template :)
 let $type := request:get-parameter('type', 'default')
 
@@ -126,11 +130,14 @@ let $model :=
 let $content :=
 <div class="content">
     
-    <a href="../index.xq">Home</a> id: {$id} tab: {$tab-id}<br/>
+    <a href="../index.xq">MODS XRX Application Home</a>
+    <span class="float-right">editing record <strong>{$id}</strong> on the <strong>{$tab-label}</strong> tab</span>
+    <br/>
     
     {mods:tabs($tab-id, $id, $show-all)}
     
-    Body Elements = {count($form-body/*/*)}<br/>
+    <!--only one body element is shown at a time - why display this?
+    Body Elements = {count($form-body/*/*)}<br/>-->
     
     <xf:submit submission="save-submission">
         <xf:label>Save</xf:label>
@@ -157,13 +164,13 @@ let $content :=
            <xf:label>Message: </xf:label>
         </xf:output>
         
-        <xf:output ref="instance('save-results')//mods:message ">
+        <!--<xf:output ref="instance('save-results')//mods:message ">
            <xf:label>MODS Message: </xf:label>
-        </xf:output>
+        </xf:output>-->
     </div>
     
-    <a href="../views/get-instance.xq?id={$id}">View FUll XML</a> -
-    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View Tab XML</a>
+    <a href="../views/get-instance.xq?id={$id}">View XML for the whole MODS record</a> -
+    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View XML for the current tab (top level element)</a>
 </div>
 
 return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, true())
