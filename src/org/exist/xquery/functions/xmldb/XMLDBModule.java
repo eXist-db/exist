@@ -87,6 +87,7 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBSetResourcePermissions.signature, XMLDBSetResourcePermissions.class),
         new FunctionDef(XMLDBUserAccess.fnExistsUser, XMLDBUserAccess.class),
         new FunctionDef(XMLDBUserAccess.fnUserGroups, XMLDBUserAccess.class),
+        new FunctionDef(XMLDBUserAccess.fnUserPrimaryGroup, XMLDBUserAccess.class),
         new FunctionDef(XMLDBUserAccess.fnUserHome, XMLDBUserAccess.class),
         new FunctionDef(XMLDBCreateUser.signature, XMLDBCreateUser.class),
         new FunctionDef(XMLDBChangeUser.signature, XMLDBChangeUser.class),
