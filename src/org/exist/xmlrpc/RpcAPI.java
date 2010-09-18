@@ -762,6 +762,10 @@ public interface RpcAPI {
 
 	boolean removeAccount(String name) throws EXistException, PermissionDeniedException;
 
+        HashMap<String, Object> getGroup(String name) throws EXistException, PermissionDeniedException;
+
+        void removeGroup(String name) throws EXistException, PermissionDeniedException;
+
 	Vector<String> getGroups() throws EXistException, PermissionDeniedException;
 
 	Vector<Vector<Object>> getIndexedElements(String collectionName, boolean inclusive)

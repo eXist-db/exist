@@ -37,6 +37,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 
 import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -318,20 +320,33 @@ class UserDialog extends JFrame {
 	}
 
 	private void actionRemoveGroup() {
-		int[] selected = groups.getSelectedIndices();
-		for (int i = 0; i < selected.length; i++)
-			groupsModel.remove(selected[i]);
+            int[] selected = groups.getSelectedIndices();
+            for (int i = 0; i < selected.length; i++) {
+                //update the ui
+                groupsModel.remove(selected[i]);
+            }
 	}
 
 	private void actionNewGroup() {
-		String newGroup =
+		String newGroupName =
 			JOptionPane.showInputDialog(
 				this,
 				"Please enter a name for the new group",
 				"New Group",
 				JOptionPane.QUESTION_MESSAGE);
-		groupsModel.addElement(newGroup);
-		allGroupsModel.addElement(newGroup);
+
+                try{
+                    //add the group
+                    GroupAider group = new GroupAider(newGroupName);
+                    service.addGroup(group);
+
+                    //update the ui
+                    groupsModel.addElement(newGroupName);
+                    allGroupsModel.addElement(newGroupName);
+                    
+                } catch(XMLDBException xmldbe) {
+                    JOptionPane.showMessageDialog(this, xmldbe.getMessage());
+                }
 	}
 
 	private void actionCreateUser() {

@@ -1744,6 +1744,30 @@ public class RpcConnection implements RpcAPI {
         }
         return v;
     }
+
+    @Override
+    public HashMap<String, Object> getGroup(String name) throws EXistException, PermissionDeniedException {
+        Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("id", group.getId());
+        map.put("realmId", group.getRealmId());
+        map.put("name", name);
+        return map;
+    }
+
+    @Override
+    public void removeGroup(String name) throws EXistException, PermissionDeniedException {
+
+        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+
+        if (!manager.hasAdminPrivileges(user)){
+            throw new PermissionDeniedException( "you are not allowed to remove users");
+        }
+        
+        factory.getBrokerPool().getSecurityManager().deleteGroup(name);
+    }
+
+
     
     /**
      * The method <code>hasDocument</code>
