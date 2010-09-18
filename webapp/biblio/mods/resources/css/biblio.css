@@ -1,0 +1,293 @@
+p, td {
+    line-height:1.7em;
+}
+
+a:link, a:visited { color: #5DB0E6; }
+
+#login { text-align: right; font-size: 120%; margin-bottom: 4px; }
+.username { font-weight: bold; }
+
+.search-form {
+}
+
+#collection-tree {
+    float: left;
+    margin-top: 1em;
+    background-color: #CCC;
+    width: 40px;
+    height: 400px;
+}
+#collection-tree-main {
+}
+
+.collection-tree-head {
+    background-color: #CCCCCC;
+}
+.collection-tree-toolbar {
+    height: 20px;
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+.collection-tree-toolbar li {
+    display: inline;
+    float: left;
+    margin: 4px 8px 4px 0;
+}
+.collection-tree-toolbar img { border: 0; }
+#toggle-collection-tree {
+    margin: 8px 4px 8px 4px;
+}
+div.ui-dynatree-container {
+    border: 0;
+}
+
+#main-content {
+    margin-left: 50px;
+}
+
+.search-form td {
+    padding: 4px 4px 0 4px;
+}
+
+.search-form input {
+    width: 260px;
+}
+
+.search-form .buttons {
+    text-align: right;
+}
+
+.search-form .buttons button {
+    font-weight: bold;
+    font-size: 112%;
+    margin-left: 1em;
+}
+
+.search-form .collection-input {
+    border: 0;
+}
+
+#results-head {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-bottom: 1px solid #BBBBBB;
+}
+
+#messages {
+    padding: 10px 8px;
+}
+
+#result-container {
+}
+
+#results {
+    margin-top: 1em;
+}
+
+.repeat-selected {
+    background-color: #CCC;
+}
+
+#filters {
+    float: right;
+    width: 240px;
+    height: 320px;
+    margin-left: 10px;
+    padding: 4px;
+}
+
+#filters ul {
+    list-style: none;
+    margin: 0;
+}
+
+#filters .expanded .expand-img {
+    background: url(minus.gif) no-repeat left bottom; 
+}
+
+#filters .expand-img {
+    float: left;
+    width: 14px;
+    height: 14px;
+    background: url(plus.gif) no-repeat left bottom;
+}
+
+#filters img {
+    border: 0;
+    text-align: center;
+}
+
+#filters li a {
+    font-weight: normal;
+}
+
+.even {
+    background-color: #E6E6E6;
+}
+
+.pagination {
+}
+
+.pagination-links {
+    padding: 0 8px 0 8px;
+    margin-bottom: 8px;
+}
+
+a {
+color: black;
+text-decoration: none;
+font-weight: normal;
+    
+}
+a:hover {
+    text-decoration: none;
+    color: blue;
+    border-bottom: 0
+}
+
+.pagination-toggle {
+    cursor: pointer;
+    text-decoration: none;
+    line-height:2em;
+    padding: .2em;
+    width:100%;
+}
+
+.pagination-link {
+    margin-right: 1em;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    cursor: pointer;
+    color: #0083CB;
+}
+
+.pagination-back {
+    cursor: pointer;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    color: #0083CB;
+    margin-right: 10px;
+}
+
+.pagination-next {
+    cursor: pointer;
+    padding: 2px 4px;
+    border: 1px solid #0083CB;
+    color: #0083CB;
+}
+
+.inactive {
+    border: 1px solid #CCC;
+    color: #CCC;
+}
+
+.pagination-info {
+    margin-left: 50px;
+}
+
+.pagination-list-view {
+    margin-left: 50px;
+}
+
+.authors {
+    display: none;
+}
+.biblio-full {
+    background-color: white;
+}
+
+.pagination-n, .actions {
+    width: 20px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+}
+
+.subject td {
+    vertical-align: middle;
+    border: gray 1px;
+    1background-color: red;
+    padding: 0;    
+}
+
+
+.biblio-full .label {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 1em;
+    vertical-align: middle;
+    width: 16em;
+}
+
+.biblio-full .sublabel {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 1em;
+    vertical-align: middle;
+    color: gray;
+    width: 10em;
+}
+
+.biblio-full .record {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: middle;
+    width:40em;
+}
+
+.biblio-full .subrecord {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: middle;
+    width:40em;
+}
+
+.biblio-full .related td {
+    margin: 10em;
+    line-height:3.4em;
+    border-top: 1px solid gray;
+}
+
+.biblio-full .related hr {
+    color: blue;
+}
+
+.host {
+    margin: 10em;
+    text-align: right;
+    color: blue;
+    padding-right: 1em;
+    font-weight: bold;
+}
+
+.actions-toolbar {
+    float: right;
+}
+
+.save {
+    vertical-align: top;
+}
+
+.save img, .actions-toolbar img {
+    border: 0;
+    margin: 0;
+}
+
+.ui-widget {
+    font-size:1em;
+}
+
+#optimize-trigger {
+	float: right;
+}
+
+form ul li {
+	list-style: none;
+}
+
+span.readable .ui-dynatree-title {
+    font-weight: normal;
+    color: #999;
+}
