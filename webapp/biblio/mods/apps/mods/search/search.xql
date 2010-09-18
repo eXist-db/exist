@@ -431,7 +431,9 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:is-collection-owner) return
             security:is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
         case element(biblio:has-collection-write-permissions) return
-            security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
+            (   util:log("debug", concat("LOOK HERE: user=", security:get-user-credential-from-session()[1], " collection=", request:get-parameter("collection", $config:mods-root))),
+                security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
+            )
         case element(biblio:form-select-collection) return
             biblio:form-select-collection($node/@name)
         case element() return
@@ -503,43 +505,6 @@ declare function biblio:conditional($node as element(biblio:conditional)) {
             $node/biblio:result
         )else()
 };
-
-(:
-declare function biblio:is-collection-owner() as xs:boolean {
-    let $user := request:get-attribute("xquery.user"),
-    $collection-owner := xmldb:get-owner(request:get-parameter("collection", $config:mods-root)) return
-        $user eq $collection-owner
-};
-:)
-
-(:
-declare function biblio:has-collection-write-permissions($collection as xs:string) as xs:boolean {
-	if (empty(collection($collection))) then
-		false()
-	else
-    let $user := request:get-attribute("xquery.user"),
-    $collection-permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
-        if(fn:matches($collection-permissions, ".......w."))then
-        (
-            (: world writeable :)
-            true()
-        )
-        else if(xmldb:get-user-groups($user) = xmldb:get-group($collection) and fn:matches($collection-permissions, "....w...."))then
-        (
-            (: group writeable :)
-            true()
-        )
-        else if($user eq xmldb:get-owner($collection) and fn:matches($collection-permissions, ".w......."))then
-        (
-            (: owner writeable :)
-            true()
-        )
-        else
-        (
-            false()
-        )
-};
-:)
 
 (:~
     Filter an existing result set by applying an additional
