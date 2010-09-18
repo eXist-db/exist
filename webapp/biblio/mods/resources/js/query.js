@@ -152,7 +152,7 @@ function login() {
     $('#login-message').text('Checking ...');
     $.ajax({
         url: "checkuser.xql",
-        data: "user=" + user.val() + "&amp;password=" + password.val(),
+        data: "user=" + user.val() + "&password=" + password.val(),
         type: 'POST',
         success:
             function(data, message) { $('#login-form').submit(); },
