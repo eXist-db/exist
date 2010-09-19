@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <tabs>
     <tab>
         <category>Citation</category>
-        <label>Title</label>
+        <label>Title Info</label>
         <tab-id>title</tab-id>
         <color>pink</color>
         <default-visibility>show</default-visibility>
@@ -10,7 +9,7 @@
     </tab>
     <tab>
         <category>Citation</category>
-        <label>Names</label>
+        <label>Name Info</label>
         <tab-id>name</tab-id>
         <color>lightsalmon</color>
         <default-visibility>show</default-visibility>
@@ -18,7 +17,7 @@
     </tab>
     <tab>
         <category>Citation</category>
-        <label>Origin</label>
+        <label>Origin Info</label>
         <tab-id>origin</tab-id>
         <color>yellow</color>
         <default-visibility>show</default-visibility>
@@ -30,7 +29,7 @@
         <tab-id>part</tab-id>
         <color>lightgreen</color>
         <default-visibility>hide</default-visibility>
-        <path>relatedItem</path>
+        <path>part</path>
     </tab>
     <tab>
         <category>Resource</category>
@@ -42,7 +41,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Target Audience</label>
+        <label>Target Audiences</label>
         <tab-id>target-audience</tab-id>
         <color>lavender</color>
         <default-visibility>hide</default-visibility>
@@ -50,7 +49,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Language of Resource</label>
+        <label>Resource Languages</label>
         <tab-id>language</tab-id>
         <color>wheat</color>
         <default-visibility>show</default-visibility>
@@ -58,7 +57,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Type</label>
+        <label>Resource Types</label>
         <tab-id>type</tab-id>
         <color>mistyrose</color>
         <default-visibility>show</default-visibility>
@@ -66,7 +65,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Genre</label>
+        <label>Genres</label>
         <tab-id>genre</tab-id>
         <color>mistyrose</color>
         <default-visibility>show</default-visibility>
@@ -82,7 +81,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Classification</label>
+        <label>Classifications</label>
         <tab-id>classification</tab-id>
         <color>lightblue</color>
         <default-visibility>hide</default-visibility>
@@ -90,7 +89,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Abstract</label>
+        <label>Abstracts</label>
         <tab-id>abstract</tab-id>
         <color>lightblue</color>
         <default-visibility>show</default-visibility>
@@ -98,7 +97,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>TOC</label>
+        <label>TOCs</label>
         <tab-id>table-of-contents</tab-id>
         <color>lightblue</color>
         <default-visibility>show</default-visibility>
@@ -106,7 +105,7 @@
     </tab>
     <tab>
         <category>Contents</category>
-        <label>Note</label>
+        <label>Notes</label>
         <tab-id>note</tab-id>
         <color>lightblue</color>
         <default-visibility>show</default-visibility>
@@ -122,7 +121,7 @@
     </tab>
     <tab>
         <category>Administrative</category>
-        <label>Identifier</label>
+        <label>Identifiers</label>
         <tab-id>identifier</tab-id>
         <color>tan</color>
         <default-visibility>hide</default-visibility>
@@ -138,7 +137,7 @@
     </tab>
     <tab>
         <category>Administrative</category>
-        <label>Location</label>
+        <label>Locations</label>
         <tab-id>location</tab-id>
         <color>silver</color>
         <default-visibility>hide</default-visibility>
@@ -146,7 +145,7 @@
     </tab>
     <tab>
         <category>Administrative</category>
-        <label>Access Condition</label>
+        <label>Access Conditions</label>
         <tab-id>access-condition</tab-id>
         <color>sandybrown</color>
         <default-visibility>hide</default-visibility>
