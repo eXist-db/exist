@@ -32,7 +32,17 @@
     width: 25ex; /* fix the width of all the labels in the block form */
     margin-right: 3px; /* margin to the right of the colon before the input area */
     text-align: right; /* right justification makes the text easier to read */
-    /* border: solid orange 1px; */
+    vertical-align: top;
+    margin-top: 1ex;
+}
+
+.add-button {
+    display: block;
+}
+
+.join {
+    padding-bottom: 2ex;
+    margin-top: -4.5ex;
 }
 
 .repeat-seperator {
@@ -44,24 +54,25 @@
 fieldset {
   background-color:#eee;
   margin: 2px 2px;
+  margin-top: 1em !important;
   padding: 0;
 }
 
 legend {
-  font-weight:bold;
-  background: white;
-  margin: 2px 6px;  
+    font-weight:bold;
+    1background: white;
+    margin: 2px 6px;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block;  
 
 }
 
-.title-field .xforms-value {width: 100ex;}
-
+.text_10 .xforms-value {width: 10ex;}
 .text_50 .xforms-value {width: 50ex;}
 .text_100 .xforms-value {width: 100ex;}
 .text_150 .xforms-value {width: 150ex;}
-.textarea .xforms-value {width: 150ex; height: 10ex}
-
-.legend-label {color: blue;}
+.textarea .xforms-value {width: 100ex; height: 5ex; padding-top: 2px;}
 
 /*.xforms-repeat-item-selected {background-color: silver;}*/
 
@@ -117,20 +128,18 @@ margin:.5em 1em .5em 1em;}
 .block-form .xforms-group-label-centered {
     display: inline-block;
     text-align: center;
-    padding: 0ex;
+    padding: 0px;
+    margin: 0px;
 }
 
 button {
-    margin: .25ex;
+    margin-bottom: 1ex;
+    margin-top: 1ex;
     padding: 0ex;
-}
-.container {
-    padding-left: 20px;
-    padding-right: 30px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    }    
-
+    vertical-align: top;
+    }
+    
+caption, th, td {text-align:center;font-weight:normal;}
 .float-right {float:right; margin-right: 2px;}
 
 </css>
