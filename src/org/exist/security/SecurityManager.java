@@ -96,9 +96,11 @@ public interface SecurityManager extends Configurable {
    public Subject getGuestSubject();
    public Group getDBAGroup();
 
+   //TODO needs javadoc saying what to replace with?
    @Deprecated
    java.util.Collection<Account> getUsers();
 
+   //TODO needs javadoc saying what to replace with?
    @Deprecated
    java.util.Collection<Group> getGroups();
 
