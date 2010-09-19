@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 
 declare namespace op="http://exist-db.org/xquery/biblio/operations";
 
@@ -117,6 +118,15 @@ declare function op:move-resource($resource-id as xs:string, $destination-collec
     )
 };
 
+declare function op:get-sharing-group-members($groupId as xs:string) as element(members){
+    <members>
+    {
+        for $group-member in sharing:get-group-members($groupId) return
+            <member>{$group-member}</member>
+    }
+    </members>        
+};
+
 declare function op:unknown-action($action as xs:string) {
         response:set-status-code(403),
         <p>Unknown action: {$action}.</p>
@@ -133,6 +143,8 @@ return
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
         op:update-collection-sharing($collection, request:get-parameter("restriction", ()), request:get-parameter("userGroup",()))
+    else if($action eq "get-sharing-group-members")then
+        op:get-sharing-group-members(request:get-parameter("groupId",()))
     else if($action eq "remove-resource")then
         op:remove-resource(request:get-parameter("resource",()))
     else if($action eq "move-resource")then

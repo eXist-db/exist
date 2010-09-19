@@ -323,3 +323,7 @@ span.readable .ui-dynatree-title {
     padding-right: 0.5em;
     padding-top: 0.25em;
 }
+
+.labelWithCheckboxLeft {
+    padding-left: 0.25em;    
+}

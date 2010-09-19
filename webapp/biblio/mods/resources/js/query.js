@@ -15,6 +15,23 @@ $(document).ready(function(){
     $('#collection-sharing').hide();
 });
 
+/* sharing dialog actions */
+$(document).ready(function(){
+    
+    $('#group-list').change(function(){
+        updateSharingGroupMembers($('#group-list').val());
+    });
+    
+    $('#add-new-member-to-group-button').click(function(){
+        $('#add-member-to-group-sharing-dialog').dialog('open');
+    });
+    
+    $('#add-member-to-group-button').click(function(){
+        addMemberToSharingGroupMembers($('#members-list').val());
+        $('#add-member-to-group-sharing-dialog').dialog('close');
+    });
+});
+
 /*
     Initialize the collection tree. Connect toolbar button events.
  */
@@ -296,3 +313,48 @@ function searchTabSelected(ev, ui) {
         $('#personal-list-size').load('user.xql', { action: 'count' });
     }
 }
+
+function updateSharingGroupMembers(groupId) {
+    var params = { action: "get-sharing-group-members", groupId: groupId };
+    $.get("operations.xql", params, function(data) {
+        
+        //remove any existing members
+        $('#group-members-list').find('li').remove();
+    
+        //add new members
+        $(data).find('member').each(function(){
+            addMemberToSharingGroupMembers($(this).text());
+        });
+    });
+}
+
+function addMemberToSharingGroupMembers(member){
+
+    //dont add the item if it already exists
+    var currentMemberInputs = $('#group-members-list').find('input');
+    for(var i = 0; i <  currentMemberInputs.size(); i++){
+        if(currentMemberInputs[i].getAttribute("value") == member){
+            return;
+        }
+    }
+
+    //add the item
+    var uuid = (new Date()).getTime();
+    var li = document.createElement('li');
+    
+    var input = document.createElement('input');
+    input.setAttribute('id', 'group-member-' + uuid);
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('name', 'group-memeber');
+    input.setAttribute('value', member);
+    input.setAttribute('checked', 'checked');
+    
+    var label = document.createElement('label');
+    label.setAttribute('for', 'group-member-_' + uuid);
+    label.innerText = member;
+    
+    li.appendChild(input);
+    li.appendChild(label);
+
+   $('#group-members-list').append(li);
+};
