@@ -17,19 +17,19 @@ xquery version "1.0";
     To apply a filter to an existing query, we just extend the XML representation
     of the query.
 :)
-import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
-
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
-
+declare namespace group="http://exist-db.org/mods/sharing/group";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
+import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace sort="http://exist-db.org/xquery/sort" at "java:org.exist.xquery.modules.sort.SortModule";
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 	
 declare option exist:serialize "method=xhtml media-type=application/xhtml+xml omit-xml-declaration=no enforce-xhtml=yes";
 
@@ -436,6 +436,10 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             )
         case element(biblio:form-select-collection) return
             biblio:form-select-collection($node/@name)
+        case element(biblio:form-collection-sharing) return
+            biblio:form-collection-sharing()
+        case element(biblio:form-add-member-to-sharing-group) return
+            biblio:form-add-member-to-sharing-group()
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -483,6 +487,87 @@ declare function biblio:form-select-collection($select-name as xs:string) as ele
                 }
         }
         </select>
+};
+
+declare function biblio:form-add-member-to-sharing-group() {
+    <jquery:dialog id="add-member-to-group-sharing-dialog" modal="true" title="Add User to Group" width="200">
+        <select id="members-list">
+        {
+            for $user in security:get-other-biblio-users() return
+                <option value="{$user}">{$user}</option>
+        }
+        </select>
+        <input id="add-member-to-group-button" type="button" value="Add"/>
+    </jquery:dialog>
+};
+
+declare function biblio:form-collection-sharing() {
+    <jquery:dialog id="sharing-collection-dialog" modal="true" title="Collection Sharing" trigger="#collection-sharing" width="450">
+        <jquery:button label="Update" function="updateCollectionSharing"/>
+        <jquery:button id="cancel" label="Cancel"/>
+        <form id="update-collection-sharing-form" action="operations.xql">
+            <input id="sharing-collection-path_" type="hidden" name="collection"/>
+            <div>Sharing settings for: <span id="sharing-collection-path_"></span></div>
+            <div class="sharing-option">
+                <input type="checkbox" id="sharing-collection-with-group" name="sharing-collection-with" value="group"/>
+                <label for="sharing-collection-with-group" class="labelWithCheckboxLeft">Share with Group</label>
+                <div id="group-sharing-panel" class="sharing-panel">
+                    <div>
+                        <label for="group-list">Group</label>
+                        <select id="group-list" name="group">
+                        {
+                            for $group in sharing:get-groups() return
+                                <option value="{$group/@id}">{$group/group:name/text()}</option>
+                        }
+                        </select>
+                        <input id="new-group-button" type="button" value="New Group"/>
+                    </div>
+                    <div id="group-members">
+                        <div>
+                            <label for="group-members-list">Members</label>
+                            <ui id="group-members-list">
+                                <li>
+                                    <input id="group-member-1" type="checkbox" name="group-member" value="bob" checked="checked"/>
+                                    <label id="group-member-1">bob</label>
+                                </li>
+                                <li>
+                                    <input id="group-member-1" type="checkbox" name="group-member" value="mike" checked="checked"/>
+                                    <label id="group-member-1">mike</label>
+                                </li>
+                            </ui>
+                        </div>
+                        <input id="add-new-member-to-group-button" type="button" value="Add Member"/>
+                    </div>
+                    <div>
+                        <span>
+                            <input id="group-sharing-premissions-read" type="checkbox" name="group-sharing-permissions" value="read"/>
+                            <label for="group-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
+                        </span>
+                        <span style="margin-left: 1em">
+                            <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write"/>
+                            <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="sharing-option">
+                <input type="checkbox" id="sharing-collection-with-other" name="sharing-collection-with" value="other"/>
+                <label for="sharing-collection-with-other" class="labelWithCheckboxLeft">Share with Everyone</label>
+                <div id="other-sharing-panel" class="sharing-panel">
+                    <div>
+                        <span>
+                            <input id="other-sharing-premissions-read" type="checkbox" name="other-sharing-permissions" value="read"/>
+                            <label for="other-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
+                        </span>
+                        <span style="margin-left: 1em">
+                            <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write"/>
+                            <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </jquery:dialog>
 };
 
 declare function biblio:get-writeable-subcollection-paths($path as xs:string) {

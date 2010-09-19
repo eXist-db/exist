@@ -9,6 +9,8 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare variable $security:GUEST_CREDENTIALS := ("guest", "guest");
 declare variable $security:SESSION_USER_ATTRIBUTE := "biblio.user";
 declare variable $security:SESSION_PASSWORD_ATTRIBUTE := "biblio.password";
+
+declare variable $security:biblio-users-group := "biblio.users";
 declare variable $security:users-collection := fn:concat($config:mods-root, "/users");
 
 (:~
@@ -155,4 +157,23 @@ declare function security:is-collection-owner($user as xs:string, $collection as
 {
     let $owner := xmldb:get-owner($collection) return
         $user eq $owner
+};
+
+(:~
+: Gets the users for a group
+:
+: @param the group name
+: @return The list of users in the group
+:)
+declare function security:get-group-members($group as xs:string) as xs:string*
+{
+    xmldb:get-users($group)
+};
+
+(:~
+: Gets a list of other biblio users
+:)
+declare function security:get-other-biblio-users() as xs:string*
+{
+    security:get-group-members($security:biblio-users-group)[. ne security:get-user-credential-from-session()[1]]
 };
