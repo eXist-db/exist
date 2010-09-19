@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 declare namespace session = "http://exist-db.org/xquery/session";
 declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
@@ -50,7 +51,12 @@ declare function local:collections($root as xs:string) {
                             }
                         }}</s>
                 )else()
-            ) 
+            )
+            
+            (: groups collection is treated specially, i.e. skipped :)
+            else if($root eq $sharing:groups-collection)then
+            ()
+            
             else
             (   (: normal collection:)
                 <s>{{ "title": "{fn:replace($root, '.*/','')}", "isFolder": true, "key": "{$root}",
