@@ -291,3 +291,35 @@ span.readable .ui-dynatree-title {
     font-weight: normal;
     color: #999;
 }
+
+.sharing-panel {
+    border: 1px black solid;
+    padding: 1em;
+    margin-bottom: 2em;
+}
+
+.sharing-option {
+    margin-top: 1em;
+}
+
+#group-members {
+    margin-top: 1em;
+    margin-bottom: 1em;    
+}
+
+#group-members-list {
+    background-color: white;
+    border: 1px solid #black;
+    color: black;
+    height: 8em;
+    list-style: none;
+    overflow: auto;
+    width: 10em;    
+}
+
+#group-members-list li {
+    padding-bottom: 0.25em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.25em;
+}
