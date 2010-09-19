@@ -26,6 +26,16 @@ declare function local:user-is-collection-owner($user as xs:string, $collection 
     <result>{security:is-collection-owner($user, $collection)}</result>
 };
 
+declare function local:is-users-home-collection($user as xs:string, $collection as xs:string) as element(result)
+{
+    <result>{security:get-home-collection-uri($user) eq $collection}</result>
+};
+
+declare function local:user-is-collection-owner-and-not-home($user as xs:string, $collection as xs:string) as element(result)
+{
+    <result>{security:is-collection-owner($user, $collection) and (security:get-home-collection-uri($user) ne $collection)}</result>
+};
+
 if(request:get-parameter("action",()))then
 (
     if(request:get-parameter("action",()) eq "can-write-collection")then
@@ -35,6 +45,14 @@ if(request:get-parameter("action",()))then
     else if(request:get-parameter("action",()) eq "is-collection-owner")then
     (
         local:user-is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
+    )
+    else if(request:get-parameter("action",()) eq "is-users-home-collection")then
+    (
+        local:is-users-home-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
+    )
+    else if(request:get-parameter("action",()) eq "is-collection-owner-and-not-home")then
+    (
+        local:user-is-collection-owner-and-not-home(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
     )
     else
     (

@@ -12,7 +12,7 @@ $(document).ready(function(){
     $('#collection-create-folder').hide();
     $('#collection-move-folder').hide();
     $('#collection-remove-folder').hide();
-    $('#collection-permissions').hide();
+    $('#collection-sharing').hide();
 });
 
 /*
@@ -26,9 +26,9 @@ function initCollectionTree() {
         rootVisible: false,
         initAjax: {url: "collections.xql" },
         onActivate: function (dtnode) {
+            var title = dtnode.data.title;
             var key = dtnode.data.key;
-            var form = $('#simple-search-form');
-            $('input[name = collection]', form).val(key);
+            updateCollectionPaths(title, key);
             showHideCollectionWriteableControls();
             showHideCollectionOwnerControls();
             
@@ -64,6 +64,18 @@ function initCollectionTree() {
     });
 }
 
+function updateCollectionPaths(title, key) {
+    
+    //search form
+    var form = $('#simple-search-form');
+    $('input[name = collection]', form).val(key);
+    
+    //dialog collection paths
+    $('span[id $= collection-path_]').text(title);
+    $('input[id $= collection-path_]').val(key);
+    
+};
+
 function showHideCollectionWriteableControls() {
     var collection = $('#simple-search-form input[name = collection]').val();
     var params = { action: "can-write-collection", collection: collection };
@@ -82,12 +94,12 @@ function showHideCollectionWriteableControls() {
 
 function showHideCollectionOwnerControls() {
     var collection = $('#simple-search-form input[name = collection]').val();
-    var params = { action: "is-collection-owner", collection: collection };
+    var params = { action: "is-collection-owner-and-not-home", collection: collection };
     $.get("checkuser.xql", params, function(data) {
         if($(data).text() == 'true') {
-            $('#collection-permissions').show();
+            $('#collection-sharing').show();
         } else {
-            $('#collection-permissions').hide();
+            $('#collection-sharing').hide();
         }
     });
 };
@@ -158,10 +170,10 @@ function removeCollection(dialog) {
     Called when the user clicks on the "create" button in the create collection dialog.
  */
 function updateCollectionPermissions(dialog) {
-    var restriction = $('#update-collection-permissions-form input[name = restriction]:checked').val();
-    var userGroup = $('#update-collection-permissions-form select[name = userGroup]').val();
+    var restriction = $('#update-collection-sharing-form input[name = restriction]:checked').val();
+    var userGroup = $('#update-collection-sharing-form select[name = userGroup]').val();
     var collection = $('#simple-search-form input[name = collection]').val();
-    var params = { action: 'update-collection-permissions', restriction: restriction, userGroup: userGroup, collection: collection };
+    var params = { action: 'update-collection-sharing', restriction: restriction, userGroup: userGroup, collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         dialog.dialog("close");

@@ -136,7 +136,7 @@
                                 <img src="../../../resources/images/arrow_refresh.png" title="Reload"/>
                             </a>
                         </li>
-                        <!-- hidden by default -->
+                        <!-- collection writeable -->
                         <li>
                             <a href="#" id="collection-create-folder">
                                 <img src="../../../resources/images/folder_add.png" title="Create Folder"/>
@@ -152,12 +152,14 @@
                                 <img src="../../../resources/images/folder_delete.png" title="Remove Folder"/>
                             </a>
                         </li>
+                        <!-- end collection writeable -->
+                        <!-- collection owner -->
                         <li>
-                            <a href="#" id="collection-permissions">
-                                <img src="../../../resources/images/user_edit.png" title="Edit Folder Permissions"/>
+                            <a href="#" id="collection-sharing">
+                                <img src="../../../resources/images/user_edit.png" title="Edit Collection Sharing"/>
                             </a>
                         </li>
-                        <!-- end hidden by default -->
+                        <!-- end collection owner -->
                     </ul>
                     <div id="collection-tree-tree"> </div>
                 </div>
@@ -230,92 +232,146 @@
                     </table>
                 </form>
             </jquery:dialog>
-            <biblio:conditional>
-                <biblio:test>
-                    <biblio:has-collection-write-permissions/>
-                </biblio:test>
-                <biblio:result>
-                    <jquery:dialog id="new-collection-dialog" modal="true" title="Create New Folder"
-                        trigger="#collection-create-folder" width="450">
-                        <jquery:button label="Create" function="createCollection"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="create-collection-form" action="operations.xql">
-                            <div>New Collection: </div>
+            <!-- collection writeable -->
+            <jquery:dialog id="new-collection-dialog" modal="true" title="Create New Folder"
+                trigger="#collection-create-folder" width="450">
+                <jquery:button label="Create" function="createCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="create-collection-form" action="operations.xql">
+                    <div>New Collection: </div>
+                    <div>
+                        <input name="name" type="text"/>
+                    </div>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder"
+                trigger="#collection-move-folder" width="450">
+                <jquery:button label="Move" function="moveCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="move-collection-form" action="operations.xql">
+                    <input id="move-collection-path_" type="hidden" name="collection"/>
+                    <div>Move collection '<span id="move-collection-path_"></span>' to
+                            <biblio:form-select-collection name="path"/></div>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder"
+                trigger="#collection-remove-folder" width="450">
+                <jquery:button label="Remove" function="removeCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="remove-collection-form" action="operations.xql">
+                    <input id="remove-collection-path_" type="hidden" name="collection"/>
+                    <div>Are you sure you wish to remove the collection: <span id="sharing-collection-path_"></span></div>
+                </form>
+            </jquery:dialog>
+            <!-- end collection writeable -->
+            <!-- collection owner -->
+            <jquery:dialog id="sharing-collection-dialog" modal="true"
+                title="Collection Sharing" trigger="#collection-sharing" width="450">
+                <jquery:button label="Update" function="updateCollectionSharing"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="update-collection-sharing-form" action="operations.xql">
+                    <input id="sharing-collection-path_" type="hidden" name="collection"/>
+                    <div>Sharing settings for: <span id="sharing-collection-path_"></span></div>
+                    <div class="sharing-option">
+                        <input type="checkbox" id="sharing-collection-with-group" name="sharing-collection-with" value="group"/>
+                        <label for="sharing-collection-with-group">Share with Group</label>
+                        <div id="group-sharing-panel" class="sharing-panel">
                             <div>
-                                <input name="name" type="text"/>
+                                <label for="group-list">Group</label>
+                                <select id="group-list" name="group">
+                                    <option label="apples">Apples</option>
+                                    <option label="oranges">Oranges</option>
+                                </select>
+                                <input id="new-group-button" type="button" value="New Group"/>
                             </div>
-                        </form>
-                    </jquery:dialog>
-                    <jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder"
-                        trigger="#collection-move-folder" width="450">
-                        <jquery:button label="Move" function="moveCollection"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="move-collection-form" action="operations.xql">
-                            <div>Move collection '<span><biblio:collection-path/></span>' to
-                                    <biblio:form-select-collection name="path"/></div>
-                        </form>
-                    </jquery:dialog>
-                    <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder"
-                        trigger="#collection-remove-folder" width="450">
-                        <jquery:button label="Remove" function="removeCollection"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="remove-collection-form" action="operations.xql">
-                            <div>Are you sure you wish to remove the collection:
-                                    <span><biblio:collection-path/></span></div>
-                        </form>
-                    </jquery:dialog>
-                    <jquery:dialog id="permissions-collection-dialog" modal="true"
-                        title="Edit Folder Permissions" trigger="#collection-permissions"
-                        width="450">
-                        <jquery:button label="Update" function="updateCollectionPermissions"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="update-collection-permissions-form" action="operations.xql">
-                            <div>Update Collection Permissions for:
-                                    <span><biblio:collection-path/></span></div>
+                            <div id="group-members">
+                                <div>
+                                    <label for="group-members-list">Members</label>
+                                    <ui id="group-members-list">
+                                        <li>
+                                            <input id="group-member-1" type="checkbox" name="group-member" value="bob" checked="checked"/>
+                                            <label id="group-member-1">bob</label>
+                                        </li>
+                                        <li>
+                                            <input id="group-member-1" type="checkbox" name="group-member" value="mike" checked="checked"/>
+                                            <label id="group-member-1">mike</label>
+                                        </li>
+                                    </ui>
+                                </div>
+                                <input id="add-member-button" type="button" value="Add Member"/>
+                            </div>
                             <div>
-                                <div>
-                                    <input id="collection-restrict-all" name="restriction"
-                                        type="radio" value="*"/>
-                                    <label for="collection-restrict-all">All</label>
-                                </div>
-                                <div>
-                                    <input id="collection-restrict-user" name="restriction"
-                                        type="radio" value="user"/>
-                                    <label for="collection-restrict-user">User
-                                        (<biblio:current-user/>)</label>
-                                </div>
-                                <div>
-                                    <input id="collection-restrict-group" name="restriction"
-                                        type="radio" value="group"/>
-                                    <label for="collection-restrict-group">Group</label>
-                                </div>
+                                <label for="group-sharing-premissions-read">Read</label>
+                                <input id="group-sharing-premissions-read" type="checkbox" name="group-sharing-permissions" value="read"/>
+                                <label for="group-sharing-premissions-write">Write</label>
+                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write"/>
                             </div>
-                            <div id="collection-restrict-user-group">
-                                <biblio:form-select-current-user-groups name="userGroup"/>
+                        </div>
+                    </div>
+                    <div class="sharing-option">
+                        <input type="checkbox" id="sharing-collection-with-other" name="sharing-collection-with" value="other"/>
+                        <label for="sharing-collection-with-other">Share with Everyone</label>
+                        <div id="other-sharing-panel" class="sharing-panel">
+                            <div>
+                                <label for="other-sharing-premissions-read">Read</label>
+                                <input id="other-sharing-premissions-read" type="checkbox" name="other-sharing-permissions" value="read"/>
+                                <label for="other-sharing-premissions-write">Write</label>
+                                <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write"/>
                             </div>
-                        </form>
-                    </jquery:dialog>
-                    <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder"
-                        width="450">
-                        <jquery:button label="Remove" function="removeResource"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="remove-resource-form" action="operations.xql">
-                            <div>Are you sure you wish to remove the resource?</div>
-                            <input id="remove-resource-id" name="resource" type="hidden" value=""/>
-                        </form>
-                    </jquery:dialog>
-                    <jquery:dialog id="move-resource-dialog" modal="true" title="Move Resource"
-                        width="450">
-                        <jquery:button label="Move" function="moveResource"/>
-                        <jquery:button id="cancel" label="Cancel"/>
-                        <form id="move-resource-form" action="operations.xql">
-                            <div>Move resource from '<span><biblio:collection-path/></span>' to
-                                    <biblio:form-select-collection name="path"/></div>
-                            <input id="move-resource-id" name="resource" type="hidden" value=""/>
-                        </form>
-                    </jquery:dialog>
-                </biblio:result>
-            </biblio:conditional>
+                        </div>
+                    </div>
+                </form>
+                
+                <!--
+                <jquery:button label="Update" function="updateCollectionSharing"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="update-collection-sharing-form" action="operations.xql">
+                    <input id="sharing-collection-path_" type="hidden" name="collection"/>
+                    <div>Sharing settings for: <span id="sharing-collection-path_"></span></div>
+                    <div>
+                        <div>
+                            <input id="collection-restrict-all" name="restriction"
+                                type="radio" value="*"/>
+                            <label for="collection-restrict-all">All</label>
+                        </div>
+                        <div>
+                            <input id="collection-restrict-user" name="restriction"
+                                type="radio" value="user"/>
+                            <label for="collection-restrict-user">User
+                                (<biblio:current-user/>)</label>
+                        </div>
+                        <div>
+                            <input id="collection-restrict-group" name="restriction"
+                                type="radio" value="group"/>
+                            <label for="collection-restrict-group">Group</label>
+                        </div>
+                    </div>
+                    <div id="collection-restrict-user-group">
+                        <biblio:form-select-current-user-groups name="userGroup"/>
+                    </div>
+                </form>
+                -->
+            </jquery:dialog>
+            <!-- end collection owner -->
+            <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder"
+                width="450">
+                <jquery:button label="Remove" function="removeResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="remove-resource-form" action="operations.xql">
+                    <div>Are you sure you wish to remove the resource?</div>
+                    <input id="remove-resource-id" name="resource" type="hidden" value=""/>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Resource"
+                width="450">
+                <jquery:button label="Move" function="moveResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="move-resource-form" action="operations.xql">
+                    <div>Move resource from '<span><biblio:collection-path/></span>' to
+                            <biblio:form-select-collection name="path"/></div>
+                    <input id="move-resource-id" name="resource" type="hidden" value=""/>
+                </form>
+            </jquery:dialog>
             <jquery:javascript/>
         </div>
     </body>
