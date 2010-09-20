@@ -370,8 +370,7 @@ public class LuceneIndexTest {
 
     @Test
     public void boosts() {
-        @SuppressWarnings("unused")
-		DocumentSet docs = configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -394,8 +393,7 @@ public class LuceneIndexTest {
 
     @Test
     public void queryTranslation() {
-        @SuppressWarnings("unused")
-		DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -1261,7 +1259,7 @@ public class LuceneIndexTest {
         Occurrences[] occur = index.scanIndex(context, docs, null, hints);
         if (occur != null && expected != occur.length) {
             for (int i = 0; i < occur.length; i++) {
-                System.out.println("term: " + occur[i].getTerm());              
+                System.out.println("term: " + occur[i].getTerm());
             }
         }
         assertEquals(expected, occur.length);
@@ -1330,7 +1328,7 @@ public class LuceneIndexTest {
             Configuration config = BrokerPool.getInstance().getConfiguration();
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
         } catch (Exception e) {
-        	transact.abort(transaction);
+            transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {

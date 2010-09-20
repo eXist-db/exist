@@ -1,13 +1,22 @@
 package org.exist.indexing.lucene;
 
-import org.apache.lucene.search.*;
-import org.apache.lucene.search.regex.RegexQuery;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermFreqVector;
-
-import java.io.IOException;
-import java.util.*;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FuzzyQuery;
+import org.apache.lucene.search.MultiTermQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.regex.RegexQuery;
 
 public class LuceneUtil {
 

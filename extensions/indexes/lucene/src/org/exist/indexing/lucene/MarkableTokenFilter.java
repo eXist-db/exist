@@ -26,14 +26,17 @@ public class MarkableTokenFilter extends TokenFilter {
         cache = new LinkedList<Token>();
     }
 
+    @Override
     public void reset() throws IOException {
         isCaching = false;
     }
 
+    @Override
     public Token next() throws IOException {
         return next(new Token());
     }
 
+    @Override
     public Token next(Token token) throws IOException {
         if (isCaching) {
             Token nextToken = input.next(new Token());

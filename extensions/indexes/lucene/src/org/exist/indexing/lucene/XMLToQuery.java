@@ -22,29 +22,38 @@
 
 package org.exist.indexing.lucene;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FuzzyQuery;
+import org.apache.lucene.search.MultiPhraseQuery;
+import org.apache.lucene.search.MultiTermQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.WildcardTermEnum;
+import org.apache.lucene.search.regex.RegexQuery;
+import org.apache.lucene.search.regex.SpanRegexQuery;
+import org.apache.lucene.search.spans.SpanFirstQuery;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
+import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.lucene.search.*;
-import org.apache.lucene.search.regex.RegexQuery;
-import org.apache.lucene.search.regex.SpanRegexQuery;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanFirstQuery;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Token;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
-import org.exist.xquery.XPathException;
-
-import java.io.StringReader;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Properties;
 
 /**
  * Parses the XML representation of a Lucene query and transforms
@@ -154,7 +163,6 @@ public class XMLToQuery {
             } catch (IOException e) {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
-
             return new SpanNearQuery(list.toArray(new SpanTermQuery[list.size()]), slop, inOrder);
         } else {
             SpanQuery[] children = parseSpanChildren(field, node, analyzer);
@@ -189,7 +197,7 @@ public class XMLToQuery {
     		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
-    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) throws XPathException {
+    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
     	String regex = getText(node);
     	return new SpanRegexQuery(new Term(field, regex));
     }

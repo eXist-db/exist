@@ -485,7 +485,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private int docBase;
         private Scorer scorer;
 
-        private LuceneHitCollector() throws IOException {
+        private LuceneHitCollector() {
+            //Nothing special to do
         }
 
         public List<ScoreDoc> getDocs() {
@@ -502,18 +503,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return docs;
         }
         
+        @Override
         public void setScorer(Scorer scorer) throws IOException {
             this.scorer = scorer;
         }
 
+        @Override
         public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
             this.docBase = docBase;
         }
 
+        @Override
         public boolean acceptsDocsOutOfOrder() {
             return false;
         }
 
+        @Override
         public void collect(int doc) {
             try {
                 float score = scorer.score();
@@ -608,7 +613,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         String start = null, end = null;
         long max = Long.MAX_VALUE;
         if (hints != null) {
-    	    Object vstart = hints.get(START_VALUE);
+            Object vstart = hints.get(START_VALUE);
             Object vend = hints.get(END_VALUE);
             start = vstart == null ? null : vstart.toString();
             end = vend == null ? null : vend.toString();
@@ -773,6 +778,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void setScorer(Scorer scorer) throws IOException {
+            //What to do there ?
         }
 
         @Override
@@ -923,6 +929,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private class LuceneStreamListener extends AbstractStreamListener {
 
+        @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (mode == STORE && config != null) {
                 if (contentStack != null && !contentStack.isEmpty()) {
@@ -941,6 +948,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.startElement(transaction, element, path);
         }
 
+        @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
                 if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
@@ -962,6 +970,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.endElement(transaction, element, path);
         }
 
+        @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             path.addComponent(attrib.getQName());
             if (mode != REMOVE_ALL_NODES && config != null && config.matches(path)) {
@@ -976,6 +985,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.attribute(transaction, attrib, path);
         }
 
+        @Override
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextExtractor extractor : contentStack) {
@@ -985,6 +995,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.characters(transaction, text, path);
         }
 
+        @Override
         public IndexWorker getWorker() {
             return LuceneIndexWorker.this;
         }
@@ -1010,6 +1021,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.query = copy.query;
         }
 
+        @Override
         public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
             return null;
         }
@@ -1018,10 +1030,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return new LuceneMatch(contextId, nodeId, query);
         }
 
+        @Override
         public Match newCopy() {
             return new LuceneMatch(this);
         }
 
+        @Override
         public String getIndexId() {
             return LuceneIndex.ID;
         }
@@ -1038,6 +1052,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.score = score;
         }
 
+        @Override
         public boolean equals(Object other) {
             if(!(other instanceof LuceneMatch))
                 return false;
@@ -1046,6 +1061,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 query == ((LuceneMatch)other).query;
         }
 
+        @Override
         public boolean matchEquals(Match other) {
             return equals(other);
         }
