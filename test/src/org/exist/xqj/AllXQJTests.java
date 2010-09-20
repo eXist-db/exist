@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        MarshallerTest.class,
+        MarshallerTest.class
         
 })
 public class AllXQJTests {
