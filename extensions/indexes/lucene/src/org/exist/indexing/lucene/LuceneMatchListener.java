@@ -112,6 +112,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
     }
 
+    @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
         Match nextMatch = match;
         // check if there are any matches in the current element
@@ -127,6 +128,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         super.startElement(qname, attribs);
     }
 
+    @Override
     public void characters(CharSequence seq) throws SAXException {
         NodeId nodeId = getCurrentNode().getNodeId();
         Offset offset = nodesWithMatch.get(nodeId);

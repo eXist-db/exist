@@ -13,6 +13,7 @@ public class TermInPhrase implements Comparable<TermInPhrase> {
         this.term = term;
     }
 
+    @Override
     public boolean equals(Object obj) {
         return term.equals(((TermInPhrase)obj).term);
     }

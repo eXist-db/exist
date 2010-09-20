@@ -85,6 +85,7 @@ public class ConcurrencyTest {
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
+		    //Nothing to do
 		}
 		assertTrue(terminated);
     }
@@ -108,6 +109,7 @@ public class ConcurrencyTest {
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
+		    //Nothing to do
 		}
 		assertTrue(terminated);
     }
