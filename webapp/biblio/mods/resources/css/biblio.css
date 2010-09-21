@@ -15,7 +15,7 @@ a:link, a:visited { color: #5DB0E6; }
     margin-top: 1em;
     background-color: #CCC;
     width: 40px;
-    height: 400px;
+    height: 390px;
 }
 #collection-tree-main {
 }
@@ -48,24 +48,75 @@ div.ui-dynatree-container {
 
 .search-form td {
     padding: 4px 4px 0 4px;
+    text-align: left;
+}
+
+td.collection-path {
+    width: 800px;    
+}
+
+td.buttons button {
+    display: inline;
+    padding-left: 3em;
+    text-align: center;
+    }
+
+td.label {
+    text-align: right;    
+}
+
+.ui-autocomplete-input {
+    width: 260px; 
 }
 
 .search-form input {
-    width: 260px;
+    width: 800px;
 }
 
-.search-form .buttons {
-    text-align: right;
+.search-form .small {
+    width: 6px;
 }
 
-.search-form .buttons button {
-    font-weight: bold;
-    font-size: 112%;
-    margin-left: 1em;
+.search-form td input{
+    width: 260px;    
 }
 
+td.dropdown{
+    width: 1em;
+}
+
+table tr.repeat {
+    background-color: white;
+}
+
+#form-submit {
+    margin-left: 7em;
+    }
+
+#form-submit {
+    font-weight: bold; 
+    display: inline;
+    padding-bottom:2px;
+    padding-left:1ex;
+    padding-right:1ex;
+    padding-top:2px;}
+
+.search-form .buttons button, .button {
+    display: inline;
+    padding-bottom:2px;
+    padding-left:1ex;
+    padding-right:1ex;
+    padding-top:2px;
+    text-align: center;    
+}
+
+.advanced-search {
+    display:inline;
+    padding-left: 10em;
+    }
 .search-form .collection-input {
     border: 0;
+    width:800px;
 }
 
 #results-head {
