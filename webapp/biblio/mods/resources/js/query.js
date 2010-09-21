@@ -83,8 +83,11 @@ function initCollectionTree() {
 
 function updateCollectionPaths(title, key) {
     
-    //search form
+    //search forms
     var form = $('#simple-search-form');
+    $('input[name = collection]', form).val(key);
+    
+    var form = $('#advanced-search-form');
     $('input[name = collection]', form).val(key);
     
     //dialog collection paths

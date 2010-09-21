@@ -23,6 +23,7 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace functx = "http://www.functx.com";
 
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
@@ -32,6 +33,11 @@ import module namespace security="http://exist-db.org/mods/security" at "securit
 import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 	
 declare option exist:serialize "method=xhtml media-type=application/xhtml+xml omit-xml-declaration=no enforce-xhtml=yes";
+
+declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string, $replacement as xs:string )  as xs:string {       
+   replace($arg, concat('(^.*?)', $pattern),
+             concat('$1',$replacement))
+ } ;
 
 (:~
     Simple mapping from field names to an XPath expression
@@ -93,8 +99,9 @@ declare variable $biblio:TEMPLATE_QUERY :=
 declare function biblio:form-from-query($query as element()) as element()+ {
     for $field at $pos in $query//field
     return
+    
         <tr class="repeat">
-            <td>
+            <td class="label">
             {
                 let $operator := 
                     if ($field/preceding-sibling::*) then
@@ -118,10 +125,19 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                             </option>
                     }
                     </select>
-            }
+            } 
+            </td>
+            <td> 
+                <jquery:input name="input{$pos}" value="{$field/string()}">
+                    <jquery:autocomplete url="autocomplete.xql"
+                        width="300" multiple="false"
+                        matchContains="false"
+                        paramsCallback="autocompleteCallback">
+                    </jquery:autocomplete>
+                </jquery:input>
             </td>
             <td>
-                <select name="field{$pos}">
+                in <select name="field{$pos}">
                 {
                     for $f in $biblio:FIELDS/field
                     return
@@ -131,15 +147,6 @@ declare function biblio:form-from-query($query as element()) as element()+ {
                         </option>
                 }
                 </select>
-            </td>
-            <td>
-                <jquery:input name="input{$pos}" value="{$field/string()}">
-                    <jquery:autocomplete url="autocomplete.xql"
-                        width="300" multiple="false"
-                        matchContains="false"
-                        paramsCallback="autocompleteCallback">
-                    </jquery:autocomplete>
-                </jquery:input>
             </td>
         </tr>
 };
@@ -413,7 +420,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:query-history) return
             biblio:query-history()
         case element(biblio:collection-path) return
-            let $collection := request:get-parameter("collection", $config:mods-root)
+            let $collection := functx:replace-first(request:get-parameter("collection", $config:mods-root), "/db/", "")
             return
                 <input class="collection-input" type="text" name="collection" value="{$collection}" readonly="true"/>
         case element(biblio:form-select-current-user-groups) return
