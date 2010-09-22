@@ -198,6 +198,20 @@ public class JettyStart implements LifeCycle.Listener {
             server.start();
 
             Connector[] connectors = server.getConnectors();
+
+            // Construct description of all ports opened.
+            StringBuilder allPorts = new StringBuilder();
+
+            if (connectors.length > 1) {
+                // plural s
+                allPorts.append("s");
+            }
+            
+            for(Connector connector: connectors){
+                allPorts.append(" ");
+                allPorts.append(connector.getPort());
+            }
+
             if (connectors.length > 0) {
                 port = connectors[0].getPort();
             }
@@ -211,14 +225,14 @@ public class JettyStart implements LifeCycle.Listener {
             //*************************************************************
 
             logger.info("-----------------------------------------------------");
-            logger.info("Server has started on port " + port + ". Configured contexts:");
+            logger.info("Server has started on port" + allPorts + ". Configured contexts:");
 
             HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
             Handler[] handlers = rootHandler.getHandlers();
             for (Handler handler: handlers) {
             	if (handler instanceof ContextHandler) {
 					ContextHandler contextHandler = (ContextHandler) handler;
-	            	logger.info("http://localhost:" + port + contextHandler.getContextPath());
+	            	logger.info("'"+contextHandler.getContextPath()+"'");
             	}
             	
             	//TODO: pluggable in future
@@ -232,7 +246,7 @@ public class JettyStart implements LifeCycle.Listener {
             				suffix = "openid";
            				else 
                				suffix = "/openid";
-            			logger.info("http://localhost:" + port + contextHandler.getContextPath() + suffix);
+            			logger.info("'"+contextHandler.getContextPath() + suffix+"'");
             		}
                 //*************************************************************
             }

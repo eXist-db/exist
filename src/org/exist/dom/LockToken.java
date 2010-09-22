@@ -78,6 +78,10 @@ public class LockToken {
     
     
     // Getters and setters
+
+    /**
+     *  Get type of lock.
+     */
     public byte getType(){  return type;   }
     public void setType(byte type){ this.type=type; }
     

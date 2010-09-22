@@ -85,7 +85,7 @@
     <!-- Generate FAKE CERTIFICATE for SSL -->
     <target name="jetty-keygen" description="Generate a new keystore file for jetty.">
         <genkey alias="jetty" storepass="${keystore.password}"
-                keystore="tools/jetty/etc/demokeystore"
+                keystore="tools/jetty/etc/keystore"
                 validity="${keystore.validity}">
             <dname>
                 <param name="CN" value="eXist XML database"/>
