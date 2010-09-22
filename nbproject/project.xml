@@ -6,21 +6,22 @@
             <name>eXist-1.5</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
-                <root id="src.dir"/>
-                <root id="src.src.dir" name="Modules"/>
-                <root id="src.src8.dir" name="XQDoc"/>
-                <root id="src.src9.dir" name="Index Sort"/>
+                <root id="src.dir" name="Core"/>
                 <root id="src.src2.dir" name="Index NGram"/>
-                <root id="src.src3.dir" name="Index Spatial"/>
                 <root id="src.src4.dir" name="Index Lucene"/>
-                <root id="src.src5.dir" name="Versioning"/>
-                <root id="eXist-1.33.dir" name="Fluent"/>
+                <root id="src.src9.dir" name="Index Sort"/>
+                <root id="src.src3.dir" name="Index Spatial"/>
+                <root id="eXist-1.33.dir" name="Extensions Fluent"/>
+                <root id="src.src.dir" name="Extensions Modules"/>
+                <root id="src.src5.dir" name="Extensions Versioning"/>
+                <root id="src.src7.dir" name="Extensions WebDAV"/>
+                <root id="src.src8.dir" name="Extensions XQDoc"/>
                 <root id="src.src6.dir" name="Wrapper"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
             <test-roots>
-                <root id="test.src.dir"/>
-                <root id="test.eXist-1.32.dir" name="Fluent test"/>
+                <root id="test.src.dir" name="Core Test"/>
+                <root id="test.eXist-1.32.dir" name="Fluent Test"/>
             </test-roots>
         </data>
     </configuration>
