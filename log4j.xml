@@ -208,6 +208,16 @@
         <appender-ref ref="exist.ehcache"/>
     </category>
     
+    <category name="com.bradmcevoy.http.webdav.PropFindPropertyBuilder" additivity="false">
+        <priority value="off"/>
+        <appender-ref ref="console"/>
+    </category>
+    
+    <category name="com.bradmcevoy.property.BeanPropertySource" additivity="false">
+        <priority value="off"/>
+        <appender-ref ref="console"/>
+    </category>
+    
     <!--
         Axis produces a large amount of debugging output if
         priority is set to debug 

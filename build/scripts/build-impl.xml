@@ -388,7 +388,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -608,6 +608,7 @@
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/betterform" target="uninstall" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -718,6 +719,10 @@
     
     <target name="samples" depends="jar" description="Build samples">
         <ant antfile="build.xml" dir="samples"/>
+    </target>
+
+    <target name="extension-webdav" depends="jar">
+        <ant antfile="build.xml" dir="extensions/webdav" inheritall="false"/>
     </target>
 
     <target name="cleandocs">
