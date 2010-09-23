@@ -22,6 +22,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -42,8 +43,6 @@ public class RemoteBinaryResource
 	extends AbstractRemoteResource
 	implements BinaryResource
 {
-	private byte[] data = null;
-	
 	public RemoteBinaryResource(RemoteCollection parent, XmldbURI documentName) throws XMLDBException {
 		super(parent,documentName);
  		mimeType = MimeType.BINARY_TYPE.getName();
@@ -67,26 +66,28 @@ public class RemoteBinaryResource
 	 * @see org.exist.xmldb.ExtendedResource#getExtendedContent()
 	 */
 	public Object getExtendedContent() throws XMLDBException {
-		return getExtendedContentInternal(data,false,-1,-1);
+		return getExtendedContentInternal(null,false,-1,-1);
 	}
 	
 	public InputStream getStreamContent()
 		throws XMLDBException
 	{
-		return getStreamContentInternal(data,false,-1,-1);
+		return getStreamContentInternal(null,false,-1,-1);
 	}
 	
 	public void getContentIntoAStream(OutputStream os)
 		throws XMLDBException
 	{
-		getContentIntoAStreamInternal(os,data,false,-1,-1);
+		getContentIntoAStreamInternal(os,null,false,-1,-1);
 	}
 
 	protected String getStreamSymbolicPath() {
 		String retval="<streamunknown>";
 		
-		if(file!=null) {
-			retval=file.getAbsolutePath();
+		if(vfile!=null) {
+			Object content = vfile.getContent();
+			if(content instanceof File)
+				retval=((File)content).getAbsolutePath();
 		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
 			retval=((EXistInputSource)inputSource).getSymbolicPath();
 		} 
@@ -97,22 +98,16 @@ public class RemoteBinaryResource
 	public long getStreamLength()
 		throws XMLDBException
 	{
-		return getStreamLengthInternal(data);
+		return getStreamLengthInternal(null);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.xmldb.api.base.Resource#setContent(java.lang.Object)
 	 */
 	public void setContent(Object obj) throws XMLDBException {
-		data = null;
     	if(!super.setContentInternal(obj)) {
-    		if(obj instanceof byte[]) {
-    			data = (byte[])obj;
-    		} else if(obj instanceof String) {
-    			data = ((String)obj).getBytes();
-    		} else
-    			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-    					"don't know how to handle value of type " + obj.getClass().getName());
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+					"don't know how to handle value of type " + obj.getClass().getName());
     	}
 	}
 

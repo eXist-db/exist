@@ -246,8 +246,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			resource = loadFromFile(collection, file, docName, binary, mimeType);
 
 		} else {
+			File temp = null;
 			try {
-				File temp = File.createTempFile("existDBS", ".xml");
+				temp = File.createTempFile("existDBS", ".xml");
 				// This is deleted later; is this necessary?
 				temp.deleteOnExit();
 				OutputStream os = new FileOutputStream(temp);
@@ -268,6 +269,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			} catch (IOException e) {
 				throw new XPathException(this, "IOException while reading from URL: " +
 						uri.toString(), e);
+			} finally {
+				if(temp!=null)
+					temp.delete();
 			}
 		}
 		return resource;

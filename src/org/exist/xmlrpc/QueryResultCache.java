@@ -14,15 +14,15 @@ public class QueryResultCache {
 
     private static final int INITIAL_SIZE = 254;
     
-    public QueryResult[] results;
+    public AbstractCachedResult[] results;
 
     private static final Logger LOG = Logger.getLogger(QueryResultCache.class);
 
     public QueryResultCache() {
-        results = new QueryResult[INITIAL_SIZE];
+        results = new AbstractCachedResult[INITIAL_SIZE];
     }
 
-    public int add(QueryResult qr) {
+    public int add(AbstractCachedResult qr) {
         for (int i = 0; i < results.length; i++) {
             if (results[i] == null) {
                 results[i] = qr;
@@ -30,7 +30,7 @@ public class QueryResultCache {
             }
         }
         // no empty bucket. need to resize.
-        QueryResult[] temp = new QueryResult[(results.length * 3) / 2];
+        AbstractCachedResult[] temp = new AbstractCachedResult[(results.length * 3) / 2];
         System.arraycopy(results, 0, temp, 0, results.length);
         int pos = results.length;
         temp[pos] = qr;
@@ -38,19 +38,40 @@ public class QueryResultCache {
         return pos;
     }
 
-    public QueryResult get(int pos) {
+    public AbstractCachedResult get(int pos) {
         if (pos < 0 || pos >= results.length)
             return null;
         return results[pos];
     }
-
+    
+    public QueryResult getResult(int pos) {
+    	AbstractCachedResult acr = get(pos);
+    	
+    	return (acr!=null && acr instanceof QueryResult)?(QueryResult)acr:null;
+    }
+    
+    public SerializedResult getSerializedResult(int pos) {
+    	AbstractCachedResult acr = get(pos);
+    	
+    	return (acr!=null && acr instanceof SerializedResult)?(SerializedResult)acr:null;
+    }
+    
     public void remove(int pos) {
-        if (pos > -1 && pos < results.length)
+        if (pos > -1 && pos < results.length) {
+        	// Perhaps we should not free resources here
+        	// but an explicit remove implies you want
+        	// to free resources
+        	results[pos].free();
             results[pos] = null;
+        }
     }
 
     public void remove(int pos, int hash) {
-        if (pos > -1 && pos < results.length && (results[pos] == null || results[pos].hashCode() == hash)) { 
+        if (pos > -1 && pos < results.length && (results[pos] == null || results[pos].hashCode() == hash)) {
+        	// Perhaps we should not free resources here
+        	// but an explicit remove implies you want
+        	// to free resources
+        	results[pos].free();
             results[pos] = null;
         }
     }
@@ -58,11 +79,13 @@ public class QueryResultCache {
     public void checkTimestamps() {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < results.length; i++) {
-            QueryResult result = results[i];
+        	AbstractCachedResult result = results[i];
             if (result != null) {
                 if (now - result.getTimestamp() > TIMEOUT) {
                     if (LOG.isDebugEnabled())
                         LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());
+                    // Here we should not free resources, because they could be still in use
+                    // by other threads, so leave the work to the garbage collector
                     results[i] = null;
                 }
             }
