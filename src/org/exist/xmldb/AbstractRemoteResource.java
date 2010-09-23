@@ -1,6 +1,5 @@
 package org.exist.xmldb;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 
@@ -27,6 +26,7 @@ import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
+import org.exist.util.VirtualTempFile;
 import org.exist.xquery.value.StringValue;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
@@ -42,8 +42,8 @@ public abstract class AbstractRemoteResource
 	protected XmldbURI path = null ;
 	protected String mimeType=null;
 	protected RemoteCollection parent;
-	protected File file=null;
-	protected File contentFile=null;
+	protected VirtualTempFile vfile=null;
+	protected VirtualTempFile contentVFile=null;
 	protected InputSource inputSource = null;
 	protected boolean isLocal=false;
 	protected long contentLen = 0L;
@@ -71,11 +71,11 @@ public abstract class AbstractRemoteResource
 	}
 	
 	public void freeLocalResources() {
-		file = null;
+		vfile = null;
 		inputSource = null;
-		if(contentFile!=null) {
-			contentFile.delete();
-			contentFile=null;
+		if(contentVFile!=null) {
+			contentVFile.delete();
+			contentVFile=null;
 		}
 		isLocal=true;
 	}
@@ -187,15 +187,42 @@ public abstract class AbstractRemoteResource
 	{
 		freeLocalResources();
 		boolean wasSet=false;
-		if (value instanceof File) {
-		    file = (File) value;
+		if(value instanceof VirtualTempFile) {
+		    vfile = (VirtualTempFile)value;
+		    // Assuring the virtual file is close state
+		    try {
+		    	vfile.close();
+		    } catch(IOException ioe) {
+		    	// IgnoreIT(R)
+		    }
+		    setExtendendContentLength(vfile.length());
 		    wasSet=true;
+		} else if(value instanceof File) {
+			vfile = new VirtualTempFile((File) value);
+			setExtendendContentLength(vfile.length());
+			wasSet=true;
 		} else if (value instanceof InputSource) {
 			inputSource = (InputSource) value;
 		    wasSet=true;
+		} else if(value instanceof byte[]) {
+			vfile = new VirtualTempFile((byte[])value);
+			setExtendendContentLength(vfile.length());
+			wasSet=true;
+		} else if(value instanceof String) {
+			try {
+				vfile = new VirtualTempFile(((String)value).getBytes("UTF-8"));
+				setExtendendContentLength(vfile.length());
+				wasSet=true;
+			} catch(UnsupportedEncodingException uee) {
+				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,"input value cannot be translated to UTF-8",uee);
+			}
 		}
 		
 		return wasSet;
+	}
+	
+	protected void setExtendendContentLength(long len) {
+		this.contentLen = len;
 	}
 	
 	public void setContentLength(int len) {
@@ -266,36 +293,16 @@ public abstract class AbstractRemoteResource
             try {
                 data = Compressor.uncompress(data);
             } catch (IOException e) {
-
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
         }
-        FileOutputStream fos = null;
 
-        try {
-            File tmpfile = File.createTempFile("eXistARR",getResourceType().equals("XMLResource")?".xml":".bin");
-            tmpfile.deleteOnExit();
-            fos = new FileOutputStream(tmpfile);
-            fos.write(data);
-            
-            contentFile = tmpfile;
-        } catch (IOException ioe) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-        } finally {
-            if (fos != null)
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    // IGNORE
-                }
-        }
+        setContent(data);
     }
 
 	protected void getRemoteContentIntoLocalFile(OutputStream os, boolean isRetrieve, int handle, int pos)
 		throws XMLDBException
 	{
-		FileOutputStream fos=null;
-		BufferedOutputStream bos=null;
-		
 		Properties properties = getProperties();
 		String command = null;
 		List params = new ArrayList();
@@ -311,10 +318,9 @@ public abstract class AbstractRemoteResource
             properties = new Properties();
 		params.add(properties);
 		try {
-			File tmpfile=File.createTempFile("eXistARR",getResourceType().equals("XMLResource")?".xml":".bin");
-			tmpfile.deleteOnExit();
-			fos=new FileOutputStream(tmpfile);
-			bos=new BufferedOutputStream(fos);
+			VirtualTempFile vtmpfile = new VirtualTempFile();
+			vtmpfile.setTempPrefix("eXistARR");
+			vtmpfile.setTempPostfix(getResourceType().equals("XMLResource")?".xml":".bin");
 			
 			Map table = (Map) parent.getClient().execute(command, params);
 			String method;
@@ -339,13 +345,13 @@ public abstract class AbstractRemoteResource
 				dec.setInput(data);
 				do {
 					decLength = dec.inflate(decResult);
-					bos.write(decResult,0,decLength);
+					vtmpfile.write(decResult,0,decLength);
 					// And other for the stream where we want to save it!
 					if(os!=null)
 						os.write(decResult,0,decLength);
 				} while(decLength==decResult.length || !dec.needsInput());
 			} else {
-				bos.write(data);
+				vtmpfile.write(data);
 				// And other for the stream where we want to save it!
 				if(os!=null)
 					os.write(data);
@@ -362,13 +368,13 @@ public abstract class AbstractRemoteResource
 					dec.setInput(data);
 					do {
 						decLength = dec.inflate(decResult);
-						bos.write(decResult,0,decLength);
+						vtmpfile.write(decResult,0,decLength);
 						// And other for the stream where we want to save it!
 						if(os!=null)
 							os.write(decResult,0,decLength);
 					} while(decLength==decResult.length || !dec.needsInput());
 				} else {
-					bos.write(data);
+					vtmpfile.write(data);
 					// And other for the stream where we want to save it!
 					if(os!=null)
 						os.write(data);
@@ -378,7 +384,7 @@ public abstract class AbstractRemoteResource
 				dec.end();
 			
 			isLocal=false;
-			contentFile=tmpfile;
+			contentVFile=vtmpfile;
 		} catch (XmlRpcException xre) {
             // backwards compatibility with eXist versions < 1.4
             getRemoteContentFallback(handle, pos);
@@ -387,16 +393,9 @@ public abstract class AbstractRemoteResource
 		} catch (DataFormatException dfe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
 		} finally {
-			if(bos!=null) {
+			if(contentVFile!=null) {
 				try {
-					bos.close();
-				} catch(IOException ioe) {
-					//IgnoreIT(R)
-				}
-			}
-			if(fos!=null) {
-				try {
-					fos.close();
+					contentVFile.close();
 				} catch(IOException ioe) {
 					//IgnoreIT(R)
 				}
@@ -427,21 +426,18 @@ public abstract class AbstractRemoteResource
 	protected void getContentIntoAStreamInternal(OutputStream os, Object obj, boolean isRetrieve, int handle, int pos)
 		throws XMLDBException
 	{
-		if(file!=null || contentFile!=null || inputSource!=null || obj!=null) {
-			FileInputStream fis=null;
+		if(vfile!=null || contentVFile!=null || inputSource!=null || obj!=null) {
 			InputStream bis=null;
 			try {
 				// First, the local content, then the remote one!!!!
-				if(file!=null) {
-					fis=new FileInputStream(file);
-					bis=new BufferedInputStream(fis,655360);
+				if(vfile!=null) {
+					bis=vfile.getByteStream();
 				} else if(inputSource!=null) {
 					bis=inputSource.getByteStream();
 				} else if(obj!=null) {
 					bis=getAnyStream(obj);
 				} else {
-					fis=new FileInputStream(contentFile);
-					bis=new BufferedInputStream(fis,655360);
+					bis=contentVFile.getByteStream();
 				}
 				int readed;
 				byte buffer[]=new byte[65536];
@@ -471,13 +467,6 @@ public abstract class AbstractRemoteResource
 							//IgnoreIT(R)
 						}
 					}
-					if(fis!=null) {
-						try {
-							fis.close();
-						} catch(IOException ioe) {
-							//IgnoreIT(R)
-						}
-					}
 				}
 			}
 		} else {
@@ -492,15 +481,15 @@ public abstract class AbstractRemoteResource
 		if(obj != null)
 			return obj;
 		
-		if(file!=null)
-			return file;
+		if(vfile!=null)
+			return vfile.getContent();
 		if(inputSource!=null)
 			return inputSource;
 		
-		if(contentFile==null)
+		if(contentVFile==null)
 			getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);
 		
-		return contentFile;
+		return contentVFile.getContent();
 	}
 
 	protected InputStream getStreamContentInternal(Object obj, boolean isRetrieve, int handle, int pos)
@@ -508,10 +497,10 @@ public abstract class AbstractRemoteResource
 	{
 		InputStream retval=null;
 		
-		if(file!=null) {
+		if(vfile!=null) {
 			try {
-				retval=new FileInputStream(file);
-			} catch(FileNotFoundException fnfe) {
+				retval=vfile.getByteStream();
+			} catch(IOException fnfe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
 			}
 		} else if(inputSource!=null) {
@@ -520,12 +509,12 @@ public abstract class AbstractRemoteResource
 			retval=getAnyStream(obj);
 		} else {
 			// At least one value, please!!!
-			if(contentFile==null)
+			if(contentVFile==null)
 				getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);
 			
 			try {
-				retval=new FileInputStream(contentFile);
-			} catch(FileNotFoundException fnfe) {
+				retval=contentVFile.getByteStream();
+			} catch(IOException fnfe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
 			}
 		}
@@ -537,8 +526,8 @@ public abstract class AbstractRemoteResource
 		throws XMLDBException
 	{
 		long retval=-1;
-		if(file!=null) {
-			retval=file.length();
+		if(vfile!=null) {
+			retval=vfile.length();
 		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
 			retval=((EXistInputSource)inputSource).getByteStreamLength();
 		} else if(obj!=null) {
@@ -553,8 +542,8 @@ public abstract class AbstractRemoteResource
 			} else {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,"don't know how to handle value of type " + obj.getClass().getName());
 			}
-		} else if(contentFile!=null) {
-			retval=contentFile.length();
+		} else if(contentVFile!=null) {
+			retval=contentVFile.length();
 		} else {
 			Properties properties = getProperties();
 			List params = new ArrayList();
