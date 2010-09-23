@@ -6,7 +6,7 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     
-    <!-- Section: APPENDERS -->
+    <!-- ========[APPENDERS]======== -->
     
     <!-- 
          writes log messages to the console. It outputs file name,
@@ -22,24 +22,6 @@
     <!-- 
          the following appenders write to files  
     -->
-    <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
-        <param name="MaxFileSize" value="500KB"/>
-        <param name="Encoding" value="UTF-8"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-        </layout>
-    </appender>
-
-    <appender name="exist.betterform" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/betterform.log"/>
-        <param name="MaxFileSize" value="500KB"/>
-        <param name="Encoding" value="UTF-8"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-        </layout>
-    </appender>
-
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/exist.log"/>
         <param name="MaxFileSize" value="5MB"/>
@@ -49,17 +31,7 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-    
-    <!--
-	<appender name="exist.statistics" class="org.apache.log4j.RollingFileAppender">
-        <param  name="File" value="${exist.home}/webapp/WEB-INF/logs/statistics.log"/>
-        <param name="MaxFileSize" value="5MB"/>
-        <layout class="org.apache.log4j.PatternLayout">
-        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-        </layout>
-    </appender>
-	-->
-    
+           
     <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xacml.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -91,23 +63,7 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-    
-    <!--appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/validation.log"/>
-        <param name="MaxFileSize" value="500KB"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-        </layout>
-    </appender-->
-    
-    <!--appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/webdav.log"/>
-        <param name="MaxFileSize" value="500KB"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-        </layout>
-    </appender-->
-    
+        
     <appender name="exist.scheduler" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/scheduler.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -115,10 +71,36 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-       
-    <!-- 
-         the following appender write to NULL  
+    
+    <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
+    <appender name="exist.betterform" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/betterform.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
+    <!--
+    <appender name="exist.statistics" class="org.apache.log4j.RollingFileAppender">
+        <param  name="File" value="${exist.home}/webapp/WEB-INF/logs/statistics.log"/>
+        <param name="MaxFileSize" value="5MB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+        <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
     -->
+       
+    <!-- the null appender writes to no where -->
     <appender name="null" class="org.apache.log4j.varia.NullAppender">
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -134,7 +116,7 @@
     </appender>
     
     
-    <!-- Section: CATEGORIES -->
+    <!-- ========[CATEGORIES]======== -->
     
     <category name="org.exist.jetty.JettyStart" additivity="false">
         <priority value="trace"/>
@@ -158,7 +140,9 @@
     <category name="org.exist.statistics" additivity="false">
         <priority value="debug"/>
         <appender-ref ref="exist.core"/>
-		<!-- <appender-ref ref="exist.statistics"/> -->
+		<!-- 
+		<appender-ref ref="exist.statistics"/> 
+		-->
     </category>
     
     <category name="org.exist.security.xacml" additivity="false">
@@ -175,14 +159,11 @@
 		<!-- set to "trace" to get detailed info on URL rewriting -->
         <priority value="info"/>
         <appender-ref ref="exist.urlrewrite"/>
-    </category>
-
-    <!-- jetty old and new -->
-    <category name="org.mortbay" additivity="false">
-        <priority value="info"/>
-        <appender-ref ref="console"/>
-    </category>
-    
+	</category>
+        
+        
+    <!-- Logging 3rd party libraries -->
+  
     <category name="org.eclipse.jetty" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
@@ -193,21 +174,12 @@
         <appender-ref ref="console"/>
     </category>
     
-    <!--category name="org.exist.validation" additivity="false">
-        <priority value="debug"/>
-        <appender-ref ref="exist.validation"/>
-    </category-->
-    
-    <!--category name="org.exist.http.webdav" additivity="false">
-        <priority value="debug"/>
-        <appender-ref ref="exist.webdav"/>
-    </category-->
-    
     <category name="net.sf.ehcache" additivity="false">
         <priority value="debug"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
     
+    <!-- Milton WebDAV framework -->
     <category name="com.bradmcevoy.http.webdav.PropFindPropertyBuilder" additivity="false">
         <priority value="off"/>
         <appender-ref ref="console"/>
@@ -218,34 +190,29 @@
         <appender-ref ref="console"/>
     </category>
     
-    <!--
-        Axis produces a large amount of debugging output if
-        priority is set to debug 
-    -->
+    <!-- Apache Axis: 'debug' produces a large amount of debugging output -->
     <category name="org.apache" additivity="false">
         <priority value="off"/>
         <appender-ref ref="console"/>
     </category>
     
-    <!-- 
-         quartz scheduler 
-    -->
+    <!-- Quartz scheduler -->
     <category name="org.quartz" additivity="false">
         <priority value="info"/>
         <appender-ref ref="exist.scheduler"/>
     </category>
 
-    <!--
-         betterFORM extension
-    -->
+    <!-- betterFORM extension -->
     <category name="de.betterform" additivity="false">
         <priority value="warn"/>
         <appender-ref ref="exist.betterform"/>
-        <!--<appender-ref ref="console"/>-->
+        <!--
+        <appender-ref ref="console"/>
+        -->
     </category>
 
-    <!-- Section: ROOT logger -->
-    
+
+    <!-- ========[ROOT logger]======== -->
     <root>
         <priority value="debug"/>
         <appender-ref ref="exist.core"/>
