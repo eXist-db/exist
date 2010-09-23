@@ -1,5 +1,7 @@
 package org.exist.util;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.File;
@@ -18,13 +20,20 @@ import java.util.zip.GZIPInputStream;
  *
  */
 public final class GZIPInputSource
-	extends FileInputSource
+	extends EXistInputSource
 {
+	private File file;
+	private InputStream inputStream;
+	private long streamLength;
+	
 	/**
 	 * Empty constructor
 	 */
 	public GZIPInputSource() {
 		super();
+		file=null;
+		inputStream = null;
+		streamLength = -1L;
 	}
 	
 	/**
@@ -33,7 +42,8 @@ public final class GZIPInputSource
 	 * The file passed to {@link #getFile()}
 	 */
 	public GZIPInputSource(File gzipFile) {
-		super(gzipFile);
+		super();
+		file = gzipFile;
 	}
 	
 	/**
@@ -45,20 +55,29 @@ public final class GZIPInputSource
 	 * null, otherwise.
 	 */
 	public InputStream getByteStream() {
-		InputStream retval=super.getByteStream();
-		
-		if(retval!=null) {
-			try {
-				retval=new GZIPInputStream(retval);
-			} catch(IOException ioe) {
-				retval=null;
-				// No way to notify :-(
-			}
+		InputStream retval = null;
+		try {
+			InputStream is = new BufferedInputStream(new FileInputStream(file));
+			retval = inputStream = new GZIPInputStream(is);
+		} catch(IOException ioe) {
+			// No way to notify :-(
 		}
 		
 		return retval;
 	}
 	
+    public void close() {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                // ignore if the stream is already closed
+            } finally {
+                inputStream = null;
+            }
+        }
+    }
+    
 	/**
 	 * This method now does nothing, so collateral
 	 * effects from superclass with this one are avoided 
@@ -75,20 +94,42 @@ public final class GZIPInputSource
 		// Nothing, so collateral effects are avoided!
 	}
 	
+	/**
+	 * This method now does nothing, so collateral
+	 * effects from superclass with this one are avoided 
+	 */
+	public void setSystemId(String systemId) {
+		// Nothing, so collateral effects are avoided!
+	}
+	
 	public long getByteStreamLength() {
-		InputStream str=getByteStream();
-		byte[] buffer=new byte[4096];
-		long retval=0;
-		int readed;
-		try {
-			while((readed=str.read(buffer,0,buffer.length))!=-1) {
-				retval+=readed;
+		if(streamLength==-1L) {
+			InputStream str=getByteStream();
+			byte[] buffer=new byte[4096];
+			long retval=0;
+			int readed;
+			try {
+				while((readed=str.read(buffer,0,buffer.length))!=-1) {
+					retval+=readed;
+				}
+				streamLength = retval;
+				close();
+			} catch(IOException ioe) {
+				// DoNothing(R)
 			}
-			str.close();
-		} catch(IOException ioe) {
-			retval=-1;
 		}
 
-		return retval;
+		return streamLength;
+	}
+	
+	public String getSymbolicPath()
+	{
+		return file.getAbsolutePath();
+	}
+	
+	protected void finalize()
+		throws Throwable
+	{
+		close();
 	}
 }

@@ -86,6 +86,8 @@ public class RpcConnection implements RpcAPI {
     private final static Logger LOG = Logger.getLogger(RpcConnection.class);
 
     private final static int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
+    
+    private final static String DEFAULT_ENCODING = "UTF-8";
 
     protected XmldbRequestProcessorFactory factory;
 
@@ -708,11 +710,11 @@ public class RpcConnection implements RpcAPI {
     public byte[] getDocument(String name, HashMap parametri) throws EXistException,
             PermissionDeniedException {
 
-        String encoding = "UTF-8";
+        String encoding = DEFAULT_ENCODING;
         String compression = "no";
 
         if (((String) parametri.get("encoding")) == null) {
-            encoding = "UTF-8";
+            encoding = DEFAULT_ENCODING;
         } else {
             encoding = (String) parametri.get("encoding");
         }
@@ -850,75 +852,44 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
             String encoding = (String)parameters.get(OutputKeys.ENCODING);
             if(encoding == null)
-                encoding = "UTF-8";
+                encoding = DEFAULT_ENCODING;
             
-            // binary check TODO dwes
+            // A tweak for very large resources, VirtualTempFile
+	    HashMap result = new HashMap();
+	    VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+	    vtempFile.setTempPrefix("eXistRPCC");
+	    
+	    // binary check TODO dwes
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {
-                //
-                
+                vtempFile.setTempPostfix(".xml");
                 Serializer serializer = broker.getSerializer();
                 serializer.setProperties(parameters);
-                HashMap result = new HashMap();
-                // A tweak for very large XML resources
-                if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
-                    File tempFile = File.createTempFile("eXistRPCC", ".xml");
-
-                    tempFile.deleteOnExit();
-                    LOG.debug("Writing to temporary file: " + tempFile.getName());
-                    
-                    OutputStream os = new FileOutputStream(tempFile);
-                    Writer writer = new OutputStreamWriter(os, encoding);
-                    serializer.serialize(doc, writer);
-                    writer.close();
-                    
-                    byte[] firstChunk = getChunk(tempFile, 0);
-                    result.put("data", firstChunk);
-                    result.put("handle", tempFile.getAbsolutePath());
-                    result.put("offset", new Integer(firstChunk.length));
-                    result.put("supports-long-offset", new Boolean(true));
-                } else {
-                    String xml = serializer.serialize(doc);
-                    result.put("data", xml.getBytes(encoding));
-                    result.put("offset", new Integer(0));
-                }
-                return result;
+		
+		Writer writer = new OutputStreamWriter(vtempFile, encoding);
+		serializer.serialize(doc, writer);
+		writer.close();
             } else {
-                HashMap result = new HashMap();
-                // A tweak for very large binary resources
-                if(doc.getContentLength()<0 || doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
-                    File tempFile = File.createTempFile("eXistRPCC", ".bin");
-                    tempFile.deleteOnExit();
-                    LOG.debug("Writing to temporary file: " + tempFile.getName());
-                    OutputStream os = new FileOutputStream(tempFile);
-                    broker.readBinaryResource((BinaryDocument)doc, os);
-                    os.close();
-                    
-                    byte[] firstChunk = getChunk(tempFile, 0);
-                    result.put("data", firstChunk);
-                    result.put("handle", tempFile.getAbsolutePath());
-                    result.put("offset", new Integer(firstChunk.length));
-                    result.put("supports-long-offset", new Boolean(true));
-                } else {
-                    try {
-                        InputStream is = broker.getBinaryResource((BinaryDocument)doc);
-                        int datasize=(int)broker.getBinaryResourceSize((BinaryDocument)doc);
-                        byte[] data = new byte[datasize];
-                        int datapos=0;
-                        int dataread=0;
-                        while(datasize>0 && (dataread=is.read(data, datapos, datasize))!=-1) {
-                        	datapos+=dataread;
-                        	datasize-=dataread;
-                        }
-                        is.close();
-                        result.put("data", data);
-                        result.put("offset", new Integer(0));
-                    } catch (IOException ex) {
-                       throw new EXistException("I/O error while reading resource.",ex);
-                    }
-                }
-                return result;
+                vtempFile.setTempPostfix(".bin");
+                broker.readBinaryResource((BinaryDocument)doc, vtempFile);
             }
-            
+	    
+	    vtempFile.close();
+	    byte[] firstChunk = vtempFile.getChunk(0);
+	    result.put("data", firstChunk);
+	    int offset = 0;
+	    if(vtempFile.length()>MAX_DOWNLOAD_CHUNK_SIZE) {
+	        offset = firstChunk.length;
+		
+		int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+		result.put("handle", Integer.toString(handle));
+		result.put("supports-long-offset", new Boolean(true));
+            } else {
+	        vtempFile.delete();
+	    }
+	    result.put("offset", new Integer(offset));
+	    
+	    return result;
+	    
         } catch (Throwable e) {
             handleException(e);
             return null;
@@ -942,19 +913,25 @@ public class RpcConnection implements RpcAPI {
      */
     public HashMap getNextChunk(String handle, int offset) throws EXistException, PermissionDeniedException {
         try {
-            File file = new File(handle);
-            if(!(file.isFile() && file.canRead()))
+            int resultId = Integer.parseInt(handle);
+	    SerializedResult sr = factory.resultSets.getSerializedResult(resultId);
+	    
+            if(sr==null)
                 throw new EXistException("Invalid handle specified");
-            if(offset <= 0 || offset > file.length())
-                throw new EXistException("No more data available");
-            byte[] chunk = getChunk(file, offset);
+            
+	    VirtualTempFile vfile = sr.result;
+	    if(offset <= 0 || offset > vfile.length()) {
+                factory.resultSets.remove(resultId);
+		throw new EXistException("No more data available");
+            }
+	    byte[] chunk = vfile.getChunk(offset);
             long nextChunk = offset + chunk.length;
 
             HashMap result = new HashMap();
             result.put("data", chunk);
             result.put("handle", handle);
-            if(nextChunk > (long)Integer.MAX_VALUE || nextChunk == file.length()) {
-                file.delete();
+            if(nextChunk > (long)Integer.MAX_VALUE || nextChunk == vfile.length()) {
+                factory.resultSets.remove(resultId);
                 result.put("offset", new Integer(0));
             } else
                 result.put("offset", new Integer((int)nextChunk));
@@ -976,20 +953,26 @@ public class RpcConnection implements RpcAPI {
      */
 	public HashMap getNextExtendedChunk(String handle, String offset) throws EXistException, PermissionDeniedException {
         try {
-            File file = new File(handle);
-            if(!(file.isFile() && file.canRead()))
+            int resultId = Integer.parseInt(handle);
+	    SerializedResult sr = factory.resultSets.getSerializedResult(resultId);
+	    
+            if(sr==null)
                 throw new EXistException("Invalid handle specified");
-            long longOffset=new Long(offset).longValue();
-            if(longOffset > file.length())
-                throw new EXistException("No more data available");
-            byte[] chunk = getChunk(file, longOffset);
+            
+	    VirtualTempFile vfile = sr.result;
+	    long longOffset=new Long(offset).longValue();
+            if(longOffset< 0 || longOffset > vfile.length()) {
+                factory.resultSets.remove(resultId);
+		throw new EXistException("No more data available");
+            }
+	    byte[] chunk = vfile.getChunk(longOffset);
             long nextChunk = longOffset + chunk.length;
 
             HashMap result = new HashMap();
             result.put("data", chunk);
             result.put("handle", handle);
-            if(nextChunk == file.length()) {
-                file.delete();
+            if(nextChunk == vfile.length()) {
+                factory.resultSets.remove(resultId);
                 result.put("offset", Long.toString(0));
             } else
                 result.put("offset", Long.toString(nextChunk));
@@ -1000,26 +983,6 @@ public class RpcConnection implements RpcAPI {
             return null;
         }
 	}
-	
-	/**
-     * The method <code>getChunk</code>
-     *
-     * @param file a <code>File</code> value
-     * @param offset a <code>long</code> value
-     * @return a <code>byte[]</code> value
-     * @exception IOException if an error occurs
-     */
-    private byte[] getChunk(File file, long offset) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(file, "r");
-        raf.seek(offset);
-        long remaining = raf.length() - offset;
-        if(remaining > MAX_DOWNLOAD_CHUNK_SIZE)
-            remaining = MAX_DOWNLOAD_CHUNK_SIZE;
-        byte[] data = new byte[(int)remaining];
-        raf.readFully(data);
-        raf.close();
-        return data;
-    }
     
     /**
      * The method <code>getBinaryResource</code>
@@ -1088,7 +1051,7 @@ public class RpcConnection implements RpcAPI {
      */
     public int xupdate(String collectionName, byte[] xupdate) throws PermissionDeniedException, EXistException {
         try {
-            return xupdate(XmldbURI.xmldbUriFor(collectionName), new String(xupdate, "UTF-8"));
+            return xupdate(XmldbURI.xmldbUriFor(collectionName), new String(xupdate, DEFAULT_ENCODING));
             
         } catch (Throwable e) {
             handleException(e);
@@ -1524,7 +1487,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      */
     public int getHits(int resultId) throws EXistException {
-        QueryResult qr = factory.resultSets.get(resultId);
+        QueryResult qr = factory.resultSets.getResult(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
         qr.timestamp = System.currentTimeMillis();
@@ -2004,90 +1967,109 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>boolean</code> value
      * @exception Exception if an error occurs
      */
-    private boolean parseLocal(String localFile, XmldbURI docUri,
-            int overwrite, String mimeType, Boolean isXML, Date created, Date modified) throws EXistException, PermissionDeniedException {
-        
-    	File file = new File(localFile);
-        if (!file.canRead())
-            throw new EXistException("unable to read file " + localFile);
-    
-        TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
-        DocumentImpl doc = null;
-        
-        // DWES
-        MimeType mime = MimeTable.getInstance().getContentType(mimeType);
-        if (mime == null)
-            mime = MimeType.BINARY_TYPE;
-        
-	boolean treatAsXML=(isXML!=null && isXML.booleanValue()) || (isXML==null && mime.isXMLType());
-        try {
-            broker = factory.getBrokerPool().get(user);
-            Collection collection = null;
-            IndexInfo info = null;
-            InputSource source = null;
-            
-            try {
+    private boolean parseLocal(String localFile, XmldbURI docUri, int overwrite, String mimeType, Boolean isXML, Date created, Date modified)
+    	throws EXistException, PermissionDeniedException
+    {
+    	VirtualTempFileInputSource source=null;
 
-	            collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-	            if (collection == null) {
-	                transact.abort(transaction);
-	                throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
-	            }
-	
-	            if (overwrite == 0) {
-	                DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-	                if (old != null) {
-	                    transact.abort(transaction);
-	                    throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
-	                }
-	            }
-	            
-	            //XML
-	            if(treatAsXML) {
-	                source = new InputSource(file.toURI().toASCIIString());
-	                info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
-	                if (created != null)
-	                    info.getDocument().getMetadata().setCreated(created.getTime());	                
-	                if (modified != null)
-	                    info.getDocument().getMetadata().setLastModified(modified.getTime());	                
-	            } else {
-	                FileInputStream is = new FileInputStream(file);
-	                doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, 
-	                        mime.getName(), (int) file.length());
-	                is.close();
-	                if (created != null)
-	                    doc.getMetadata().setCreated(created.getTime());
-	                if (modified != null)
-	                    doc.getMetadata().setLastModified(modified.getTime());
-	            }
-	            
-            } finally {
-            	if (collection != null)
-            		collection.release(Lock.WRITE_LOCK);
-            }
+    	try {
+    		int handle = Integer.parseInt(localFile);
+    		SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+    		if(sr==null)
+    			throw new EXistException("Invalid handle specified");
+    		
+    		source = new VirtualTempFileInputSource(sr.result);
+    		
+    		// Unlinking the VirtualTempFile from the SerializeResult
+    		sr.result=null;
+    		factory.resultSets.remove(handle);
+    	} catch(NumberFormatException nfe) {
+    		// As this file can be a non-temporal one, we should not
+    		// blindly erase it!
+    		File file = new File(localFile);
+        	if (!file.canRead())
+        		throw new EXistException("unable to read file " + file.getAbsolutePath());
+        	
+        	source = new VirtualTempFileInputSource(file);
+    	} catch(IOException ioe) {
+			throw new EXistException("Error preparing virtual temp file for parsing");
+    	}
 
-            // DWES why seperate store?
-            if(treatAsXML){
-                collection.store(transaction, broker, info, source, false);
-            }
-            
-            // generic
-            transact.commit(transaction);
+    	TransactionManager transact = factory.getBrokerPool().getTransactionManager();
+    	Txn transaction = transact.beginTransaction();
+    	DBBroker broker = null;
+    	DocumentImpl doc = null;
 
-        } catch (Throwable e) {
-            transact.abort(transaction);
-            handleException(e);
+    	// DWES
+    	MimeType mime = MimeTable.getInstance().getContentType(mimeType);
+    	if (mime == null)
+    		mime = MimeType.BINARY_TYPE;
 
-        } finally {
-            factory.getBrokerPool().release(broker);
-        }
-        
-        // DWES there are situations the file is not cleaned up
-        file.delete();
-        
-        return true; // when arrived here, insert/update was successfull
+    	boolean treatAsXML=(isXML!=null && isXML.booleanValue()) || (isXML==null && mime.isXMLType());
+    	try {
+    		broker = factory.getBrokerPool().get(user);
+    		Collection collection = null;
+    		IndexInfo info = null;
+
+    		try {
+
+    			collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
+    			if (collection == null) {
+    				transact.abort(transaction);
+    				throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
+    			}
+
+    			if (overwrite == 0) {
+    				DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+    				if (old != null) {
+    					transact.abort(transaction);
+    					throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
+    				}
+    			}
+
+    			//XML
+    			if(treatAsXML) {
+    				info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
+    				if (created != null)
+    					info.getDocument().getMetadata().setCreated(created.getTime());	                
+    				if (modified != null)
+    					info.getDocument().getMetadata().setLastModified(modified.getTime());	                
+    			} else {
+    				InputStream is = source.getByteStream();
+    				doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, 
+    						mime.getName(), (int) source.getByteStreamLength());
+    				is.close();
+    				if (created != null)
+    					doc.getMetadata().setCreated(created.getTime());
+    				if (modified != null)
+    					doc.getMetadata().setLastModified(modified.getTime());
+    			}
+
+    		} finally {
+    			if (collection != null)
+    				collection.release(Lock.WRITE_LOCK);
+    		}
+
+    		// DWES why seperate store?
+    		if(treatAsXML){
+    			collection.store(transaction, broker, info, source, false);
+    		}
+
+    		// generic
+    		transact.commit(transaction);
+
+    	} catch (Throwable e) {
+    		transact.abort(transaction);
+    		handleException(e);
+
+    	} finally {
+    		factory.getBrokerPool().release(broker);
+        	// DWES there are situations the file is not cleaned up
+    		if(source!=null)
+    			source.free();
+    	}
+
+    	return true; // when arrived here, insert/update was successful
     }
     
     /**
@@ -2200,26 +2182,33 @@ public class RpcConnection implements RpcAPI {
      * @exception IOException if an error occurs
      */
     public String upload(byte[] chunk, int length, String fileName, boolean compressed)
-    throws EXistException, IOException {
-        File file;
+    	throws EXistException, IOException
+    {
+        VirtualTempFile vtempFile;
         if (fileName == null || fileName.length() == 0) {
             // create temporary file
-            file = File.createTempFile("rpc", ".xml");
-            file.deleteOnExit();
-            fileName = file.getAbsolutePath();
-            LOG.debug("created temporary file " + file.getAbsolutePath());
+        	vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+        	vtempFile.setTempPrefix("rpc");
+        	vtempFile.setTempPostfix(".xml");
+			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+            fileName = Integer.toString(handle);
         } else {
 //            LOG.debug("appending to file " + fileName);
-            file = new File(fileName);
+        	try {
+        		int handle = Integer.parseInt(fileName);
+        		SerializedResult sr = factory.resultSets.getSerializedResult(handle);
+        		if(sr==null)
+        			throw new EXistException("Invalid handle specified");
+        		vtempFile = sr.result;
+        	} catch(NumberFormatException nfe) {
+       			throw new EXistException("Syntactically invalid handle specified");
+        	}
         }
-        if (!file.canWrite())
-            throw new EXistException("cannot write to file " + fileName);
-        FileOutputStream os = new FileOutputStream(file, true);
         if (compressed)
-            Compressor.uncompress(chunk, os);
+            Compressor.uncompress(chunk, vtempFile);
         else
-            os.write(chunk, 0, length);
-        os.close();
+            vtempFile.write(chunk, 0, length);
+        
         return fileName;
     }
     
@@ -2343,12 +2332,12 @@ public class RpcConnection implements RpcAPI {
         try {
             broker = factory.getBrokerPool().get(user);
             QueryResult qr = doQuery(broker, xpath, null, parameters);
-            if (qr.hasErrors())
-                throw qr.getException();
             if (qr == null)
                 return "<?xml version=\"1.0\"?>\n"
                         + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
                         + "hitCount=\"0\"/>";
+            if (qr.hasErrors())
+                throw qr.getException();
             
             result = printAll(broker, qr.result, howmany, start, parameters,
                     (System.currentTimeMillis() - startTime));
@@ -2497,7 +2486,7 @@ public class RpcConnection implements RpcAPI {
         byte[] doc = getBinaryResource(XmldbURI.createInternal(pathToQuery));
         String xpath = null;
         try {
-            xpath = new String(doc, "UTF-8");
+            xpath = new String(doc, DEFAULT_ENCODING);
         } catch (UnsupportedEncodingException e) {
             throw new EXistException("Character encoding issue while reading stored XQuery: " + e.getMessage());
         }
@@ -2729,7 +2718,7 @@ public class RpcConnection implements RpcAPI {
             try {
                 String encoding = (String) parameters.get(OutputKeys.ENCODING);
                 if (encoding == null)
-                    encoding = "UTF-8";
+                    encoding = DEFAULT_ENCODING;
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
                 LOG.warn(uee);
@@ -2805,7 +2794,7 @@ public class RpcConnection implements RpcAPI {
         	DBBroker broker = null;
 		String encoding = (String) parameters.get(OutputKeys.ENCODING);
 		if (encoding == null)
-			encoding = "UTF-8";
+			encoding = DEFAULT_ENCODING;
 		String compression = "no";
 		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
 			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
@@ -2824,17 +2813,16 @@ public class RpcConnection implements RpcAPI {
 			serializer.setProperties(parameters);
 			
                 	HashMap result = new HashMap();
-			File tempFile = File.createTempFile("eXistRPCC", ".xml");
-			tempFile.deleteOnExit();
-			LOG.debug("Writing to temporary file: " + tempFile.getName());
+			VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+			vtempFile.setTempPrefix("eXistRPCC");
+			vtempFile.setTempPostfix(".xml");
 
-			FileOutputStream fos = new FileOutputStream(tempFile);
 			OutputStream os=null;
 			if(compression.equals("yes")) {
 				LOG.debug("get result with compression");
-				os = new DeflaterOutputStream(fos);
+				os = new DeflaterOutputStream(vtempFile);
 			} else {
-				os = fos;
+				os = vtempFile;
 			}
 			try {
 				Writer writer = new OutputStreamWriter(os, encoding);
@@ -2849,24 +2837,27 @@ public class RpcConnection implements RpcAPI {
 				} catch(IOException ioe) {
 					//IgnoreIT(R)
 				}
-				if(os!=fos)
+				if(os!=vtempFile)
 					try {
-						fos.close();
+						vtempFile.close();
 					} catch(IOException ioe) {
 						//IgnoreIT(R)
 					}
 			}
 			
-			byte[] firstChunk = getChunk(tempFile, 0);
+			byte[] firstChunk = vtempFile.getChunk(0);
 			result.put("data", firstChunk);
-			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
-				result.put("handle", tempFile.getAbsolutePath());
-				result.put("offset", new Integer(firstChunk.length));
+			int offset = 0;
+			if(vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				offset = firstChunk.length;
+				
+				int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+				result.put("handle", Integer.toString(handle));
 				result.put("supports-long-offset", new Boolean(true));
                 	} else {
-				result.put("offset", new Integer(0));
-				tempFile.delete();
+				vtempFile.delete();
                 	}
+			result.put("offset", new Integer(offset));
                 	return result;
 
         	} catch (Throwable e) {
@@ -2889,7 +2880,7 @@ public class RpcConnection implements RpcAPI {
             String xml = retrieveAsString(resultId, num, parameters);
             String encoding = (String) parameters.get(OutputKeys.ENCODING);
             if (encoding == null)
-                encoding = "UTF-8";
+                encoding = DEFAULT_ENCODING;
             try {
 
                 if (compression.equals("no")) {
@@ -2929,7 +2920,7 @@ public class RpcConnection implements RpcAPI {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = factory.resultSets.get(resultId);
+            QueryResult qr = factory.resultSets.getResult(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
@@ -2969,7 +2960,7 @@ public class RpcConnection implements RpcAPI {
 	{
 		String encoding = (String) parameters.get(OutputKeys.ENCODING);
 		if (encoding == null)
-			encoding = "UTF-8";
+			encoding = DEFAULT_ENCODING;
 		String compression = "no";
 		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
 			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
@@ -2977,7 +2968,7 @@ public class RpcConnection implements RpcAPI {
         	DBBroker broker = null;
         	try {
 			broker = factory.getBrokerPool().get(user);
-			QueryResult qr = factory.resultSets.get(resultId);
+			QueryResult qr = factory.resultSets.getResult(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out: " + resultId);
 			qr.timestamp = System.currentTimeMillis();
@@ -2986,17 +2977,16 @@ public class RpcConnection implements RpcAPI {
 				throw new EXistException("index out of range");
 			
                 	HashMap result = new HashMap();
-			File tempFile = File.createTempFile("eXistRPCC", ".xml");
-			tempFile.deleteOnExit();
-			LOG.debug("Writing to temporary file: " + tempFile.getName());
+			VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+			vtempFile.setTempPrefix("eXistRPCC");
+			vtempFile.setTempPostfix(".xml");
 
-			FileOutputStream fos = new FileOutputStream(tempFile);
 			OutputStream os=null;
 			if(compression.equals("yes")) {
 				LOG.debug("get result with compression");
-				os = new DeflaterOutputStream(fos);
+				os = new DeflaterOutputStream(vtempFile);
 			} else {
-				os = fos;
+				os = vtempFile;
 			}
 			try {
 				Writer writer = new OutputStreamWriter(os, encoding);
@@ -3028,24 +3018,27 @@ public class RpcConnection implements RpcAPI {
 				} catch(IOException ioe) {
 					//IgnoreIT(R)
 				}
-				if(os!=fos)
+				if(os!=vtempFile)
 					try {
-						fos.close();
+						vtempFile.close();
 					} catch(IOException ioe) {
 						//IgnoreIT(R)
 					}
 			}
 			
-			byte[] firstChunk = getChunk(tempFile, 0);
+			byte[] firstChunk = vtempFile.getChunk(0);
 			result.put("data", firstChunk);
-			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
-				result.put("handle", tempFile.getAbsolutePath());
-				result.put("offset", new Integer(firstChunk.length));
+			int offset = 0;
+			if(vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				offset = firstChunk.length;
+				
+				int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+				result.put("handle", Integer.toString(handle));
 				result.put("supports-long-offset", new Boolean(true));
                 	} else {
-				result.put("offset", new Integer(0));
-				tempFile.delete();
+				vtempFile.delete();
                 	}
+			result.put("offset", new Integer(offset));
                 	return result;
 
         	} catch (Throwable e) {
@@ -3064,7 +3057,7 @@ public class RpcConnection implements RpcAPI {
             String xml = retrieveAllAsString(resultId, parameters);
             String encoding = (String) parameters.get(OutputKeys.ENCODING);
             if (encoding == null)
-                encoding = "UTF-8";
+                encoding = DEFAULT_ENCODING;
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
@@ -3090,7 +3083,7 @@ public class RpcConnection implements RpcAPI {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = factory.resultSets.get(resultId);
+            QueryResult qr = factory.resultSets.getResult(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
             qr.timestamp = System.currentTimeMillis();
@@ -3151,7 +3144,7 @@ public class RpcConnection implements RpcAPI {
 	{
 		String encoding = (String) parameters.get(OutputKeys.ENCODING);
 		if (encoding == null)
-			encoding = "UTF-8";
+			encoding = DEFAULT_ENCODING;
 		String compression = "no";
 		if (((String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)) != null) {
 			compression = (String) parameters.get(EXistOutputKeys.COMPRESS_OUTPUT);
@@ -3159,7 +3152,7 @@ public class RpcConnection implements RpcAPI {
         	DBBroker broker = null;
         	try {
 			broker = factory.getBrokerPool().get(user);
-			QueryResult qr = factory.resultSets.get(resultId);
+			QueryResult qr = factory.resultSets.getResult(resultId);
 			if (qr == null)
 				throw new EXistException("result set unknown or timed out");
 			qr.timestamp = System.currentTimeMillis();
@@ -3173,17 +3166,16 @@ public class RpcConnection implements RpcAPI {
 			SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 			
                 	HashMap result = new HashMap();
-			File tempFile = File.createTempFile("eXistRPCC", ".xml");
-			tempFile.deleteOnExit();
-			LOG.debug("Writing to temporary file: " + tempFile.getName());
+			VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+			vtempFile.setTempPrefix("eXistRPCC");
+			vtempFile.setTempPostfix(".xml");
 
-			FileOutputStream fos = new FileOutputStream(tempFile);
 			OutputStream os=null;
 			if(compression.equals("yes")) {
 				LOG.debug("get result with compression");
-				os = new DeflaterOutputStream(fos);
+				os = new DeflaterOutputStream(vtempFile);
 			} else {
-				os = fos;
+				os = vtempFile;
 			}
 			try {
 				Writer writer = new OutputStreamWriter(os, encoding);
@@ -3229,24 +3221,27 @@ public class RpcConnection implements RpcAPI {
 				} catch(IOException ioe) {
 					//IgnoreIT(R)
 				}
-				if(os!=fos)
+				if(os!=vtempFile)
 					try {
-						fos.close();
+						vtempFile.close();
 					} catch(IOException ioe) {
 						//IgnoreIT(R)
 					}
 			}
 			
-			byte[] firstChunk = getChunk(tempFile, 0);
+			byte[] firstChunk = vtempFile.getChunk(0);
 			result.put("data", firstChunk);
-			if(tempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
-				result.put("handle", tempFile.getAbsolutePath());
-				result.put("offset", new Integer(firstChunk.length));
+			int offset = 0;
+			if(vtempFile.length() > MAX_DOWNLOAD_CHUNK_SIZE) {
+				offset = firstChunk.length;
+				
+				int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+				result.put("handle", Integer.toString(handle));
 				result.put("supports-long-offset", new Boolean(true));
                 	} else {
-				result.put("offset", new Integer(0));
-				tempFile.delete();
+				vtempFile.delete();
                 	}
+			result.put("offset", new Integer(offset));
                 	return result;
 
         	} catch (Throwable e) {
@@ -3861,7 +3856,7 @@ public class RpcConnection implements RpcAPI {
      * @exception XPathException if an error occurs
      */
     public HashMap summary(int resultId) throws EXistException, XPathException {
-        QueryResult qr = factory.resultSets.get(resultId);
+        QueryResult qr = factory.resultSets.getResult(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
         qr.timestamp = System.currentTimeMillis();
@@ -4631,7 +4626,7 @@ public class RpcConnection implements RpcAPI {
             HashMap parametri = new HashMap();
             parametri.put(OutputKeys.INDENT, "no");
             parametri.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-            parametri.put(OutputKeys.ENCODING, "UTF-8");
+            parametri.put(OutputKeys.ENCODING, DEFAULT_ENCODING);
 
             HashMap lista = getCollectionDesc(name);
             Object[] collezioni = (Object[]) lista.get("collections");
@@ -4649,7 +4644,7 @@ public class RpcConnection implements RpcAPI {
             HashMap hash;
             int p, dsize = documents.length;
             for (int i = 0; i < dsize; i++) {
-                hash = (HashMap) documents[i];
+                hash = (HashMap<String, Object>) documents[i];
                 nome = (String) hash.get("name");
                 //TODO : use dedicated function in XmldbURI
                 if ((p = nome.lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
@@ -4668,7 +4663,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     public int xupdateResource(String resource, byte[] xupdate) throws PermissionDeniedException, EXistException, SAXException {
-        return xupdateResource(resource, xupdate, "UTF-8");
+        return xupdateResource(resource, xupdate, DEFAULT_ENCODING);
     }
 
     public boolean setPermissions(String resource, int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -4733,7 +4728,7 @@ public class RpcConnection implements RpcAPI {
 
     public boolean parse(String xml, String docName) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
-            return parse(xml.getBytes("UTF-8"), docName, 0);
+            return parse(xml.getBytes(DEFAULT_ENCODING), docName, 0);
             
         } catch (UnsupportedEncodingException e) {
             handleException(e);
@@ -4743,7 +4738,7 @@ public class RpcConnection implements RpcAPI {
 
     public boolean parse(String xml, String docName, int overwrite) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
-            return parse(xml.getBytes("UTF-8"), docName, overwrite);
+            return parse(xml.getBytes(DEFAULT_ENCODING), docName, overwrite);
 
         } catch (UnsupportedEncodingException e) {
             handleException(e);
@@ -4763,8 +4758,8 @@ public class RpcConnection implements RpcAPI {
     /** @deprecated Use XmldbURI version instead */
     public byte[] query(byte[] xquery, int howmany, int start, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
-            String result = query(new String(xquery, "UTF-8"), howmany, start, parameters);
-            return result.getBytes("UTF-8");
+            String result = query(new String(xquery, DEFAULT_ENCODING), howmany, start, parameters);
+            return result.getBytes(DEFAULT_ENCODING);
 
         } catch (UnsupportedEncodingException e) {
             handleException(e);
@@ -4774,7 +4769,7 @@ public class RpcConnection implements RpcAPI {
 
     public HashMap queryP(byte[] xpath, String docName, String s_id, HashMap parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
-            return queryP(new String(xpath, "UTF-8"), docName, s_id, parameters);
+            return queryP(new String(xpath, DEFAULT_ENCODING), docName, s_id, parameters);
         } catch (UnsupportedEncodingException e) {
             handleException(e);
             return null;
@@ -4783,7 +4778,7 @@ public class RpcConnection implements RpcAPI {
 
     public HashMap queryP(byte[] xpath, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
-            return queryP(new String(xpath, "UTF-8"), (XmldbURI) null, null, parameters);
+            return queryP(new String(xpath, DEFAULT_ENCODING), (XmldbURI) null, null, parameters);
             
         } catch (UnsupportedEncodingException e) {
             handleException(e);
@@ -4793,7 +4788,7 @@ public class RpcConnection implements RpcAPI {
 
     public HashMap compile(byte[] xquery, HashMap parameters) throws EXistException, PermissionDeniedException {
         try {
-            return compile(new String(xquery, "UTF-8"), parameters);
+            return compile(new String(xquery, DEFAULT_ENCODING), parameters);
             
         } catch (UnsupportedEncodingException e) {
             handleException(e);

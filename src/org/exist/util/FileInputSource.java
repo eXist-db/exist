@@ -1,18 +1,23 @@
 package org.exist.util;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.Reader;
 
 public class FileInputSource extends EXistInputSource {
 
 	private File file;
-	private InputStream inputStream = null;
+	private InputStream inputStream;
 
 	/**
 	 * Empty constructor
 	 */
 	public FileInputSource() {
-		super();
-		file=null;
+		this(null);
 	}
 	
 	/**
@@ -21,7 +26,8 @@ public class FileInputSource extends EXistInputSource {
 	 * The file passed to {@link #setFile(File)}
 	 */
 	public FileInputSource(File file) {
-		this();
+		super();
+		inputStream = null;
 		setFile(file);
 	}
 	
@@ -42,7 +48,13 @@ public class FileInputSource extends EXistInputSource {
 	 * The File object pointing to the GZIP file.
 	 */
 	public void setFile(File file) {
+		close();
 		this.file=file;
+		// Remember: super.setSystemId must be used instead of local implementation
+		if(file!=null)
+			super.setSystemId(file.toURI().toASCIIString());
+		else
+			super.setSystemId(null);
 	}
 	
 	/**
@@ -69,14 +81,14 @@ public class FileInputSource extends EXistInputSource {
 	}
 
     public void close() {
-        if (inputStream != null) {
+        if(inputStream != null) {
             try {
                 inputStream.close();
             } catch (IOException e) {
                 // ignore if the stream is already closed
             }
+	        inputStream = null;
         }
-        inputStream = null;
     }
 
     /**
@@ -95,8 +107,16 @@ public class FileInputSource extends EXistInputSource {
 		// Nothing, so collateral effects are avoided!
 	}
 
+	/**
+	 * This method now does nothing, so collateral
+	 * effects from superclass with this one are avoided 
+	 */
+	public void setSystemId(String systemId) {
+		// Nothing, so collateral effects are avoided!
+	}
+	
 	public long getByteStreamLength() {
-		long retval=-1;
+		long retval=-1L;
 		
 		if(file!=null) {
 			retval=file.length();
