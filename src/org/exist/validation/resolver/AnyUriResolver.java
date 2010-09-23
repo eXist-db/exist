@@ -69,6 +69,7 @@ public class AnyUriResolver implements XMLEntityResolver {
     }
     
 
+    @Override
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         
         if(xri.getExpandedSystemId()==null && xri.getLiteralSystemId()==null && 
@@ -95,7 +96,11 @@ public class AnyUriResolver implements XMLEntityResolver {
         xri.setBaseSystemId(docPath);
         
         LOG.debug("resourcePath='"+resourcePath+"'");
-        
+
+        // prevent NPE
+        if(resourcePath==null){
+            return null;
+        }
         
         InputStream is = null;
         if(resourcePath.startsWith("xmldb:")){
