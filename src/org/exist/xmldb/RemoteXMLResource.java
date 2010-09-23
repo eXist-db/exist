@@ -29,6 +29,7 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.VirtualTempFile;
 import org.exist.xquery.value.StringValue;
 
 import org.w3c.dom.Document;
@@ -55,9 +56,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -155,11 +153,13 @@ public class RemoteXMLResource
     	throws XMLDBException
     {
     	InputSource is=null;
+    	InputStream cis=null;
 	
     	if(content!=null) {
     		is=new InputSource(new StringReader(content));
     	} else {
-    		is=new InputSource(getStreamContent());
+    		cis = getStreamContent();
+    		is=new InputSource(cis);
     	}
     	
 		try {
@@ -176,6 +176,14 @@ public class RemoteXMLResource
 		    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
 		} catch(IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+		} finally {
+			if(cis != null) {
+				try {
+					cis.close();
+				} catch(IOException ioe) {
+					// IgnoreIT(R)
+				}
+			}
 		}
     }
 
@@ -183,15 +191,17 @@ public class RemoteXMLResource
     	throws XMLDBException
     {
     	InputSource is=null;
+    	InputStream cis = null;
 	
     	if(content!=null) {
     		is=new InputSource(new StringReader(content));
     	} else {
-    		is=new InputSource(getStreamContent());
+    		cis = getStreamContent();
+    		is=new InputSource(cis);
     	}
     	
-        XMLReader reader = null;
-		if (xmlReader == null) {
+        XMLReader reader = xmlReader;
+		if (reader == null) {
 		    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 		    saxFactory.setNamespaceAware(true);
 		    saxFactory.setValidating(false);
@@ -204,8 +214,6 @@ public class RemoteXMLResource
                 saxe.printStackTrace();
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
             }
-        } else {
-            reader = xmlReader;
         }
 		try {
 		    reader.setContentHandler(handler);
@@ -218,6 +226,14 @@ public class RemoteXMLResource
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
         } catch (IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        } finally {
+        	if(cis!=null) {
+        		try {
+        			cis.close();
+        		} catch(IOException ioe) {
+        			// IgnoreIT(R)
+        		}
+        	}
         }
     }
     
@@ -267,11 +283,11 @@ public class RemoteXMLResource
 
     public void setContentAsDOM(Node root) throws XMLDBException {
     	try {
-	    	File tmpfile=File.createTempFile("eXistRXR", ".xml");
-	    	tmpfile.deleteOnExit();
-	    	FileOutputStream fos=new FileOutputStream(tmpfile);
-	    	BufferedOutputStream bos=new BufferedOutputStream(fos);
-	    	OutputStreamWriter osw=new OutputStreamWriter(bos,"UTF-8");
+    		VirtualTempFile vtmpfile = new VirtualTempFile();
+    		vtmpfile.setTempPrefix("eXistRXR");
+    		vtmpfile.setTempPostfix(".xml");
+    		
+	    	OutputStreamWriter osw=new OutputStreamWriter(vtmpfile,"UTF-8");
 			DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
 			try {
 			    switch (root.getNodeType()) {
@@ -287,7 +303,6 @@ public class RemoteXMLResource
 				    default :
 				    	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
 				}
-				setContent(tmpfile);
 			} catch (TransformerException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} finally {
@@ -297,16 +312,12 @@ public class RemoteXMLResource
 					// IgnoreIT(R)
 				}
 				try {
-					bos.close();
-				} catch(IOException ioe) {
-					// IgnoreIT(R)
-				}
-				try {
-					fos.close();
+					vtmpfile.close();
 				} catch(IOException ioe) {
 					// IgnoreIT(R)
 				}
 			}
+			setContent(vtmpfile);
     	} catch(IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
     	}
@@ -322,7 +333,7 @@ public class RemoteXMLResource
 
     private class InternalXMLSerializer extends SAXSerializer
     {
-    	File tmpfile = null;
+    	VirtualTempFile vtmpfile = null;
     	OutputStreamWriter writer = null;
     	
 		public InternalXMLSerializer() {
@@ -331,12 +342,11 @@ public class RemoteXMLResource
 
 		public void startDocument() throws SAXException {
 			try {
-		    	tmpfile = File.createTempFile("eXistRXR", ".xml");
-		    	tmpfile.deleteOnExit();
+				vtmpfile = new VirtualTempFile();
+				vtmpfile.setTempPrefix("eXistRXR");
+				vtmpfile.setTempPostfix(".xml");
 		    	
-		    	FileOutputStream fos=new FileOutputStream(tmpfile);
-		    	BufferedOutputStream bos=new BufferedOutputStream(fos);
-		    	writer=new OutputStreamWriter(bos,"UTF-8");
+		    	writer=new OutputStreamWriter(vtmpfile,"UTF-8");
 				setOutput(writer, emptyProperties);
 			
 			} catch(IOException ioe) {
@@ -351,11 +361,6 @@ public class RemoteXMLResource
 		public void endDocument() throws SAXException
 		{
 		    super.endDocument();
-		    try {
-		    	setContent(tmpfile);
-		    } catch(XMLDBException xe) {
-		    	throw new SAXException("Unable to close temp file containing serialized data",xe);
-		    }
 		    
 		    try {
 		    	if (writer != null)
@@ -363,6 +368,19 @@ public class RemoteXMLResource
 			} catch (IOException e) {
 		    	throw new SAXException("Unable to close temp file containing serialized data",e);
 			}
+			
+		    try {
+		    	if (vtmpfile != null)
+		    		vtmpfile.close();
+			} catch (IOException e) {
+		    	throw new SAXException("Unable to close temp file containing serialized data",e);
+			}
+			
+		    try {
+		    	setContent(vtmpfile);
+		    } catch(XMLDBException xe) {
+		    	throw new SAXException("Unable to set file content containing serialized data",xe);
+		    }
 		}
     }
 

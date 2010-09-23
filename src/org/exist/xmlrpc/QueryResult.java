@@ -10,13 +10,13 @@ import java.util.Properties;
  * query results that may be retrieved later by the client.
  * 
  * @author wolf
+ * @author jmfernandez
  */
-public class QueryResult {
-	
-	protected long queryTime = 0;
+public class QueryResult
+	extends AbstractCachedResult
+{
 	protected Sequence result;
     protected Properties serialization = null;
-	protected long timestamp = 0; 
 	
 	// set upon failure
 	protected XPathException exception = null;
@@ -26,10 +26,9 @@ public class QueryResult {
 	}
 	
 	public QueryResult(Sequence result, Properties outputProperties, long queryTime) {
+		super(queryTime);
         this.serialization = outputProperties;
 		this.result = result;
-		this.queryTime = queryTime;
-		this.timestamp = System.currentTimeMillis();
 	}
 	
 	public QueryResult(XPathException e) {
@@ -45,23 +44,16 @@ public class QueryResult {
 	}
 	
 	/**
-	 * @return Returns the queryTime.
-	 */
-	public long getQueryTime() {
-		return queryTime;
-	}
-	
-	/**
 	 * @return Returns the result.
 	 */
 	public Sequence getResult() {
 		return result;
 	}
 	
-	/**
-	 * @return Returns the timestamp.
-	 */
-	public long getTimestamp() {
-		return timestamp;
+	public void free() {
+		// Really, nothing to explicitly free
+		if(result!=null) {
+			result=null;
+		}
 	}
 }
