@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
+import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;
@@ -38,18 +39,20 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.security.SecurityManager;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class XMLDBCreateGroup extends BasicFunction {
+public class XMLDBAddUserToGroup extends BasicFunction {
 	
     protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
-        new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-        "Create a new user group. $group is the group name" + XMLDBModule.NEED_PRIV_USER,
+        new QName("add-user-to-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Add a user to a group. $user us the username. $group is the group name" + XMLDBModule.NEED_PRIV_USER,
         new SequenceType[]{
+            new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
             new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
         },
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")
@@ -58,7 +61,7 @@ public class XMLDBCreateGroup extends BasicFunction {
     /**
      * @param context
      */
-    public XMLDBCreateGroup(XQueryContext context) {
+    public XMLDBAddUserToGroup(XQueryContext context) {
         super(context, signature);
     }
 
@@ -70,28 +73,39 @@ public class XMLDBCreateGroup extends BasicFunction {
      */
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
-
-        String groupName = args[0].getStringValue();
-
-        if(context.getUser().getUsername().equals("guest") || groupName.equals("dba")) {
+		
+        if(context.getUser().getUsername().equals("guest")) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be an authenticated user to call this function.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
 
-        logger.info("Attempting to create group " + groupName);
+        String userName = args[0].getStringValue();
+        String groupName = args[1].getStringValue();
 
-        Group group = new GroupAider(groupName);
+
+        if(groupName.equals("dba") && !context.getUser().hasDbaRole()){
+            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to add users to the DBA group.");
+            logger.error("Invalid user", xPathException);
+            throw xPathException;
+        }
+
+        logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
         
 	try {
-            context.getBroker().getBrokerPool().getSecurityManager().addGroup(group);
+            SecurityManager securityManager = context.getBroker().getBrokerPool().getSecurityManager();
+            Group group = securityManager.getGroup(groupName);
+
+            Account user = securityManager.getAccount(userName);
+            user.addGroup(group);
+            securityManager.updateAccount(user);
 
             return BooleanValue.TRUE;
 			
 	} catch (PermissionDeniedException pde) {
-	    logger.error("Failed to create group: " + group, pde);
+	    logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", pde);
         } catch (EXistException exe) {
-            logger.error("Failed to create group: " + group, exe);
+            logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", exe);
         }
 
         return BooleanValue.FALSE;
