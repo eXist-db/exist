@@ -447,6 +447,8 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             biblio:form-collection-sharing(request:get-parameter("collection", $config:mods-root))
         case element(biblio:form-add-member-to-sharing-group) return
             biblio:form-add-member-to-sharing-group()
+        case element(biblio:form-add-sharing-group) return
+            biblio:form-add-sharing-group()        
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -505,6 +507,13 @@ declare function biblio:form-add-member-to-sharing-group() {
         }
         </select>
         <input id="add-member-to-group-button" type="button" value="Add"/>
+    </jquery:dialog>
+};
+
+declare function biblio:form-add-sharing-group() {
+    <jquery:dialog id="new-group-sharing-dialog" modal="true" title="New Group" width="200">
+        <label for="new-group-name" value="Group Name"/><input type="text" id="new-group-name"/>
+        <input id="add-group-button" type="button" value="Add"/>
     </jquery:dialog>
 };
 

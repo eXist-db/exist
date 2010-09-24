@@ -265,6 +265,16 @@ declare function security:set-other-can-write-collection($collection, $write as 
 
 declare function security:set-group-can-read-collection($collection, $read as xs:boolean) as xs:boolean
 {
+    security:set-group-can-write-collection($collection, xmldb:get-group($collection), $read)
+};
+
+declare function security:set-group-can-write-collection($collection, $write as xs:boolean) as xs:boolean
+{
+    security:set-group-can-write-collection($collection, xmldb:get-group($collection), $write)
+};
+
+declare function security:set-group-can-read-collection($collection, $group as xs:string, $read as xs:boolean) as xs:boolean
+{
     let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
         let $new-permissions := if($read)then(
             fn:replace($permissions, "(...)(.)(.....)", "$1r$3")
@@ -272,12 +282,12 @@ declare function security:set-group-can-read-collection($collection, $read as xs
            fn:replace($permissions, "(...)(.)(.....)", "$1-$3")
         )
         return
-            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), xmldb:get-group($collection), xmldb:string-to-permissions($new-permissions)),
+            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), $group, xmldb:string-to-permissions($new-permissions)),
             
             true()
 };
 
-declare function security:set-group-can-write-collection($collection, $write as xs:boolean) as xs:boolean
+declare function security:set-group-can-write-collection($collection, $group as xs:string, $write as xs:boolean) as xs:boolean
 {
     let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
         let $new-permissions := if($write)then(
@@ -286,7 +296,38 @@ declare function security:set-group-can-write-collection($collection, $write as 
            fn:replace($permissions, "(....)(.)(....)", "$1-$3")
         )
         return        
-            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), xmldb:get-group($collection), xmldb:string-to-permissions($new-permissions)),
+            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), $group, xmldb:string-to-permissions($new-permissions)),
+            
+            true()
+};
+
+declare function security:create-group($group-name as xs:string, $group-member as xs:string*) as xs:boolean
+{
+    if(xmldb:create-group($group-name))then
+    (
+        let $results:= for $gm in $group-member return
+            xmldb:add-user-to-group($gm, $group-name)
+        return
+            not($results = false())        
+    )
+    else
+    (
+        false()
+    )
+};
+
+declare function security:set-group-can-read-resource($group-name as xs:string, $resource as xs:string, $read as xs:boolean) as xs:boolean
+{
+    let $collection-uri := fn:replace($resource, "(.*)/.*", "$1"),
+    $resource-uri := fn:replace($resource, ".*/", ""),
+    $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection-uri, $resource-uri)) return
+        let $new-permissions := if($read)then(
+            fn:replace($permissions, "(...)(.)(.....)", "$1r$3")
+        ) else (
+           fn:replace($permissions, "(...)(.)(.....)", "$1-$3")
+        )
+        return
+            xmldb:set-resource-permissions($collection-uri, $resource-uri, xmldb:get-owner($collection-uri, $resource-uri), $group-name, xmldb:string-to-permissions($new-permissions)),
             
             true()
 };

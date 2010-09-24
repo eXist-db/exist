@@ -60,14 +60,36 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
     
     
     (: group :)
-    $share-with-group-outcome := if($sharing-collection-with = "other")then
+    $share-with-group-outcome := if($sharing-collection-with = "group")then
     (
-        (: group:)
+        (: does the group exist? :)
+        let $group-id := if(sharing:group-exists($group-list))then
+        (
+            (: yes, are we the owner? :)
+            if(sharing:is-group-owner($group-list, security:get-user-credential-from-session()[1]))then
+            (
+                (: yes, so update the group members :)
+                
+                (: TODO update the group members :)
+                
+                $group-list
+            )
+            else
+            (
+                (: no, so we cant modify the group members :)
+                $group-list
+            )
+        )
+        else
+        (
+            let $null := util:log("debug", "********* CREATE GROUP CALLED ***********") return
         
-        (: check if owner of a group before modifying a group :)
-        
-        (: TODO:)
-        true()
+            (: no, so create it! :)
+            sharing:create-group($group-list, security:get-user-credential-from-session()[1], $group-member)
+        )
+        return
+            (: change the collection permissions to that of the group and appropriate read/write :)
+            sharing:share-with-group($collection, $group-id, ($group-sharing-permissions = "read"), ($group-sharing-permissions = "write"))
     )
     else
     (
@@ -130,11 +152,12 @@ declare function op:move-resource($resource-id as xs:string, $destination-collec
 };
 
 declare function op:get-sharing-group-members($groupId as xs:string) as element(members){
-    <members>
-    {
-        for $group-member in sharing:get-group-members($groupId) return
-            <member>{$group-member}</member>
-    }
+    <members group-id="{$groupId}">
+        <owner>{element {sharing:is-group-owner($groupId, security:get-user-credential-from-session()[1])} {""}}</owner>
+        {
+            for $group-member in sharing:get-group-members($groupId) return
+                <member>{$group-member}</member>
+        }
     </members>        
 };
 
