@@ -26,6 +26,8 @@
 	<classpathentry excluding="*.java|org/exist/cluster/cocoon/ClusterGenerator.java|org/exist/cluster/cocoon/ClusterInfoGenerator.java|org/exist/cluster/cocoon/ConsoleInfo.java|org/exist/cocoon/CocoonRequestWrapper.java|org/exist/cocoon/CocoonResponseWrapper.java|org/exist/cocoon/CocoonSessionWrapper.java|org/exist/cocoon/ShutdownAction.java|org/exist/cocoon/StatusGenerator.java|org/exist/cocoon/XMLDBSessionLoginAction.java|org/exist/cocoon/XMLDBSource.java|org/exist/cocoon/XMLDBSourceFactory.java|org/exist/cocoon/XMLDBTransformer.java|org/exist/cocoon/XMLReaderWrapper.java|org/exist/cocoon/XQueryGenerator.java|org/exist/cocoon/XSPHelper.java|org/exist/cocoon/source/CocoonSource.java" kind="src" path="extensions/cocoon/src"/>
 	<classpathentry kind="src" path="extensions/svn/src"/>
 	<classpathentry kind="src" path="extensions/svn/test/src"/>
+	<classpathentry kind="src" path="extensions/security/ldap/src"/>
+	<classpathentry kind="src" path="extensions/security/activedirectory/src"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
