@@ -232,41 +232,30 @@ function removeCollection(dialog) {
 function updateCollectionSharing(dialog) {
     var collection = $('#simple-search-form input[name = collection]').val();
    
-    var params = [];
-    
-    params.push({"action": 'update-collection-sharing'});
-    params.push({"collection": collection });
-   
     var sharingCollectionWith = [];   
     $('input:checked[type="checkbox"][name="sharing-collection-with"]').each(function() {
         sharingCollectionWith.push($(this).val());
     });
-    params.push({"sharingCollectionWith": sharingCollectionWith});
     
     var groupList = $('#group-list').val();
-    params.push({"groupList": groupList});
     
     var groupMember = [];
     $('input:checked[type="checkbox"][name="group-member"]').each(function() {
         groupMember.push($(this).val());
     });
-    params.push({"groupMember": groupMember});
     
     var groupSharingPermissions = [];
     $('input:checked[type="checkbox"][name="group-sharing-permissions"]').each(function() {
         groupSharingPermissions.push($(this).val());
     });
-    params.push({"groupSharingPermissions": groupSharingPermissions});
     
     var otherSharingPermissions = [];
     $('input:checked[type="checkbox"][name="other-sharing-permissions"]').each(function() {
         otherSharingPermissions.push($(this).val());
     });
-    params.push({"otherSharingPermissions": otherSharingPermissions});
     
-    
-    //, sharingCollectionWith: [sharingCollectionWith], groupList: groupList, groupMember: groupMember, groupSharingPermissions: groupSharingPermissions, otherSharingPermissions: otherSharingPermissions };
-    $.get("operations.xql", params, function (data) {
+    var params = { "action":"update-collection-sharing", "collection":collection, "sharingCollectionWith":sharingCollectionWith, "groupList": groupList, "groupMember": groupMember, "groupSharingPermissions": groupSharingPermissions, "otherSharingPermissions": otherSharingPermissions };
+    $.post("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         dialog.dialog("close");
     });
