@@ -148,6 +148,58 @@ declare function security:can-write-collection($user as xs:string, $collection a
 };
 
 (:~
+: Determines if a group has read access to a collection
+:
+: @param group The group name
+: @param collection The path of the collection
+:)
+declare function security:group-can-read-collection($group as xs:string, $collection as xs:string) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+    let $owner-group := xmldb:get-group($collection)
+    return
+        ($group eq $owner-group and fn:substring($permissions, 4, 1) eq 'r')
+};
+
+(:~
+: Determines if a group has write access to a collection
+:
+: @param group The group name
+: @param collection The path of the collection
+:)
+declare function security:group-can-write-collection($group as xs:string, $collection as xs:string) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+    let $owner-group := xmldb:get-group($collection)
+    return
+        ($group eq $owner-group and fn:substring($permissions, 5, 1) eq 'w')
+};
+
+(:~
+: Determines if everyone has read access to a collection
+:
+: @param collection The path of the collection
+:)
+declare function security:other-can-read-collection($collection as xs:string) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+    return
+        fn:substring($permissions, 7, 1) eq 'r'
+};
+
+(:~
+: Determines if everyone has write access to a collection
+:
+: @param collection The path of the collection
+:)
+declare function security:other-can-write-collection($collection as xs:string) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+    return
+        fn:substring($permissions, 8, 1) eq 'r'
+};
+
+(:~
 : Determines if the user is the collection owner
 :
 : @param user The username
@@ -176,4 +228,9 @@ declare function security:get-group-members($group as xs:string) as xs:string*
 declare function security:get-other-biblio-users() as xs:string*
 {
     security:get-group-members($security:biblio-users-group)[. ne security:get-user-credential-from-session()[1]]
+};
+
+declare function security:get-group($collection as xs:string) as xs:string
+{
+    xmldb:get-group($collection)
 };

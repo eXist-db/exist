@@ -15,6 +15,47 @@ declare function sharing:get-groups() as element(group:group)*
 
 declare function sharing:get-group-members($groupId) as xs:string*
 {
-    let $group := fn:collection($sharing:groups-collection)/group:group[@id eq $groupId] return
-        security:get-group-members($group/group:system/group:group)
+        security:get-group-members(sharing:__group-id-to-system-group-name($groupId))
+};
+
+declare function sharing:get-group-id($collection as xs:string) as xs:string?
+{
+    let $security-group := security:get-group($collection) return
+        fn:string(fn:collection($sharing:groups-collection)/group:group[group:system/group:group eq $security-group]/@id)
+};
+
+declare function sharing:group-readable($collection as xs:string) as xs:boolean
+{
+    security:group-can-read-collection(security:get-group($collection), $collection)
+};
+
+declare function sharing:group-readable($collection as xs:string, $groupId as xs:string) as xs:boolean
+{
+    security:group-can-read-collection(sharing:__group-id-to-system-group-name($groupId), $collection)
+};
+
+declare function sharing:group-writeable($collection as xs:string) as xs:boolean
+{
+    security:group-can-write-collection(security:get-group($collection), $collection)
+};
+
+declare function sharing:group-writeable($collection as xs:string, $groupId as xs:string) as xs:boolean
+{
+    security:group-can-write-collection(sharing:__group-id-to-system-group-name($groupId), $collection)
+};
+
+declare function sharing:other-readable($collection as xs:string) as xs:boolean
+{
+    security:other-can-read-collection($collection)
+};
+
+declare function sharing:other-writeable($collection as xs:string) as xs:boolean
+{
+    security:other-can-write-collection($collection)
+};
+
+
+declare function sharing:__group-id-to-system-group-name($groupId as xs:string) as xs:string?
+{
+    fn:collection($sharing:groups-collection)/group:group[@id eq $groupId]/group:system/group:group
 };
