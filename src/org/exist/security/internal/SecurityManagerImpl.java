@@ -23,7 +23,9 @@ package org.exist.security.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -42,6 +44,7 @@ import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.UUIDGenerator;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
@@ -380,6 +383,18 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
+		if ("jsessionid".equals(username)) {
+			Subject subject = sessions.get(credentials);
+			
+			if (subject == null)
+				throw new AuthenticationException(
+						AuthenticationException.SESSION_NOT_FOUND,
+						"Session [" + credentials + "] not found");
+				
+			//TODO: validate session
+			
+			return subject;
+		}
 		for (Realm realm : realms) {
 			
 			if (LOG.isDebugEnabled())
@@ -568,5 +583,24 @@ public class SecurityManagerImpl implements SecurityManager {
 			if (id.equals(realm.getId())) return realm;
 		}
 		return null;
+	}
+	
+	//Session management part
+
+	Map<String, Subject> sessions = new HashMap<String, Subject>();
+	
+	@Override
+	public String registerSession(Subject subject) {
+		String sessionId = UUIDGenerator.getUUID();
+		
+		sessions.put(sessionId, subject);
+		
+		return sessionId;
+	}
+
+	@Override
+	public Subject getSubjectBySessionId(String sessionid) {
+		//TODO: validate
+		return sessions.get(sessionid);
 	}
 }

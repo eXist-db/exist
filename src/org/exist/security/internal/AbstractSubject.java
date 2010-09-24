@@ -23,10 +23,13 @@ package org.exist.security.internal;
 
 import java.util.Set;
 
+import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.security.Group;
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
+import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -250,5 +253,21 @@ public abstract class AbstractSubject implements Subject {
 	@Override
 	public boolean equals(Object obj) {
 		return account.equals(obj);
+	}
+
+	//session part
+	String sessionId = null;
+	
+	@Override
+	public String getSessionId() {
+		if (sessionId == null) {
+			try {
+				SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
+				sessionId = sm.registerSession(this);
+			} catch (EXistException e) {
+				return null;
+			}
+		}
+		return sessionId;
 	}
 }

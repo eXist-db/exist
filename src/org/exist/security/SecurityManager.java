@@ -106,4 +106,9 @@ public interface SecurityManager extends Configurable {
 
    Realm getRealm(String iD);
 
+   //session manager part
+   String registerSession(Subject subject);
+   
+   Subject getSubjectBySessionId(String sessionid);
+
 }

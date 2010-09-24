@@ -37,6 +37,8 @@ public class AuthenticationException extends Exception {
 	public static final int WRONG_PASSWORD = 1; 
 	public static final int ACCOUNT_LOCKED = 2;
 	
+	public static final int SESSION_NOT_FOUND = 3;
+
 	private int type;
 
 	public AuthenticationException(int type, String message) {

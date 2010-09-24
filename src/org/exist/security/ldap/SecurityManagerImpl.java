@@ -610,4 +610,16 @@ public class SecurityManagerImpl implements SecurityManager
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String registerSession(Subject subject) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Subject getSubjectBySessionId(String sessionid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

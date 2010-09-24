@@ -484,13 +484,24 @@ public class Resource extends File {
     
     private URLConnection getConnection() throws IOException {
     	if (connection == null) {
+			BrokerPool database = null;
+			DBBroker broker = null;
 			try {
-				URL url = new URL("xmldb:exist://" + uri.toString());
+				database = BrokerPool.getInstance();
+				broker = database.get(null);
+				Subject subject = broker.getUser();
+				
+				URL url = new URL("xmldb:exist://jsessionid:"+subject.getSessionId()+"@"+ uri.toString());
 				connection = url.openConnection();
 			} catch (IllegalArgumentException e) {
 				throw new IOException(e); 
 			} catch (MalformedURLException e) {
 				throw new IOException(e); 
+			} catch (EXistException e) {
+				throw new IOException(e); 
+			} finally {
+				if (database != null)
+					database.release(broker);
 			}
     	}
     	return connection;

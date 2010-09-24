@@ -31,4 +31,6 @@ public interface Subject extends Account {
 
 	public boolean isAuthenticated();
 
+	public String getSessionId();
+
 }
