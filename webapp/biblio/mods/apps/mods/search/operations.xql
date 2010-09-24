@@ -45,29 +45,28 @@ declare function op:remove-collection($collection as xs:string) as element(statu
         <status id="removed">{$collection}</status>
 };
 
-declare function op:update-collection-sharing($collection as xs:string, $restriction as xs:string, $user-group as xs:string?) as element(status) {
+declare function op:update-collection-sharing($collection as xs:string, $sharing-collection-with as xs:string*, $group-list as xs:string?, $group-member as xs:string*, $group-sharing-permissions as xs:string*, $other-sharing-permissions as xs:string*) as element(status) {
     
-    let $null := if($restriction eq "user") then
+    if($sharing-collection-with = "other" or $sharing-collection-with = "group")then
+    (
+        if($sharing-collection-with = "other")then
         (
-            (: onlu this user can access, so restrict full access to user :)
-            let $current-group := xmldb:get-group($collection) return
-                xmldb:set-collection-permissions($collection, request:get-attribute("xquery.user"), $current-group, $rwx------)
-        )
-        else if($restriction eq "group")then
-        (
-            (: anyone in the group can access, so restrict full access to group :)
-            let $current-owner := xmldb:get-owner($collection) return
-                xmldb:set-collection-permissions($collection, $current-owner, $user-group, $rwxrwx---)
+            (: other :)
+            sharing:share-with-other($collection, $other-sharing-permissions = "read", $other-sharing-permissions = "write")
         )
         else
         (
-            (: anyone can access, so allow full access to everyone :)
-            let $current-owner := xmldb:get-owner($collection),
-            $current-group := xmldb:get-group($collection) return
-                xmldb:set-collection-permissions($collection, $current-owner, $current-group, $rwxrwxrwx)
-        )
-    return
-        <status id="sharing">{$restriction}{if($restriction eq "group")then(concat(": ", $user-group))else()}</status>
+            (: group:)
+            
+            (: check if owner of a group before modifying a group :)
+        ),
+        <status id="sharing">ok</status>
+    )
+    else
+    (
+        response:set-status-code(403),
+        <invalid-parameters/>
+    )
 };
 
 (:~
@@ -174,7 +173,7 @@ return
     else if($action eq "remove-collection")then
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
-        op:update-collection-sharing($collection, request:get-parameter("restriction", ()), request:get-parameter("userGroup",()))
+        op:update-collection-sharing($collection, request:get-parameter("sharingCollectionWith",()), request:get-parameter("groupList",()), request:get-parameter("groupMember",()), request:get-parameter("groupSharingPermissions",()), request:get-parameter("otherSharingPermissions",()))
     else if($action eq "get-group-permissions")then
         op:get-group-permissions($collection, request:get-parameter("groupId",()))
     else if($action eq "get-other-permissions")then

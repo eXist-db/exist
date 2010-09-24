@@ -234,3 +234,23 @@ declare function security:get-group($collection as xs:string) as xs:string
 {
     xmldb:get-group($collection)
 };
+
+declare function security:set-other-can-read-collection($collection) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
+        let $new-permissions := fn:replace($permissions, "(......)(.)(..)", "$1r$3") return
+            
+            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), xmldb:get-group($collection), xmldb:string-to-permissions($new-permissions)),
+            
+            true()
+};
+
+declare function security:set-other-can-write-collection($collection) as xs:boolean
+{
+    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection)) return
+        let $new-permissions := fn:replace($permissions, "(.......)(.)(.)", "$1w$3") return
+            
+            xmldb:set-collection-permissions($collection, xmldb:get-owner($collection), xmldb:get-group($collection), xmldb:string-to-permissions($new-permissions)),
+            
+            true()
+};

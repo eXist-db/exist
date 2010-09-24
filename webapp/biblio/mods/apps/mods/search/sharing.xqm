@@ -59,3 +59,16 @@ declare function sharing:__group-id-to-system-group-name($groupId as xs:string) 
 {
     fn:collection($sharing:groups-collection)/group:group[@id eq $groupId]/group:system/group:group
 };
+
+declare function sharing:share-with-other($collection as xs:string, $read as xs:boolean, $write as xs:boolean) as xs:boolean
+{
+    if($read)then
+    (
+        security:set-other-can-read-collection($collection)
+    )else(),
+
+    if($write)then
+    (
+        security:set-other-can-write-collection($collection)
+    )else()
+};
