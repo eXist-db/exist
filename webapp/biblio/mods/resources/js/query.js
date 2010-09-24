@@ -36,11 +36,6 @@ $(document).ready(function(){
 
     $('#sharing-collection-dialog').bind( "dialogopen", function(event, ui) {
     
-        //debug
-        console.log($('#sharing-collection-with-other').attr('type'));
-        console.log($('#sharing-collection-with-other').removeAttr('checked').attr('checked'));
-        //end debug
-    
         //show/hide group sharing panel
         if(!$('#sharing-collection-with-group').is(':checked')) {
             $('#group-sharing-panel').hide()
@@ -232,13 +227,45 @@ function removeCollection(dialog) {
 }
 
 /*
-    Called when the user clicks on the "create" button in the create collection dialog.
+    Called when the user clicks on the "save" button in the collection sharing dialog
  */
-function updateCollectionPermissions(dialog) {
-    var restriction = $('#update-collection-sharing-form input[name = restriction]:checked').val();
-    var userGroup = $('#update-collection-sharing-form select[name = userGroup]').val();
+function updateCollectionSharing(dialog) {
     var collection = $('#simple-search-form input[name = collection]').val();
-    var params = { action: 'update-collection-sharing', restriction: restriction, userGroup: userGroup, collection: collection };
+   
+    var params = [];
+    
+    params.push({"action": 'update-collection-sharing'});
+    params.push({"collection": collection });
+   
+    var sharingCollectionWith = [];   
+    $('input:checked[type="checkbox"][name="sharing-collection-with"]').each(function() {
+        sharingCollectionWith.push($(this).val());
+    });
+    params.push({"sharingCollectionWith": sharingCollectionWith});
+    
+    var groupList = $('#group-list').val();
+    params.push({"groupList": groupList});
+    
+    var groupMember = [];
+    $('input:checked[type="checkbox"][name="group-member"]').each(function() {
+        groupMember.push($(this).val());
+    });
+    params.push({"groupMember": groupMember});
+    
+    var groupSharingPermissions = [];
+    $('input:checked[type="checkbox"][name="group-sharing-permissions"]').each(function() {
+        groupSharingPermissions.push($(this).val());
+    });
+    params.push({"groupSharingPermissions": groupSharingPermissions});
+    
+    var otherSharingPermissions = [];
+    $('input:checked[type="checkbox"][name="other-sharing-permissions"]').each(function() {
+        otherSharingPermissions.push($(this).val());
+    });
+    params.push({"otherSharingPermissions": otherSharingPermissions});
+    
+    
+    //, sharingCollectionWith: [sharingCollectionWith], groupList: groupList, groupMember: groupMember, groupSharingPermissions: groupSharingPermissions, otherSharingPermissions: otherSharingPermissions };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         dialog.dialog("close");
