@@ -46,27 +46,39 @@ declare function op:remove-collection($collection as xs:string) as element(statu
 };
 
 declare function op:update-collection-sharing($collection as xs:string, $sharing-collection-with as xs:string*, $group-list as xs:string?, $group-member as xs:string*, $group-sharing-permissions as xs:string*, $other-sharing-permissions as xs:string*) as element(status) {
-    
-    if($sharing-collection-with = "other" or $sharing-collection-with = "group")then
+
+    (: other :)
+    let $share-with-other-outrcome := if($sharing-collection-with = "other")then
     (
-        if($sharing-collection-with = "other")then
-        (
-            (: other :)
-            sharing:share-with-other($collection, $other-sharing-permissions = "read", $other-sharing-permissions = "write")
-        )
-        else
-        (
-            (: group:)
-            
-            (: check if owner of a group before modifying a group :)
-        ),
-        <status id="sharing">ok</status>
+        sharing:share-with-other($collection, ($other-sharing-permissions = "read"), ($other-sharing-permissions = "write"))
     )
     else
     (
-        response:set-status-code(403),
-        <invalid-parameters/>
+        (: dont share with other :)
+        sharing:share-with-other($collection, false(), false())
+    ),
+    
+    
+    (: group :)
+    $share-with-group-outcome := if($sharing-collection-with = "other")then
+    (
+        (: group:)
+        
+        (: check if owner of a group before modifying a group :)
+        
+        (: TODO:)
+        true()
     )
+    else
+    (
+        (: dont share with group :)
+        sharing:share-with-group($collection, false(), false())
+    )
+    return
+        if($share-with-other-outrcome and $share-with-group-outcome)then
+            <status id="sharing">done</status>
+        else
+            <status id="sharing">invalid permissions</status>
 };
 
 (:~
@@ -173,7 +185,7 @@ return
     else if($action eq "remove-collection")then
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
-        op:update-collection-sharing($collection, request:get-parameter("sharingCollectionWith",()), request:get-parameter("groupList",()), request:get-parameter("groupMember",()), request:get-parameter("groupSharingPermissions",()), request:get-parameter("otherSharingPermissions",()))
+        op:update-collection-sharing($collection, request:get-parameter("sharingCollectionWith[]",()), request:get-parameter("groupList",()), request:get-parameter("groupMember[]",()), request:get-parameter("groupSharingPermissions[]",()), request:get-parameter("otherSharingPermissions[]",()))
     else if($action eq "get-group-permissions")then
         op:get-group-permissions($collection, request:get-parameter("groupId",()))
     else if($action eq "get-other-permissions")then
