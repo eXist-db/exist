@@ -49,7 +49,7 @@ import org.exist.security.realm.ldap.LdapContextFactory;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-@ConfigurationClass("ActiveDirectory")
+@ConfigurationClass("realm") //TODO: id = ActiveDirectory
 public class ActiveDirectoryRealm extends LDAPRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
