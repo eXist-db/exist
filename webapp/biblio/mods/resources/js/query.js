@@ -13,7 +13,11 @@ $(document).ready(function(){
     $('#collection-move-folder').hide();
     $('#collection-remove-folder').hide();
     $('#collection-sharing').hide();
-    
+});
+
+/* sharing dialog actions */
+$(document).ready(function(){
+
     $('#sharing-collection-with-group').click(function(){
             if($(this).is(':checked')) {
                 $('#group-sharing-panel').show();
@@ -28,12 +32,9 @@ $(document).ready(function(){
             } else {
                 $('#other-sharing-panel').hide();
             }
-        });
-});
+    });
 
-/* sharing dialog actions */
-$(document).ready(function(){
-
+    //when the sharing dialog is opened
     $('#sharing-collection-dialog').bind( "dialogopen", function(event, ui) {
     
         //show/hide group sharing panel
@@ -47,17 +48,29 @@ $(document).ready(function(){
         }
     });
     
+    updateSharingGroupMembers($('#group-list').val());
     $('#group-list').change(function(){
         updateSharingGroupMembers($('#group-list').val());
     });
     
+    //add member to group events
     $('#add-new-member-to-group-button').click(function(){
         $('#add-member-to-group-sharing-dialog').dialog('open');
     });
     
     $('#add-member-to-group-button').click(function(){
-        addMemberToSharingGroupMembers($('#members-list').val());
+        addMemberToSharingGroupMembers($('#members-list').val(), true);
         $('#add-member-to-group-sharing-dialog').dialog('close');
+    });
+    
+    //add group events
+    $('#new-group-button').click(function(){
+        $('#new-group-sharing-dialog').dialog('open');
+    });
+    
+    $('#add-group-button').click(function(){
+        addNewGroupToGroupList($('#new-group-name').val());
+        $('#new-group-sharing-dialog').dialog('close');
     });
 });
 
@@ -378,16 +391,43 @@ function searchTabSelected(ev, ui) {
     }
 }
 
+/*
+function isGroupOwner(groupId) {
+    if(groupId == ""){
+        return true;
+    }
+    
+    var params = { action: "is-group-owner", groupId: groupId };
+    $.get("operations.xql", params, function(data) {
+        $(data).find('true').each(function(){
+            return true;
+        });
+    });
+}*/
+
 function updateSharingGroupMembers(groupId) {
+
     var params = { action: "get-sharing-group-members", groupId: groupId };
     $.get("operations.xql", params, function(data) {
         
         //remove any existing members
         $('#group-members-list').find('li').remove();
     
+        var owner = false;
+        if($(data).find('owner true').size() == 1)
+        {
+            owner = true;
+            $('#add-new-member-to-group-button').show();
+        } else if($('#group-list :selected').val() == $('#group-list :selected').text()) {
+            owner = true;   //this is a new group i.e. we own it!
+            $('#add-new-member-to-group-button').show();
+        } else {
+            $('#add-new-member-to-group-button').hide();
+        }
+    
         //add new members
         $(data).find('member').each(function(){
-            addMemberToSharingGroupMembers($(this).text());
+            addMemberToSharingGroupMembers($(this).text(), owner);
         });
     });
     
@@ -442,37 +482,31 @@ function updateSharingOtherCheckboxes() {
         //set read checkbox
         var readPermissions = $(data).find('read');
         if(readPermissions.size() == 1){
-         //$('#other-sharing-premissions-read').attr('checked','checked');
          $('#other-sharing-premissions-read').get(0).checked = true;
         } else {
-         //$('#other-sharing-premissions-read').removeAttr('checked');
          $('#other-sharing-premissions-read').get(0).checked = false;
         }
         
         //set write checkbox
         var writePermissions = $(data).find('write');
          if(writePermissions.size() == 1){
-         //$('#other-sharing-premissions-write').attr('checked','checked');
          $('#other-sharing-premissions-write').get(0).checked = true;
         } else {
-         //$('#other-sharing-premissions-write').removeAttr('checked');
          $('#other-sharing-premissions-write').get(0).checked = false;
         }
         
         //set sharing checkbox
         if(readPermissions.size() + writePermissions.size() >= 1) {
-            //$('#sharing-collection-with-other').attr('checked','checked');
             $('#sharing-collection-with-other').get(0).checked = true;
             $('#other-sharing-panel').show();
         } else {
-            //$('#sharing-collection-with-other').removeAttr('checked');
             $('#sharing-collection-with-other').get(0).checked = false;
             $('#other-sharing-panel').hide();
         }
     });
 }
 
-function addMemberToSharingGroupMembers(member){
+function addMemberToSharingGroupMembers(member, isGroupOwner){
 
     //dont add the item if it already exists
     var currentMemberInputs = $('#group-members-list').find('input');
@@ -489,9 +523,12 @@ function addMemberToSharingGroupMembers(member){
     var input = document.createElement('input');
     input.setAttribute('id', 'group-member-' + uuid);
     input.setAttribute('type', 'checkbox');
-    input.setAttribute('name', 'group-memeber');
+    input.setAttribute('name', 'group-member');
     input.setAttribute('value', member);
     input.setAttribute('checked', 'checked');
+    if(!isGroupOwner){
+        input.setAttribute('disabled', 'disabled');
+    }
     
     var label = document.createElement('label');
     label.setAttribute('for', 'group-member-_' + uuid);
@@ -502,4 +539,18 @@ function addMemberToSharingGroupMembers(member){
     li.appendChild(label);
 
    $('#group-members-list').append(li);
-};
+}
+
+function addNewGroupToGroupList(groupName){
+    
+    //add the new group
+    $('#group-list').append(
+        $("<option></option>").attr("value", groupName).text(groupName)
+    );
+    
+    //select the new group
+    $('#group-list').val(groupName);
+    
+    //update the members etc
+    updateSharingGroupMembers($('#group-list').val());
+}

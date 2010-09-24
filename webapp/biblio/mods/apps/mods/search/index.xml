@@ -276,6 +276,7 @@
             <!-- collection owner -->
             <biblio:form-collection-sharing/>
             <biblio:form-add-member-to-sharing-group/>
+            <biblio:form-add-sharing-group/>
             <!-- end collection owner -->
             <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" width="450">
                 <jquery:button label="Remove" function="removeResource"/>
