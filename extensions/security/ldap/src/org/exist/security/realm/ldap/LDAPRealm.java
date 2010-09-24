@@ -45,7 +45,7 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-@ConfigurationClass("LDAP")
+@ConfigurationClass("realm") //TODO: id = LDAP
 public class LDAPRealm extends AbstractRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
