@@ -444,7 +444,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:form-select-collection) return
             biblio:form-select-collection($node/@name)
         case element(biblio:form-collection-sharing) return
-            biblio:form-collection-sharing()
+            biblio:form-collection-sharing(request:get-parameter("collection", $config:mods-root))
         case element(biblio:form-add-member-to-sharing-group) return
             biblio:form-add-member-to-sharing-group()
         case element() return
@@ -508,7 +508,7 @@ declare function biblio:form-add-member-to-sharing-group() {
     </jquery:dialog>
 };
 
-declare function biblio:form-collection-sharing() {
+declare function biblio:form-collection-sharing($collection as xs:string) {
     <jquery:dialog id="sharing-collection-dialog" modal="true" title="Collection Sharing" trigger="#collection-sharing" width="450">
         <jquery:button label="Update" function="updateCollectionSharing"/>
         <jquery:button id="cancel" label="Cancel"/>
@@ -516,58 +516,111 @@ declare function biblio:form-collection-sharing() {
             <input id="sharing-collection-path_" type="hidden" name="collection"/>
             <div>Sharing settings for: <span id="sharing-collection-path_"></span></div>
             <div class="sharing-option">
-                <input type="checkbox" id="sharing-collection-with-group" name="sharing-collection-with" value="group"/>
+                <input type="checkbox" id="sharing-collection-with-group" name="sharing-collection-with" value="group">
+                {
+                 (:   if(sharing:group-readable($collection))then(attribute checked{ "checked" })else()
+                 :)
+                 ()
+                }
+                </input>
                 <label for="sharing-collection-with-group" class="labelWithCheckboxLeft">Share with Group</label>
-                <div id="group-sharing-panel" class="sharing-panel">
-                    <div>
-                        <label for="group-list">Group</label>
-                        <select id="group-list" name="group">
-                        {
-                            for $group in sharing:get-groups() return
-                                <option value="{$group/@id}">{$group/group:name/text()}</option>
-                        }
-                        </select>
-                        <input id="new-group-button" type="button" value="New Group"/>
-                    </div>
-                    <div id="group-members">
+                {
+                let $groups := sharing:get-groups(),
+                $collection-group-id := sharing:get-group-id($collection) return
+                    <div id="group-sharing-panel" class="sharing-panel">
                         <div>
-                            <label for="group-members-list">Members</label>
-                            <ui id="group-members-list">
-                                <li>
-                                    <input id="group-member-1" type="checkbox" name="group-member" value="bob" checked="checked"/>
-                                    <label id="group-member-1">bob</label>
-                                </li>
-                                <li>
-                                    <input id="group-member-1" type="checkbox" name="group-member" value="mike" checked="checked"/>
-                                    <label id="group-member-1">mike</label>
-                                </li>
-                            </ui>
+                            <label for="group-list">Group</label>
+                            <select id="group-list" name="group">
+                            {
+                                for $group in $groups return
+                                    if($group/@id eq $collection-group-id)then
+                                    (
+                                        <option selected="selected" value="{$group/@id}">{$group/group:name/text()}</option>
+                                    )
+                                    else
+                                    (
+                                        <option value="{$group/@id}">{$group/group:name/text()}</option>
+                                    )
+                            }
+                            </select>
+                            <input id="new-group-button" type="button" value="New Group"/>
                         </div>
-                        <input id="add-new-member-to-group-button" type="button" value="Add Member"/>
+                        <div id="group-members">
+                            <div>
+                                <label for="group-members-list">Members</label>
+                                <ui id="group-members-list">
+                                {
+                                    (: get members of the selected group, or if none selected then the first group :)
+                                    let $selected-group := if(not(empty($groups[@id eq $collection-group-id])))then($groups[@id eq $collection-group-id])else($groups[1]) return
+                                        for $group-member at $i in sharing:get-group-members($selected-group/@id) return
+                                        <li>
+                                            <input id="group-member-{$i}" type="checkbox" name="group-member" value="{$group-member}" checked="checked"/>
+                                            <label id="group-member-{$i}" class="labelWithCheckboxLeft">{$group-member}</label>
+                                        </li>
+                                }
+                                </ui>
+                            </div>
+                            <input id="add-new-member-to-group-button" type="button" value="Add Member"/>
+                        </div>
+                        <div>
+                            <span>
+                                <input id="group-sharing-premissions-read" type="checkbox" name="group-sharing-permissions" value="read">
+                                {
+                                (:
+                                    if(sharing:group-readable($collection))then(attribute checked{ "checked" })else()
+                                    :)
+                                    ()
+                                }
+                                </input>
+                                <label for="group-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
+                            </span>
+                            <span style="margin-left: 1em">
+                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write">
+                                {
+                                    (:
+                                    if(sharing:group-writeable($collection))then(attribute checked{ "checked" })else()
+                                    :)
+                                    ()
+                                }
+                                </input>
+                                <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
+                            </span>
+                        </div>
                     </div>
-                    <div>
-                        <span>
-                            <input id="group-sharing-premissions-read" type="checkbox" name="group-sharing-permissions" value="read"/>
-                            <label for="group-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
-                        </span>
-                        <span style="margin-left: 1em">
-                            <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write"/>
-                            <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
-                        </span>
-                    </div>
-                </div>
+            }
             </div>
             <div class="sharing-option">
-                <input type="checkbox" id="sharing-collection-with-other" name="sharing-collection-with" value="other"/>
+                <input type="checkbox" id="sharing-collection-with-other" name="sharing-collection-with" value="other">
+                {
+                    (:
+                    if(sharing:other-readable($collection))then(attribute checked{ "checked" })else()
+                    :)
+                    ()
+                }
+                </input>
                 <label for="sharing-collection-with-other" class="labelWithCheckboxLeft">Share with Everyone</label>
                 <div id="other-sharing-panel" class="sharing-panel">
                     <div>
                         <span>
-                            <input id="other-sharing-premissions-read" type="checkbox" name="other-sharing-permissions" value="read"/>
+                            <input id="other-sharing-premissions-read" type="checkbox" name="other-sharing-permissions" value="read">
+                            {
+                                (:
+                                if(sharing:other-readable($collection))then(attribute checked{ "checked" })else()
+                                :)
+                                ()
+                            }
+                            </input>
                             <label for="other-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
                         </span>
                         <span style="margin-left: 1em">
-                            <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write"/>
+                            <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write">
+                            {
+                                (:
+                                if(sharing:other-writeable($collection))then(attribute checked{ "checked" })else()
+                                :)
+                                ()
+                            }
+                            </input>
                             <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
                         </span>
                     </div>

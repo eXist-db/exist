@@ -13,10 +13,44 @@ $(document).ready(function(){
     $('#collection-move-folder').hide();
     $('#collection-remove-folder').hide();
     $('#collection-sharing').hide();
+    
+    $('#sharing-collection-with-group').click(function(){
+            if($(this).is(':checked')) {
+                $('#group-sharing-panel').show();
+            } else {
+                $('#group-sharing-panel').hide();
+            }
+        });
+    
+    $('#sharing-collection-with-other').click(function(){
+            if($(this).is(':checked')) {
+                $('#other-sharing-panel').show();
+            } else {
+                $('#other-sharing-panel').hide();
+            }
+        });
 });
 
 /* sharing dialog actions */
 $(document).ready(function(){
+
+    $('#sharing-collection-dialog').bind( "dialogopen", function(event, ui) {
+    
+        //debug
+        console.log($('#sharing-collection-with-other').attr('type'));
+        console.log($('#sharing-collection-with-other').removeAttr('checked').attr('checked'));
+        //end debug
+    
+        //show/hide group sharing panel
+        if(!$('#sharing-collection-with-group').is(':checked')) {
+            $('#group-sharing-panel').hide()
+        }
+        
+        //show/hide other sharing panel
+        if(!$('#sharing-collection-with-other').is(':checked')) {
+            $('#other-sharing-panel').hide()
+        }
+    });
     
     $('#group-list').change(function(){
         updateSharingGroupMembers($('#group-list').val());
@@ -31,6 +65,16 @@ $(document).ready(function(){
         $('#add-member-to-group-sharing-dialog').dialog('close');
     });
 });
+
+function getActiveGroup()
+{
+    var selectedGroupId = $('#group-list').val();
+    if(selectedGroupId){
+        return selectedGroupId;
+    } else {
+        return $('#group-list option[0]').val();
+    }
+}
 
 /*
     Initialize the collection tree. Connect toolbar button events.
@@ -48,7 +92,8 @@ function initCollectionTree() {
             updateCollectionPaths(title, key);
             showHideCollectionWriteableControls();
             showHideCollectionOwnerControls();
-            
+            updateSharingGroupCheckboxes(getActiveGroup());
+            updateSharingOtherCheckboxes();
 //            form.submit();
         }
     });
@@ -329,6 +374,86 @@ function updateSharingGroupMembers(groupId) {
             addMemberToSharingGroupMembers($(this).text());
         });
     });
+    
+    updateSharingGroupCheckboxes(groupId);
+}
+
+function updateSharingGroupCheckboxes(groupId) {
+    //set the read/write checkboxes
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: "get-group-permissions", groupId: groupId, collection: collection };
+    $.get("operations.xql", params, function(data) {
+    
+        //set read checkbox
+        var readPermissions = $(data).find('read');
+        if(readPermissions.size() == 1){
+         //$('#group-sharing-premissions-read').attr('checked','checked');
+         $('#group-sharing-premissions-read').get(0).checked = true;
+        } else {
+         //$('#group-sharing-premissions-read').removeAttr('checked');
+         $('#group-sharing-premissions-read').get(0).checked = false;
+        }
+        
+        //set write checkbox
+        var writePermissions = $(data).find('write');
+         if(writePermissions.size() == 1){
+         //$('#group-sharing-premissions-write').attr('checked','checked');
+         $('#group-sharing-premissions-write').get(0).checked = true;
+        } else {
+         //$('#group-sharing-premissions-write').removeAttr('checked');
+         $('#group-sharing-premissions-write').get(0).checked = false;
+        }
+        
+        //set sharing checkbox
+        if(readPermissions.size() + writePermissions.size() >= 1) {
+            //$('#sharing-collection-with-group').attr('checked','checked');
+            $('#sharing-collection-with-group').get(0).checked = true;
+            $('#group-sharing-panel').show();
+        } else {
+            //$('#sharing-collection-with-group').removeAttr('checked');
+            $('#sharing-collection-with-group').get(0).checked = false;
+            $('#group-sharing-panel').hide();
+        }
+    });
+}
+
+function updateSharingOtherCheckboxes() {
+     //set the read/write checkboxes
+    var collection = $('#simple-search-form input[name = collection]').val();
+    var params = { action: "get-other-permissions", collection: collection };
+    $.get("operations.xql", params, function(data) {
+    
+        //set read checkbox
+        var readPermissions = $(data).find('read');
+        if(readPermissions.size() == 1){
+         //$('#other-sharing-premissions-read').attr('checked','checked');
+         $('#other-sharing-premissions-read').get(0).checked = true;
+        } else {
+         //$('#other-sharing-premissions-read').removeAttr('checked');
+         $('#other-sharing-premissions-read').get(0).checked = false;
+        }
+        
+        //set write checkbox
+        var writePermissions = $(data).find('write');
+         if(writePermissions.size() == 1){
+         //$('#other-sharing-premissions-write').attr('checked','checked');
+         $('#other-sharing-premissions-write').get(0).checked = true;
+        } else {
+         //$('#other-sharing-premissions-write').removeAttr('checked');
+         $('#other-sharing-premissions-write').get(0).checked = false;
+        }
+        
+        //set sharing checkbox
+        if(readPermissions.size() + writePermissions.size() >= 1) {
+            //$('#sharing-collection-with-other').attr('checked','checked');
+            $('#sharing-collection-with-other').get(0).checked = true;
+            $('#other-sharing-panel').show();
+        } else {
+            //$('#sharing-collection-with-other').removeAttr('checked');
+            $('#sharing-collection-with-other').get(0).checked = false;
+            $('#other-sharing-panel').hide();
+        }
+    });
 }
 
 function addMemberToSharingGroupMembers(member){
@@ -354,6 +479,7 @@ function addMemberToSharingGroupMembers(member){
     
     var label = document.createElement('label');
     label.setAttribute('for', 'group-member-_' + uuid);
+    label.setAttribute('class', 'labelWithCheckboxLeft');
     label.innerText = member;
     
     li.appendChild(input);

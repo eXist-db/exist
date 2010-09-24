@@ -127,6 +127,38 @@ declare function op:get-sharing-group-members($groupId as xs:string) as element(
     </members>        
 };
 
+declare function op:get-group-permissions($collection as xs:string, $groupId as xs:string) as element(permissions){
+    <permissions>
+    {
+        if(sharing:group-readable($collection, $groupId))then
+        (
+            <read/>
+        )else(),
+        
+        if(sharing:group-writeable($collection, $groupId))then
+        (
+            <write/>
+        )else()
+    }
+    </permissions>
+};
+
+declare function op:get-other-permissions($collection as xs:string) as element(permissions){
+    <permissions>
+    {
+        if(sharing:other-readable($collection))then
+        (
+            <read/>
+        )else(),
+        
+        if(sharing:other-writeable($collection))then
+        (
+            <write/>
+        )else()
+    }
+    </permissions>
+};
+
 declare function op:unknown-action($action as xs:string) {
         response:set-status-code(403),
         <p>Unknown action: {$action}.</p>
@@ -143,6 +175,10 @@ return
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
         op:update-collection-sharing($collection, request:get-parameter("restriction", ()), request:get-parameter("userGroup",()))
+    else if($action eq "get-group-permissions")then
+        op:get-group-permissions($collection, request:get-parameter("groupId",()))
+    else if($action eq "get-other-permissions")then
+        op:get-other-permissions($collection)
     else if($action eq "get-sharing-group-members")then
         op:get-sharing-group-members(request:get-parameter("groupId",()))
     else if($action eq "remove-resource")then
