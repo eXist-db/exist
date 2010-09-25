@@ -6,7 +6,6 @@ declare namespace package="http://expath.org/ns/pkg";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
-import module namespace repo="http://exist-db.org/xquery/repo";
 
 declare variable $repomanager:coll := "/db/system/repo";
 declare variable $repomanager:repo-uri := if (request:get-parameter("repository-url", ())) then
@@ -77,6 +76,7 @@ return
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
                 }
             </ul>
+                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
@@ -100,6 +100,7 @@ declare function repomanager:upload() as element()
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
                 }
             </ul>
+                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
@@ -153,6 +154,7 @@ declare function repomanager:deploy() as element()
                         </ul>
                 }
             </ul>
+                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
@@ -171,6 +173,7 @@ declare function repomanager:activate() as element()
                     repo:install(concat('http://',$hostname,':',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar'))
                 }
             </ul>
+                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
@@ -187,6 +190,7 @@ declare function repomanager:deactivate() as element()
                     repo:remove($name)
                 }
             </ul>
+                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
@@ -269,13 +273,14 @@ declare function repomanager:main() as element() {
 
             let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
             let $package := $meta//package:package
+            let $pkg-name := $package/package:module/@name
             let $repo := $meta//repo:meta
 
-            let $installed := exists($repos[. eq $package-name])
+            let $installed := exists($repos[. eq $pkg-name])
             return
              <tr>
                 <td/>
-                <td><a href="{$repo//repo:website}" target="website">{$package-name}</a><br/>
+                <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
                 {$repo//repo:type}</td>
                 <td>{$repo//repo:description}</td>
 
@@ -293,7 +298,7 @@ declare function repomanager:main() as element() {
 
                     ( <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}">deactivate</a>,
                       if ($repo//repo:type eq 'application') then 
-                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$package-name}">deploy</a> )
+                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$pkg-name}">deploy</a> )
                      else
                         ()
                      )
