@@ -13,9 +13,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import java.io.File;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
+import org.expath.pkg.repo.Package;
 
 /**
  * List function: Lists out repository packages
@@ -43,10 +41,10 @@ public class ListFunction extends BasicFunction {
 		throws XPathException {
         ValueSequence result = new ValueSequence();
         try {
-
-            for ( File p :  ExpathPackageModule._repo.listPackages() ) {
-                System.out.println(p);
-                result.add(new StringValue(p.getName()));
+            for ( Package pkg :  ExpathPackageModule._repo.listPackages() ) {
+                String name = pkg.getName();
+                System.out.println(name);
+                result.add(new StringValue(name));
             }
         } catch (Exception ex ) {
             throw new XPathException("Problem listing packages in expath repository ", ex);
