@@ -41,7 +41,7 @@ public class RemoveFunction extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
         Sequence removed = BooleanValue.TRUE;
-        boolean force = true;
+        boolean force = false;
         UserInteractionStrategy interact = new BatchUserInteraction();
         String pkg = args[0].getStringValue();
 
@@ -55,7 +55,7 @@ public class RemoveFunction extends BasicFunction {
         } catch (PackageException ex ) {
             return removed;
             // /TODO: _repo.removePackage seems to throw PackageException
-            //throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
+            // throw new XPathException("Problem removing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
         }
         return removed;
 	}
