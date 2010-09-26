@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -153,7 +154,10 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonDocument> getDocumentResources() {
         List<MiltonDocument> allResources = new ArrayList<MiltonDocument>();
         for (XmldbURI path : existCollection.getDocumentURIs()) {
-            allResources.add(new MiltonDocument(this.host, path, brokerPool, subject));
+            // Show restimated size for XML documents for PROPFIND
+            MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
+            mdoc.setReturnContentLenghtAsNull(false);
+            allResources.add(mdoc);
         }
         return allResources;
     }
@@ -261,9 +265,11 @@ public class MiltonCollection extends MiltonResource
      * ========================= */
     @Override
     public LockToken createAndLock(String name, LockTimeout timeout, LockInfo lockInfo) throws NotAuthorizedException {
-        // DWES: not sure if required to implement
-        LOG.debug(resourceXmldbUri.toString() + " name=" + name + " NOT IMPLEMENTED YET");
-        return null;
+        LOG.debug(resourceXmldbUri.toString() + " name=" + name);
+
+        String token = UUID.randomUUID().toString();
+
+        return new LockToken(token, lockInfo, timeout);
     }
 
 
@@ -273,30 +279,32 @@ public class MiltonCollection extends MiltonResource
     @Override
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
-        // DWES: not sure if required to implement
-        LOG.debug(resourceXmldbUri.toString());
-        throw new RuntimeException("didnt lock");
+        LOG.debug(resourceXmldbUri.toString() + " -- "+ lockInfo.toString());
+        return refreshLock(UUID.randomUUID().toString());
     }
 
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
-        // DWES: not sure if required to implement
         LOG.debug(resourceXmldbUri.toString() + " token=" + token);
-        throw new RuntimeException("didnt lock");
+
+        LockInfo lockInfo = new LockInfo(LockInfo.LockScope.NONE, LockInfo.LockType.READ, token, LockInfo.LockDepth.ZERO);
+        LockTimeout lockTime = new LockTimeout(Long.MAX_VALUE);
+
+        LockToken lockToken = new LockToken(token, lockInfo, lockTime);
+
+        return new LockResult(LockResult.FailureReason.PRECONDITION_FAILED, lockToken);
     }
 
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
-        // DWES: not sure if required to implement
+        // Just do nothing
         LOG.debug(resourceXmldbUri.toString() + " token=" + tokenId);
-        throw new RuntimeException("didnt lock");
     }
 
     @Override
     public LockToken getCurrentLock() {
-        // DWES: not sure if required to implement
         LOG.debug(resourceXmldbUri.toString());
-        return null;
+        return null; // null is allowed
     }
 
 

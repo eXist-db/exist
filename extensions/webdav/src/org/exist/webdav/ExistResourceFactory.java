@@ -47,7 +47,7 @@ public class ExistResourceFactory implements ResourceFactory {
     private BrokerPool brokerPool = null;
 
     private enum ResourceType {
-        DOCUMENT, COLLECTION, NOT_EXISTING
+        DOCUMENT, COLLECTION, IGNORABLE, NOT_EXISTING
     };
 
     /**
@@ -93,6 +93,12 @@ public class ExistResourceFactory implements ResourceFactory {
             // Create uri inside database
             uri = XmldbURI.xmldbUriFor(path);
 
+            // MacOsX finder specific files
+            String documentSeqment = uri.lastSegment().toString();
+            if(documentSeqment.startsWith("._")){
+                LOG.debug("skipping MacOsX file "+uri.lastSegment().toString());
+            }
+
         } catch (URISyntaxException e) {
             LOG.error("Unable to convert path into XmldbURI representation.");
             return null;
@@ -105,6 +111,10 @@ public class ExistResourceFactory implements ResourceFactory {
 
             case COLLECTION:
                 return new MiltonCollection(host, uri, brokerPool);
+
+            case IGNORABLE:
+                LOG.debug("ignoring file");
+                return null;
 
             default:
                 LOG.error("Unkown resource type for " + uri);

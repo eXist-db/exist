@@ -58,7 +58,6 @@ import org.xml.sax.SAXException;
  */
 public class ExistDocument extends ExistResource {
 
-
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
         LOG.debug("New document object for " + uri);
         brokerPool = pool;
@@ -90,6 +89,10 @@ public class ExistDocument extends ExistResource {
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
+
+            if(document.getResourceType() == DocumentImpl.XML_FILE) {
+                isXmlDocument=true;
+            }
 
             // Get meta data         
             creationTime = document.getMetadata().getCreated();
@@ -141,7 +144,12 @@ public class ExistDocument extends ExistResource {
         return contentLength;
     }
 
+    private boolean isXmlDocument=false;
 
+    public boolean isXmlDocument() {
+        return isXmlDocument;
+    }
+    
 
     /**
      *  Stream document to framework.
