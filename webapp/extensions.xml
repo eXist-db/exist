@@ -77,7 +77,7 @@
         <command>Class:</command>&#160;org.exist.xquery.modules.example.ExampleModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/examples </para>
     </section>
-        
+
     <section id="module_cache">
       <title>Cache Module</title>
       <para>Provides a global key/value cache</para>
@@ -102,9 +102,9 @@
 
     <section id="module_context">
       <title>Context Module</title>
-      <para>Provides access to XQuery contexts, local attributes and foreign contexts for simple inter-XQuery communication. This extension is experimental at this time and
-            has side effects (eg. not purely functional in nature). Use at own risk!
-      </para>
+      <para>Provides access to XQuery contexts, local attributes and foreign contexts for simple
+        inter-XQuery communication. This extension is experimental at this time and has side effects
+        (eg. not purely functional in nature). Use at own risk! </para>
       <para>
         <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina</dc:creator>
         <command>Licence:</command>&#160;LGPL <command>Status:</command>&#160;experimental </para>
@@ -142,10 +142,9 @@
       <title>HTTP Client Module</title>
       <para>Functions for performing HTTP requests</para>
       <para>
-        <command>Creator:</command>&#160;<dc:creator>Adam Retter and Andrzej
-          Taramina</dc:creator>
-        <command>Licence:</command>&#160;LGPL <command>Features
-        Used:</command>&#160;NekoHTML <command>Status:</command>&#160;production </para>
+        <command>Creator:</command>&#160;<dc:creator>Adam Retter and Andrzej Taramina</dc:creator>
+        <command>Licence:</command>&#160;LGPL <command>Features Used:</command>&#160;NekoHTML
+          <command>Status:</command>&#160;production </para>
       <para>
         <command>Class:</command>&#160;org.exist.xquery.modules.http.HTTPClientModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/httpclient </para>
@@ -204,6 +203,20 @@
       <para>
         <command>Class:</command>&#160;org.exist.xquery.modules.math.MathModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/math </para>
+    </section>
+
+    <section id="module_oracle">
+      <title>Oracle Module</title>
+      <para>This module allows execution of PL/SQL Stored Procedures within an Oracle RDBMS from
+        XQuery and returns the results as XML nodes. This module should be used where an Oracle
+        database returns results in an Oracle REF_CURSOR and can only be used in conjunction with
+        the SQL extension module.</para>
+      <para>
+        <command>Creator:</command>&#160;<dc:creator>Rob Walpole</dc:creator>
+        <command>Licence:</command>&#160;LGPL <command>Status:</command>&#160;production </para>
+      <para>
+        <command>Class:</command>&#160;org.exist.xquery.modules.oracle.OracleModule
+          <command>Namespace:</command>&#160;http://exist-db.org/xquery/oracle </para>
     </section>
 
     <section id="module_scheduler">
@@ -291,8 +304,8 @@
         <command>Creator:</command>&#160;<dc:creator>
           <ulink url="http://www.webcomposite.com">James R. Fuller</ulink>
         </dc:creator>
-        <command>Licence:</command>&#160;MPL v1.1 <command>Features
-          Used:</command>&#160;<ulink url="http://www.expath.org">expath http library</ulink>
+        <command>Licence:</command>&#160;MPL v1.1 <command>Features Used:</command>&#160;<ulink
+          url="http://www.expath.org">expath http library</ulink>
         <command>Status:</command>&#160;in development for v1.3/1.4 release </para>
       <para>
         <command>Class:</command>&#160;static xquery module via extensions/xprocxq.jar
@@ -306,10 +319,9 @@
         <command>Creator:</command>&#160;<dc:creator>
           <ulink url="http://www.webcomposite.com">James R. Fuller</ulink>
         </dc:creator>
-        <command>Licence:</command>&#160;MPL v1.1
-      </para>
+        <command>Licence:</command>&#160;MPL v1.1 </para>
       <para>
-        <command>Class:</command>&#160;org.exist.xquery.modules.xmlcalabash 
+        <command>Class:</command>&#160;org.exist.xquery.modules.xmlcalabash
           <command>Namespace:</command>&#160; http://xmlcalabash.com </para>
     </section>
   </chapter>
