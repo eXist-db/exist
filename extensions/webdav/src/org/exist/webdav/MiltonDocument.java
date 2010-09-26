@@ -70,6 +70,17 @@ public class MiltonDocument extends MiltonResource
 
     private ExistDocument existDocument;
 
+    // Only for PROPFIND the estimate size for an XML document must be shown
+    private boolean returnContentLenghtAsNull=true;
+
+    /**
+     * Set to TRUE if for an XML document an estimated document must be returned. Otherwise
+     * for content length NULL is returned.
+     */
+    public void setReturnContentLenghtAsNull(boolean returnContentLenghtAsNull) {
+        this.returnContentLenghtAsNull = returnContentLenghtAsNull;
+    }
+
     /**
      *  Constructor of representation of a Document in the Milton framework, without subject information.
      * To be called by the resource factory.
@@ -139,6 +150,11 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public Long getContentLength() {
+        // Only for PROPFIND the estimate size for an XML document must be shown
+        if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
+            LOG.debug("Returning NULL for content length XML resource.");
+            return null;
+        }
         return 0L + existDocument.getContentLength();
     }
 
