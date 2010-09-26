@@ -1685,7 +1685,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public String getInputEncoding()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -1697,7 +1697,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public String getXmlEncoding()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -1709,7 +1709,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public boolean getXmlStandalone()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
@@ -1723,7 +1723,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public void setXmlStandalone( boolean xmlStandalone ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -1735,7 +1735,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public String getXmlVersion()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -1749,7 +1749,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public void setXmlVersion( String xmlVersion ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -1761,7 +1761,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public boolean getStrictErrorChecking()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
@@ -1773,7 +1773,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public void setStrictErrorChecking( boolean strictErrorChecking )
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -1811,7 +1811,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public Node adoptNode( Node source ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -1823,7 +1823,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public DOMConfiguration getDomConfig()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -1833,7 +1833,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public void normalizeDocument()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -1851,7 +1851,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      */
     public Node renameNode( Node n, String namespaceURI, String qualifiedName ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 

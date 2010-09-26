@@ -242,7 +242,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
      */
     public TypeInfo getSchemaTypeInfo()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 

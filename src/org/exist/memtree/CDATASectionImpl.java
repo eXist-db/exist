@@ -133,7 +133,7 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection
      */
     public boolean isElementContentWhitespace()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
@@ -145,7 +145,7 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection
      */
     public String getWholeText()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -161,7 +161,7 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection
      */
     public Text replaceWholeText( String content ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 

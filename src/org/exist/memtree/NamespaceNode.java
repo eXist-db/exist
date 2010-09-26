@@ -162,7 +162,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
      */
     public TypeInfo getSchemaTypeInfo()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -174,7 +174,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
      */
     public boolean isId()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
