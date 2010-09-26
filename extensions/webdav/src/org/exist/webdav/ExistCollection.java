@@ -356,7 +356,7 @@ public class ExistCollection extends ExistResource {
             
 
             // Get mime, or NULL when not available
-            MimeType mime = MimeTable.getInstance().getContentType(newName);
+            MimeType mime = MimeTable.getInstance().getContentTypeFor(newName);
             if (mime == null) {
                 mime = MimeType.BINARY_TYPE;
             }
