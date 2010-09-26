@@ -157,6 +157,7 @@ public class ExistDocument extends ExistResource {
     public void stream(OutputStream os) throws IOException, PermissionDeniedException {
 
         LOG.debug("Stream started");
+        long startTime = System.currentTimeMillis();
 
         DBBroker broker = null;
         DocumentImpl document = null;
@@ -205,6 +206,8 @@ public class ExistDocument extends ExistResource {
             }
 
             brokerPool.release(broker);
+
+            LOG.debug("Stream stopped, duration " + (System.currentTimeMillis()-startTime) + " msec.");
         }
 
     }
@@ -249,6 +252,7 @@ public class ExistDocument extends ExistResource {
 
             if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                 collection.removeBinaryResource(txn, broker, resource.getFileURI());
+                
             } else {
                 collection.removeXMLResource(txn, broker, resource.getFileURI());
             }
