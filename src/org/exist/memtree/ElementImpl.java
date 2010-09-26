@@ -696,7 +696,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist
      */
     public TypeInfo getSchemaTypeInfo()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -711,7 +711,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist
      */
     public void setIdAttribute( String name, boolean isId ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -727,7 +727,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist
      */
     public void setIdAttributeNS( String namespaceURI, String localName, boolean isId ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 
@@ -742,7 +742,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist
      */
     public void setIdAttributeNode( Attr idAttr, boolean isId ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
 
     }
 

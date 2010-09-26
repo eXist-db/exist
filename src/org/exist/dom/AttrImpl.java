@@ -309,7 +309,7 @@ public class AttrImpl extends NamedNode implements Attr {
 	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
 	 */
 	public TypeInfo getSchemaTypeInfo() {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
@@ -330,77 +330,77 @@ public class AttrImpl extends NamedNode implements Attr {
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
 	public short compareDocumentPosition(Node other) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return 0;
 	}
 
 	/** ? @see org.w3c.dom.Node#getTextContent()
 	 */
 	public String getTextContent() throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
 	public void setTextContent(String textContent) throws DOMException {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		
 	}
 
 	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
 	public boolean isSameNode(Node other) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return false;
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
 	 */
 	public String lookupPrefix(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
 	public boolean isDefaultNamespace(String namespaceURI) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return false;
 	}
 
 	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
 	public String lookupNamespaceURI(String prefix) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
 	public boolean isEqualNode(Node arg) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return false;
 	}
 
 	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
 	public Object getFeature(String feature, String version) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
 	 */
 	public Object setUserData(String key, Object data, UserDataHandler handler) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
 	public Object getUserData(String key) {
-		// maybe TODO - new DOM interfaces - Java 5.0
+		// maybe _TODO_ - new DOM interfaces - Java 5.0
 		return null;
 	}
 }

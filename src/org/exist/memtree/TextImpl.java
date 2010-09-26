@@ -52,7 +52,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public Text splitText( int arg0 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
         return( null );
     }
 
@@ -115,7 +115,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public String substringData( int arg0, int arg1 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
         return( null );
     }
 
@@ -125,7 +125,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public void appendData( String arg0 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
 
     }
 
@@ -135,7 +135,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public void insertData( int arg0, String arg1 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
 
     }
 
@@ -145,7 +145,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public void deleteData( int arg0, int arg1 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
     }
 
 
@@ -154,7 +154,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public void replaceData( int arg0, int arg1, String arg2 ) throws DOMException
     {
-        // TODO Auto-generated method stub
+        // _TODO_ Auto-generated method stub
     }
 
 
@@ -165,7 +165,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public boolean isElementContentWhitespace()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
@@ -177,7 +177,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public String getWholeText()
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
@@ -193,7 +193,7 @@ public class TextImpl extends NodeImpl implements Text
      */
     public Text replaceWholeText( String content ) throws DOMException
     {
-        // maybe TODO - new DOM interfaces - Java 5.0
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
