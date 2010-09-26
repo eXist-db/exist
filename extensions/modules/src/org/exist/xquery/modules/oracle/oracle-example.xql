@@ -26,7 +26,7 @@ import module namespace oracle="http://exist-db.org/xquery/oracle";
 :)
 
 let $connection := sql:get-connection("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@//127.0.0.1:1521/mydatabase", "username", "password"),
-$stored-procedure := "{ call my_schema.my_package.my_stored_procedure(?, ?, ?) }",
+$stored-procedure := "{ ? = call my_schema.my_package.my_stored_procedure(?, ?, ?) }",
 $oracleCursorPos := 4,
 $parameters :=
      <oracle:parameters>
