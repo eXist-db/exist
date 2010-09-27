@@ -29,13 +29,8 @@ declare function security:login($user as xs:string, $password as xs:string?) as 
             true()
         else
         (
-            if(security:create-home-collection($user))then
-            (
+            let $users-collection-uri := security:create-home-collection($user) return
                 true()
-            )
-            else
-                (: failed to create the users mods home collection :)
-                false()
         )
     ) else
         (: authentication failed:)
@@ -92,17 +87,22 @@ declare function security:get-home-collection-uri($user as xs:string) as xs:stri
 
 (:~
 : Creates a users mods home collection and sets permissions
+:
+: @return The uri of the users home collection or an empty sequence if it could not be created
 :)
-declare function security:create-home-collection($user as xs:string) as xs:string
+declare function security:create-home-collection($user as xs:string) as xs:string?
 {
-    let $collection-uri := xmldb:create-collection($security:users-collection, $user) return
-        if($collection-uri) then
-        (
-            let $null := xmldb:set-collection-permissions($collection-uri, $user, xmldb:get-user-primary-group($user), xmldb:string-to-permissions("rwu------")) return
+    if(xmldb:collection-available($security:users-collection))then
+    (
+        let $collection-uri := xmldb:create-collection($security:users-collection, $user) return
+            if($collection-uri) then
+            (
+                let $null := xmldb:set-collection-permissions($collection-uri, $user, xmldb:get-user-primary-group($user), xmldb:string-to-permissions("rwu------")) return
+                    $collection-uri
+            ) else (
                 $collection-uri
-        ) else (
-            $collection-uri
-        )            
+            )
+    )else()
 };
 
 (:~
@@ -230,9 +230,12 @@ declare function security:get-other-biblio-users() as xs:string*
     security:get-group-members($security:biblio-users-group)[. ne security:get-user-credential-from-session()[1]]
 };
 
-declare function security:get-group($collection as xs:string) as xs:string
+declare function security:get-group($collection as xs:string) as xs:string?
 {
-    xmldb:get-group($collection)
+    if(xmldb:collection-available($collection))then
+    (
+        xmldb:get-group($collection)
+    ) else()
 };
 
 declare function security:set-other-can-read-collection($collection, $read as xs:boolean) as xs:boolean
