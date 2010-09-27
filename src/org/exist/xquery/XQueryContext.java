@@ -130,9 +130,6 @@ import java.io.File;
 import org.exist.repo.ExistRepository;
 import org.exist.source.FileSource;
 import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.PkgHandlerExist;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.URISpace;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
