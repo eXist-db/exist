@@ -5,7 +5,7 @@ Build
 This module relies on the presence of the following jar files in your EXIST_HOME/lib/user folder:
 
 	calabash.jar
-	saxon9pe.jar or saxon9he.jar or saxon9ee.jar
+	saxon9-s9api.jar
 
 
 If you are building from source then the module build process will try and download
@@ -23,14 +23,14 @@ To use xmlcalabash uncomment in conf.xml
     <module class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule"
           uri="http://xmlcalabash.com" />
 
-This has been tested with XML Calabash v0.9.21
+This has been tested with XML Calabash v0.9.23
 
 
 -----
 Usage
 -----
 
-upload an XProc pipeline somewhere into eXist (ex. /db/xmlcalabash/pipe.xml)
+upload an XProc pipeline somewhere into eXist (ex. /db/test/hello.xproc)
 
 <?xml version="1.0"?>
 <p:declare-step version="1.0" xmlns:p="http://www.w3.org/ns/xproc">
@@ -44,7 +44,7 @@ upload an XProc pipeline somewhere into eXist (ex. /db/xmlcalabash/pipe.xml)
 
 invoke using xmlcalabash:process (in sandbox for example)
 
-let $result := xmlcalabash:process("xmldb:exist:///db/xproc/examples/hello.xproc","-")
+let $result := xmlcalabash:process("xmldb:exist:///db/test/hello.xproc","-")
 return
    $result
 
