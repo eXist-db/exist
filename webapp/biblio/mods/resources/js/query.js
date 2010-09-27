@@ -100,7 +100,10 @@ function initCollectionTree() {
             updateCollectionPaths(title, key);
             showHideCollectionWriteableControls();
             showHideCollectionOwnerControls();
-            updateSharingGroupCheckboxes(getActiveGroup());
+            var groupId = getActiveGroup();
+            if(groupId){
+                updateSharingGroupCheckboxes();
+            }
             updateSharingOtherCheckboxes();
 //            form.submit();
         }

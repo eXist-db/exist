@@ -561,11 +561,14 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                 {
                                     (: get members of the selected group, or if none selected then the first group :)
                                     let $selected-group := if(not(empty($groups[@id eq $collection-group-id])))then($groups[@id eq $collection-group-id])else($groups[1]) return
-                                        for $group-member at $i in sharing:get-group-members($selected-group/@id) return
-                                        <li>
-                                            <input id="group-member-{$i}" type="checkbox" name="group-member" value="{$group-member}" checked="checked"/>
-                                            <label id="group-member-{$i}" class="labelWithCheckboxLeft">{$group-member}</label>
-                                        </li>
+                                        if($selected-group)then
+                                        (
+                                            for $group-member at $i in sharing:get-group-members($selected-group/@id) return
+                                            <li>
+                                                <input id="group-member-{$i}" type="checkbox" name="group-member" value="{$group-member}" checked="checked"/>
+                                                <label id="group-member-{$i}" class="labelWithCheckboxLeft">{$group-member}</label>
+                                            </li>
+                                        )else()
                                 }
                                 </ui>
                             </div>
