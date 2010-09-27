@@ -435,8 +435,11 @@ public class RemoteUserManagementService implements UserManagementService {
                 List<Object> params = new ArrayList<Object>(1);
                 params.add(name);
                 HashMap<String,Object> tab = (HashMap<String,Object>) parent.getClient().execute("getGroup", params);
-                Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
-                return role;
+                if(tab != null) {
+                    Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
+                    return role;
+                }
+                return null;
             } catch (XmlRpcException e) {
                     throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
             }
