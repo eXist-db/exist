@@ -33,7 +33,7 @@ public class ExistPkgExtension
 {
     public ExistPkgExtension()
     {
-        super("exist.xml");
+        super("exist", "exist.xml");
     }
 
     @Override
@@ -41,7 +41,7 @@ public class ExistPkgExtension
             throws PackageException
     {
         myXSHelper.ensureNextElement(parser, "package");
-        ExistPkgInfo info = new ExistPkgInfo();
+        ExistPkgInfo info = new ExistPkgInfo(pkg);
         try {
             parser.next();
             while ( parser.getEventType() == XMLStreamConstants.START_ELEMENT ) {

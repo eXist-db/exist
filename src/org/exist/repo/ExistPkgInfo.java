@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageInfo;
 
 /**
@@ -25,9 +26,9 @@ import org.expath.pkg.repo.PackageInfo;
 public class ExistPkgInfo
         extends PackageInfo
 {
-    public ExistPkgInfo()
+    public ExistPkgInfo(Package pkg)
     {
-        super("exist");
+        super("exist", pkg);
     }
 
     // TODO: resolve(), etc...
