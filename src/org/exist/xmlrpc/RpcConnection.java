@@ -1716,11 +1716,14 @@ public class RpcConnection implements RpcAPI {
     @Override
     public HashMap<String, Object> getGroup(String name) throws EXistException, PermissionDeniedException {
         Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("id", group.getId());
-        map.put("realmId", group.getRealmId());
-        map.put("name", name);
-        return map;
+        if(group != null){
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("id", group.getId());
+            map.put("realmId", group.getRealmId());
+            map.put("name", name);
+            return map;
+        }
+        return null;
     }
 
     @Override
