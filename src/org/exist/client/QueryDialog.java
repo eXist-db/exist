@@ -62,6 +62,10 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.LocalCollection;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XQueryWatchDog;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceIterator;
@@ -77,6 +81,7 @@ public class QueryDialog extends JFrame {
 	private Collection collection;
 	private Properties properties;
 	private ClientTextArea query;
+	private JTabbedPane resultTabs;
 	private ClientTextArea resultDisplay;
 	private ClientTextArea exprDisplay;
 	private JComboBox collections= null;
@@ -86,9 +91,12 @@ public class QueryDialog extends JFrame {
 	private JTextField statusMessage;
 	private JTextField queryPositionDisplay;
 	private JProgressBar progress;
+	private JButton submitButton;
+	private JButton killButton;
+	private QueryThread q=null;
 
 	public QueryDialog(InteractiveClient client, Collection collection, Properties properties) {
-		super("Query Dialog");
+		super(Messages.getString("QueryDialog.0"));
 		this.collection= collection;
 		this.properties= properties;
         this.client = client;
@@ -102,8 +110,7 @@ public class QueryDialog extends JFrame {
 		
 		URL url= getClass().getResource("icons/Open24.gif");
 		JButton button= new JButton(new ImageIcon(url));
-		button.setToolTipText(
-		"Read query from file.");
+		button.setToolTipText(Messages.getString("QueryDialog.opentooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				open();
@@ -113,8 +120,7 @@ public class QueryDialog extends JFrame {
 		
 		url= getClass().getResource("icons/SaveAs24.gif");
 		button= new JButton(new ImageIcon(url));
-		button.setToolTipText(
-		"Write query to file.");
+		button.setToolTipText(Messages.getString("QueryDialog.saveastooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				save(query.getText(), "query");
@@ -124,8 +130,7 @@ public class QueryDialog extends JFrame {
 
 		url= getClass().getResource("icons/SaveAs24.gif");
 		button= new JButton(new ImageIcon(url));
-		button.setToolTipText(
-		"Write result to file.");
+		button.setToolTipText(Messages.getString("QueryDialog.saveresultstooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				save(resultDisplay.getText(), "result");
@@ -136,7 +141,7 @@ public class QueryDialog extends JFrame {
 		toolbar.addSeparator();
 		url = getClass().getResource("icons/Copy24.gif");
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Copy selection.");
+		button.setToolTipText(Messages.getString("QueryDialog.copytooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				query.copy();
@@ -145,7 +150,7 @@ public class QueryDialog extends JFrame {
 		toolbar.add(button);
 		url = getClass().getResource("icons/Cut24.gif");
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Cut selection.");
+		button.setToolTipText(Messages.getString("QueryDialog.cuttooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				query.cut();
@@ -154,7 +159,7 @@ public class QueryDialog extends JFrame {
 		toolbar.add(button);
 		url = getClass().getResource("icons/Paste24.gif");
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Paste selection.");
+		button.setToolTipText(Messages.getString("QueryDialog.pastetooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			   query.paste();
@@ -166,7 +171,7 @@ public class QueryDialog extends JFrame {
 		//TODO: change icon
 		url= getClass().getResource("icons/Find24.gif");
 		button= new JButton(new ImageIcon(url));
-		button.setToolTipText("Compile only query.");
+		button.setToolTipText(Messages.getString("QueryDialog.compiletooltip"));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			   compileQuery();
@@ -176,16 +181,34 @@ public class QueryDialog extends JFrame {
 		
 		toolbar.addSeparator();
         url= getClass().getResource("icons/Find24.gif");
-		button= new JButton("Submit", new ImageIcon(url));
-		button.setToolTipText("Submit query.");
-		toolbar.add(button);
-		button.addActionListener(new ActionListener() {
+		submitButton= new JButton(Messages.getString("QueryDialog.submitbutton"), new ImageIcon(url));
+		submitButton.setToolTipText(Messages.getString("QueryDialog.submittooltip"));
+		toolbar.add(submitButton);
+		submitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				doQuery();
+				submitButton.setEnabled(false);
+				if(collection instanceof LocalCollection)
+					killButton.setEnabled(true);
+				q=doQuery();
 			}
 		});
-		toolbar.add(button);
 		
+		toolbar.addSeparator();
+		url= getClass().getResource("icons/Delete24.gif");
+		killButton= new JButton(Messages.getString("QueryDialog.killbutton"), new ImageIcon(url));
+		killButton.setToolTipText(Messages.getString("QueryDialog.killtooltip"));
+		toolbar.add(killButton);
+		killButton.setEnabled(false);
+		killButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(q!=null) {
+					q.killQuery();
+					killButton.setEnabled(false);
+
+					q = null;
+				}
+			}
+		});
 		
 		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
@@ -196,22 +219,22 @@ public class QueryDialog extends JFrame {
         JPanel vbox = new JPanel();
         vbox.setLayout(new BorderLayout());
         
-        JLabel label = new JLabel("Results:");
+        JLabel label = new JLabel(Messages.getString("QueryDialog.resultslabel"));
         vbox.add(label, BorderLayout.NORTH);
         
-        JTabbedPane tabs = new JTabbedPane();
+		resultTabs = new JTabbedPane();
         
 		resultDisplay= new ClientTextArea(false, "XML");
 		resultDisplay.setText("");
 		resultDisplay.setPreferredSize(new Dimension(400, 250));
-		tabs.add("XML", resultDisplay);
+		resultTabs.add(Messages.getString("QueryDialog.XMLtab"), resultDisplay);
 		
 		exprDisplay = new ClientTextArea(false, "Dump");
 		exprDisplay.setText("");
 		exprDisplay.setPreferredSize(new Dimension(400, 250));
-		tabs.add("Trace", exprDisplay);
+		resultTabs.add(Messages.getString("QueryDialog.tracetab"), exprDisplay);
 		
-        vbox.add(tabs, BorderLayout.CENTER);
+        vbox.add(resultTabs, BorderLayout.CENTER);
         
         Box statusbar = Box.createHorizontalBox();
         statusbar.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
@@ -243,10 +266,10 @@ public class QueryDialog extends JFrame {
 
 		JPanel inputVBox = new JPanel();
 		inputVBox.setLayout(new BorderLayout());
-		tabs.add("Query Input:", inputVBox);
+		tabs.add(Messages.getString("QueryDialog.inputtab"), inputVBox);
 		
 		Box historyBox= Box.createHorizontalBox();
-		JLabel label= new JLabel("History: ");
+		JLabel label= new JLabel(Messages.getString("QueryDialog.historylabel"));
 		historyBox.add(label);
 		final JComboBox historyList= new JComboBox(history);
 		for(String query : client.queryHistory) {
@@ -269,7 +292,7 @@ public class QueryDialog extends JFrame {
         
 		Box optionsPanel = Box.createHorizontalBox();
         
-        label = new JLabel("Context:");
+        label = new JLabel(Messages.getString("QueryDialog.contextlabel"));
         optionsPanel.add(label);
         
 		final Vector<String> data= new Vector<String>();
@@ -279,7 +302,7 @@ public class QueryDialog extends JFrame {
 			getCollections(root, collection, data);
 		} catch (XMLDBException e) {
 			ClientFrame.showErrorMessage(
-					"An error occurred while retrieving collections list.", e);
+					Messages.getString("QueryDialog.collectionretrievalerrormessage")+".", e);
 		}
 		collections= new JComboBox(data);
 		collections.addActionListener(new ActionListener() {
@@ -294,7 +317,7 @@ public class QueryDialog extends JFrame {
 		});
         optionsPanel.add(collections);
 
-		label= new JLabel(" Display max.:");
+		label= new JLabel(Messages.getString("QueryDialog.maxlabel"));
         optionsPanel.add(label);
         
 		count= new SpinnerNumberModel(100, 1, 10000, 50);
@@ -327,14 +350,14 @@ public class QueryDialog extends JFrame {
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 		
-		if (chooser.showDialog(this, "Select query file")
+		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog"))
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			File file = chooser.getSelectedFile();
 			if(!file.canRead())
-				JOptionPane.showInternalMessageDialog(this, "Cannot read query from file " + file.getAbsolutePath(),
-					"Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage")+" "+ file.getAbsolutePath(),
+					Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				try {
@@ -373,16 +396,16 @@ public class QueryDialog extends JFrame {
 		{
 			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
 		}
-		if (chooser.showDialog(this, "Select file for " +fileCategory+ " export")
+		if (chooser.showDialog(this, Messages.getString("QueryDialog.savedialogpre")+" " +fileCategory+ " "+Messages.getString("QueryDialog.savedialogpost"))
 			== JFileChooser.APPROVE_OPTION) {
 			File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
 			File file = chooser.getSelectedFile();
 			if(file.exists() && (!file.canWrite()))
-				JOptionPane.showMessageDialog(this, "Can not write " +fileCategory+ " to file " + file.getAbsolutePath(),
-						"Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre")+" " +fileCategory+ " "+Messages.getString("QueryDialog.cannotsavemessageinf")+" " + file.getAbsolutePath(),
+						Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
 			if(file.exists() &&
-				JOptionPane.showConfirmDialog(this, "File exists. Overwrite?", "Overwrite?", 
+				JOptionPane.showConfirmDialog(this, Messages.getString("QueryDialog.savedialogconfirm"), "Overwrite?", 
 					JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
 				return;
 			try {
@@ -397,13 +420,15 @@ public class QueryDialog extends JFrame {
 		}
 	}
 	
-	private void doQuery() {
+	private QueryThread doQuery() {
 		String xpath= (String) query.getText();
 		if (xpath.length() == 0)
-			return;
+			return null;
 		resultDisplay.setText("");
-		new QueryThread(xpath).start();
-        System.gc();
+		QueryThread q = new QueryThread(xpath);
+		q.start();
+		System.gc();
+		return q;
 	}
 	
 	
@@ -414,7 +439,7 @@ public class QueryDialog extends JFrame {
 		resultDisplay.setText("");
 		
 		{
-			statusMessage.setText("Compiling query ...");
+			statusMessage.setText(Messages.getString("QueryDialog.compilemessage"));
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			long tResult =0;
 			long tCompiled=0;
@@ -426,13 +451,20 @@ public class QueryDialog extends JFrame {
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
 				tCompiled = t1 - t0;
-				statusMessage.setText("Compilation: " + tCompiled + "ms");
+				
+				// In this way we can see the parsed structure meanwhile the query is
+				StringWriter writer = new StringWriter();
+				service.dump(compiled, writer);
+				exprDisplay.setText(writer.toString());
+				resultTabs.setSelectedComponent(exprDisplay);
+				
+				statusMessage.setText(Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms");
 				
 			} catch (Throwable e) {
-				statusMessage.setText("Error: "+InteractiveClient.getExceptionMessage(e)+". Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
+				statusMessage.setText(Messages.getString("QueryDialog.Error")+": "+InteractiveClient.getExceptionMessage(e)+". "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 		
 				ClientFrame.showErrorMessageQuery(
-						"An exception occurred during query compilation: "
+						Messages.getString("QueryDialog.compilationerrormessage")+": "
 						+ InteractiveClient.getExceptionMessage(e), e);
 				
 			} 
@@ -446,17 +478,34 @@ public class QueryDialog extends JFrame {
 	class QueryThread extends Thread {
 
 		private String xpath;
+
+		private XQueryContext context;
 		
 		public QueryThread(String query) {
 			super();
 			this.xpath = query;
+			this.context = null;
 		}
 		
+		public boolean killQuery() {
+			if(context!=null) {
+				XQueryWatchDog xwd = context.getWatchDog();
+				boolean retval = !xwd.isTerminating();
+				if( retval )
+					xwd.kill(0);
+				context = null;
+
+				return retval;
+			}
+
+			return false;
+		}
+
 		/**
 		 * @see java.lang.Thread#run()
 		 */
 		public void run() {
-			statusMessage.setText("Processing query ...");
+			statusMessage.setText(Messages.getString("QueryDialog.processingquerymessage"));
 			progress.setVisible(true);
 			progress.setIndeterminate(true);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -469,15 +518,24 @@ public class QueryDialog extends JFrame {
 				long t0 = System.currentTimeMillis();
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
+				context = ((CompiledXQuery)compiled).getContext();
 				tCompiled = t1 - t0;
-				result = service.execute(compiled);
-				tResult = System.currentTimeMillis() - t1;
 				
+				// In this way we can see the parsed structure meanwhile the query is
 				StringWriter writer = new StringWriter();
 				service.dump(compiled, writer);
 				exprDisplay.setText(writer.toString());
 				
-				statusMessage.setText("Retrieving results ...");
+				result = service.execute(compiled);
+				context = null;
+				tResult = System.currentTimeMillis() - t1;
+				
+				// jmfg: Is this still needed? I don't think so
+				writer = new StringWriter();
+				service.dump(compiled, writer);
+				exprDisplay.setText(writer.toString());
+				
+				statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage"));
 				XMLResource resource;
 				int howmany= count.getNumber().intValue();
 				progress.setIndeterminate(false);
@@ -494,25 +552,27 @@ public class QueryDialog extends JFrame {
 						contents.append("\n");
 					} catch (XMLDBException e) {
 						select = ClientFrame.showErrorMessageQuery(
-								"An error occurred while retrieving results: "
+								Messages.getString("QueryDialog.retrievalerrormessage")+": "
 								+ InteractiveClient.getExceptionMessage(e), e);
 						if (select == 3) break;
 					}
 				}
+				resultTabs.setSelectedComponent(resultDisplay);
 				resultDisplay.setText(contents.toString());
 				resultDisplay.setCaretPosition(0);
 				resultDisplay.scrollToCaret();
-				statusMessage.setText("Found " + result.getSize() + " items." + 
-					" Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
+				statusMessage.setText(Messages.getString("QueryDialog.Found")+" " + result.getSize() + " "+Messages.getString("QueryDialog.items")+"." + 
+					" "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 			} catch (Throwable e) {
-				statusMessage.setText("Error: "+InteractiveClient.getExceptionMessage(e)+". Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
+				statusMessage.setText(Messages.getString("QueryDialog.Error")+": "+InteractiveClient.getExceptionMessage(e)+". "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 			    progress.setVisible(false);
 			    
 			
 				ClientFrame.showErrorMessageQuery(
-						"An exception occurred during query execution: "
+						Messages.getString("QueryDialog.queryrunerrormessage")+": "
 						+ InteractiveClient.getExceptionMessage(e), e);
 			} finally {
+				context = null;
                 if (result != null)
                     try {
                         result.clear();
@@ -526,6 +586,8 @@ public class QueryDialog extends JFrame {
 			}
 			setCursor(Cursor.getDefaultCursor());
 			progress.setVisible(false);
+			killButton.setEnabled(false);
+			submitButton.setEnabled(true);
 		}
 	}
 	
