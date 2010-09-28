@@ -317,7 +317,7 @@
 
         <!-- Convert native to ascii-->
         <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
-            includes="messages*.properties"/>
+            encoding="UTF-8" includes="messages*.properties"/>
 
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
