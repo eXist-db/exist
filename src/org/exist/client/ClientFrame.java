@@ -520,7 +520,7 @@ public class ClientFrame extends JFrame
 //        });
 //        toolsMenu.add(item);
         
-        item = new JMenuItem("Edit Triggers", KeyEvent.VK_T);
+        item = new JMenuItem(Messages.getString("ClientFrame.60"), KeyEvent.VK_T);
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
@@ -542,7 +542,7 @@ public class ClientFrame extends JFrame
 
         toolsMenu.addSeparator();
 
-        item = new JMenuItem("Enter service mode");
+        item = new JMenuItem(Messages.getString("ClientFrame.62a"));
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -556,7 +556,7 @@ public class ClientFrame extends JFrame
         });
         toolsMenu.add(item);
 
-        item = new JMenuItem("Exit service mode");
+        item = new JMenuItem(Messages.getString("ClientFrame.62b"));
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

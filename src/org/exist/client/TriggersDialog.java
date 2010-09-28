@@ -119,7 +119,7 @@ class TriggersDialog extends JFrame {
 		c.insets = new Insets(2, 2, 2, 2);
 
 		//collection label
-		JLabel label = new JLabel("Collection");
+		JLabel label = new JLabel(Messages.getString("TriggersDialog.Collection"));
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 1;
@@ -172,7 +172,7 @@ class TriggersDialog extends JFrame {
 
         //Panel to hold controls relating to the Triggers Index
 		JPanel panelTriggers = new JPanel();
-		panelTriggers.setBorder(new TitledBorder("Triggers"));
+		panelTriggers.setBorder(new TitledBorder(Messages.getString("TriggersDialog.Triggers")));
 		GridBagLayout panelTriggersGrid = new GridBagLayout();
 		panelTriggers.setLayout(panelTriggersGrid);
 		
@@ -214,7 +214,7 @@ class TriggersDialog extends JFrame {
 		//Toolbar with add/delete buttons for Triggers
 		Box triggersToolbarBox = Box.createHorizontalBox();
 		//add button
-		JButton btnAddTrigger = new JButton("Add");
+		JButton btnAddTrigger = new JButton(Messages.getString("TriggersDialog.addbutton"));
 		btnAddTrigger.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
@@ -223,7 +223,7 @@ class TriggersDialog extends JFrame {
 		});
 		triggersToolbarBox.add(btnAddTrigger);
 		//delete button
-		JButton btnDeleteTrigger = new JButton("Delete");
+		JButton btnDeleteTrigger = new JButton(Messages.getString("TriggersDialog.deletebutton"));
 		btnDeleteTrigger.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
