@@ -21,6 +21,7 @@
  */
 package org.exist.webdav;
 
+
 import org.apache.log4j.Logger;
 
 import com.bradmcevoy.http.Resource;
@@ -89,7 +90,7 @@ public class ExistResourceFactory implements ResourceFactory {
             }
 
             LOG.debug("host='" + host + "' path='" + path + "'");
-
+          
             // Create uri inside database
             uri = XmldbURI.xmldbUriFor(path);
 
@@ -100,7 +101,7 @@ public class ExistResourceFactory implements ResourceFactory {
             }
 
         } catch (URISyntaxException e) {
-            LOG.error("Unable to convert path into XmldbURI representation.");
+            LOG.error("Unable to convert path '" + path + "'into a XmldbURI representation.");
             return null;
         }
 
@@ -186,4 +187,5 @@ public class ExistResourceFactory implements ResourceFactory {
         LOG.debug("Resource type=" + type.toString());
         return type;
     }
+
 }
