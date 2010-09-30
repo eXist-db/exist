@@ -316,7 +316,7 @@ public class ExistDocument extends ExistResource {
             // TODO consider. A Webdav lock can be set without subject lock.
             Account lock = document.getUserLock();
             if (lock == null) {
-                LOG.debug("Document does not contain userlock");
+                LOG.debug("Document " + xmldbUri + " does not contain userlock");
                 return null;
             }
 
@@ -466,8 +466,8 @@ public class ExistDocument extends ExistResource {
 
             // Check if Resource is already locked.
             if (lock == null) {
-                LOG.debug("Resource is not locked.");
-                throw new DocumentNotLockedException(lock.getName());
+                LOG.debug("Resource " + xmldbUri + " is not locked.");
+                throw new DocumentNotLockedException("" + xmldbUri);
             }
 
             // Check if Resource is from subject
@@ -623,7 +623,7 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
         DocumentImpl document = null;
 
-        if(token==null){
+        if (token == null) {
             LOG.debug("token is null");
             throw new EXistException("token is null");
         }
