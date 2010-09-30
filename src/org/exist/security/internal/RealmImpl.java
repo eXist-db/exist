@@ -23,11 +23,8 @@ package org.exist.security.internal;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
@@ -37,10 +34,8 @@ import org.exist.security.SecurityManager;
 import org.exist.security.UUIDGenerator;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
-import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -57,9 +52,6 @@ public class RealmImpl extends AbstractRealm {
 		ID = value;
 	}
 
-	protected final static String ACL_FILE = "users.xml";
-	protected final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE); 
-	   
     protected final Account ACCOUNT_SYSTEM;
     protected final Account ACCOUNT_GUEST;
     protected final Group GROUP_DBA;
@@ -314,78 +306,4 @@ public class RealmImpl extends AbstractRealm {
 				AuthenticationException.WRONG_PASSWORD,
 				"Wrong password for user [" + accountName + "] ");
 	}
-	
-	private void __save() throws PermissionDeniedException, EXistException {
-		DBBroker broker = null;
-		TransactionManager transact = sm.getDatabase().getTransactionManager();
-		Txn txn = transact.beginTransaction();
-		try {
-			broker = sm.getDatabase().get(null);
-			_save(broker, txn);
-			transact.commit(txn);
-		} catch (EXistException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			
-			e.printStackTrace();
-			
-			throw e;
-		} finally {
-			sm.getDatabase().release(broker);
-		}
-	}
-
-	private synchronized void _save(DBBroker broker, Txn transaction) throws EXistException, PermissionDeniedException {
-		//LOG.debug("storing acl file");
-		StringBuffer buf = new StringBuffer();
-        buf.append("<!-- Central user configuration. Editing this document will cause the security " +
-                "to reload and update its internal database. Please handle with care! -->");
-		buf.append("<auth version='1.0'>");
-		
-		// save groups
-        buf.append("<!-- Please do not remove the guest and admin groups -->");
-		buf.append("<groups last-id='"+sm.lastGroupId+"'>");
-		for (Group group : groupsByName.values())
-			buf.append(group.toString());
-		buf.append("</groups>");
-
-		//save users
-        buf.append("<!-- Please do not remove the admin user. -->");
-		buf.append("<users last-id='"+sm.lastUserId+"'>");
-		for (Account account : usersByName.values())
-			buf.append(account.toString());
-		buf.append("</users>");
-		buf.append("</auth>");
-        
-		// store users.xml
-		//broker.flush();
-		//broker.sync(Sync.MAJOR_SYNC);
-		
-		Subject currentUser = broker.getUser();
-		try {
-			broker.setUser(sm.getSystemSubject());
-			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-            String data = buf.toString();
-            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
-            //TODO : unlock the collection here ?
-            DocumentImpl doc = info.getDocument();
-            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-			doc.setPermissions(0770);
-            sysCollection.store(transaction, broker, info, data, false);
-			broker.saveCollection(transaction, doc.getCollection());
-		} catch (PermissionDeniedException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new EXistException(e.getMessage());
-		} finally {
-			broker.setUser(currentUser);
-		}
-		
-		broker.flush();
-		broker.sync(Sync.MAJOR_SYNC);
-	}
-
 }
