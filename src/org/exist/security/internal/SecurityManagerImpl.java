@@ -265,100 +265,6 @@ public class SecurityManagerImpl implements SecurityManager {
     	return false;
 	}
 
-//	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
-//		LOG.debug("storing acl file");
-//		StringBuffer buf = new StringBuffer();
-//        buf.append("<!-- Central user configuration. Editing this document will cause the security " +
-//                "to reload and update its internal database. Please handle with care! -->");
-//		buf.append("<auth version='1.0'>");
-//		// save groups
-//        buf.append("<!-- Please do not remove the guest and admin groups -->");
-//		buf.append("<groups last-id=\"");
-//		buf.append(Integer.toString(nextGroupId));
-//		buf.append("\">");
-//		for (Iterator i = groups.valueIterator(); i.hasNext();)
-//			buf.append(((Group) i.next()).toString());
-//		buf.append("</groups>");
-//		//save users
-//        buf.append("<!-- Please do not remove the admin user. -->");
-//		buf.append("<users last-id=\"");
-//		buf.append(Integer.toString(nextUserId));
-//		buf.append("\">");
-//		for (Iterator i = users.valueIterator(); i.hasNext();)
-//			buf.append(((User) i.next()).toString());
-//		buf.append("</users>");
-//		buf.append("</auth>");
-//        
-//		// store users.xml
-//		broker.flush();
-//		broker.sync(Sync.MAJOR_SYNC);
-//		
-//		User currentUser = broker.getUser();
-//		try {
-//			broker.setUser(getUser(DBA_USER));
-//			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-//            String data = buf.toString();
-//            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
-//            //TODO : unlock the collection here ?
-//            DocumentImpl doc = info.getDocument();
-//            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-//            sysCollection.store(transaction, broker, info, data, false);
-//			doc.setPermissions(0770);
-//			broker.saveCollection(transaction, doc.getCollection());
-//		} catch (IOException e) {
-//			throw new EXistException(e.getMessage());
-//        } catch (TriggerException e) {
-//            throw new EXistException(e.getMessage());
-//		} catch (SAXException e) {
-//			throw new EXistException(e.getMessage());
-//		} catch (PermissionDeniedException e) {
-//			throw new EXistException(e.getMessage());
-//		} catch (LockException e) {
-//			throw new EXistException(e.getMessage());
-//		} finally {
-//			broker.setUser(currentUser);
-//		}
-//		
-//		broker.flush();
-//		broker.sync(Sync.MAJOR_SYNC);
-//	}
-
-//	public synchronized void addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
-//		 defaultRealm.addAccount(account);
-		
-//		if (user.getUID() < 0)
-//			user.setUID(++nextUserId);
-//		users.put(user.getUID(), user);
-//		String[] groups = user.getGroups();
-//        // if no group is specified, we automatically fall back to the guest group
-//        if (groups.length == 0)
-//            user.addGroup(GUEST_GROUP);
-//		for (int i = 0; i < groups.length; i++) {
-//			if (!hasGroup(groups[i]))
-//				newGroup(groups[i]);
-//		}
-//        TransactionManager transact = pool.getTransactionManager();
-//        Txn txn = transact.beginTransaction();
-//		DBBroker broker = null;
-//		try {
-//			broker = pool.get(SYSTEM_USER);
-//			save(broker, txn);
-//			createUserHome(broker, txn, user);
-//            transact.commit(txn);
-//		} catch (EXistException e) {
-//            transact.abort(txn);
-//			LOG.debug("error while creating user", e);
-//		} catch (IOException e) {
-//            transact.abort(txn);
-//			LOG.debug("error while creating home collection", e);
-//		} catch (PermissionDeniedException e) {
-//            transact.abort(txn);
-//			LOG.debug("error while creating home collection", e);
-//		} finally {
-//			pool.release(broker);
-//		}
-//	}
-	
 	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
 			return;
@@ -395,6 +301,7 @@ public class SecurityManagerImpl implements SecurityManager {
 			
 			return subject;
 		}
+		
 		for (Realm realm : realms) {
 			
 			if (LOG.isDebugEnabled())
@@ -531,8 +438,8 @@ public class SecurityManagerImpl implements SecurityManager {
 				
 				home.getPermissions().setOwner(account);
 				CollectionConfiguration config = home.getConfiguration(broker);
-				String role = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-				home.getPermissions().setGroup(role);
+				String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
+				home.getPermissions().setGroup(group);
 				
 				broker.saveCollection(txn, home);
 				

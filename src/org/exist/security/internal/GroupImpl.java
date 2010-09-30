@@ -21,15 +21,23 @@
  */
 package org.exist.security.internal;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.security.Account;
 import org.exist.security.Group;
 
 @ConfigurationClass("group")
 public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, Group {
 
+	@ConfigurationFieldAsElement("members-manager")
+	private Set<Account> membersManagers = new HashSet<Account>();
+	
 	public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
 		super(realm, realm.collectionGroups, id, name);
 	}
