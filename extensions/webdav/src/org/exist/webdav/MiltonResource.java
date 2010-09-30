@@ -31,6 +31,9 @@ import com.bradmcevoy.http.Request;
 import com.bradmcevoy.http.Request.Method;
 import com.bradmcevoy.http.Resource;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
@@ -218,6 +221,45 @@ public class MiltonResource implements Resource {
     }
 
 
+    /**
+     *  Convert % encoded string back to text
+     */
+    protected XmldbURI decodePath(XmldbURI uri){
+
+        XmldbURI retval =null;
+
+        try {
+            String path = URLDecoder.decode(uri.toString(), "UTF-8");
+
+            retval = XmldbURI.xmldbUriFor(""+path, false);
+
+        } catch (UnsupportedEncodingException ex) {
+            // oops
+            ex.printStackTrace();
+        } catch (URISyntaxException ex){
+            // oops
+            ex.printStackTrace();
+
+        }
+        return retval;
+    }
+
+    /**
+     *  Convert % encoded string back to text
+     */
+    protected String decodePath(String uri){
+
+        String path =null;
+
+        try {
+            path = URLDecoder.decode(uri.toString(), "UTF-8");
+
+        } catch (UnsupportedEncodingException ex) {
+            // oops
+        }
+        return path;
+    }
+
     /* ========
      * Resource
      * ======== */
@@ -229,7 +271,7 @@ public class MiltonResource implements Resource {
 
     @Override
     public String getName() {
-        return resourceXmldbUri.lastSegment().toString();
+        return decodePath( "" + resourceXmldbUri.lastSegment() );
     }
 
     @Override

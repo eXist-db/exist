@@ -206,7 +206,7 @@ public class ExistCollection extends ExistResource {
      */
     void delete() {
 
-        LOG.debug("Deleting " + xmldbUri);
+        LOG.debug("Deleting '" + xmldbUri + "'");
 
         DBBroker broker = null;
         Collection collection = null;
@@ -260,7 +260,7 @@ public class ExistCollection extends ExistResource {
     }
 
     public XmldbURI createCollection(String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
-        LOG.debug("Create  " + name + " in " + xmldbUri);
+        LOG.debug("Create  '" + name + "' in '" + xmldbUri + "'");
 
         XmldbURI newCollection = xmldbUri.append(name);
 
@@ -291,7 +291,7 @@ public class ExistCollection extends ExistResource {
             // Commit change
             transact.commit(txn);
 
-            LOG.debug("Document deleted sucessfully");
+            LOG.debug("Collection created sucessfully");
 
 
         } catch (EXistException e) {
@@ -330,7 +330,7 @@ public class ExistCollection extends ExistResource {
 
     public XmldbURI createFile(String newName, InputStream dis, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
-        LOG.debug("Create '" + newName + "' in " + xmldbUri);
+        LOG.debug("Create '" + newName + "' in '" + xmldbUri + "'");
      
         XmldbURI newNameUri = XmldbURI.create(newName);
 
@@ -442,7 +442,7 @@ public class ExistCollection extends ExistResource {
     }
 
     void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
-        LOG.debug(mode + " " + xmldbUri + " to " + destCollectionUri + " named " + newName);
+        LOG.debug(mode + " '" + xmldbUri + "' to '" + destCollectionUri + "' named '" + newName + "'");
 
         XmldbURI newNameUri = null;
         try {

@@ -27,6 +27,7 @@ import com.bradmcevoy.http.CopyableResource;
 import com.bradmcevoy.http.DeletableResource;
 import com.bradmcevoy.http.GetableResource;
 import com.bradmcevoy.http.LockInfo;
+import com.bradmcevoy.http.LockNullResource;
 import com.bradmcevoy.http.LockResult;
 import com.bradmcevoy.http.LockTimeout;
 import com.bradmcevoy.http.LockToken;
@@ -72,7 +73,8 @@ import org.exist.xmldb.XmldbURI;
  */
 public class MiltonCollection extends MiltonResource
         implements CollectionResource, GetableResource, PropFindableResource,
-        DeletableResource, MakeCollectionableResource, PutableResource, LockingCollectionResource /*, DigestResource */, MoveableResource, CopyableResource {
+        DeletableResource, MakeCollectionableResource, PutableResource, LockingCollectionResource 
+        /*, DigestResource */, MoveableResource, CopyableResource, LockNullResource {
 
     private ExistCollection existCollection;
 
@@ -154,8 +156,8 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonDocument> getDocumentResources() {
         List<MiltonDocument> allResources = new ArrayList<MiltonDocument>();
         for (XmldbURI path : existCollection.getDocumentURIs()) {
-            // Show restimated size for XML documents for PROPFIND
             MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
+            // Show (restimated) size for PROPFIND only
             mdoc.setReturnContentLenghtAsNull(false);
             allResources.add(mdoc);
         }
@@ -198,6 +200,7 @@ public class MiltonCollection extends MiltonResource
      * ==================== */
     @Override
     public void delete() throws NotAuthorizedException, ConflictException, BadRequestException {
+        LOG.debug("Delete collection '" + resourceXmldbUri + "'.");
         existCollection.delete();
     }
 
@@ -208,7 +211,7 @@ public class MiltonCollection extends MiltonResource
     public CollectionResource createCollection(String name)
             throws NotAuthorizedException, ConflictException {
 
-        LOG.debug("Create collection '" + name + "' in '" + resourceXmldbUri.toString() + "'.");
+        LOG.debug("Create collection '" + name + "' in '" + resourceXmldbUri + "'.");
 
         CollectionResource collection = null;
         try {
@@ -239,7 +242,7 @@ public class MiltonCollection extends MiltonResource
     public Resource createNew(String newName, InputStream is, Long length, String contentType)
             throws IOException, ConflictException {
 
-        LOG.debug("Create " + newName + " in " + resourceXmldbUri);
+        LOG.debug("Create '" + newName + "' in '" + resourceXmldbUri + "'");
 
         Resource resource = null;
         try {
@@ -265,7 +268,7 @@ public class MiltonCollection extends MiltonResource
      * ========================= */
     @Override
     public LockToken createAndLock(String name, LockTimeout timeout, LockInfo lockInfo) throws NotAuthorizedException {
-        LOG.debug(resourceXmldbUri.toString() + " name=" + name);
+        LOG.debug("'" + resourceXmldbUri + "' name='" + name + "'");
 
         String token = UUID.randomUUID().toString();
 
@@ -279,13 +282,13 @@ public class MiltonCollection extends MiltonResource
     @Override
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
-        LOG.debug(resourceXmldbUri.toString() + " -- "+ lockInfo.toString());
+        LOG.debug("'" + resourceXmldbUri + "' -- "+ lockInfo.toString());
         return refreshLock(UUID.randomUUID().toString());
     }
 
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
-        LOG.debug(resourceXmldbUri.toString() + " token=" + token);
+        LOG.debug("'" + resourceXmldbUri + "' token='" + token + "'");
 
         LockInfo lockInfo = new LockInfo(LockInfo.LockScope.NONE, LockInfo.LockType.READ, token, LockInfo.LockDepth.ZERO);
         LockTimeout lockTime = new LockTimeout(Long.MAX_VALUE);
@@ -298,12 +301,12 @@ public class MiltonCollection extends MiltonResource
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
         // Just do nothing
-        LOG.debug(resourceXmldbUri.toString() + " token=" + tokenId);
+        LOG.debug("'" + resourceXmldbUri + "' token='" + tokenId + "'");
     }
 
     @Override
     public LockToken getCurrentLock() {
-        LOG.debug(resourceXmldbUri.toString());
+        LOG.debug("'" + resourceXmldbUri + "'");
         return null; // null is allowed
     }
 
@@ -313,7 +316,7 @@ public class MiltonCollection extends MiltonResource
      * =============== */
     @Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
-        LOG.debug("Move '" + rDest.getName() + "'---'" + newName + "'");
+        LOG.debug("Move '"+ resourceXmldbUri + "' to '" + newName + "' in '" + rDest.getName() + "'");
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existCollection.resourceCopyMove(destCollection, newName, Mode.MOVE);
@@ -329,7 +332,7 @@ public class MiltonCollection extends MiltonResource
 
     @Override
     public void copyTo(CollectionResource toCollection, String newName) {
-        LOG.debug("Copy '" + toCollection.getName() + "'---'" + newName + "'");
+        LOG.debug("Move '"+ resourceXmldbUri + "' to '" + newName + "' in '" + toCollection.getName() + "'");
         XmldbURI destCollection = ((MiltonCollection) toCollection).getXmldbUri();
         try {
             existCollection.resourceCopyMove(destCollection, newName, Mode.COPY);
