@@ -96,8 +96,8 @@ public class ExistResourceFactory implements ResourceFactory {
 
             // MacOsX finder specific files
             String documentSeqment = uri.lastSegment().toString();
-            if(documentSeqment.startsWith("._")){
-                LOG.debug("skipping MacOsX file "+uri.lastSegment().toString());
+            if(documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")){
+                LOG.debug("skipping MacOsX file '"+uri.lastSegment().toString()+"'");
             }
 
         } catch (URISyntaxException e) {
