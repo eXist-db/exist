@@ -371,6 +371,12 @@ public class ExistCollection extends ExistResource {
                 IOUtils.copy(dis, fos);
                 dis.close();
 
+//                if(tmpFile.length()==0){
+//                    FileOutputStream fos2 = new FileOutputStream(tmpFile);
+//                    IOUtils.write("<null_resource/>", fos2);
+//                    fos2.close();
+//                }
+
                 String url = tmpFile.toURI().toASCIIString();
                 InputSource is = new InputSource(url);
                 IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, is);

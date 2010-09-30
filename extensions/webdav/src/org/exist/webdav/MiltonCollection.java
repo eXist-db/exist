@@ -74,7 +74,7 @@ import org.exist.xmldb.XmldbURI;
 public class MiltonCollection extends MiltonResource
         implements CollectionResource, GetableResource, PropFindableResource,
         DeletableResource, MakeCollectionableResource, PutableResource, LockingCollectionResource 
-        /*, DigestResource */, MoveableResource, CopyableResource, LockNullResource {
+        /*, DigestResource , LockNullResource*/, MoveableResource, CopyableResource {
 
     private ExistCollection existCollection;
 
