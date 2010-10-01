@@ -26,6 +26,7 @@ import java.util.Set;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
@@ -48,7 +49,7 @@ public abstract class AbstractSubject implements Subject {
 	 * @see org.exist.security.User#addGroup(java.lang.String)
 	 */
 	@Override
-	public Group addGroup(String name) {
+	public Group addGroup(String name) throws PermissionDeniedException {
 		return account.addGroup(name);
 	}
 
@@ -56,7 +57,7 @@ public abstract class AbstractSubject implements Subject {
 	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
 	 */
 	@Override
-	public Group addGroup(Group group) {
+	public Group addGroup(Group group) throws PermissionDeniedException {
 		return account.addGroup(group);
 	}
 

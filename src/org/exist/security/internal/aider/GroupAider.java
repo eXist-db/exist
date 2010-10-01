@@ -21,7 +21,10 @@
  */
 package org.exist.security.internal.aider;
 
+import java.util.Set;
+
 import org.exist.config.Configuration;
+import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.internal.RealmImpl;
 
@@ -34,6 +37,8 @@ public class GroupAider implements Group {
 	private String realmId;
 	private String name;
 	private int id;
+	
+	private Set<Account> membersManagers;
 	
 	public GroupAider(int id) {
 		this(id, null, null);

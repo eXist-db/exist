@@ -384,7 +384,7 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(name);
 			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getAccount", params);
-			Account u = new UserAider((String) tab.get("realmId"), (String) tab.get("name"));
+			UserAider u = new UserAider((String) tab.get("realmId"), (String) tab.get("name"));
 			Object[] groups = (Object[]) tab.get("groups");
             for (int i = 0; i < groups.length; i++) {
 				u.addGroup((String) groups[i]);
@@ -406,7 +406,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	public Account[] getAccounts() throws XMLDBException {
 		try {
 			Object[] users = (Object[]) parent.getClient().execute("getAccounts", new ArrayList<Object>());
-			Account[] u = new Account[users.length];
+			UserAider[] u = new UserAider[users.length];
 			for (int i = 0; i < u.length; i++) {
 				final HashMap<?,?> tab = (HashMap<?,?>) users[i];
 				

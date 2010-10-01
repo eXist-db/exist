@@ -34,6 +34,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.Credential;
 import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
 import org.exist.security.realm.Realm;
@@ -47,7 +48,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	
 	@ConfigurationFieldAsElement("group")
 	@ConfigurationReferenceBy("name")
-	protected List<Group> groups = null;
+	protected List<Group> groups = new ArrayList<Group>();
 	
 	//used for internal locking
 	private boolean accountLocked = false;
@@ -78,19 +79,24 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, configuration);
 	}
 
-	public final Group addGroup(Group group) {
+	public final Group addGroup(Group group) throws PermissionDeniedException {
 		return addGroup(group.getName());
 	}
 
-	public final Group addGroup(String name) {
+	public final Group addGroup(String name) throws PermissionDeniedException {
 		Group group = realm.getGroup(name);
 		if (group == null)
 			return null;
 		
-		if (groups == null) {
-			groups = new ArrayList<Group>();
-		}
+		Account user = getDatabase().getSubject();
+
 		
+		if ( !( (user != null && user.hasDbaRole()) 
+				|| ((GroupImpl)group).isMembersManager(user)))
+			
+			throw new PermissionDeniedException(
+				"not allowed to change group memberships");
+
 		if (!groups.contains(group)) {
 			groups.add(group);
 		
@@ -102,7 +108,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
 	//this method used by Configurator
-	protected final Group addGroup(Configuration conf) {
+	protected final Group addGroup(Configuration conf) throws PermissionDeniedException {
 		if (conf == null) return null;
 		
 		String name = conf.getProperty("name");
@@ -143,12 +149,12 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return names;
 	}
 
-	public final boolean hasGroup(String group) {
+	public final boolean hasGroup(String name) {
 		if (groups == null)
 			return false;
 		
-		for (Group role : groups) {
-			if (role.getName().equals(group))
+		for (Group group : groups) {
+			if (group.getName().equals(name))
 				return true;
 		}
 		
@@ -181,9 +187,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		} else
 			buf.append(">");
 		if (groups != null) {
-			for (Group role : groups) {
+			for (Group group : groups) {
 				buf.append("<group>");
-				buf.append(role.getName());
+				buf.append(group.getName());
 				buf.append("</group>");
 			}
 		}
