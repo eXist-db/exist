@@ -1,43 +1,34 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="table-of-contents" tab-id="table-of-contents"><div class="block-form">
         <!--tableOfContents begins-->
     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-    <!--Cluster: include--><fieldset><legend><span class="legend">Table Of Contents</span></legend><xf:hint><p> A description of the contents of a resource.</p><p> A Table Of Contents can be rendered e.g. with dashes separating the chapter titles.</p><p> Use
+    <!--Cluster: include--><fieldset><div class="join"><legend><span class="legend">Table Of Contents</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A description of the contents of a resource.</p><p> A Table Of Contents can be rendered e.g. with dashes separating the chapter titles.</p><p> Use
             of Table Of Contents should be determined by the complexity of the digital object and whether or not the information is readily available. If more
             structured information is needed, consider using Related Item with the type="constituent" field instead. Table Of Contents can also be used as
-            an empty field with an xlink:href field to link to an external table of contents. </p></xf:hint>
+            an empty field with an xlink:href field to link to an external table of contents. </p></div></span></div>
         <!--tableOfContents repeat begins--><xf:repeat nodeset="instance('save-data')/mods:tableOfContents" id="tableOfContents-repeat"><div class="block-form">
             <!--tableOfContents input begins-->
             <!--DLF/Aquifer: NOT RECOMMENDED-->
-            <!--Cluster: omit-->
-            <!-- <xf:input ref="./@type"> <xf:label>Type:</xf:label> <xf:hint><p>Hint</p></xf:hint> </xf:input>  -->
+            <!--Cluster: omit--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>Hint</p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include--><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p>
-                                The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
-                </p></xf:hint></xf:input>
-                    
+            <!--Cluster: include--><xf:group ref=".[@xlink:href]" appearance="full"><xf:input ref="./@xlink:href" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents. </p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: omit-->
-            <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label: </xf:label> <xf:hint><p>Hint</p></xf:hint> </xf:input>  -->
+            <!--Cluster: omit--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p>Hint</p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: omit: would follow languageOfResource-->
-            <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--Cluster: omit: would follow languageOfResource--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: omit: would follow languageOfResource--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
+            <!--Cluster: omit: would follow languageOfResource--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
                                 This field is used to specify the language used within a field, using specifications in RFC 3066. 
                     RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
                         </p><p>
                                 The recommendation is not to use xml:lang, but to use the above Language field.
-                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                    
+                </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: omit-->
-            <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
+            <!--Cluster: omit--><xf:group ref=".[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
             <!--DLF/Aquifer: N/A-->
-            <!--Cluster: omit-->
-            <!-- <xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1>  --><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>TOC:</xf:label><xf:hint><p>A description of the contents of a resource.</p></xf:hint></xf:textarea>
+            <!--Cluster: omit--><xf:group ref=".[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref="." appearance="full"><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>TOC:</xf:label><xf:hint><p>A description of the contents of a resource.</p></xf:hint></xf:textarea></xf:group>
             <!--tableOfContents input ends-->
-            <!--tableOfContents delete begins--><xf:trigger ref="self::node()[count(../mods:tableOfContents) &gt; 1]" class="delete-button"><xf:label>Delete This Table Of Contents</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:tableOfContents" at="index('tableOfContents-repeat')"/></xf:trigger>
-            <!--tableOfContents delete ends--><div class="hr"/></div></xf:repeat>
+            <!--tableOfContents delete begins--><xf:trigger ref=".[count(../mods:tableOfContents) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Table Of Contents</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:tableOfContents" at="index('tableOfContents-repeat')"/></xf:trigger>
+            <!--tableOfContents delete ends--></div></xf:repeat>
         <!--tableOfContents repeat ends-->
-        <!--tableOfContents add begins--><xf:trigger ref="self::node()[count(mods:tableOfContents) &gt; 0]" class="add-button"><xf:label>Add Table Of Contents</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:tableOfContents" at="index('tableOfContents-repeat')" position="after" origin="instance('insert-templates')/mods:tableOfContents"/><xf:setvalue ref="instance('save-data')/mods:tableOfContents[last()]" value="''"/></xf:action></xf:trigger>
+        <!--tableOfContents add begins--><xf:trigger ref=".[count(mods:tableOfContents) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Table Of Contents</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:tableOfContents" at="index('tableOfContents-repeat')" position="after" origin="instance('insert-templates')/mods:tableOfContents"/><xf:setvalue ref="instance('save-data')/mods:tableOfContents[last()]" value="''"/></xf:action></xf:trigger>
         <!--tableOfContents add ends--></fieldset></div></div>

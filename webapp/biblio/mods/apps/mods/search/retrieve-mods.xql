@@ -7,11 +7,17 @@ declare namespace functx = "http://www.functx.com";
 
 declare option exist:serialize "media-type=text/xml";
 
-(: A lot of restrictions to the first item have been made; these must all be changed to for-structures. :)
+(: TODO: A lot of restrictions to the first item in a sequence ([1]) have been made; these must all be changed to for-structures. :)
 
 (: ### general functions begin ###:)
 
-declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string? {
+ 
+declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string, $replacement as xs:string )  as xs:string {       
+   replace($arg, concat('(^.*?)', $pattern),
+             concat('$1',$replacement))
+ } ;
+ 
+ declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string? {
    concat(substring($arg,1,1), replace(substring($arg,2),'(\p{Lu})', concat($delim, '$1')))
 };
 
@@ -35,15 +41,14 @@ declare function functx:trim
 
 declare function mods:get-collection($entry as element(mods:mods)) {
     let $collection := util:collection-name($entry)
+    let $collection-short := functx:replace-first($collection, "/db/", "")
     return
                 <tr>
                 <td class="host">In Collection:</td>
                 <td>
-                {$collection}
+                {$collection-short}
                 </td>
-                </tr>
-            
-            
+                </tr>            
 };
 
 

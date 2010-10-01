@@ -1,23 +1,23 @@
-<mods xmlns="http://www.loc.gov/mods/v3" ID="">
-    <titleInfo lang="" xml:lang="" script="" transliteration="" type="" authority="" displayLabel="" ID="" xlink="">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 file:/Applications/eXist_dev2/webapp/biblio/mods/apps/mods/schemas/mods-3-4.xsd" ID="">
+    <titleInfo lang="" xml:lang="" script="" transliteration="" type="" authority="" displayLabel="" ID="" xlink:href="" nameTitleGroup="" usage="">
         <nonSort/>
         <title/>
         <subTitle/>
         <partNumber/>
         <partName/>
     </titleInfo>
-    <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="" altRepGroup="" nameTitleGroup="" usage="">
-        <namePart type=""/>
-        <description/>
-        <displayForm/>
-        <affiliation/>
+    <name type="" authority="" authorityURI="" valueURI="" ID="" lang="" xml:lang="" script="" transliteration="" xlink:href="" altRepGroup="" nameTitleGroup="" usage="">
+        <namePart type="" lang="" xml:lang="" script="" transliteration=""/>
+        <description lang="" xml:lang="" script="" transliteration=""/>
+        <displayForm lang="" xml:lang="" script="" transliteration=""/>
+        <affiliation lang="" xml:lang="" script="" transliteration=""/>
         <role>
-            <roleTerm type="code" authority="marcrelator"/>
+            <roleTerm type="code" authority="marcrelator" authorityURI="" valueURI="" lang="" xml:lang="" script="" transliteration=""/>
         </role>
     </name>
-    <originInfo lang="" xml:lang="" script="" transliteration="">
-        <place>
-            <placeTerm type="" authority="marccountry"/>
+    <originInfo lang="" xml:lang="" script="" transliteration="" displayLabel="" altRepGroup="">
+        <place supplied="">
+            <placeTerm type="" authority="marccountry" authorityURI="" valueURI=""/>
         </place>
         <dateIssued encoding="w3cdtf" point="" keyDate="" qualifier=""/>
         <dateCreated encoding="w3cdtf" point="" keyDate="" qualifier=""/>
@@ -31,7 +31,7 @@
         <issuance/>
         <frequency authority="marcfrequency"/>
     </originInfo>
-    <part type="" order="" ID="">
+    <part type="" order="" ID="" lang="" xml:lang="" script="" transliteration="" altRepGroup="">
         <detail type="" level="" order="">
             <number/>
             <caption/>
@@ -52,7 +52,7 @@
         <internetMediaType/>
         <extent/>
         <digitalOrigin/>
-        <note lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink=""/>
+        <note lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink:href=""/>
     </physicalDescription>
     <targetAudience lang="eng" xml:lang="" authority="marctarget" script="" transliteration=""/>
     <language objectPart="">
@@ -61,18 +61,18 @@
     </language>
     <typeOfResource collection="" manuscript=""/>
     <genre type="code" authority="marcgt" lang="eng" xml:lang="en" script="Latn" transliteration=""/>
-    <subject authority="" xlink="" ID="" lang="" xml:lang="" script="" transliteration="">
+    <subject authority="" xlink:href="" ID="" lang="" xml:lang="" script="" transliteration="">
         <topic authority=""/>
         <geographic/>
         <temporal encoding="w3cdtf" point="" keyDate=""/>
-        <titleInfo lang="" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink="">
+        <titleInfo lang="" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink:href="">
             <nonSort/>
             <title/>
             <subTitle/>
             <partNumber/>
             <partName/>
         </titleInfo>
-        <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink="">
+        <name type="" authority="" ID="" lang="" xml:lang="" script="" transliteration="" xlink:href="">
             <namePart type=""/>
         </name>
         <genre type="code" authority="" lang="" xml:lang="" script="" transliteration=""/>
@@ -100,9 +100,9 @@
     </subject>
     <classification authority="" edition="" displayLabel="" lang="eng" xml:lang="" script="" transliteration=""/>
     <abstract lang="" xml:lang="" script="" transliteration="" type="" displayLabel=""/>
-    <tableOfContents type="" displayLabel="" lang="eng" xml:lang="" script="" transliteration="" xlink=""/>
-    <note lang="eng" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink=""/>
-    <relatedItem type="" xlink="" ID="" displayLabel="">
+    <tableOfContents type="" displayLabel="" lang="eng" xml:lang="" script="" transliteration="" xlink:href=""/>
+    <note lang="eng" xml:lang="" type="" authority="" displayLabel="" script="" transliteration="" ID="" xlink:href=""/>
+    <relatedItem type="" xlink:href="" ID="" displayLabel="">
         <part type="" order="" ID="">
             <detail type="" level="">
                 <number/>
@@ -132,9 +132,9 @@
         </languageOfCataloging>
         <descriptionStandard authority=""/>
     </recordInfo>
-    <accessCondition lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink=""/>
+    <accessCondition lang="eng" xml:lang="" type="" displayLabel="" script="" transliteration="" xlink:href=""/>
     <location>
-        <physicalLocation displayLabel="" type="" authority="" xlink="" lang="eng" xml:lang="" script="" transliteration=""/>
+        <physicalLocation displayLabel="" type="" authority="" xlink:href="" lang="eng" xml:lang="" script="" transliteration=""/>
         <shelfLocator/>
         <url displayLabel="" dateLastAccessed="" note="" access="" usage=""/>
         <holdingSimple>

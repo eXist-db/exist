@@ -58,12 +58,12 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
 <div class="tabs">
     
     <xf:trigger class="link">
-        <xf:label>
+        <xf:label class="xforms-group-label-centered-general">
            {if ($show-all)
-              then 'Show Default'
-              else 'Show All'
+              then 'Show Default Tabs'
+              else 'Show All Tabs'
            }
-        </xf:label>
+        </xf:label><br/>
         <xf:action ev:event="DOMActivate">
             <xf:send submission="save-submission"></xf:send>
             <xf:load resource="edit.xq?tab-id={$tab-id}&amp;id={$id}&amp;show-all={not($show-all)}" show="replace">
