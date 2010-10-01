@@ -389,10 +389,11 @@ public class XQueryURLRewrite implements Filter {
     	
     	String formEncoding = "UTF-8";
     	String contentType = "text/html";
-    	
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-        response.setContentType(contentType + "; charset=" + formEncoding);
+        if (((HttpServletResponse) response).containsHeader("Content-Type")){
+        	response.setContentType(contentType + "; charset=" + formEncoding);
+        }
 //        response.addHeader( "pragma", "no-cache" );
 //        response.addHeader( "Cache-Control", "no-cache" );
         
