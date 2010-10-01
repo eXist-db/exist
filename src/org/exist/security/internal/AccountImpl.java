@@ -30,11 +30,11 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.Group;
 import org.exist.security.MessageDigester;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.ldap.LDAPbindSecurityManager;
 import org.exist.storage.BrokerPool;
 
 import java.io.IOException;
@@ -161,13 +161,14 @@ public class AccountImpl extends AbstractAccount {
 	 *@param primaryGroup
 	 *            Description of the Parameter
 	 * @throws ConfigurationException 
+	 * @throws PermissionDeniedException 
 	 */
-	public AccountImpl(AbstractRealm realm, int id, String name, String password, String primaryGroup) throws ConfigurationException {
-		this(realm, id, name, password);
-		addGroup(primaryGroup);
-	}
+//	public AccountImpl(AbstractRealm realm, int id, String name, String password, String primaryGroup) throws ConfigurationException {
+//		this(realm, id, name, password);
+//		addGroup(primaryGroup);
+//	}
 
-    public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException {
+    public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
         super(realm, id, from_user.getName());
 
         home = from_user.getHome();
@@ -327,17 +328,6 @@ public class AccountImpl extends AbstractAccount {
 		}
 		if (passwd == null) {
 			return false;
-		}
-
-		// [ 1557095 ] LDAP passwords patch
-		// Try to authenticate using LDAP
-		if (sm != null) {
-			if (sm instanceof LDAPbindSecurityManager) {
-				if (((LDAPbindSecurityManager) sm).bind(name, passwd))
-					return true;
-				else
-					return false;
-			}
 		}
 
 		if (password != null) {

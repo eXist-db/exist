@@ -810,7 +810,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	                    throw new RemoteException(e.getMessage());
 					}
                 
-                u.addGroup(roleName);
+                try {
+					u.addGroup(roleName);
+				} catch (PermissionDeniedException e) {
+	                throw new RemoteException(
+                    e.getMessage());
+				}
             }
         }
         if (home != null) {

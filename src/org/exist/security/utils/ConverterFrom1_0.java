@@ -35,6 +35,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -138,9 +139,11 @@ public class ConverterFrom1_0 {
 	 *@exception DatabaseConfigurationException
 	 *                Description of the Exception
 	 * @throws ConfigurationException 
+	 * @throws PermissionDeniedException 
+	 * @throws DOMException 
 	 */
 	public static Account createAccount(int majorVersion, int minorVersion, Element node)
-			throws ConfigurationException {
+			throws ConfigurationException, DOMException, PermissionDeniedException {
 		
 		String password = null;
 		String digestPassword = null;

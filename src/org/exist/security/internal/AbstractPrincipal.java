@@ -136,4 +136,8 @@ public abstract class AbstractPrincipal implements Principal {
 			configuration = Configurator.configure(this, _config_);
 		}
 	}
+	
+	protected BrokerPool getDatabase() {
+		return realm.getDatabase();
+	}
 }

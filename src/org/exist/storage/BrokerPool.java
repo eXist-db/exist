@@ -1242,6 +1242,19 @@ public class BrokerPool extends Observable {
 		return broker;
 	}
     
+    public boolean setSubject(Subject subject) {
+		synchronized(this) {
+			//Try to get an active broker
+			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			if(broker != null) {
+				broker.setUser(subject);
+				return true;
+			}
+		}
+		
+		return false;
+    }
+
     public Subject getSubject() {
 		synchronized(this) {
 			//Try to get an active broker
@@ -1251,10 +1264,10 @@ public class BrokerPool extends Observable {
 			}
 		}
 		
-		return null; //XXX: return guest?
+		return securityManager.getGuestSubject();
     }
 
-	/** Returns an active broker for the database instance.
+    /** Returns an active broker for the database instance.
 	 * @return The broker
 	 * @throws EXistException If the instance is not available (stopped or not configured)
 	 */

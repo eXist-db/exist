@@ -38,14 +38,14 @@ public interface User extends Principal {
 	 *
 	 * @param  group  The feature to be added to the Group attribute
 	 */
-	public Group addGroup(String name);
+	public Group addGroup(String name) throws PermissionDeniedException;;
 
 	/**
 	 * Add the user to a group
 	 *
 	 * @param  group  The feature to be added to the Group attribute
 	 */
-	public Group addGroup(Group group);
+	public Group addGroup(Group group) throws PermissionDeniedException;;
 
 	/**
 	 *  Remove the user to a group

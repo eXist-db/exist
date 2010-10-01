@@ -52,12 +52,12 @@ public class RealmImpl extends AbstractRealm {
 		ID = value;
 	}
 
-    protected final Account ACCOUNT_SYSTEM;
-    protected final Account ACCOUNT_GUEST;
+    protected final AccountImpl ACCOUNT_SYSTEM;
+    protected final AccountImpl ACCOUNT_GUEST;
     protected final Group GROUP_DBA;
     protected final Group GROUP_GUEST;
 
-    protected final Account ACCOUNT_UNKNOW;
+    protected final AccountImpl ACCOUNT_UNKNOW;
     protected final Group GROUP_UNKNOW;
 
     protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
@@ -67,7 +67,7 @@ public class RealmImpl extends AbstractRealm {
 		//Build-in accounts
 		GROUP_UNKNOW = new GroupImpl(this, -1, "");
     	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", (String)null);
-    	ACCOUNT_UNKNOW.addGroup(GROUP_UNKNOW);
+    	ACCOUNT_UNKNOW.groups.add(GROUP_UNKNOW);
 
     	//DBA group & account
     	GROUP_DBA = new GroupImpl(this, 1, SecurityManager.DBA_GROUP);
@@ -76,13 +76,15 @@ public class RealmImpl extends AbstractRealm {
 
     	//System account
     	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "");
-    	ACCOUNT_SYSTEM.addGroup(GROUP_DBA);
+    	ACCOUNT_SYSTEM.groups.add(GROUP_DBA);
+    	ACCOUNT_SYSTEM.hasDbaRole = true;
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
     	//Administrator account
     	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "");
-    	ACCOUNT_ADMIN.addGroup(GROUP_DBA);
+    	ACCOUNT_ADMIN.groups.add(GROUP_DBA);
+    	ACCOUNT_ADMIN.hasDbaRole = true;
     	sm.usersById.put(ACCOUNT_ADMIN.getId(), ACCOUNT_ADMIN);
     	usersByName.put(ACCOUNT_ADMIN.getName(), ACCOUNT_ADMIN);
 
@@ -92,7 +94,7 @@ public class RealmImpl extends AbstractRealm {
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
     	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
-    	ACCOUNT_GUEST.addGroup(GROUP_GUEST);
+    	ACCOUNT_GUEST.groups.add(GROUP_GUEST);
     	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
     	
@@ -164,25 +166,32 @@ public class RealmImpl extends AbstractRealm {
 			
 			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
 					throw new PermissionDeniedException(
-						" you are not allowed to change '"+account.getName()+"' user");
+						" you are not allowed to change '"+account.getName()+"' account");
 	
 	
 			Account updatingAccount = getAccount(account.getName());
 			if (updatingAccount == null)
 				throw new PermissionDeniedException( //XXX: different exception
-					"user " + account.getName() + " does not exist");
-				
+					"account " + account.getName() + " does not exist");
+
+			//check: add account to group 
 			String[] groups = account.getGroups();
 			for (int i = 0; i < groups.length; i++) {
 				if (!(updatingAccount.hasGroup(groups[i]))) {
+						updatingAccount.addGroup(groups[i]);
+					}
+			}
+			//check: remove account from group 
+			groups = updatingAccount.getGroups();
+			for (int i = 0; i < groups.length; i++) {
+				if (!(account.hasGroup(groups[i]))) {
 						if ( !user.hasDbaRole() )
 							throw new PermissionDeniedException(
 								"not allowed to change group memberships");
 						
-						updatingAccount.addGroup(groups[i]);
+						updatingAccount.remGroup(groups[i]);
 					}
 			}
-			//XXX: delete group from account information
 				
 			updatingAccount.setPassword(account.getPassword());
 	
@@ -258,7 +267,7 @@ public class RealmImpl extends AbstractRealm {
 			
 			if ( ! ( user.hasDbaRole() ) )
 					throw new PermissionDeniedException(
-						" you are not allowed to delete '"+remove_group.getName()+"' group");
+						" you ["+user.getName()+"] are not allowed to delete '"+remove_group.getName()+"' group");
 
 			remove_group.removed = true;
 			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
@@ -295,7 +304,7 @@ public class RealmImpl extends AbstractRealm {
 		if (user == null)
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Acount " + accountName + " not found");
+					"Acount '" + accountName + "' not found");
 			
 		Subject newUser = new SubjectImpl((AccountImpl) user, credentials);
 			

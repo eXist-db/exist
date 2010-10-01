@@ -28,6 +28,7 @@ import org.exist.security.Group;
 import org.exist.security.Account;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -43,4 +44,6 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 	public Collection<Group> getRoles();
 
 	public void startUp(DBBroker broker) throws EXistException;
+
+	public BrokerPool getDatabase();
 }

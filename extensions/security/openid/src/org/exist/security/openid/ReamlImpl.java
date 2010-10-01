@@ -31,6 +31,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -190,6 +191,12 @@ public class ReamlImpl implements Realm {
 	public void startUp(DBBroker broker) throws EXistException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public BrokerPool getDatabase() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

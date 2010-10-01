@@ -70,4 +70,8 @@ public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, 
 		buf.append("\"/>");
 		return buf.toString();
 	}
+
+	public boolean isMembersManager(Account account) {
+		return membersManagers.contains(account);
+	}
 }
