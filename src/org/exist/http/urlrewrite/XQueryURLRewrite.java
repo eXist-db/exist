@@ -391,7 +391,7 @@ public class XQueryURLRewrite implements Filter {
     	String contentType = "text/html";
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-        if (((HttpServletResponse) response).containsHeader("Content-Type")){
+        if (!((HttpServletResponse) response).containsHeader("Content-Type")){
         	response.setContentType(contentType + "; charset=" + formEncoding);
         }
 //        response.addHeader( "pragma", "no-cache" );
