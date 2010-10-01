@@ -100,7 +100,7 @@ public class IndexController {
      * @return instance of index worker
      */
     public IndexWorker getWorkerByIndexId(String indexId) {
-        return (IndexWorker) indexWorkers.get(indexId);
+        return indexWorkers.get(indexId);
     }
 
     /**

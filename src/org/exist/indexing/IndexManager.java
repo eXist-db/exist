@@ -178,7 +178,7 @@ public class IndexManager {
     public void shutdown() throws DBException {
         Index index;
         for (Iterator<Index> i = iterator(); i.hasNext(); ) {
-            index = (Index) i.next();
+            index = i.next();
             index.close();
         }
     }
