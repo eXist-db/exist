@@ -32,7 +32,6 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.IndentingXMLWriter;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

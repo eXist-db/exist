@@ -62,6 +62,7 @@ import java.util.Properties;
  *
  * @author   Adam Retter <adam@exist-db.org>
  * @author   Andrzej Taramina <andrzej@chaeron.com>
+ * @author   <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * @version  1.3
  * @serial   20100228
  */
@@ -211,15 +212,19 @@ public class POSTFunction extends BaseHTTPClientFunction
             Element field = ( Element )nlField.item( i );
 
             if( field.hasAttribute( "type" ) && field.getAttribute( "type" ).equals( "file" ) ) {
-                File file = new File( field.getAttribute( "value" ) );
-                //XXX: handle database resources, url starts with xmldb:exist:// 
-
                 try {
-                    parts[i] = new FilePart( field.getAttribute( "name" ), file );
-                }
-                catch( FileNotFoundException e ) {
+	            
+                	String url = field.getAttribute( "value" );
+	            	if (url.startsWith("xmldb:exist://")) {
+	                    parts[i] = new FilePart( field.getAttribute( "name" ), new DBFile( url.substring(13) ) );
+	            	} else {
+	                    parts[i] = new FilePart( field.getAttribute( "name" ), new File( url ) );
+	            	}
+
+                } catch( FileNotFoundException e ) {
                     throw( new XPathException( e ) );
                 }
+                
             } else {
                 parts[i] = new StringPart( field.getAttribute( "name" ), field.getAttribute( "value" ) );
             }
