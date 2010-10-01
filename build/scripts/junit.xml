@@ -419,7 +419,7 @@
             <classpath refid="classpath.test-libs"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test name="org.exist.xquery.xqts.XQTS_1_0_2.AllTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xquery.xqts.XQTS_1_0_3.AllTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
