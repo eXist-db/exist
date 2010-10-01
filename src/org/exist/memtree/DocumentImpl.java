@@ -412,6 +412,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public DocumentImpl getDocument()
     {
         return( this );
@@ -602,6 +603,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      *
      * @see org.w3c.dom.Node#getParentNode()
      */
+    @Override
     public Node getParentNode()
     {
         return( null );
@@ -775,6 +777,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public void selectChildren( NodeTest test, Sequence result ) throws XPathException
     {
         if( size == 1 ) {
@@ -792,6 +795,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) throws XPathException
     {
         if( includeSelf && test.matches( this ) ) {
@@ -814,6 +818,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException
     {
         if( size == 1 ) {
@@ -919,6 +924,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public boolean matchChildren( NodeTest test ) throws XPathException
     {
         if( size == 1 ) {
@@ -937,6 +943,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public boolean matchDescendants( boolean includeSelf, NodeTest test ) throws XPathException
     {
         if( includeSelf && test.matches( this ) ) {
@@ -963,6 +970,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public boolean matchDescendantAttributes( NodeTest test ) throws XPathException
     {
         if( size == 1 ) {
@@ -1183,6 +1191,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      *
      * @see org.w3c.dom.Node#getOwnerDocument()
      */
+    @Override
     public org.w3c.dom.Document getOwnerDocument()
     {
         return( this );
@@ -1236,7 +1245,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
 
                     if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
                         copyEndNode( node, receiver );
-                        nextNode = null;
                         break;
                     }
                 }
@@ -1336,6 +1344,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void expand() throws DOMException
     {
         if( size == 0 ) {
@@ -1525,7 +1534,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
 
                     if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
                         endNode( node, receiver );
-                        nextNode = null;
                         break;
                     }
                 }
@@ -1666,12 +1674,14 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public String getLocalName()
     {
         return( "" );
     }
 
 
+    @Override
     public String getNamespaceURI()
     {
         return( "" );
@@ -1889,6 +1899,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist
     }
 
 
+    @Override
     public int getItemType()
     {
         return( Type.DOCUMENT );
