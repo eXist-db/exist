@@ -1241,6 +1241,18 @@ public class BrokerPool extends Observable {
 			"created broker '" + broker.getId() + " for database instance '" + instanceName + "'");		
 		return broker;
 	}
+    
+    public Subject getSubject() {
+		synchronized(this) {
+			//Try to get an active broker
+			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			if(broker != null) {
+				return broker.getUser();
+			}
+		}
+		
+		return null; //XXX: return guest?
+    }
 
 	/** Returns an active broker for the database instance.
 	 * @return The broker
