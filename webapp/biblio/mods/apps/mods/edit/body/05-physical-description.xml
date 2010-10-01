@@ -1,499 +1,80 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="physical-description" tab-id="physical-description">
-    <div class="block-form">
-        <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of one <physicalDescription> element, one <digitalOrigin>subelement, and at least one <internetMediaType> subelement. -->
-        <fieldset>
-            <div class="join">
-                <legend>Physical Description</legend>
-                <span class="xforms-hint">
-                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                    <div class="xforms-hint-value">
-                        <p> Physical Description contains all subfields relating to the physical description information of the resource described. Data is input only within each subfield. </p>
-                    </div>
-                </span>
-            </div>
-            <!--physicalDescription repeat begins-->
-            <xf:repeat nodeset="mods:physicalDescription" id="physicalDescription-repeat">
-                <div class="block-form">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="physical-description" tab-id="physical-description"><div class="block-form">
+        <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of one <physicalDescription> element, one <digitalOrigin>subelement, and at least one <internetMediaType> subelement. --><fieldset class="level-1"><div class="join"><legend>Physical Description</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Physical Description contains all subfields relating to the physical description information of the resource described. Data is input only within each subfield. </p></div></span></div>
+            <!--physicalDescription repeat begins--><xf:repeat nodeset="mods:physicalDescription" id="physicalDescription-repeat"><div class="block-form">
                     <!--physicalDescription input begins-->
-                    <!--Cluster: hide; will follow languageOfCataloging-->
-                    <xf:group ref=".[@lang]" appearance="full">
-                        <xf:select1 ref="./@lang">
-                            <xf:label>Language:</xf:label>
-                            <xf:hint>
-                                <p> The language used within Physical Description is specified here, if this language is different from the language noted in Language of Cataloging. The most common languages have been moved to the top of the list. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
+                    <!--Cluster: hide; will follow languageOfCataloging--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Physical Description is specified here, if this language is different from the language noted in Language of Cataloging. The most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                     <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                    <!--Cluster: omit-->
-                    <xf:group ref=".[@xml:lang]" appearance="full">
-                        <xf:select1 ref="./@xml:lang">
-                            <xf:label>xml:lang:</xf:label>
-                            <xf:hint>
-                                <p> The language used within Physical Description is specified here, if this language is different from the language noted in Language of Cataloging. xml:lang is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p>
-                                <p> The recommendation is not to use xml:lang, but to use the above Language field. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
-                    <!--Cluster: hide; will follow languageOfCataloging-->
-                    <xf:group ref=".[@script]" appearance="full">
-                        <xf:select1 ref="./@script">
-                            <xf:label>Script:</xf:label>
-                            <xf:hint>
-                                <p> This field specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
-                    <!--Cluster: hide; will follow languageOfCataloging-->
-                    <xf:group ref=".[@transliteration]" appearance="full">
-                        <xf:select1 ref="./@transliteration">
-                            <xf:label>Transliteration:</xf:label>
-                            <xf:hint>
-                                <p> This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
+                    <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> The language used within Physical Description is specified here, if this language is different from the language noted in Language of Cataloging. xml:lang is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the above Language field. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--Cluster: hide; will follow languageOfCataloging--><xf:group ref=".[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> This field specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--Cluster: hide; will follow languageOfCataloging--><xf:group ref=".[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p> This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                     <!--physicalDescription input ends-->
-                    <!--form begins-->
-                    <xf:group id="fieldset-form" ref=".[mods:form]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Form</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p> A designation of a particular physical presentation of a resource. Form includes information that specifies the physical form or medium of material for a resource. Form should be used to characterize the resource itself rather than the content of the resource, which would be Genre. Either a controlled list of values or free text may be used. </p>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--form repeat begins-->
-                            <xf:repeat nodeset="./mods:form" id="form-repeat">
-                                <!--form input begins-->
-                                <xf:group ref="." appearance="full">
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Form:</xf:label>
-                                        <xf:hint>
-                                            <p> A designation of a particular physical presentation of a resource. Form includes information that specifies the physical form or medium of material for a resource. Form should be used to characterize the resource itself rather than the content of the resource, which would be Genre. Either a controlled list of values or free text may be used. </p>
-                                        </xf:hint>
-                                    </xf:input>
-                                </xf:group>
-                                <!-- The use of the type field is not recommended with <form> by the DLF/Aquifer Implementation Guidelines for Shareable MODS Records due to the lack of controlled values, making it of limited usefulness for aggregators. -->
-                                <xf:group ref=".[@type]" appearance="full">
-                                    <xf:select1 ref="./@type">
-                                        <xf:label>Type:</xf:label>
-                                        <xf:hint>
-                                            <p> This field is used if desired to specify whether the information noted under Form concerns materials or techniques, e.g. type="material": oil paint; type="technique": painting. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='form-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
-                                <xf:group ref=".[@authority]" appearance="full">
-                                    <xf:select1 ref="./@authority">
-                                        <xf:label>Authority:</xf:label>
-                                        <xf:hint>
-                                            <p> The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. The MARC 21 form list contains most of the values defined in fields 008/23 (BK, MU, CR, MX) and 008/29 (MP, VM). Use authority="marcform" to indicate its use. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                    <!--form begins--><xf:group id="fieldset-form" ref=".[mods:form]"><fieldset class="level-2"><div class="join"><legend>Form</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A designation of a particular physical presentation of a resource. Form includes information that specifies the physical form or medium of material for a resource. Form should be used to characterize the resource itself rather than the content of the resource, which would be Genre. Either a controlled list of values or free text may be used. </p></div></span></div>
+                            <!--form repeat begins--><xf:repeat nodeset="./mods:form" id="form-repeat">
+                                <!--form input begins--><xf:group ref="." appearance="full"><xf:input ref="." class="text_50"><xf:label>Form:</xf:label><xf:hint><p> A designation of a particular physical presentation of a resource. Form includes information that specifies the physical form or medium of material for a resource. Form should be used to characterize the resource itself rather than the content of the resource, which would be Genre. Either a controlled list of values or free text may be used. </p></xf:hint></xf:input></xf:group>
+                                <!-- The use of the type field is not recommended with <form> by the DLF/Aquifer Implementation Guidelines for Shareable MODS Records due to the lack of controlled values, making it of limited usefulness for aggregators. --><xf:group ref=".[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p> This field is used if desired to specify whether the information noted under Form concerns materials or techniques, e.g. type="material": oil paint; type="technique": painting. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='form-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@authority]" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/form/formsource.html. The MARC 21 form list contains most of the values defined in fields 008/23 (BK, MU, CR, MX) and 008/29 (MP, VM). Use authority="marcform" to indicate its use. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--form input ends-->
-                                <!--form delete begins-->
-                                <xf:trigger ref=".[count(../mods:form) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Form</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:form" at="index('form-repeat')"/>
-                                </xf:trigger>
-                                <!--form delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--form delete begins--><xf:trigger ref=".[../mods:form]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Form</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:form" at="index('form-repeat')"/></xf:trigger>
+                                <!--form delete ends--></xf:repeat>
                             <!--form repeat ends-->
-                            <!--form add begins-->
-                            <xf:trigger ref=".[count(mods:form) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Form</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:form" at="index('form-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:form"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:form[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--form add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--form add begins--><xf:trigger ref=".[count(mods:form) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Form</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('form-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:form"/><xf:setvalue ref="instance('save-data')/mods:form[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--form add ends--></fieldset></xf:group>
                     <!--form ends-->
-                    <!--reformattingQuality begins-->
-                    <xf:group id="fieldset-reformattingQuality" ref=".[mods:reformattingQuality]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Reformatting Quality</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p>Reformatting Quality indicates an overall assessment of the physical quality of an electronic resource in relation to its intended use.</p>
-                                        <p>The following values may be used: access, preservation and replacement.</p>
-                                        <li>
-                                            <item>"access" indicates that the electronic resource is intended to support current electronic access to the original item (i.e., reference use), but is not sufficient to serve as a preservation copy.</item>
-                                            <item>"preservation" indicates that the electronic resource was created via reformatting to help preserve the original item. The capture and storage techniques ensure high-quality, long-term protection.</item>
-                                            <item>"replacement" indicates that the electronic resource is of high enough quality to serve as a replacement if the original is lost, damaged, or destroyed.</item>
-                                        </li>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--reformattingQuality repeat begins-->
-                            <xf:repeat nodeset="./mods:reformattingQuality" id="reformattingQuality-repeat">
-                                <!--reformattingQuality input begins-->
-                                <xf:group ref="." appearance="full">
-                                    <xf:select1 ref=".">
-                                        <xf:label>Reformatting Quality:</xf:label>
-                                        <xf:hint>
-                                            <p>Hint</p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='reformatting-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                    <!--reformattingQuality begins--><xf:group id="fieldset-reformattingQuality" ref=".[mods:reformattingQuality]"><fieldset class="level-2"><div class="join"><legend>Reformatting Quality</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>Reformatting Quality indicates an overall assessment of the physical quality of an electronic resource in relation to its intended use.</p><p>The following values may be used: access, preservation and replacement.</p><li><item>"access" indicates that the electronic resource is intended to support current electronic access to the original item (i.e., reference use), but is not sufficient to serve as a preservation copy.</item><item>"preservation" indicates that the electronic resource was created via reformatting to help preserve the original item. The capture and storage techniques ensure high-quality, long-term protection.</item><item>"replacement" indicates that the electronic resource is of high enough quality to serve as a replacement if the original is lost, damaged, or destroyed.</item></li></div></span></div>
+                            <!--reformattingQuality repeat begins--><xf:repeat nodeset="./mods:reformattingQuality" id="reformattingQuality-repeat">
+                                <!--reformattingQuality input begins--><xf:group ref="." appearance="full"><xf:select1 ref="."><xf:label>Reformatting Quality:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='reformatting-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--reformattingQuality input ends-->
-                                <!--reformattingQuality delete begins-->
-                                <xf:trigger ref=".[count(../mods:reformattingQuality) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Reformatting Quality</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:reformattingQuality" at="index('reformattingQuality-repeat')"/>
-                                </xf:trigger>
-                                <!--reformattingQuality delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--reformattingQuality delete begins--><xf:trigger ref=".[../mods:reformattingQuality]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Reformatting Quality</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:reformattingQuality" at="index('reformattingQuality-repeat')"/></xf:trigger>
+                                <!--reformattingQuality delete ends--></xf:repeat>
                             <!--reformattingQuality repeat ends-->
-                            <!--reformattingQuality add begins-->
-                            <xf:trigger ref=".[count(mods:reformattingQuality) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Reformatting Quality</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:reformattingQuality" at="index('reformattingQuality-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:reformattingQuality"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:role[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--reformattingQuality add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--reformattingQuality add begins--><xf:trigger ref=".[count(mods:reformattingQuality) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Reformatting Quality</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:reformattingQuality" at="index('reformattingQuality-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:reformattingQuality"/><xf:setvalue ref="instance('save-data')/mods:role[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--reformattingQuality add ends--></fieldset></xf:group>
                     <!--reformattingQuality ends-->
-                    <!--internetMediaType begins-->
-                    <xf:group id="fieldset-internetMediaType" ref=".[mods:internetMediaType]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Internet Media Type</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p> An identification of the electronic format type, or the data representation of the resource. Internet Media Type specifies the electronic format type, such as text/html, ASCII, Postscript file, executable application or JPEG image. It is roughly equivalent to MARC 21 field 856 subfield $q, although subfield $q may also contain other designations of electronic format. The Internet Media Type value is generally taken from a controlled list, especially from the Internet Media types (MIME types) (see: www.iana.org/assignments/media-types/index.html for a complete list). </p>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--internetMediaType repeat begins-->
-                            <xf:repeat nodeset="./mods:internetMediaType" id="internetMediaType-repeat">
-                                <!--internetMediaType input begins-->
-                                <xf:group ref="." appearance="full">
-                                    <xf:select1 ref=".">
-                                        <xf:label>Internet Media Type:</xf:label>
-                                        <xf:hint>
-                                            <p> An identification of the electronic format type, or the data representation of the resource. Internet Media Type specifies the electronic format type, such as text/html, ASCII, Postscript file, executable application or JPEG image. It is roughly equivalent to MARC 21 field 856 subfield $q, although subfield $q may also contain other designations of electronic format. The Internet Media Type value is generally taken from a controlled list, especially from the Internet Media types (MIME types) (see: www.iana.org/assignments/media-types/index.html for a complete list). </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='internet-media-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                    <!--internetMediaType begins--><xf:group id="fieldset-internetMediaType" ref=".[mods:internetMediaType]"><fieldset class="level-2"><div class="join"><legend>Internet Media Type</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> An identification of the electronic format type, or the data representation of the resource. Internet Media Type specifies the electronic format type, such as text/html, ASCII, Postscript file, executable application or JPEG image. It is roughly equivalent to MARC 21 field 856 subfield $q, although subfield $q may also contain other designations of electronic format. The Internet Media Type value is generally taken from a controlled list, especially from the Internet Media types (MIME types) (see: www.iana.org/assignments/media-types/index.html for a complete list). </p></div></span></div>
+                            <!--internetMediaType repeat begins--><xf:repeat nodeset="./mods:internetMediaType" id="internetMediaType-repeat">
+                                <!--internetMediaType input begins--><xf:group ref="." appearance="full"><xf:select1 ref="."><xf:label>Internet Media Type:</xf:label><xf:hint><p> An identification of the electronic format type, or the data representation of the resource. Internet Media Type specifies the electronic format type, such as text/html, ASCII, Postscript file, executable application or JPEG image. It is roughly equivalent to MARC 21 field 856 subfield $q, although subfield $q may also contain other designations of electronic format. The Internet Media Type value is generally taken from a controlled list, especially from the Internet Media types (MIME types) (see: www.iana.org/assignments/media-types/index.html for a complete list). </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='internet-media-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--internetMediaType input ends-->
-                                <!--internetMediaType delete begins-->
-                                <xf:trigger ref=".[count(../mods:internetMediaType) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Internet Media Type</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:internetMediaType" at="index('internetMediaType-repeat')"/>
-                                </xf:trigger>
-                                <!--internetMediaType delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--internetMediaType delete begins--><xf:trigger ref=".[../mods:internetMediaType]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Internet Media Type</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:internetMediaType" at="index('internetMediaType-repeat')"/></xf:trigger>
+                                <!--internetMediaType delete ends--></xf:repeat>
                             <!--internetMediaType repeat ends-->
-                            <!--internetMediaType add begins-->
-                            <xf:trigger ref=".[count(mods:internetMediaType) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Internet Media Type</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:internetMediaType" at="index('internetMediaType-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:internetMediaType"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:internetMediaType[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--internetMediaType add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--internetMediaType add begins--><xf:trigger ref=".[count(mods:internetMediaType) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Internet Media Type</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:internetMediaType" at="index('internetMediaType-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:internetMediaType"/><xf:setvalue ref="instance('save-data')/mods:internetMediaType[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--internetMediaType add ends--></fieldset></xf:group>
                     <!--internetMediaType ends-->
-                    <!--extent begins-->
-                    <xf:group id="fieldset-extent" ref=".[mods:extent]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Extent</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p> A statement of the number and specific material of the units of the resource that express physical extent. Extent may be used with electronic resources, e.g. digitised collection of slides, to show how many slides constitute the resource. </p>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--extent repeat begins-->
-                            <xf:repeat nodeset="./mods:extent" id="extent-repeat">
-                                <!--extent input begins-->
-                                <xf:group ref="." appearance="full">
-                                    <xf:input ref="." class="text_50">
-                                        <xf:label>Extent:</xf:label>
-                                        <xf:hint>
-                                            <p> A statement of the number and specific material of the units of the resource that express physical extent. Extent may be used with electronic resources, e.g. digitised collection of slides, to show how many slides constitute the resource. </p>
-                                        </xf:hint>
-                                    </xf:input>
-                                </xf:group>
+                    <!--extent begins--><xf:group id="fieldset-extent" ref=".[mods:extent]"><fieldset class="level-2"><div class="join"><legend>Extent</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A statement of the number and specific material of the units of the resource that express physical extent. Extent may be used with electronic resources, e.g. digitised collection of slides, to show how many slides constitute the resource. </p></div></span></div>
+                            <!--extent repeat begins--><xf:repeat nodeset="./mods:extent" id="extent-repeat">
+                                <!--extent input begins--><xf:group ref="." appearance="full"><xf:input ref="." class="text_50"><xf:label>Extent:</xf:label><xf:hint><p> A statement of the number and specific material of the units of the resource that express physical extent. Extent may be used with electronic resources, e.g. digitised collection of slides, to show how many slides constitute the resource. </p></xf:hint></xf:input></xf:group>
                                 <!--extent input ends-->
-                                <!--extent delete begins-->
-                                <xf:trigger ref=".[count(../mods:extent) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Extent</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:extent" at="index('extent-repeat')"/>
-                                </xf:trigger>
-                                <!--extent delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--extent delete begins--><xf:trigger ref=".[../mods:extent]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Extent</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:extent" at="index('extent-repeat')"/></xf:trigger>
+                                <!--extent delete ends--></xf:repeat>
                             <!--extent repeat ends-->
-                            <!--extent add begins-->
-                            <xf:trigger ref=".[count(mods:extent) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Extent</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:extent" at="index('extent-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:extent"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:extent[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--extent add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--extent add begins--><xf:trigger ref=".[count(mods:extent) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Extent</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:extent" at="index('extent-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:extent"/><xf:setvalue ref="instance('save-data')/mods:extent[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--extent add ends--></fieldset></xf:group>
                     <!--extent ends-->
-                    <!--digitalOrigin begins-->
-                    <xf:group id="fieldset-digitalOrigin" ref=".[mods:digitalOrigin]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Digital Origin</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p> A designation of the source of a digital file important to its creation, use and management. Digital Origin may indicate the source of a digital file important to its creation, use and management. </p>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--digitalOrigin repeat begins-->
-                            <xf:repeat nodeset="./mods:digitalOrigin" id="digitalOrigin-repeat">
-                                <!--digitalOrigin input begins-->
-                                <xf:group ref="." appearance="full">
-                                    <xf:select1 ref=".">
-                                        <xf:label>Digital Origin:</xf:label>
-                                        <xf:hint>
-                                            <p> A designation of the source of a digital file important to its creation, use and management. Digital Origin may indicate the source of a digital file important to its creation, use and management. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='digital-origin-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                    <!--digitalOrigin begins--><xf:group id="fieldset-digitalOrigin" ref=".[mods:digitalOrigin]"><fieldset class="level-2"><div class="join"><legend>Digital Origin</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A designation of the source of a digital file important to its creation, use and management. Digital Origin may indicate the source of a digital file important to its creation, use and management. </p></div></span></div>
+                            <!--digitalOrigin repeat begins--><xf:repeat nodeset="./mods:digitalOrigin" id="digitalOrigin-repeat">
+                                <!--digitalOrigin input begins--><xf:group ref="." appearance="full"><xf:select1 ref="."><xf:label>Digital Origin:</xf:label><xf:hint><p> A designation of the source of a digital file important to its creation, use and management. Digital Origin may indicate the source of a digital file important to its creation, use and management. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='digital-origin-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--digitalOrigin input ends-->
-                                <!--digitalOrigin delete begins-->
-                                <xf:trigger ref=".[count(../mods:digitalOrigin) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Digital Origin</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:digitalOrigin" at="index('digitalOrigin-repeat')"/>
-                                </xf:trigger>
-                                <!--digitalOrigin delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--digitalOrigin delete begins--><xf:trigger ref=".[../mods:digitalOrigin]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Digital Origin</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:digitalOrigin" at="index('digitalOrigin-repeat')"/></xf:trigger>
+                                <!--digitalOrigin delete ends--></xf:repeat>
                             <!--digitalOrigin repeat ends-->
-                            <!--digitalOrigin add begins-->
-                            <xf:trigger ref=".[count(mods:digitalOrigin) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Digital Origin</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:digitalOrigin" at="index('digitalOrigin-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:digitalOrigin"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:digitalOrigin[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--digitalOrigin add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--digitalOrigin add begins--><xf:trigger ref=".[count(mods:digitalOrigin) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Digital Origin</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:digitalOrigin" at="index('digitalOrigin-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:digitalOrigin"/><xf:setvalue ref="instance('save-data')/mods:digitalOrigin[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--digitalOrigin add ends--></fieldset></xf:group>
                     <!--digitalOrigin ends-->
-                    <!--note begins-->
-                    <xf:group id="fieldset-note" ref=".[mods:note]">
-                        <fieldset>
-                            <div class="join">
-                                <legend>Notes</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                        <p> A designation of a particular physical presentation of a resource. Form includes innoteation that specifies the physical note or medium of material for a resource. Either a controlled list of values or free text may be used. </p>
-                                    </div>
-                                </span>
-                            </div>
-                            <!--note repeat begins-->
-                            <xf:repeat nodeset="./mods:note" id="physical-description-note-repeat">
-                                <!--note input begins-->
-                                <xf:group ref=".[@type]" appearance="full">
-                                    <xf:select1 ref="./@type" selection="open">
-                                        <xf:label>Type:</xf:label>
-                                        <xf:hint>
-                                            <p> This field is used if desired to specify whether the note concerns materials or techniques, e.g. type="material": oil paint; type="technique": painting. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                    <!--note begins--><xf:group id="fieldset-note" ref=".[mods:note]"><fieldset class="level-2"><div class="join"><legend>Notes</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A designation of a particular physical presentation of a resource. Form includes innoteation that specifies the physical note or medium of material for a resource. Either a controlled list of values or free text may be used. </p></div></span></div>
+                            <!--note repeat begins--><xf:repeat nodeset="./mods:note" id="physical-description-note-repeat">
+                                <!--note input begins--><xf:group ref=".[@type]" appearance="full"><xf:select1 ref="./@type" selection="open"><xf:label>Type:</xf:label><xf:hint><p> This field is used if desired to specify whether the note concerns materials or techniques, e.g. type="material": oil paint; type="technique": painting. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: omit-->
-                                <xf:group ref=".[@xlink]" appearance="full">
-                                    <xf:input ref="./@xlink" class="text_50">
-                                        <xf:label>XLink: </xf:label>
-                                        <xf:hint>
-                                            <p> The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents. </p>
-                                        </xf:hint>
-                                    </xf:input>
-                                </xf:group>
-                                <xf:group ref=".[@authority]" appearance="full">
-                                    <xf:select1 ref="./@authority">
-                                        <xf:label>Authority:</xf:label>
-                                        <xf:hint>
-                                            <p> The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/note/notesource.html. The MARC 21 form list contains most of the values defined in fields 008/23 (BK, MU, CR, MX) and 008/29 (MP, VM). Use authority="marcform" to indicate its use. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-authority-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
-                                <xf:group ref=".[@lang]" appearance="full">
-                                    <xf:select1 ref="./@lang">
-                                        <xf:label>Language:</xf:label>
-                                        <xf:hint>
-                                            <p>Hint</p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
+                                <!--Cluster: omit--><xf:group ref=".[@xlink:href]" appearance="full"><xf:input ref="./@xlink:href" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents. </p></xf:hint></xf:input></xf:group><xf:group ref=".[@authority]" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. A list of authorities is maintained at: www.loc.gov/marc/sourcecode/note/notesource.html. The MARC 21 form list contains most of the values defined in fields 008/23 (BK, MU, CR, MX) and 008/29 (MP, VM). Use authority="marcform" to indicate its use. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='note-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                                <!--Cluster: omit-->
-                                <xf:group ref=".[@xml:lang]" appearance="full">
-                                    <xf:select1 ref="./@xml:lang">
-                                        <xf:label>xml:lang:</xf:label>
-                                        <xf:hint>
-                                            <p> This field is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p>
-                                            <p> The recommendation is not to use xml:lang, but to use the above Language field. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
-                                <xf:group ref=".[@script]" appearance="full">
-                                    <xf:select1 ref="./@script">
-                                        <xf:label>Script:</xf:label>
-                                        <xf:hint>
-                                            <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
-                                <xf:group ref=".[@transliteration]" appearance="full">
-                                    <xf:select1 ref="./@transliteration">
-                                        <xf:label>Transliteration:</xf:label>
-                                        <xf:hint>
-                                            <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                </xf:group>
-                                <xf:group ref=".[@displayLabel]" appearance="full">
-                                    <xf:input ref="./@displayLabel" class="text_50">
-                                        <xf:label>Display Label:</xf:label>
-                                        <xf:hint>
-                                            <p> Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p>
-                                        </xf:hint>
-                                    </xf:input>
-                                </xf:group>
-                                <xf:textarea ref="." class="textarea" mediatype="dojo">
-                                    <xf:label>Note:</xf:label>
-                                    <xf:hint>
-                                        <p> A designation of a particular physical presentation of a resource. Form includes innoteation that specifies the physical note or medium of material for a resource. Either a controlled list of values or free text may be used. </p>
-                                    </xf:hint>
-                                </xf:textarea>
+                                <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> This field is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the above Language field. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label:</xf:label><xf:hint><p> Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p></xf:hint></xf:input></xf:group><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>Note:</xf:label><xf:hint><p> A designation of a particular physical presentation of a resource. Form includes innoteation that specifies the physical note or medium of material for a resource. Either a controlled list of values or free text may be used. </p></xf:hint></xf:textarea>
                                 <!--note input ends-->
-                                <!--note delete begins-->
-                                <xf:trigger ref=".[count(../mods:note) &gt; 1]" class="delete-button">
-                                    <xf:label>Delete This Note</xf:label>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:note" at="index('physical-description-note-repeat')"/>
-                                </xf:trigger>
-                                <!--note delete ends-->
-                                <div class="hr"/>
-                            </xf:repeat>
+                                <!--note delete begins--><xf:trigger ref=".[../mods:note]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Note</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription/mods:note" at="index('physical-description-note-repeat')"/></xf:trigger>
+                                <!--note delete ends--></xf:repeat>
                             <!--note repeat ends-->
-                            <!--note add begins-->
-                            <xf:trigger ref=".[count(mods:note) &gt; 0]" class="add-button">
-                                <xf:label>Add Another Note</xf:label>
-                                <xf:action ev:event="DOMActivate">
-                                    <xf:insert nodeset="mods:note" at="index('physical-description-note-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:note"/>
-                                    <xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/>
-                                </xf:action>
-                            </xf:trigger>
-                            <!--note add ends-->
-                        </fieldset>
-                    </xf:group>
+                            <!--note add begins--><xf:trigger ref=".[count(mods:note) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Note</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:note" at="index('physical-description-note-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription/mods:note"/><xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--note add ends--></fieldset></xf:group>
                     <!--note ends-->
-                    <div class="hr"/>
-                    <!--physicalDescription delete begins-->
-                    <xf:trigger ref=".[count(../mods:physicalDescription) &gt; 1]" class="delete-button">
-                        <xf:label>Delete This Physical Description</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription" at="index('physicalDescription-repeat')"/>
-                    </xf:trigger>
-                    <!--physicalDescription delete ends-->
-                    <div class="hr"/>
-                </div>
-            </xf:repeat>
+                    <!--physicalDescription delete begins--><xf:trigger ref=".[count(../mods:physicalDescription) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Physical Description</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:physicalDescription" at="index('physicalDescription-repeat')"/></xf:trigger>
+                    <!--physicalDescription delete ends--></div></xf:repeat>
             <!--physicalDescription repeat ends-->
-            <!--physicalDescription add begins-->
-            <xf:trigger ref=".[count(mods:physicalDescription) &gt; 0]" class="add-button">
-                <xf:label>Add Another Physical Description</xf:label>
-                <xf:action ev:event="DOMActivate">
-                    <xf:insert nodeset="mods:physicalDescription" at="index('physicalDescription-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription"/>
-                    <xf:setvalue ref="instance('save-data')/mods:physicalDescription[last()]" value="''"/>
-                </xf:action>
-            </xf:trigger>
-            <!--physicalDescription add ends-->
-        </fieldset>
-    </div>
-</div>
+            <!--physicalDescription add begins--><xf:trigger ref=".[count(mods:physicalDescription) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Physical Description</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:physicalDescription" at="index('physicalDescription-repeat')" position="after" origin="instance('insert-templates')/mods:physicalDescription"/><xf:setvalue ref="instance('save-data')/mods:physicalDescription[last()]" value="''"/></xf:action></xf:trigger>
+            <!--physicalDescription add ends--></fieldset></div></div>

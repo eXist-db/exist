@@ -61,7 +61,7 @@ let $create-new-from-template :=
          let $new-file-name := concat($id, '.xml')
          
          (: uncomment the following line in for testing if you are not admin :)
-         let $login := xmldb:login($data-collection, 'admin', 'his2RIen')
+         let $login := xmldb:login($data-collection, 'admin', 'admin123')
          
          (: store it in the right location :)
          let $store := xmldb:store($data-collection, $new-file-name, $template)
@@ -130,30 +130,31 @@ let $model :=
 let $content :=
 <div class="content">
     
-    <a href="../index.xq">MODS XRX Application Home</a>
+    <a href="../index.xq">MODS <!--XRX--> Application Home</a>
     <span class="float-right">editing record <strong>{$id}</strong> on the <strong>{$tab-label}</strong> tab</span>
-    <br/>
+    
     
     {mods:tabs($tab-id, $id, $show-all)}
     
-    <!--only one body element is shown at a time - why display this?
-    Body Elements = {count($form-body/*/*)}<br/>-->
-    
     <xf:submit submission="save-submission">
-        <xf:label>Save</xf:label>
+        <xf:label class="xforms-group-label-centered-general">Save</xf:label>
     </xf:submit>
+    <br/><br/>
     
     <!-- import the correct form body for this tab -->
     {$form-body}
     
     <br/>
     <xf:submit submission="save-submission">
-        <xf:label>Save</xf:label>
+        <xf:label class="xforms-group-label-centered-general">Save</xf:label>
     </xf:submit>
 
     <xf:submit submission="echo-post-submission">
-        <xf:label>Echo Post (no save)</xf:label>
+        <xf:label class="xforms-group-label-centered-general">Echo Post (no save)</xf:label>
     </xf:submit>
+    
+    <br/>
+    Body Elements = {count($form-body/*/*)}
     
     <div class="debug">
         <xf:output value="count(instance('save-data')/*)">

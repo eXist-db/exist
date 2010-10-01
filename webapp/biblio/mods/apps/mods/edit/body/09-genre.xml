@@ -1,44 +1,14 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="genre" tab-id="genre">
-    <div class="block-form">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="genre" tab-id="genre"><div class="block-form">
         <!--DLF/Aquifer: RECOMMENDED-->
         <!--Cluster: include-->
-        <!-- The DLF /Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one genre element in every MODS record and, if a value is provided, require the use of a value from a controlled list and the designation of this list in the authority attribute. This element is repeatable. -->
-        <fieldset>
-            <div class="join">
-                <legend>
-                    <span class="legend">Genres</span>
-                </legend>
-                <span class="xforms-hint">
-                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                    <div class="xforms-hint-value">
-                        <p> One or more terms that characterize the resource as having a particular style, form, or content, such as artistic, musical, literary composition, etc. </p>
-                        <p> Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p>
-                        <p> Genre should be used to characterise the content of a digital resource rather than the digital resource itself. The values should be pulled from a controlled vocabulary appropriate for the resource described. This source vocabulary is indicated using the authority field. </p>
-                        <p> Genre is a term that carries different specific meanings within different communities of practice, and the content of most information objects can be characterised by genre at some level of granularity, either very broad or quite specific. For example, photographs and ambrotypes are both valid genre characterizations, depending on your perspective, for a specific type of direct positive photographic print. At the very least, provide a very broad genre term for materials being digitised. Type of Resource, Genre, Form under Physical Description overlap to some degree. </p>
-                    </div>
-                </span>
-            </div>
-            <!--genre repeat begins-->
-            <xf:repeat nodeset="instance('save-data')/mods:genre" id="genre-repeat">
+        <!-- The DLF /Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one genre element in every MODS record and, if a value is provided, require the use of a value from a controlled list and the designation of this list in the authority attribute. This element is repeatable. --><fieldset level="1"><div class="join"><legend><span class="legend">Genres</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> One or more terms that characterize the resource as having a particular style, form, or content, such as artistic, musical, literary composition, etc. </p><p> Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p><p> Genre should be used to characterise the content of a digital resource rather than the digital resource itself. The values should be pulled from a controlled vocabulary appropriate for the resource described. This source vocabulary is indicated using the authority field. </p><p> Genre is a term that carries different specific meanings within different communities of practice, and the content of most information objects can be characterised by genre at some level of granularity, either very broad or quite specific. For example, photographs and ambrotypes are both valid genre characterizations, depending on your perspective, for a specific type of direct positive photographic print. At the very least, provide a very broad genre term for materials being digitised. Type of Resource, Genre, Form under Physical Description overlap to some degree. </p></div></span></div>
+            <!--genre repeat begins--><xf:repeat nodeset="instance('save-data')/mods:genre" id="genre-repeat">
                 <!--genre input begins-->
                 <!--DLF/Aquifer: N/A-->
                 <!--Cluster: include, with default "code"-->
                 <!-- <xf:select1 ref="./@type"> <xf:label>Type:</xf:label> <xf:hint><p> Hint </p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
                 <!--DLF/Aquifer: REQUIRED-->
-                <!--Cluster: include-->
-                <xf:group ref=".[@authority]" appearance="full">
-                    <xf:select1 ref="./@authority" selection="open">
-                        <xf:label>Authority:</xf:label>
-                        <xf:hint>
-                            <p> The name of the authoritative list for a controlled value is recorded here. </p>
-                            <p> See http://www.loc.gov/standards/sourcelist/genre-form.html for a list of authority files in this area. If you wish to employ one of these, please contact <!--contact-->. </p>
-                        </xf:hint>
-                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item">
-                            <xf:label ref="label"/>
-                            <xf:value ref="value"/>
-                        </xf:itemset>
-                    </xf:select1>
-                </xf:group>
+                <!--Cluster: include--><xf:group ref=".[@authority]" appearance="full"><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p><p> See http://www.loc.gov/standards/sourcelist/genre-form.html for a list of authority files in this area. If you wish to employ one of these, please contact <!--contact-->. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                 <!--DLF/Aquifer: N/A-->
                 <!--Cluster: omit-->
                 <!-- <xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
@@ -51,65 +21,12 @@
                 <!--DLF/Aquifer: N/A-->
                 <!--Cluster: omit-->
                 <!-- <xf:group ref=".[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1></xf:group> -->
-                <div class="hr"/>
                 <!--DLF/Aquifer: REQUIRED-->
-                <!--Cluster: include-->
-                <xf:group ref=".[@authority='marcgt']" appearance="full">
-                    <xf:select1 ref=".">
-                        <xf:label>Genre:</xf:label>
-                        <xf:hint>
-                            <p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p>
-                        </xf:hint>
-                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcgt-code']/items/item">
-                            <xf:label ref="label"/>
-                            <xf:value ref="value"/>
-                        </xf:itemset>
-                    </xf:select1>
-                </xf:group>
-                <xf:group ref=".[@authority='marcsmd']" appearance="full">
-                    <xf:select1 ref=".">
-                        <xf:label>Genre:</xf:label>
-                        <xf:hint>
-                            <p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p>
-                        </xf:hint>
-                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcsmd-code']/items/item">
-                            <xf:label ref="label"/>
-                            <xf:value ref="value"/>
-                        </xf:itemset>
-                    </xf:select1>
-                </xf:group>
-                <!--NB: make other code tables-->
-                <xf:group ref=".[not(@authority='marcgt') and not(@authority='marcsmd')]" appearance="full">
-                    <xf:select1 ref="." selection="open">
-                        <xf:label>Genre:</xf:label>
-                        <xf:hint>
-                            <p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p>
-                        </xf:hint>
-                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcgt-code']/items/item">
-                            <xf:label ref="label"/>
-                            <xf:value ref="value"/>
-                        </xf:itemset>
-                    </xf:select1>
-                </xf:group>
+                <!--Cluster: include--><xf:group ref=".[@authority='marcgt']" appearance="full"><xf:select1 ref="."><xf:label>Genre:</xf:label><xf:hint><p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcgt-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@authority='marcsmd']" appearance="full"><xf:select1 ref="."><xf:label>Genre:</xf:label><xf:hint><p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcsmd-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--NB: make other code tables--><xf:group ref=".[not(@authority='marcgt') and not(@authority='marcsmd')]" appearance="full"><xf:select1 ref="." selection="open"><xf:label>Genre:</xf:label><xf:hint><p> One or more terms that designate a category characterising a particular style, form, or content, such as artistic, musical, literary composition, etc. Genre contains terms that give more specificity than the broad terms used in Type Of Resource. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='genre-marcgt-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                 <!--genre input ends-->
-                <!--genre delete begins-->
-                <xf:trigger ref=".[count(../mods:genre) &gt; 1]" class="delete-button">
-                    <xf:label>Delete This Genre</xf:label>
-                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:genre" at="index('genre-repeat')"/>
-                </xf:trigger>
-                <!--genre delete ends-->
-                <div class="hr"/>
-            </xf:repeat>
+                <!--genre delete begins--><xf:trigger ref=".[count(../mods:genre) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Genre</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:genre" at="index('genre-repeat')"/></xf:trigger>
+                <!--genre delete ends--></xf:repeat>
             <!--genre repeat ends-->
-            <!--genre add begins-->
-            <xf:trigger ref=".[count(mods:genre) &gt; 0]" class="add-button">
-                <xf:label>Add Another Genre</xf:label>
-                <xf:action ev:event="DOMActivate">
-                    <xf:insert nodeset="mods:genre" at="index('genre-repeat')" position="after" origin="instance('insert-templates')/mods:genre"/>
-                    <xf:setvalue ref="instance('save-data')/mods:genre[last()]" value="''"/>
-                </xf:action>
-            </xf:trigger>
-            <!--genre add ends-->
-        </fieldset>
-    </div>
-</div>
+            <!--genre add begins--><xf:trigger ref=".[count(mods:genre) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Genre</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:genre" at="index('genre-repeat')" position="after" origin="instance('insert-templates')/mods:genre"/><xf:setvalue ref="instance('save-data')/mods:genre[last()]" value="''"/></xf:action></xf:trigger>
+            <!--genre add ends--></fieldset></div></div>

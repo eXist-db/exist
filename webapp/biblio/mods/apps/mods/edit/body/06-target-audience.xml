@@ -1,48 +1,16 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="target-audience" tab-id="target-audience">
-    <div class="block-form">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="target-audience" tab-id="target-audience"><div class="block-form">
         <!--DLF/Aquifer: Recommended if applicable-->
     <!--Cluster: hide-->
-    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one targetAudience element when applicable, and a controlled vocabulary when available. This element is repeatable. -->
-        <fieldset>
-            <div class="join">
-                <legend>
-                    <span class="legend">Target Audiences</span>
-                </legend>
-                <span class="xforms-hint">
-                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                    <div class="xforms-hint-value">
-                        <p> Use Target Audience to describe a group for which a resource is intended. </p>
-                        <p> Use this field whenever there is a specific audience for a
+    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one targetAudience element when applicable, and a controlled vocabulary when available. This element is repeatable. --><fieldset class="level-1"><div class="join"><legend><span class="legend">Target Audiences</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Target Audience to describe a group for which a resource is intended. </p><p> Use this field whenever there is a specific audience for a
                         resource (for example, a text marked up specifically for historians). Do not limit the use of Target Audience to the intellectual level of the
-                        audience (as suggested by the marctarget list). </p>
-                        <p> If you wish to add an authority file, or wish to add terms to the Local authority file, please
-                        contact <!--contact-->. When more than one target audience is recorded, the field is repeated. </p>
-                        <p> Use the authority field whenever possible
-                        to indicate the controlled vocabulary used. </p>
-                        <p> Do not use Target Audience to indicate audiences to whom access or use of the resource is limited;
-                        include this information in the Access Condition field. </p>
-                    </div>
-                </span>
-            </div>
-        <!--targetAudience repeat begins-->
-            <xf:repeat nodeset="instance('save-data')/mods:targetAudience" id="target-audience-repeat">
-                <div class="block-form">
-                    <div class="block-form">
+                        audience (as suggested by the marctarget list). </p><p> If you wish to add an authority file, or wish to add terms to the Local authority file, please
+                        contact <!--contact-->. When more than one target audience is recorded, the field is repeated. </p><p> Use the authority field whenever possible
+                        to indicate the controlled vocabulary used. </p><p> Do not use Target Audience to indicate audiences to whom access or use of the resource is limited;
+                        include this information in the Access Condition field. </p></div></span></div>
+        <!--targetAudience repeat begins--><xf:repeat nodeset="instance('save-data')/mods:targetAudience" id="target-audience-repeat"><div class="block-form"><div class="block-form">
                 <!--targetAudience input begins-->
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include-->
-                        <xf:group ref=".[@authority]" appearance="full">
-                            <xf:select1 ref="./@authority" selection="open">
-                                <xf:label>Authority:</xf:label>
-                                <xf:hint>
-                                    <p> The name of the authoritative list for a controlled value is recorded here. </p>
-                                </xf:hint>
-                                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-authority-code']/items/item">
-                                    <xf:label ref="label"/>
-                                    <xf:value ref="value"/>
-                                </xf:itemset>
-                            </xf:select1>
-                        </xf:group>
+                <!--Cluster: include--><xf:group ref=".[@authority]" appearance="full"><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                 <!--DLF/Aquifer: N/A-->
                 <!--Cluster: omit-->
                 <!--Language would follow language of cataloguing.-->
@@ -83,66 +51,16 @@
                                     <xf:label ref="label"/>
                                     <xf:value ref="value"/>
                                 </xf:itemset>
-                            </xf:select1></xf:group> <div class="hr"/> -->
+                            </xf:select1></xf:group> -->
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include-->
-                        <xf:group ref="." appearance="full">
-                            <xf:input ref=".[string-length(@authority)=0]" class="text_50" selection="open">
-                                <xf:label>Target Audience: </xf:label>
-                                <xf:hint>
-                                    <p> Use Target Audience to describe a group for which a resource is intended. </p>
-                                </xf:hint>
-                            </xf:input>
-                        </xf:group>
+                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:input ref=".[string-length(@authority)=0]" class="text_50" selection="open"><xf:label>Target Audience: </xf:label><xf:hint><p> Use Target Audience to describe a group for which a resource is intended. </p></xf:hint></xf:input></xf:group>
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include-->
-                        <xf:group ref="." appearance="full">
-                            <xf:select1 ref=".[@authority='marctarget']" selection="open">
-                                <xf:label>Target Audience:</xf:label>
-                                <xf:hint>
-                                    <p> The name of the authoritative list for a controlled value is recorded here. </p>
-                                </xf:hint>
-                                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-marctarget-code']/items/item">
-                                    <xf:label ref="label"/>
-                                    <xf:value ref="value"/>
-                                </xf:itemset>
-                            </xf:select1>
-                        </xf:group>
+                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:select1 ref=".[@authority='marctarget']" selection="open"><xf:label>Target Audience:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-marctarget-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include-->
-                        <xf:group ref="." appearance="full">
-                            <xf:select1 ref=".[@authority='local']" selection="open">
-                                <xf:label>Target Audience:</xf:label>
-                                <xf:hint>
-                                    <p> The name of the authoritative list for a controlled value is recorded here. </p>
-                                </xf:hint>
-                                <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-local-code']/items/item">
-                                    <xf:label ref="label"/>
-                                    <xf:value ref="value"/>
-                                </xf:itemset>
-                            </xf:select1>
-                        </xf:group>
+                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:select1 ref=".[@authority='local']" selection="open"><xf:label>Target Audience:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-local-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                 <!--targetAudience input ends-->
-                <!--targetAudience delete begins-->
-                    </div>
-                    <xf:trigger ref=".[count(../mods:targetAudience) &gt; 1]" class="delete-button">
-                        <xf:label>Delete This Target Audience</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:targetAudience" at="index('target-audience-repeat')"/>
-                    </xf:trigger>
-            <!--targetAudience delete ends-->
-                    <div class="hr"/>
-                </div>
-            </xf:repeat>
+                <!--targetAudience delete begins--></div><xf:trigger ref=".[count(../mods:targetAudience) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Target Audience</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:targetAudience" at="index('target-audience-repeat')"/></xf:trigger>
+            <!--targetAudience delete ends--></div></xf:repeat>
         <!--targetAudience repeat ends-->
-        <!--targetAudience add begins-->
-            <xf:trigger ref=".[count(mods:targetAudience) &gt; 0]" class="add-button">
-                <xf:label>Add Another Target Audience</xf:label>
-                <xf:action ev:event="DOMActivate">
-                    <xf:insert nodeset="mods:targetAudience" at="index('target-audience-repeat')" position="after" origin="instance('insert-templates')/mods:targetAudience"/>
-                    <xf:setvalue ref="instance('save-data')/mods:targetAudience[last()]" value="''"/>
-                </xf:action>
-            </xf:trigger>
-        <!--targetAudience add ends-->
-        </fieldset>
-    </div>
-</div>
+        <!--targetAudience add begins--><xf:trigger ref=".[count(mods:targetAudience) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Target Audience</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:targetAudience" at="index('target-audience-repeat')" position="after" origin="instance('insert-templates')/mods:targetAudience"/><xf:setvalue ref="instance('save-data')/mods:targetAudience[last()]" value="''"/></xf:action></xf:trigger>
+        <!--targetAudience add ends--></fieldset></div></div>

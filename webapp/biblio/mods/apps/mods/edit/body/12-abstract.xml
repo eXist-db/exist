@@ -1,73 +1,21 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract" tab-id="abstract"><div class="block-form"><fieldset><legend><span class="legend">Abstracts</span></legend><xf:hint><p>
-            Abstract is used to record a succinct summary of some aspect of the content of the resource. 
-            </p><p>
-            Use one Abstract in every record, except when Title Informaiton serves as an adequate summary of the content of the resource.
-            </p><p>
-            When creating a record for a digital surrogate, record a summary of the content of the original resource. 
-            If only a portion of the resource was digitized, summarize only that portion.
-            </p><p>            
-            A link may be supplied in lieu of or in addition to the content.
-            </p><p>
-            Repeat Abstract as many times as necessary.            
-        </p></xf:hint>
-        <!--abstract repeat begins--><xf:repeat nodeset="instance('save-data')/mods:abstract" id="abstract-repeat"><div class="block-form">
-            <!--abstract input begins-->
-                <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-                <!--Cluster: include--><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>
-                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. 
-                        The most common languages have been moved to the top of the list.
-                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                    
-                <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
-                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
-                        xml:lang is used to specify the language used within a field, using specifications in RFC 3066. 
-                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                        </p><p>
-                                The recommendation is not to use xml:lang, but to use the above Language field.
-                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                    
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: include--><xf:select1 ref=".[@type='transliterated']/@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p>
-                                This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
-                        When specificing the transliteration used, also specify the language employed. 
-                        There is at present no standard list of transliteration schemes available.
-                        If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
-                        In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
-                        If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
-                        The following transliteration schemes are authorised by <!--NB-->:
-                        Chinese: pinyin
-                        Japanese: (modified) Hepburn
-                        Korean: <!--NB-->
-                        Russian: <!--NB-->
-                        Sanskrit: <!--NB-->
-                        If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
-                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: include--><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>
-                                This field specifies the script used within individual fields. 
-                        The use of Latin script is not noted.
-                        "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". 
-                        If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. 
-                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                    
-                <!--DLF/Aquifer: NOT RECOMMENDED-->
-                <!--Cluster: omit--><xf:input ref="./@type" class="text_50"><xf:label>Type:</xf:label><xf:hint><p>
-                        Type identifies what type of summary is recorded.
-                        There are no controlled vocabuliries for Type.
-                        Examples include scope, subject, content advice, review.
-                    </p></xf:hint></xf:input>
-                    
-            <!--DLF/Aquifer: OPTIONAL-->
-            <!--Cluster: omit--><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p>
-                        Additional text associated with the abstract when necessary for display purposes.
-                    </p></xf:hint></xf:input><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>Abstract:</xf:label><xf:hint><p>
-                        Abstract is used to record a succinct summary of some aspect of the content of the resource.
-                    </p></xf:hint></xf:textarea>
-            <!--abstract input ends-->
-                    
-            <!--abstract delete begins--><xf:trigger ref="self::node()[count(../mods:abstract) &gt; 1]" class="delete-button"><xf:label>Delete This Abstract</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:abstract" at="index('abstract-repeat')"/></xf:trigger>
-            <!--abstract delete ends--><div class="hr"/></div></xf:repeat>
-        <!--abstract repeat ends-->
-        <!--abstract add begins--><xf:trigger ref="self::node()[count(mods:abstract) &gt; 0]" class="add-button"><xf:label>Add Abstract</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:abstract" at="index('abstract-repeat')" position="after" origin="instance('insert-templates')/mods:abstract"/><xf:setvalue ref="instance('save-data')/mods:abstract[last()]" value="''"/></xf:action></xf:trigger>
-        <!--abstract add ends--></fieldset></div></div>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract" tab-id="abstract"><div class="block-form"><fieldset><div class="join"><legend><span class="legend">Abstracts</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Abstract is used to record a succinct summary of some aspect of the content of the resource. </p><p> Use one Abstract in every record, except when Title Informaiton serves as an adequate summary of the content of the resource. </p><p> When creating a record for a digital surrogate, record a summary of the content of the original resource. If only a portion of the resource was digitized, summarize only that portion. </p><p> A link may be supplied in lieu of or in addition to the content. </p><p> Repeat Abstract as many times as necessary. </p></div></span></div>
+            <!--abstract repeat begins--><xf:repeat nodeset="instance('save-data')/mods:abstract" id="abstract-repeat"><div class="block-form">
+                    <!--abstract input begins-->
+                    <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
+                    <!--Cluster: include--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. The most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                    <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the above Language field. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: include--><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p> This field specifies the transliteration (transcription, romanisation) scheme used within Title Information. When specificing the transliteration used, also specify the language employed. There is at present no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: include--><xf:group ref=".[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> This field specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: NOT RECOMMENDED-->
+                    <!--Cluster: omit--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_50"><xf:label>Type:</xf:label><xf:hint><p> Type identifies what type of summary is recorded. There are no controlled vocabuliries for Type. Examples include scope, subject, content advice, review. </p></xf:hint></xf:input></xf:group>
+                    <!--DLF/Aquifer: OPTIONAL-->
+                    <!--Cluster: omit--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p> Additional text associated with the abstract when necessary for display purposes. </p></xf:hint></xf:input></xf:group><xf:group ref="." appearance="full"><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>Abstract:</xf:label><xf:hint><p> Abstract is used to record a succinct summary of some aspect of the content of the resource. </p></xf:hint></xf:textarea></xf:group>
+                    <!--abstract input ends-->
+                    <!--abstract delete begins--><xf:trigger ref=".[count(../mods:abstract) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Abstract</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:abstract" at="index('abstract-repeat')"/></xf:trigger>
+                    <!--abstract delete ends--></div></xf:repeat>
+            <!--abstract repeat ends-->
+            <!--abstract add begins--><xf:trigger ref=".[count(mods:abstract) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Abstract</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:abstract" at="index('abstract-repeat')" position="after" origin="instance('insert-templates')/mods:abstract"/><xf:setvalue ref="instance('save-data')/mods:abstract[last()]" value="''"/></xf:action></xf:trigger>
+            <!--abstract add ends--></fieldset></div></div>

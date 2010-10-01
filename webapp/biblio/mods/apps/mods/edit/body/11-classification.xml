@@ -1,39 +1,24 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="classification" tab-id="classification"><div class="block-form">
         <!--DLF/Aquifer: OPTIONAL-->
-    <!--Cluster: omit--><fieldset><legend><span class="legend">Classifications</span></legend><xf:hint><p> A designation applied to a resource that indicates the subject by applying a formal system of coding and organising resources according to
-            subject areas. Classification contains the classification number of a resource. It may also include the full call number if desired. </p></xf:hint>
-        <!--classification repeat begins--><xf:repeat nodeset="instance('save-data')/mods:classification" id="classification-repeat"><div class="block-form"><div class="block-form">
-                <!--DLF/Aquifer: REQUIRED-->
-                <!--Cluster: include--><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. Authority contains designation of the source of the
-                        authority for classification schemes. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='classification-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                        
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: include--><xf:input ref="./@edition" class="text_50"><xf:label>Edition:</xf:label><xf:hint><p> This field contains a designation of the edition of the particular classification scheme indicated in authority for those
-                        schemes that are issued in editions. </p></xf:hint></xf:input>
-                        
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label: </xf:label> <xf:hint><p>Hint</p></xf:hint> </xf:input>  -->
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@lang"> <xf:label>Language:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
-                <!--DLF/Aquifer: NOT RECOMMENDED-->
-                <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
-                                    This field is used to specify the language used within a field, using specifications in RFC 3066. 
-                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                            </p><p>
-                                    The recommendation is not to use xml:lang, but to use the above Language field.
-                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
-                        
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@script"> <xf:label>Script:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> -->
-                <!--DLF/Aquifer: N/A-->
-                <!--Cluster: omit-->
-                <!-- <xf:select1 ref="./@transliteration"> <xf:label>Transliteration:</xf:label> <xf:hint><p>Hint</p></xf:hint> <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"> <xf:label ref="label"/> <xf:value ref="value"/> </xf:itemset> </xf:select1> --><xf:input ref="." class="text_50"><xf:label>Classification:</xf:label><xf:hint><p>A designation applied to a resource that indicates the subject by applying a formal system of coding and organising resources
-                        according to subject areas.</p></xf:hint></xf:input></div>
-            <!--classification delete begins--><xf:trigger ref="self::node()[count(../mods:classification) &gt; 1]" class="delete-button"><xf:label>Delete This Classification</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:classification" at="index('classification-repeat')"/></xf:trigger>
-            <!--classification delete ends--><div class="hr"/></div></xf:repeat>
-        <!--classification repeat ends-->
-        <!--classification add begins--><xf:trigger ref="self::node()[count(mods:classification) &gt; 0]" class="add-button"><xf:label>Add Classification</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:classification" at="index('classification-repeat')" position="after" origin="instance('insert-templates')/mods:classification"/><xf:setvalue ref="instance('save-data')/mods:classification[last()]" value="''"/></xf:action></xf:trigger>
-        <!--classification add ends--></fieldset></div></div>
+        <!--Cluster: omit--><fieldset><div class="join"><legend><span class="legend">Classifications</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A designation applied to a resource that indicates the subject by applying a formal system of coding and organising resources according to subject areas. Classification contains the classification number of a resource. It may also include the full call number if desired. </p></div></span></div>
+            <!--classification repeat begins--><xf:repeat nodeset="instance('save-data')/mods:classification" id="classification-repeat"><div class="block-form"><div class="block-form">
+                        <!--DLF/Aquifer: REQUIRED-->
+                        <!--Cluster: include--><xf:group ref=".[@authority]" appearance="full"><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. Authority contains designation of the source of the authority for classification schemes. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='classification-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                        <!--Cluster: include--><xf:group ref=".[@edition]" appearance="full"><xf:input ref="./@edition" class="text_50"><xf:label>Edition:</xf:label><xf:hint><p> This field contains a designation of the edition of the particular classification scheme indicated in authority for those schemes that are issued in editions. </p></xf:hint></xf:input></xf:group>
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit-->
+                        <!-- <xf:input ref="./@displayLabel" class="text_50"> <xf:label>Display Label: </xf:label> <xf:hint><p>Hint</p></xf:hint> </xf:input> -->
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: NOT RECOMMENDED-->
+                        <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> This field is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the above Language field. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit--><xf:group ref=".[@script]" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--DLF/Aquifer: N/A-->
+                        <!--Cluster: omit--><xf:group ref=".[@transliteration]" appearance="full"><xf:select1 ref="./@transliteration"><xf:label>Transliteration:</xf:label><xf:hint><p>Hint</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref="." appearance="full"><xf:input ref="." class="text_50"><xf:label>Classification:</xf:label><xf:hint><p>A designation applied to a resource that indicates the subject by applying a formal system of coding and organising resources according to subject areas.</p></xf:hint></xf:input></xf:group></div>
+                    <!--classification delete begins--><xf:trigger ref=".[count(../mods:classification) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Classification</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:classification" at="index('classification-repeat')"/></xf:trigger>
+                    <!--classification delete ends--></div></xf:repeat>
+            <!--classification repeat ends-->
+            <!--classification add begins--><xf:trigger ref=".[count(mods:classification) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Classification</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:classification" at="index('classification-repeat')" position="after" origin="instance('insert-templates')/mods:classification"/><xf:setvalue ref="instance('save-data')/mods:classification[last()]" value="''"/></xf:action></xf:trigger>
+            <!--classification add ends--></fieldset></div></div>
