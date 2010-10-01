@@ -321,20 +321,20 @@
 
     <!-- External tests -->
 
-    <available file="${junit.reports}/external/XQTS_1_0_2" property="xqts.present"/>
+    <available file="${junit.reports}/external/XQTS_1_0_3" property="xqts.present"/>
 
     <target name="download-xqts" description="Download XQTS file." unless="xqts.present">
         <mkdir dir="${junit.reports}/external"/>
 
         <!-- XML Query Test Suite -->
         <!-- http://www.w3.org/XML/Query/test-suite/          -->
-        <get src="http://www.w3.org/XML/Query/test-suite/XQTS_1_0_2.zip"
-            dest="${junit.reports}/external/XQTS_1_0_2.zip" verbose="true" usetimestamp="true"/>
+        <get src="http://dev.w3.org/2006/xquery-test-suite/PublicPagesStagingArea/XQTS_1_0_3.zip"
+            dest="${junit.reports}/external/XQTS_1_0_3.zip" verbose="true" usetimestamp="true"/>
 
-        <unzip src="${junit.reports}/external/XQTS_1_0_2.zip" dest="${junit.reports}/external/XQTS_1_0_2"/>
+        <unzip src="${junit.reports}/external/XQTS_1_0_3.zip" dest="${junit.reports}/external/XQTS_1_0_3"/>
     </target>
 
-    <available file="${junit.reports}/src/org/exist/xquery/xqts/XQTS_1_0_2" property="xqts_junit.present"/>
+    <available file="${junit.reports}/src/org/exist/xquery/xqts/XQTS_1_0_3" property="xqts_junit.present"/>
 
     <target name="prepare-xqts" depends="download-xqts" unless="xqts_junit.present">
         <!--

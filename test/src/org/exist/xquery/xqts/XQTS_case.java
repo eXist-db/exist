@@ -62,7 +62,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQTS_case extends TestCase {
 
-    private static final String XQTS_folder = "test/external/XQTS_1_0_2/";
+    protected static final String XQTS_folder = "test/external/XQTS_1_0_3/";
     
     private static Map<String, String> sources = null;
     private static Map<String, String> moduleSources = null;
@@ -74,7 +74,7 @@ public class XQTS_case extends TestCase {
             File buildFile = new File("webapp/xqts/build.xml");
             Project p = new Project();
             p.setUserProperty("ant.file", buildFile.getAbsolutePath());
-            p.setUserProperty("config.basedir", "../../test/external/XQTS_1_0_2");
+            p.setUserProperty("config.basedir", "../../"+XQTS_folder);
             DefaultLogger consoleLogger = new DefaultLogger();
             consoleLogger.setErrorPrintStream(System.err);
             consoleLogger.setOutputPrintStream(System.out);
@@ -113,7 +113,7 @@ public class XQTS_case extends TestCase {
 
             for (int i = 0; i < results.getSize(); i++) {
                 ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
-                sources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName"));
+                sources.put(source.getAttribute("ID"), XQTS_folder + source.getAttribute("FileName"));
             }
         }
         if (moduleSources == null) {
@@ -309,7 +309,7 @@ public class XQTS_case extends TestCase {
                 for (int i = 0; i < outputFiles.getLength(); i++) {
                     ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
 
-                    if (compareResult(script, "XQTS_1_0_2/ExpectedTestResults/"+folder, outputFile, result)) {
+                    if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
                         ok = true;
                         break;
                     }
