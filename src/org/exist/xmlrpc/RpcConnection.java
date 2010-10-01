@@ -1645,7 +1645,7 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
-     * The method <code>getUser</code>
+     * The method <code>getAccount</code>
      *
      * @param name a <code>String</code> value
      * @return a <code>HashMap</code> value
@@ -1656,7 +1656,7 @@ public class RpcConnection implements RpcAPI {
             PermissionDeniedException {
         Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
         if (u == null)
-            throw new EXistException("user " + name + " does not exist");
+            throw new EXistException("account '" + name + "' does not exist");
         HashMap<String, Object> tab = new HashMap<String, Object>();
         tab.put("name", u.getName());
         Vector<String> groups = new Vector<String>();
@@ -1670,7 +1670,7 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
-     * The method <code>getUsers</code>
+     * The method <code>getAccounts</code>
      *
      * @return a <code>Vector</code> value
      * @exception EXistException if an error occurs
@@ -1729,13 +1729,16 @@ public class RpcConnection implements RpcAPI {
     @Override
     public void removeGroup(String name) throws EXistException, PermissionDeniedException {
 
-        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-
-        if (!manager.hasAdminPrivileges(user)){
-            throw new PermissionDeniedException( "you are not allowed to remove users");
-        }
+    	DBBroker broker = null; 
+        BrokerPool database = factory.getBrokerPool();
         
-        factory.getBrokerPool().getSecurityManager().deleteGroup(name);
+        try {
+        	broker = database.get(user);
+
+            database.getSecurityManager().deleteGroup(name);
+        } finally {
+        	database.release(broker);
+        }
     }
 
 
@@ -3565,7 +3568,17 @@ public class RpcConnection implements RpcAPI {
         		throw new EXistException("Invalid home URI",e);
         	}
         }
-         manager.addAccount(u);
+        
+        DBBroker broker = null;
+        BrokerPool database = factory.getBrokerPool();
+        try {
+        	broker = database.get(user);
+
+            manager.addAccount(u);
+        } finally {
+        	database.release(broker);
+        }
+        
         return true;
     }
     
