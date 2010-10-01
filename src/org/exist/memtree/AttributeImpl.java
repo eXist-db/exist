@@ -21,22 +21,20 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.QName;
+import org.exist.numbering.NodeId;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 
-import org.exist.dom.QName;
-import org.exist.dom.QNameable;
-import org.exist.numbering.NodeId;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
-
-public class AttributeImpl extends NodeImpl implements Attr, QNameable
+public class AttributeImpl extends NodeImpl implements Attr
 {
     public static final int ATTR_CDATA_TYPE  = 0;
     public static final int ATTR_ID_TYPE     = 1;
@@ -54,12 +52,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
         super( doc, nodeNumber );
     }
 
+    @Override
     public NodeId getNodeId()
     {
         return( document.attrNodeId[nodeNumber] );
     }
 
 
+    @Override
     public QName getQName()
     {
         return( document.attrName[nodeNumber] );
@@ -78,6 +78,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeName()
      */
+    @Override
     public String getNodeName()
     {
         return( getQName().getStringValue() );
@@ -87,6 +88,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeType()
      */
+    @Override
     public short getNodeType()
     {
         return( Node.ATTRIBUTE_NODE );
@@ -96,6 +98,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.exist.memtree.NodeImpl#getType()
      */
+    @Override
     public int getType()
     {
         return( Type.ATTRIBUTE );
@@ -105,6 +108,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getLocalName()
      */
+    @Override
     public String getLocalName()
     {
         return( getQName().getLocalName() );
@@ -114,6 +118,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNamespaceURI()
      */
+    @Override
     public String getNamespaceURI()
     {
         return( getQName().getNamespaceURI() );
@@ -123,12 +128,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getPrefix()
      */
+    @Override
     public String getPrefix()
     {
         return( getQName().getPrefix() );
     }
 
 
+    @Override
     public String getBaseURI()
     {
         Node e = document.getNode( document.attrParent[nodeNumber] );
@@ -141,6 +148,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     }
 
 
+    @Override
     public Node getFirstChild()
     {
         return( null );
@@ -168,12 +176,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeValue()
      */
+    @Override
     public String getNodeValue() throws DOMException
     {
         return( document.attrValue[nodeNumber] );
     }
 
 
+    @Override
     public String getStringValue() throws DOMException
     {
         return( document.attrValue[nodeNumber] );
@@ -183,6 +193,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
      */
+    @Override
     public void setNodeValue( String arg0 ) throws DOMException
     {
         // This method was added to enable the SQL XQuery Exztension Module to change the value of an attribute after the fact - Andrzej
@@ -207,6 +218,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     }
 
 
+    @Override
     public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException
     {
         if( test.matches( this ) ) {
@@ -218,6 +230,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */
+    @Override
     public Node getParentNode()
     {
         int parent = document.attrParent[nodeNumber];
@@ -229,6 +242,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     }
 
 
+    @Override
     public Node selectParentNode()
     {
         return( getParentNode() );
@@ -258,12 +272,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable
     }
 
 
+    @Override
     public int getItemType()
     {
         return( Type.ATTRIBUTE );
     }
 
 
+    @Override
     public String toString()
     {
         StringBuilder result = new StringBuilder();
