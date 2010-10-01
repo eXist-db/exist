@@ -518,7 +518,9 @@ public class QueryDialog extends JFrame {
 				long t0 = System.currentTimeMillis();
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
-				context = ((CompiledXQuery)compiled).getContext();
+				// Check could also be collection instanceof LocalCollection
+				if(compiled instanceof CompiledXQuery)
+					context = ((CompiledXQuery)compiled).getContext();
 				tCompiled = t1 - t0;
 				
 				// In this way we can see the parsed structure meanwhile the query is
