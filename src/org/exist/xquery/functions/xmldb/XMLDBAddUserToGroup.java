@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.Subject;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -40,6 +40,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.security.SecurityManager;
+import org.exist.storage.BrokerPool;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -89,21 +90,38 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
-
+        
+        if (!context.getUser().hasGroup(groupName)) {
+            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a memeber of '"+groupName+"' to add users to the '"+groupName+"' group.");
+            logger.error("Invalid user", xPathException);
+            throw xPathException;
+        }
+        
         logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
         
-	try {
-            SecurityManager securityManager = context.getBroker().getBrokerPool().getSecurityManager();
-            Group group = securityManager.getGroup(groupName);
+		try {
+			BrokerPool database = context.getBroker().getBrokerPool();
+			
+            SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
+            
+            Subject currentSubject = database.getSubject();
+            try {
+            	database.setSubject(sm.getSystemSubject());
+            	
+            	Group group = sm.getGroup(groupName);
+            
+            	Account account = sm.getAccount(userName);
 
-            Account user = securityManager.getAccount(userName);
-            user.addGroup(group);
-            securityManager.updateAccount(user);
+	            account.addGroup(group);
+	            sm.updateAccount(account);
+            } finally {
+            	database.setSubject(currentSubject);
+            }
 
             return BooleanValue.TRUE;
-			
-	} catch (PermissionDeniedException pde) {
-	    logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", pde);
+				
+		} catch (PermissionDeniedException pde) {
+			logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", pde);
         } catch (EXistException exe) {
             logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", exe);
         }
