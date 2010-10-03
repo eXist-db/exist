@@ -306,17 +306,7 @@ declare function security:set-group-can-write-collection($collection, $group as 
 
 declare function security:create-group($group-name as xs:string, $group-member as xs:string*) as xs:boolean
 {
-    if(xmldb:create-group($group-name))then
-    (
-        let $results:= for $gm in $group-member return
-            xmldb:add-user-to-group($gm, $group-name)
-        return
-            not($results = false())        
-    )
-    else
-    (
-        false()
-    )
+    xmldb:create-group($group-name, $group-member)
 };
 
 declare function security:set-group-can-read-resource($group-name as xs:string, $resource as xs:string, $read as xs:boolean) as xs:boolean
