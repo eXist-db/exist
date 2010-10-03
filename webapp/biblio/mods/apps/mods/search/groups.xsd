@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xh="http://www.w3.org/1999/xhtml" targetNamespace="http://exist-db.org/mods/sharing/group">
+    <xs:annotation>
+        <xs:documentation>
+            <xh:p>Schema for describing sharing groups within the biblio mods search web application</xh:p>
+        </xs:documentation>
+    </xs:annotation>
+    <xs:element name="group">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="system">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="owner" type="xs:string"/>
+                            <xs:element name="group" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="name" type="xs:string"/>
+            </xs:sequence>
+            <xs:attribute name="id" use="required" type="xs:ID"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

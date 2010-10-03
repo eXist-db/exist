@@ -52,13 +52,20 @@ declare function local:collections($root as xs:string) {
                                             ()
                                 }
                             }}</s>
-                    )else()
+                    )else(),
+                    
+                    (: groups collection of shared group items :)
+                    <s>{{ "title": "Groups", "isFolder": true, "key": "{$sharing:groups-collection}",
+                                "writable": false,
+                                "addClass": "readable",
+                                "icon": "../css/dynatree/ltFld.groups.gif"
+                            }}</s>
                 )
                 
                 (: groups collection is treated specially, i.e. skipped :)
                 else if($root eq $sharing:groups-collection)then
-                ()
-                
+                (
+                )
                 else
                 (   (: normal collection:)
                     <s>{{ "title": "{fn:replace($root, '.*/','')}", "isFolder": true, "key": "{$root}",
