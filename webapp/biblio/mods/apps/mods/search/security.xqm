@@ -324,3 +324,27 @@ declare function security:set-group-can-read-resource($group-name as xs:string, 
             
             true()
 };
+
+declare function security:set-resource-permissions($resource as xs:string, $owner as xs:string, $group as xs:string, $owner-read as xs:boolean, $owner-write as xs:boolean, $group-read as xs:boolean, $group-write as xs:boolean, $other-read as xs:boolean, $other-write as xs:boolean) as empty() {
+    let $permissions := fn:concat(
+        if($owner-read)then("r")else("-"),
+        if($owner-write)then("w")else("-"),
+        if($owner-write)then("u")else("-"),
+        
+        if($group-read)then("r")else("-"),
+        if($group-write)then("w")else("-"),
+        if($group-write)then("u")else("-"),
+        
+        if($other-read)then("r")else("-"),
+        if($other-write)then("w")else("-"),
+        if($other-write)then("u")else("-")
+    ) return
+        let $collection-uri := fn:replace($resource, "(.*)/.*", "$1"),
+        $resource-uri := fn:replace($resource, ".*/", "") return
+            xmldb:set-resource-permissions($collection-uri, $resource-uri, $owner, $group, xmldb:string-to-permissions($permissions))
+};
+
+declare function security:get-groups($user as xs:string) as xs:string*
+{
+    xmldb:get-user-groups($user)
+};
