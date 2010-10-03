@@ -117,9 +117,9 @@ declare function sharing:share-with-group($collection as xs:string, $groupId as 
     )
 };
 
-declare function sharing:is-group-owner($groupId as xs:string, $user as xs:string) as xs:boolean
+declare function sharing:is-group-owner($group-id as xs:string, $user as xs:string) as xs:boolean
 {
-    exists(fn:collection($sharing:groups-collection)/group:group[@id eq $groupId]/group:system[group:owner eq $user])
+    exists(sharing:get-group($group-id)/group:system[group:owner eq $user])
 };
 
 declare function sharing:create-group($group-name as xs:string, $owner as xs:string, $group-member as xs:string*) as xs:string?
@@ -138,8 +138,23 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
                     <group:name>{$group-name}</group:name>
                 </group:group>
             ) return
+                 security:set-resource-permissions($group-doc, $owner, $group-name, true(), true(), true(), false(), false(), false()),
                  $new-group-id
         )
-        else()
-    
+        else() 
+};   
+
+declare function sharing:get-users-groups($user as xs:string) as element(group:group)*
+{
+    fn:collection($sharing:groups-collection)/group:group[group:system/group:group = security:get-groups($user)]       
+};
+
+declare function sharing:get-group($group-id as xs:string) as element(group:group) {
+    fn:collection($sharing:groups-collection)/group:group[@id eq $group-id]
+};
+
+declare function sharing:get-group-collections($group-id as xs:string, $collection as xs:string) as xs:string*
+{
+    let $system-group := sharing:get-group($group-id) return
+        xmldb:get-child-collections($collection) (:[security:get-group(.) eq $system-group]:)
 };
