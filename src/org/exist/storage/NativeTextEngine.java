@@ -1253,8 +1253,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
-                    } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
+                    //} catch (ReadOnlyException e) {
+                        //LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } catch (IOException e) {
                         LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } finally {
