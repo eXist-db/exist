@@ -12,6 +12,7 @@
  :       <p>An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</p>
  :       <p>An element with a single text child becomes a property with the value of the text child, i.e.
  :       &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}</p>
+ :       <p>If the attribute json:literal="true" is present on an element, then its text value is considered literal and not quoted as a string. Useful for boolean and numberic values!</p>
  :)
 module namespace json="http://www.json.org";
 
@@ -34,7 +35,12 @@ declare function json:element-helper($attribs as attribute()*, $children as node
         if ($children instance of text()+) then
             for $text in $children
             return
-                concat('"#text": "', $text, '"')
+                if($text/parent::node()/@json:literal)then
+                (
+                    $text
+                )else(
+                    concat('"#text": "', $text, '"')
+                )
         else
             for $name in distinct-values(for $c in $children return node-name($c))
             return
@@ -62,7 +68,7 @@ declare function json:contents-to-json($node as node()) {
                 if (count($children) eq 0 and count($attribs) eq 0) then
                     'null'
                 (: XML: <e>text</e> JSON: "e": "text" :)
-                else if (count($children) eq 1 and count($attribs) eq 0 
+                else if (count($children) eq 1 and (count($attribs) eq 0 or $attribs[name() eq "json:literal"]) 
                     and $children[1] instance of text()) then
                     json:node-to-json($children[1])
                 else
@@ -70,7 +76,11 @@ declare function json:contents-to-json($node as node()) {
         case $attr as attribute() return
             concat('"', string($attr), '"')
         case $text as text() return
-            concat('"', $text, '"')
+            if($text/parent::node()/@json:literal)then(
+                $text
+            ) else (
+                concat('"', $text, '"')
+            )
         default return ()
 };
 (:~
@@ -90,7 +100,9 @@ declare function json:node-to-json($node as node()+) {
                 ']'
             )
         case $attr as attribute() return
-            concat('"@', node-name($attr), '": ', json:contents-to-json($attr))
+            if(name($attr) ne "json:literal")then(
+                concat('"@', node-name($attr), '": ', json:contents-to-json($attr))
+            )else()
         default return
             json:contents-to-json($node)
 };
