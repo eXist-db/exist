@@ -1,2 +1,3546 @@
-<code-table><code-table-name>language-3-type-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt</basis><description/><notes>See also http://www.loc.gov/standards/codelists/languages.xml, http://www.loc.gov/marc/languages/language_code.html.
-    </notes><items><item><label>(none selected)</label><value/></item><item><value>ara</value><valueTerm/><valueTwo>ar</valueTwo><label>Arabic</label><labelFrench>arabe</labelFrench></item><item><value>chi</value><valueTerm>zho</valueTerm><valueTwo>zh</valueTwo><label>Chinese</label><labelFrench>chinois</labelFrench></item><item><value>eng</value><valueTerm/><valueTwo>en</valueTwo><label>English</label><labelFrench>anglais</labelFrench></item><item><value>fre</value><valueTerm>fra</valueTerm><valueTwo>fr</valueTwo><label>French</label><labelFrench>français</labelFrench></item><item><value>ger</value><valueTerm>deu</valueTerm><valueTwo>de</valueTwo><label>German</label><labelFrench>allemand</labelFrench></item><item><value>hin</value><valueTerm/><valueTwo>hi</valueTwo><label>Hindi</label><labelFrench>hindi</labelFrench></item><item><value>jpn</value><valueTerm/><valueTwo>ja</valueTwo><label>Japanese</label><labelFrench>japonais</labelFrench></item><item><value>rus</value><valueTerm/><valueTwo>ru</valueTwo><label>Russian</label><labelFrench>russe</labelFrench></item><item><value>san</value><valueTerm/><valueTwo>sa</valueTwo><label>Sanskrit</label><labelFrench>sanskrit</labelFrench></item><item><label>---</label><value> </value></item><item><value>aar</value><valueTerm/><valueTwo>aa</valueTwo><label>Afar</label><labelFrench>afar</labelFrench></item><item><value>abk</value><valueTerm/><valueTwo>ab</valueTwo><label>Abkhazian</label><labelFrench>abkhaze</labelFrench></item><item><value>ace</value><valueTerm/><label>Achinese</label><labelFrench>aceh</labelFrench></item><item><value>ach</value><valueTerm/><label>Acoli</label><labelFrench>acoli</labelFrench></item><item><value>ada</value><valueTerm/><label>Adangme</label><labelFrench>adangme</labelFrench></item><item><value>ady</value><valueTerm/><label>Adyghe<!--; Adygei--></label><labelFrench>adyghé</labelFrench></item><item><value>afa</value><valueTerm/><label>Afro-Asiatic languages</label><labelFrench>afro-asiatiques, langues</labelFrench></item><item><value>afh</value><valueTerm/><label>Afrihili</label><labelFrench>afrihili</labelFrench></item><item><value>afr</value><valueTerm/><valueTwo>af</valueTwo><label>Afrikaans</label><labelFrench>afrikaans</labelFrench></item><item><value>ain</value><valueTerm/><label>Ainu</label><labelFrench>a√Ønou</labelFrench></item><item><value>aka</value><valueTerm/><valueTwo>ak</valueTwo><label>Akan</label><labelFrench>akan</labelFrench></item><item><value>akk</value><valueTerm/><label>Akkadian</label><labelFrench>akkadien</labelFrench></item><item><value>alb</value><valueTerm>sqi</valueTerm><valueTwo>sq</valueTwo><label>Albanian</label><labelFrench>albanais</labelFrench></item><item><value>ale</value><valueTerm/><label>Aleut</label><labelFrench>aléoute</labelFrench></item><item><value>alg</value><valueTerm/><label>Algonquian languages</label><labelFrench>algonquines, langues</labelFrench></item><item><value>alt</value><valueTerm/><label>Southern Altai</label><labelFrench>altai du Sud</labelFrench></item><item><value>amh</value><valueTerm/><valueTwo>am</valueTwo><label>Amharic</label><labelFrench>amharique</labelFrench></item><item><value>ang</value><valueTerm/><label>English, Old<!-- (ca.450-1100)--></label><labelFrench>anglo-saxon (ca.450-1100)</labelFrench></item><item><value>anp</value><valueTerm/><label>Angika</label><labelFrench>angika</labelFrench></item><item><value>apa</value><valueTerm/><label>Apache languages</label><labelFrench>apaches, langues</labelFrench></item><item><value>arc</value><valueTerm/><label>Official Aramaic<!-- (700-300 BCE)--><!--; Imperial Aramaic (700-300 BCE)--></label><labelFrench>araméen d'empire (700-300 BCE)</labelFrench></item><item><value>arg</value><valueTerm/><valueTwo>an</valueTwo><label>Aragonese</label><labelFrench>aragonais</labelFrench></item><item><value>arm</value><valueTerm>hye</valueTerm><valueTwo>hy</valueTwo><label>Armenian</label><labelFrench>arménien</labelFrench></item><item><value>arn</value><valueTerm/><label>Mapudungun<!--; Mapuche--></label><labelFrench>mapudungun; mapuche; mapuce</labelFrench></item><item><value>arp</value><valueTerm/><label>Arapaho</label><labelFrench>arapaho</labelFrench></item><item><value>art</value><valueTerm/><label>Artificial languages</label><labelFrench>artificielles, langues</labelFrench></item><item><value>arw</value><valueTerm/><label>Arawak</label><labelFrench>arawak</labelFrench></item><item><value>asm</value><valueTerm/><valueTwo>as</valueTwo><label>Assamese</label><labelFrench>assamais</labelFrench></item><item><value>ast</value><valueTerm/><label>Asturian<!--; Bable; Leonese; Asturleonese--></label><labelFrench>asturien; bable; léonais; asturoléonais</labelFrench></item><item><value>ath</value><valueTerm/><label>Athapascan languages</label><labelFrench>athapascanes, langues</labelFrench></item><item><value>aus</value><valueTerm/><label>Australian languages</label><labelFrench>australiennes, langues</labelFrench></item><item><value>ava</value><valueTerm/><valueTwo>av</valueTwo><label>Avaric</label><labelFrench>avar</labelFrench></item><item><value>ave</value><valueTerm/><valueTwo>ae</valueTwo><label>Avestan</label><labelFrench>avestique</labelFrench></item><item><value>awa</value><valueTerm/><label>Awadhi</label><labelFrench>awadhi</labelFrench></item><item><value>aym</value><valueTerm/><valueTwo>ay</valueTwo><label>Aymara</label><labelFrench>aymara</labelFrench></item><item><value>aze</value><valueTerm/><valueTwo>az</valueTwo><label>Azerbaijani</label><labelFrench>azéri</labelFrench></item><item><value>bad</value><valueTerm/><label>Banda languages</label><labelFrench>banda, langues</labelFrench></item><item><value>bai</value><valueTerm/><label>Bamileke languages</label><labelFrench>bamiléké, langues</labelFrench></item><item><value>bak</value><valueTerm/><valueTwo>ba</valueTwo><label>Bashkir</label><labelFrench>bachkir</labelFrench></item><item><value>bal</value><valueTerm/><label>Baluchi</label><labelFrench>baloutchi</labelFrench></item><item><value>bam</value><valueTerm/><valueTwo>bm</valueTwo><label>Bambara</label><labelFrench>bambara</labelFrench></item><item><value>ban</value><valueTerm/><label>Balinese</label><labelFrench>balinais</labelFrench></item><item><value>baq</value><valueTerm>eus</valueTerm><valueTwo>eu</valueTwo><label>Basque</label><labelFrench>basque</labelFrench></item><item><value>bas</value><valueTerm/><label>Basa</label><labelFrench>basa</labelFrench></item><item><value>bat</value><valueTerm/><label>Baltic languages</label><labelFrench>baltes, langues</labelFrench></item><item><value>bej</value><valueTerm/><label>Beja<!--; Bedawiyet--></label><labelFrench>bedja</labelFrench></item><item><value>bel</value><valueTerm/><valueTwo>be</valueTwo><label>Belarusian</label><labelFrench>biélorusse</labelFrench></item><item><value>bem</value><valueTerm/><label>Bemba</label><labelFrench>bemba</labelFrench></item><item><value>ben</value><valueTerm/><valueTwo>bn</valueTwo><label>Bengali</label><labelFrench>bengali</labelFrench></item><item><value>ber</value><valueTerm/><label>Berber languages</label><labelFrench>berb√®res, langues</labelFrench></item><item><value>bho</value><valueTerm/><label>Bhojpuri</label><labelFrench>bhojpuri</labelFrench></item><item><value>bih</value><valueTerm/><valueTwo>bh</valueTwo><label>Bihari languages</label><labelFrench>langues biharis</labelFrench></item><item><value>bik</value><valueTerm/><label>Bikol</label><labelFrench>bikol</labelFrench></item><item><value>bin</value><valueTerm/><label>Bini<!--; Edo--></label><labelFrench>bini; edo</labelFrench></item><item><value>bis</value><valueTerm/><valueTwo>bi</valueTwo><label>Bislama</label><labelFrench>bichlamar</labelFrench></item><item><value>bla</value><valueTerm/><label>Siksika</label><labelFrench>blackfoot</labelFrench></item><item><value>bnt</value><valueTerm/><label>Bantu (Other)</label><labelFrench>bantoues, autres langues</labelFrench></item><item><value>bos</value><valueTerm/><valueTwo>bs</valueTwo><label>Bosnian</label><labelFrench>bosniaque</labelFrench></item><item><value>bra</value><valueTerm/><label>Braj</label><labelFrench>braj</labelFrench></item><item><value>bre</value><valueTerm/><valueTwo>br</valueTwo><label>Breton</label><labelFrench>breton</labelFrench></item><item><value>btk</value><valueTerm/><label>Batak languages</label><labelFrench>batak, langues</labelFrench></item><item><value>bua</value><valueTerm/><label>Buriat</label><labelFrench>bouriate</labelFrench></item><item><value>bug</value><valueTerm/><label>Buginese</label><labelFrench>bugi</labelFrench></item><item><value>bul</value><valueTerm/><valueTwo>bg</valueTwo><label>Bulgarian</label><labelFrench>bulgare</labelFrench></item><item><value>bur</value><valueTerm>mya</valueTerm><valueTwo>my</valueTwo><label>Burmese</label><labelFrench>birman</labelFrench></item><item><value>byn</value><valueTerm/><label>Blin<!--; Bilin--></label><labelFrench>blin; bilen</labelFrench></item><item><value>cad</value><valueTerm/><label>Caddo</label><labelFrench>caddo</labelFrench></item><item><value>cai</value><valueTerm/><label>Central American Indian languages</label><labelFrench>amérindiennes de L'Amérique centrale, langues</labelFrench></item><item><value>car</value><valueTerm/><label>Galibi Carib</label><labelFrench>karib<!--; galibi; carib--></labelFrench></item><item><value>cat</value><valueTerm/><valueTwo>ca</valueTwo><label>Catalan<!--; Valencian--></label><labelFrench>catalan; valencien</labelFrench></item><item><value>cau</value><valueTerm/><label>Caucasian languages</label><labelFrench>caucasiennes, langues</labelFrench></item><item><value>ceb</value><valueTerm/><label>Cebuano</label><labelFrench>cebuano</labelFrench></item><item><value>cel</value><valueTerm/><label>Celtic languages</label><labelFrench>celtiques, langues; celtes, langues</labelFrench></item><item><value>cha</value><valueTerm/><valueTwo>ch</valueTwo><label>Chamorro</label><labelFrench>chamorro</labelFrench></item><item><value>chb</value><valueTerm/><label>Chibcha</label><labelFrench>chibcha</labelFrench></item><item><value>che</value><valueTerm/><valueTwo>ce</valueTwo><label>Chechen</label><labelFrench>tchétch√®ne</labelFrench></item><item><value>chg</value><valueTerm/><label>Chagatai</label><labelFrench>djaghata√Ø</labelFrench></item><item><value>chk</value><valueTerm/><label>Chuukese</label><labelFrench>chuuk</labelFrench></item><item><value>chm</value><valueTerm/><label>Mari</label><labelFrench>mari</labelFrench></item><item><value>chn</value><valueTerm/><label>Chinook jargon</label><labelFrench>chinook, jargon</labelFrench></item><item><value>cho</value><valueTerm/><label>Choctaw</label><labelFrench>choctaw</labelFrench></item><item><value>chp</value><valueTerm/><label>Chipewyan<!--; Dene Suline--></label><labelFrench>chipewyan</labelFrench></item><item><value>chr</value><valueTerm/><label>Cherokee</label><labelFrench>cherokee</labelFrench></item><item><value>chu</value><valueTerm/><valueTwo>cu</valueTwo><label>Church Slavic<!--; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic--></label><labelFrench>slavon d'église; vieux slave; slavon liturgique; vieux bulgare</labelFrench></item><item><value>chv</value><valueTerm/><valueTwo>cv</valueTwo><label>Chuvash</label><labelFrench>tchouvache</labelFrench></item><item><value>chy</value><valueTerm/><label>Cheyenne</label><labelFrench>cheyenne</labelFrench></item><item><value>cmc</value><valueTerm/><label>Chamic languages</label><labelFrench>chames, langues</labelFrench></item><item><value>cop</value><valueTerm/><label>Coptic</label><labelFrench>copte</labelFrench></item><item><value>cor</value><valueTerm/><valueTwo>kw</valueTwo><label>Cornish</label><labelFrench>cornique</labelFrench></item><item><value>cos</value><valueTerm/><valueTwo>co</valueTwo><label>Corsican</label><labelFrench>corse</labelFrench></item><item><value>cpe</value><valueTerm/><label>Creoles and pidgins, English based</label><labelFrench>créoles et pidgins basés sur l'anglais</labelFrench></item><item><value>cpf</value><valueTerm/><label>Creoles and pidgins, French-based </label><labelFrench>créoles et pidgins basés sur le français</labelFrench></item><item><value>cpp</value><valueTerm/><label>Creoles and pidgins, Portuguese-based </label><labelFrench>créoles et pidgins basés sur le portugais</labelFrench></item><item><value>cre</value><valueTerm/><valueTwo>cr</valueTwo><label>Cree</label><labelFrench>cree</labelFrench></item><item><value>crh</value><valueTerm/><label>Crimean Tatar<!--; Crimean Turkish--></label><labelFrench>tatar de Crimé</labelFrench></item><item><value>crp</value><valueTerm/><label>Creoles and pidgins </label><labelFrench>créoles et pidgins</labelFrench></item><item><value>csb</value><valueTerm/><label>Kashubian</label><labelFrench>kachoube</labelFrench></item><item><value>cus</value><valueTerm/><label>Cushitic languages</label><labelFrench>couchitiques, langues</labelFrench></item><item><value>cze</value><valueTerm>ces</valueTerm><valueTwo>cs</valueTwo><label>Czech</label><labelFrench>tch√®que</labelFrench></item><item><value>dak</value><valueTerm/><label>Dakota</label><labelFrench>dakota</labelFrench></item><item><value>dan</value><valueTerm/><valueTwo>da</valueTwo><label>Danish</label><labelFrench>danois</labelFrench></item><item><value>dar</value><valueTerm/><label>Dargwa</label><labelFrench>dargwa</labelFrench></item><item><value>day</value><valueTerm/><label>Land Dayak languages</label><labelFrench>dayak, langues</labelFrench></item><item><value>del</value><valueTerm/><label>Delaware</label><labelFrench>delaware</labelFrench></item><item><value>den</value><valueTerm/><label>Slave<!-- (Athapascan)--></label><labelFrench>esclave (athapascan)</labelFrench></item><item><value>dgr</value><valueTerm/><label>Dogrib</label><labelFrench>dogrib</labelFrench></item><item><value>din</value><valueTerm/><label>Dinka</label><labelFrench>dinka</labelFrench></item><item><value>div</value><valueTerm/><valueTwo>dv</valueTwo><label>Divehi<!--; Dhivehi; Maldivian--></label><labelFrench>maldivien</labelFrench></item><item><value>doi</value><valueTerm/><label>Dogri</label><labelFrench>dogri</labelFrench></item><item><value>dra</value><valueTerm/><label>Dravidian languages</label><labelFrench>dravidiennes, langues</labelFrench></item><item><value>dsb</value><valueTerm/><label>Lower Sorbian</label><labelFrench>bas-sorabe</labelFrench></item><item><value>dua</value><valueTerm/><label>Duala</label><labelFrench>douala</labelFrench></item><item><value>dum</value><valueTerm/><label>Dutch, Middle<!-- (ca.1050-1350)--></label><labelFrench>néerlandais moyen (ca. 1050-1350)</labelFrench></item><item><value>dut</value><valueTerm>nld</valueTerm><valueTwo>nl</valueTwo><label>Dutch<!--; Flemish--></label><labelFrench>néerlandais; flamand</labelFrench></item><item><value>dyu</value><valueTerm/><label>Dyula</label><labelFrench>dioula</labelFrench></item><item><value>dzo</value><valueTerm/><valueTwo>dz</valueTwo><label>Dzongkha</label><labelFrench>dzongkha</labelFrench></item><item><value>efi</value><valueTerm/><label>Efik</label><labelFrench>efik</labelFrench></item><item><value>egy</value><valueTerm/><label>Egyptian (Ancient)</label><labelFrench>égyptien</labelFrench></item><item><value>eka</value><valueTerm/><label>Ekajuk</label><labelFrench>ekajuk</labelFrench></item><item><value>elx</value><valueTerm/><label>Elamite</label><labelFrench>élamite</labelFrench></item><item><value>enm</value><valueTerm/><label>English, Middle<!-- (1100-1500)--></label><labelFrench>anglais moyen (1100-1500)</labelFrench></item><item><value>epo</value><valueTerm/><valueTwo>eo</valueTwo><label>Esperanto</label><labelFrench>espéranto</labelFrench></item><item><value>est</value><valueTerm/><valueTwo>et</valueTwo><label>Estonian</label><labelFrench>estonien</labelFrench></item><item><value>ewe</value><valueTerm/><valueTwo>ee</valueTwo><label>Ewe</label><labelFrench>éwé</labelFrench></item><item><value>ewo</value><valueTerm/><label>Ewondo</label><labelFrench>éwondo</labelFrench></item><item><value>fan</value><valueTerm/><label>Fang</label><labelFrench>fang</labelFrench></item><item><value>fao</value><valueTerm/><valueTwo>fo</valueTwo><label>Faroese</label><labelFrench>féro√Øen</labelFrench></item><item><value>fat</value><valueTerm/><label>Fanti</label><labelFrench>fanti</labelFrench></item><item><value>fij</value><valueTerm/><valueTwo>fj</valueTwo><label>Fijian</label><labelFrench>fidjien</labelFrench></item><item><value>fil</value><valueTerm/><label>Filipino<!--; Pilipino--></label><labelFrench>filipino; pilipino</labelFrench></item><item><value>fin</value><valueTerm/><valueTwo>fi</valueTwo><label>Finnish</label><labelFrench>finnois</labelFrench></item><item><value>fiu</value><valueTerm/><label>Finno-Ugrian languages</label><labelFrench>finno-ougriennes, langues</labelFrench></item><item><value>fon</value><valueTerm/><label>Fon</label><labelFrench>fon</labelFrench></item><item><value>frm</value><valueTerm/><label>French, Middle<!-- (ca.1400-1600)--></label><labelFrench>français moyen (1400-1600)</labelFrench></item><item><value>fro</value><valueTerm/><label>French, Old<!-- (842-ca.1400)--></label><labelFrench>français ancien (842-ca.1400)</labelFrench></item><item><value>frr</value><valueTerm/><label>Northern Frisian</label><labelFrench>frison septentrional</labelFrench></item><item><value>frs</value><valueTerm/><label>Eastern Frisian</label><labelFrench>frison oriental</labelFrench></item><item><value>fry</value><valueTerm/><valueTwo>fy</valueTwo><label>Western Frisian</label><labelFrench>frison occidental</labelFrench></item><item><value>ful</value><valueTerm/><valueTwo>ff</valueTwo><label>Fulah</label><labelFrench>peul</labelFrench></item><item><value>fur</value><valueTerm/><label>Friulian</label><labelFrench>frioulan</labelFrench></item><item><value>gaa</value><valueTerm/><label>Ga</label><labelFrench>ga</labelFrench></item><item><value>gay</value><valueTerm/><label>Gayo</label><labelFrench>gayo</labelFrench></item><item><value>gba</value><valueTerm/><label>Gbaya</label><labelFrench>gbaya</labelFrench></item><item><value>gem</value><valueTerm/><label>Germanic languages</label><labelFrench>germaniques, langues</labelFrench></item><item><value>geo</value><valueTerm>kat</valueTerm><valueTwo>ka</valueTwo><label>Georgian</label><labelFrench>géorgien</labelFrench></item><item><value>gez</value><valueTerm/><label>Geez</label><labelFrench>gu√®ze</labelFrench></item><item><value>gil</value><valueTerm/><label>Gilbertese</label><labelFrench>kiribati</labelFrench></item><item><value>gla</value><valueTerm/><valueTwo>gd</valueTwo><label>Gaelic<!--; Scottish Gaelic--></label><labelFrench>gaélique; gaélique écossais</labelFrench></item><item><value>gle</value><valueTerm/><valueTwo>ga</valueTwo><label>Irish</label><labelFrench>irlandais</labelFrench></item><item><value>glg</value><valueTerm/><valueTwo>gl</valueTwo><label>Galician</label><labelFrench>galicien</labelFrench></item><item><value>glv</value><valueTerm/><valueTwo>gv</valueTwo><label>Manx</label><labelFrench>manx; mannois</labelFrench></item><item><value>gmh</value><valueTerm/><label>German, Middle High<!-- (ca.1050-1500)--></label><labelFrench>allemand, moyen haut (ca. 1050-1500)</labelFrench></item><item><value>goh</value><valueTerm/><label>German, Old High<!-- (ca.750-1050)--></label><labelFrench>allemand, vieux haut (ca. 750-1050)</labelFrench></item><item><value>gon</value><valueTerm/><label>Gondi</label><labelFrench>gond</labelFrench></item><item><value>gor</value><valueTerm/><label>Gorontalo</label><labelFrench>gorontalo</labelFrench></item><item><value>got</value><valueTerm/><label>Gothic</label><labelFrench>gothique</labelFrench></item><item><value>grb</value><valueTerm/><label>Grebo</label><labelFrench>grebo</labelFrench></item><item><value>grc</value><valueTerm/><label>Greek, Ancient<!-- (to 1453)--></label><labelFrench>grec ancien (jusqu'√† 1453)</labelFrench></item><item><value>gre</value><valueTerm>ell</valueTerm><valueTwo>el</valueTwo><label>Greek, Modern<!-- (1453-)--></label><labelFrench>grec moderne (apr√®s 1453)</labelFrench></item><item><value>grn</value><valueTerm/><valueTwo>gn</valueTwo><label>Guarani</label><labelFrench>guarani</labelFrench></item><item><value>gsw</value><valueTerm/><label>Swiss German<!--; Alemannic; Alsatian--></label><labelFrench>suisse alémanique; alémanique; alsacien</labelFrench></item><item><value>guj</value><valueTerm/><valueTwo>gu</valueTwo><label>Gujarati</label><labelFrench>goudjrati</labelFrench></item><item><value>gwi</value><valueTerm/><label>Gwich'in</label><labelFrench>gwich'in</labelFrench></item><item><value>hai</value><valueTerm/><label>Haida</label><labelFrench>haida</labelFrench></item><item><value>hat</value><valueTerm/><valueTwo>ht</valueTwo><label>Haitian<!--; Haitian Creole--></label><labelFrench>ha√Øtien; créole ha√Øtien</labelFrench></item><item><value>hau</value><valueTerm/><valueTwo>ha</valueTwo><label>Hausa</label><labelFrench>haoussa</labelFrench></item><item><value>haw</value><valueTerm/><label>Hawaiian</label><labelFrench>hawa√Øen</labelFrench></item><item><value>heb</value><valueTerm/><valueTwo>he</valueTwo><label>Hebrew</label><labelFrench>hébreu</labelFrench></item><item><value>her</value><valueTerm/><valueTwo>hz</valueTwo><label>Herero</label><labelFrench>herero</labelFrench></item><item><value>hil</value><valueTerm/><label>Hiligaynon</label><labelFrench>hiligaynon</labelFrench></item><item><value>him</value><valueTerm/><label>Himachali languages<!--; Western Pahari languages--></label><labelFrench>langues himachalis; langues paharis occidentales</labelFrench></item><item><value>hit</value><valueTerm/><label>Hittite</label><labelFrench>hittite</labelFrench></item><item><value>hmn</value><valueTerm/><label>Hmong<!--; Mong--></label><labelFrench>hmong</labelFrench></item><item><value>hmo</value><valueTerm/><valueTwo>ho</valueTwo><label>Hiri Motu</label><labelFrench>hiri motu</labelFrench></item><item><value>hrv</value><valueTerm/><valueTwo>hr</valueTwo><label>Croatian</label><labelFrench>croate</labelFrench></item><item><value>hsb</value><valueTerm/><label>Upper Sorbian</label><labelFrench>haut-sorabe</labelFrench></item><item><value>hun</value><valueTerm/><valueTwo>hu</valueTwo><label>Hungarian</label><labelFrench>hongrois</labelFrench></item><item><value>hup</value><valueTerm/><label>Hupa</label><labelFrench>hupa</labelFrench></item><item><value>iba</value><valueTerm/><label>Iban</label><labelFrench>iban</labelFrench></item><item><value>ibo</value><valueTerm/><valueTwo>ig</valueTwo><label>Igbo</label><labelFrench>igbo</labelFrench></item><item><value>ice</value><valueTerm>isl</valueTerm><valueTwo>is</valueTwo><label>Icelandic</label><labelFrench>islandais</labelFrench></item><item><value>ido</value><valueTerm/><valueTwo>io</valueTwo><label>Ido</label><labelFrench>ido</labelFrench></item><item><value>iii</value><valueTerm/><valueTwo>ii</valueTwo><label>Sichuan Yi<!--; Nuosu--></label><labelFrench>yi de Sichuan</labelFrench></item><item><value>ijo</value><valueTerm/><label>Ijo languages</label><labelFrench>ijo, langues</labelFrench></item><item><value>iku</value><valueTerm/><valueTwo>iu</valueTwo><label>Inuktitut</label><labelFrench>inuktitut</labelFrench></item><item><value>ile</value><valueTerm/><valueTwo>ie</valueTwo><label>Interlingue<!--; Occidental--></label><labelFrench>interlingue</labelFrench></item><item><value>ilo</value><valueTerm/><label>Iloko</label><labelFrench>ilocano</labelFrench></item><item><value>ina</value><valueTerm/><valueTwo>ia</valueTwo><label>Interlingua<!-- (International Auxiliary Language Association)--></label><labelFrench>interlingua (langue auxiliaire internationale)</labelFrench></item><item><value>inc</value><valueTerm/><label>Indic languages</label><labelFrench>indo-aryennes, langues</labelFrench></item><item><value>ind</value><valueTerm/><valueTwo>id</valueTwo><label>Indonesian</label><labelFrench>indonésien</labelFrench></item><item><value>ine</value><valueTerm/><label>Indo-European languages</label><labelFrench>indo-européennes, langues</labelFrench></item><item><value>inh</value><valueTerm/><label>Ingush</label><labelFrench>ingouche</labelFrench></item><item><value>ipk</value><valueTerm/><valueTwo>ik</valueTwo><label>Inupiaq</label><labelFrench>inupiaq</labelFrench></item><item><value>ira</value><valueTerm/><label>Iranian languages</label><labelFrench>iraniennes, langues</labelFrench></item><item><value>iro</value><valueTerm/><label>Iroquoian languages</label><labelFrench>iroquoises, langues</labelFrench></item><item><value>ita</value><valueTerm/><valueTwo>it</valueTwo><label>Italian</label><labelFrench>italien</labelFrench></item><item><value>jav</value><valueTerm/><valueTwo>jv</valueTwo><label>Javanese</label><labelFrench>javanais</labelFrench></item><item><value>jbo</value><valueTerm/><label>Lojban</label><labelFrench>lojban</labelFrench></item><item><value>jpr</value><valueTerm/><label>Judeo-Persian</label><labelFrench>judéo-persan</labelFrench></item><item><value>jrb</value><valueTerm/><label>Judeo-Arabic</label><labelFrench>judéo-arabe</labelFrench></item><item><value>kaa</value><valueTerm/><label>Kara-Kalpak</label><labelFrench>karakalpak</labelFrench></item><item><value>kab</value><valueTerm/><label>Kabyle</label><labelFrench>kabyle</labelFrench></item><item><value>kac</value><valueTerm/><label>Kachin<!--; Jingpho--></label><labelFrench>kachin; jingpho</labelFrench></item><item><value>kal</value><valueTerm/><valueTwo>kl</valueTwo><label>Kalaallisut<!--; Greenlandic--></label><labelFrench>groenlandais</labelFrench></item><item><value>kam</value><valueTerm/><label>Kamba</label><labelFrench>kamba</labelFrench></item><item><value>kan</value><valueTerm/><valueTwo>kn</valueTwo><label>Kannada</label><labelFrench>kannada</labelFrench></item><item><value>kar</value><valueTerm/><label>Karen languages</label><labelFrench>karen, langues</labelFrench></item><item><value>kas</value><valueTerm/><valueTwo>ks</valueTwo><label>Kashmiri</label><labelFrench>kashmiri</labelFrench></item><item><value>kau</value><valueTerm/><valueTwo>kr</valueTwo><label>Kanuri</label><labelFrench>kanouri</labelFrench></item><item><value>kaw</value><valueTerm/><label>Kawi</label><labelFrench>kawi</labelFrench></item><item><value>kaz</value><valueTerm/><valueTwo>kk</valueTwo><label>Kazakh</label><labelFrench>kazakh</labelFrench></item><item><value>kbd</value><valueTerm/><label>Kabardian</label><labelFrench>kabardien</labelFrench></item><item><value>kha</value><valueTerm/><label>Khasi</label><labelFrench>khasi</labelFrench></item><item><value>khi</value><valueTerm/><label>Khoisan languages</label><labelFrench>kho√Øsan, langues</labelFrench></item><item><value>khm</value><valueTerm/><valueTwo>km</valueTwo><label>Central Khmer</label><labelFrench>khmer central</labelFrench></item><item><value>kho</value><valueTerm/><label>Khotanese<!--; Sakan--></label><labelFrench>khotanais; sakan</labelFrench></item><item><value>kik</value><valueTerm/><valueTwo>ki</valueTwo><label>Kikuyu<!--; Gikuyu--></label><labelFrench>kikuyu</labelFrench></item><item><value>kin</value><valueTerm/><valueTwo>rw</valueTwo><label>Kinyarwanda</label><labelFrench>rwanda</labelFrench></item><item><value>kir</value><valueTerm/><valueTwo>ky</valueTwo><label>Kirghiz<!--; Kyrgyz--></label><labelFrench>kirghiz</labelFrench></item><item><value>kmb</value><valueTerm/><label>Kimbundu</label><labelFrench>kimbundu</labelFrench></item><item><value>kok</value><valueTerm/><label>Konkani</label><labelFrench>konkani</labelFrench></item><item><value>kom</value><valueTerm/><valueTwo>kv</valueTwo><label>Komi</label><labelFrench>kom</labelFrench></item><item><value>kon</value><valueTerm/><valueTwo>kg</valueTwo><label>Kongo</label><labelFrench>kongo</labelFrench></item><item><value>kor</value><valueTerm/><valueTwo>ko</valueTwo><label>Korean</label><labelFrench>coréen</labelFrench></item><item><value>kos</value><valueTerm/><label>Kosraean</label><labelFrench>kosrae</labelFrench></item><item><value>kpe</value><valueTerm/><label>Kpelle</label><labelFrench>kpellé</labelFrench></item><item><value>krc</value><valueTerm/><label>Karachay-Balkar</label><labelFrench>karatchai balkar</labelFrench></item><item><value>krl</value><valueTerm/><label>Karelian</label><labelFrench>carélien</labelFrench></item><item><value>kro</value><valueTerm/><label>Kru languages</label><labelFrench>krou, langues</labelFrench></item><item><value>kru</value><valueTerm/><label>Kurukh</label><labelFrench>kurukh</labelFrench></item><item><value>kua</value><valueTerm/><valueTwo>kj</valueTwo><label>Kuanyama<!--; Kwanyama--></label><labelFrench>kuanyama; kwanyama</labelFrench></item><item><value>kum</value><valueTerm/><label>Kumyk</label><labelFrench>koumyk</labelFrench></item><item><value>kur</value><valueTerm/><valueTwo>ku</valueTwo><label>Kurdish</label><labelFrench>kurde</labelFrench></item><item><value>kut</value><valueTerm/><label>Kutenai</label><labelFrench>kutenai</labelFrench></item><item><value>lad</value><valueTerm/><label>Ladino</label><labelFrench>judéo-espagnol</labelFrench></item><item><value>lah</value><valueTerm/><label>Lahnda</label><labelFrench>lahnda</labelFrench></item><item><value>lam</value><valueTerm/><label>Lamba</label><labelFrench>lamba</labelFrench></item><item><value>lao</value><valueTerm/><valueTwo>lo</valueTwo><label>Lao</label><labelFrench>lao</labelFrench></item><item><value>lat</value><valueTerm/><valueTwo>la</valueTwo><label>Latin</label><labelFrench>latin</labelFrench></item><item><value>lav</value><valueTerm/><valueTwo>lv</valueTwo><label>Latvian</label><labelFrench>letton</labelFrench></item><item><value>lez</value><valueTerm/><label>Lezghian</label><labelFrench>lezghien</labelFrench></item><item><value>lim</value><valueTerm/><valueTwo>li</valueTwo><label>Limburgan<!--; Limburger; Limburgish--></label><labelFrench>limbourgeois</labelFrench></item><item><value>lin</value><valueTerm/><valueTwo>ln</valueTwo><label>Lingala</label><labelFrench>lingala</labelFrench></item><item><value>lit</value><valueTerm/><valueTwo>lt</valueTwo><label>Lithuanian</label><labelFrench>lituanien</labelFrench></item><item><value>lol</value><valueTerm/><label>Mongo</label><labelFrench>mongo</labelFrench></item><item><value>loz</value><valueTerm/><label>Lozi</label><labelFrench>lozi</labelFrench></item><item><value>ltz</value><valueTerm/><valueTwo>lb</valueTwo><label>Luxembourgish<!--; Letzeburgesch--></label><labelFrench>luxembourgeois</labelFrench></item><item><value>lua</value><valueTerm/><label>Luba-Lulua</label><labelFrench>luba-lulua</labelFrench></item><item><value>lub</value><valueTerm/><valueTwo>lu</valueTwo><label>Luba-Katanga</label><labelFrench>luba-katanga</labelFrench></item><item><value>lug</value><valueTerm/><valueTwo>lg</valueTwo><label>Ganda</label><labelFrench>ganda</labelFrench></item><item><value>lui</value><valueTerm/><label>Luiseno</label><labelFrench>luiseno</labelFrench></item><item><value>lun</value><valueTerm/><label>Lunda</label><labelFrench>lunda</labelFrench></item><item><value>luo</value><valueTerm/><label>Luo<!-- (Kenya and Tanzania)--></label><labelFrench>luo (Kenya et Tanzanie)</labelFrench></item><item><value>lus</value><valueTerm/><label>Lushai</label><labelFrench>lushai</labelFrench></item><item><value>mac</value><valueTerm>mkd</valueTerm><valueTwo>mk</valueTwo><label>Macedonian</label><labelFrench>macédonien</labelFrench></item><item><value>mad</value><valueTerm/><label>Madurese</label><labelFrench>madourais</labelFrench></item><item><value>mag</value><valueTerm/><label>Magahi</label><labelFrench>magahi</labelFrench></item><item><value>mah</value><valueTerm/><valueTwo>mh</valueTwo><label>Marshallese</label><labelFrench>marshall</labelFrench></item><item><value>mai</value><valueTerm/><label>Maithili</label><labelFrench>maithili</labelFrench></item><item><value>mak</value><valueTerm/><label>Makasar</label><labelFrench>makassar</labelFrench></item><item><value>mal</value><valueTerm/><valueTwo>ml</valueTwo><label>Malayalam</label><labelFrench>malayalam</labelFrench></item><item><value>man</value><valueTerm/><label>Mandingo</label><labelFrench>mandingue</labelFrench></item><item><value>mao</value><valueTerm>mri</valueTerm><valueTwo>mi</valueTwo><label>Maori</label><labelFrench>maori</labelFrench></item><item><value>map</value><valueTerm/><label>Austronesian languages</label><labelFrench>austronésiennes, langues</labelFrench></item><item><value>mar</value><valueTerm/><valueTwo>mr</valueTwo><label>Marathi</label><labelFrench>marathe</labelFrench></item><item><value>mas</value><valueTerm/><label>Masai</label><labelFrench>massa√Ø</labelFrench></item><item><value>may</value><valueTerm>msa</valueTerm><valueTwo>ms</valueTwo><label>Malay</label><labelFrench>malais</labelFrench></item><item><value>mdf</value><valueTerm/><label>Moksha</label><labelFrench>moksa</labelFrench></item><item><value>mdr</value><valueTerm/><label>Mandar</label><labelFrench>mandar</labelFrench></item><item><value>men</value><valueTerm/><label>Mende</label><labelFrench>mendé</labelFrench></item><item><value>mga</value><valueTerm/><label>Irish, Middle<!-- (900-1200)--></label><labelFrench>irlandais moyen (900-1200)</labelFrench></item><item><value>mic</value><valueTerm/><label>Mi'kmaq<!--; Micmac--></label><labelFrench>mi'kmaq; micmac</labelFrench></item><item><value>min</value><valueTerm/><label>Minangkabau</label><labelFrench>minangkabau</labelFrench></item><item><value>mis</value><valueTerm/><label>Uncoded languages</label><labelFrench>langues non codées</labelFrench></item><item><value>mkh</value><valueTerm/><label>Mon-Khmer languages</label><labelFrench>m√¥n-khmer, langues</labelFrench></item><item><value>mlg</value><valueTerm/><valueTwo>mg</valueTwo><label>Malagasy</label><labelFrench>malgache</labelFrench></item><item><value>mlt</value><valueTerm/><valueTwo>mt</valueTwo><label>Maltese</label><labelFrench>maltais</labelFrench></item><item><value>mnc</value><valueTerm/><label>Manchu</label><labelFrench>mandchou</labelFrench></item><item><value>mni</value><valueTerm/><label>Manipuri</label><labelFrench>manipuri</labelFrench></item><item><value>mno</value><valueTerm/><label>Manobo languages</label><labelFrench>manobo, langues</labelFrench></item><item><value>moh</value><valueTerm/><label>Mohawk</label><labelFrench>mohawk</labelFrench></item><item><value>mon</value><valueTerm/><valueTwo>mn</valueTwo><label>Mongolian</label><labelFrench>mongol</labelFrench></item><item><value>mos</value><valueTerm/><label>Mossi</label><labelFrench>moré</labelFrench></item><item><value>mul</value><valueTerm/><label>Multiple languages</label><labelFrench>multilingue</labelFrench></item><item><value>mun</value><valueTerm/><label>Munda languages</label><labelFrench>mounda, langues</labelFrench></item><item><value>mus</value><valueTerm/><label>Creek</label><labelFrench>muskogee</labelFrench></item><item><value>mwl</value><valueTerm/><label>Mirandese</label><labelFrench>mirandais</labelFrench></item><item><value>mwr</value><valueTerm/><label>Marwari</label><labelFrench>marvari</labelFrench></item><item><value>myn</value><valueTerm/><label>Mayan languages</label><labelFrench>maya, langues</labelFrench></item><item><value>myv</value><valueTerm/><label>Erzya</label><labelFrench>erza</labelFrench></item><item><value>nah</value><valueTerm/><label>Nahuatl languages</label><labelFrench>nahuatl, langues</labelFrench></item><item><value>nai</value><valueTerm/><label>North American Indian languages</label><labelFrench>nord-amérindiennes, langues</labelFrench></item><item><value>nap</value><valueTerm/><label>Neapolitan</label><labelFrench>napolitain</labelFrench></item><item><value>nau</value><valueTerm/><valueTwo>na</valueTwo><label>Nauru</label><labelFrench>nauruan</labelFrench></item><item><value>nav</value><valueTerm/><valueTwo>nv</valueTwo><label>Navajo<!--; Navaho--></label><labelFrench>navaho</labelFrench></item><item><value>nbl</value><valueTerm/><valueTwo>nr</valueTwo><label>Ndebele, South<!--; South Ndebele--></label><labelFrench>ndébélé du Sud</labelFrench></item><item><value>nde</value><valueTerm/><valueTwo>nd</valueTwo><label>Ndebele, North<!--; North Ndebele--></label><labelFrench>ndébélé du Nord</labelFrench></item><item><value>ndo</value><valueTerm/><valueTwo>ng</valueTwo><label>Ndonga</label><labelFrench>ndonga</labelFrench></item><item><value>nds</value><valueTerm/><label>Low German<!--; Low Saxon; German, Low; Saxon, Low--></label><labelFrench>bas allemand; bas saxon; allemand, bas; saxon, bas</labelFrench></item><item><value>nep</value><valueTerm/><valueTwo>ne</valueTwo><label>Nepali</label><labelFrench>népalais</labelFrench></item><item><value>new</value><valueTerm/><label>Nepal Bhasa<!--; Newari--></label><labelFrench>nepal bhasa; newari</labelFrench></item><item><value>nia</value><valueTerm/><label>Nias</label><labelFrench>nias</labelFrench></item><item><value>nic</value><valueTerm/><label>Niger-Kordofanian languages</label><labelFrench>nigéro-kordofaniennes, langues</labelFrench></item><item><value>niu</value><valueTerm/><label>Niuean</label><labelFrench>niué</labelFrench></item><item><value>nno</value><valueTerm/><valueTwo>nn</valueTwo><label>Norwegian Nynorsk<!--; Nynorsk, Norwegian--></label><labelFrench>norvégien nynorsk; nynorsk, norvégien</labelFrench></item><item><value>nob</value><valueTerm/><valueTwo>nb</valueTwo><label>Bokmål, Norwegian<!--; Norwegian Bokmål--></label><labelFrench>norvégien bokm√•l</labelFrench></item><item><value>nog</value><valueTerm/><label>Nogai</label><labelFrench>noga√Ø; nogay</labelFrench></item><item><value>non</value><valueTerm/><label>Norse, Old</label><labelFrench>norrois, vieux</labelFrench></item><item><value>nor</value><valueTerm/><valueTwo>no</valueTwo><label>Norwegian</label><labelFrench>norvégien</labelFrench></item><item><value>nqo</value><valueTerm/><label>N'Ko</label><labelFrench>n'ko</labelFrench></item><item><value>nso</value><valueTerm/><label>Pedi<!--; Sepedi; Northern Sotho--></label><labelFrench>pedi; sepedi; sotho du Nord</labelFrench></item><item><value>nub</value><valueTerm/><label>Nubian languages</label><labelFrench>nubiennes, langues</labelFrench></item><item><value>nwc</value><valueTerm/><label>Classical Newari<!--; Old Newari; Classical Nepal Bhasa--></label><labelFrench>newari classique</labelFrench></item><item><value>nya</value><valueTerm/><valueTwo>ny</valueTwo><label>Chichewa<!--; Chewa; Nyanja--></label><labelFrench>chichewa; chewa; nyanja</labelFrench></item><item><value>nym</value><valueTerm/><label>Nyamwezi</label><labelFrench>nyamwezi</labelFrench></item><item><value>nyn</value><valueTerm/><label>Nyankole</label><labelFrench>nyankolé</labelFrench></item><item><value>nyo</value><valueTerm/><label>Nyoro</label><labelFrench>nyoro</labelFrench></item><item><value>nzi</value><valueTerm/><label>Nzima</label><labelFrench>nzema</labelFrench></item><item><value>oci</value><valueTerm/><valueTwo>oc</valueTwo><label>Occitan<!-- (post 1500)--><!--; Provençal--></label><labelFrench>occitan (apr√®s 1500); provençal</labelFrench></item><item><value>oji</value><valueTerm/><valueTwo>oj</valueTwo><label>Ojibwa</label><labelFrench>ojibwa</labelFrench></item><item><value>ori</value><valueTerm/><valueTwo>or</valueTwo><label>Oriya</label><labelFrench>oriya</labelFrench></item><item><value>orm</value><valueTerm/><valueTwo>om</valueTwo><label>Oromo</label><labelFrench>galla</labelFrench></item><item><value>osa</value><valueTerm/><label>Osage</label><labelFrench>osage</labelFrench></item><item><value>oss</value><valueTerm/><valueTwo>os</valueTwo><label>Ossetian<!--; Ossetic--></label><labelFrench>oss√®te</labelFrench></item><item><value>ota</value><valueTerm/><label>Turkish, Ottoman<!-- (1500-1928)--></label><labelFrench>turc ottoman (1500-1928)</labelFrench></item><item><value>oto</value><valueTerm/><label>Otomian languages</label><labelFrench>otomi, langues</labelFrench></item><item><value>paa</value><valueTerm/><label>Papuan languages</label><labelFrench>papoues, langues</labelFrench></item><item><value>pag</value><valueTerm/><label>Pangasinan</label><labelFrench>pangasinan</labelFrench></item><item><value>pal</value><valueTerm/><label>Pahlavi</label><labelFrench>pahlavi</labelFrench></item><item><value>pam</value><valueTerm/><label>Pampanga<!--; Kapampangan--></label><labelFrench>pampangan</labelFrench></item><item><value>pan</value><valueTerm/><valueTwo>pa</valueTwo><label>Panjabi<!--; Punjabi--></label><labelFrench>pendjabi</labelFrench></item><item><value>pap</value><valueTerm/><label>Papiamento</label><labelFrench>papiamento</labelFrench></item><item><value>pau</value><valueTerm/><label>Palauan</label><labelFrench>palau</labelFrench></item><item><value>peo</value><valueTerm/><label>Persian, Old<!-- (ca.600-400 B.C.)--></label><labelFrench>perse, vieux (ca. 600-400 av. J.-C.)</labelFrench></item><item><value>per</value><valueTerm>fas</valueTerm><valueTwo>fa</valueTwo><label>Persian</label><labelFrench>persan</labelFrench></item><item><value>phi</value><valueTerm/><label>Philippine languages</label><labelFrench>philippines, langues</labelFrench></item><item><value>phn</value><valueTerm/><label>Phoenician</label><labelFrench>phénicien</labelFrench></item><item><value>pli</value><valueTerm/><valueTwo>pi</valueTwo><label>Pali</label><labelFrench>pali</labelFrench></item><item><value>pol</value><valueTerm/><valueTwo>pl</valueTwo><label>Polish</label><labelFrench>polonais</labelFrench></item><item><value>pon</value><valueTerm/><label>Pohnpeian</label><labelFrench>pohnpei</labelFrench></item><item><value>por</value><valueTerm/><valueTwo>pt</valueTwo><label>Portuguese</label><labelFrench>portugais</labelFrench></item><item><value>pra</value><valueTerm/><label>Prakrit languages</label><labelFrench>pr√¢krit, langues</labelFrench></item><item><value>pro</value><valueTerm/><label>Provençal, Old<!-- (to 1500)--></label><labelFrench>provençal ancien (jusqu'√† 1500)</labelFrench></item><item><value>pus</value><valueTerm/><valueTwo>ps</valueTwo><label>Pushto<!--; Pashto--></label><labelFrench>pachto</labelFrench></item><item><value>qaa-qtz</value><valueTerm/><label>Reserved for local use</label><labelFrench>réservée √† l'usage local</labelFrench></item><item><value>que</value><valueTerm/><valueTwo>qu</valueTwo><label>Quechua</label><labelFrench>quechua</labelFrench></item><item><value>raj</value><valueTerm/><label>Rajasthani</label><labelFrench>rajasthani</labelFrench></item><item><value>rap</value><valueTerm/><label>Rapanui</label><labelFrench>rapanui</labelFrench></item><item><value>rar</value><valueTerm/><label>Rarotongan<!--; Cook Islands Maori--></label><labelFrench>rarotonga; maori des √Æles Cook</labelFrench></item><item><value>roa</value><valueTerm/><label>Romance languages</label><labelFrench>romanes, langues</labelFrench></item><item><value>roh</value><valueTerm/><valueTwo>rm</valueTwo><label>Romansh</label><labelFrench>romanche</labelFrench></item><item><value>rom</value><valueTerm/><label>Romany</label><labelFrench>tsigane</labelFrench></item><item><value>rum</value><valueTerm>ron</valueTerm><valueTwo>ro</valueTwo><label>Romanian<!--; Moldavian; Moldovan--></label><labelFrench>roumain; moldave</labelFrench></item><item><value>run</value><valueTerm/><valueTwo>rn</valueTwo><label>Rundi</label><labelFrench>rundi</labelFrench></item><item><value>rup</value><valueTerm/><label>Aromanian<!--; Arumanian; Macedo-Romanian--></label><labelFrench>aroumain; macédo-roumain</labelFrench></item><item><value>sad</value><valueTerm/><label>Sandawe</label><labelFrench>sandawe</labelFrench></item><item><value>sag</value><valueTerm/><valueTwo>sg</valueTwo><label>Sango</label><labelFrench>sango</labelFrench></item><item><value>sah</value><valueTerm/><label>Yakut</label><labelFrench>iakoute</labelFrench></item><item><value>sai</value><valueTerm/><label>South American Indian (Other)</label><labelFrench>indiennes d'Amérique du Sud, autres langues</labelFrench></item><item><value>sal</value><valueTerm/><label>Salishan languages</label><labelFrench>salishennes, langues</labelFrench></item><item><value>sam</value><valueTerm/><label>Samaritan Aramaic</label><labelFrench>samaritain</labelFrench></item><item><value>sas</value><valueTerm/><label>Sasak</label><labelFrench>sasak</labelFrench></item><item><value>sat</value><valueTerm/><label>Santali</label><labelFrench>santal</labelFrench></item><item><value>scn</value><valueTerm/><label>Sicilian</label><labelFrench>sicilien</labelFrench></item><item><value>sco</value><valueTerm/><label>Scots</label><labelFrench>écossais</labelFrench></item><item><value>sel</value><valueTerm/><label>Selkup</label><labelFrench>selkoupe</labelFrench></item><item><value>sem</value><valueTerm/><label>Semitic languages</label><labelFrench>sémitiques, langues</labelFrench></item><item><value>sga</value><valueTerm/><label>Irish, Old<!-- (to 900)--></label><labelFrench>irlandais ancien (jusqu'√† 900)</labelFrench></item><item><value>sgn</value><valueTerm/><label>Sign Languages</label><labelFrench>langues des signes</labelFrench></item><item><value>shn</value><valueTerm/><label>Shan</label><labelFrench>chan</labelFrench></item><item><value>sid</value><valueTerm/><label>Sidamo</label><labelFrench>sidamo</labelFrench></item><item><value>sin</value><valueTerm/><valueTwo>si</valueTwo><label>Sinhalese<!--; Sinhala--></label><labelFrench>singhalais</labelFrench></item><item><value>sio</value><valueTerm/><label>Siouan languages</label><labelFrench>sioux, langues</labelFrench></item><item><value>sit</value><valueTerm/><label>Sino-Tibetan languages</label><labelFrench>sino-tibétaines, langues</labelFrench></item><item><value>sla</value><valueTerm/><label>Slavic languages</label><labelFrench>slaves, langues</labelFrench></item><item><value>slo</value><valueTerm>slk</valueTerm><valueTwo>sk</valueTwo><label>Slovak</label><labelFrench>slovaque</labelFrench></item><item><value>slv</value><valueTerm/><valueTwo>sl</valueTwo><label>Slovenian</label><labelFrench>slov√®ne</labelFrench></item><item><value>sma</value><valueTerm/><label>Southern Sami</label><labelFrench>sami du Sud</labelFrench></item><item><value>sme</value><valueTerm/><valueTwo>se</valueTwo><label>Northern Sami</label><labelFrench>sami du Nord</labelFrench></item><item><value>smi</value><valueTerm/><label>Sami languages</label><labelFrench>sames, langues</labelFrench></item><item><value>smj</value><valueTerm/><label>Lule Sami</label><labelFrench>sami de Lule</labelFrench></item><item><value>smn</value><valueTerm/><label>Inari Sami</label><labelFrench>sami d'Inari</labelFrench></item><item><value>smo</value><valueTerm/><valueTwo>sm</valueTwo><label>Samoan</label><labelFrench>samoan</labelFrench></item><item><value>sms</value><valueTerm/><label>Skolt Sami</label><labelFrench>sami skolt</labelFrench></item><item><value>sna</value><valueTerm/><valueTwo>sn</valueTwo><label>Shona</label><labelFrench>shona</labelFrench></item><item><value>snd</value><valueTerm/><valueTwo>sd</valueTwo><label>Sindhi</label><labelFrench>sindhi</labelFrench></item><item><value>snk</value><valueTerm/><label>Soninke</label><labelFrench>soninké</labelFrench></item><item><value>sog</value><valueTerm/><label>Sogdian</label><labelFrench>sogdien</labelFrench></item><item><value>som</value><valueTerm/><valueTwo>so</valueTwo><label>Somali</label><labelFrench>somali</labelFrench></item><item><value>son</value><valueTerm/><label>Songhai languages</label><labelFrench>songhai, langues</labelFrench></item><item><value>sot</value><valueTerm/><valueTwo>st</valueTwo><label>Sotho, Southern</label><labelFrench>sotho du Sud</labelFrench></item><item><value>spa</value><valueTerm/><valueTwo>es</valueTwo><label>Spanish<!--; Castilian--></label><labelFrench>espagnol; castillan</labelFrench></item><item><value>srd</value><valueTerm/><valueTwo>sc</valueTwo><label>Sardinian</label><labelFrench>sarde</labelFrench></item><item><value>srn</value><valueTerm/><label>Sranan Tongo</label><labelFrench>sranan tongo</labelFrench></item><item><value>srp</value><valueTerm/><valueTwo>sr</valueTwo><label>Serbian</label><labelFrench>serbe</labelFrench></item><item><value>srr</value><valueTerm/><label>Serer</label><labelFrench>sér√®re</labelFrench></item><item><value>ssa</value><valueTerm/><label>Nilo-Saharan languages</label><labelFrench>nilo-sahariennes, langues</labelFrench></item><item><value>ssw</value><valueTerm/><valueTwo>ss</valueTwo><label>Swati</label><labelFrench>swati</labelFrench></item><item><value>suk</value><valueTerm/><label>Sukuma</label><labelFrench>sukuma</labelFrench></item><item><value>sun</value><valueTerm/><valueTwo>su</valueTwo><label>Sundanese</label><labelFrench>soundanais</labelFrench></item><item><value>sus</value><valueTerm/><label>Susu</label><labelFrench>soussou</labelFrench></item><item><value>sux</value><valueTerm/><label>Sumerian</label><labelFrench>sumérien</labelFrench></item><item><value>swa</value><valueTerm/><valueTwo>sw</valueTwo><label>Swahili</label><labelFrench>swahili</labelFrench></item><item><value>swe</value><valueTerm/><valueTwo>sv</valueTwo><label>Swedish</label><labelFrench>suédois</labelFrench></item><item><value>syc</value><valueTerm/><label>Classical Syriac</label><labelFrench>syriaque classique</labelFrench></item><item><value>syr</value><valueTerm/><label>Syriac</label><labelFrench>syriaque</labelFrench></item><item><value>tah</value><valueTerm/><valueTwo>ty</valueTwo><label>Tahitian</label><labelFrench>tahitien</labelFrench></item><item><value>tai</value><valueTerm/><label>Tai languages</label><labelFrench>tai, langues</labelFrench></item><item><value>tam</value><valueTerm/><valueTwo>ta</valueTwo><label>Tamil</label><labelFrench>tamoul</labelFrench></item><item><value>tat</value><valueTerm/><valueTwo>tt</valueTwo><label>Tatar</label><labelFrench>tatar</labelFrench></item><item><value>tel</value><valueTerm/><valueTwo>te</valueTwo><label>Telugu</label><labelFrench>télougou</labelFrench></item><item><value>tem</value><valueTerm/><label>Timne</label><labelFrench>temne</labelFrench></item><item><value>ter</value><valueTerm/><label>Tereno</label><labelFrench>tereno</labelFrench></item><item><value>tet</value><valueTerm/><label>Tetum</label><labelFrench>tetum</labelFrench></item><item><value>tgk</value><valueTerm/><valueTwo>tg</valueTwo><label>Tajik</label><labelFrench>tadjik</labelFrench></item><item><value>tgl</value><valueTerm/><valueTwo>tl</valueTwo><label>Tagalog</label><labelFrench>tagalog</labelFrench></item><item><value>tha</value><valueTerm/><valueTwo>th</valueTwo><label>Thai</label><labelFrench>tha√Ø</labelFrench></item><item><value>tib</value><valueTerm>bod</valueTerm><valueTwo>bo</valueTwo><label>Tibetan</label><labelFrench>tibétain</labelFrench></item><item><value>tig</value><valueTerm/><label>Tigre</label><labelFrench>tigré</labelFrench></item><item><value>tir</value><valueTerm/><valueTwo>ti</valueTwo><label>Tigrinya</label><labelFrench>tigrigna</labelFrench></item><item><value>tiv</value><valueTerm/><label>Tiv</label><labelFrench>tiv</labelFrench></item><item><value>tkl</value><valueTerm/><label>Tokelau</label><labelFrench>tokelau</labelFrench></item><item><value>tlh</value><valueTerm/><label>Klingon<!--; tlhIngan-Hol--></label><labelFrench>klingon</labelFrench></item><item><value>tli</value><valueTerm/><label>Tlingit</label><labelFrench>tlingit</labelFrench></item><item><value>tmh</value><valueTerm/><label>Tamashek</label><labelFrench>tamacheq</labelFrench></item><item><value>tog</value><valueTerm/><label>Tonga (Nyasa)</label><labelFrench>tonga (Nyasa)</labelFrench></item><item><value>ton</value><valueTerm/><valueTwo>to</valueTwo><label>Tonga (Tonga Islands)</label><labelFrench>tongan (√éles Tonga)</labelFrench></item><item><value>tpi</value><valueTerm/><label>Tok Pisin</label><labelFrench>tok pisin</labelFrench></item><item><value>tsi</value><valueTerm/><label>Tsimshian</label><labelFrench>tsimshian</labelFrench></item><item><value>tsn</value><valueTerm/><valueTwo>tn</valueTwo><label>Tswana</label><labelFrench>tswana</labelFrench></item><item><value>tso</value><valueTerm/><valueTwo>ts</valueTwo><label>Tsonga</label><labelFrench>tsonga</labelFrench></item><item><value>tuk</value><valueTerm/><valueTwo>tk</valueTwo><label>Turkmen</label><labelFrench>turkm√®ne</labelFrench></item><item><value>tum</value><valueTerm/><label>Tumbuka</label><labelFrench>tumbuka</labelFrench></item><item><value>tup</value><valueTerm/><label>Tupi languages</label><labelFrench>tupi, langues</labelFrench></item><item><value>tur</value><valueTerm/><valueTwo>tr</valueTwo><label>Turkish</label><labelFrench>turc</labelFrench></item><item><value>tut</value><valueTerm/><label>Altaic languages</label><labelFrench>alta√Øques, langues</labelFrench></item><item><value>tvl</value><valueTerm/><label>Tuvalu</label><labelFrench>tuvalu</labelFrench></item><item><value>twi</value><valueTerm/><valueTwo>tw</valueTwo><label>Twi</label><labelFrench>twi</labelFrench></item><item><value>tyv</value><valueTerm/><label>Tuvinian</label><labelFrench>touva</labelFrench></item><item><value>udm</value><valueTerm/><label>Udmurt</label><labelFrench>oudmourte</labelFrench></item><item><value>uga</value><valueTerm/><label>Ugaritic</label><labelFrench>ougaritique</labelFrench></item><item><value>uig</value><valueTerm/><valueTwo>ug</valueTwo><label>Uighur<!--; Uyghur--></label><labelFrench>ou√Øgour</labelFrench></item><item><value>ukr</value><valueTerm/><valueTwo>uk</valueTwo><label>Ukrainian</label><labelFrench>ukrainien</labelFrench></item><item><value>umb</value><valueTerm/><label>Umbundu</label><labelFrench>umbundu</labelFrench></item><item><value>und</value><valueTerm/><label>Undetermined</label><labelFrench>indéterminée</labelFrench></item><item><value>urd</value><valueTerm/><valueTwo>ur</valueTwo><label>Urdu</label><labelFrench>ourdou</labelFrench></item><item><value>uzb</value><valueTerm/><valueTwo>uz</valueTwo><label>Uzbek</label><labelFrench>ouszbek</labelFrench></item><item><value>vai</value><valueTerm/><label>Vai</label><labelFrench>va√Ø</labelFrench></item><item><value>ven</value><valueTerm/><valueTwo>ve</valueTwo><label>Venda</label><labelFrench>venda</labelFrench></item><item><value>vie</value><valueTerm/><valueTwo>vi</valueTwo><label>Vietnamese</label><labelFrench>vietnamien</labelFrench></item><item><value>vol</value><valueTerm/><valueTwo>vo</valueTwo><label>Volapük</label><labelFrench>volapük</labelFrench></item><item><value>vot</value><valueTerm/><label>Votic</label><labelFrench>vote</labelFrench></item><item><value>wak</value><valueTerm/><label>Wakashan languages</label><labelFrench>wakashanes, langues</labelFrench></item><item><value>wal</value><valueTerm/><label>Walamo</label><labelFrench>walamo</labelFrench></item><item><value>war</value><valueTerm/><label>Waray</label><labelFrench>waray</labelFrench></item><item><value>was</value><valueTerm/><label>Washo</label><labelFrench>washo</labelFrench></item><item><value>wel</value><valueTerm>cym</valueTerm><valueTwo>cy</valueTwo><label>Welsh</label><labelFrench>gallois</labelFrench></item><item><value>wen</value><valueTerm/><label>Sorbian languages</label><labelFrench>sorabes, langues</labelFrench></item><item><value>wln</value><valueTerm/><valueTwo>wa</valueTwo><label>Walloon</label><labelFrench>wallon</labelFrench></item><item><value>wol</value><valueTerm/><valueTwo>wo</valueTwo><label>Wolof</label><labelFrench>wolof</labelFrench></item><item><value>xal</value><valueTerm/><label>Kalmyk<!--; Oirat--></label><labelFrench>kalmouk; o√Ørat</labelFrench></item><item><value>xho</value><valueTerm/><valueTwo>xh</valueTwo><label>Xhosa</label><labelFrench>xhosa</labelFrench></item><item><value>yao</value><valueTerm/><label>Yao</label><labelFrench>yao</labelFrench></item><item><value>yap</value><valueTerm/><label>Yapese</label><labelFrench>yapois</labelFrench></item><item><value>yid</value><valueTerm/><valueTwo>yi</valueTwo><label>Yiddish</label><labelFrench>yiddish</labelFrench></item><item><value>yor</value><valueTerm/><valueTwo>yo</valueTwo><label>Yoruba</label><labelFrench>yoruba</labelFrench></item><item><value>ypk</value><valueTerm/><label>Yupik languages</label><labelFrench>yupik, langues</labelFrench></item><item><value>zap</value><valueTerm/><label>Zapotec</label><labelFrench>zapot√®que</labelFrench></item><item><value>zbl</value><valueTerm/><label>Blissymbols<!--; Blissymbolics; Bliss--></label><labelFrench>symboles Bliss; Bliss</labelFrench></item><item><value>zen</value><valueTerm/><label>Zenaga</label><labelFrench>zenaga</labelFrench></item><item><value>zha</value><valueTerm/><valueTwo>za</valueTwo><label>Zhuang<!--; Chuang--></label><labelFrench>zhuang; chuang</labelFrench></item><item><value>znd</value><valueTerm/><label>Zande languages</label><labelFrench>zandé, langues</labelFrench></item><item><value>zul</value><valueTerm/><valueTwo>zu</valueTwo><label>Zulu</label><labelFrench>zoulou</labelFrench></item><item><value>zun</value><valueTerm/><label>Zuni</label><labelFrench>zuni</labelFrench></item><item><value>zxx</value><valueTerm/><label>No linguistic content<!--; Not applicable--></label><labelFrench>pas de contenu linguistique; non applicable</labelFrench></item><item><value>zza</value><valueTerm/><label>Zaza<!--; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki--></label><labelFrench>zaza; dimili; dimli; kirdki; kirmanjki; zazaki</labelFrench></item></items></code-table>
+<code-table>
+    <code-table-name>language-3-type-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt</basis>
+    <description/>
+    <notes> See also http://www.loc.gov/standards/codelists/languages.xml, http://www.loc.gov/marc/languages/language_code.html. The following classifiers have
+        been applied: common, transliteration, Latin/not Latin. The classifier common has been applied subjectively. The classifier transliteration has been
+        applied by noting all languages in ALA-LC Romanization Tables at http://www.loc.gov/catdir/cpso/roman.html, minus Lepcha, Limbu, Moplah and Non-Slavic
+        Languages (in Cyrillic Script). On the basis of http://www.omniglot.com/writing/languages.htm, it has been noted which languages use Latin script. If
+        central pages of www.omniglot.com have not been used for a notation, type="added" has been attributed. With languages where both a script based on Latin
+        and a script not based on Latin (mostly Cyrillic) is used, the notation gives "non Latin". The modern form of the languages is intended, unless the
+        language name indicated otherwise. </notes>
+    <items>
+        <item>
+            <label>(no language selected)</label>
+            <value/>
+        </item>
+        <item>
+            <value>aar</value>
+            <valueTerm/>
+            <valueTwo>aa</valueTwo>
+            <label>Afar</label>
+            <labelFrench>afar</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>abk</value>
+            <valueTerm/>
+            <valueTwo>ab</valueTwo>
+            <label>Abkhazian</label>
+            <labelFrench>abkhaze</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ace</value>
+            <valueTerm/>
+            <label>Achinese</label>
+            <labelFrench>aceh</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>ara</value>
+            <valueTerm/>
+            <valueTwo>ar</valueTwo>
+            <label>Arabic</label>
+            <labelFrench>arabe</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ach</value>
+            <valueTerm/>
+            <label>Acoli</label>
+            <labelFrench>acoli</labelFrench>
+        </item>
+        <item>
+            <value>ada</value>
+            <valueTerm/>
+            <label>Adangme</label>
+            <labelFrench>adangme</labelFrench>
+        </item>
+        <item>
+            <value>ady</value>
+            <valueTerm/>
+            <label>Adyghe<!--; Adygei--></label>
+            <labelFrench>adyghé</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>afa</value>
+            <valueTerm/>
+            <label>Afro-Asiatic languages</label>
+            <labelFrench>afro-asiatiques, langues</labelFrench>
+        </item>
+        <item>
+            <value>afh</value>
+            <valueTerm/>
+            <label>Afrihili</label>
+            <labelFrench>afrihili</labelFrench>
+        </item>
+        <item>
+            <value>afr</value>
+            <valueTerm/>
+            <valueTwo>af</valueTwo>
+            <label>Afrikaans</label>
+            <labelFrench>afrikaans</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ain</value>
+            <valueTerm/>
+            <label>Ainu</label>
+            <labelFrench>a√Ønou</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>aka</value>
+            <valueTerm/>
+            <valueTwo>ak</valueTwo>
+            <label>Akan</label>
+            <labelFrench>akan</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>akk</value>
+            <valueTerm/>
+            <label>Akkadian</label>
+            <labelFrench>akkadien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>alb</value>
+            <valueTerm>sqi</valueTerm>
+            <valueTwo>sq</valueTwo>
+            <label>Albanian</label>
+            <labelFrench>albanais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ale</value>
+            <valueTerm/>
+            <label>Aleut</label>
+            <labelFrench>aléoute</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>alg</value>
+            <valueTerm/>
+            <label>Algonquian languages</label>
+            <labelFrench>algonquines, langues</labelFrench>
+        </item>
+        <item>
+            <value>alt</value>
+            <valueTerm/>
+            <label>Southern Altai</label>
+            <labelFrench>altai du Sud</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>amh</value>
+            <valueTerm/>
+            <valueTwo>am</valueTwo>
+            <label>Amharic</label>
+            <labelFrench>amharique</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ang</value>
+            <valueTerm/>
+            <label>English, Old<!-- (ca.450-1100)--></label>
+            <labelFrench>anglo-saxon (ca.450-1100)</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>anp</value>
+            <valueTerm/>
+            <label>Angika</label>
+            <labelFrench>angika</labelFrench>
+        </item>
+        <item>
+            <value>apa</value>
+            <valueTerm/>
+            <label>Apache languages</label>
+            <labelFrench>apaches, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>arc</value>
+            <valueTerm/>
+            <label>Official Aramaic<!-- (700-300 BCE)--><!--; Imperial Aramaic (700-300 BCE)--></label>
+            <labelFrench>araméen d'empire (700-300 BCE)</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>arg</value>
+            <valueTerm/>
+            <valueTwo>an</valueTwo>
+            <label>Aragonese</label>
+            <labelFrench>aragonais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>arm</value>
+            <valueTerm>hye</valueTerm>
+            <valueTwo>hy</valueTwo>
+            <label>Armenian</label>
+            <labelFrench>arménien</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>arn</value>
+            <valueTerm/>
+            <label>Mapudungun<!--; Mapuche--></label>
+            <labelFrench>mapudungun; mapuche; mapuce</labelFrench>
+        </item>
+        <item>
+            <value>arp</value>
+            <valueTerm/>
+            <label>Arapaho</label>
+            <labelFrench>arapaho</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>art</value>
+            <valueTerm/>
+            <label>Artificial languages</label>
+            <labelFrench>artificielles, langues</labelFrench>
+        </item>
+        <item>
+            <value>arw</value>
+            <valueTerm/>
+            <label>Arawak</label>
+            <labelFrench>arawak</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>asm</value>
+            <valueTerm/>
+            <valueTwo>as</valueTwo>
+            <label>Assamese</label>
+            <labelFrench>assamais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ast</value>
+            <valueTerm/>
+            <label>Asturian<!--; Bable; Leonese; Asturleonese--></label>
+            <labelFrench>asturien; bable; léonais; asturoléonais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ath</value>
+            <valueTerm/>
+            <label>Athapascan languages</label>
+            <labelFrench>athapascanes, langues</labelFrench>
+        </item>
+        <item>
+            <value>aus</value>
+            <valueTerm/>
+            <label>Australian languages</label>
+            <labelFrench>australiennes, langues</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>ava</value>
+            <valueTerm/>
+            <valueTwo>av</valueTwo>
+            <label>Avaric</label>
+            <labelFrench>avar</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ave</value>
+            <valueTerm/>
+            <valueTwo>ae</valueTwo>
+            <label>Avestan</label>
+            <labelFrench>avestique</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>awa</value>
+            <valueTerm/>
+            <label>Awadhi</label>
+            <labelFrench>awadhi</labelFrench>
+        </item>
+        <item>
+            <value>aym</value>
+            <valueTerm/>
+            <valueTwo>ay</valueTwo>
+            <label>Aymara</label>
+            <labelFrench>aymara</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>aze</value>
+            <valueTerm/>
+            <valueTwo>az</valueTwo>
+            <label>Azerbaijani</label>
+            <labelFrench>azéri</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bad</value>
+            <valueTerm/>
+            <label>Banda languages</label>
+            <labelFrench>banda, langues</labelFrench>
+        </item>
+        <item>
+            <value>bai</value>
+            <valueTerm/>
+            <label>Bamileke languages</label>
+            <labelFrench>bamiléké, langues</labelFrench>
+        </item>
+        <item>
+            <value>bak</value>
+            <valueTerm/>
+            <valueTwo>ba</valueTwo>
+            <label>Bashkir</label>
+            <labelFrench>bachkir</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bal</value>
+            <valueTerm/>
+            <label>Baluchi</label>
+            <labelFrench>baloutchi</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bam</value>
+            <valueTerm/>
+            <valueTwo>bm</valueTwo>
+            <label>Bambara</label>
+            <labelFrench>bambara</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ban</value>
+            <valueTerm/>
+            <label>Balinese</label>
+            <labelFrench>balinais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>baq</value>
+            <valueTerm>eus</valueTerm>
+            <valueTwo>eu</valueTwo>
+            <label>Basque</label>
+            <labelFrench>basque</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>bas</value>
+            <valueTerm/>
+            <label>Basa</label>
+            <labelFrench>basa</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bat</value>
+            <valueTerm/>
+            <label>Baltic languages</label>
+            <labelFrench>baltes, langues</labelFrench>
+        </item>
+        <item>
+            <value>bej</value>
+            <valueTerm/>
+            <label>Beja<!--; Bedawiyet--></label>
+            <labelFrench>bedja</labelFrench>
+        </item>
+        <item>
+            <value>bel</value>
+            <valueTerm/>
+            <valueTwo>be</valueTwo>
+            <label>Belarusian</label>
+            <labelFrench>biélorusse</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bem</value>
+            <valueTerm/>
+            <label>Bemba</label>
+            <labelFrench>bemba</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ben</value>
+            <valueTerm/>
+            <valueTwo>bn</valueTwo>
+            <label>Bengali</label>
+            <labelFrench>bengali</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ber</value>
+            <valueTerm/>
+            <label>Berber languages</label>
+            <labelFrench>berb√®res, langues</labelFrench>
+        </item>
+        <item>
+            <value>bho</value>
+            <valueTerm/>
+            <label>Bhojpuri</label>
+            <labelFrench>bhojpuri</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bih</value>
+            <valueTerm/>
+            <valueTwo>bh</valueTwo>
+            <label>Bihari languages</label>
+            <labelFrench>langues biharis</labelFrench>
+        </item>
+        <item>
+            <value>bik</value>
+            <valueTerm/>
+            <label>Bikol</label>
+            <labelFrench>bikol</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>bin</value>
+            <valueTerm/>
+            <label>Bini<!--; Edo--></label>
+            <labelFrench>bini; edo</labelFrench>
+        </item>
+        <item>
+            <value>bis</value>
+            <valueTerm/>
+            <valueTwo>bi</valueTwo>
+            <label>Bislama</label>
+            <labelFrench>bichlamar</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>bla</value>
+            <valueTerm/>
+            <label>Siksika</label>
+            <labelFrench>blackfoot</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bnt</value>
+            <valueTerm/>
+            <label>Bantu (Other)</label>
+            <labelFrench>bantoues, autres langues</labelFrench>
+        </item>
+        <item>
+            <value>bos</value>
+            <valueTerm/>
+            <valueTwo>bs</valueTwo>
+            <label>Bosnian</label>
+            <labelFrench>bosniaque</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bra</value>
+            <valueTerm/>
+            <label>Braj</label>
+            <labelFrench>braj</labelFrench>
+        </item>
+        <item>
+            <value>bre</value>
+            <valueTerm/>
+            <valueTwo>br</valueTwo>
+            <label>Breton</label>
+            <labelFrench>breton</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>btk</value>
+            <valueTerm/>
+            <label>Batak languages</label>
+            <labelFrench>batak, langues</labelFrench>
+        </item>
+        <item>
+            <value>bua</value>
+            <valueTerm/>
+            <label>Buriat</label>
+            <labelFrench>bouriate</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bug</value>
+            <valueTerm/>
+            <label>Buginese</label>
+            <labelFrench>bugi</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bul</value>
+            <valueTerm/>
+            <valueTwo>bg</valueTwo>
+            <label>Bulgarian</label>
+            <labelFrench>bulgare</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>bur</value>
+            <valueTerm>mya</valueTerm>
+            <valueTwo>my</valueTwo>
+            <label>Burmese</label>
+            <labelFrench>birman</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>byn</value>
+            <valueTerm/>
+            <label>Blin<!--; Bilin--></label>
+            <labelFrench>blin; bilen</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>cad</value>
+            <valueTerm/>
+            <label>Caddo</label>
+            <labelFrench>caddo</labelFrench>
+        </item>
+        <item>
+            <value>cai</value>
+            <valueTerm/>
+            <label>Central American Indian languages</label>
+            <labelFrench>amérindiennes de L'Amérique centrale, langues</labelFrench>
+        </item>
+        <item>
+            <value>car</value>
+            <valueTerm/>
+            <label>Galibi Carib</label>
+            <labelFrench>karib<!--; galibi; carib--></labelFrench>
+        </item>
+        <item>
+            <value>cat</value>
+            <valueTerm/>
+            <valueTwo>ca</valueTwo>
+            <label>Catalan<!--; Valencian--></label>
+            <labelFrench>catalan; valencien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cau</value>
+            <valueTerm/>
+            <label>Caucasian languages</label>
+            <labelFrench>caucasiennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>ceb</value>
+            <valueTerm/>
+            <label>Cebuano</label>
+            <labelFrench>cebuano</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cel</value>
+            <valueTerm/>
+            <label>Celtic languages</label>
+            <labelFrench>celtiques, langues; celtes, langues</labelFrench>
+        </item>
+        <item>
+            <value>cha</value>
+            <valueTerm/>
+            <valueTwo>ch</valueTwo>
+            <label>Chamorro</label>
+            <labelFrench>chamorro</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>chb</value>
+            <valueTerm/>
+            <label>Chibcha</label>
+            <labelFrench>chibcha</labelFrench>
+        </item>
+        <item>
+            <value>che</value>
+            <valueTerm/>
+            <valueTwo>ce</valueTwo>
+            <label>Chechen</label>
+            <labelFrench>tchétch√®ne</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chg</value>
+            <valueTerm/>
+            <label>Chagatai</label>
+            <labelFrench>djaghata√Ø</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chi</value>
+            <valueTerm>zho</valueTerm>
+            <valueTwo>zh</valueTwo>
+            <label>Chinese</label>
+            <labelFrench>chinois</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chk</value>
+            <valueTerm/>
+            <label>Chuukese</label>
+            <labelFrench>chuuk</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chm</value>
+            <valueTerm/>
+            <label>Mari</label>
+            <labelFrench>mari</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chn</value>
+            <valueTerm/>
+            <label>Chinook jargon</label>
+            <labelFrench>chinook, jargon</labelFrench>
+        </item>
+        <item>
+            <value>cho</value>
+            <valueTerm/>
+            <label>Choctaw</label>
+            <labelFrench>choctaw</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>chp</value>
+            <valueTerm/>
+            <label>Chipewyan<!--; Dene Suline--></label>
+            <labelFrench>chipewyan</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chr</value>
+            <valueTerm/>
+            <label>Cherokee</label>
+            <labelFrench>cherokee</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chu</value>
+            <valueTerm/>
+            <valueTwo>cu</valueTwo>
+            <label>Church Slavic<!--; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic--></label>
+            <labelFrench>slavon d'église; vieux slave; slavon liturgique; vieux bulgare</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chv</value>
+            <valueTerm/>
+            <valueTwo>cv</valueTwo>
+            <label>Chuvash</label>
+            <labelFrench>tchouvache</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>chy</value>
+            <valueTerm/>
+            <label>Cheyenne</label>
+            <labelFrench>cheyenne</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cmc</value>
+            <valueTerm/>
+            <label>Chamic languages</label>
+            <labelFrench>chames, langues</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>cop</value>
+            <valueTerm/>
+            <label>Coptic</label>
+            <labelFrench>copte</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>cor</value>
+            <valueTerm/>
+            <valueTwo>kw</valueTwo>
+            <label>Cornish</label>
+            <labelFrench>cornique</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cos</value>
+            <valueTerm/>
+            <valueTwo>co</valueTwo>
+            <label>Corsican</label>
+            <labelFrench>corse</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cpe</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, English based</label>
+            <labelFrench>créoles et pidgins basés sur l'anglais</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>cpf</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, French-based </label>
+            <labelFrench>créoles et pidgins basés sur le français</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>cpp</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, Portuguese-based </label>
+            <labelFrench>créoles et pidgins basés sur le portugais</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>cre</value>
+            <valueTerm/>
+            <valueTwo>cr</valueTwo>
+            <label>Cree</label>
+            <labelFrench>cree</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>crh</value>
+            <valueTerm/>
+            <label>Crimean Tatar<!--; Crimean Turkish--></label>
+            <labelFrench>tatar de Crimé</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>crp</value>
+            <valueTerm/>
+            <label>Creoles and pidgins </label>
+            <labelFrench>créoles et pidgins</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>csb</value>
+            <valueTerm/>
+            <label>Kashubian</label>
+            <labelFrench>kachoube</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>cus</value>
+            <valueTerm/>
+            <label>Cushitic languages</label>
+            <labelFrench>couchitiques, langues</labelFrench>
+        </item>
+        <item>
+            <value>cze</value>
+            <valueTerm>ces</valueTerm>
+            <valueTwo>cs</valueTwo>
+            <label>Czech</label>
+            <labelFrench>tch√®que</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dak</value>
+            <valueTerm/>
+            <label>Dakota</label>
+            <labelFrench>dakota</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dan</value>
+            <valueTerm/>
+            <valueTwo>da</valueTwo>
+            <label>Danish</label>
+            <labelFrench>danois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dar</value>
+            <valueTerm/>
+            <label>Dargwa</label>
+            <labelFrench>dargwa</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>day</value>
+            <valueTerm/>
+            <label>Land Dayak languages</label>
+            <labelFrench>dayak, langues</labelFrench>
+        </item>
+        <item>
+            <value>del</value>
+            <valueTerm/>
+            <label>Delaware</label>
+            <labelFrench>delaware</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>den</value>
+            <valueTerm/>
+            <label>Slave<!-- (Athapascan)--></label>
+            <labelFrench>esclave (athapascan)</labelFrench>
+        </item>
+        <item>
+            <value>dgr</value>
+            <valueTerm/>
+            <label>Dogrib</label>
+            <labelFrench>dogrib</labelFrench>
+        </item>
+        <item>
+            <value>din</value>
+            <valueTerm/>
+            <label>Dinka</label>
+            <labelFrench>dinka</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>div</value>
+            <valueTerm/>
+            <valueTwo>dv</valueTwo>
+            <label>Divehi<!--; Dhivehi; Maldivian--></label>
+            <labelFrench>maldivien</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>doi</value>
+            <valueTerm/>
+            <label>Dogri</label>
+            <labelFrench>dogri</labelFrench>
+        </item>
+        <item>
+            <value>dra</value>
+            <valueTerm/>
+            <label>Dravidian languages</label>
+            <labelFrench>dravidiennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>dsb</value>
+            <valueTerm/>
+            <label>Lower Sorbian</label>
+            <labelFrench>bas-sorabe</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dua</value>
+            <valueTerm/>
+            <label>Duala</label>
+            <labelFrench>douala</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dum</value>
+            <valueTerm/>
+            <label>Dutch, Middle<!-- (ca.1050-1350)--></label>
+            <labelFrench>néerlandais moyen (ca. 1050-1350)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>dut</value>
+            <valueTerm>nld</valueTerm>
+            <valueTwo>nl</valueTwo>
+            <label>Dutch<!--; Flemish--></label>
+            <labelFrench>néerlandais; flamand</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>dyu</value>
+            <valueTerm/>
+            <label>Dyula</label>
+            <labelFrench>dioula</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>dzo</value>
+            <valueTerm/>
+            <valueTwo>dz</valueTwo>
+            <label>Dzongkha</label>
+            <labelFrench>dzongkha</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>efi</value>
+            <valueTerm/>
+            <label>Efik</label>
+            <labelFrench>efik</labelFrench>
+        </item>
+        <item>
+            <value>egy</value>
+            <valueTerm/>
+            <label>Egyptian (Ancient)</label>
+            <labelFrench>égyptien</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>eka</value>
+            <valueTerm/>
+            <label>Ekajuk</label>
+            <labelFrench>ekajuk</labelFrench>
+        </item>
+        <item>
+            <value>elx</value>
+            <valueTerm/>
+            <label>Elamite</label>
+            <labelFrench>élamite</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>eng</value>
+            <valueTerm/>
+            <valueTwo>en</valueTwo>
+            <label>English</label>
+            <labelFrench>anglais</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>enm</value>
+            <valueTerm/>
+            <label>English, Middle<!-- (1100-1500)--></label>
+            <labelFrench>anglais moyen (1100-1500)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>epo</value>
+            <valueTerm/>
+            <valueTwo>eo</valueTwo>
+            <label>Esperanto</label>
+            <labelFrench>espéranto</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>est</value>
+            <valueTerm/>
+            <valueTwo>et</valueTwo>
+            <label>Estonian</label>
+            <labelFrench>estonien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ewe</value>
+            <valueTerm/>
+            <valueTwo>ee</valueTwo>
+            <label>Ewe</label>
+            <labelFrench>éwé</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ewo</value>
+            <valueTerm/>
+            <label>Ewondo</label>
+            <labelFrench>éwondo</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fan</value>
+            <valueTerm/>
+            <label>Fang</label>
+            <labelFrench>fang</labelFrench>
+        </item>
+        <item>
+            <value>fao</value>
+            <valueTerm/>
+            <valueTwo>fo</valueTwo>
+            <label>Faroese</label>
+            <labelFrench>féro√Øen</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fat</value>
+            <valueTerm/>
+            <label>Fanti</label>
+            <labelFrench>fanti</labelFrench>
+        </item>
+        <item>
+            <value>fij</value>
+            <valueTerm/>
+            <valueTwo>fj</valueTwo>
+            <label>Fijian</label>
+            <labelFrench>fidjien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fil</value>
+            <valueTerm/>
+            <label>Filipino<!--; Pilipino--></label>
+            <labelFrench>filipino; pilipino</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fin</value>
+            <valueTerm/>
+            <valueTwo>fi</valueTwo>
+            <label>Finnish</label>
+            <labelFrench>finnois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fiu</value>
+            <valueTerm/>
+            <label>Finno-Ugrian languages</label>
+            <labelFrench>finno-ougriennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>fon</value>
+            <valueTerm/>
+            <label>Fon</label>
+            <labelFrench>fon</labelFrench>
+        </item>
+        <item>
+            <value>fre</value>
+            <valueTerm>fra</valueTerm>
+            <valueTwo>fr</valueTwo>
+            <label>French</label>
+            <labelFrench>français</labelFrench>
+            <classifier>Latin</classifier>
+            <classifier>common</classifier>
+        </item>
+        <item>
+            <value>frm</value>
+            <valueTerm/>
+            <label>French, Middle<!-- (ca.1400-1600)--></label>
+            <labelFrench>français moyen (1400-1600)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>fro</value>
+            <valueTerm/>
+            <label>French, Old<!-- (842-ca.1400)--></label>
+            <labelFrench>français ancien (842-ca.1400)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>frr</value>
+            <valueTerm/>
+            <label>Northern Frisian</label>
+            <labelFrench>frison septentrional</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>frs</value>
+            <valueTerm/>
+            <label>Eastern Frisian</label>
+            <labelFrench>frison oriental</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>fry</value>
+            <valueTerm/>
+            <valueTwo>fy</valueTwo>
+            <label>Western Frisian</label>
+            <classifier>Latin</classifier>
+            <labelFrench>frison occidental</labelFrench>
+        </item>
+        <item>
+            <value>ful</value>
+            <valueTerm/>
+            <valueTwo>ff</valueTwo>
+            <label>Fulah</label>
+            <labelFrench>peul</labelFrench>
+        </item>
+        <item>
+            <value>fur</value>
+            <valueTerm/>
+            <label>Friulian</label>
+            <labelFrench>frioulan</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gaa</value>
+            <valueTerm/>
+            <label>Ga</label>
+            <labelFrench>ga</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gay</value>
+            <valueTerm/>
+            <label>Gayo</label>
+            <labelFrench>gayo</labelFrench>
+        </item>
+        <item>
+            <value>gba</value>
+            <valueTerm/>
+            <label>Gbaya</label>
+            <labelFrench>gbaya</labelFrench>
+        </item>
+        <item>
+            <value>gem</value>
+            <valueTerm/>
+            <label>Germanic languages</label>
+            <labelFrench>germaniques, langues</labelFrench>
+        </item>
+        <item>
+            <value>geo</value>
+            <valueTerm>kat</valueTerm>
+            <valueTwo>ka</valueTwo>
+            <label>Georgian</label>
+            <labelFrench>géorgien</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ger</value>
+            <valueTerm>deu</valueTerm>
+            <valueTwo>de</valueTwo>
+            <label>German</label>
+            <labelFrench>allemand</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gez</value>
+            <valueTerm/>
+            <label>Geez</label>
+            <labelFrench>gu√®ze</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>gil</value>
+            <valueTerm/>
+            <label>Gilbertese</label>
+            <labelFrench>kiribati</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gla</value>
+            <valueTerm/>
+            <valueTwo>gd</valueTwo>
+            <label>Gaelic<!--; Scottish Gaelic--></label>
+            <labelFrench>gaélique; gaélique écossais</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>gle</value>
+            <valueTerm/>
+            <valueTwo>ga</valueTwo>
+            <label>Irish</label>
+            <labelFrench>irlandais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>glg</value>
+            <valueTerm/>
+            <valueTwo>gl</valueTwo>
+            <label>Galician</label>
+            <labelFrench>galicien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>glv</value>
+            <valueTerm/>
+            <valueTwo>gv</valueTwo>
+            <label>Manx</label>
+            <labelFrench>manx; mannois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gmh</value>
+            <valueTerm/>
+            <label>German, Middle High<!-- (ca.1050-1500)--></label>
+            <labelFrench>allemand, moyen haut (ca. 1050-1500)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>goh</value>
+            <valueTerm/>
+            <label>German, Old High<!-- (ca.750-1050)--></label>
+            <labelFrench>allemand, vieux haut (ca. 750-1050)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>gon</value>
+            <valueTerm/>
+            <label>Gondi</label>
+            <labelFrench>gond</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>gor</value>
+            <valueTerm/>
+            <label>Gorontalo</label>
+            <labelFrench>gorontalo</labelFrench>
+        </item>
+        <item>
+            <value>got</value>
+            <valueTerm/>
+            <label>Gothic</label>
+            <labelFrench>gothique</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>grb</value>
+            <valueTerm/>
+            <label>Grebo</label>
+            <labelFrench>grebo</labelFrench>
+        </item>
+        <item>
+            <value>grc</value>
+            <valueTerm/>
+            <label>Greek, Ancient<!-- (to 1453)--></label>
+            <labelFrench>grec ancien (jusqu'√† 1453)</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>gre</value>
+            <valueTerm>ell</valueTerm>
+            <valueTwo>el</valueTwo>
+            <label>Greek, Modern<!-- (1453-)--></label>
+            <labelFrench>grec moderne (apr√®s 1453)</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>grn</value>
+            <valueTerm/>
+            <valueTwo>gn</valueTwo>
+            <label>Guarani</label>
+            <labelFrench>guarani</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>gsw</value>
+            <valueTerm/>
+            <label>Swiss German<!--; Alemannic; Alsatian--></label>
+            <labelFrench>suisse alémanique; alémanique; alsacien</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>guj</value>
+            <valueTerm/>
+            <valueTwo>gu</valueTwo>
+            <label>Gujarati</label>
+            <labelFrench>goudjrati</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>gwi</value>
+            <valueTerm/>
+            <label>Gwich'in</label>
+            <labelFrench>gwich'in</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hai</value>
+            <valueTerm/>
+            <label>Haida</label>
+            <labelFrench>haida</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hat</value>
+            <valueTerm/>
+            <valueTwo>ht</valueTwo>
+            <label>Haitian<!--; Haitian Creole--></label>
+            <labelFrench>ha√Øtien; créole ha√Øtien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hau</value>
+            <valueTerm/>
+            <valueTwo>ha</valueTwo>
+            <label>Hausa</label>
+            <labelFrench>haoussa</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>haw</value>
+            <valueTerm/>
+            <label>Hawaiian</label>
+            <labelFrench>hawa√Øen</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>heb</value>
+            <valueTerm/>
+            <valueTwo>he</valueTwo>
+            <label>Hebrew</label>
+            <labelFrench>hébreu</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>her</value>
+            <valueTerm/>
+            <valueTwo>hz</valueTwo>
+            <label>Herero</label>
+            <labelFrench>herero</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hil</value>
+            <valueTerm/>
+            <label>Hiligaynon</label>
+            <labelFrench>hiligaynon</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>him</value>
+            <valueTerm/>
+            <label>Himachali languages<!--; Western Pahari languages--></label>
+            <labelFrench>langues himachalis; langues paharis occidentales</labelFrench>
+        </item>
+        <item>
+            <value>hin</value>
+            <valueTerm/>
+            <valueTwo>hi</valueTwo>
+            <label>Hindi</label>
+            <labelFrench>hindi</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>hit</value>
+            <valueTerm/>
+            <label>Hittite</label>
+            <labelFrench>hittite</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>hmn</value>
+            <valueTerm/>
+            <label>Hmong<!--; Mong--></label>
+            <labelFrench>hmong</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>hmo</value>
+            <valueTerm/>
+            <valueTwo>ho</valueTwo>
+            <label>Hiri Motu</label>
+            <labelFrench>hiri motu</labelFrench>
+        </item>
+        <item>
+            <value>hrv</value>
+            <valueTerm/>
+            <valueTwo>hr</valueTwo>
+            <label>Croatian</label>
+            <labelFrench>croate</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hsb</value>
+            <valueTerm/>
+            <label>Upper Sorbian</label>
+            <labelFrench>haut-sorabe</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hun</value>
+            <valueTerm/>
+            <valueTwo>hu</valueTwo>
+            <label>Hungarian</label>
+            <labelFrench>hongrois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>hup</value>
+            <valueTerm/>
+            <label>Hupa</label>
+            <labelFrench>hupa</labelFrench>
+        </item>
+        <item>
+            <value>iba</value>
+            <valueTerm/>
+            <label>Iban</label>
+            <labelFrench>iban</labelFrench>
+        </item>
+        <item>
+            <value>ibo</value>
+            <valueTerm/>
+            <valueTwo>ig</valueTwo>
+            <label>Igbo</label>
+            <labelFrench>igbo</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ice</value>
+            <valueTerm>isl</valueTerm>
+            <valueTwo>is</valueTwo>
+            <label>Icelandic</label>
+            <labelFrench>islandais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ido</value>
+            <valueTerm/>
+            <valueTwo>io</valueTwo>
+            <label>Ido</label>
+            <labelFrench>ido</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>iii</value>
+            <valueTerm/>
+            <valueTwo>ii</valueTwo>
+            <label>Sichuan Yi<!--; Nuosu--></label>
+            <labelFrench>yi de Sichuan</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ijo</value>
+            <valueTerm/>
+            <label>Ijo languages</label>
+            <labelFrench>ijo, langues</labelFrench>
+        </item>
+        <item>
+            <value>iku</value>
+            <valueTerm/>
+            <valueTwo>iu</valueTwo>
+            <label>Inuktitut</label>
+            <labelFrench>inuktitut</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ile</value>
+            <valueTerm/>
+            <valueTwo>ie</valueTwo>
+            <label>Interlingue<!--; Occidental--></label>
+            <labelFrench>interlingue</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ilo</value>
+            <valueTerm/>
+            <label>Iloko</label>
+            <labelFrench>ilocano</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ina</value>
+            <valueTerm/>
+            <valueTwo>ia</valueTwo>
+            <label>Interlingua<!-- (International Auxiliary Language Association)--></label>
+            <labelFrench>interlingua (langue auxiliaire internationale)</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>inc</value>
+            <valueTerm/>
+            <label>Indic languages</label>
+            <labelFrench>indo-aryennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>ind</value>
+            <valueTerm/>
+            <valueTwo>id</valueTwo>
+            <label>Indonesian</label>
+            <labelFrench>indonésien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ine</value>
+            <valueTerm/>
+            <label>Indo-European languages</label>
+            <labelFrench>indo-européennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>inh</value>
+            <valueTerm/>
+            <label>Ingush</label>
+            <labelFrench>ingouche</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ipk</value>
+            <valueTerm/>
+            <valueTwo>ik</valueTwo>
+            <label>Inupiaq</label>
+            <labelFrench>inupiaq</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ira</value>
+            <valueTerm/>
+            <label>Iranian languages</label>
+            <labelFrench>iraniennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>iro</value>
+            <valueTerm/>
+            <label>Iroquoian languages</label>
+            <labelFrench>iroquoises, langues</labelFrench>
+        </item>
+        <item>
+            <value>ita</value>
+            <valueTerm/>
+            <valueTwo>it</valueTwo>
+            <label>Italian</label>
+            <labelFrench>italien</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>jav</value>
+            <valueTerm/>
+            <valueTwo>jv</valueTwo>
+            <label>Javanese</label>
+            <labelFrench>javanais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>jbo</value>
+            <valueTerm/>
+            <label>Lojban</label>
+            <labelFrench>lojban</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>jpr</value>
+            <valueTerm/>
+            <label>Judeo-Persian</label>
+            <labelFrench>judéo-persan</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>jpn</value>
+            <valueTerm/>
+            <valueTwo>ja</valueTwo>
+            <label>Japanese</label>
+            <labelFrench>japonais</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>jrb</value>
+            <valueTerm/>
+            <label>Judeo-Arabic</label>
+            <labelFrench>judéo-arabe</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kaa</value>
+            <valueTerm/>
+            <label>Kara-Kalpak</label>
+            <labelFrench>karakalpak</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kab</value>
+            <valueTerm/>
+            <label>Kabyle</label>
+            <labelFrench>kabyle</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kac</value>
+            <valueTerm/>
+            <label>Kachin<!--; Jingpho--></label>
+            <labelFrench>kachin; jingpho</labelFrench>
+        </item>
+        <item>
+            <value>kal</value>
+            <valueTerm/>
+            <valueTwo>kl</valueTwo>
+            <label>Kalaallisut<!--; Greenlandic--></label>
+            <labelFrench>groenlandais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>kam</value>
+            <valueTerm/>
+            <label>Kamba</label>
+            <labelFrench>kamba</labelFrench>
+        </item>
+        <item>
+            <value>kan</value>
+            <valueTerm/>
+            <valueTwo>kn</valueTwo>
+            <label>Kannada</label>
+            <labelFrench>kannada</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kar</value>
+            <valueTerm/>
+            <label>Karen languages</label>
+            <labelFrench>karen, langues</labelFrench>
+        </item>
+        <item>
+            <value>kas</value>
+            <valueTerm/>
+            <valueTwo>ks</valueTwo>
+            <label>Kashmiri</label>
+            <labelFrench>kashmiri</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kau</value>
+            <valueTerm/>
+            <valueTwo>kr</valueTwo>
+            <label>Kanuri</label>
+            <labelFrench>kanouri</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>kaw</value>
+            <valueTerm/>
+            <label>Kawi</label>
+            <labelFrench>kawi</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kaz</value>
+            <valueTerm/>
+            <valueTwo>kk</valueTwo>
+            <label>Kazakh</label>
+            <labelFrench>kazakh</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kbd</value>
+            <valueTerm/>
+            <label>Kabardian</label>
+            <labelFrench>kabardien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kha</value>
+            <valueTerm/>
+            <label>Khasi</label>
+            <labelFrench>khasi</labelFrench>
+        </item>
+        <item>
+            <value>khi</value>
+            <valueTerm/>
+            <label>Khoisan languages</label>
+            <labelFrench>kho√Øsan, langues</labelFrench>
+        </item>
+        <item>
+            <value>khm</value>
+            <valueTerm/>
+            <valueTwo>km</valueTwo>
+            <label>Central Khmer</label>
+            <labelFrench>khmer central</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kho</value>
+            <valueTerm/>
+            <label>Khotanese<!--; Sakan--></label>
+            <labelFrench>khotanais; sakan</labelFrench>
+        </item>
+        <item>
+            <value>kik</value>
+            <valueTerm/>
+            <valueTwo>ki</valueTwo>
+            <label>Kikuyu<!--; Gikuyu--></label>
+            <labelFrench>kikuyu</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>kin</value>
+            <valueTerm/>
+            <valueTwo>rw</valueTwo>
+            <label>Kinyarwanda</label>
+            <labelFrench>rwanda</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>kir</value>
+            <valueTerm/>
+            <valueTwo>ky</valueTwo>
+            <label>Kirghiz<!--; Kyrgyz--></label>
+            <labelFrench>kirghiz</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kmb</value>
+            <valueTerm/>
+            <label>Kimbundu</label>
+            <labelFrench>kimbundu</labelFrench>
+        </item>
+        <item>
+            <value>kok</value>
+            <valueTerm/>
+            <label>Konkani</label>
+            <labelFrench>konkani</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kom</value>
+            <valueTerm/>
+            <valueTwo>kv</valueTwo>
+            <label>Komi</label>
+            <labelFrench>kom</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kon</value>
+            <valueTerm/>
+            <valueTwo>kg</valueTwo>
+            <label>Kongo</label>
+            <labelFrench>kongo</labelFrench>
+        </item>
+        <item>
+            <value>kor</value>
+            <valueTerm/>
+            <valueTwo>ko</valueTwo>
+            <label>Korean</label>
+            <labelFrench>coréen</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kos</value>
+            <valueTerm/>
+            <label>Kosraean</label>
+            <labelFrench>kosrae</labelFrench>
+        </item>
+        <item>
+            <value>kpe</value>
+            <valueTerm/>
+            <label>Kpelle</label>
+            <labelFrench>kpellé</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>krc</value>
+            <valueTerm/>
+            <label>Karachay-Balkar</label>
+            <labelFrench>karatchai balkar</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>krl</value>
+            <valueTerm/>
+            <label>Karelian</label>
+            <labelFrench>carélien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>kro</value>
+            <valueTerm/>
+            <label>Kru languages</label>
+            <labelFrench>krou, langues</labelFrench>
+        </item>
+        <item>
+            <value>kru</value>
+            <valueTerm/>
+            <label>Kurukh</label>
+            <labelFrench>kurukh</labelFrench>
+        </item>
+        <item>
+            <value>kua</value>
+            <valueTerm/>
+            <valueTwo>kj</valueTwo>
+            <label>Kuanyama<!--; Kwanyama--></label>
+            <labelFrench>kuanyama; kwanyama</labelFrench>
+        </item>
+        <item>
+            <value>kum</value>
+            <valueTerm/>
+            <label>Kumyk</label>
+            <labelFrench>koumyk</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>kur</value>
+            <valueTerm/>
+            <valueTwo>ku</valueTwo>
+            <label>Kurdish</label>
+            <labelFrench>kurde</labelFrench>
+            <classifier>not Latin</classifier>
+            <classifier>transliteration</classifier>
+        </item>
+        <item>
+            <value>kut</value>
+            <valueTerm/>
+            <label>Kutenai</label>
+            <labelFrench>kutenai</labelFrench>
+        </item>
+        <item>
+            <value>lad</value>
+            <valueTerm/>
+            <label>Ladino</label>
+            <labelFrench>judéo-espagnol</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>lah</value>
+            <valueTerm/>
+            <label>Lahnda</label>
+            <labelFrench>lahnda</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>lam</value>
+            <valueTerm/>
+            <label>Lamba</label>
+            <labelFrench>lamba</labelFrench>
+        </item>
+        <item>
+            <value>lao</value>
+            <valueTerm/>
+            <valueTwo>lo</valueTwo>
+            <label>Lao</label>
+            <labelFrench>lao</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>lat</value>
+            <valueTerm/>
+            <valueTwo>la</valueTwo>
+            <label>Latin</label>
+            <labelFrench>latin</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lav</value>
+            <valueTerm/>
+            <valueTwo>lv</valueTwo>
+            <label>Latvian</label>
+            <labelFrench>letton</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lez</value>
+            <valueTerm/>
+            <label>Lezghian</label>
+            <labelFrench>lezghien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>lim</value>
+            <valueTerm/>
+            <valueTwo>li</valueTwo>
+            <label>Limburgan<!--; Limburger; Limburgish--></label>
+            <labelFrench>limbourgeois</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>lin</value>
+            <valueTerm/>
+            <valueTwo>ln</valueTwo>
+            <label>Lingala</label>
+            <labelFrench>lingala</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lit</value>
+            <valueTerm/>
+            <valueTwo>lt</valueTwo>
+            <label>Lithuanian</label>
+            <labelFrench>lituanien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lol</value>
+            <valueTerm/>
+            <label>Mongo</label>
+            <labelFrench>mongo</labelFrench>
+        </item>
+        <item>
+            <value>loz</value>
+            <valueTerm/>
+            <label>Lozi</label>
+            <labelFrench>lozi</labelFrench>
+        </item>
+        <item>
+            <value>ltz</value>
+            <valueTerm/>
+            <valueTwo>lb</valueTwo>
+            <label>Luxembourgish<!--; Letzeburgesch--></label>
+            <labelFrench>luxembourgeois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lua</value>
+            <valueTerm/>
+            <label>Luba-Lulua</label>
+            <labelFrench>luba-lulua</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lub</value>
+            <valueTerm/>
+            <valueTwo>lu</valueTwo>
+            <label>Luba-Katanga</label>
+            <labelFrench>luba-katanga</labelFrench>
+        </item>
+        <item>
+            <value>lug</value>
+            <valueTerm/>
+            <valueTwo>lg</valueTwo>
+            <label>Ganda</label>
+            <labelFrench>ganda</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>lui</value>
+            <valueTerm/>
+            <label>Luiseno</label>
+            <labelFrench>luiseno</labelFrench>
+        </item>
+        <item>
+            <value>lun</value>
+            <valueTerm/>
+            <label>Lunda</label>
+            <labelFrench>lunda</labelFrench>
+        </item>
+        <item>
+            <value>luo</value>
+            <valueTerm/>
+            <label>Luo<!-- (Kenya and Tanzania)--></label>
+            <labelFrench>luo (Kenya et Tanzanie)</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>lus</value>
+            <valueTerm/>
+            <label>Lushai</label>
+            <labelFrench>lushai</labelFrench>
+        </item>
+        <item>
+            <value>mac</value>
+            <valueTerm>mkd</valueTerm>
+            <valueTwo>mk</valueTwo>
+            <label>Macedonian</label>
+            <labelFrench>macédonien</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mad</value>
+            <valueTerm/>
+            <label>Madurese</label>
+            <labelFrench>madourais</labelFrench>
+            <classifier>transliteration</classifier>
+        </item>
+        <item>
+            <value>mag</value>
+            <valueTerm/>
+            <label>Magahi</label>
+            <labelFrench>magahi</labelFrench>
+        </item>
+        <item>
+            <value>mah</value>
+            <valueTerm/>
+            <valueTwo>mh</valueTwo>
+            <label>Marshallese</label>
+            <labelFrench>marshall</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mai</value>
+            <valueTerm/>
+            <label>Maithili</label>
+            <labelFrench>maithili</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>mak</value>
+            <valueTerm/>
+            <label>Makasar</label>
+            <labelFrench>makassar</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mal</value>
+            <valueTerm/>
+            <valueTwo>ml</valueTwo>
+            <label>Malayalam</label>
+            <labelFrench>malayalam</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>man</value>
+            <valueTerm/>
+            <label>Mandingo</label>
+            <labelFrench>mandingue</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mao</value>
+            <valueTerm>mri</valueTerm>
+            <valueTwo>mi</valueTwo>
+            <label>Maori</label>
+            <labelFrench>maori</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>map</value>
+            <valueTerm/>
+            <label>Austronesian languages</label>
+            <labelFrench>austronésiennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>mar</value>
+            <valueTerm/>
+            <valueTwo>mr</valueTwo>
+            <label>Marathi</label>
+            <labelFrench>marathe</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mas</value>
+            <valueTerm/>
+            <label>Masai</label>
+            <labelFrench>massa√Ø</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>may</value>
+            <valueTerm>msa</valueTerm>
+            <valueTwo>ms</valueTwo>
+            <label>Malay</label>
+            <labelFrench>malais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mdf</value>
+            <valueTerm/>
+            <label>Moksha</label>
+            <labelFrench>moksa</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mdr</value>
+            <valueTerm/>
+            <label>Mandar</label>
+            <labelFrench>mandar</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>men</value>
+            <valueTerm/>
+            <label>Mende</label>
+            <labelFrench>mendé</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mga</value>
+            <valueTerm/>
+            <label>Irish, Middle<!-- (900-1200)--></label>
+            <labelFrench>irlandais moyen (900-1200)</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mic</value>
+            <valueTerm/>
+            <label>Mi'kmaq<!--; Micmac--></label>
+            <labelFrench>mi'kmaq; micmac</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>min</value>
+            <valueTerm/>
+            <label>Minangkabau</label>
+            <labelFrench>minangkabau</labelFrench>
+        </item>
+        <item>
+            <value>mis</value>
+            <valueTerm/>
+            <label>Uncoded languages</label>
+            <labelFrench>langues non codées</labelFrench>
+        </item>
+        <item>
+            <value>mkh</value>
+            <valueTerm/>
+            <label>Mon-Khmer languages</label>
+            <labelFrench>m√¥n-khmer, langues</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mlg</value>
+            <valueTerm/>
+            <valueTwo>mg</valueTwo>
+            <label>Malagasy</label>
+            <labelFrench>malgache</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mlt</value>
+            <valueTerm/>
+            <valueTwo>mt</valueTwo>
+            <label>Maltese</label>
+            <labelFrench>maltais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mnc</value>
+            <valueTerm/>
+            <label>Manchu</label>
+            <labelFrench>mandchou</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mni</value>
+            <valueTerm/>
+            <label>Manipuri</label>
+            <labelFrench>manipuri</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mno</value>
+            <valueTerm/>
+            <label>Manobo languages</label>
+            <labelFrench>manobo, langues</labelFrench>
+        </item>
+        <item>
+            <value>moh</value>
+            <valueTerm/>
+            <label>Mohawk</label>
+            <labelFrench>mohawk</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mon</value>
+            <valueTerm/>
+            <valueTwo>mn</valueTwo>
+            <label>Mongolian</label>
+            <labelFrench>mongol</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>mos</value>
+            <valueTerm/>
+            <label>Mossi</label>
+            <labelFrench>moré</labelFrench>
+        </item>
+        <item>
+            <value>mul</value>
+            <valueTerm/>
+            <label>Multiple languages</label>
+            <labelFrench>multilingue</labelFrench>
+            <classifier>common</classifier>
+        </item>
+        <item>
+            <value>mun</value>
+            <valueTerm/>
+            <label>Munda languages</label>
+            <labelFrench>mounda, langues</labelFrench>
+        </item>
+        <item>
+            <value>mus</value>
+            <valueTerm/>
+            <label>Creek</label>
+            <labelFrench>muskogee</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mwl</value>
+            <valueTerm/>
+            <label>Mirandese</label>
+            <labelFrench>mirandais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>mwr</value>
+            <valueTerm/>
+            <label>Marwari</label>
+            <labelFrench>marvari</labelFrench>
+        </item>
+        <item>
+            <value>myn</value>
+            <valueTerm/>
+            <label>Mayan languages</label>
+            <labelFrench>maya, langues</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>myv</value>
+            <valueTerm/>
+            <label>Erzya</label>
+            <labelFrench>erza</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>nah</value>
+            <valueTerm/>
+            <label>Nahuatl languages</label>
+            <labelFrench>nahuatl, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nai</value>
+            <valueTerm/>
+            <label>North American Indian languages</label>
+            <labelFrench>nord-amérindiennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>nap</value>
+            <valueTerm/>
+            <label>Neapolitan</label>
+            <labelFrench>napolitain</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nau</value>
+            <valueTerm/>
+            <valueTwo>na</valueTwo>
+            <label>Nauru</label>
+            <labelFrench>nauruan</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nav</value>
+            <valueTerm/>
+            <valueTwo>nv</valueTwo>
+            <label>Navajo<!--; Navaho--></label>
+            <labelFrench>navaho</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nbl</value>
+            <valueTerm/>
+            <valueTwo>nr</valueTwo>
+            <label>Ndebele, South<!--; South Ndebele--></label>
+            <labelFrench>ndébélé du Sud</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nde</value>
+            <valueTerm/>
+            <valueTwo>nd</valueTwo>
+            <label>Ndebele, North<!--; North Ndebele--></label>
+            <labelFrench>ndébélé du Nord</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ndo</value>
+            <valueTerm/>
+            <valueTwo>ng</valueTwo>
+            <label>Ndonga</label>
+            <labelFrench>ndonga</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nds</value>
+            <valueTerm/>
+            <label>Low German<!--; Low Saxon; German, Low; Saxon, Low--></label>
+            <labelFrench>bas allemand; bas saxon; allemand, bas; saxon, bas</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>nep</value>
+            <valueTerm/>
+            <valueTwo>ne</valueTwo>
+            <label>Nepali</label>
+            <labelFrench>népalais</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>new</value>
+            <valueTerm/>
+            <label>Nepal Bhasa<!--; Newari--></label>
+            <labelFrench>nepal bhasa; newari</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>nia</value>
+            <valueTerm/>
+            <label>Nias</label>
+            <labelFrench>nias</labelFrench>
+        </item>
+        <item>
+            <value>nic</value>
+            <valueTerm/>
+            <label>Niger-Kordofanian languages</label>
+            <labelFrench>nigéro-kordofaniennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>niu</value>
+            <valueTerm/>
+            <label>Niuean</label>
+            <labelFrench>niué</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nno</value>
+            <valueTerm/>
+            <valueTwo>nn</valueTwo>
+            <label>Norwegian Nynorsk<!--; Nynorsk, Norwegian--></label>
+            <labelFrench>norvégien nynorsk; nynorsk, norvégien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nob</value>
+            <valueTerm/>
+            <valueTwo>nb</valueTwo>
+            <label>Bokmål, Norwegian<!--; Norwegian Bokmål--></label>
+            <labelFrench>norvégien bokm√•l</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nog</value>
+            <valueTerm/>
+            <label>Nogai</label>
+            <labelFrench>noga√Ø; nogay</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>non</value>
+            <valueTerm/>
+            <label>Norse, Old</label>
+            <labelFrench>norrois, vieux</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>nor</value>
+            <valueTerm/>
+            <valueTwo>no</valueTwo>
+            <label>Norwegian</label>
+            <labelFrench>norvégien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nqo</value>
+            <valueTerm/>
+            <label>N'Ko</label>
+            <labelFrench>n'ko</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>nso</value>
+            <valueTerm/>
+            <label>Pedi<!--; Sepedi; Northern Sotho--></label>
+            <labelFrench>pedi; sepedi; sotho du Nord</labelFrench>
+        </item>
+        <item>
+            <value>nub</value>
+            <valueTerm/>
+            <label>Nubian languages</label>
+            <labelFrench>nubiennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>nwc</value>
+            <valueTerm/>
+            <label>Classical Newari<!--; Old Newari; Classical Nepal Bhasa--></label>
+            <labelFrench>newari classique</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>nya</value>
+            <valueTerm/>
+            <valueTwo>ny</valueTwo>
+            <label>Chichewa<!--; Chewa; Nyanja--></label>
+            <labelFrench>chichewa; chewa; nyanja</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>nym</value>
+            <valueTerm/>
+            <label>Nyamwezi</label>
+            <labelFrench>nyamwezi</labelFrench>
+        </item>
+        <item>
+            <value>nyn</value>
+            <valueTerm/>
+            <label>Nyankole</label>
+            <labelFrench>nyankolé</labelFrench>
+        </item>
+        <item>
+            <value>nyo</value>
+            <valueTerm/>
+            <label>Nyoro</label>
+            <labelFrench>nyoro</labelFrench>
+        </item>
+        <item>
+            <value>nzi</value>
+            <valueTerm/>
+            <label>Nzima</label>
+            <labelFrench>nzema</labelFrench>
+        </item>
+        <item>
+            <value>oci</value>
+            <valueTerm/>
+            <valueTwo>oc</valueTwo>
+            <label>Occitan<!-- (post 1500)--><!--; Provençal--></label>
+            <labelFrench>occitan (apr√®s 1500); provençal</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>oji</value>
+            <valueTerm/>
+            <valueTwo>oj</valueTwo>
+            <label>Ojibwa</label>
+            <labelFrench>ojibwa</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ori</value>
+            <valueTerm/>
+            <valueTwo>or</valueTwo>
+            <label>Oriya</label>
+            <labelFrench>oriya</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>orm</value>
+            <valueTerm/>
+            <valueTwo>om</valueTwo>
+            <label>Oromo</label>
+            <labelFrench>galla</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>osa</value>
+            <valueTerm/>
+            <label>Osage</label>
+            <labelFrench>osage</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>oss</value>
+            <valueTerm/>
+            <valueTwo>os</valueTwo>
+            <label>Ossetian<!--; Ossetic--></label>
+            <labelFrench>oss√®te</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ota</value>
+            <valueTerm/>
+            <label>Turkish, Ottoman<!-- (1500-1928)--></label>
+            <labelFrench>turc ottoman (1500-1928)</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>oto</value>
+            <valueTerm/>
+            <label>Otomian languages</label>
+            <labelFrench>otomi, langues</labelFrench>
+        </item>
+        <item>
+            <value>paa</value>
+            <valueTerm/>
+            <label>Papuan languages</label>
+            <labelFrench>papoues, langues</labelFrench>
+        </item>
+        <item>
+            <value>pag</value>
+            <valueTerm/>
+            <label>Pangasinan</label>
+            <labelFrench>pangasinan</labelFrench>
+        </item>
+        <item>
+            <value>pal</value>
+            <valueTerm/>
+            <label>Pahlavi</label>
+            <labelFrench>pahlavi</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>pam</value>
+            <valueTerm/>
+            <label>Pampanga<!--; Kapampangan--></label>
+            <labelFrench>pampangan</labelFrench>
+        </item>
+        <item>
+            <value>pan</value>
+            <valueTerm/>
+            <valueTwo>pa</valueTwo>
+            <label>Panjabi<!--; Punjabi--></label>
+            <labelFrench>pendjabi</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>pap</value>
+            <valueTerm/>
+            <label>Papiamento</label>
+            <labelFrench>papiamento</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>pau</value>
+            <valueTerm/>
+            <label>Palauan</label>
+            <labelFrench>palau</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>peo</value>
+            <valueTerm/>
+            <label>Persian, Old<!-- (ca.600-400 B.C.)--></label>
+            <labelFrench>perse, vieux (ca. 600-400 av. J.-C.)</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>per</value>
+            <valueTerm>fas</valueTerm>
+            <valueTwo>fa</valueTwo>
+            <label>Persian</label>
+            <labelFrench>persan</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>phi</value>
+            <valueTerm/>
+            <label>Philippine languages</label>
+            <labelFrench>philippines, langues</labelFrench>
+        </item>
+        <item>
+            <value>phn</value>
+            <valueTerm/>
+            <label>Phoenician</label>
+            <labelFrench>phénicien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>pli</value>
+            <valueTerm/>
+            <valueTwo>pi</valueTwo>
+            <label>Pali</label>
+            <labelFrench>pali</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>pol</value>
+            <valueTerm/>
+            <valueTwo>pl</valueTwo>
+            <label>Polish</label>
+            <labelFrench>polonais</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>pon</value>
+            <valueTerm/>
+            <label>Pohnpeian</label>
+            <labelFrench>pohnpei</labelFrench>
+        </item>
+        <item>
+            <value>por</value>
+            <valueTerm/>
+            <valueTwo>pt</valueTwo>
+            <label>Portuguese</label>
+            <labelFrench>portugais</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>pra</value>
+            <valueTerm/>
+            <label>Prakrit languages</label>
+            <labelFrench>pr√¢krit, langues</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>pro</value>
+            <valueTerm/>
+            <label>Provençal, Old<!-- (to 1500)--></label>
+            <labelFrench>provençal ancien (jusqu'√† 1500)</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>pus</value>
+            <valueTerm/>
+            <valueTwo>ps</valueTwo>
+            <label>Pushto<!--; Pashto--></label>
+            <labelFrench>pachto</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>qaa-qtz</value>
+            <valueTerm/>
+            <label>Reserved for local use</label>
+            <labelFrench>réservée √† l'usage local</labelFrench>
+        </item>
+        <item>
+            <value>que</value>
+            <valueTerm/>
+            <valueTwo>qu</valueTwo>
+            <label>Quechua</label>
+            <labelFrench>quechua</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>raj</value>
+            <valueTerm/>
+            <label>Rajasthani</label>
+            <labelFrench>rajasthani</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>rap</value>
+            <valueTerm/>
+            <label>Rapanui</label>
+            <labelFrench>rapanui</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>rar</value>
+            <valueTerm/>
+            <label>Rarotongan<!--; Cook Islands Maori--></label>
+            <labelFrench>rarotonga; maori des √Æles Cook</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>roa</value>
+            <valueTerm/>
+            <label>Romance languages</label>
+            <labelFrench>romanes, langues</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>roh</value>
+            <valueTerm/>
+            <valueTwo>rm</valueTwo>
+            <label>Romansh</label>
+            <labelFrench>romanche</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>rom</value>
+            <valueTerm/>
+            <label>Romany</label>
+            <labelFrench>tsigane</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>rum</value>
+            <valueTerm>ron</valueTerm>
+            <valueTwo>ro</valueTwo>
+            <label>Romanian<!--; Moldavian; Moldovan--></label>
+            <labelFrench>roumain; moldave</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>run</value>
+            <valueTerm/>
+            <valueTwo>rn</valueTwo>
+            <label>Rundi</label>
+            <labelFrench>rundi</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>rup</value>
+            <valueTerm/>
+            <label>Aromanian<!--; Arumanian; Macedo-Romanian--></label>
+            <labelFrench>aroumain; macédo-roumain</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>rus</value>
+            <valueTerm/>
+            <valueTwo>ru</valueTwo>
+            <label>Russian</label>
+            <labelFrench>russe</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sad</value>
+            <valueTerm/>
+            <label>Sandawe</label>
+            <labelFrench>sandawe</labelFrench>
+        </item>
+        <item>
+            <value>sag</value>
+            <valueTerm/>
+            <valueTwo>sg</valueTwo>
+            <label>Sango</label>
+            <labelFrench>sango</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sah</value>
+            <valueTerm/>
+            <label>Yakut</label>
+            <labelFrench>iakoute</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sai</value>
+            <valueTerm/>
+            <label>South American Indian (Other)</label>
+            <labelFrench>indiennes d'Amérique du Sud, autres langues</labelFrench>
+        </item>
+        <item>
+            <value>sal</value>
+            <valueTerm/>
+            <label>Salishan languages</label>
+            <labelFrench>salishennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>sam</value>
+            <valueTerm/>
+            <label>Samaritan Aramaic</label>
+            <labelFrench>samaritain</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>san</value>
+            <valueTerm/>
+            <valueTwo>sa</valueTwo>
+            <label>Sanskrit</label>
+            <labelFrench>sanskrit</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sas</value>
+            <valueTerm/>
+            <label>Sasak</label>
+            <labelFrench>sasak</labelFrench>
+        </item>
+        <item>
+            <value>sat</value>
+            <valueTerm/>
+            <label>Santali</label>
+            <labelFrench>santal</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>scn</value>
+            <valueTerm/>
+            <label>Sicilian</label>
+            <labelFrench>sicilien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sco</value>
+            <valueTerm/>
+            <label>Scots</label>
+            <labelFrench>écossais</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sel</value>
+            <valueTerm/>
+            <label>Selkup</label>
+            <labelFrench>selkoupe</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>sem</value>
+            <valueTerm/>
+            <label>Semitic languages</label>
+            <labelFrench>sémitiques, langues</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>sga</value>
+            <valueTerm/>
+            <label>Irish, Old<!-- (to 900)--></label>
+            <labelFrench>irlandais ancien (jusqu'√† 900)</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sgn</value>
+            <valueTerm/>
+            <label>Sign Languages</label>
+            <labelFrench>langues des signes</labelFrench>
+        </item>
+        <item>
+            <value>shn</value>
+            <valueTerm/>
+            <label>Shan</label>
+            <labelFrench>chan</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sid</value>
+            <valueTerm/>
+            <label>Sidamo</label>
+            <labelFrench>sidamo</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>sin</value>
+            <valueTerm/>
+            <valueTwo>si</valueTwo>
+            <label>Sinhalese<!--; Sinhala--></label>
+            <labelFrench>singhalais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sio</value>
+            <valueTerm/>
+            <label>Siouan languages</label>
+            <labelFrench>sioux, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sit</value>
+            <valueTerm/>
+            <label>Sino-Tibetan languages</label>
+            <labelFrench>sino-tibétaines, langues</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>sla</value>
+            <valueTerm/>
+            <label>Slavic languages</label>
+            <labelFrench>slaves, langues</labelFrench>
+        </item>
+        <item>
+            <value>slo</value>
+            <valueTerm>slk</valueTerm>
+            <valueTwo>sk</valueTwo>
+            <label>Slovak</label>
+            <labelFrench>slovaque</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>slv</value>
+            <valueTerm/>
+            <valueTwo>sl</valueTwo>
+            <label>Slovenian</label>
+            <labelFrench>slov√®ne</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sma</value>
+            <valueTerm/>
+            <label>Southern Sami</label>
+            <labelFrench>sami du Sud</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sme</value>
+            <valueTerm/>
+            <valueTwo>se</valueTwo>
+            <label>Northern Sami</label>
+            <labelFrench>sami du Nord</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>smi</value>
+            <valueTerm/>
+            <label>Sami languages</label>
+            <labelFrench>sames, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>smj</value>
+            <valueTerm/>
+            <label>Lule Sami</label>
+            <labelFrench>sami de Lule</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>smn</value>
+            <valueTerm/>
+            <label>Inari Sami</label>
+            <labelFrench>sami d'Inari</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>smo</value>
+            <valueTerm/>
+            <valueTwo>sm</valueTwo>
+            <label>Samoan</label>
+            <labelFrench>samoan</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sms</value>
+            <valueTerm/>
+            <label>Skolt Sami</label>
+            <labelFrench>sami skolt</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>sna</value>
+            <valueTerm/>
+            <valueTwo>sn</valueTwo>
+            <label>Shona</label>
+            <labelFrench>shona</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>snd</value>
+            <valueTerm/>
+            <valueTwo>sd</valueTwo>
+            <label>Sindhi</label>
+            <labelFrench>sindhi</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>snk</value>
+            <valueTerm/>
+            <label>Soninke</label>
+            <labelFrench>soninké</labelFrench>
+            <classifier type="added">Latin</classifier>
+        </item>
+        <item>
+            <value>sog</value>
+            <valueTerm/>
+            <label>Sogdian</label>
+            <labelFrench>sogdien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>som</value>
+            <valueTerm/>
+            <valueTwo>so</valueTwo>
+            <label>Somali</label>
+            <labelFrench>somali</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>son</value>
+            <valueTerm/>
+            <label>Songhai languages</label>
+            <labelFrench>songhai, langues</labelFrench>
+        </item>
+        <item>
+            <value>sot</value>
+            <valueTerm/>
+            <valueTwo>st</valueTwo>
+            <label>Sotho, Southern</label>
+            <labelFrench>sotho du Sud</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>spa</value>
+            <valueTerm/>
+            <valueTwo>es</valueTwo>
+            <label>Spanish<!--; Castilian--></label>
+            <labelFrench>espagnol; castillan</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>srd</value>
+            <valueTerm/>
+            <valueTwo>sc</valueTwo>
+            <label>Sardinian</label>
+            <labelFrench>sarde</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>srn</value>
+            <valueTerm/>
+            <label>Sranan Tongo</label>
+            <labelFrench>sranan tongo</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>srp</value>
+            <valueTerm/>
+            <valueTwo>sr</valueTwo>
+            <label>Serbian</label>
+            <labelFrench>serbe</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>srr</value>
+            <valueTerm/>
+            <label>Serer</label>
+            <labelFrench>sér√®re</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ssa</value>
+            <valueTerm/>
+            <label>Nilo-Saharan languages</label>
+            <labelFrench>nilo-sahariennes, langues</labelFrench>
+        </item>
+        <item>
+            <value>ssw</value>
+            <valueTerm/>
+            <valueTwo>ss</valueTwo>
+            <label>Swati</label>
+            <labelFrench>swati</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>suk</value>
+            <valueTerm/>
+            <label>Sukuma</label>
+            <labelFrench>sukuma</labelFrench>
+        </item>
+        <item>
+            <value>sun</value>
+            <valueTerm/>
+            <valueTwo>su</valueTwo>
+            <label>Sundanese</label>
+            <labelFrench>soundanais</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>sus</value>
+            <valueTerm/>
+            <label>Susu</label>
+            <labelFrench>soussou</labelFrench>
+        </item>
+        <item>
+            <value>sux</value>
+            <valueTerm/>
+            <label>Sumerian</label>
+            <labelFrench>sumérien</labelFrench>
+            <classifier type="added">not Latin</classifier>
+        </item>
+        <item>
+            <value>swa</value>
+            <valueTerm/>
+            <valueTwo>sw</valueTwo>
+            <label>Swahili</label>
+            <labelFrench>swahili</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>swe</value>
+            <valueTerm/>
+            <valueTwo>sv</valueTwo>
+            <label>Swedish</label>
+            <labelFrench>suédois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>syc</value>
+            <valueTerm/>
+            <label>Classical Syriac</label>
+            <labelFrench>syriaque classique</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>syr</value>
+            <valueTerm/>
+            <label>Syriac</label>
+            <labelFrench>syriaque</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tah</value>
+            <valueTerm/>
+            <valueTwo>ty</valueTwo>
+            <label>Tahitian</label>
+            <labelFrench>tahitien</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tai</value>
+            <valueTerm/>
+            <label>Tai languages</label>
+            <labelFrench>tai, langues</labelFrench>
+        </item>
+        <item>
+            <value>tam</value>
+            <valueTerm/>
+            <valueTwo>ta</valueTwo>
+            <label>Tamil</label>
+            <labelFrench>tamoul</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tat</value>
+            <valueTerm/>
+            <valueTwo>tt</valueTwo>
+            <label>Tatar</label>
+            <labelFrench>tatar</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tel</value>
+            <valueTerm/>
+            <valueTwo>te</valueTwo>
+            <label>Telugu</label>
+            <labelFrench>télougou</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tem</value>
+            <valueTerm/>
+            <label>Timne</label>
+            <labelFrench>temne</labelFrench>
+        </item>
+        <item>
+            <value>ter</value>
+            <valueTerm/>
+            <label>Tereno</label>
+            <labelFrench>tereno</labelFrench>
+        </item>
+        <item>
+            <value>tet</value>
+            <valueTerm/>
+            <label>Tetum</label>
+            <labelFrench>tetum</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tgk</value>
+            <valueTerm/>
+            <valueTwo>tg</valueTwo>
+            <label>Tajik</label>
+            <labelFrench>tadjik</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tgl</value>
+            <valueTerm/>
+            <valueTwo>tl</valueTwo>
+            <label>Tagalog</label>
+            <labelFrench>tagalog</labelFrench>
+            <classifier>common</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tha</value>
+            <valueTerm/>
+            <valueTwo>th</valueTwo>
+            <label>Thai</label>
+            <labelFrench>tha√Ø</labelFrench>
+            <classifier>common</classifier>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tib</value>
+            <valueTerm>bod</valueTerm>
+            <valueTwo>bo</valueTwo>
+            <label>Tibetan</label>
+            <labelFrench>tibétain</labelFrench>
+            <classifier>common</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tig</value>
+            <valueTerm/>
+            <label>Tigre</label>
+            <labelFrench>tigré</labelFrench>
+        </item>
+        <item>
+            <value>tir</value>
+            <valueTerm/>
+            <valueTwo>ti</valueTwo>
+            <label>Tigrinya</label>
+            <labelFrench>tigrigna</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tiv</value>
+            <valueTerm/>
+            <label>Tiv</label>
+            <labelFrench>tiv</labelFrench>
+        </item>
+        <item>
+            <value>tkl</value>
+            <valueTerm/>
+            <label>Tokelau</label>
+            <labelFrench>tokelau</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tlh</value>
+            <valueTerm/>
+            <label>Klingon<!--; tlhIngan-Hol--></label>
+            <labelFrench>klingon</labelFrench>
+        </item>
+        <item>
+            <value>tli</value>
+            <valueTerm/>
+            <label>Tlingit</label>
+            <labelFrench>tlingit</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tmh</value>
+            <valueTerm/>
+            <label>Tamashek</label>
+            <labelFrench>tamacheq</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tog</value>
+            <valueTerm/>
+            <label>Tonga (Nyasa)</label>
+            <labelFrench>tonga (Nyasa)</labelFrench>
+        </item>
+        <item>
+            <value>ton</value>
+            <valueTerm/>
+            <valueTwo>to</valueTwo>
+            <label>Tonga (Tonga Islands)</label>
+            <labelFrench>tongan (√éles Tonga)</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tpi</value>
+            <valueTerm/>
+            <label>Tok Pisin</label>
+            <labelFrench>tok pisin</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tsi</value>
+            <valueTerm/>
+            <label>Tsimshian</label>
+            <labelFrench>tsimshian</labelFrench>
+        </item>
+        <item>
+            <value>tsn</value>
+            <valueTerm/>
+            <valueTwo>tn</valueTwo>
+            <label>Tswana</label>
+            <labelFrench>tswana</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tso</value>
+            <valueTerm/>
+            <valueTwo>ts</valueTwo>
+            <label>Tsonga</label>
+            <labelFrench>tsonga</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tuk</value>
+            <valueTerm/>
+            <valueTwo>tk</valueTwo>
+            <label>Turkmen</label>
+            <labelFrench>turkm√®ne</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>tum</value>
+            <valueTerm/>
+            <label>Tumbuka</label>
+            <labelFrench>tumbuka</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tup</value>
+            <valueTerm/>
+            <label>Tupi languages</label>
+            <labelFrench>tupi, langues</labelFrench>
+        </item>
+        <item>
+            <value>tur</value>
+            <valueTerm/>
+            <valueTwo>tr</valueTwo>
+            <label>Turkish</label>
+            <labelFrench>turc</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tut</value>
+            <valueTerm/>
+            <label>Altaic languages</label>
+            <labelFrench>alta√Øques, langues</labelFrench>
+        </item>
+        <item>
+            <value>tvl</value>
+            <valueTerm/>
+            <label>Tuvalu</label>
+            <labelFrench>tuvalu</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>twi</value>
+            <valueTerm/>
+            <valueTwo>tw</valueTwo>
+            <label>Twi</label>
+            <labelFrench>twi</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>tyv</value>
+            <valueTerm/>
+            <label>Tuvinian</label>
+            <labelFrench>touva</labelFrench>
+        </item>
+        <item>
+            <value>udm</value>
+            <valueTerm/>
+            <label>Udmurt</label>
+            <labelFrench>oudmourte</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>uga</value>
+            <valueTerm/>
+            <label>Ugaritic</label>
+            <labelFrench>ougaritique</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>uig</value>
+            <valueTerm/>
+            <valueTwo>ug</valueTwo>
+            <label>Uighur<!--; Uyghur--></label>
+            <labelFrench>ou√Øgour</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ukr</value>
+            <valueTerm/>
+            <valueTwo>uk</valueTwo>
+            <label>Ukrainian</label>
+            <labelFrench>ukrainien</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>umb</value>
+            <valueTerm/>
+            <label>Umbundu</label>
+            <labelFrench>umbundu</labelFrench>
+        </item>
+        <item>
+            <value>und</value>
+            <valueTerm/>
+            <label>Undetermined</label>
+            <labelFrench>indéterminée</labelFrench>
+        </item>
+        <item>
+            <value>urd</value>
+            <valueTerm/>
+            <valueTwo>ur</valueTwo>
+            <label>Urdu</label>
+            <labelFrench>ourdou</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>uzb</value>
+            <valueTerm/>
+            <valueTwo>uz</valueTwo>
+            <label>Uzbek</label>
+            <labelFrench>ouszbek</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>vai</value>
+            <valueTerm/>
+            <label>Vai</label>
+            <labelFrench>va√Ø</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>ven</value>
+            <valueTerm/>
+            <valueTwo>ve</valueTwo>
+            <label>Venda</label>
+            <labelFrench>venda</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>vie</value>
+            <valueTerm/>
+            <valueTwo>vi</valueTwo>
+            <label>Vietnamese</label>
+            <labelFrench>vietnamien</labelFrench>
+            <classifier>common</classifier>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>vol</value>
+            <valueTerm/>
+            <valueTwo>vo</valueTwo>
+            <label>Volapük</label>
+            <labelFrench>volapük</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>vot</value>
+            <valueTerm/>
+            <label>Votic</label>
+            <labelFrench>vote</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>wak</value>
+            <valueTerm/>
+            <label>Wakashan languages</label>
+            <labelFrench>wakashanes, langues</labelFrench>
+        </item>
+        <item>
+            <value>wal</value>
+            <valueTerm/>
+            <label>Walamo</label>
+            <labelFrench>walamo</labelFrench>
+        </item>
+        <item>
+            <value>war</value>
+            <valueTerm/>
+            <label>Waray</label>
+            <labelFrench>waray</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>was</value>
+            <valueTerm/>
+            <label>Washo</label>
+            <labelFrench>washo</labelFrench>
+        </item>
+        <item>
+            <value>wel</value>
+            <valueTerm>cym</valueTerm>
+            <valueTwo>cy</valueTwo>
+            <label>Welsh</label>
+            <labelFrench>gallois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>wen</value>
+            <valueTerm/>
+            <label>Sorbian languages</label>
+            <labelFrench>sorabes, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>wln</value>
+            <valueTerm/>
+            <valueTwo>wa</valueTwo>
+            <label>Walloon</label>
+            <labelFrench>wallon</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>wol</value>
+            <valueTerm/>
+            <valueTwo>wo</valueTwo>
+            <label>Wolof</label>
+            <labelFrench>wolof</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>xal</value>
+            <valueTerm/>
+            <label>Kalmyk<!--; Oirat--></label>
+            <labelFrench>kalmouk; o√Ørat</labelFrench>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>xho</value>
+            <valueTerm/>
+            <valueTwo>xh</valueTwo>
+            <label>Xhosa</label>
+            <labelFrench>xhosa</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>yao</value>
+            <valueTerm/>
+            <label>Yao</label>
+            <labelFrench>yao</labelFrench>
+        </item>
+        <item>
+            <value>yap</value>
+            <valueTerm/>
+            <label>Yapese</label>
+            <labelFrench>yapois</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>yid</value>
+            <valueTerm/>
+            <valueTwo>yi</valueTwo>
+            <label>Yiddish</label>
+            <labelFrench>yiddish</labelFrench>
+            <classifier>transliteration</classifier>
+            <classifier>not Latin</classifier>
+        </item>
+        <item>
+            <value>yor</value>
+            <valueTerm/>
+            <valueTwo>yo</valueTwo>
+            <label>Yoruba</label>
+            <labelFrench>yoruba</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>ypk</value>
+            <valueTerm/>
+            <label>Yupik languages</label>
+            <labelFrench>yupik, langues</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>zap</value>
+            <valueTerm/>
+            <label>Zapotec</label>
+            <labelFrench>zapot√®que</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>zbl</value>
+            <valueTerm/>
+            <label>Blissymbols<!--; Blissymbolics; Bliss--></label>
+            <labelFrench>symboles Bliss; Bliss</labelFrench>
+        </item>
+        <item>
+            <value>zen</value>
+            <valueTerm/>
+            <label>Zenaga</label>
+            <labelFrench>zenaga</labelFrench>
+        </item>
+        <item>
+            <value>zha</value>
+            <valueTerm/>
+            <valueTwo>za</valueTwo>
+            <label>Zhuang<!--; Chuang--></label>
+            <labelFrench>zhuang; chuang</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>znd</value>
+            <valueTerm/>
+            <label>Zande languages</label>
+            <labelFrench>zandé, langues</labelFrench>
+        </item>
+        <item>
+            <value>zul</value>
+            <valueTerm/>
+            <valueTwo>zu</valueTwo>
+            <label>Zulu</label>
+            <labelFrench>zoulou</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>zun</value>
+            <valueTerm/>
+            <label>Zuni</label>
+            <labelFrench>zuni</labelFrench>
+            <classifier>Latin</classifier>
+        </item>
+        <item>
+            <value>zxx</value>
+            <valueTerm/>
+            <label>No linguistic content<!--; Not applicable--></label>
+            <labelFrench>pas de contenu linguistique; non applicable</labelFrench>
+            <classifier>common</classifier>
+        </item>
+        <item>
+            <value>zza</value>
+            <valueTerm/>
+            <label>Zaza<!--; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki--></label>
+            <labelFrench>zaza; dimili; dimli; kirdki; kirmanjki; zazaki</labelFrench>
+        </item>
+    </items>
+</code-table>
