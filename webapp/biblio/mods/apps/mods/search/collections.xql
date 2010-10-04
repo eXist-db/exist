@@ -24,19 +24,21 @@ declare function local:get-group-collections($group-id as xs:string, $collection
             """children"": [",
                 
                 let $sub-collections := xmldb:get-child-collections($collection) return
-                    for $sub-collection at $i in  $sub-collections
-                    let $sub-collection-path := fn:concat($collection, "/", $sub-collection),
-                    $can-write := security:can-write-collection(security:get-user-credential-from-session()[1], $sub-collection-path) return
-                        fn:concat(
-                            "{""title"": """, fn:replace($sub-collection, '.*/',''), """,",
-                            """isFolder"": true,",
-                            """key"": """, $sub-collection-path, """,",
-                            """writable"": ", if($can-write)then("true")else("false"), ",",
-                            """addClass"": ", if($can-write)then("""writable""")else("""readable"""), ",",
-                            local:get-group-collections($group-id, $sub-collection-path),
-                            "}",
-                            if($i lt count($sub-collections))then(",")else() 
-                        ),
+                    fn:string-join(
+                        for $sub-collection at $i in  $sub-collections
+                        let $sub-collection-path := fn:concat($collection, "/", $sub-collection),
+                        $can-write := security:can-write-collection(security:get-user-credential-from-session()[1], $sub-collection-path) return
+                            fn:concat(
+                                "{""title"": """, fn:replace($sub-collection, '.*/',''), """,",
+                                """isFolder"": true,",
+                                """key"": """, $sub-collection-path, """,",
+                                """writable"": ", if($can-write)then("true")else("false"), ",",
+                                """addClass"": ", if($can-write)then("""writable""")else("""readable"""), ",",
+                                local:get-group-collections($group-id, $sub-collection-path),
+                                "}",
+                                if($i lt count($sub-collections))then(",")else() 
+                            )
+                    ,""),
                         
             "]"
         )
