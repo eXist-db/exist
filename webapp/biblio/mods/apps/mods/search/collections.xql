@@ -1,49 +1,102 @@
 xquery version "1.0";
 
-import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
-import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
-declare namespace session = "http://exist-db.org/xquery/session";
-declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
+import module namespace json="http://www.json.org";
+import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace session = "http://exist-db.org/xquery/session";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
+import module namespace util="http://exist-db.org/xquery/util";
+import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
+
 declare namespace group = "http://exist-db.org/mods/sharing/group";
 
-declare option exist:serialize "method=text media-type=text/javascript";
+(:~
+: Generates an XML collection navigation representation for the biblio app
+: and then renders it as JSON
+:
+: Includes virtual users homes and shared collections via groups
+:
+: @author Adam Retter <adam@exist-db.org>
+:)
 
-declare function local:sub-collections($root as xs:string, $children as xs:string*) {
-    fn:string-join(
-        for $child in $children
-        return
-            local:collections(concat($root, '/', $child)),
-        ","
-    )
+(:~
+: Gets a collection and its descendants from the database
+:)
+declare function local:db-collection-children($collection-path as xs:string) as element(children)* {
+    for $child in xmldb:get-child-collections($collection-path)
+    let $sub-collection-path := fn:concat($collection-path, "/", $child) return
+        let $children := local:collections($sub-collection-path) return
+            if($children)then(
+                <children>{$children}</children>
+            )else()
 };
 
-declare function local:get-group-collections($group-id as xs:string, $collection as xs:string) {
-
-        fn:concat(
-            """children"": [",
-                
-                let $sub-collections := xmldb:get-child-collections($collection) return
-                    fn:string-join(
-                        for $sub-collection at $i in  $sub-collections
-                        let $sub-collection-path := fn:concat($collection, "/", $sub-collection),
-                        $can-write := security:can-write-collection(security:get-user-credential-from-session()[1], $sub-collection-path) return
-                            fn:concat(
-                                "{""title"": """, fn:replace($sub-collection, '.*/',''), """,",
-                                """isFolder"": true,",
-                                """key"": """, $sub-collection-path, """,",
-                                """writable"": ", if($can-write)then("true")else("false"), ",",
-                                """addClass"": ", if($can-write)then("""writable""")else("""readable"""), ",",
-                                local:get-group-collections($group-id, $sub-collection-path),
-                                "}",
-                                if($i lt count($sub-collections))then(",")else() 
-                            )
-                    ,""),
-                        
-            "]"
-        )
+(:~
+: Gets all the child collections for the groups accesible to a user
+:)
+declare function local:group-children($collection-path as xs:string) as element(children)* {
+    let $user-groups := sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
+        for $group at $i in  $user-groups return
+            <children>{local:tree-node(fn:concat($sharing:groups-collection, "/", $group/@id), false(), $group/group:name, (), util:function(xs:QName("local:group-collection-children"), 1))/*}</children>
 };
 
+(:~
+: Finds all of the collections inside a users home folder which match the group
+:
+:)
+declare function local:user-collection-for-group($group-id as xs:string, $user-collection-path as xs:string) as node()*
+{
+    let $system-group := sharing:get-group($group-id)/group:system/group:group return
+        for $user-sub-collection in xmldb:get-child-collections($user-collection-path)
+            let $user-sub-collection-path := fn:concat($user-collection-path, "/", $user-sub-collection) return
+                (
+                    if(security:get-group($user-sub-collection-path) eq $system-group)then(
+                        local:tree-node($user-sub-collection-path, sharing:group-writeable($user-sub-collection-path, $group-id), (), (), ())
+                    )else(),
+                        local:user-collection-for-group($group-id, $user-sub-collection-path)
+                )
+};
+
+(:~
+: Generates the collections for a group in the navigation tree
+:
+: $group-collection-path The virtual collection path of the group e.g. /db/mods/groups/1234-1234-1234-1234
+:)
+declare function local:group-collection-children($group-collection-path as xs:string) {
+    
+    let $group-id := fn:replace($group-collection-path, ".*/", "") return
+        for $user-collection in xmldb:get-child-collections($security:users-collection)
+        let $user-collection-path := fn:concat($security:users-collection, "/", $user-collection) return
+            for $node in local:user-collection-for-group($group-id, $user-collection-path) return
+                <children>{$node/*}</children>
+};
+
+(:~
+: Generates a node for the navigation tree
+:)
+declare function local:tree-node($collection-path as xs:string, $can-write as xs:boolean, $title as xs:string?, $icon-path as xs:string?, $children-function) as element(node)
+{
+    <node>
+        <title>{if($title)then($title)else(fn:replace($collection-path, '.*/',''))}</title>
+        <isFolder json:literal="true">true</isFolder>
+        <key>{$collection-path}</key>
+        <writeable json:literal="true">{$can-write}</writeable>
+        <addClass>{if ($can-write) then 'writable' else 'readable'}</addClass>
+        {
+            if($icon-path)then(
+                <icon>{$icon-path}</icon>
+            )else(),
+            
+            if(not(empty($children-function)))then(
+                util:call($children-function, $collection-path)
+            )else()
+        }
+    </node>
+};
+
+(:~
+: Gets the collections for the navigation
+:)
 declare function local:collections($root as xs:string) {
     
     if(xmldb:collection-available($root))then
@@ -62,76 +115,24 @@ declare function local:collections($root as xs:string) {
                     (
                         (: found a mods home collection for the currently logged in user :)
                         let $home-collection-uri := security:get-home-collection-uri($user) return
-                            <s>{{ "title": "Home", "isFolder": true, "key": "{$home-collection-uri}",
-                                "writable": {if ($can-write) then 'true' else 'false' },
-                                "addClass": "{if ($can-write) then 'writable' else 'readable'}",
-                                "icon": "../css/dynatree/ltFld.user.gif"
-                                {
-                                    let $home-children := xmldb:get-child-collections($home-collection-uri) return
-                                        if(fn:exists($home-children)) then
-                                            <s>, "children": [
-                                            {
-                                                local:sub-collections($home-collection-uri, $home-children)
-                                            }
-                                            ]
-                                            </s>
-                                        else
-                                            ()
-                                }
-                            }}</s>
-                    )else(),
-                    
-                    (: groups collection of shared group items :)
-                    <s>{{ "title": "Groups", "isFolder": true, "key": "{$sharing:groups-collection}",
-                                "writable": false,
-                                "addClass": "readable",
-                                "icon": "../css/dynatree/ltFld.groups.gif"
-                                <s>, "children": [
-                                {
-                                    let $user-groups := sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
-                                        for $group at $i in  $user-groups return
-                                            <s>{{
-                                                "title": "{$group/group:name}",
-                                                "isFolder": true,
-                                                "key": "{fn:concat($sharing:groups-collection, "/", $group/@id)}",
-                                                "writable": true,
-                                                "addClass": "writable"
-                                                {
-                                                <s>,   
-                                                    {local:get-group-collections($group/@id, $security:users-collection)}
-                                                </s>
-                                                }
-                                            }}{if($i lt count($user-groups))then(",")else()}</s>
-                                }
-                                ]
-                                </s>
-                    }}</s>
+                            local:tree-node($home-collection-uri, $can-write, "Home", "../css/dynatree/ltFld.user.gif", util:function(xs:QName("local:db-collection-children"), 1))/*
+                    )else()
                 )
-                
                 (: groups collection is treated specially, i.e. skipped :)
                 else if($root eq $sharing:groups-collection)then
                 (
+                    if($user ne "guest")then(
+                        local:tree-node($sharing:groups-collection, false(), "Groups", "../css/dynatree/ltFld.groups.gif", util:function(xs:QName("local:group-children"), 1))/*
+                    )else()
                 )
                 else
                 (   (: normal collection:)
-                    <s>{{ "title": "{fn:replace($root, '.*/','')}", "isFolder": true, "key": "{$root}",
-                        "writable": {if ($can-write) then 'true' else 'false' },
-                        "addClass": "{if ($can-write) then 'writable' else 'readable'}"
-                        {
-                            if (fn:exists($children)) then
-                                <s>, "children": [
-                                {
-                                    local:sub-collections($root, $children)
-                                }
-                                ]
-                                </s>
-                            else
-                                ()
-                        }
-                    }}</s>
+                    local:tree-node($root, $can-write, (), (), util:function(xs:QName("local:db-collection-children"), 1))/*
                 )
             else()
     )else()
 };
 
-<s>[{local:collections($config:mods-root)}]</s>
+(: get the collection navigation and convert to json :)
+let $xml := <json>{local:collections($config:mods-root)}</json> return
+    json:xml-to-json($xml)
