@@ -6,7 +6,10 @@ body
   background-color: #eeeeee !important;/*overrules xsltforms.css*/
 }
 
-caption, th, td {
+caption, 
+th, 
+td 
+    {
     text-align: center;
     font-weight: normal;
 }
@@ -24,7 +27,7 @@ legend {
 .xforms-required .xforms-required-icon, 
 .xforms-alert-icon 
     {
-    display:none
+    display:none;
 }
 
 button {
@@ -68,6 +71,19 @@ button {
     width: 1em;
 }
 
+fieldset,
+.xforms-repeat-item,
+.xforms-repeat-item-selected,
+.node-adds
+    {
+    -moz-border-radius: .75em;
+    border-bottom-left-radius: 10px 10px;
+    border-bottom-right-radius: 10px 10px;
+    border-top-left-radius: 10px 10px;
+    border-top-right-radius: 10px 10px;
+    }
+
+
 .block-form {
    /* border: solid blue 1px; */
    margin: 0 10px;
@@ -99,20 +115,23 @@ button {
     border-style: solid;
     background-color: #eeeeee;
     border-width: 2px;
-    padding: .25ex 1em .25ex 1em;
-    width: 170px;
-    margin-top: -4.5ex;
+    padding: 0.65ex 1em 0.65ex 1em;
+    width: 30ex;
+    margin-top: -5ex;
     text-align: center;
     margin-bottom: .5ex;    
 }
 
+input {
+    padding: .5ex;    
+}
 .block-form .xforms-group-label-centered {
     display: inline-block;
     text-align: center;
     vertical-align: middle;
     width: 30ex;
     height: 5.1ex;
-    margin-bottom: -1.5ex;
+    margin-bottom: -.8ex;
 }
 
 .xforms-group-label-centered-general {
@@ -127,12 +146,72 @@ button {
     margin-top: auto;
 }
 
-span.xforms-alert-icon, span.xforms-help-icon, span.xforms-hint-icon {
-padding-bottom: 2px;
+
+xf|trigger.delete-button { /*works in FireFox only*/
+    vertical-align: top;    
 }
 
-xf|trigger.delete-button {
-    vertical-align: top;    
+.text_10 .xforms-value {
+    width: 10ex;
+    }
+.text_50 .xforms-value {
+    width: 50ex;
+    }
+.text_100 .xforms-value {
+    width: 80ex;
+    }
+
+.textarea .xforms-value {
+    width: 80ex; 
+    height: 5ex; 
+    padding-top: 2px;
+    }
+
+div.join span.xforms-hint { /*the fieldset hints*/
+    margin-left: 1px;
+    vertical-align: top;
+    font-style: normal;
+    font-weight: normal;
+    color: #cccccc;
+    cursor:help;
+}
+span.xforms-hint-icon:after { /*the regular hints*/
+    color: #cccccc;
+    padding: 1px;
+    content: "?";
+    margin-left: -1.5em;
+    background-image:url("");
+}
+span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
+    background-image:url("x.xxx");
+    width: 0;
+    display: inline;
+}
+
+div.xforms-help-value, 
+div.xforms-alert-value, 
+div.xforms-hint-value 
+    { 
+    text-align: left;
+    color: gray;
+    display: none;
+	background-color: white;
+	position: absolute;
+	border: gray 1px solid; 
+	width: 35em;
+	margin-top: 1em;
+	margin-left: -1em;
+	padding: 1em;
+	-moz-border-radius: .75em;
+    border-bottom-left-radius: 10px 10px;
+    border-bottom-right-radius: 10px 10px;
+    border-top-left-radius: 10px 10px;
+    border-top-right-radius: 10px 10px;
+	
+}
+
+.xforms-value {
+    padding-left: .5ex;
 }
 
 /*title
@@ -142,16 +221,17 @@ bbaabb: unselected border
 eeddee: tab background
 */
 
+.title fieldset,
+.title .xforms-repeat-item,
+.title .xforms-repeat-item-selected
+    {
+    border-width: 2px;    
+    }
+
 .title .xforms-case {
     margin-bottom: 0;
     margin-top:auto;
 }
-
-.title .node-adds-title, 
-.node-adds 
-    {
-    margin-bottom: -2ex;
-    }
 
 .title .join { 
     color: #886699;    
@@ -164,34 +244,32 @@ eeddee: tab background
 
 .title .xforms-repeat-item {
     border-color: #bbaabb;
-    border-width: 2px;
-    -moz-border-radius: .75em;
 }
 
 .title fieldset,
 .title .xforms-repeat-item-selected
     {
     border-color: #886699;
-    border-width: 2px;
-    -moz-border-radius: .75em;
     padding-bottom: 1.5ex;
     }
 
-.title button {
-    1width: 35ex;
-    1height: 5.1ex;
-}
 .title .node-adds-title, 
 .title .node-adds 
     {
-    padding: 1ex;
-    margin: 1ex;
-    border: #cccccc 1px solid;
+    padding: .5em;
+    margin: 1em;    
+    border: #eeddee 1px solid;
+}
+
+.title .node-adds 
+    {
+    border: #eeddee 1px solid;
 }
 
 .title .node-adds-title {
     border: 0;
 }
+
 .title .xforms-label-small {
     display: block;
     width: 4px;
@@ -199,10 +277,10 @@ eeddee: tab background
     padding: 1px;    
 }
 
-
 .title .xforms-group-content {
     vertical-align:top;    
 }
+
 /*name
 
 669966
@@ -210,44 +288,49 @@ eeddee: tab background
 eeeedd
 */
 
-.name .join 
+.name fieldset,
+.name .xforms-repeat-item,
+.name .xforms-repeat-item-selected
     {
+    border-width: 2px;    
+    }
+
+.name .join {
     color: #669966;
     border-color: #669966;
     }
-.name .xforms-label 
-    {
+.name .xforms-label {
     color: #669966;
     }
-.name .xforms-repeat-item 
-    {
+.name .xforms-repeat-item {
     border-color: #88aa88;
-    -moz-border-radius: .75em;
+    margin-top: 1em;
     }
-.name .xforms-repeat-item-selected 
-    {
+.name .xforms-repeat-item-selected {
     border-color: #669966;
-    border-width: 2px;
-    -moz-border-radius: .75em;
+    margin-top: 1em;
     }
-.name .level-1 
-    {
+.name .level-1 {
     border-color: #669966;
-    border-width: 2px;
-    -moz-border-radius: .75em;
     }
-.name fieldset .level-2 
-    {
+.name .level-2 {
     border-color: #669966;
-    border-width: 2px;
-    -moz-border-radius: .75em;
     margin-left: 1ex;
     margin-right: 1ex;
-    margin-top: 1.5em;
+    margin-top: 2em;
+    }
+.name .level-3 {
+    border-color: #669966;
+    margin-left: 1ex;
+    margin-right: 1ex;
+    margin-top: 1.25em;
     }
 .name button {
     width: 35ex;
     height: 5.1ex;
+}
+.name #name-add-node-unhide {
+    padding-bottom: 2.5ex;    
 }
 
 /*origin
@@ -255,9 +338,10 @@ eeeedd
 88aabb: unselected border
 ccddee: tab background
 */
-.origin .xforms-label,
-.origin .join
-    {
+.origin .join {
+    color: #668899;
+    }
+.origin .xforms-label {
     color: #668899;
     }
 .origin .join,
@@ -267,42 +351,30 @@ ccddee: tab background
     border-color: #668899;
     border-width: 2px;
     }
-.origin .xforms-repeat-item 
-    {
+.origin .xforms-repeat-item {
     border-color: #88aabb;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
-.origin .xforms-repeat-item-selected 
-    {
+.origin .xforms-repeat-item-selected {
     border-color: #668899;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
-.origin .level-1 
-    {
-    -moz-border-radius: .75em;
-    }
-.origin .level-2 
-    {
+.origin .level-2 {
     margin-top: 3ex;
+    margin-bottom: 4ex;
     margin-left: -0.5ex;
     margin-right: -0.5ex;
-    -moz-border-radius: .75em;
     }
-.origin .level-2 .join 
-    {
+.origin .level-2 .join {
     margin-bottom: 3ex;
     }
-.origin .level-3 
-    {
-    margin-top: 2.5ex;
+.origin .level-3 {
+    margin-top: 4ex;
+    margin-bottom: 4ex;
     margin-left: 1.5ex;
     margin-right: 1.5ex;
-    -moz-border-radius: .75em;
     }
-.origin #fieldset-dates .xforms-group-content .level-3 
-    {
+.origin #fieldset-dates .xforms-group-content .level-3 {
     margin-left: 0ex;
     margin-right: .25ex;
     1margin-bottom: 1.5em;
@@ -310,7 +382,7 @@ ccddee: tab background
 .origin button {
     width: 35ex;
     height: 5.1ex;
-}
+    }
 
 
 
@@ -331,7 +403,6 @@ eeddcc
 .part .xforms-repeat-item {
     border-color: #ccaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
 }
 .part .xforms-repeat-item-selected,
 .part fieldset,
@@ -340,7 +411,6 @@ eeddcc
     {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
 }
 .part fieldset .level-2 
     {
@@ -376,13 +446,11 @@ ddcccc
     {
     border-color: #aa8899;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .physical-description .level-1 
     {
     border-color: #996688;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .physical-description fieldset .level-2 
     {
@@ -390,26 +458,23 @@ ddcccc
     border-width: 2px;
     margin-right: -0.5ex;
     margin-left: -0.5ex;
-    margin-top: 1em;
-    -moz-border-radius: .75em;
+    margin-top: 2em;
     }
 .physical-description fieldset .level-3 
     {
     border-color: #996688;
-    border-width: 2px;
-    -moz-border-radius: .75em;
+    border-width: 2px
     }
 .physical-description .node-adds-title, .node-adds 
     {
     border-color: #996688;
     border-width: 2px;
-    -moz-border-radius: .75em;
+    
     }
 .physical-description .xforms-repeat-item-selected 
     {
     border-color: #996688;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .physical-description button {
     width: 50ex;
@@ -436,7 +501,6 @@ eedddd/f6eeee
     {
     border-color: #cc8888;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .target-audience fieldset,
 .target-audience .xforms-repeat-item-selected,
@@ -445,7 +509,6 @@ eedddd/f6eeee
     {
     border-color: #aa6666;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .target-audience button {
     width: 40ex;
@@ -475,30 +538,26 @@ eeddee: tab background
     {
     border-color: #bbaabb;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-bottom: 2ex;
     }
 .language fieldset 
     {
     border-color: #886699;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .language fieldset .level-2 
     {
-    margin-top: 1.5ex;
+    margin-top: 2em;
     }
 .language .node-adds-title, .node-adds 
     {
     border-color: #886699;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .language .xforms-repeat-item-selected 
     {
     border-color: #886699;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-bottom: 2ex;
     }
 .language button {
@@ -523,7 +582,6 @@ eeeedd
 .type .xforms-repeat-item {
     border-color: #88aa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .type fieldset,
 .type .node-adds-title, 
@@ -532,7 +590,6 @@ eeeedd
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .type button {
     width: 40ex;
@@ -559,7 +616,6 @@ ccddee: tab background
 .genre .xforms-repeat-item {
     border-color: #88aabb;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .genre fieldset,
 .genre .node-adds-title, 
@@ -568,7 +624,6 @@ ccddee: tab background
     {
     border-color: #668899;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .genre button {
     width: 40ex;
@@ -593,12 +648,10 @@ ddcccc*/
 .subject .block-form .xforms-group .xforms-group-content .level-1 .join {
     border-color: #996688;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .subject .xforms-repeat-item {
     border-color: #aa8899;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .subject fieldset,
 .subject .node-adds-title, 
@@ -607,7 +660,6 @@ ddcccc*/
     {
     border-color: #996688;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .subject fieldset
     {
@@ -642,22 +694,18 @@ ddddcc
 .classification .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .classification fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .classification .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .classification .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .classification button 
     {
@@ -680,22 +728,18 @@ ddddcc
 .abstract .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .abstract fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .abstract .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .abstract .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .abstract button 
     {
@@ -718,22 +762,18 @@ ddddcc
 .table-of-contents .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .table-of-contents fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .table-of-contents .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .table-of-contents .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .table-of-contents button 
     {
@@ -757,22 +797,18 @@ ddddcc
 .note .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .note fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .note .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .note .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .note button 
     {
@@ -801,25 +837,21 @@ eeeedd
 .related .xforms-repeat-item 
     {
     border-color: #88aa88;
-    -moz-border-radius: .75em;
     }
 .related .xforms-repeat-item-selected 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .related .level-1 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .related fieldset .level-2 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-left: -2ex;
     margin-right: -2ex;
     margin-top: 1.5em;
@@ -828,7 +860,6 @@ eeeedd
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-left: 1ex;
     margin-right: 1ex;
     margin-top: 1.5em;
@@ -856,22 +887,18 @@ ddddcc
 .identifier .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .identifier fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .identifier .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .identifier .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .identifier .block-form button {
     width: 40ex;
@@ -901,25 +928,21 @@ ccddcc
 .record-info .xforms-repeat-item 
     {
     border-color: #88aa88;
-    -moz-border-radius: .75em;
     }
 .record-info .xforms-repeat-item-selected 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .record-info .level-1 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .record-info fieldset .level-2 
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-left: 1ex;
     margin-right: 1ex;
     margin-top: 1.5em;
@@ -928,7 +951,6 @@ ccddcc
     {
     border-color: #669966;
     border-width: 2px;
-    -moz-border-radius: .75em;
     margin-left: 1ex;
     margin-right: 1ex;
     margin-top: 1.5em;
@@ -971,38 +993,32 @@ ccddee: tab background
     {
     border-color: #88aabb;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .location .xforms-repeat-item-selected 
     {
     border-color: #668899;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .location .level-1 
     {
-    -moz-border-radius: .75em;
     }
 .location .level-2 
     {
     margin-top: 2ex;
     margin-left: -0.5ex;
     margin-right: -0.5ex;
-    -moz-border-radius: .75em;
     }
 .location .level-3 
     {
     margin-right: 1.5ex;
     margin-left: 1.5ex;
     margin-top: 1.5ex;
-    -moz-border-radius: .75em;
     }
 .location .level-4 
     {
     margin-right: 1.5ex;
     margin-left: 1.5ex;
     margin-top: 1.5ex;
-    -moz-border-radius: .75em;
     }
 #fieldset-dates .xforms-group-content .level-2 .join 
     {
@@ -1039,22 +1055,18 @@ ddddcc
 .access-condition .xforms-repeat-item {
     border-color: #bbaa88;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .access-condition fieldset {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .access-condition .node-adds-title, .node-adds {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .access-condition .xforms-repeat-item-selected {
     border-color: #aa8866;
     border-width: 2px;
-    -moz-border-radius: .75em;
     }
 .access-condition .block-form button {
     width: 40ex;
@@ -1063,59 +1075,5 @@ ddddcc
     {
     height: 5.1ex;    
     }
-
-
-.text_10 .xforms-value {
-    width: 10ex;
-    }
-.text_50 .xforms-value {
-    width: 50ex;
-    }
-.text_100 .xforms-value {
-    width: 80ex;
-    }
-
-.textarea .xforms-value {width: 80ex; height: 5ex; padding-top: 2px;}
-
-div.xforms-help-value, div.xforms-alert-value, div.xforms-hint-value { 
-    text-align: left;
-    color: gray;
-    display: none;
-	background-color: white;
-	position: absolute;
-	border: black 1px solid; 
-	width: 60ex;
-	margin-top: 16px;
-	margin-left: -16px;
-	padding: 1ex;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-}
-
-.xforms-value {
-    padding-left: .5ex;
-}
-
-.hr {
-    border: #ccc 1px solid;
-    margin:1em;
-}
-
-.hr-strong {
-    border: #ccc 2px solid;
-    margin:1em;
-    width:100%;
-    margin-bottom: 3em;
-}
-
-
-
-
-
-
-
-
-
-    
 
 </css>
