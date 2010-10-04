@@ -152,9 +152,3 @@ declare function sharing:get-users-groups($user as xs:string) as element(group:g
 declare function sharing:get-group($group-id as xs:string) as element(group:group) {
     fn:collection($sharing:groups-collection)/group:group[@id eq $group-id]
 };
-
-declare function sharing:get-group-collections($group-id as xs:string, $collection as xs:string) as xs:string*
-{
-    let $system-group := sharing:get-group($group-id) return
-        xmldb:get-child-collections($collection) (:[security:get-group(.) eq $system-group]:)
-};
