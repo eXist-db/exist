@@ -105,7 +105,7 @@ declare function setup:importLocal() as element()+
                 setup:create-collection("/db/mods", "users"),
                 setup:create-group("biblio.users"),
                 setup:set-collection-group("/db/mods/users", "biblio.users"),
-                setup:set-collection-permissions("/db/mods/users", "rwurwu---"),
+                setup:set-collection-permissions("/db/mods/users", "rwurwur--"),
                 setup:create-collection("/db/mods", "groups"),
                 setup:set-collection-group("/db/mods/groups", "biblio.users"),
                 setup:set-collection-permissions("/db/mods/groups", "rwurwu---"),
