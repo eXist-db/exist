@@ -27,6 +27,9 @@ declare namespace functx = "http://www.functx.com";
 
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
+(:
+import module namespace jquery="http://exist-db.org/xquery/jquery" at "jquery.xql";
+:)
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace sort="http://exist-db.org/xquery/sort" at "java:org.exist.xquery.modules.sort.SortModule";
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
@@ -201,7 +204,8 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
 declare function biblio:xml-query-to-string($xml as element()) as xs:string* {
     typeswitch ($xml)
         case element(query) return
-            biblio:xml-query-to-string($xml/*[1])
+            for $query-term in $xml/*
+                return biblio:xml-query-to-string($query-term)
         case element(and) return
             (
                 biblio:xml-query-to-string($xml/*[1]), 
@@ -220,6 +224,8 @@ declare function biblio:xml-query-to-string($xml as element()) as xs:string* {
                 " NOT ", 
                 biblio:xml-query-to-string($xml/*[2])
             )
+        case element(collection) return
+            fn:concat("collection(""", $xml, """):")
         case element(field) return
             concat($xml/@name, ':', $xml/string())
         default return
@@ -361,7 +367,7 @@ declare function biblio:query-history() {
         let $history := session:get-attribute('history')
         for $query at $pos in $history/query
         return
-            <li><a href="?history={$query/@id}&amp;query-tabs=advanced">{biblio:xml-query-to-string($query)}</a></li>
+            <li><a href="?history={$query/@id}&amp;query-tabs=advanced-search-form">{biblio:xml-query-to-string($query)}</a></li>
     }
     </ul>
 };
@@ -438,9 +444,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:is-collection-owner) return
             security:is-collection-owner(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
         case element(biblio:has-collection-write-permissions) return
-            (   util:log("debug", concat("LOOK HERE: user=", security:get-user-credential-from-session()[1], " collection=", request:get-parameter("collection", $config:mods-root))),
-                security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
-            )
+            security:can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection", $config:mods-root))
         case element(biblio:form-select-collection) return
             biblio:form-select-collection($node/@name)
         case element(biblio:form-collection-sharing) return
@@ -671,6 +675,7 @@ declare function biblio:apply-filter() {
     let $prevQuery := session:get-attribute("query")
     let $filter := request:get-parameter("filter", ())
     let $value := request:get-parameter("value", ())
+    
     return
         if ($filter = ('All', 'Title') and count($prevQuery/field) eq 1) then
             <query>
