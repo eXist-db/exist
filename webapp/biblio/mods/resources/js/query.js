@@ -154,14 +154,22 @@ function updateCollectionPaths(title, key) {
 
 function showHideCollectionWriteableControls() {
     var collection = $('#simple-search-form input[name = collection]').val();
+    
     var params = { action: "can-write-collection", collection: collection };
     $.get("checkuser.xql", params, function(data) {
         if($(data).text() == 'true') {
             $('#collection-create-folder').show();
+        } else {
+            $('#collection-create-folder').hide();
+        }
+    });
+    
+    params = { action: "can-write-collection-and-not-home", collection: collection };
+    $.get("checkuser.xql", params, function(data) {
+        if($(data).text() == 'true') {
             $('#collection-move-folder').show();
             $('#collection-remove-folder').show();
         } else {
-            $('#collection-create-folder').hide();
             $('#collection-move-folder').hide();
             $('#collection-remove-folder').hide();
         }
