@@ -107,7 +107,7 @@
                                 <td></td>
                             </tr>
                         </table>
-                        <input type="hidden" name="query-tabs" value="advanced"/>
+                        <input type="hidden" name="query-tabs" value="advanced-search-form"/>
                     </form>
                 </jquery:tab>
                 <jquery:tab id="query-history" label="Query History">
