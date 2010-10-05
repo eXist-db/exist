@@ -113,17 +113,24 @@ declare function security:create-home-collection($user as xs:string) as xs:strin
 :)
 declare function security:can-read-collection($user as xs:string, $collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner := xmldb:get-owner($collection)
-    let $group := xmldb:get-group($collection)
-    let $users-groups := xmldb:get-user-groups($user)
-    return
-        if ($owner eq $user) then
-            fn:substring($permissions, 1, 1) eq 'r'
-        else if ($group = $users-groups) then
-            fn:substring($permissions, 4, 1) eq 'r'
-        else
-            fn:substring($permissions, 7, 1) eq 'r'
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        let $owner := xmldb:get-owner($collection)
+        let $group := xmldb:get-group($collection)
+        let $users-groups := xmldb:get-user-groups($user)
+        return
+            if ($owner eq $user) then
+                fn:substring($permissions, 1, 1) eq 'r'
+            else if ($group = $users-groups) then
+                fn:substring($permissions, 4, 1) eq 'r'
+            else
+                fn:substring($permissions, 7, 1) eq 'r'
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -134,17 +141,24 @@ declare function security:can-read-collection($user as xs:string, $collection as
 :)
 declare function security:can-write-collection($user as xs:string, $collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner := xmldb:get-owner($collection)
-    let $group := xmldb:get-group($collection)
-    let $users-groups := xmldb:get-user-groups($user)
-    return
-        if ($owner eq $user) then
-            fn:substring($permissions, 2, 1) eq 'w'
-        else if ($group = $users-groups) then
-            fn:substring($permissions, 5, 1) eq 'w'
-        else
-            fn:substring($permissions, 8, 1) eq 'w'
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        let $owner := xmldb:get-owner($collection)
+        let $group := xmldb:get-group($collection)
+        let $users-groups := xmldb:get-user-groups($user)
+        return
+            if ($owner eq $user) then
+                fn:substring($permissions, 2, 1) eq 'w'
+            else if ($group = $users-groups) then
+                fn:substring($permissions, 5, 1) eq 'w'
+            else
+                fn:substring($permissions, 8, 1) eq 'w'
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -155,10 +169,17 @@ declare function security:can-write-collection($user as xs:string, $collection a
 :)
 declare function security:group-can-read-collection($group as xs:string, $collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner-group := xmldb:get-group($collection)
-    return
-        ($group eq $owner-group and fn:substring($permissions, 4, 1) eq 'r')
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        let $owner-group := xmldb:get-group($collection)
+        return
+            ($group eq $owner-group and fn:substring($permissions, 4, 1) eq 'r')
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -169,10 +190,17 @@ declare function security:group-can-read-collection($group as xs:string, $collec
 :)
 declare function security:group-can-write-collection($group as xs:string, $collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    let $owner-group := xmldb:get-group($collection)
-    return
-        ($group eq $owner-group and fn:substring($permissions, 5, 1) eq 'w')
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        let $owner-group := xmldb:get-group($collection)
+        return
+         ($group eq $owner-group and fn:substring($permissions, 5, 1) eq 'w')
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -182,9 +210,16 @@ declare function security:group-can-write-collection($group as xs:string, $colle
 :)
 declare function security:other-can-read-collection($collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    return
-        fn:substring($permissions, 7, 1) eq 'r'
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        return
+            fn:substring($permissions, 7, 1) eq 'r'
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -194,9 +229,16 @@ declare function security:other-can-read-collection($collection as xs:string) as
 :)
 declare function security:other-can-write-collection($collection as xs:string) as xs:boolean
 {
-    let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
-    return
-        fn:substring($permissions, 8, 1) eq 'w'
+    if(xmldb:collection-available($collection))then
+    (
+        let $permissions := xmldb:permissions-to-string(xmldb:get-permissions($collection))
+        return
+            fn:substring($permissions, 8, 1) eq 'w'
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
@@ -207,8 +249,15 @@ declare function security:other-can-write-collection($collection as xs:string) a
 :)
 declare function security:is-collection-owner($user as xs:string, $collection as xs:string) as xs:boolean
 {
-    let $owner := xmldb:get-owner($collection) return
-        $user eq $owner
+    if(xmldb:collection-available($collection))then
+    (
+        let $owner := xmldb:get-owner($collection) return
+            $user eq $owner
+    )
+    else
+    (
+        false()
+    )
 };
 
 (:~
