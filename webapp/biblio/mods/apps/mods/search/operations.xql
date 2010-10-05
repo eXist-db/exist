@@ -103,6 +103,36 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
             <status id="sharing">invalid permissions</status>
 };
 
+declare function op:get-collection-sharing($collection as xs:string) as element(collection)
+{
+    <collection uri="{$collection}">
+    {
+        let $group-id := sharing:get-group-id($collection) return
+            if($group-id)then
+            (
+                <group id="{$group-id}">
+                {
+                    if(sharing:group-readable($collection, $group-id))then(<read/>)else(),
+                    if(sharing:group-writeable($collection, $group-id))then(<write/>)else()
+                }
+                </group>
+            )else(),
+        
+        let $other-readable := sharing:other-readable($collection),
+        $other-writeable := sharing:other-writeable($collection) return
+        if($other-readable or $other-writeable)then
+        (
+            <other>
+            {
+                if($other-readable)then(<read/>)else(),
+                if($other-writeable)then(<write/>)else()
+            }
+            </other>
+        )else()
+    }
+    </collection>
+};
+
 (:~
 :
 : @ resource-id has the format db-document-path#node-id e.g. /db/mods/eXist/exist-articles.xml#1.36
@@ -219,5 +249,7 @@ return
         op:remove-resource(request:get-parameter("resource",()))
     else if($action eq "move-resource")then
         op:move-resource(request:get-parameter("resource",()), request:get-parameter("path",()))
+    else if($action eq "get-collection-sharing")then
+        op:get-collection-sharing($collection)
     else
         op:unknown-action($action)
