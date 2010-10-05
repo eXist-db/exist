@@ -1,73 +1,45 @@
-<project xmlns:xdb="http://exist-db.org/ant" default="load-mods" name="MODS Database Loader">
+<project xmlns:xdb="http://exist-db.org/ant" 
+   default="load-mods" 
+   name="MODS Database Loader">
 
-	<property file="local.properties"/>
+    <description>This ant file loads all of the finds for the 
+    MODS XForms editor demo.  NOTE: To make sure
+    that only the correct files are in the database
+    the ${mods-collection} path is first removed.</description>
+    
+    <property file="local.properties"/>
 
-	<property name="server.dir" value="../.."/>
-	<property name="mods.dir" value="mods"/>
-	<property name="scripts.dir" value="../scripts"/>
-	<property name="styles.dir" value="../styles"/>
-	
-	<path id="classpath.core">
-		<fileset dir="${server.dir}/lib/core">
-			<include name="*.jar"/>
-		</fileset>
-		<pathelement path="${server.dir}/exist.jar"/>
-		<pathelement path="${server.dir}/exist-optional.jar"/>
-	</path>
+    <path id="classpath.core">
+        <pathelement path="${exist.home}/exist.jar"/>
+        <pathelement path="${exist.home}/exist-optional.jar"/>
+        <fileset dir="${exist.home}/lib/core/">
+            <include name="*.jar"/>
+        </fileset>
+        
+    </path>
+    
+    <typedef resource="org/exist/ant/antlib.xml"  uri="http://exist-db.org/ant">
+        <classpath refid="classpath.core"/>
+    </typedef>
 
-	<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-		<classpath refid="classpath.core"/>
-	</typedef>
+    <target name="echo-params">
+       <echo message="exist.home=${exist.home}"/>
+       <echo message="server-uri=${server-uri}"/>
+       <echo message="mods-collection=${mods-collection}"/>
+    </target>
 
-	<target name="load-mods" xmlns:xdb="http://exist-db.org/ant">
-		<echo message="Removing old MODS application from eXist database"/>
-		<xdb:remove user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}" collection="${mods-collection}" failonerror="false"/>
+    <target name="load-mods">
+        <echo message="Removing old MODS application from eXist database"/>
 
-		<echo message="Loading new MODS database into eXist database"/>
-		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}/${mods-collection}" createcollection="true"
-			createsubcollections="true" failonerror="false">
-			<fileset dir="${mods.dir}" id="id">
-				<include name="**/*.xq"/>
-				<include name="**/*.xql"/>
-				<include name="**/*.xml"/>
-				<include name="**/*.xsl"/>
-				<include name="**/*.xqm"/>
-				<include name="**/*.css"/>
-				<include name="**/*.js"/>
-				<include name="**/*.png"/>
-				<include name="**/*.gif"/>
-				<include name="**/*.jpg"/>
-				<include name="**/*.properties"/>
-			</fileset>
-		</xdb:store>
-
-		<echo message="Storing XSLTForms"/>
-		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}/xforms" createcollection="true" createsubcollections="true"
-			failonerror="false">
-			<fileset dir="${xslt-forms}"/>
-		</xdb:store>
-		
-		<echo message="Storing jQuery scripts"/>
-		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}/${mods-collection}/scripts" createcollection="true" createsubcollections="true"
-			failonerror="false">
-			<fileset dir="${scripts.dir}">
-				<include name="jquery/**"/>
-				<exclude name="**/.svn"/>
-			</fileset>
-		</xdb:store>
-		
-		<echo message="Storing global CSS styles"/>
-		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}/${mods-collection}/styles" createcollection="true" createsubcollections="true"
-			failonerror="false">
-			<fileset dir="${styles.dir}">
-				<include name="default-style2.css"/>
-			</fileset>
-		</xdb:store>
-	</target>
-
+        <xdb:remove user="${admin.username}" password="${admin.password}"
+            uri="${server-uri}" collection="${mods-collection}"/>
+        
+        <echo message="Loading new MODS database into eXist database at ${server-uri}${mods-collection}"/>
+        <xdb:store user="${admin.username}" password="${admin.password}"
+            uri="${server-uri}${mods-collection}"
+            createcollection="true" createsubcollections="true" failonerror="false">
+            <fileset dir="mods"/>
+        </xdb:store>
+    </target>
+    
 </project>
