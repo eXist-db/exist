@@ -357,27 +357,38 @@ function repeatCallback() {
     });
 }
 
+function saveToPersonalList(anchor){
+    var img = $('img', anchor);
+    var pos = anchor.hash.substring(1);
+    if (img.hasClass('stored')) {
+        var id = anchor.id;
+        img.removeClass('stored');
+        img.attr('src', '../../../resources/images/disk.gif');
+        $.get('user.xql', { list: 'remove', id: id });
+    } else {
+        img.attr('src', '../../../resources/images/disk_gew.gif');
+        img.addClass('stored');
+        $.get('user.xql', { list: 'add', pos: pos });
+    }
+    $('#personal-list-size').load('user.xql', { action: 'count' });
+    return false;
+}
+
 function resultsLoaded(options) {
     if (options.itemsPerPage > 1)
         $('tbody > tr:even > td', this).addClass('even');
     $('#filters').css('display', 'block');
     $('#filters .include-target').empty();
     $('#filters .expand').removeClass('expanded');
+    
+    //detail view
     $('.actions-toolbar .save', this).click(function (ev) {
-        var img = $('img', this);
-        var pos = this.hash.substring(1);
-        if (img.hasClass('stored')) {
-            var id = this.id;
-            img.removeClass('stored');
-            img.attr('src', 'disk.gif');
-            $.get('user.xql', { list: 'remove', id: id });
-        } else {
-            img.attr('src', 'disk_gew.gif');
-            img.addClass('stored');
-            $.get('user.xql', { list: 'add', pos: pos });
-        }
-        $('#personal-list-size').load('user.xql', { action: 'count' });
-        return false;
+        saveToPersonalList(this);
+    });
+    
+    //list view
+    $('.actions-cell .save', this).click(function (ev) {
+        saveToPersonalList(this);
     });
     
     /** add remove resource action */
