@@ -1,5 +1,5 @@
 xquery version "1.0";
-import module namespace style = "http://www.danmccreary.com/library" at "../../../modules/style.xqm";
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 declare option exist:serialize "method=xml media-type=text/xml indent=yes";
 
 let $code-table-collection := concat($style:web-path-to-app, '/code-tables/')
