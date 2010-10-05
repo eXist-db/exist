@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
 
 declare namespace request = "http://exist-db.org/xquery/request";
 declare namespace response = "http://exist-db.org/xquery/response";
@@ -18,7 +19,26 @@ declare function local:authenticate($user as xs:string, $password as xs:string?)
 
 declare function local:user-can-write-collection($user as xs:string, $collection as xs:string) as element(result)
 {
-    <result>{security:can-write-collection($user, $collection)}</result>
+    if($collection eq $sharing:groups-collection)then
+    (
+        <result>false</result>
+    )
+    else
+    (
+        <result>{security:can-write-collection($user, $collection)}</result>
+    )
+};
+
+declare function local:user-can-write-collection-and-not-home($user, $collection as xs:string) as element(result)
+{
+    if($collection eq security:get-home-collection-uri($user))then
+    (
+        <result>false</result>
+    )
+    else
+    (
+        local:user-can-write-collection($user, $collection)
+    )
 };
 
 declare function local:user-is-collection-owner($user as xs:string, $collection as xs:string) as element(result)
@@ -41,6 +61,10 @@ if(request:get-parameter("action",()))then
     if(request:get-parameter("action",()) eq "can-write-collection")then
     (
         local:user-can-write-collection(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
+    )
+    else if(request:get-parameter("action",()) eq "can-write-collection-and-not-home")then
+    (
+        local:user-can-write-collection-and-not-home(security:get-user-credential-from-session()[1], request:get-parameter("collection",()))
     )
     else if(request:get-parameter("action",()) eq "is-collection-owner")then
     (
