@@ -35,7 +35,7 @@ $(document).ready(function(){
     });
 
     //when the sharing dialog is opened
-    $('#sharing-collection-dialog').bind( "dialogopen", function(event, ui) {
+    $('#sharing-collection-dialog').bind("dialogopen", function(event, ui) {
     
         //show/hide group sharing panel
         if(!$('#sharing-collection-with-group').is(':checked')) {
@@ -102,7 +102,7 @@ function initCollectionTree() {
             showHideCollectionOwnerControls();
             var groupId = getActiveGroup();
             if(groupId){
-                updateSharingGroupCheckboxes();
+                updateSharingGroupCheckboxes(groupId);
             }
             updateSharingOtherCheckboxes();
 //            form.submit();
@@ -393,20 +393,6 @@ function searchTabSelected(ev, ui) {
         $('#personal-list-size').load('user.xql', { action: 'count' });
     }
 }
-
-/*
-function isGroupOwner(groupId) {
-    if(groupId == ""){
-        return true;
-    }
-    
-    var params = { action: "is-group-owner", groupId: groupId };
-    $.get("operations.xql", params, function(data) {
-        $(data).find('true').each(function(){
-            return true;
-        });
-    });
-}*/
 
 function updateSharingGroupMembers(groupId) {
 
