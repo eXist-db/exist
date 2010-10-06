@@ -543,7 +543,8 @@ function addMemberToSharingGroupMembers(member, isGroupOwner){
     var label = document.createElement('label');
     label.setAttribute('for', 'group-member-_' + uuid);
     label.setAttribute('class', 'labelWithCheckboxLeft');
-    label.innerText = member;
+    var memberText = document.createTextNode(member);
+    label.appendChild(memberText);
     
     li.appendChild(input);
     li.appendChild(label);
