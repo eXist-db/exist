@@ -97,7 +97,8 @@ declare function security:create-home-collection($user as xs:string) as xs:strin
         let $collection-uri := xmldb:create-collection($security:users-collection, $user) return
             if($collection-uri) then
             (
-                let $null := xmldb:set-collection-permissions($collection-uri, $user, xmldb:get-user-primary-group($user), xmldb:string-to-permissions("rwu------")) return
+                (: note users the group biblio.users need read access to a users home collection root so that they can list the collections inside to match against shared groups :)
+                let $null := xmldb:set-collection-permissions($collection-uri, $user, $security:biblio-users-group, xmldb:string-to-permissions("rwur-----")) return
                     $collection-uri
             ) else (
                 $collection-uri
