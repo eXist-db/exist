@@ -238,7 +238,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         if (value == null) {
             value = DEFAULT_IGNORES;
         }
-        Collection tokensList = new ArrayList();
+        Collection<String> tokensList = new ArrayList<String>();
         for (StringTokenizer tokens = new StringTokenizer(value, " \t"); tokens.hasMoreTokens();) {
             String token = tokens.nextToken();
             if ("".equals(token)) {
@@ -246,7 +246,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
             }
             tokensList.add(token);
         }
-        return (String[]) tokensList.toArray(new String[tokensList.size()]);
+        return tokensList.toArray(new String[tokensList.size()]);
     }
 
     /**
@@ -303,14 +303,14 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
             return;
         }
         String[] patterns = getIgnorePatterns();
-        Collection newPatterns = new ArrayList();
+        Collection<String> newPatterns = new ArrayList<String>();
         for (int i = 0; i < patterns.length; i++) {
             String s = patterns[i];
             if (!s.equals(pattern)) {
                 newPatterns.add(s);
             }
         }
-        patterns = (String[]) newPatterns.toArray(new String[newPatterns.size()]);
+        patterns = newPatterns.toArray(new String[newPatterns.size()]);
         setIgnorePatterns(patterns);
     }
 
@@ -361,8 +361,8 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
     public void setAutoProperties(Map autoProperties) {
         autoProperties = autoProperties == null ? Collections.EMPTY_MAP : autoProperties;
         Map existingProperties = getAutoProperties();
-        for (Iterator names = existingProperties.keySet().iterator(); names.hasNext();) {
-            String pattern = (String) names.next();
+        for (Iterator<String> names = existingProperties.keySet().iterator(); names.hasNext();) {
+            String pattern = names.next();
             String value = (String) existingProperties.get(pattern);
             if (value.equals(autoProperties.get(pattern))) {
                 continue;
@@ -371,8 +371,8 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
             names.remove();
         }
         // add all new
-        for (Iterator names = autoProperties.keySet().iterator(); names.hasNext();) {
-            String pattern = (String) names.next();
+        for (Iterator<String> names = autoProperties.keySet().iterator(); names.hasNext();) {
+            String pattern = names.next();
             String value = (String) autoProperties.get(pattern);
             if (value.equals(existingProperties.get(pattern))) {
                 continue;
@@ -432,8 +432,8 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
             return target;
         }
         Map autoProperties = getAutoProperties();
-        for (Iterator names = autoProperties.keySet().iterator(); names.hasNext();) {
-            String pattern = (String) names.next();
+        for (Iterator<String> names = autoProperties.keySet().iterator(); names.hasNext();) {
+            String pattern = names.next();
             String value = (String) autoProperties.get(pattern);
             if (value != null && !"".equals(value) && matches(pattern, fileName)) {
                 StringBuffer token = new StringBuffer();
@@ -600,7 +600,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         if (value == null) {
             value = "";
         }
-        Collection tokensList = new ArrayList();
+        Collection<String> tokensList = new ArrayList<String>();
         for (StringTokenizer tokens = new StringTokenizer(value, " \n\r\t"); tokens.hasMoreTokens();) {
             String token = tokens.nextToken();
             if ("".equals(token)) {
@@ -608,7 +608,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
             }
             tokensList.add(token);
         }
-        return (String[]) tokensList.toArray(new String[tokensList.size()]);
+        return tokensList.toArray(new String[tokensList.size()]);
     }
 
     public boolean isAllowAllForwardMergesFromSelf() {
@@ -619,7 +619,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         return System.getProperty("file.encoding");
     }
 
-    public byte[] getNativeEOL() {        
+    public byte[] getNativeEOL() {
         return System.getProperty("line.separator").getBytes();
     }
 
@@ -630,10 +630,10 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         }
         
         BufferedReader reader = null;
-        Map extensionsToMimeTypes = new SVNHashMap();
+        Map<String,String> extensionsToMimeTypes = new SVNHashMap();
         try {
             reader = new BufferedReader(new FileReader(mimeTypesFile));
-            LinkedList tokensList = new LinkedList();
+            LinkedList<String> tokensList = new LinkedList<String>();
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
@@ -652,10 +652,10 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
                     continue;
                 }
                 
-                String mimeType = (String) tokensList.get(0);
+                String mimeType = tokensList.get(0);
                 for (int i = 1; i < tokensList.size(); i++) {
-                    String extension = (String) tokensList.get(i);
-                    extensionsToMimeTypes.put(extension, mimeType);    
+                    String extension = tokensList.get(i);
+                    extensionsToMimeTypes.put(extension, mimeType);
                 }
             }
         } catch (IOException e) {

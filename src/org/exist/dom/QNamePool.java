@@ -34,7 +34,7 @@ import org.exist.util.hashtable.AbstractHashtable;
  * 
  * @author wolf
  */
-public class QNamePool extends AbstractHashtable {
+public class QNamePool extends AbstractHashtable{
 
     private QName[] values;
     private QName temp = new QName("", "");
@@ -65,112 +65,115 @@ public class QNamePool extends AbstractHashtable {
         temp.setPrefix(prefix);
         temp.setNameType(type);
         int idx = temp.hashCode() % tabSize;
-		if (idx < 0)
-			idx *= -1;
-		if (values[idx] == null)
-			return null; // key does not exist
-		else if (values[idx].equals(temp)) {
-			return values[idx];
-		}
-		int rehashVal = rehash(idx);
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (values[idx] == null) {
-				return null; // key not found
-			} else if (values[idx].equals(temp)) {
-				return values[idx];
-			}
-		}
-		return null;
+        if (idx < 0)
+            idx *= -1;
+        if (values[idx] == null)
+            return null; // key does not exist
+        else if (values[idx].equals(temp)) {
+            return values[idx];
+        }
+        int rehashVal = rehash(idx);
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (values[idx] == null) {
+                return null; // key not found
+            } else if (values[idx].equals(temp)) {
+                return values[idx];
+            }
+        }
+        return null;
     }
 
     /**
-	 * Add a QName, consisting of namespace, local name and prefix, to the
-	 * pool.
-	 */
+     * Add a QName, consisting of namespace, local name and prefix, to the
+     * pool.
+     */
     public QName add(byte type, String namespaceURI, String localName, String prefix) {
         temp.setLocalName(localName);
         temp.setNamespaceURI(namespaceURI);
         temp.setPrefix(prefix);
         temp.setNameType(type);
-		try {
-			return insert(temp);
-		} catch(HashtableOverflowException e) {
-		    // just clear the pool and try again
-		    values = new QName[tabSize];
-		    items = 0;
-		    try {
+        try {
+            return insert(temp);
+        } catch(HashtableOverflowException e) {
+            // just clear the pool and try again
+            values = new QName[tabSize];
+            items = 0;
+            try {
                 return insert(temp);
             } catch (HashtableOverflowException e1) {
+                //Doh ! Report something here !
             }
             // should never happen, but just to be sure
             return new QName(temp);
-		}
-	}
+        }
+    }
     
     protected QName insert(QName value) throws HashtableOverflowException {
-		if (value == null)
-			throw new IllegalArgumentException("Illegal value: null");
-		int idx = value.hashCode() % tabSize;
-		if (idx < 0)
-			idx *= -1;
-		int bucket = -1;
-		// look for an empty bucket
-		if (values[idx] == null) {
-			values[idx] = new QName(value);
-			++items;
-			return values[idx];
-		} else if (values[idx] == REMOVED) {
-			// remember the bucket, but continue to check
-			// for duplicate keys
-			bucket = idx;
-		} else if (values[idx].equals(value)) {
-			// duplicate value
-			return values[idx];
-		}
-//		System.out.println("Hash collision: " + value + " with " + values[idx]);
-		int rehashVal = rehash(idx);
-		int rehashCnt = 1;
-		for (int i = 0; i < tabSize; i++) {
-			idx = (idx + rehashVal) % tabSize;
-			if (values[idx] == REMOVED) {
-				bucket = idx;
-			} else if (values[idx] == null) {
-				if (bucket > -1) {
-					// store key into the empty bucket first found
-					idx = bucket;
-				}
-				values[idx] = new QName(value);
-				++items;
-				return values[idx];
-			} else if (values[idx].equals(value)) {
-				// duplicate value
-				return values[idx];
-			}
-			++rehashCnt;
-		}
-		// should never happen, but just to be sure:
-		// if the key has not been inserted yet, do it now
-		if (bucket > -1) {
-			values[bucket] = new QName(value);
-			++items;
-			return values[bucket];
-		}
-		throw new HashtableOverflowException();
-	}
-    
-    protected int rehash(int iVal) {
-		int retVal = (iVal + iVal / 2) % tabSize;
-		if (retVal == 0)
-			retVal = 1;
-		return retVal;
-	}
-	
-	public Iterator iterator() {
-		return null;
-	}
+        if (value == null)
+            throw new IllegalArgumentException("Illegal value: null");
+        int idx = value.hashCode() % tabSize;
+        if (idx < 0)
+            idx *= -1;
+        int bucket = -1;
+        // look for an empty bucket
+        if (values[idx] == null) {
+            values[idx] = new QName(value);
+            ++items;
+            return values[idx];
+        } else if (values[idx] == REMOVED) {
+            // remember the bucket, but continue to check
+            // for duplicate keys
+            bucket = idx;
+        } else if (values[idx].equals(value)) {
+            // duplicate value
+            return values[idx];
+        }
+        //System.out.println("Hash collision: " + value + " with " + values[idx]);
+        int rehashVal = rehash(idx);
+        int rehashCnt = 1;
+        for (int i = 0; i < tabSize; i++) {
+            idx = (idx + rehashVal) % tabSize;
+            if (values[idx] == REMOVED) {
+                bucket = idx;
+            } else if (values[idx] == null) {
+                if (bucket > -1) {
+                    // store key into the empty bucket first found
+                    idx = bucket;
+                }
+                values[idx] = new QName(value);
+                ++items;
+                return values[idx];
+            } else if (values[idx].equals(value)) {
+                // duplicate value
+                return values[idx];
+            }
+            ++rehashCnt;
+        }
+        // should never happen, but just to be sure:
+        // if the key has not been inserted yet, do it now
+        if (bucket > -1) {
+            values[bucket] = new QName(value);
+            ++items;
+            return values[bucket];
+        }
+        throw new HashtableOverflowException();
+    }
 
-	public Iterator valueIterator() {
-		return null;
-	}
+    protected int rehash(int iVal) {
+        int retVal = (iVal + iVal / 2) % tabSize;
+        if (retVal == 0)
+            retVal = 1;
+        return retVal;
+    }
+
+    @Override
+    public Iterator<QName> iterator() {
+        return null;
+    }
+
+    @Override
+    public Iterator<QName> valueIterator() {
+        return null;
+    }
 }
