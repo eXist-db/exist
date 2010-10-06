@@ -181,8 +181,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         try {
             return (ps.executeUpdate() == 1);
         } finally {
-            if (ps != null)
-                ps.close();
+            ps.close();
         }
     }
 
@@ -195,8 +194,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         try {
             return ps.executeUpdate();
         } finally {
-            if (ps != null)
-                ps.close();
+            ps.close();
         }
     }
 
@@ -210,8 +208,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         try {
             return ps.executeUpdate();
         } finally {
-            if (ps!= null)
-                ps.close();
+            ps.close();
         }
     }
 
@@ -455,8 +452,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         } finally {
             if (rs != null)
                 rs.close();
-            if (ps != null)
-                ps.close();
+            ps.close();
         }
     }
     
@@ -565,8 +561,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         } finally {
             if (rs != null)
                 rs.close();
-            if (ps != null)
-                ps.close();
+            ps.close();
         }
     }
 

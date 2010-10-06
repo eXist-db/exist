@@ -1263,8 +1263,8 @@ public class NativeBroker extends DBBroker {
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
             //TODO : rethrow ? -pb
-        } catch (ReadOnlyException e) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        //} catch (ReadOnlyException e) {
+            //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -2264,8 +2264,8 @@ public class NativeBroker extends DBBroker {
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
             //TODO : rethrow ? -pb
-        } catch (ReadOnlyException e) {
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        //} catch (ReadOnlyException e) {
+            //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
@@ -2335,9 +2335,9 @@ public class NativeBroker extends DBBroker {
             byte[] d = new byte[4];
             ByteConversion.intToByte(nextDocId, d, 0);
             collectionsDb.put(transaction, key, d, true);
-        } catch (ReadOnlyException e) {
-            LOG.warn("Database is read-only");
-            return DocumentImpl.UNKNOWN_DOCUMENT_ID;
+        //} catch (ReadOnlyException e) {
+            //LOG.warn("Database is read-only");
+            //return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);

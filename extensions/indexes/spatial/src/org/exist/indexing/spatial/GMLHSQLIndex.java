@@ -158,31 +158,29 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
                 if (conn == null)
                     initializeConnection();
                 return conn;
-            } else {
-                long timeOut_ = connectionTimeout;
-                long waitTime = timeOut_;
-                long start = System.currentTimeMillis();
-                try {
-                    for (;;) {
-                        wait(waitTime);
-                        if (connectionOwner == null) {
-                            connectionOwner = broker;
-                            if (conn == null)
-                                //We should never get there since the connection should have been initialized
-                                //by the first request from a worker
-                                initializeConnection();
-                            return conn;
-                        } else {
-                            waitTime = timeOut_ - (System.currentTimeMillis() - start);
-                            if (waitTime <= 0) {
-                                LOG.error("Time out while trying to get connection");
-                            }
-                        }
+            }
+            long timeOut_ = connectionTimeout;
+            long waitTime = timeOut_;
+            long start = System.currentTimeMillis();
+            try {
+                for (;;) {
+                    wait(waitTime);
+                    if (connectionOwner == null) {
+                        connectionOwner = broker;
+                        if (conn == null)
+                            //We should never get there since the connection should have been initialized
+                            //by the first request from a worker
+                            initializeConnection();
+                        return conn;
                     }
-                } catch (InterruptedException ex) {
-                    notify();
-                    throw new RuntimeException("interrupted while waiting for lock");
+                    waitTime = timeOut_ - (System.currentTimeMillis() - start);
+                    if (waitTime <= 0) {
+                        LOG.error("Time out while trying to get connection");
+                    }
                 }
+            } catch (InterruptedException ex) {
+                notify();
+                throw new RuntimeException("interrupted while waiting for lock");
             }
         }
     }
