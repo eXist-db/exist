@@ -138,6 +138,10 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
                     <group:name>{$group-name}</group:name>
                 </group:group>
             ) return
+                 (: NOTE - 
+                    using $system-group-name means that users can only share with groups of which they are already a member
+                    otherwise $security:biblio-users-group could be used, allowing a user to share with any existing group (whether they are a member of that group or not!)
+                 :)
                  security:set-resource-permissions($group-doc, $owner, $system-group-name, true(), true(), true(), false(), false(), false()),
                  $new-group-id
         )
