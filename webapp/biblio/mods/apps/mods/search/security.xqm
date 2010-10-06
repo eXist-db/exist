@@ -398,3 +398,15 @@ declare function security:get-groups($user as xs:string) as xs:string*
 {
     xmldb:get-user-groups($user)
 };
+
+declare function security:find-collections-with-group($collection-path as xs:string, $group as xs:string) as xs:string*
+{
+	for $child-collection in xmldb:get-child-collections($collection-path)
+	let $child-collection-path := fn:concat($collection-path, "/", $child-collection) return
+		(
+			if(xmldb:get-group($child-collection-path) eq $group)then(
+				$child-collection-path
+			)else(),
+			security:find-collections-with-group($child-collection-path, $group)
+		)
+};
