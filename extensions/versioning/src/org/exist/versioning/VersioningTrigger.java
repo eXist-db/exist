@@ -57,6 +57,7 @@ import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import org.exist.dom.BinaryDocument;
 
@@ -96,10 +97,10 @@ public class VersioningTrigger extends FilteringTrigger {
     private String documentRev = null;
     private boolean checkForConflicts = false;
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters != null) {
-            String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
+            String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE).get(0);
             if (allowOverwrite != null)
                 checkForConflicts = allowOverwrite.equals("false") || allowOverwrite.equals("no");
         }
