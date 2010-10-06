@@ -125,7 +125,7 @@ declare function sharing:is-group-owner($group-id as xs:string, $user as xs:stri
 declare function sharing:create-group($group-name as xs:string, $owner as xs:string, $group-member as xs:string*) as xs:string?
 {
     let $new-group-id := util:uuid(),
-    $system-group-name :=  fn:concat($owner, ".", fn:replace($group-name, "[^a-zA-Z0-9]", "")) return
+    $system-group-name :=  fn:concat($owner, ".", fn:lower-case(fn:replace($group-name, "[^a-zA-Z0-9]", ""))) return
     
         if(security:create-group($system-group-name, $group-member))then
         (
@@ -138,7 +138,7 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
                     <group:name>{$group-name}</group:name>
                 </group:group>
             ) return
-                 security:set-resource-permissions($group-doc, $owner, $group-name, true(), true(), true(), false(), false(), false()),
+                 security:set-resource-permissions($group-doc, $owner, $system-group-name, true(), true(), true(), false(), false(), false()),
                  $new-group-id
         )
         else() 
@@ -149,6 +149,6 @@ declare function sharing:get-users-groups($user as xs:string) as element(group:g
     fn:collection($sharing:groups-collection)/group:group[group:system/group:group = security:get-groups($user)]       
 };
 
-declare function sharing:get-group($group-id as xs:string) as element(group:group) {
+declare function sharing:get-group($group-id as xs:string) as element(group:group)? {
     fn:collection($sharing:groups-collection)/group:group[@id eq $group-id]
 };

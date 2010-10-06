@@ -48,7 +48,7 @@ declare function op:remove-collection($collection as xs:string) as element(statu
 declare function op:update-collection-sharing($collection as xs:string, $sharing-collection-with as xs:string*, $group-list as xs:string?, $group-member as xs:string*, $group-sharing-permissions as xs:string*, $other-sharing-permissions as xs:string*) as element(status) {
 
     (: other :)
-    let $share-with-other-outrcome := if($sharing-collection-with = "other")then
+    let $share-with-other-outcome := if($sharing-collection-with = "other")then
     (
         sharing:share-with-other($collection, ($other-sharing-permissions = "read"), ($other-sharing-permissions = "write"))
     )
@@ -65,6 +65,8 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
         (: does the group exist? :)
         let $group-id := if(sharing:group-exists($group-list))then
         (
+            let $null := util:log("debug", "********* GROUP ALREADY EXISTS ***********") return
+                
             (: yes, are we the owner? :)
             if(sharing:is-group-owner($group-list, security:get-user-credential-from-session()[1]))then
             (
@@ -97,7 +99,7 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
         sharing:share-with-group($collection, false(), false())
     )
     return
-        if($share-with-other-outrcome and $share-with-group-outcome)then
+        if($share-with-other-outcome and $share-with-group-outcome)then
             <status id="sharing">done</status>
         else
             <status id="sharing">invalid permissions</status>

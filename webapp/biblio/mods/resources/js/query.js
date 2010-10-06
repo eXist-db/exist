@@ -415,31 +415,33 @@ function searchTabSelected(ev, ui) {
 
 function updateSharingGroupMembers(groupId) {
 
-    var params = { action: "get-sharing-group-members", groupId: groupId };
-    $.get("operations.xql", params, function(data) {
+    if(groupId){
+        var params = { action: "get-sharing-group-members", groupId: groupId };
+        $.get("operations.xql", params, function(data) {
+            
+            //remove any existing members
+            $('#group-members-list').find('li').remove();
         
-        //remove any existing members
-        $('#group-members-list').find('li').remove();
-    
-        var owner = false;
-        if($(data).find('owner true').size() == 1)
-        {
-            owner = true;
-            $('#add-new-member-to-group-button').show();
-        } else if($('#group-list :selected').val() == $('#group-list :selected').text()) {
-            owner = true;   //this is a new group i.e. we own it!
-            $('#add-new-member-to-group-button').show();
-        } else {
-            $('#add-new-member-to-group-button').hide();
-        }
-    
-        //add new members
-        $(data).find('member').each(function(){
-            addMemberToSharingGroupMembers($(this).text(), owner);
+            var owner = false;
+            if($(data).find('owner true').size() == 1)
+            {
+                owner = true;
+                $('#add-new-member-to-group-button').show();
+            } else if($('#group-list :selected').val() == $('#group-list :selected').text()) {
+                owner = true;   //this is a new group i.e. we own it!
+                $('#add-new-member-to-group-button').show();
+            } else {
+                $('#add-new-member-to-group-button').hide();
+            }
+        
+            //add new members
+            $(data).find('member').each(function(){
+                addMemberToSharingGroupMembers($(this).text(), owner);
+            });
         });
-    });
-    
-    updateSharingGroupCheckboxes(groupId);
+        
+        updateSharingGroupCheckboxes(groupId);
+    }
 }
 
 function updateSharingGroupCheckboxes(groupId) {
