@@ -48,13 +48,13 @@ declare function local:user-collection-for-group($group-id as xs:string, $user-c
 {
     let $system-group := sharing:get-group($group-id)/group:system/group:group return
         for $user-sub-collection in xmldb:get-child-collections($user-collection-path)
-            let $user-sub-collection-path := fn:concat($user-collection-path, "/", $user-sub-collection) return
-                (
-                    if(security:get-group($user-sub-collection-path) eq $system-group)then(
-                        local:tree-node($user-sub-collection-path, sharing:group-writeable($user-sub-collection-path, $group-id), (), (), ())
-                    )else(),
-                        local:user-collection-for-group($group-id, $user-sub-collection-path)
-                )
+        let $user-sub-collection-path := fn:concat($user-collection-path, "/", $user-sub-collection) return
+            (
+                if(security:get-group($user-sub-collection-path) eq $system-group)then(
+                    local:tree-node($user-sub-collection-path, sharing:group-writeable($user-sub-collection-path, $group-id), (), (), ())
+                )else(),
+                    local:user-collection-for-group($group-id, $user-sub-collection-path)
+            )
 };
 
 (:~
@@ -62,8 +62,8 @@ declare function local:user-collection-for-group($group-id as xs:string, $user-c
 :
 : $group-collection-path The virtual collection path of the group e.g. /db/mods/groups/1234-1234-1234-1234
 :)
-declare function local:group-collection-children($group-collection-path as xs:string) {
-    
+declare function local:group-collection-children($group-collection-path as xs:string)
+{
     let $group-id := fn:replace($group-collection-path, ".*/", "") return
         for $user-collection in xmldb:get-child-collections($security:users-collection)
         let $user-collection-path := fn:concat($security:users-collection, "/", $user-collection) return

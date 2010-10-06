@@ -27,11 +27,11 @@ declare variable $rwxrwxrwx := 511;
 declare function op:create-collection($parent as xs:string, $name as xs:string) as element(status) {
     let $collection := xmldb:create-collection($parent, fn:lower-case(fn:replace($name, " ", ""))),
     
-    (: by default newly created collections inherit the permissions of their parent :)
-    $parent-group := xmldb:get-group($parent),
+    (: by default newly created collections inherit the owner of their parent and are set to private permissions :)
     $parent-owner := xmldb:get-owner($parent),
+    $group := xmldb:get-user-primary-group($parent-owner),
     $parent-permissions := xmldb:get-permissions($parent),
-    $null := xmldb:set-collection-permissions($collection, $parent-owner, $parent-group, $parent-permissions) return
+    $null := xmldb:set-collection-permissions($collection, $parent-owner, $group, $rwx------) return
         <status id="created">{$collection}</status>
 };
 
