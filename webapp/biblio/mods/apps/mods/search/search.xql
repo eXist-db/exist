@@ -152,6 +152,25 @@ declare function biblio:form-from-query($query as element()) as element()+ {
         </tr>
 };
 
+declare function local:create-group-collections-string($group-ids as xs:string+,  $group-collections as xs:string*) as xs:string*
+{
+    if(not(empty($group-collections)))then(
+        fn:concat(
+            "collection(",
+            fn:string-join(
+                for $shared-collection in $group-collections return
+                    fn:concat("'", $shared-collection, "'")
+            , ","),
+            ")//"
+        )
+    )
+    else
+    (
+        util:log("debug", fn:concat("biblio: could not find any shared collections for the group with id: ", $group-ids)), 
+        fn:concat("collection('", $config:mods-root, "')//")
+    )
+};
+
 (:~
     Generate an XPath query string from the given XML representation
     of the query.
@@ -184,7 +203,36 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
             let $expr0 := $biblio:FIELDS/field[@name = $xml/@name]
             let $expr := if ($expr0) then $expr0 else $biblio:FIELDS/field[last()]
             let $log := util:log("DEBUG", ("$expr0: ", $expr0))
-            let $collection := concat("collection('", $xml/ancestor::query/collection/string(), "')//")
+            let $collection-path := $xml/ancestor::query/collection/string()
+            
+            let $collection := if($collection-path eq $sharing:groups-collection)then
+            (
+                let $group-ids := sharing:get-users-groups(security:get-user-credential-from-session()[1])/@id return
+                    if(not(empty($group-ids)))then
+                    (
+                        let $group-collections := for $group-id in $group-ids return
+                            sharing:find-group-collections($group-id)
+                        return
+                            local:create-group-collections-string($group-ids, $group-collections)
+                    )
+                    else
+                    (
+                         util:log("debug", "biblio: could not find any shared collections for this user"), 
+                         fn:concat("collection('", $config:mods-root, "')//")
+                    )
+            )            
+            else if(fn:starts-with($collection-path, $sharing:groups-collection) or fn:starts-with($collection-path, fn:replace($sharing:groups-collection, "/db/", "")))then
+            (
+                (: search inside a group of shared collections :)
+                 let $group-id := fn:replace($collection-path, ".*/", ""),
+                 $group-collections := sharing:find-group-collections($group-id) return
+                    local:create-group-collections-string($group-id, $group-collections)
+            )
+            else
+            (
+                (: search a single collection :)
+                fn:concat("collection('", $collection-path, "')//")
+            )
             return
                 ($collection, replace($expr, '\$q', $xml/string()))
         case element(collection) return

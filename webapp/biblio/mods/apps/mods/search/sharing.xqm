@@ -153,6 +153,13 @@ declare function sharing:get-users-groups($user as xs:string) as element(group:g
     fn:collection($sharing:groups-collection)/group:group[group:system/group:group = security:get-groups($user)]       
 };
 
-declare function sharing:get-group($group-id as xs:string) as element(group:group)? {
+declare function sharing:get-group($group-id as xs:string) as element(group:group)?
+{
     fn:collection($sharing:groups-collection)/group:group[@id eq $group-id]
+};
+
+declare function sharing:find-group-collections($group-id as xs:string) as xs:string*
+{
+    let $system-group := sharing:__group-id-to-system-group-name($group-id) return
+        security:find-collections-with-group($security:users-collection, $system-group)
 };
