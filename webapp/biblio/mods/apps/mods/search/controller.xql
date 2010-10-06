@@ -5,18 +5,8 @@ import module namespace security="http://exist-db.org/mods/security" at "securit
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 
-declare function local:logout() {
-    let $logout := request:get-parameter("logout", ())
-    return
-        if ($logout) then
-            session:clear()
-        else
-            ()
-};
-
 declare function local:set-user() {
     session:create(),
-    local:logout(),
     let $user := request:get-parameter("user", ())
     let $password := request:get-parameter("password", ())
     let $session-user-credential := security:get-user-credential-from-session()
@@ -43,18 +33,29 @@ if ($exist:path eq '/') then
     the actual search and expand the index.xml template.
 :)
 else if ($exist:resource eq 'index.xml') then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        { local:set-user() }
-        <view>
-            <forward url="search.xql">
-                <!-- Errors should be passed through instead of terminating the request -->
-        		<set-attribute name="xquery.report-errors" value="yes"/>
-            </forward>
-		</view>
-	</dispatch>
-(:  Retrieve an item from the query results stored in the HTTP session. The
-	format of the URL will be /sandbox/results/X, where X is the number of the
-	item in the result set :)
+
+    if(request:get-parameter("logout",()))then
+    (
+        session:clear(),
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="index.xml"/>
+        </dispatch>
+    )
+    else
+    (
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            { local:set-user() }
+            <view>
+                <forward url="search.xql">
+                    <!-- Errors should be passed through instead of terminating the request -->
+            		<set-attribute name="xquery.report-errors" value="yes"/>
+                </forward>
+    		</view>
+    	</dispatch>
+        (:  Retrieve an item from the query results stored in the HTTP session. The
+    	format of the URL will be /sandbox/results/X, where X is the number of the
+    	item in the result set :)
+	)
 else if ($exist:resource eq 'retrieve') then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 	   { local:set-user() }
