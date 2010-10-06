@@ -25,7 +25,7 @@ declare variable $rwxrwxrwx := 511;
 : @param $name the name for the new collection
 :)
 declare function op:create-collection($parent as xs:string, $name as xs:string) as element(status) {
-    let $collection := xmldb:create-collection($parent, $name),
+    let $collection := xmldb:create-collection($parent, fn:lower-case(fn:replace($name, " ", ""))),
     
     (: by default newly created collections inherit the permissions of their parent :)
     $parent-group := xmldb:get-group($parent),
