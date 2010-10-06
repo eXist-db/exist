@@ -681,12 +681,6 @@ declare function biblio:apply-filter() {
                 { $prevQuery/collection }
                 <field name="{$filter}">{$value}</field>
             </query>
-        else if ($filter = ('All', 'Title') and count($prevQuery/field) eq 1) then
-                <query>
-                    <field>{$prevQuery/field/@name, 
-                        normalize-space(concat($prevQuery/field/string(), ' ', $value))
-                    }</field>
-                </query>
         else
             <query>
                 { $prevQuery/collection }
