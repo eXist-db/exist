@@ -15,7 +15,7 @@ declare variable $local:MAX_RESULTS_NAMES := 2000;
 declare variable $local:MAX_TERMS := 30;
 
 declare function local:key($key, $options) {
-    <li><a href="?filter=Title&amp;value={$key}&amp;query-tabs=advanced">{$key} ({$options[1]})</a></li>
+    <li><a href="?filter=Title&amp;value={$key}&amp;query-tabs=advanced-search-form">{$key} ({$options[1]})</a></li>
 };
 
 declare function local:keywords($results as element()*) {
@@ -51,7 +51,7 @@ return
                     for $name in $distinct
                     order by $name
                     return
-                        <li><a href="?filter=Name&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
+                        <li><a href="?filter=Name&amp;value={$name}&amp;query-tabs=advanced-search-form">{$name}</a></li>
         }
         </ul>
     else if ($type eq 'date') then
@@ -69,7 +69,7 @@ return
                     for $date in distinct-values($dates)
                     order by $date descending
                     return
-                        <li><a href="?filter=Date&amp;value={$date}&amp;query-tabs=advanced">{$date}</a></li>
+                        <li><a href="?filter=Date&amp;value={$date}&amp;query-tabs=advanced-search-form">{$date}</a></li>
          }</ul>
     else if ($type eq 'keywords') then
         local:keywords($cached)
