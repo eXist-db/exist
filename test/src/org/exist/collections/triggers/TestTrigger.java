@@ -15,6 +15,7 @@ import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +27,7 @@ public class TestTrigger extends FilteringTrigger {
 
     private DocumentImpl doc;
 
-    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
         System.out.println("TestTrigger prepares");
