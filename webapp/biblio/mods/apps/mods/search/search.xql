@@ -205,7 +205,7 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
             let $log := util:log("DEBUG", ("$expr0: ", $expr0))
             let $collection-path := $xml/ancestor::query/collection/string()
             
-            let $collection := if($collection-path eq $sharing:groups-collection)then
+            let $collection := if($collection-path eq $sharing:groups-collection or $collection-path eq fn:replace($sharing:groups-collection, "/db/", ""))then
             (
                 let $group-ids := sharing:get-users-groups(security:get-user-credential-from-session()[1])/@id return
                     if(not(empty($group-ids)))then
@@ -755,7 +755,7 @@ let $queryAsXML :=
     else if ($clear) then
         biblio:clear()
     else if ($filter) then 
-        biblio:apply-filter() 
+        biblio:apply-filter()
     else if ($mylist eq 'display') then
         ()
     else 
