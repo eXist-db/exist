@@ -27,9 +27,7 @@ declare namespace functx = "http://www.functx.com";
 
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
-(:
-import module namespace jquery="http://exist-db.org/xquery/jquery" at "jquery.xql";
-:)
+
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace sort="http://exist-db.org/xquery/sort" at "java:org.exist.xquery.modules.sort.SortModule";
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
@@ -77,7 +75,7 @@ declare variable $biblio:FIELDS :=
 		<field name="Abstract">mods:mods[ft:query(mods:abstract, '$q', $options)]</field>
         <field name="Note">mods:mods[ft:query(mods:note, '$q', $options)]</field>
         <field name="Subject">mods:mods[ft:query(mods:subject, '$q', $options)]</field>
-        <field name="All Except Date">(
+        <field name="All">(
         mods:mods[ft:query(.//*, '$q', $options)]
 		)</field>
         
@@ -185,6 +183,7 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
         case element(field) return
             let $expr0 := $biblio:FIELDS/field[@name = $xml/@name]
             let $expr := if ($expr0) then $expr0 else $biblio:FIELDS/field[last()]
+            let $log := util:log("DEBUG", ("$expr0: ", $expr0))
             let $collection := concat("collection('", $xml/ancestor::query/collection/string(), "')//")
             return
                 ($collection, replace($expr, '\$q', $xml/string()))
@@ -677,17 +676,23 @@ declare function biblio:apply-filter() {
     let $value := request:get-parameter("value", ())
     
     return
-        if ($filter = ('All', 'Title') and count($prevQuery/field) eq 1) then
+        if (not($prevQuery/field)) then
             <query>
-                <field>{$prevQuery/field/@name, 
-                    normalize-space(concat($prevQuery/field/string(), ' ', $value))
-                }</field>
+                { $prevQuery/collection }
+                <field name="{$filter}">{$value}</field>
             </query>
+        else if ($filter = ('All', 'Title') and count($prevQuery/field) eq 1) then
+                <query>
+                    <field>{$prevQuery/field/@name, 
+                        normalize-space(concat($prevQuery/field/string(), ' ', $value))
+                    }</field>
+                </query>
         else
             <query>
+                { $prevQuery/collection }
                 <and>
-                { $prevQuery/* }
-                { <field name="{$filter}">{$value}</field> }
+                { $prevQuery/*[not(self::collection)] }
+                <field name="{$filter}">{$value}</field>
                 </and>
             </query>
 };

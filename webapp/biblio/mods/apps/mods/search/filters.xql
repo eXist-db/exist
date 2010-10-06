@@ -51,7 +51,7 @@ return
                     for $name in $distinct
                     order by $name
                     return
-                        <li><a href="?filter=Author&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
+                        <li><a href="?filter=Name&amp;value={$name}&amp;query-tabs=advanced">{$name}</a></li>
         }
         </ul>
     else if ($type eq 'date') then
