@@ -73,16 +73,19 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#iterate()
      */
+    @Override
     public abstract SequenceIterator iterate() throws XPathException;
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#unorderedIterator()
      */
+    @Override
     public abstract SequenceIterator unorderedIterator() throws XPathException;
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getItemType()
      */
+    @Override
     public int getItemType() {
         return Type.NODE;
     }
@@ -119,6 +122,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * Add a sequence item to the node set. The item has to be
      * a subtype of node.
      */
+    @Override
     public void add(Item item) throws XPathException {
         if (!Type.subTypeOf(item.getType(), Type.NODE))
             throw new XPathException("item has wrong type");
@@ -132,6 +136,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param other
      * @throws XPathException
      */
+    @Override
     public void addAll(Sequence other) throws XPathException {
         if (!other.isEmpty() && !Type.subTypeOf(other.getItemType(), Type.NODE))
             throw new XPathException("sequence argument is not a node sequence");
@@ -152,10 +157,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public abstract int getLength();
 
+    @Override
     public void setIsCached(boolean cached) {
         isCached = cached;
     }
 
+    @Override
     public boolean isCached() {
         return isCached;
     }
@@ -184,6 +191,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public abstract NodeProxy get(NodeProxy p);
 
+    @Override
     public DocumentSet getDocumentSet() {
         MutableDocumentSet ds = new DefaultDocumentSet();
         NodeProxy p;
@@ -194,6 +202,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return ds;
     }
 
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return new CollectionIterator();
     }
@@ -606,6 +615,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getState()
      */
+    @Override
     public int getState() {
         return 1;
     }
@@ -613,6 +623,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasChanged(int)
      */
+    @Override
     public boolean hasChanged(int previousState) {
         return false;
     }
@@ -652,6 +663,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return indexType;
     }
 
+    @Override
     public void clearContext(int contextId) throws XPathException {
         NodeProxy p;
         for (Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
@@ -660,6 +672,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         }
     }
 
+    @Override
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
         NodeProxy p = get((DocumentImpl)newNode.getOwnerDocument(), oldNodeId);
         if (p != null)
@@ -669,11 +682,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AbstractSequence#isPersistentSet()
      */
+    @Override
     public boolean isPersistentSet() {
         // node sets are always persistent
         return true;
     }
 
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("NodeSet(");

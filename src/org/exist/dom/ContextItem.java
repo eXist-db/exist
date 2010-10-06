@@ -27,43 +27,43 @@ public class ContextItem {
     private NodeProxy node;
 
     private ContextItem nextDirect;
-	
-	private int contextId;
-	
-	public ContextItem(NodeProxy node) {
-		this(Expression.NO_CONTEXT_ID, node);
-	}
-	
+    private int contextId;
+
+    public ContextItem(NodeProxy node) {
+        this(Expression.NO_CONTEXT_ID, node);
+    }
+
     public ContextItem(int contextId, NodeProxy node) {
-    	this.contextId = contextId;
+        this.contextId = contextId;
         this.node = node;
     }
-    
-	public NodeProxy getNode() {
-		return node;
-	}
-    
-	public int getContextId() {
-		return contextId;
-	}
-	
+
+    public NodeProxy getNode() {
+        return node;
+    }
+
+    public int getContextId() {
+        return contextId;
+    }
+
     public boolean hasNextDirect() {
         return (nextDirect != null);
     }
-	
+
     public ContextItem getNextDirect() {
         return nextDirect;
     }
-	
+
     public void setNextContextItem(ContextItem next) {
             nextDirect = next;
     }
-    
+
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(node);        
+        buf.append(node);
         if (nextDirect != null)
             buf.append("/" + nextDirect);
         return buf.toString();
-    }    
+    }
 }

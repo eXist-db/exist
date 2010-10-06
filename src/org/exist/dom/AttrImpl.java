@@ -80,13 +80,15 @@ public class AttrImpl extends NamedNode implements Attr {
         this.attributeType = other.attributeType;
         this.value = other.value;
     }
-    
+
+    @Override
     public void clear() {
         super.clear();
         attributeType = DEFAULT_ATTRIBUTE_TYPE;
         value = null;
-    }    
-    
+    }
+
+    @Override
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
             throw new RuntimeException("Local name is null");
@@ -108,8 +110,8 @@ public class AttrImpl extends NamedNode implements Attr {
         data[pos] |= idSizeType;
         data[pos] |= (byte) (attributeType << 0x2);
         if(nodeName.needsNamespaceDecl())
-            data[pos] |= 0x10;        
-        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;        
+            data[pos] |= 0x10;
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(data, pos);
@@ -133,7 +135,7 @@ public class AttrImpl extends NamedNode implements Attr {
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
         int pos = start;
         byte idSizeType = (byte) ( data[pos] & 0x3 );
-		boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        boolean hasNamespace = (data[pos] & 0x10) == 0x10;
         int attrType = ( data[pos] & 0x4 ) >> 0x2;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
@@ -141,36 +143,34 @@ public class AttrImpl extends NamedNode implements Attr {
         NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         pos += dln.size();
         short id = (short) Signatures.read(idSizeType, data, pos);
-		pos += Signatures.getLength(idSizeType);
+        pos += Signatures.getLength(idSizeType);
         String name = doc.getBrokerPool().getSymbols().getName(id);
         if (name == null)
             throw new RuntimeException("no symbol for id " + id);
         short nsId = 0;
         String prefix = null;
-		if (hasNamespace) {
-			nsId = ByteConversion.byteToShort(data, pos);
-			pos += LENGTH_NS_ID;
-			int prefixLen = ByteConversion.byteToShort(data, pos);
-			pos += LENGTH_PREFIX_LENGTH;
-			if (prefixLen > 0)
-				prefix = UTF8.decode(data, pos, prefixLen).toString();
-			pos += prefixLen;
-		}
-		String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
+        if (hasNamespace) {
+            nsId = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_NS_ID;
+            int prefixLen = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_PREFIX_LENGTH;
+            if (prefixLen > 0)
+                prefix = UTF8.decode(data, pos, prefixLen).toString();
+            pos += prefixLen;
+        }
+        String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
         XMLString value = UTF8.decode(data, pos, len - (pos - start));
 
         //OK : we have the necessary material to build the attribute
         AttrImpl attr;
         if(pooled)
             attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
-//            attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+            //attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
         else
             attr = new AttrImpl();
         attr.setNodeName(doc.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
         attr.value = value;
         attr.setNodeId(dln);
-        if (dln == null)
-        	throw new RuntimeException("no node id " + id);
         attr.setType(attrType);
         return attr;
     }
@@ -216,14 +216,14 @@ public class AttrImpl extends NamedNode implements Attr {
         return nodeName.getStringValue();
     }
 
-	public int getType() {
-		return attributeType;
-	}
-	
-	public void setType(int type) {
+    public int getType() {
+        return attributeType;
+    }
+
+    public void setType(int type) {
         //TODO : range check -pb
-		attributeType = type;
-	}
+        attributeType = type;
+    }
 
     public static String getAttributeType(int type) {
         if (type == AttrImpl.ID)
@@ -246,10 +246,11 @@ public class AttrImpl extends NamedNode implements Attr {
     public String getValue() {
         return value.toString();
     }
-    
+
+    @Override
     public String getNodeValue() {
         return value.toString();
-    }    
+    }
     
     public void setValue(String str) throws DOMException {
         this.value = new XMLString(str.toCharArray());
@@ -263,6 +264,7 @@ public class AttrImpl extends NamedNode implements Attr {
         return true;
     } 
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append( ' ' );
@@ -273,8 +275,9 @@ public class AttrImpl extends NamedNode implements Attr {
         return buf.toString();
     }
 
-    public String toString( boolean top ) {
-        if ( top ) {
+    @Override
+    public String toString(boolean top) {
+        if (top) {
             StringBuilder result = new StringBuilder();
             result.append( "<exist:attribute " );
             result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
@@ -289,119 +292,131 @@ public class AttrImpl extends NamedNode implements Attr {
             result.append( "\"/>" );
             return result.toString();
         }
-        else
-            return toString();
+        return toString();
     }
-    
+
+    @Override
     public boolean hasChildNodes() {
-        return false;        
+        return false;
     } 
-    
+
+    @Override
     public int getChildCount() {
-    	return 0;
+        return 0;
     }
-    
-    public Node getFirstChild() {   
+
+    @Override
+    public Node getFirstChild() {
         //bad implementations don't call hasChildNodes before
         return null;
-    }        
+    }
 
-	/** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
-	 */
-	public TypeInfo getSchemaTypeInfo() {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
+     */
+    public TypeInfo getSchemaTypeInfo() {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Attr#isId()
-	 */
-	public boolean isId() {
-		return this.getType() == ID;
-	}
+    /** ? @see org.w3c.dom.Attr#isId()
+     */
+    public boolean isId() {
+        return this.getType() == ID;
+    }
 
-	public String getBaseURI() {
-		Element e = getOwnerElement();
-		if (e != null)
-			return e.getBaseURI();
-		
-		return null;
-	}
+    @Override
+    public String getBaseURI() {
+        Element e = getOwnerElement();
+        if (e != null)
+            return e.getBaseURI();
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-	 */
-	public short compareDocumentPosition(Node other) throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return 0;
-	}
+    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
+     */
+    @Override
+    public short compareDocumentPosition(Node other) throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return 0;
+    }
 
-	/** ? @see org.w3c.dom.Node#getTextContent()
-	 */
-	public String getTextContent() throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getTextContent()
+     */
+    @Override
+    public String getTextContent() throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-	 */
-	public void setTextContent(String textContent) throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		
-	}
+    /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
+     */
+    @Override
+    public void setTextContent(String textContent) throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    }
 
-	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-	 */
-	public boolean isSameNode(Node other) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
+     */
+    @Override
+    public boolean isSameNode(Node other) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-	 */
-	public String lookupPrefix(String namespaceURI) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
+     */
+    @Override
+    public String lookupPrefix(String namespaceURI) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-	 */
-	public boolean isDefaultNamespace(String namespaceURI) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
+     */
+    @Override
+    public boolean isDefaultNamespace(String namespaceURI) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-	 */
-	public String lookupNamespaceURI(String prefix) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
+     */
+    @Override
+    public String lookupNamespaceURI(String prefix) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-	 */
-	public boolean isEqualNode(Node arg) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
+     */
+    @Override
+    public boolean isEqualNode(Node arg) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-	 */
-	public Object getFeature(String feature, String version) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
+     */
+    @Override
+    public Object getFeature(String feature, String version) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-	 */
-	public Object setUserData(String key, Object data, UserDataHandler handler) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
+     */
+    @Override
+    public Object setUserData(String key, Object data, UserDataHandler handler) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-	 */
-	public Object getUserData(String key) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
+     */
+    @Override
+    public Object getUserData(String key) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 }
 

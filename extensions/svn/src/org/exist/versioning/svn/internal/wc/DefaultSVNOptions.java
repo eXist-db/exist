@@ -557,12 +557,12 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         if (subProtocolName == null) {
             return null;
         }
-        Map tunnels = getConfigFile().getProperties("tunnels");
-	    final String tunnel = (String)tunnels.get(subProtocolName);
-	    if (tunnel == null) {
-		    return null;
-	    }
-	    return new SVNTunnelConnector(subProtocolName, tunnel);
+        Map<String,String> tunnels = getConfigFile().getProperties("tunnels");
+        final String tunnel = tunnels.get(subProtocolName);
+        if (tunnel == null) {
+            return null;
+        }
+        return new SVNTunnelConnector(subProtocolName, tunnel);
     }
 
     public DateFormat getKeywordDateFormat() {
@@ -623,7 +623,7 @@ public class DefaultSVNOptions implements ISVNOptions, ISVNMergerFactory {
         return System.getProperty("line.separator").getBytes();
     }
 
-    public Map getFileExtensionsToMimeTypes() {
+    public Map<String,String> getFileExtensionsToMimeTypes() {
         String mimeTypesFile = getConfigFile().getPropertyValue(MISCELLANY_GROUP, MIME_TYPES_FILE);
         if (mimeTypesFile == null) {
             return null;

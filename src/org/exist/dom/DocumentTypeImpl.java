@@ -33,8 +33,8 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
 
     protected String publicId = null;
     protected String systemId = null;
-	protected String name = null;
-	
+    protected String name = null;
+
     public DocumentTypeImpl() {
         super(Node.DOCUMENT_TYPE_NODE);
     }
@@ -50,18 +50,20 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         this.publicId = publicId;
         this.systemId = systemId;
     }
-    
+
+    @Override
     public void clear() {
         super.clear();   
         this.publicId = null;
         this.systemId = null;
-        this.name = null;           
+        this.name = null;
     }     
 
     public String getName() {
         return name;
     }
-    
+
+    @Override
     public boolean hasChildNodes() {
         return false;
     } 

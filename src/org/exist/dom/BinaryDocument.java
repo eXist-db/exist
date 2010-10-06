@@ -43,8 +43,8 @@ import java.io.IOException;
  * @author wolf
  */
 public class BinaryDocument extends DocumentImpl {
-	
-	private long pageNr = Page.NO_PAGE;
+
+    private long pageNr = Page.NO_PAGE;
     
     private int realSize = 0;
     
@@ -52,77 +52,79 @@ public class BinaryDocument extends DocumentImpl {
         super(pool, null, null);
     } 
     
-	public BinaryDocument(BrokerPool pool, Collection collection) {
-		super(pool, collection);
-	}
+    public BinaryDocument(BrokerPool pool, Collection collection) {
+        super(pool, collection);
+    }
 
     public BinaryDocument(BrokerPool pool, XmldbURI fileURI) {
         super(pool, null, fileURI);
-    }    
+    }
 
-	public BinaryDocument(BrokerPool pool, Collection collection, XmldbURI fileURI) {
-		super(pool, collection, fileURI);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.DocumentImpl#getResourceType()
-	 */
-	public byte getResourceType() {
-		return BINARY_FILE;
-	}
+    public BinaryDocument(BrokerPool pool, Collection collection, XmldbURI fileURI) {
+        super(pool, collection, fileURI);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.dom.DocumentImpl#getResourceType()
+     */
+    @Override
+    public byte getResourceType() {
+        return BINARY_FILE;
+    }
     
-	public void setPage(long page) {
-		this.pageNr = page;
-	}
+    public void setPage(long page) {
+        this.pageNr = page;
+    }
 
-	public long getPage() {
-		return pageNr;
-	}
+    public long getPage() {
+        return pageNr;
+    }
 
+    @Override
     public int getContentLength() {
         return realSize;
     }
-    
+
     public void setContentLength(int length) {
         this.realSize = length;
     }
-    
-	public void write(VariableByteOutputStream ostream) throws IOException {
-		ostream.writeInt(getDocId());
-		ostream.writeUTF(getFileURI().toString());
-		ostream.writeLong(pageNr);
 
-		ostream.writeInt(permissions.getOwner().getId());
-		ostream.writeInt(permissions.getOwnerGroup().getId());
+    @Override
+    public void write(VariableByteOutputStream ostream) throws IOException {
+        ostream.writeInt(getDocId());
+        ostream.writeUTF(getFileURI().toString());
+        ostream.writeLong(pageNr);
 
-		ostream.writeByte((byte) permissions.getPermissions());
+        ostream.writeInt(permissions.getOwner().getId());
+        ostream.writeInt(permissions.getOwnerGroup().getId());
+
+        ostream.writeByte((byte) permissions.getPermissions());
         ostream.writeInt(realSize);
-		getMetadata().write(getBrokerPool(), ostream);
-	}
+        getMetadata().write(getBrokerPool(), ostream);
+    }
 
-	public void read(VariableByteInput istream)
-		throws IOException, EOFException {
-		setDocId(istream.readInt());
-		setFileURI(XmldbURI.create(istream.readUTF()));
-		pageNr = istream.readLong();
-		final SecurityManager secman = getBrokerPool().getSecurityManager();
-		final int uid = istream.readInt();
-		final int groupId = istream.readInt();
-		final int perm = (istream.readByte() & 0777);
-		if (secman == null) {
-			permissions.setOwner(SecurityManager.DBA_USER);
-			permissions.setGroup(SecurityManager.DBA_GROUP);
-		} else {
-			permissions.setOwner(secman.getAccount(uid));
+    @Override
+    public void read(VariableByteInput istream) throws IOException, EOFException {
+        setDocId(istream.readInt());
+        setFileURI(XmldbURI.create(istream.readUTF()));
+        pageNr = istream.readLong();
+        final SecurityManager secman = getBrokerPool().getSecurityManager();
+        final int uid = istream.readInt();
+        final int groupId = istream.readInt();
+        final int perm = (istream.readByte() & 0777);
+        if (secman == null) {
+            permissions.setOwner(SecurityManager.DBA_USER);
+            permissions.setGroup(SecurityManager.DBA_GROUP);
+        } else {
+            permissions.setOwner(secman.getAccount(uid));
             Group group = secman.getGroup(groupId);
             if (group != null)
                 permissions.setGroup(group.getName());
-		}
-		permissions.setPermissions(perm);
-		realSize = istream.readInt();
-        
+        }
+        permissions.setPermissions(perm);
+        realSize = istream.readInt();
         DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(getBrokerPool(), istream);
         setMetadata(metadata);
-	}
+    }
 }
