@@ -23,6 +23,7 @@
  */
 package org.exist.collections.triggers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -57,10 +58,9 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 	 * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
 	 * to later retrieve the collection. 
 	 */
-	public void configure(DBBroker broker, Collection parent, Map parameters) 
-    throws CollectionConfigurationException {
-    	this.collection = parent;
-    }
+	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+            this.collection = parent;
+        }
     
 	public void setValidating(boolean validating) {
 		this.validating = validating;
