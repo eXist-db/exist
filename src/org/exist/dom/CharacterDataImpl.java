@@ -29,13 +29,13 @@ import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 
 public class CharacterDataImpl extends StoredNode implements CharacterData {
-    
+
     protected XMLString cdata = null;
-    
+
     public CharacterDataImpl( short nodeType ) {
         super( nodeType );
     }
-    
+
     public CharacterDataImpl( short nodeType, NodeId nodeId) {
         super( nodeType, nodeId );
     }
@@ -47,7 +47,7 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
 
     public CharacterDataImpl( short nodeType, String data ) {
         super( nodeType );
-		cdata = new XMLString(data.toCharArray());
+        cdata = new XMLString(data.toCharArray());
     }
 
     public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
@@ -55,109 +55,108 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
         cdata = new XMLString(data, start, howmany);
     }
 
+    @Override
     public void clear() {
         super.clear();
         cdata.reset();
     }
 
     public void appendData( String arg ) throws DOMException {
-    	if(cdata == null)
-    		cdata = new XMLString(arg.toCharArray());
-    	else
-        	cdata.append(arg);
+        if(cdata == null)
+            cdata = new XMLString(arg.toCharArray());
+        else
+            cdata.append(arg);
     }
 
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
-    	if(cdata == null)
-    		cdata = new XMLString(data, start, howmany);
-    	else
-        	cdata.append( data, start, howmany );
+        if(cdata == null)
+            cdata = new XMLString(data, start, howmany);
+        else
+            cdata.append( data, start, howmany );
     }
 
     public void deleteData( int offset, int count ) throws DOMException {
-    	if(cdata != null)
-        	cdata.delete(offset, count);
+        if(cdata != null)
+            cdata.delete(offset, count);
     }
 
     public String getData() throws DOMException {
-    	if(cdata == null)
-    		return null;
-    	else
-        	return cdata.toString();
+        if(cdata == null)
+            return null;
+        return cdata.toString();
     }
-    
+
     public XMLString getXMLString() {
-    	return cdata;
+        return cdata;
     }
 
     public String getLowerCaseData() throws DOMException {
-    	if(cdata == null)
-    		return null;
-    	else
-        	return cdata.toString().toLowerCase();
+        if(cdata == null)
+            return null;
+        return cdata.toString().toLowerCase();
     }
-    
+
     public int getLength() {
         return cdata.length();
     }
 
+    @Override
     public String getNodeValue() {
         return cdata.toString();
     }
 
     public void insertData( int offset, String arg ) throws DOMException {
-    	if(cdata == null)
-    		cdata = new XMLString(arg.toCharArray());
-    	else
-        	cdata.insert(offset, arg);
+        if(cdata == null)
+            cdata = new XMLString(arg.toCharArray());
+        else
+            cdata.insert(offset, arg);
     }
 
     public void replaceData( int offset, int count, String arg ) throws DOMException {
-		if(cdata == null)
-			throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
-				"string index out of bounds");
+        if(cdata == null)
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
         cdata.replace(offset, count, arg);
     }
 
     public void setData( String data ) throws DOMException {
         if(cdata == null)
-        	cdata = new XMLString(data.toCharArray());
+            cdata = new XMLString(data.toCharArray());
         else
-        	cdata.setData(data.toCharArray(), 0, data.length());
+            cdata.setData(data.toCharArray(), 0, data.length());
     }
 
-	public void setData( XMLString data ) throws DOMException {
-		cdata = data;
-	}
+    public void setData( XMLString data ) throws DOMException {
+        cdata = data;
+    }
 
     public void setData( char[] data, int start, int howmany ) throws DOMException {
         if(cdata == null)
-        	cdata = new XMLString(data, start, howmany);
+            cdata = new XMLString(data, start, howmany);
         else
-        	cdata.setData(data, start, howmany);
+            cdata.setData(data, start, howmany);
     }
 
     public String substringData( int offset, int count ) throws DOMException {
-    	if(cdata == null)
-    		throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, 
-    			"string index out of bounds");
+        if(cdata == null)
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
         return cdata.substring(offset, count);
     }
 
+    @Override
     public String toString() {
-    	if(cdata == null)
-    		return null;
-    	else
-        	return cdata.toString();
+        if(cdata == null)
+            return null;
+        return cdata.toString();
     }
-    
+
     /**
      * Release all resources hold by this object.
      */
+    @Override
     public void release() {
-    	cdata.release();
-    	super.release();
-    }    
+        cdata.release();
+        super.release();
+    }
 
     public static XMLString readData(NodeId nodeId, Value value, XMLString string) {
         final int nodeIdLen = nodeId.size();

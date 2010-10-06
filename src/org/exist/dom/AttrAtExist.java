@@ -29,5 +29,5 @@ import org.w3c.dom.Attr;
  *
  */
 public interface AttrAtExist extends Attr {
-
+    //Nothing to do here
 }

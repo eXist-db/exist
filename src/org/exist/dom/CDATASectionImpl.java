@@ -37,7 +37,7 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     public CDATASectionImpl() {
         super(Node.CDATA_SECTION_NODE);
     }
-    
+
     public CDATASectionImpl(NodeId nodeId, String data) {
         super(Node.CDATA_SECTION_NODE, nodeId, data);
     }
@@ -45,24 +45,27 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     public CDATASectionImpl(NodeId nodeId) {
         super(Node.CDATA_SECTION_NODE, nodeId);
     }
-    
+
     public CDATASectionImpl( XMLString data ) {
         super( Node.CDATA_SECTION_NODE);
         this.cdata = data;
     }
-    
+
+    @Override
     public int getChildCount() {
         return 0;
     }
-    
+
+    @Override
     public Node getFirstChild() {
         return null;
     }
-    
+
+    @Override
     public boolean hasChildNodes() {
         return false;
     }
-    
+
     public String getWholeText() {
         return null;
     }
@@ -78,11 +81,12 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     public Text splitText(int offset) throws DOMException {
         return null;
     }
-    
+
+    @Override
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
         byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
-        		nodeIdLen + cdata.UTF8Size());
+            nodeIdLen + cdata.UTF8Size());
         int pos = 0;
         data[pos] = (byte) ( Signatures.Cdata << 0x5 );
         pos += LENGTH_SIGNATURE_LENGTH;
@@ -93,14 +97,14 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
         cdata.UTF8Encode(data, pos);
         return data;
     }
-    
+
     public static StoredNode deserialize(byte[] data,
             int start,
             int len,
             DocumentImpl doc,
             boolean pooled) {
-    	int pos = start;
-    	pos += LENGTH_SIGNATURE_LENGTH;
+        int pos = start;
+        pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        

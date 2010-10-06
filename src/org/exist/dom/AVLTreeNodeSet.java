@@ -15,15 +15,18 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     private int state = 0;
     
     public AVLTreeNodeSet() {
+        //Nothing to do
     }
 
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#iterate()
       */
+    @Override
     public SequenceIterator iterate() throws XPathException {
         return new InorderTraversal();
     }
 
+    @Override
     public SequenceIterator unorderedIterator() throws XPathException {
         return new InorderTraversal();
     }
@@ -31,6 +34,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
       */
+    @Override
     public void addAll(NodeSet other) {
         for (Iterator<NodeProxy> i = other.iterator(); i.hasNext();)
             add(i.next());
@@ -39,18 +43,21 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#getLength()
       */
+    @Override
     public int getLength() {
         return size;
     }
     
     //TODO : evaluate both semantics
+    @Override
     public int getItemCount() {
-    	return size;
+        return size;
     }
 
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#item(int)
       */
+    @Override
     public org.w3c.dom.Node item(int pos) {
         int i = 0;
         for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
@@ -64,6 +71,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#get(int)
       */
+    @Override
     public NodeProxy get(int pos) {
         return (NodeProxy)itemAt(pos);
     }
@@ -71,22 +79,26 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
       */
+    @Override
     public final NodeProxy get(NodeProxy p) {
         Node n = searchData(p);
         return n == null ? null : n.getData();
     }
-	
-    public boolean isEmpty() {		
-		return (size == 0);
+
+    @Override
+    public boolean isEmpty() {
+        return (size == 0);
     }
-    
+
+    @Override
     public boolean hasOne() {
-    	return (size == 1);
-    }   
+        return (size == 1);
+    }
 
     /* (non-Javadoc)
       * @see org.exist.xquery.value.Sequence#itemAt(int)
       */
+    @Override
     public Item itemAt(int pos) {
         int i = 0;
         for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
@@ -94,47 +106,47 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             if(i == pos)
                 return p;
         }
+        //TODO : exception ?
         return null;
     }
 
-	public final void add(NodeProxy proxy) {
-		if(proxy == null)
-			return;
+    @Override
+    public final void add(NodeProxy proxy) {
+        if(proxy == null)
+            return;
         setHasChanged();
         if (root == null) {
-			root = new Node(proxy);
-			++size;
-			return;
-		}
-		Node tempNode = root;
-		while (true) {
-			int c = tempNode.data.compareTo(proxy);
-			if (c == 0) {
-				return;
-			}
-			if (c > 0) { // inserts s into left subtree.
-				if (tempNode.hasLeftChild()) {
-					tempNode = tempNode.leftChild;
-					continue;
-				} else {
-					Node newNode = tempNode.addLeft(proxy);
-					balance(newNode);
-					++size;
-					return;
-				}
-			} else { // inserts s to right subtree
-				if (tempNode.hasRightChild()) {
-					tempNode = tempNode.rightChild;
-					continue;
-				} else {
-					Node newNode = tempNode.addRight(proxy);
-					balance(newNode);
-					++size;
-					return;
-				}
-			}
-		}		
-	}
+            root = new Node(proxy);
+            ++size;
+            return;
+        }
+        Node tempNode = root;
+        while (true) {
+            int c = tempNode.data.compareTo(proxy);
+            if (c == 0) {
+                return;
+            }
+            if (c > 0) { // inserts s into left subtree.
+                if (tempNode.hasLeftChild()) {
+                    tempNode = tempNode.leftChild;
+                    continue;
+                }
+                Node newNode = tempNode.addLeft(proxy);
+                balance(newNode);
+                ++size;
+                return;
+            }
+            // inserts s to right subtree
+            if (tempNode.hasRightChild()) {
+                tempNode = tempNode.rightChild;
+                continue;
+            }
+            Node newNode = tempNode.addRight(proxy);
+            balance(newNode);
+            ++size;
+            return;
+        }
+    }
 
     public Node getMinNode() {
         if (root == null)
@@ -322,6 +334,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
       */
+    @Override
     public final boolean contains(NodeProxy proxy) {
         return searchData(proxy) != null;
     }
@@ -362,6 +375,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
     }
 
+    @Override
     public NodeSetIterator iterator() {
         return (this.new InorderTraversal());
     }
@@ -371,6 +385,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
      *
      * @see org.exist.dom.AbstractNodeSet#hasChanged(int)
      */
+    @Override
     public boolean hasChanged(int previousState) {
         return state != previousState;
     }
@@ -380,10 +395,12 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
      *
      * @see org.exist.dom.AbstractNodeSet#getState()
      */
+    @Override
     public int getState() {
         return state;
     }
 
+    @Override
     public boolean isCacheable() {
         return true;
     }
@@ -410,8 +427,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public boolean hasNext() {
             if (nodes.size() == 0)
                 return false;
-            else
-                return true;
+            return true;
         }
 
         public NodeProxy next() {
@@ -456,8 +472,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
 
         /* (non-Javadoc)
-           * @see org.exist.xquery.value.SequenceIterator#nextItem()
-           */
+       * @see org.exist.xquery.value.SequenceIterator#nextItem()
+       */
         public Item nextItem() {
             if(nodes.isEmpty())
                 return null;
@@ -474,6 +490,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
     }
 
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("AVLTree#").append(super.toString());
@@ -481,6 +498,12 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     private final static class Node {
+
+        NodeProxy data;
+        Node parent;
+        Node leftChild;
+        Node rightChild;
+        int height;
 
         public Node(NodeProxy data) {
             this.data = data;
@@ -554,8 +577,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return tempNode;
         }
 
-        @SuppressWarnings("unused")
-		public int degree() {
+        public int degree() {
             int i = 0;
             if (leftChild != null)
                 i++;
@@ -580,27 +602,19 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public int leftHeight() {
             if (hasLeftChild())
                 return (1 + leftChild.height);
-            else
-                return 0;
+            return 0;
         }
 
         public int rightHeight() {
             if (hasRightChild())
                 return (1 + rightChild.height);
-            else
-                return 0;
+            return 0;
         }
 
-        @SuppressWarnings("unused")
-		public int height() {
+        public int height() {
             return height;
         }
 
-        NodeProxy data;
-        Node parent;
-        Node leftChild;
-        Node rightChild;
-        int height;
     }
 
 }

@@ -14,7 +14,7 @@ import java.io.UnsupportedEncodingException;
 public class CommentImpl extends CharacterDataImpl implements Comment {
 
     public CommentImpl() {
-    	super(Node.COMMENT_NODE);
+        super(Node.COMMENT_NODE);
     }
 
     public CommentImpl( String data ) {
@@ -24,15 +24,18 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     public CommentImpl( char[] data, int start, int howmany ) {
         super( Node.COMMENT_NODE, data, start, howmany );
     }
-    
-	public String getLocalName() {		
-        return "";
-	}
-	
-	public String getNamespaceURI() {
-        return "";
-	}		
 
+    @Override
+    public String getLocalName() {
+        return "";
+    }
+
+    @Override
+    public String getNamespaceURI() {
+        return "";
+    }
+
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append( "<!-- " );
@@ -41,24 +44,25 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         return buf.toString();
     }
 
+    @Override
     public byte[] serialize() {
         String s;
         try {
             s = StringValue.expand(cdata);
         } catch (XPathException e) {
-        	LOG.warn(e);
+            LOG.warn(e);
             s = cdata.toString();
         }
         byte[] cd;
         try {
             cd = s.getBytes( "UTF-8" );
         } catch (UnsupportedEncodingException uee) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             cd = s.getBytes();
         }
         int nodeIdLen = nodeId.size();
         byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
-                               + nodeIdLen + cd.length];
+           + nodeIdLen + cd.length];
         int pos = 0;
         data[pos] = (byte) ( Signatures.Comm << 0x5 );
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
@@ -70,13 +74,10 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         return data;
     }
 
-    public static StoredNode deserialize(byte[] data,
-                                       int start,
-                                       int len,
-                                       DocumentImpl doc,
-                                       boolean pooled) {
-    	int pos = start;
-    	pos += LENGTH_SIGNATURE_LENGTH;
+    public static StoredNode deserialize(byte[] data, int start, int len,
+           DocumentImpl doc, boolean pooled) {
+        int pos = start;
+        pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
@@ -86,33 +87,35 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         try {
             cdata = new String(data, pos, len - (pos - start), "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             cdata = new String(data, pos, len - (pos - start));
         }
         //OK : we have the necessary material to build the comment
         CommentImpl comment;
         if(pooled)
             comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);
-//            comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
+            //comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
         else
             comment = new CommentImpl();
         comment.setNodeId(dln);
         comment.appendData(cdata);
         return comment;
     }
-    
+
+    @Override
     public boolean hasChildNodes() {
-        return false;        
+        return false;
     }
-    
+
+    @Override
     public int getChildCount() {
-    	return 0;
+        return 0;
     }
-    
-    public Node getFirstChild() {   
+
+    @Override
+    public Node getFirstChild() {
         //bad implementations don't call hasChildNodes before
         return null;
-    }        
- 
+    }
 }
 
