@@ -22,6 +22,7 @@
  */
 package org.exist.collections.triggers;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -104,7 +105,7 @@ public interface Trigger {
 	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
 	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, String> parameters) throws CollectionConfigurationException;
+	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException;
 
 	/**
 	 * Returns a Logger object. Use this to log debugging information.

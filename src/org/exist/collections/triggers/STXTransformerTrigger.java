@@ -24,6 +24,7 @@
 package org.exist.collections.triggers;
 
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Templates;
@@ -60,10 +61,10 @@ public class STXTransformerTrigger extends FilteringTrigger {
 	private SAXTransformerFactory factory = null;
 	private TransformerHandler handler = null;
 	
-	public void configure(DBBroker broker, Collection parent, Map parameters)
+	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters)
 		throws CollectionConfigurationException {
 		super.configure(broker, parent, parameters);
-		String stylesheet = (String)parameters.get("src");
+		String stylesheet = (String)parameters.get("src").get(0);
 		if(stylesheet == null)
 			throw new CollectionConfigurationException("STXTransformerTrigger requires an " +
 				"attribute 'src'");

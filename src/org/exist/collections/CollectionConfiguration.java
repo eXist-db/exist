@@ -20,8 +20,11 @@
  */
 package org.exist.collections;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -37,6 +40,7 @@ import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -309,14 +313,14 @@ public class CollectionConfiguration {
 		if(eventAttr == null) {
 			throwOrLog("'" + node.getNodeName() +
                     "' requires an attribute '"+ EVENT_ATTRIBUTE + "'", testConfig);
-            return;
-        }
-        String classAttr = node.getAttribute(CLASS_ATTRIBUTE);
-		if(classAttr == null) {
-			throwOrLog("'" + node.getNodeName() +
-                    "' requires an attribute '"+ CLASS_ATTRIBUTE + "'", testConfig);
-            return;
-        }
+                    return;
+                }
+                String classAttr = node.getAttribute(CLASS_ATTRIBUTE);
+                        if(classAttr == null) {
+                                throwOrLog("'" + node.getNodeName() +
+                            "' requires an attribute '"+ CLASS_ATTRIBUTE + "'", testConfig);
+                    return;
+                }
         
         TriggerConfig trigger = instantiate(broker, node, classAttr, testConfig);
         if (!testConfig) {
@@ -355,6 +359,47 @@ public class CollectionConfiguration {
             }
         }
     }
+
+        private Map<String, List> getTriggerParameterChildParameters(Element param) {
+
+            Map<String, List> results = new HashMap<String, List>();
+
+            NodeList childParameters = param.getChildNodes();
+            for(int i = 0; i < childParameters.getLength(); i++) {
+                Node nChildParameter = childParameters.item(i);
+                if(nChildParameter instanceof Element) {
+                    Element childParameter = (Element)nChildParameter;
+                    String name = childParameter.getLocalName();
+
+                    if(childParameter.getAttributes().getLength() > 0){
+                        List<Properties> childParameterProperties = (List<Properties>)results.get(name);
+                        if(childParameterProperties == null) {
+                            childParameterProperties = new ArrayList<Properties>();
+                        }
+
+                        NamedNodeMap attrs = childParameter.getAttributes();
+                        Properties props = new Properties();
+                        for(int a = 0; a < attrs.getLength(); a++) {
+                            Node attr = attrs.item(a);
+                            props.put(attr.getLocalName(), attr.getNodeValue());
+                        }
+                        childParameterProperties.add(props);
+
+                        results.put(name, childParameterProperties);
+                    }
+                    else {
+                        List<String> strings = (List<String>)results.get(name);
+                        if(strings == null) {
+                            strings = new ArrayList<String>();
+                        }
+                        strings.add(childParameter.getNodeValue());
+                        results.put(name, strings);
+                    }
+                }
+            }
+
+            return results;
+        }
 	
 	@SuppressWarnings("unchecked")
 	private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
@@ -369,7 +414,8 @@ public class CollectionConfiguration {
 			NodeList nodes = node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             //TODO : rely on schema-driven validation -pb
             if (nodes.getLength() > 0) {
-                Map<String, String> parameters = new HashMap<String, String>(nodes.getLength()); 
+                Map<String, List> parameters = new HashMap<String, List>(nodes.getLength());
+
                 for (int i = 0 ; i < nodes.getLength();  i++) {
                     Element param = (Element)nodes.item(i);
                     //TODO : rely on schema-driven validation -pb
@@ -377,17 +423,36 @@ public class CollectionConfiguration {
                     if(name == null) {
                         throwOrLog("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
                                 "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
-                    } else {
-                        String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
-                        if(value == null) {
-                            throwOrLog("Expected attribute '" + PARAM_VALUE_ATTRIBUTE +
-                                    "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
-                        } else
-                            parameters.put(name, value);
                     }
+
+                    List values = parameters.get(name);
+
+                    String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
+                    if(value != null && value.length() > 0) {
+                        if(values == null) {
+                            values = new ArrayList<String>();
+                        }
+                        values.add(value);
+                    }
+                    else
+                    {
+                        //are there child nodes?
+                        if(param.getChildNodes().getLength() > 0) {
+                            
+                            if(values  == null) {
+                                values = new ArrayList<Map<String, List>>();
+                            }
+
+                            values.add(getTriggerParameterChildParameters(param));
+                        }
+                    }
+
+                    parameters.put(name, values);
                 }
+
                 triggerConf.setParameters(parameters);
             }
+
             return triggerConf;
         } catch (ClassNotFoundException e) {
             if (testOnly)
@@ -398,7 +463,7 @@ public class CollectionConfiguration {
         return null;
     }
 	
-	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, String> parameters) throws CollectionConfigurationException {
+	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, List> parameters) throws CollectionConfigurationException {
 
 		TriggerConfig trigger = instantiate(broker, classname, parameters);
 
@@ -441,7 +506,7 @@ public class CollectionConfiguration {
 	    }
 	}
 
-	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, String> parameters) throws CollectionConfigurationException {
+	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List> parameters) throws CollectionConfigurationException {
 		try {
 			Class<?> clazz = Class.forName(classname);
 			if(!Trigger.class.isAssignableFrom(clazz)) {
@@ -483,7 +548,7 @@ public class CollectionConfiguration {
     public static class TriggerConfig {
 
         private Class<Trigger> clazz;
-        private Map<String, String> parameters;
+        private Map<String, List> parameters;
 
         public TriggerConfig(Class<Trigger> clazz) {
             this.clazz = clazz;
@@ -501,11 +566,11 @@ public class CollectionConfiguration {
             }
         }
 
-        public Map<String, String> getParameters() {
+        public Map<String, List> getParameters() {
             return parameters;
         }
 
-        public void setParameters(Map<String, String> parameters) {
+        public void setParameters(Map<String, List> parameters) {
             this.parameters = parameters;
         }
 

@@ -3,6 +3,7 @@ package org.exist.collections.triggers;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
@@ -49,7 +50,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
 
     protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException
+    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException
     {
         super.configure(broker, parent, parameters);
         
@@ -57,7 +58,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
         {
             try
             {
-            	rootPath = XmldbURI.xmldbUriFor(parameters.get("root").toString());
+            	rootPath = XmldbURI.xmldbUriFor(parameters.get("root").get(0).toString());
             }
             catch(URISyntaxException e)
             {

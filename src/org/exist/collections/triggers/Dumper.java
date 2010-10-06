@@ -23,6 +23,7 @@
  */
 package org.exist.collections.triggers;
 
+import java.util.Map.Entry;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DefaultDocumentSet;
@@ -31,7 +32,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,14 +43,14 @@ public class Dumper extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map parameters)
+	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters)
 		throws CollectionConfigurationException {
 		super.configure(broker, parent, parameters);
 		System.out.println("parameters:");
-		for(Iterator i = parameters.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry next = (Map.Entry)i.next();
-			System.out.println(next.getKey() + " = " + next.getValue());
-		}
+                
+                for(Entry<String, List> entry : parameters.entrySet()) {
+                    System.out.print(entry.getKey() + " = " + entry.getValue());
+                }
 	}
 	
 	/* (non-Javadoc)

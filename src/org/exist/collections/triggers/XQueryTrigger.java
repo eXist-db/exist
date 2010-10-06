@@ -3,6 +3,7 @@ package org.exist.collections.triggers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -78,7 +79,7 @@ public class XQueryTrigger extends FilteringTrigger
 	/**
 	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException
+	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException
 	{
  		this.collection = parent;
  		
@@ -86,8 +87,11 @@ public class XQueryTrigger extends FilteringTrigger
  		//one parameter to specify the XQuery
  		if(parameters != null)
  		{
- 			urlQuery = (String) parameters.get("url");
- 			strQuery = (String) parameters.get("query");
+ 			List<String> urlQueries = parameters.get("url");
+                        urlQuery = urlQueries != null ? urlQueries.get(0) : null;
+
+                        List<String> strQueries = parameters.get("query");
+ 			strQuery = strQueries != null ? strQueries.get(0) : null;
  			
  			for(Iterator itParamName = parameters.keySet().iterator(); itParamName.hasNext();)
  			{
@@ -96,7 +100,7 @@ public class XQueryTrigger extends FilteringTrigger
  				//get the binding prefix (if any)
  				if(paramName.equals("bindingPrefix"))
  				{
- 					String bindingPrefix = (String)parameters.get("bindingPrefix");
+ 					String bindingPrefix = (String)parameters.get("bindingPrefix").get(0);
  					if(bindingPrefix != null && !"".equals(bindingPrefix.trim()))
  					{
  						this.bindingPrefix = bindingPrefix.trim() + ":";
@@ -106,19 +110,20 @@ public class XQueryTrigger extends FilteringTrigger
  				//get the URL of the query (if any)
  				else if(paramName.equals("url"))
  				{
- 					urlQuery = (String)parameters.get("url");
+ 					urlQuery = (String)parameters.get("url").get(0);
  				}
  				
  				//get the query (if any)
  				else if(paramName.equals("query"))
  				{
- 					strQuery = (String)parameters.get("query");
+ 					strQuery = (String)parameters.get("query").get(0);
  				}
  				
  				//make any other parameters available as external variables for the query
  				else
  				{
- 					userDefinedVariables.put(paramName, parameters.get(paramName));
+                                        //TODO could be enhanced to setup a sequence etc
+ 					userDefinedVariables.put(paramName, parameters.get(paramName).get(0));
  				}
  			}
  			
