@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -88,8 +89,12 @@ public class STXTransformerTrigger extends FilteringTrigger {
             DocumentImpl doc;
             try {
 				doc = (DocumentImpl)broker.getXMLResource(stylesheetUri);
-				if(doc == null)
-					throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " not found in database");
+				if(doc == null) {
+                                    throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " not found in database");
+                                }
+                                if(doc instanceof BinaryDocument) {
+                                    throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
+                                }
 				Serializer serializer = broker.getSerializer();
 				TemplatesHandler thandler = factory.newTemplatesHandler();
 				serializer.setSAXHandlers(thandler, null);
