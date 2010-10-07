@@ -66,30 +66,30 @@ import org.w3c.dom.Node;
 public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     private final static int INITIAL_DOC_SIZE = 64;
-    
+
     private int documentIds[];
     private Part parts[];
-    
+
     protected int initalSize = 128;
     protected int size = 0;
-    
+
     private int partCount = 0;
-    
+
     private boolean isSorted = false;
-    
+
     private boolean hasOne = false;
-    
+
     protected int lastDoc = -1;
     protected Part lastPart = null;
     protected NodeProxy lastAdded = null;
-    
+ 
     private int state = 0;
 
     private MutableDocumentSet cachedDocuments = null;
-    
+
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
-    
+
     /**
      * Creates a new <code>ExtArrayNodeSet</code> instance.
      *
@@ -201,8 +201,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean isEmpty() {
-    	return (size == 0);
+        return (size == 0);
     }
 
     /**
@@ -210,8 +211,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean hasOne() {
-    	return hasOne;
+        return hasOne;
     }
 
     /**
@@ -219,8 +221,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @param proxy a <code>NodeProxy</code> value
      */
+    @Override
     public void add(NodeProxy proxy) {
-    	if (size > 0) {
+        if (size > 0) {
             if (hasOne) {
                 if (isSorted) {
                     hasOne = get(proxy) != null;
@@ -228,7 +231,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
                 }
             }
-    	} else {
+        } else {
             hasOne = true;
         }
 
@@ -248,22 +251,22 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * If the size hint is correct, no further reallocations will be required.
      */
+    @Override
     public void add(NodeProxy proxy, int sizeHint) {
-    	if (size > 0) {
+        if (size > 0) {
             if (hasOne) {
                 if (isSorted) {
                     hasOne = get(proxy) == null;
                 } else {
                     hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
                 }
-
             }
-    	} else {
+        } else {
             hasOne = true;
         }
 
-        getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
-                                                                                                           proxy);
+        getPart(proxy.getDocument(), true, 
+                sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(proxy);
         ++size;
         isSorted = false;
         setHasChanged();
@@ -288,6 +291,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return an <code>int</code> value
      */
+    @Override
     public int getItemType() {
         return itemType;
     }
@@ -303,6 +307,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param doc a <code>DocumentImpl</code> value
      * @return an <code>int</code> value
      */
+    @Override
     public int getSizeHint(DocumentImpl doc) {
         Part part = getPart(doc, false, 0);
         return part == null ? Constants.NO_SIZE_HINT : part.length;
@@ -313,6 +318,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.NodeSet#iterator()
      */
+    @Override
     public NodeSetIterator iterator() {
         if (!isSorted()) {
             sort();
@@ -325,6 +331,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.xquery.value.Sequence#iterate()
      */
+    @Override
     public SequenceIterator iterate() throws XPathException {
         sortInDocumentOrder();
         return new ExtArrayIterator();
@@ -335,6 +342,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
+    @Override
     public SequenceIterator unorderedIterator() throws XPathException {
         if (!isSorted()) {
             sort();
@@ -343,10 +351,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     }
 
     public ByDocumentIterator iterateByDocument() {
-    	if (!isSorted()) {
+        if (!isSorted()) {
             sort();
         }
-    	return new ExtDocIterator();
+        return new ExtDocIterator();
     }
 
     /*
@@ -354,6 +362,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
      */
+    @Override
     public boolean contains(NodeProxy proxy) {
         final Part part = getPart(proxy.getDocument(), false, 0);
         return part == null ? false : part.contains(proxy.getNodeId());
@@ -364,6 +373,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
      */
+    @Override
     public void addAll(NodeSet other) {
         if (other.isEmpty())
             return;
@@ -381,6 +391,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.xquery.value.Sequence#getLength()
      */
+    @Override
     public int getLength() {
         if (!isSorted())
             sort(); // sort to remove duplicates
@@ -388,6 +399,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     }
 
     //TODO : evaluate both semantics
+    @Override
     public int getItemCount() {
         if (!isSorted())
             sort(); // sort to remove duplicates
@@ -399,6 +411,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.w3c.dom.NodeList#item(int)
      */
+    @Override
     public Node item(int pos) {
         sortInDocumentOrder();
         NodeProxy p = get(pos);
@@ -410,6 +423,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.NodeSet#get(int)
      */
+    @Override
     public NodeProxy get(int pos) {
         int count = 0;
         Part part;
@@ -427,6 +441,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.NodeSet#get(org.exist.dom.NodeProxy)
      */
+    @Override
     public NodeProxy get(NodeProxy p) {
         final Part part = getPart(p.getDocument(), false, 0);
         return part == null ? null : part.get(p.getNodeId());
@@ -443,6 +458,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.xquery.value.Sequence#itemAt(int)
      */
+    @Override
     public Item itemAt(int pos) {
         sortInDocumentOrder();
         return get(pos);
@@ -458,19 +474,19 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, int contextId,
-                                       boolean copyMatches) {
+    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, 
+            int contextId, boolean copyMatches) {
         sort();
         NodeSet result = new ExtArrayNodeSet();
 
-		Part part;
-		for (NodeProxy node : al) {
-			part = getPart(node.getDocument(), false, 0);
-	        if (part != null) {
-	        	part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId, copyMatches);
+        Part part;
+        for (NodeProxy node : al) {
+            part = getPart(node.getDocument(), false, 0);
+            if (part != null) {
+                part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId, copyMatches);
             }
-		}
-		return result;
+        }
+        return result;
     }
 
     /**
@@ -496,11 +512,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
+    @Override
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-    	sort();
+        sort();
         if (al instanceof VirtualNodeSet)
             return super.selectParentChild(al, mode, contextId);
-    	return getDescendantsInSet(al, true, false, mode, contextId, true);
+        return getDescendantsInSet(al, true, false, mode, contextId, true);
     }
 
     /**
@@ -535,8 +552,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param sorted a <code>boolean</code> value
      */
     public void setSorted(DocumentImpl document, boolean sorted) {
-    	Part part = getPart(document, false, -1);
-    	if (part != null) {
+        Part part = getPart(document, false, -1);
+        if (part != null) {
             part.setIsSorted(sorted);
         }
     }
@@ -567,11 +584,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             return;
 
         if (hasOne) {
-            isSorted = true;    // shortcut: don't sort if there's just one item
+            isSorted = true; // shortcut: don't sort if there's just one item
             size = parts[0].removeDuplicates(mergeContexts);
             return;
         }
-        //        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
@@ -580,8 +597,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             size += part.removeDuplicates(mergeContexts);
         }
         isSorted = true;
-        //        System.out.println("sort took " + (System.currentTimeMillis() -
-        //                start) + "ms.");
+        //System.out.println("sort took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
     /**
@@ -597,6 +613,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.xquery.value.AbstractSequence#setSelfAsContext()
      */
+    @Override
     public void setSelfAsContext(int contextId)  throws XPathException {
         for (int i = 0; i < partCount; i++) {
             parts[i].setSelfAsContext(contextId);
@@ -606,13 +623,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
      */
+    @Override
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
-                                            boolean includeSelf, int contextId,
-                                            boolean copyMatches) {
+            boolean includeSelf, int contextId, boolean copyMatches) {
         sort();
         if (al instanceof VirtualNodeSet) {
             return super.selectAncestorDescendant(al, mode, includeSelf,
-                                                  contextId, copyMatches);
+              contextId, copyMatches);
         }
         return getDescendantsInSet(al, false, includeSelf, mode, contextId, copyMatches);
     }
@@ -620,6 +637,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectSiblings(org.exist.dom.NodeSet, int)
      */
+    @Override
     public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
         sort();
         return super.selectPrecedingSiblings(siblings, contextId);
@@ -632,15 +650,16 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
+    @Override
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
         sort();
         return super.selectFollowingSiblings(siblings, contextId);
     }
 
-
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#selectAncestors(org.exist.dom.NodeSet, boolean, boolean)
      */
+    @Override
     public NodeSet selectAncestors(NodeSet al, boolean includeSelf, int contextId) {
         sort();
         return super.selectAncestors(al, includeSelf, contextId);
@@ -655,6 +674,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param includeSelf a <code>boolean</code> value
      * @return a <code>NodeProxy</code> value
      */
+    @Override
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
         sort();
         lastPart = getPart(doc, false, initalSize);
@@ -667,25 +687,26 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @return a <code>String</code> value
      */
     public String debugParts() {
-    	StringBuilder buf = new StringBuilder();
-    	for (int i = 0; i < partCount; i++) {
-    		buf.append(documentIds[i]);
-    		buf.append(' ');
-    	}
-    	return buf.toString();
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < partCount; i++) {
+            buf.append(documentIds[i]);
+            buf.append(' ');
+        }
+        return buf.toString();
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getIndexType()
      */
+    @Override
     public int getIndexType() {
-    	//Is the index type initialized ?
-    	if (indexType == Type.ANY_TYPE) {
-		    for (int i = 0; i < partCount; i++) {
-		    	parts[i].determineIndexType();
-		    }
-    	}
-    	return indexType;
+        //Is the index type initialized ?
+        if (indexType == Type.ANY_TYPE) {
+            for (int i = 0; i < partCount; i++) {
+                parts[i].determineIndexType();
+            }
+        }
+        return indexType;
     }
 
     /**
@@ -693,17 +714,18 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return a <code>DocumentSet</code> value
      */
+    @Override
     public DocumentSet getDocumentSet() {
         return this;
-//        if(cachedDocuments != null)
-//            return cachedDocuments;
-//        cachedDocuments = new DefaultDocumentSet(partCount);
-//        sort();
-//        for (int i = 0; i < partCount; i++) {
-//            cachedDocuments.add(parts[i].getDocument(), false);
-//        }
-//        isSorted = true;
-//        return cachedDocuments;
+        //if(cachedDocuments != null)
+        //  return cachedDocuments;
+        //cachedDocuments = new DefaultDocumentSet(partCount);
+        //sort();
+        //for (int i = 0; i < partCount; i++) {
+        //  cachedDocuments.add(parts[i].getDocument(), false);
+        //}
+        //isSorted = true;
+        //return cachedDocuments;
     }
 
     /**
@@ -712,28 +734,29 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param docs a <code>DocumentSet</code> value
      */
     public void setDocumentSet(DocumentSet docs) {
-    	cachedDocuments = new DefaultDocumentSet();
+        cachedDocuments = new DefaultDocumentSet();
         cachedDocuments.addAll(docs);
     }
 
     public boolean equalDocs(DocumentSet other) {
-		if (this == other)
-			// we are comparing the same objects
-			return true;
-		if (partCount != other.getDocumentCount())
-			return false;
+        if (this == other)
+            // we are comparing the same objects
+            return true;
+        if (partCount != other.getDocumentCount())
+            return false;
         for (int i = 0; i < partCount; i++) {
-			if (!other.contains(parts[i].getDocument().getDocId()))
-				return false;
+            if (!other.contains(parts[i].getDocument().getDocId()))
+                return false;
         }
         return true;
-	}
+    }
 
     /**
      * The method <code>getCollectionIterator</code>
      *
      * @return an <code>Iterator</code> value
      */
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return new CollectionIterator();
     }
@@ -756,8 +779,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         int idx = ArrayUtils.binarySearch(documentIds, docId, partCount);
         if (idx > -1)
             return parts[idx].getDocument();
-        else
-            return null;
+        return null;
     }
 
     public XmldbURI[] getNames() {
@@ -770,30 +792,30 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     public DocumentSet intersection(DocumentSet other) {
         DefaultDocumentSet r = new DefaultDocumentSet();
-		DocumentImpl d;
+        DocumentImpl d;
         for (int i = 0; i < partCount; i++) {
             d = parts[i].getDocument();
-			if (other.contains(d.getDocId()))
-				r.add(d);
+            if (other.contains(d.getDocId()))
+                r.add(d);
         }
-		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
-			d = i.next();
-			if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
-				r.add(d);
-		}
-		return r;
+        for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+            d = i.next();
+            if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
+                r.add(d);
+        }
+        return r;
     }
 
     public boolean contains(DocumentSet other) {
         if (other.getDocumentCount() > partCount)
-			return false;
-		DocumentImpl d;
-		for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
-			d = i.next();
-			if (!contains(d.getDocId()))
-				return false;
-		}
-		return true;
+            return false;
+        DocumentImpl d;
+        for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+            d = i.next();
+            if (!contains(d.getDocId()))
+                return false;
+        }
+        return true;
     }
 
     public boolean contains(int docId) {
@@ -802,11 +824,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     public NodeSet docsToNodeSet() {
         NodeSet result = new ExtArrayNodeSet(partCount);
-		DocumentImpl doc;
+        DocumentImpl doc;
         for (int i = 0; i < partCount; i++) {
             doc = parts[i].getDocument();
-            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-            	result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
+                result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
             }
         }
         return result;
@@ -814,9 +836,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
         DocumentImpl d;
-	    Lock dlock;
+        Lock dlock;
         for (int idx = 0; idx < partCount; idx++) {
-	        d = parts[idx].getDocument();
+            d = parts[idx].getDocument();
             dlock = d.getUpdateLock();
             if (exclusive)
                 dlock.acquire(Lock.WRITE_LOCK);
@@ -827,11 +849,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     public void unlock(boolean exclusive) {
         DocumentImpl d;
-	    Lock dlock;
+        Lock dlock;
         final Thread thread = Thread.currentThread();
         for(int idx = 0; idx < partCount; idx++) {
-	        d = parts[idx].getDocument();
-	        dlock = d.getUpdateLock();
+            d = parts[idx].getDocument();
+            dlock = d.getUpdateLock();
             if(exclusive)
                 dlock.release(Lock.WRITE_LOCK);
             else if (dlock.isLockedForRead(thread))
@@ -850,14 +872,14 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         public DocumentImpl next() {
             if (currentDoc == partCount)
                 return null;
-            else
-                return parts[currentDoc++].getDocument();
+            return parts[currentDoc++].getDocument();
         }
 
         public void remove() {
+            //Nothing to do
         }
     }
-    
+
     /**
      * The class <code>CollectionIterator</code>
      *
@@ -869,7 +891,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         CollectionIterator() {
             if (partCount > 0) {
                 ObjectHashSet<Collection> collections = new ObjectHashSet<Collection>();
-                
                 Part part;
                 for (int i = 0; i < partCount; i++) {
                     part = parts[i];
@@ -912,6 +933,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.AbstractNodeSet#hasChanged(int)
      */
+    @Override
     public boolean hasChanged(int previousState) {
         return state != previousState;
     }
@@ -921,10 +943,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @see org.exist.dom.AbstractNodeSet#getState()
      */
+    @Override
     public int getState() {
         return state;
     }
 
+    @Override
     public boolean isCacheable() {
         return true;
     }
@@ -934,6 +958,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      *
      * @return a <code>String</code> value
      */
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("ExtArrayTree#").append(super.toString());
@@ -946,7 +971,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      */
     private final class Part {
 
-    	private boolean isSorted = false;
+        private boolean isSorted = false;
         private NodeProxy array[];
         private int length = 0;
 
@@ -968,7 +993,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @param mode an <code>int</code> value
          * @param contextId an <code>int</code> value
          */
-        public void selectParentChild(NodeSet result, NodeProxy na, NodeSetIterator ia, int mode, int contextId) {
+        public void selectParentChild(NodeSet result, NodeProxy na, NodeSetIterator ia, 
+                int mode, int contextId) {
             if (length == 0)
                 return;
             int pos = 0;
@@ -1010,7 +1036,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                         if (next.getNodeId().isDescendantOf(pa)) {
                             pos = startPos;
                             nb = array[pos];
-                            na = (NodeProxy) ia.next();
+                            na = ia.next();
                             startPos = pos;
                         } else {
                             break;
@@ -1022,7 +1048,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     int cmp = pa.compareTo(pb);
                     if (cmp < 0) {
                         if (ia.hasNext()) {
-                            NodeProxy next = (NodeProxy) ia.next();
+                            NodeProxy next = ia.next();
                             if (next.getNodeId().isDescendantOf(pa)) {
                                 pos = startPos;
                                 nb = array[pos];
@@ -1041,7 +1067,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                             nb = array[pos];
                         } else {
                             if (ia.hasNext()) {
-                                NodeProxy next = (NodeProxy) ia.next();
+                                NodeProxy next = ia.next();
                                 if (next.getNodeId().isDescendantOf(pa)) {
                                     pos = startPos;
                                     nb = array[pos];
@@ -1280,12 +1306,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @param contextId
          */
         NodeSet getDescendantsInSet(NodeSet result, NodeProxy parent, boolean childOnly,
-                                    boolean includeSelf, int mode, int contextId, boolean copyMatches) {
+                boolean includeSelf, int mode, int contextId, boolean copyMatches) {
             NodeProxy p;
             NodeId parentId = parent.getNodeId();
             // document nodes are treated specially
             if (parentId == NodeId.DOCUMENT_NODE) {
-            	for (int i = 0; i < length; i++) {
+                for (int i = 0; i < length; i++) {
                     boolean add;
                     if (childOnly) {
                         add = array[i].getNodeId().getTreeLevel() == 1;
@@ -1320,15 +1346,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                                 break;
                         }
                     }
-            	}
+                }
             } else {
                 // do a binary search to pick some node in the range of valid
                 // child ids
-            	int low = 0;
+                int low = 0;
                 int high = length - 1;
                 int mid = 0;
                 int cmp;
-            	while (low <= high) {
+                while (low <= high) {
                     mid = (low + high) / 2;
                     p = array[mid];
                     if (p.getNodeId().isDescendantOrSelfOf(parentId)) {
@@ -1340,16 +1366,16 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     } else {
                         low = mid + 1;
                     }
-            	}
-            	if (low > high) {
+                }
+                if (low > high) {
                     return result; // no node found
                 }
-            	// find the first child node in the range
-            	while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > -1) {
+                // find the first child node in the range
+                while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > -1) {
                     --mid;
                 }
-            	// walk through the range of child nodes we found
-            	for (int i = mid; i < length; i++) {
+                // walk through the range of child nodes we found
+                for (int i = mid; i < length; i++) {
                     cmp = array[i].getNodeId().computeRelation(parentId); 
                     if (cmp > -1) {
                         boolean add = true;
@@ -1385,7 +1411,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     } else {
                         break;
                     }
-            	}
+                }
             }
             return result;
         }
@@ -1418,7 +1444,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          *
          */
         void determineIndexType() {
-            //Is the index type initialized ?        	
+            //Is the index type initialized ?
             if (indexType == Type.ANY_TYPE) {
                 for (int i = 0; i < length; i++) {
                     NodeProxy node = array[i];
@@ -1435,7 +1461,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     } else {
                         //Broaden type
                         //TODO : use common supertype
-                        if (indexType != nodeIndexType)             
+                        if (indexType != nodeIndexType)
                             indexType = Type.ITEM;
                     }
                 }
@@ -1452,6 +1478,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 array[i].addContextNode(contextId, array[i]);
             }
         }
+
     }
 
     /**
@@ -1552,7 +1579,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @see org.exist.xquery.value.SequenceIterator#nextItem()
          */
         public Item nextItem() {
-            return (Item) next();
+            return next();
         }
 
         /*
@@ -1561,7 +1588,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @see java.util.Iterator#remove()
          */
         public void remove() {
+            //Nothing to do
         }
+
     }
 
     /**
@@ -1600,18 +1629,18 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             } else {
                 next = null;
             }
-    	}
+        }
 
-    	/**
+        /**
          * The method <code>hasNextNode</code>
          *
          * @return a <code>boolean</code> value
          */
         public boolean hasNextNode() {
             return next != null;
-    	}
+        }
 
-    	/**
+        /**
          * The method <code>nextNode</code>
          *
          * @return a <code>NodeProxy</code> value
@@ -1626,9 +1655,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             	next = currentPart.get(pos);
             }
             return n;
-    	}
-        
-    	/**
+        }
+
+        /**
          * The method <code>peekNode</code>
          *
          * @return a <code>NodeProxy</code> value
@@ -1665,5 +1694,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             }
             next = null;
         }
+
     }
+
 }
