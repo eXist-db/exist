@@ -67,7 +67,7 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public AttrImpl( QName name, XMLString value ) {
         super( Node.ATTRIBUTE_NODE, name);
-		this.value = value;
+        this.value = value;
     }
 
     public AttrImpl (QName name, String str) {
@@ -97,14 +97,14 @@ public class AttrImpl extends NamedNode implements Attr {
         int prefixLen = 0;
         if (nodeName.needsNamespaceDecl()) {
             if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-            	prefixLen = UTF8.encoded(nodeName.getPrefix());
+                prefixLen = UTF8.encoded(nodeName.getPrefix());
         }
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(
-        		LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
+                LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
                 Signatures.getLength(idSizeType) +
                 (nodeName.needsNamespaceDecl() ? LENGTH_NS_ID + LENGTH_PREFIX_LENGTH + prefixLen : 0) + 
-        		value.UTF8Size());
+                value.UTF8Size());
         int pos = 0;
         data[pos] = (byte) ( Signatures.Attr << 0x5 );
         data[pos] |= idSizeType;
@@ -131,7 +131,7 @@ public class AttrImpl extends NamedNode implements Attr {
         value.UTF8Encode(data, pos);
         return data;
     }
-    
+
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
         int pos = start;
         byte idSizeType = (byte) ( data[pos] & 0x3 );

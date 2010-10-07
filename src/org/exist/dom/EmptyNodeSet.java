@@ -33,147 +33,173 @@ import org.w3c.dom.NodeList;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 
-	public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
-	
-	public final static EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
-	
+    public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
+
+    public final static EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
+
+    @Override
     public NodeSetIterator iterator() {
-	    return EMPTY_ITERATOR;
+        return EMPTY_ITERATOR;
     }
     
     /* (non-Javadoc)
-	 * @see org.exist.dom.NodeSet#iterate()
-	 */
-	public SequenceIterator iterate() throws XPathException {
-		return SequenceIterator.EMPTY_ITERATOR;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
-	 */
-	public SequenceIterator unorderedIterator() throws XPathException {
-		return SequenceIterator.EMPTY_ITERATOR;
-	}
-	
-    public boolean contains(DocumentImpl doc, long nodeId) {
-	    return false;
+     * @see org.exist.dom.NodeSet#iterate()
+     */
+    @Override
+    public SequenceIterator iterate() throws XPathException {
+        return SequenceIterator.EMPTY_ITERATOR;
     }
     
+    /* (non-Javadoc)
+     * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
+     */
+    @Override
+    public SequenceIterator unorderedIterator() throws XPathException {
+        return SequenceIterator.EMPTY_ITERATOR;
+    }
+
+    public boolean contains(DocumentImpl doc, long nodeId) {
+        return false;
+    }
+
+    @Override
     public boolean contains(NodeProxy proxy) {
-	    return false;
+        return false;
     }
 
     public boolean contains(DocumentImpl doc) {
-	return false;
+        return false;
     }
-    
+
+    @Override
     public boolean isEmpty() {
-    	return true;
+        return true;
     }
-    
+
+    @Override
     public boolean hasOne() {
-    	return false;
-    }    
+        return false;
+    }
 
     public void add(DocumentImpl doc, long nodeId) {
+        //Nothing to do
     }
 
     public void add(Node node) {
+        //Nothing todo
     }
 
+    @Override
     public void add(NodeProxy proxy) {
+        //Nothing to do
     }
 
     public void addAll(NodeList other) {
+        //Nothing to do
     }
 
+    @Override
     public void addAll(NodeSet other) {
+        //Nothing to do
     }
 
     public void remove(NodeProxy node) {
+        //Nothing to do
     }
 
+    @Override
     public int getLength() {
-	    return 0;
+        return 0;
     }
 
-    //TODO : evaluate both semantics
+    @Override
     public int getItemCount() {
-	    return 0;
+        return 0;
     }
-    
+
+    @Override
     public Node item(int pos) {
-	    return null;
+        return null;
     }
-    
+
+    @Override
     public Item itemAt(int pos) {
-    	return null;
+        return null;
     }
-    
+
+    @Override
     public NodeProxy get(int pos) {
-	    return null;
+        return null;
     }
 
     public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
         return null;
     }
 
+    @Override
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
         return null;
     }
 
+    @Override
     public NodeProxy get(NodeProxy proxy) {
         return null;
     }
 
+    @Override
     public NodeSet intersection(NodeSet other) {
         return this;
     }
 
+    @Override
     public NodeSet deepIntersection(NodeSet other) {
         return this;
     }
 
+    @Override
     public NodeSet union(NodeSet other) {
         return other;
     }
 
     private final static class EmptyNodeSetIterator implements NodeSetIterator {
 
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#remove()
-		 */
-		public void remove() {
-		}
+        /* (non-Javadoc)
+         * @see java.util.Iterator#remove()
+         */
+        public void remove() {
+            //Nothing to do
+        }
 
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#hasNext()
-		 */
-		public boolean hasNext() {
-			return false;
-		}
+        /* (non-Javadoc)
+         * @see java.util.Iterator#hasNext()
+         */
+        public boolean hasNext() {
+            return false;
+        }
 
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#next()
-		 */
-		public NodeProxy next() {
-			return null;
-		}
-        
+        /* (non-Javadoc)
+         * @see java.util.Iterator#next()
+         */
+        public NodeProxy next() {
+            return null;
+        }
+
         public NodeProxy peekNode() {
             return null;
         }
-        
+
         public void setPosition(NodeProxy proxy) {
+            //Nothing to do
         }
-        
+
+        @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
             result.append("Empty#").append(super.toString());
             return result.toString();
-        }          
-		
-	} 
+        }
+
+    } 
 
     private final static class EmptyCollectionIterator implements Iterator<Collection> {
 
@@ -186,6 +212,8 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         }
 
         public void remove() {
+            //Nothing to do
         }
+
     }
 }

@@ -78,9 +78,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
-	public static final int LENGTH_NS_ID = 2; //sizeof short
-	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
-	
+    public static final int LENGTH_NS_ID = 2; //sizeof short
+    public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
+
     private short attributes = 0;
     private int children = 0;
 
@@ -117,6 +117,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * Reset this element to its initial state.
      *
      */
+    @Override
     public void clear() {
         super.clear();
         attributes = 0;
@@ -136,10 +137,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return indexType;
     }
 
+    @Override
     public boolean isDirty() {
         return isDirty;
     }
 
+    @Override
     public void setDirty(boolean dirty) {
         this.isDirty = dirty;
     }
@@ -158,8 +161,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return (namespaceMappings.size() > 0);
     }
 
+    @Override
     public byte[] serialize() {
-    	 if (nodeId == null)
+        if (nodeId == null)
              throw new RuntimeException("nodeId = null for element: " +
                  getQName().getStringValue());
         try {
@@ -171,7 +175,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 DataOutputStream out = new DataOutputStream(bout);
                 out.writeShort(namespaceMappings.size());
                 for (Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
-                    Map.Entry<String, String> entry = (Map.Entry<String, String>) i.next();
+                    Map.Entry<String, String> entry = i.next();
                     out.writeUTF(entry.getKey());
                     short nsId = symbols.getNSSymbol(entry.getValue());
                     out.writeShort(nsId);
@@ -188,7 +192,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             int prefixLen = 0;
             if (hasNamespace) {
                 if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-                	prefixLen = UTF8.encoded(nodeName.getPrefix());
+                    prefixLen = UTF8.encoded(nodeName.getPrefix());
                 signature |= 0x10;
             }
             if (isDirty)
@@ -196,11 +200,11 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             final int nodeIdLen = nodeId.size();
             byte[] data =
                     ByteArrayPool.getByteArray(
-                    		StoredNode.LENGTH_SIGNATURE_LENGTH + LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + 
-                    + nodeIdLen + LENGTH_ATTRIBUTES_COUNT
-                    + Signatures.getLength(idSizeType)
-                    + (hasNamespace ? prefixLen + 4 : 0)
-                    + (prefixData != null ? prefixData.length : 0)
+                        StoredNode.LENGTH_SIGNATURE_LENGTH + LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + 
+                        + nodeIdLen + LENGTH_ATTRIBUTES_COUNT
+                        + Signatures.getLength(idSizeType)
+                        + (hasNamespace ? prefixLen + 4 : 0)
+                        + (prefixData != null ? prefixData.length : 0)
                     );
             int next = 0;
             data[next] = signature;
@@ -272,7 +276,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         ElementImpl node;
         if (pooled)
             node = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
-//            node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
+            //node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
         else
             node = new ElementImpl();
         node.setNodeId(dln);
@@ -281,7 +285,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         node.attributes = attributes;
         node.isDirty = isDirty;
         node.setOwnerDocument(doc);
-        //TO UNDERSTAND : why is this code here ?  
+        //TO UNDERSTAND : why is this code here ?
         if (end > pos) {
             byte[] pfxData = new byte[end - pos];
             System.arraycopy(data, pos, pfxData, 0, end - pos);
@@ -291,7 +295,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 short prefixCount = in.readShort();
                 for (int i = 0; i < prefixCount; i++) {
                     prefix = in.readUTF();
-                    nsId = in.readShort();                    
+                    nsId = in.readShort();
                     node.addNamespaceMapping(prefix, doc.getBrokerPool().getSymbols().getNamespace(nsId));
                 }
             }
@@ -389,22 +393,24 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @throws DOMException
      */
     public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
-    	NodeId childId;
-    	if (prevNode == null) {
-    		childId = getNodeId().newChild();
+        NodeId childId;
+
+        if (prevNode == null) {
+            childId = getNodeId().newChild();
         } else {
-    		if (prevNode.getNodeId() == null) {
-    			LOG.warn(getQName() + " : " + prevNode.getNodeName());
-    		}
-    		childId = prevNode.getNodeId().nextSibling();
-    	}
-    	child.setNodeId(childId);
-    	++children;
+            if (prevNode.getNodeId() == null) {
+                LOG.warn(getQName() + " : " + prevNode.getNodeName());
+            }
+            childId = prevNode.getNodeId().nextSibling();
+        }
+        child.setNodeId(childId);
+        ++children;
     }
 
     /**
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
+    @Override
     public Node appendChild(Node child) throws DOMException {
         TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -425,8 +431,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     public void appendAttributes(Txn transaction, NodeList attribs) throws DOMException {
-    	NodeList duplicateAttrs = findDupAttributes(attribs);
-    	removeAppendAttributes(transaction, duplicateAttrs, attribs);
+        NodeList duplicateAttrs = findDupAttributes(attribs);
+        removeAppendAttributes(transaction, duplicateAttrs, attribs);
     }
 
     private NodeList checkForAttributes(Txn transaction, NodeList nodes) throws DOMException {
@@ -451,6 +457,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return rest;
     }
 
+    @Override
     public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
         // attributes are handled differently. Call checkForAttributes to extract them.
         nodes = checkForAttributes(transaction, nodes);
@@ -478,8 +485,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 if (child == 1) {
                     Node firstChild = getFirstChild();
                     insertBefore(transaction, nodes, firstChild);
-                }
-                else {
+                } else {
                     if (child > 1 && child <= children) {
                         NodeList cl = getChildNodes();
                         StoredNode last = (StoredNode) cl.item(child - 2);
@@ -535,7 +541,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             switch (child.getNodeType()) {
                 case Node.DOCUMENT_FRAGMENT_NODE :
                     appendChildren(transaction, newNodeId, null, last, lastPath, child.getChildNodes(), listener);
-                    return null;    // TODO: implement document fragments so we can return all newly appended children
+                    return null; // TODO: implement document fragments so we can return all newly appended children
                 case Node.ELEMENT_NODE :
                     // create new element
                     final ElementImpl elem =
@@ -573,7 +579,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     lastPath.addComponent(elem.getQName());
                     // insert the node
                     broker.insertNodeAfter(transaction, last.getNode(), elem);
-                
+
                     broker.indexNode(transaction, elem, lastPath);
                     broker.getIndexController().indexNode(transaction, elem, lastPath, listener);
                     //getBroker().getIndexController().startElement(transaction, elem, lastPath, listener);
@@ -622,7 +628,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     } else
                         attrName.setNameType(ElementValue.ATTRIBUTE);
                     broker.insertNodeAfter(transaction, last.getNode(), attrib);
-                
+
                     broker.indexNode(transaction, attrib, lastPath);
                     broker.getIndexController().indexNode(transaction, attrib, lastPath, listener);
                     //getBroker().getIndexController().attribute(transaction, attrib, lastPath, listener);
@@ -644,7 +650,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                                 ((ProcessingInstruction) child).getTarget(),
                                 ((ProcessingInstruction) child).getData());
                     pi.setOwnerDocument(owner);
-                    //          insert the node
+                    //insert the node
                     broker.insertNodeAfter(transaction, last.getNode(), pi);
                     broker.indexNode(transaction, pi, lastPath);
                     last.setNode(pi);
@@ -664,6 +670,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
+    @Override
     public short getAttributesCount() {
         return attributes;
     }
@@ -673,6 +680,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      *
      * @param attribNum The new attributes value
      */
+    @Override
     public void setAttributes(short attribNum) {
         attributes = attribNum;
     }
@@ -689,27 +697,28 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
     public String getAttributeNS(String namespaceURI, String localName) {
-    	Attr attr = findAttribute(new QName(localName, namespaceURI));
-    	return attr != null ? attr.getValue() : "";
+        Attr attr = findAttribute(new QName(localName, namespaceURI));
+        return attr != null ? attr.getValue() : "";
     }
 
     /**
      * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
      */
     public Attr getAttributeNode(String name) {
-    	return findAttribute(name);
+        return findAttribute(name);
     }
-    
+
     /**
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-    	return findAttribute(new QName(localName, namespaceURI));
+        return findAttribute(new QName(localName, namespaceURI));
     }
 
     /**
      * @see org.w3c.dom.Node#getAttributes()
      */
+    @Override
     public NamedNodeMap getAttributes() {
         NamedNodeMapImpl map = new NamedNodeMapImpl();
         if (getAttributesCount() > 0) {
@@ -720,7 +729,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 iterator.next();
                 final int ccount = getChildCount();
                 for (int i = 0; i < ccount; i++) {
-                    StoredNode next = (StoredNode) iterator.next();
+                    StoredNode next = iterator.next();
                     if (next.getNodeType() != Node.ATTRIBUTE_NODE)
                         break;
                     map.setNamedItem(next);
@@ -733,7 +742,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         if(declaresNamespacePrefixes()) {
             for(Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry<String, String> entry = (Map.Entry<String, String>) i.next();
+                Map.Entry<String, String> entry = i.next();
                 String prefix = entry.getKey().toString();
                 String ns = entry.getValue().toString();
                 QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
@@ -744,7 +753,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         return map;
     }
-    
+
     private AttrImpl findAttribute(String qname) {
         DBBroker broker = null;
         try {
@@ -766,13 +775,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         for (int i = 0; i < ccount; i++) {
             next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-            	break;
+                break;
             if (next.getNodeName().equals(qname))
-            	return (AttrImpl) next;
+                return (AttrImpl) next;
         }
         return null;
     }
-    
+
     private AttrImpl findAttribute(QName qname) {
         DBBroker broker = null;
         try {
@@ -789,13 +798,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     private AttrImpl findAttribute(QName qname, Iterator<StoredNode> iterator, StoredNode current) {
-    	final int ccount = current.getChildCount();        
+        final int ccount = current.getChildCount();
         for (int i = 0; i < ccount; i++) {
-        	StoredNode next = iterator.next();
+            StoredNode next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-            	break;
-    		if (next.getQName().equalsSimple(qname))
-    			return (AttrImpl) next;     
+                break;
+            if (next.getQName().equalsSimple(qname))
+                return (AttrImpl) next;
         }
         return null;
     }
@@ -809,31 +818,33 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @throws DOMException
      */
     private NodeList findDupAttributes(NodeList attrs) throws DOMException {
-    	NodeListImpl dupList = null;
-    	NamedNodeMap map = getAttributes();
-    	for (int i = 0; i < attrs.getLength(); i++) {
-    		Node attr = attrs.item(i);
+        NodeListImpl dupList = null;
+        NamedNodeMap map = getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Node attr = attrs.item(i);
             // Workaround: xerces sometimes returns null for getLocalName() !!!!
             String localName = attr.getLocalName();
             if (localName == null)
                 localName = attr.getNodeName();
             Node duplicate = map.getNamedItemNS(attr.getNamespaceURI(), localName);
-    		if (duplicate != null) {
-    			if (dupList == null)
-            		dupList = new NodeListImpl();
-            	dupList.add(duplicate);
-    		}
-    	}
+            if (duplicate != null) {
+                if (dupList == null)
+                    dupList = new NodeListImpl();
+                dupList.add(duplicate);
+            }
+        }
         return dupList;
     }
 
     /**
      * @see org.exist.dom.NodeImpl#getChildCount()
      */
+    @Override
     public int getChildCount() {
         return children;
     }
 
+    @Override
     public NodeList getChildNodes() {
         final NodeListImpl childList = new NodeListImpl(1);
         DBBroker broker = null;
@@ -855,16 +866,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }
-//        accept(new NodeVisitor() {
-//            public boolean visit(StoredNode node) {
-//                if(node.nodeId.isChildOf(nodeId))
-//                    childList.add(node);
-//                return true;
-//            }
-//        });
         return childList;
     }
-    
+
     /**
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
@@ -884,6 +888,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Node#getFirstChild()
      */
+    @Override
     public Node getFirstChild() {
         if (!hasChildNodes() || getChildCount() == getAttributesCount())
             return null;
@@ -894,7 +899,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             iterator.next();
             StoredNode next;
             for (int i = 0; i < getChildCount(); i++) {
-                next = (StoredNode) iterator.next();
+                next = iterator.next();
                 if (next.getNodeType() != Node.ATTRIBUTE_NODE)
                     return next;
             }
@@ -905,7 +910,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         return null;
     }
-    
+
+    @Override
     public Node getLastChild() {
         if (!hasChildNodes())
             return null;
@@ -932,19 +938,20 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
      */
     public boolean hasAttribute(String name) {
-    	return findAttribute(name) != null;
+        return findAttribute(name) != null;
     }
 
     /**
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
-    	return findAttribute(new QName(localName, namespaceURI)) != null;
+        return findAttribute(new QName(localName, namespaceURI)) != null;
     }
 
     /**
      * @see org.w3c.dom.Node#hasAttributes()
      */
+    @Override
     public boolean hasAttributes() {
         return (getAttributesCount() > 0);
     }
@@ -952,6 +959,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Node#hasChildNodes()
      */
+    @Override
     public boolean hasChildNodes() {
         return children > 0;
     }
@@ -959,8 +967,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Node#getNodeValue()
      */
+    @Override
     public String getNodeValue() /*throws DOMException*/ {
-    	//TODO : parametrize the boolea value ?
+        //TODO : parametrize the boolean value ?
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
@@ -1007,13 +1016,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setAttributeNodeNS(Attr newAttr) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public void setChildCount(int count) {
         children = count;
     }
 
     public void setNamespaceMappings(Map<String, String> map) {
         namespaceMappings = new HashMap<String, String>(map);
-
         for (String ns : namespaceMappings.values()) {
             ownerDocument.getBrokerPool().getSymbols().getNSSymbol(ns);
         }
@@ -1038,12 +1047,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return toString(true);
     }
 
     /**
      */
+    @Override
     public String toString(boolean top) {
         return toString(top, new TreeSet<String>());
     }
@@ -1059,20 +1070,20 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         buf.append('<');
         buf.append(nodeName);
         //Remove false to have a verbose output
-        if (top && false) {
-            buf.append(" xmlns:exist=\""+ Namespaces.EXIST_NS + "\"");
-            buf.append(" exist:id=\"");
-            buf.append(getNodeId());
-            buf.append("\" exist:document=\"");
-            buf.append(((DocumentImpl)getOwnerDocument()).getFileURI());
-            buf.append("\"");
-        }
+        //if (top && false) {
+            //buf.append(" xmlns:exist=\""+ Namespaces.EXIST_NS + "\"");
+            //buf.append(" exist:id=\"");
+            //buf.append(getNodeId());
+            //buf.append("\" exist:document=\"");
+            //buf.append(((DocumentImpl)getOwnerDocument()).getFileURI());
+            //buf.append("\"");
+        //}
         if (declaresNamespacePrefixes()) {
             // declare namespaces used by this element
             Map.Entry<String, String> entry;
             String namespace, prefix;
             for (Iterator<Map.Entry<String, String>> i = namespaceMappings.entrySet().iterator(); i.hasNext();) {
-                entry = (Map.Entry<String, String>) i.next();
+                entry = i.next();
                 prefix = entry.getKey();
                 namespace = entry.getValue();
                 if (prefix.length() == 0) {
@@ -1115,7 +1126,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     children.append(child.toString());
             }
         }
-        
+
         if (attributes.length() > 0)
             buf.append(attributes.toString());
 
@@ -1135,6 +1146,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
      */
+    @Override
     public Node insertBefore(Node newChild, Node refChild) throws DOMException {
         if (refChild == null)
             return appendChild(newChild);
@@ -1142,7 +1154,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         NodeListImpl nl = new NodeListImpl();
         nl.add(newChild);
-        
+
         TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -1168,6 +1180,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * Insert a list of nodes at the position before the reference
      * child.
      */
+    @Override
     public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         if (refChild == null) {
             //TODO : use NodeImpl.UNKNOWN_NODE_IMPL_GID ? -pb
@@ -1217,6 +1230,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * Insert a list of nodes at the position following the reference
      * child.
      */
+    @Override
     public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         if (refChild == null) {
             //TODO : use NodeImpl.UNKNOWN_NODE_IMPL_GID ? -pb
@@ -1263,7 +1277,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @throws DOMException
      */
     public void update(Txn transaction, NodeList newContent) throws DOMException {
-        final NodePath path = getPath();        
+        final NodePath path = getPath();
         // remove old child nodes
         NodeList nodes = getChildNodes();
 
@@ -1283,7 +1297,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             // TODO: fix once range index has been moved to new architecture
             StoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
             broker.getValueIndex().reindex(valueReindexRoot);
-        
+
             StoredNode last = this;
             int i = nodes.getLength();
             for (; i > 0; i--) {
@@ -1326,6 +1340,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @param newChild
      * @throws DOMException
      */
+    @Override
     public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
@@ -1337,12 +1352,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "node is not a child of this element");
         if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-        	if (newNode.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
-				// an xml:id attribute. Normalize the attribute and set its type to ID
-        		AttrImpl attr = (AttrImpl) newNode;
-        		attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
-        		attr.setType(AttrImpl.ID);
-        	}
+            if (newNode.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
+                // an xml:id attribute. Normalize the attribute and set its type to ID
+                AttrImpl attr = (AttrImpl) newNode;
+                attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+                attr.setType(AttrImpl.ID);
+            }
         }
         StoredNode previousNode = (StoredNode) oldNode.getPreviousSibling();
         if (previousNode == null)
@@ -1370,7 +1385,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             // Remove the actual node data
             broker.removeNode(transaction, oldNode, oldPath, null);
             broker.endRemove(transaction);
-        
+
             newNode.nodeId = oldNode.nodeId;
             // Reinsert the new node data
             broker.insertNodeAfter(transaction, previousNode, newNode);
@@ -1390,17 +1405,18 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         return newNode;
     }
-    
+
     /**
      * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
      */
+    @Override
     public Node removeChild(Txn transaction, Node oldChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         final StoredNode oldNode = (StoredNode) oldChild;
         if (!oldNode.nodeId.getParentId().equals(nodeId))
             throw new DOMException(DOMException.NOT_FOUND_ERR,
-                    "node is not a child of this element");
+                "node is not a child of this element");
         NodePath oldPath = oldNode.getPath();
         StreamListener listener = null;
         DBBroker broker = null;
@@ -1432,79 +1448,81 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         return oldNode;
     }
-	
-	public void removeAppendAttributes(Txn transaction, NodeList removeList, NodeList appendList) {
+
+    public void removeAppendAttributes(Txn transaction, NodeList removeList, NodeList appendList) {
         DBBroker broker = null;
-		try {
+        try {
             broker = ownerDocument.getBrokerPool().get(null);
-			if (removeList != null) {
-				try {
-					for (int i=0; i<removeList.getLength(); i++) {
-						Node oldChild = removeList.item(i);
-						if (!(oldChild instanceof StoredNode))
-							throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-						StoredNode old = (StoredNode) oldChild;
-						if (!old.nodeId.isChildOf(nodeId))
-							throw new DOMException(DOMException.NOT_FOUND_ERR, "node " + old.nodeId.getParentId() + 
-									" is not a child of element " + nodeId);
+            if (removeList != null) {
+                try {
+                    for (int i=0; i<removeList.getLength(); i++) {
+                        Node oldChild = removeList.item(i);
+                        if (!(oldChild instanceof StoredNode))
+                            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+                        StoredNode old = (StoredNode) oldChild;
+                        if (!old.nodeId.isChildOf(nodeId))
+                            throw new DOMException(DOMException.NOT_FOUND_ERR, "node " + old.nodeId.getParentId() + 
+                                " is not a child of element " + nodeId);
                         final NodePath oldPath = old.getPath();
                         // remove old custom indexes
                         broker.getIndexController().reindex(transaction, old, StreamListener.REMOVE_SOME_NODES);
                         broker.removeNode(transaction, old, oldPath, null);
-						children--;
-						attributes--;
-					}
-				} finally {
-					broker.endRemove(transaction);
-				}
-			}
+                        children--;
+                        attributes--;
+                    }
+                } finally {
+                    broker.endRemove(transaction);
+                }
+            }
             NodePath path = getPath();
             broker.getIndexController().setDocument(ownerDocument, StreamListener.STORE);
             StreamListener listener = broker.getIndexController().getStreamListener();
             if (children == 0) {
-			   appendChildren(transaction, nodeId.newChild(), null,
-					   new NodeImplRef(this), path, appendList, listener);
-			} else {
-		        if (attributes == 0) {
-		        	StoredNode firstChild = (StoredNode) getFirstChild();
-		        	NodeId newNodeId = firstChild.nodeId.insertBefore();
+                appendChildren(transaction, nodeId.newChild(), null,
+                    new NodeImplRef(this), path, appendList, listener);
+            } else {
+                if (attributes == 0) {
+                    StoredNode firstChild = (StoredNode) getFirstChild();
+                    NodeId newNodeId = firstChild.nodeId.insertBefore();
                     appendChildren(transaction, newNodeId, firstChild.getNodeId(), new NodeImplRef(this), path, appendList, listener);
-		        } else {
-		        	AttribVisitor visitor = new AttribVisitor();
-			        accept(visitor);
-			        NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
-			        NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
+                } else {
+                    AttribVisitor visitor = new AttribVisitor();
+                    accept(visitor);
+                    NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
+                    NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
                     appendChildren(transaction, newNodeId, firstChildId, new NodeImplRef(visitor.lastAttrib),
-                    		path, appendList, listener);
-		        }
+                            path, appendList, listener);
+                }
                 setDirty(true);
             }
-			attributes += appendList.getLength();
+            attributes += appendList.getLength();
         } catch (EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            broker.updateNode(transaction, this, true);
-            broker.flush();
-            ownerDocument.getBrokerPool().release(broker);
-		}
-	}
+            if (broker != null) {
+                broker.updateNode(transaction, this, true);
+                broker.flush();
+                ownerDocument.getBrokerPool().release(broker);
+            }
+        }
+    }
 
-	@Deprecated
-	private class AttribVisitor implements NodeVisitor {
-		private StoredNode lastAttrib = null;
-		private StoredNode firstChild = null;
-		
-		public boolean visit(StoredNode node) {
-        	if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-        		lastAttrib = node;
-        	} else if (node.nodeId.isChildOf(ElementImpl.this.nodeId)) {
+    @Deprecated
+    private class AttribVisitor implements NodeVisitor {
+        private StoredNode lastAttrib = null;
+        private StoredNode firstChild = null;
+
+        public boolean visit(StoredNode node) {
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                lastAttrib = node;
+            } else if (node.nodeId.isChildOf(ElementImpl.this.nodeId)) {
                 firstChild = node;
                 return false;
-        	}
-        	return true;
+            }
+            return true;
         }
-	}
-	
+    }
+
     /**
      * Replaces the oldNode with the newChild
      * 
@@ -1516,13 +1534,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * 
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
+    @Override
     public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         StoredNode oldNode = (StoredNode) oldChild;
         if (!oldNode.nodeId.getParentId().equals(nodeId))
             throw new DOMException(DOMException.NOT_FOUND_ERR,
-                    "node is not a child of this element");        
+                "node is not a child of this element");
         StoredNode previous = (StoredNode) oldNode.getPreviousSibling();
         if (previous == null)
             previous = this;
@@ -1572,7 +1591,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         StringBuilder buffer = null;
         String entity = null;
         char ch;
-
         for (int i = 0; i < str.length(); i++) {
             ch = str.charAt(i);
             switch (ch) {
@@ -1608,47 +1626,48 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
         return (buffer == null) ? str : buffer.toString();
     }
-    
+
     public void setPreserveSpace(boolean preserveWS) {
         this.preserveWS = preserveWS;
     }
-    
+
     public boolean preserveSpace() {
         return preserveWS;
-    }     
+    }
 
-	/** ? @see org.w3c.dom.Element#getSchemaTypeInfo()
-	 */
-	public TypeInfo getSchemaTypeInfo() {
+    /** ? @see org.w3c.dom.Element#getSchemaTypeInfo()
+     */
+    public TypeInfo getSchemaTypeInfo() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getSchemaTypeInfo() not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Element#setIdAttribute(java.lang.String, boolean)
-	 */
-	public void setIdAttribute(String name, boolean isId) throws DOMException {
+    /** ? @see org.w3c.dom.Element#setIdAttribute(java.lang.String, boolean)
+     */
+    public void setIdAttribute(String name, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setIdAttribute(String name, boolean isId) not implemented on class " + getClass().getName());	
-	}
+    }
 
-	/** ? @see org.w3c.dom.Element#setIdAttributeNS(java.lang.String, java.lang.String, boolean)
-	 */
-	public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
+    /** ? @see org.w3c.dom.Element#setIdAttributeNS(java.lang.String, java.lang.String, boolean)
+     */
+    public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setIdAttributeNS(String namespaceURI, String localName, boolean isId) not implemented on class " + getClass().getName());		
-	}
+    }
 
-	/** ? @see org.w3c.dom.Element#setIdAttributeNode(org.w3c.dom.Attr, boolean)
-	 */
-	public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
+    /** ? @see org.w3c.dom.Element#setIdAttributeNode(org.w3c.dom.Attr, boolean)
+     */
+    public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setIdAttributeNode(Attr idAttr, boolean isId) not implemented on class " + getClass().getName());	
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#getBaseURI()
-	 */
-	public String getBaseURI() {
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+     */
+    @Override
+    public String getBaseURI() {
         String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
         if ( baseURI == null || "".equals(baseURI)) {
             StoredNode parent = getParentStoredNode();
             if (parent != null)
-            	return parent.getBaseURI();
+                return parent.getBaseURI();
         }
 
         baseURI = "";
@@ -1666,80 +1685,90 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             baseURI = getDocument().getBaseURI();
         }
         return baseURI;
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-	 */
-	public short compareDocumentPosition(Node other) throws DOMException {
+    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
+     */
+    @Override
+    public short compareDocumentPosition(Node other) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "compareDocumentPosition(Node other) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#getTextContent()
-	 */
-	public String getTextContent() throws DOMException {
+    /** ? @see org.w3c.dom.Node#getTextContent()
+     */
+    @Override
+    public String getTextContent() throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getTextContent() not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-	 */
-	public void setTextContent(String textContent) throws DOMException {
+    /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
+     */
+    @Override
+    public void setTextContent(String textContent) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setTextContent(String textContent) not implemented on class " + getClass().getName());	
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-	 */
-	public boolean isSameNode(Node other) 
-	{
-		// This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-		if( other instanceof StoredNode ) {
-			return( this.nodeId == ((StoredNode)other).nodeId && this.ownerDocument.getDocId() == ((StoredNode)other).ownerDocument.getDocId() );
-		} 
-		
-		throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode(Node other) not implemented on other class " + other.getClass().getName());
-	}
+    /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
+     */
+    @Override
+    public boolean isSameNode(Node other) {
+        // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
+        if( other instanceof StoredNode ) {
+            return( this.nodeId == ((StoredNode)other).nodeId && this.ownerDocument.getDocId() == ((StoredNode)other).ownerDocument.getDocId() );
+        } 
+        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isSameNode(Node other) not implemented on other class " + other.getClass().getName());
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-	 */
-	public String lookupPrefix(String namespaceURI) {
+    /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
+     */
+    @Override
+    public String lookupPrefix(String namespaceURI) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupPrefix(String namespaceURI) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-	 */
-	public boolean isDefaultNamespace(String namespaceURI) {
+    /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
+     */
+    @Override
+    public boolean isDefaultNamespace(String namespaceURI) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isDefaultNamespace(String namespaceURI) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-	 */
-	public String lookupNamespaceURI(String prefix) {
+    /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
+     */
+    @Override
+    public String lookupNamespaceURI(String prefix) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "lookupNamespaceURI(String prefix) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-	 */
-	public boolean isEqualNode(Node arg) {
+    /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
+     */
+    @Override
+    public boolean isEqualNode(Node arg) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "isEqualNode(Node arg) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-	 */
-	public Object getFeature(String feature, String version) {
+    /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
+     */
+    @Override
+    public Object getFeature(String feature, String version) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getFeature(String feature, String version) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-	 */
-	public Object setUserData(String key, Object data, UserDataHandler handler) {
+    /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
+     */
+    @Override
+    public Object setUserData(String key, Object data, UserDataHandler handler) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setUserData(String key, Object data, UserDataHandler handler) not implemented on class " + getClass().getName());
-	}
+    }
 
-	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-	 */
-	public Object getUserData(String key) {
+    /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
+     */
+    @Override
+    public Object getUserData(String key) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String key) not implemented on class " + getClass().getName());
-	}
-    
+    }
+
+    @Override
     public boolean accept(Iterator iterator, NodeVisitor visitor) {
         if (!visitor.visit(this))
             return false;
@@ -1747,7 +1776,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             final int ccount = getChildCount();
             StoredNode next;
             for (int i = 0; i < ccount; i++) {
-                next = (StoredNode) iterator.next();            
+                next = (StoredNode) iterator.next();
                 if (!next.accept(iterator, visitor))
                     return false;
             }
