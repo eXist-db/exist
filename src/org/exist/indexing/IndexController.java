@@ -53,9 +53,9 @@ public class IndexController {
     protected StreamListener listener = null;    
     protected DocumentImpl currentDoc = null;
     protected int currentMode = StreamListener.UNKNOWN;
-    
+
     public IndexController(DBBroker broker) {
-    	this.broker = broker;
+        this.broker = broker;
         List<IndexWorker> workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
         for (IndexWorker worker : workers) {
             indexWorkers.put(worker.getIndexId(), worker);
@@ -113,12 +113,12 @@ public class IndexController {
      */    
     public IndexWorker getWorkerByIndexName(String indexName) {
         for (IndexWorker worker : indexWorkers.values()) {
-        	if (indexName.equals(worker.getIndexName()))
-        		return worker;
+            if (indexName.equals(worker.getIndexName()))
+                return worker;
         }
         return null;
     }
-    
+
     /**
      * Sets the document for the next operation.
      * 
@@ -126,13 +126,13 @@ public class IndexController {
      */    
     public void setDocument(DocumentImpl doc) {
         if (currentDoc != doc)
-        	//Reset listener
-        	listener = null;
+            //Reset listener
+            listener = null;
         currentDoc = doc;
 
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setDocument(currentDoc);
-        }    	
+        }
     }
 
     /**
@@ -143,33 +143,33 @@ public class IndexController {
      */
     public void setMode(int mode) {
         if (currentMode != mode)
-        	//Reset listener
-        	listener = null;
+            //Reset listener
+            listener = null;
         currentMode = mode;
 
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setMode(currentMode);
         }
     }
-    
+
     /**
      * Returns the document for the next operation.
      * 
      * @return the document
      */
     public DocumentImpl getDocument() {
-    	return currentDoc;
+        return currentDoc;
     }
-    
+
     /**
      * Returns the mode for the next operation.
      * 
      * @return the document
      */
     public int getMode() {
-    	return currentMode;
-    }    
-    
+        return currentMode;
+    }
+
     /**
      * Sets the document and the mode for the next operation.
      * 
@@ -178,10 +178,10 @@ public class IndexController {
      * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
     public void setDocument(DocumentImpl doc, int mode) {
-    	setDocument(doc);
-    	setMode(mode);
+        setDocument(doc);
+        setMode(mode);
     }
-    
+
     /**
      * Flushes all index workers.
      */
@@ -190,7 +190,7 @@ public class IndexController {
             indexWorker.flush();
         }
     }  
-    
+
     /**
      * Remove all indexes defined on the specified collection.
      *
@@ -201,7 +201,7 @@ public class IndexController {
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.removeCollection(collection, broker);
         }
-    }    
+    }
 
     /**
      * Reindex all nodes below the specified root node, using the given mode.
@@ -220,7 +220,7 @@ public class IndexController {
         IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
         flush();
     }
-    
+
     /**
      * When adding or removing nodes to or from the document tree, it might become
      * necessary to reindex some parts of the tree, in particular if indexes are defined
@@ -259,13 +259,13 @@ public class IndexController {
             top = node;
         return top;
     }
-    
+
     /**
      * Returns a chain of {@link org.exist.indexing.StreamListener}, one
      * for each index configured on the current document for the current mode.
      * Note that the chain is reinitialized when the operating mode changes.
      * That allows workers to return different {@link org.exist.indexing.StreamListener}
-     * for each mode.  
+     * for each mode.
      *
      * @return the first listener in the chain of StreamListeners
      */
@@ -274,7 +274,7 @@ public class IndexController {
             StreamListener next = listener;
             while (next != null) {
                 // wolf: setDocument() should have been called before
-//                next.getWorker().setDocument(currentDoc, currentMode);
+                // next.getWorker().setDocument(currentDoc, currentMode);
                 next = next.getNextInChain();
             }
             return listener;
@@ -284,21 +284,21 @@ public class IndexController {
 
         for (IndexWorker worker : indexWorkers.values()) {
             // wolf: setDocument() should have been called before
-//            worker.setDocument(currentDoc, currentMode);
+            //worker.setDocument(currentDoc, currentMode);
             current = worker.getListener();
             if (first == null) {
                 first = current;
             } else {
-            	if (current != null)
-            		previous.setNextInChain(current);
+                if (current != null)
+                    previous.setNextInChain(current);
             }
             if (current != null)
-            	previous = current;
+                previous = current;
         }
         listener = first;
         return listener;
-    }    
-    
+    }
+
     /**
      * Helper method: index a single node which has been added during an XUpdate or XQuery update expression.
      *
@@ -322,7 +322,7 @@ public class IndexController {
             }
         }
     }
-    
+
     /**
      * Helper method: index a single element node which has been added during an XUpdate or XQuery update expression.
      *
@@ -334,8 +334,8 @@ public class IndexController {
     public void startElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
            listener.startElement(transaction, node, path);
-    } 
-    
+    }
+
     /**
      * Helper method: dispatch a single endElement event to the specified listener.
      *
@@ -347,8 +347,8 @@ public class IndexController {
     public void endElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
             listener.endElement(transaction, node, path);
-    }    
-    
+    }
+
     /**
      * Helper method: index a single attribute node which has been added during an XUpdate or XQuery update expression.
      *
@@ -359,9 +359,9 @@ public class IndexController {
      */     
     public void attribute(Txn transaction, AttrImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-        	listener.attribute(transaction, node, path);
+            listener.attribute(transaction, node, path);
     }
-    
+
     /**
      * Helper method: index a single text node which has been added during an XUpdate or XQuery update expression.
      *
@@ -372,9 +372,9 @@ public class IndexController {
      */    
     public void characters(Txn transaction, TextImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-            listener.characters(transaction, node, path);       
+            listener.characters(transaction, node, path);
     }
-   
+
     /**
      * Returns the match listener for this node.
      * 
@@ -397,6 +397,5 @@ public class IndexController {
             }
         }
         return first;
-    }    
-
+    }
 }

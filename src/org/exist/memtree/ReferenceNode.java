@@ -33,28 +33,25 @@ import org.exist.dom.NodeProxy;
  *
  * @author  wolf
  */
-public class ReferenceNode extends NodeImpl
-{
+public class ReferenceNode extends NodeImpl {
+
     /**
      * Creates a new ReferenceNode object.
      *
      * @param  doc
      * @param  nodeNumber
      */
-    public ReferenceNode( DocumentImpl doc, int nodeNumber )
-    {
+    public ReferenceNode( DocumentImpl doc, int nodeNumber ) {
         super( doc, nodeNumber );
     }
 
-    public NodeProxy getReference()
-    {
+    public NodeProxy getReference() {
         int p = document.alpha[nodeNumber];
         return( document.references[p] );
     }
 
-
-    public String toString()
-    {
+    @Override
+    public String toString() {
         StringBuilder result = new StringBuilder();
         result.append( "reference[ " );
         result.append( getReference().getNode().toString() );
@@ -62,30 +59,26 @@ public class ReferenceNode extends NodeImpl
         return( result.toString() );
     }
 
-
-    public String getNamespaceURI()
-    {
+    @Override
+    public String getNamespaceURI() {
         //TODO : improve performance ?
         return( getReference().getNode().getNamespaceURI() );
     }
 
-
-    public String getLocalName()
-    {
+    @Override
+    public String getLocalName() {
         //TODO : improve performance ?
         return( getReference().getNode().getLocalName() );
     }
 
-
-    public NamedNodeMap getAttributes()
-    {
+    @Override
+    public NamedNodeMap getAttributes() {
         //TODO : improve performance ?
         return( getReference().getNode().getAttributes() );
     }
 
-
-    public Node getFirstChild()
-    {
+    @Override
+    public Node getFirstChild() {
         //TODO : improve performance ?
         //TODO : how to make this node a reference as well ?
         return( getReference().getNode().getFirstChild() );

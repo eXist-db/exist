@@ -44,18 +44,18 @@ import java.util.Map;
  * to take care of synchronizing access to shared resources.
  */
 public interface IndexWorker {
-	
+
     /**
      * A key to a QName {@link java.util.List} "hint" to be used when the index scans its index entries
      */	
-	public static final String VALUE_COUNT = "value_count";	
-	
+    public static final String VALUE_COUNT = "value_count";
+
     /**
      * Returns an ID which uniquely identifies this worker's index.
      * @return a unique name identifying this worker's index.
      */
-	public String getIndexId();
-	
+    public String getIndexId();
+
     /**
      * Returns a name which uniquely identifies this worker's index.
      * @return a unique name identifying this worker's index.
@@ -98,7 +98,7 @@ public interface IndexWorker {
      * @param mode the current operation mode
      */
     void setDocument(DocumentImpl doc, int mode);
-    
+
     /**
      * Notify this worker to operate using the mode
      * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
@@ -107,21 +107,21 @@ public interface IndexWorker {
      * @param mode the current operation mode
      */
     void setMode(int mode);
-    
+
     /**
      * Returns the document for the next operation.
      * 
      * @return the document
      */
     DocumentImpl getDocument();
-    
+
     /**
      * Returns the mode for the next operation.
      * 
      * @return the document
      */
     int getMode();
-    
+
     /**
      * When adding or removing nodes to or from the document tree, it might become
      * necessary to reindex some parts of the tree, in particular if indexes are defined
@@ -134,7 +134,7 @@ public interface IndexWorker {
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be reindexed
      */
-    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf);    
+    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf);
 
     /**
      * Return a stream listener to index the current document in the current mode.
@@ -158,14 +158,14 @@ public interface IndexWorker {
      * serialization events
      */
     MatchListener getMatchListener(DBBroker broker, NodeProxy proxy);
-    
+
     /**
      * Flush the index. This method will be called when indexing a document. The implementation should
      * immediately process all data it has buffered (if there is any), release as many memory resources
      * as it can and prepare for being reused for a different job.
      */
     void flush();
-    
+
     /**
      * Remove all indexes for the given collection, its subcollections and
      * all resources..
@@ -190,7 +190,7 @@ public interface IndexWorker {
      * as a single occurence.
      * @param context 
      * @param docs The documents to which the index entries belong
-	 * @param contextSet
+     * @param contextSet
      * @param hints Some "hints" for retrieving the index entries. See such hints in
      * {@link org.exist.indexing.OrderedValuesIndex} and {@link org.exist.indexing.QNamedKeysIndex}.
      * @return Occurrences objects that contain :
@@ -201,7 +201,7 @@ public interface IndexWorker {
      * </ol> 
      */
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints);
-    
+
     //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 
 }
