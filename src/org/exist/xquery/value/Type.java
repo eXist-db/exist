@@ -38,264 +38,262 @@ import org.exist.xquery.XPathException;
 public class Type {
 
     private final static Logger LOG = Logger.getLogger(Type.class);
-    
-	public final static String[] NODETYPES =
-		{
-			"node",
-			"element",
-			"attribute",
-			"text",
-			"processing-instruction",
-			"comment",
-			"document",
-			"namespace",
-			"cdata-section" };
 
-	public static final int NODE = -1;
+    public final static String[] NODETYPES = {
+        "node",
+        "element",
+        "attribute",
+        "text",
+        "processing-instruction",
+        "comment",
+        "document",
+        "namespace",
+        "cdata-section" 
+    };
 
-	public final static int ELEMENT = 1;
-	public final static int ATTRIBUTE = 2;
-	public final static int TEXT = 3;
-	public final static int PROCESSING_INSTRUCTION = 4;
-	public final static int COMMENT = 5;
-	public final static int DOCUMENT = 6;
-	public final static int NAMESPACE = 500;
-	public final static int CDATA_SECTION = 501;
+    public static final int NODE = -1;
 
-	public final static int EMPTY = 10;
-	public final static int ITEM = 11;
-	public final static int ANY_TYPE = 12;
-	public final static int ANY_SIMPLE_TYPE = 13;
-	public final static int UNTYPED = 14;
+    public final static int ELEMENT = 1;
+    public final static int ATTRIBUTE = 2;
+    public final static int TEXT = 3;
+    public final static int PROCESSING_INSTRUCTION = 4;
+    public final static int COMMENT = 5;
+    public final static int DOCUMENT = 6;
+    public final static int NAMESPACE = 500;
+    public final static int CDATA_SECTION = 501;
 
-	public final static int ATOMIC = 20;
-	public final static int UNTYPED_ATOMIC = 21;
+    public final static int EMPTY = 10;
+    public final static int ITEM = 11;
+    public final static int ANY_TYPE = 12;
+    public final static int ANY_SIMPLE_TYPE = 13;
+    public final static int UNTYPED = 14;
 
-	public final static int STRING = 22;
-	public final static int BOOLEAN = 23;
-	public final static int QNAME = 24;
-	public final static int ANY_URI = 25;
-	public final static int BASE64_BINARY = 26;
+    public final static int ATOMIC = 20;
+    public final static int UNTYPED_ATOMIC = 21;
+
+    public final static int STRING = 22;
+    public final static int BOOLEAN = 23;
+    public final static int QNAME = 24;
+    public final static int ANY_URI = 25;
+    public final static int BASE64_BINARY = 26;
     public final static int HEX_BINARY = 27;
     public final static int NOTATION = 28;
-    
-	public final static int NUMBER = 30;
-	public final static int INTEGER = 31;
-	public final static int DECIMAL = 32;
-	public final static int FLOAT = 33;
-	public final static int DOUBLE = 34;
-	
-	public final static int NON_POSITIVE_INTEGER = 35;
-	public final static int NEGATIVE_INTEGER = 36;
-	public final static int LONG = 37;
-	public final static int INT = 38;
-	public final static int SHORT = 39;
-	public final static int BYTE = 40;
-	public final static int NON_NEGATIVE_INTEGER = 41;
-	public final static int UNSIGNED_LONG = 42;
-	public final static int UNSIGNED_INT = 43;
-	public final static int UNSIGNED_SHORT = 44;
-	public final static int UNSIGNED_BYTE = 45;
-	public final static int POSITIVE_INTEGER = 46;
-	
-	public final static int DATE_TIME = 50;
-	public final static int DATE = 51;
-	public final static int TIME = 52;
-	public final static int DURATION = 53;
-	public final static int YEAR_MONTH_DURATION = 54;
-	public final static int DAY_TIME_DURATION = 55;
-	public final static int GYEAR = 56;
+
+    public final static int NUMBER = 30;
+    public final static int INTEGER = 31;
+    public final static int DECIMAL = 32;
+    public final static int FLOAT = 33;
+    public final static int DOUBLE = 34;
+
+    public final static int NON_POSITIVE_INTEGER = 35;
+    public final static int NEGATIVE_INTEGER = 36;
+    public final static int LONG = 37;
+    public final static int INT = 38;
+    public final static int SHORT = 39;
+    public final static int BYTE = 40;
+    public final static int NON_NEGATIVE_INTEGER = 41;
+    public final static int UNSIGNED_LONG = 42;
+    public final static int UNSIGNED_INT = 43;
+    public final static int UNSIGNED_SHORT = 44;
+    public final static int UNSIGNED_BYTE = 45;
+    public final static int POSITIVE_INTEGER = 46;
+
+    public final static int DATE_TIME = 50;
+    public final static int DATE = 51;
+    public final static int TIME = 52;
+    public final static int DURATION = 53;
+    public final static int YEAR_MONTH_DURATION = 54;
+    public final static int DAY_TIME_DURATION = 55;
+    public final static int GYEAR = 56;
     public final static int GMONTH = 57;
     public final static int GDAY = 58;
     public final static int GYEARMONTH = 59;
     public final static int GMONTHDAY = 71;
-    
-	public final static int TOKEN = 60;
-	public final static int NORMALIZED_STRING = 61;
-	public final static int LANGUAGE = 62;
-	public final static int NMTOKEN = 63;
-	public final static int NAME = 64;
-	public final static int NCNAME = 65;
-	public final static int ID = 66;
-	public final static int IDREF = 67;
-	public final static int ENTITY = 68;
-	
-	public final static int JAVA_OBJECT = 100;
+
+    public final static int TOKEN = 60;
+    public final static int NORMALIZED_STRING = 61;
+    public final static int LANGUAGE = 62;
+    public final static int NMTOKEN = 63;
+    public final static int NAME = 64;
+    public final static int NCNAME = 65;
+    public final static int ID = 66;
+    public final static int IDREF = 67;
+    public final static int ENTITY = 68;
+
+    public final static int JAVA_OBJECT = 100;
     public final static int FUNCTION_REFERENCE = 101;
-	
-	/**
-	 * Special type constant to indicate that an item has been
-	 * fulltext indexed.
-	 */
-	public final static int IDX_FULLTEXT = 200;
-	
+
+    /**
+     * Special type constant to indicate that an item has been
+     * fulltext indexed.
+     */
+    public final static int IDX_FULLTEXT = 200;
+
     private final static int[] superTypes = new int[512];
 
-	static {
-		defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
+    static {
+        defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
         defineSubType(ANY_TYPE, UNTYPED);
-
         defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
+        defineSubType(NODE, ELEMENT);
+        defineSubType(NODE, ATTRIBUTE);
+        defineSubType(NODE, TEXT);
+        defineSubType(NODE, PROCESSING_INSTRUCTION);
+        defineSubType(NODE, COMMENT);
+        defineSubType(NODE, DOCUMENT);
+        defineSubType(NODE, NAMESPACE);
+        defineSubType(NODE, CDATA_SECTION);
 
-		defineSubType(NODE, ELEMENT);
-		defineSubType(NODE, ATTRIBUTE);
-		defineSubType(NODE, TEXT);
-		defineSubType(NODE, PROCESSING_INSTRUCTION);
-		defineSubType(NODE, COMMENT);
-		defineSubType(NODE, DOCUMENT);
-		defineSubType(NODE, NAMESPACE);
-		defineSubType(NODE, CDATA_SECTION);
-
-		defineSubType(ITEM, ATOMIC);
-		defineSubType(ATOMIC, STRING);
-		defineSubType(ATOMIC, BOOLEAN);
-		defineSubType(ATOMIC, QNAME);
-		defineSubType(ATOMIC, ANY_URI);
-		defineSubType(ATOMIC, NUMBER);
-		defineSubType(ATOMIC, UNTYPED_ATOMIC);
-		defineSubType(ATOMIC, JAVA_OBJECT);
+        defineSubType(ITEM, ATOMIC);
+        defineSubType(ATOMIC, STRING);
+        defineSubType(ATOMIC, BOOLEAN);
+        defineSubType(ATOMIC, QNAME);
+        defineSubType(ATOMIC, ANY_URI);
+        defineSubType(ATOMIC, NUMBER);
+        defineSubType(ATOMIC, UNTYPED_ATOMIC);
+        defineSubType(ATOMIC, JAVA_OBJECT);
         defineSubType(ATOMIC, FUNCTION_REFERENCE);
-		defineSubType(ATOMIC, DATE_TIME);
-		defineSubType(ATOMIC, DATE);
-		defineSubType(ATOMIC, TIME);
-		defineSubType(ATOMIC, DURATION);
+        defineSubType(ATOMIC, DATE_TIME);
+        defineSubType(ATOMIC, DATE);
+        defineSubType(ATOMIC, TIME);
+        defineSubType(ATOMIC, DURATION);
         defineSubType(ATOMIC, GYEAR);
         defineSubType(ATOMIC, GMONTH);
         defineSubType(ATOMIC, GDAY);
         defineSubType(ATOMIC, GYEARMONTH);
         defineSubType(ATOMIC, GMONTHDAY);
-		defineSubType(ATOMIC, BASE64_BINARY);
+        defineSubType(ATOMIC, BASE64_BINARY);
         defineSubType(ATOMIC, HEX_BINARY);
         defineSubType(ATOMIC, NOTATION);
+
+        defineSubType(DURATION, YEAR_MONTH_DURATION);
+        defineSubType(DURATION, DAY_TIME_DURATION);
+
+        defineSubType(NUMBER, DECIMAL);
+        defineSubType(NUMBER, FLOAT);
+        defineSubType(NUMBER, DOUBLE);
+
+        defineSubType(DECIMAL, INTEGER);
+
+        defineSubType(INTEGER, NON_POSITIVE_INTEGER);
+        defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
+
+        defineSubType(INTEGER, LONG);
+        defineSubType(LONG, INT);
+        defineSubType(INT, SHORT);
+        defineSubType(SHORT, BYTE);
+
+        defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+        defineSubType(NON_NEGATIVE_INTEGER, POSITIVE_INTEGER);
+
+        defineSubType(NON_NEGATIVE_INTEGER, UNSIGNED_LONG);
+        defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
+        defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
+        defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
+
+        defineSubType(STRING, NORMALIZED_STRING);
+        defineSubType(NORMALIZED_STRING, TOKEN);
+        defineSubType(TOKEN, LANGUAGE);
+        defineSubType(TOKEN, NMTOKEN);
+        defineSubType(TOKEN, NAME);
+        defineSubType(NAME, NCNAME);
+        defineSubType(NCNAME, ID);
+        defineSubType(NCNAME, IDREF);
+        defineSubType(NCNAME, ENTITY);
+    }
+
+    private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
+    private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
+
+    static {
+        //TODO : use NODETYPES above ?
+        //TODO use parentheses after the nodes name  ?
+        defineBuiltInType(NODE, "node()");
+        defineBuiltInType(ITEM, "item()");
+        defineBuiltInType(EMPTY, "empty()");
+
+        defineBuiltInType(ELEMENT, "element()");
+        defineBuiltInType(DOCUMENT, "document-node()");
+        defineBuiltInType(ATTRIBUTE, "attribute()");
+        defineBuiltInType(TEXT, "text()");
+        defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction()");
+        defineBuiltInType(COMMENT, "comment()");
+        defineBuiltInType(NAMESPACE, "namespace()");
+        defineBuiltInType(CDATA_SECTION, "cdata-section()");
         
-		defineSubType(DURATION, YEAR_MONTH_DURATION);
-		defineSubType(DURATION, DAY_TIME_DURATION);
-		
-		defineSubType(NUMBER, DECIMAL);
-		defineSubType(NUMBER, FLOAT);
-		defineSubType(NUMBER, DOUBLE);
-
-		defineSubType(DECIMAL, INTEGER);
-		
-		defineSubType(INTEGER, NON_POSITIVE_INTEGER);
-		defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
-		
-		defineSubType(INTEGER, LONG);
-		defineSubType(LONG, INT);
-		defineSubType(INT, SHORT);
-		defineSubType(SHORT, BYTE);
-		
-		defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
-		defineSubType(NON_NEGATIVE_INTEGER, POSITIVE_INTEGER);
-		
-		defineSubType(NON_NEGATIVE_INTEGER, UNSIGNED_LONG);
-		defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
-		defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
-		defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
-		
-		defineSubType(STRING, NORMALIZED_STRING);
-		defineSubType(NORMALIZED_STRING, TOKEN);
-		defineSubType(TOKEN, LANGUAGE);
-		defineSubType(TOKEN, NMTOKEN);
-		defineSubType(TOKEN, NAME);
-		defineSubType(NAME, NCNAME);
-		defineSubType(NCNAME, ID);
-		defineSubType(NCNAME, IDREF);
-		defineSubType(NCNAME, ENTITY);
-	}
-
-	private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
-	private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
-
-	static {
-		//TODO : use NODETYPES above ?
-		//TODO use parentheses after the nodes name  ?
-		defineBuiltInType(NODE, "node()");
-		defineBuiltInType(ITEM, "item()");
-		defineBuiltInType(EMPTY, "empty()");		
-
-		defineBuiltInType(ELEMENT, "element()");
-		defineBuiltInType(DOCUMENT, "document-node()");
-		defineBuiltInType(ATTRIBUTE, "attribute()");
-		defineBuiltInType(TEXT, "text()");
-		defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction()");
-		defineBuiltInType(COMMENT, "comment()");
-		defineBuiltInType(NAMESPACE, "namespace()");
-		defineBuiltInType(CDATA_SECTION, "cdata-section()");
-
-		defineBuiltInType(JAVA_OBJECT, "object");
-		defineBuiltInType(FUNCTION_REFERENCE, "function");
-		defineBuiltInType(NUMBER, "numeric");
-
-		defineBuiltInType(ANY_TYPE, "xs:anyType");
-		defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
-		defineBuiltInType(UNTYPED, "xs:untyped");
-
-		//Duplicate definition : new one first
-		defineBuiltInType(ATOMIC, "xs:anyAtomicType");
-		defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
-		//Duplicate definition : new one first
-		defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic");
-		defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");		
-
-		defineBuiltInType(BOOLEAN, "xs:boolean");
-		defineBuiltInType(DECIMAL, "xs:decimal");
-		defineBuiltInType(FLOAT, "xs:float");
-		defineBuiltInType(DOUBLE, "xs:double");
-		
-		defineBuiltInType(INTEGER, "xs:integer");
-		defineBuiltInType(NON_POSITIVE_INTEGER, "xs:nonPositiveInteger");
-		defineBuiltInType(NEGATIVE_INTEGER, "xs:negativeInteger");
-		defineBuiltInType(LONG, "xs:long");
-		defineBuiltInType(INT, "xs:int");
-		defineBuiltInType(SHORT, "xs:short");
-		defineBuiltInType(BYTE, "xs:byte");
-		defineBuiltInType(NON_NEGATIVE_INTEGER, "xs:nonNegativeInteger");
-		defineBuiltInType(UNSIGNED_LONG, "xs:unsignedLong");
-		defineBuiltInType(UNSIGNED_INT, "xs:unsignedInt");
-		defineBuiltInType(UNSIGNED_SHORT, "xs:unsignedShort");
-		defineBuiltInType(UNSIGNED_BYTE, "xs:unsignedByte");
-		defineBuiltInType(POSITIVE_INTEGER, "xs:positiveInteger");
-		
-		defineBuiltInType(STRING, "xs:string");
-		defineBuiltInType(QNAME, "xs:QName");
-		defineBuiltInType(ANY_URI, "xs:anyURI");
-		defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
+        defineBuiltInType(JAVA_OBJECT, "object");
+        defineBuiltInType(FUNCTION_REFERENCE, "function");
+        defineBuiltInType(NUMBER, "numeric");
+        
+        defineBuiltInType(ANY_TYPE, "xs:anyType");
+        defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
+        defineBuiltInType(UNTYPED, "xs:untyped");
+        
+        //Duplicate definition : new one first
+        defineBuiltInType(ATOMIC, "xs:anyAtomicType");
+        defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
+        //Duplicate definition : new one first
+        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic");
+        defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");		
+        
+        defineBuiltInType(BOOLEAN, "xs:boolean");
+        defineBuiltInType(DECIMAL, "xs:decimal");
+        defineBuiltInType(FLOAT, "xs:float");
+        defineBuiltInType(DOUBLE, "xs:double");
+        
+        defineBuiltInType(INTEGER, "xs:integer");
+        defineBuiltInType(NON_POSITIVE_INTEGER, "xs:nonPositiveInteger");
+        defineBuiltInType(NEGATIVE_INTEGER, "xs:negativeInteger");
+        defineBuiltInType(LONG, "xs:long");
+        defineBuiltInType(INT, "xs:int");
+        defineBuiltInType(SHORT, "xs:short");
+        defineBuiltInType(BYTE, "xs:byte");
+        defineBuiltInType(NON_NEGATIVE_INTEGER, "xs:nonNegativeInteger");
+        defineBuiltInType(UNSIGNED_LONG, "xs:unsignedLong");
+        defineBuiltInType(UNSIGNED_INT, "xs:unsignedInt");
+        defineBuiltInType(UNSIGNED_SHORT, "xs:unsignedShort");
+        defineBuiltInType(UNSIGNED_BYTE, "xs:unsignedByte");
+        defineBuiltInType(POSITIVE_INTEGER, "xs:positiveInteger");
+        
+        defineBuiltInType(STRING, "xs:string");
+        defineBuiltInType(QNAME, "xs:QName");
+        defineBuiltInType(ANY_URI, "xs:anyURI");
+        defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
         defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         defineBuiltInType(NOTATION, "xs:NOTATION");
         
-		defineBuiltInType(DATE_TIME, "xs:dateTime");
-		defineBuiltInType(DATE, "xs:date");
-		defineBuiltInType(TIME, "xs:time");
-		defineBuiltInType(DURATION, "xs:duration");
+        defineBuiltInType(DATE_TIME, "xs:dateTime");
+        defineBuiltInType(DATE, "xs:date");
+        defineBuiltInType(TIME, "xs:time");
+        defineBuiltInType(DURATION, "xs:duration");
         defineBuiltInType(GYEAR, "xs:gYear");
         defineBuiltInType(GMONTH, "xs:gMonth");
         defineBuiltInType(GDAY, "xs:gDay");
         defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
         defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
         
-		//Duplicate definition : new one first
-		defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration");
-		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");		
-		//Duplicate definition : new one first
-		defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration");
-		defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");		
-		
-		defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
-		defineBuiltInType(TOKEN, "xs:token");
-		defineBuiltInType(LANGUAGE, "xs:language");
-		defineBuiltInType(NMTOKEN, "xs:NMTOKEN");
-		defineBuiltInType(NAME, "xs:Name");
-		defineBuiltInType(NCNAME, "xs:NCName");
-		defineBuiltInType(ID, "xs:ID");
-		defineBuiltInType(IDREF, "xs:IDREF");
-		defineBuiltInType(ENTITY, "xs:ENTITY");
-	}
+        //Duplicate definition : new one first
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration");
+        defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");		
+        //Duplicate definition : new one first
+        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration");
+        defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");		
+        
+        defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
+        defineBuiltInType(TOKEN, "xs:token");
+        defineBuiltInType(LANGUAGE, "xs:language");
+        defineBuiltInType(NMTOKEN, "xs:NMTOKEN");
+        defineBuiltInType(NAME, "xs:Name");
+        defineBuiltInType(NCNAME, "xs:NCName");
+        defineBuiltInType(ID, "xs:ID");
+        defineBuiltInType(IDREF, "xs:IDREF");
+        defineBuiltInType(ENTITY, "xs:ENTITY");
+    }
 
-	public final static void defineBuiltInType(int type, String name) {
-		typeNames.put(type, name);
-		typeCodes.put(name, type);
-	}
+    public final static void defineBuiltInType(int type, String name) {
+        typeNames.put(type, name);
+        typeCodes.put(name, type);
+    }
 
 	/**
 	 * Get the internal name for the built-in type.

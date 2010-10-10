@@ -34,8 +34,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 
 
-public class AttributeImpl extends NodeImpl implements Attr
-{
+public class AttributeImpl extends NodeImpl implements Attr {
+
     public static final int ATTR_CDATA_TYPE  = 0;
     public static final int ATTR_ID_TYPE     = 1;
     public static final int ATTR_IDREF_TYPE  = 2;
@@ -47,241 +47,189 @@ public class AttributeImpl extends NodeImpl implements Attr
      * @param  doc
      * @param  nodeNumber
      */
-    public AttributeImpl( DocumentImpl doc, int nodeNumber )
-    {
+    public AttributeImpl( DocumentImpl doc, int nodeNumber ) {
         super( doc, nodeNumber );
     }
 
     @Override
-    public NodeId getNodeId()
-    {
+    public NodeId getNodeId() {
         return( document.attrNodeId[nodeNumber] );
     }
 
-
     @Override
-    public QName getQName()
-    {
+    public QName getQName() {
         return( document.attrName[nodeNumber] );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getName()
      */
-    public String getName()
-    {
+    public String getName() {
         return( getQName().getStringValue() );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeName()
      */
     @Override
-    public String getNodeName()
-    {
+    public String getNodeName() {
         return( getQName().getStringValue() );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeType()
      */
     @Override
-    public short getNodeType()
-    {
+    public short getNodeType() {
         return( Node.ATTRIBUTE_NODE );
     }
-
 
     /* (non-Javadoc)
      * @see org.exist.memtree.NodeImpl#getType()
      */
     @Override
-    public int getType()
-    {
+    public int getType() {
         return( Type.ATTRIBUTE );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getLocalName()
      */
     @Override
-    public String getLocalName()
-    {
+    public String getLocalName() {
         return( getQName().getLocalName() );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNamespaceURI()
      */
     @Override
-    public String getNamespaceURI()
-    {
+    public String getNamespaceURI() {
         return( getQName().getNamespaceURI() );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getPrefix()
      */
     @Override
-    public String getPrefix()
-    {
+    public String getPrefix() {
         return( getQName().getPrefix() );
     }
 
-
     @Override
-    public String getBaseURI()
-    {
+    public String getBaseURI() {
         Node e = document.getNode( document.attrParent[nodeNumber] );
-
         if( e != null ) {
             return( e.getBaseURI() );
         }
-
         return( null );
     }
-
 
     @Override
-    public Node getFirstChild()
-    {
+    public Node getFirstChild() {
         return( null );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getSpecified()
      */
-    public boolean getSpecified()
-    {
+    public boolean getSpecified() {
         return( true );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getValue()
      */
-    public String getValue()
-    {
+    public String getValue() {
         return( document.attrValue[nodeNumber] );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeValue()
      */
     @Override
-    public String getNodeValue() throws DOMException
-    {
+    public String getNodeValue() throws DOMException {
         return( document.attrValue[nodeNumber] );
     }
-
 
     @Override
-    public String getStringValue() throws DOMException
-    {
+    public String getStringValue() throws DOMException {
         return( document.attrValue[nodeNumber] );
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
      */
     @Override
-    public void setNodeValue( String arg0 ) throws DOMException
-    {
+    public void setNodeValue( String arg0 ) throws DOMException {
         // This method was added to enable the SQL XQuery Exztension Module to change the value of an attribute after the fact - Andrzej
         document.attrValue[nodeNumber] = arg0;
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#setValue(java.lang.String)
      */
-    public void setValue( String arg0 ) throws DOMException
-    {
+    public void setValue( String arg0 ) throws DOMException {
+        //Nothing to do
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getOwnerElement()
      */
-    public Element getOwnerElement()
-    {
+    public Element getOwnerElement() {
         return( (Element)document.getNode( document.attrParent[nodeNumber] ) );
     }
 
-
     @Override
-    public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException
-    {
+    public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException {
         if( test.matches( this ) ) {
             result.add( this );
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */
     @Override
-    public Node getParentNode()
-    {
+    public Node getParentNode() {
         int parent = document.attrParent[nodeNumber];
-
         if( parent > 0 ) {
             return( document.getNode( parent ) );
         }
         return( null );
     }
 
-
     @Override
-    public Node selectParentNode()
-    {
+    public Node selectParentNode() {
         return( getParentNode() );
     }
-
 
     /**
      * ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
      *
      * @return  DOCUMENT ME!
      */
-    public TypeInfo getSchemaTypeInfo()
-    {
+    public TypeInfo getSchemaTypeInfo() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Attr#isId()
      *
      * @return  DOCUMENT ME!
      */
-    public boolean isId()
-    {
+    public boolean isId() {
         return( document.attrType[nodeNumber] == ATTR_ID_TYPE );
     }
 
-
     @Override
-    public int getItemType()
-    {
+    public int getItemType() {
         return( Type.ATTRIBUTE );
     }
 
-
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "attribute {" );

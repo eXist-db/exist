@@ -32,5 +32,6 @@ import org.w3c.dom.Element;
  */
 public interface ElementAtExist extends NodeAtExist, Element {
 
-	public Map<String, String> getNamespaceMap();
+    public Map<String, String> getNamespaceMap();
+
 }

@@ -1269,7 +1269,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	
 	private class IndexCallback implements BTreeCallback {
 		
-		List matches = new ArrayList();
+		List<String> matches = new ArrayList<String>();
 		TermMatcher matcher;
 		XQueryContext context;
 		
@@ -1280,7 +1280,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		
 		public String[] getMatches() {
 			String[] a = new String[matches.size()];
-			return (String[]) matches.toArray(a);
+			return matches.toArray(a);
 		}
 		
 		/* (non-Javadoc)
