@@ -79,10 +79,24 @@ server {
 }
                 </programlisting>
             </section>
-            <!-- section>
+            <section>
                 <title>Apache HTTPD</title>
-                <para></para>
-            </section -->
+                <para>This needs to be added to your httpd.conf -</para>
+                <programlisting language="xml">
+		  &lt;VirtualHost *:80&gt;
+		    ProxyRequests	    off
+		    ServerName	    www.mywebsite.com
+		    ServerAlias     *.mywebsite.com
+		    ProxyPass	    /	http://localhost:8088/db/mywebsite.com/
+		    ProxyPassReverse	/	http://localhost:8088/db/mywebsite.com
+	        ProxyPassReverseCookieDomain localhost mywebsite.com
+		    ProxyPassReverseCookiePath / /exist
+
+		    RewriteEngine       on
+		    RewriteRule         ^/(.*)$     /$1   [PT]
+		  &lt;/VirtualHost&gt;
+		  </programlisting>
+            </section>
         </section>
     </chapter>
 </book>
