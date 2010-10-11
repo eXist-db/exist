@@ -44,7 +44,8 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 		super(context);
 		this.requiredCardinality = requiredCardinality;
 		this.expression = expr;
-        this.error = error;
+                this.error = error;
+                setLocation(expression.getLine(), expression.getColumn());
 	}
 	
 	/* (non-Javadoc)
