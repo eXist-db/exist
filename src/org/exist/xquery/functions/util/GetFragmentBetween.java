@@ -354,7 +354,7 @@ public class GetFragmentBetween extends BasicFunction {
     ArrayList<String> result = new ArrayList<String>();
     if (pathName.charAt(0) == '/')
       pathName = pathName.substring(1, pathName.length());  // without first "/" character
-    String regExpr = "[a-zA-Z0-9]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9]+?/" + "|" + "[a-zA-Z0-9]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
+    String regExpr = "[a-zA-Z0-9:]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9:]+?/" + "|" + "[a-zA-Z0-9:]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9:]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
     Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
     Matcher m = p.matcher(pathName);
     while (m.find()) {
