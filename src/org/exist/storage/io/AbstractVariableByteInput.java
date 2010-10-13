@@ -32,10 +32,11 @@ import org.apache.log4j.Logger;
  * @author wolf
  */
 public abstract class AbstractVariableByteInput implements VariableByteInput {
-	
-	private static Logger LOG = Logger.getLogger(AbstractVariableByteInput.class.getName());
+    
+    private static Logger LOG = Logger.getLogger(AbstractVariableByteInput.class.getName());
 
     public AbstractVariableByteInput() {
+        //Nothing to do
     }
 
     public abstract int available() throws IOException;
@@ -74,7 +75,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         ( ( readByte() & 0xff ) << 16 ) |
         ( ( readByte() & 0xff ) << 24 );
     }
-    
+
     public long readLong() throws IOException {
         byte b = readByte();
         long i = b & 0177;
@@ -139,6 +140,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
                 }
             }
         } catch (IOException ee) {
+            //Nothing to do
         }
         return i;
     }
@@ -165,14 +167,15 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     }
     
     public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
-    	for (int i = 0; i < count; i++) {
-    		os.buf.append((byte) read());
-    	}
+        for (int i = 0; i < count; i++) {
+            os.buf.append((byte) read());
+        }
     }
     
     /* (non-Javadoc)
      * @see org.exist.storage.io.VariableByteInput#release()
      */
     public void release() {
+        //Nothing to do
     }
 }

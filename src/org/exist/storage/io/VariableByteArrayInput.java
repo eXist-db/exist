@@ -63,6 +63,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         this.end = offset + length;
     }
 
+    @Override
     public byte readByte() throws IOException, EOFException {
         if (position == end) throw new EOFException();
         return data[position++];
@@ -73,6 +74,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
      * 
      * @see java.io.InputStream#read()
      */
+    @Override
     public int read() throws IOException {
         if (position == end) return -1;
         return data[position++] & 0xFF;
@@ -83,10 +85,12 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
      * 
      * @see java.io.InputStream#available()
      */
+    @Override
     public int available() throws IOException {
         return end - position;
     }
 
+    @Override
     public short readShort() throws IOException {
         if (position == end) throw new EOFException();
         byte b = data[position++];
@@ -99,6 +103,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         return i;
     }
 
+    @Override
     public int readInt() throws IOException {
         if (position == end) throw new EOFException();
         byte b = data[position++];
@@ -110,14 +115,16 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         }
         return i;
     }
-    
+
+    @Override
     public int readFixedInt() throws IOException {
         return ( data[position++] & 0xff ) |
             ( ( data[position++] & 0xff ) << 8 ) |
             ( ( data[position++] & 0xff ) << 16 ) |
             ( ( data[position++] & 0xff ) << 24 );
     }
-    
+
+    @Override
     public long readLong() throws IOException {
         if (position == end) throw new EOFException();
         byte b = data[position++];
@@ -130,6 +137,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         return i;
     }
 
+    @Override
     public String readUTF() throws IOException, EOFException {
     	int len = readInt();
     	String s;
@@ -142,9 +150,9 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         position += len;
     	return s;
     }
-    
-    public void copyTo(VariableByteOutputStream os, int count)
-            throws IOException {
+
+    @Override
+    public void copyTo(VariableByteOutputStream os, int count) throws IOException {
         byte more;
         for (int i = 0; i < count; i++) {
             do {
@@ -153,37 +161,38 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
             } while ((more & 0x200) > 0);
         }
     }
-    
+
+    @Override
     public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
         os.buf.append(data, position, count);
         position += count;
-//        for (int i = 0; i < count; i++) {
-//    		os.buf.append(data[position++]);
-//    	}
     }
-    
+
+    @Override
     public void skip(int count) throws IOException {
         for (int i = 0; i < count; i++) {
-            while (position < end && (data[position++] & 0200) > 0)
-                ;
+            while (position < end && (data[position++] & 0200) > 0) {
+                //Nothing to do
+            }
         }
     }
-    
+
+    @Override
     public void skipBytes(long count) throws IOException {
         for(long i = 0; i < count && position < end; i++)
             position++;
     }
-    
+
     public String toString(int len) {
-    	byte[] subArray = new byte[len];
-        System.arraycopy(data, position, subArray, 0, len);    	
-    	StringBuilder buf = new StringBuilder("[");
-    	for (int i = 0 ; i < len; i++) {
-    		if (i > 0)
-    			buf.append(" ");
-    		buf.append(subArray[i]);
-    	}
-    	buf.append("]");
-    	return buf.toString();
+        byte[] subArray = new byte[len];
+        System.arraycopy(data, position, subArray, 0, len);
+        StringBuilder buf = new StringBuilder("[");
+        for (int i = 0 ; i < len; i++) {
+            if (i > 0)
+                buf.append(" ");
+            buf.append(subArray[i]);
+        }
+        buf.append("]");
+        return buf.toString();
     }
 }

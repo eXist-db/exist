@@ -31,7 +31,7 @@ import java.io.OutputStream;
  * @author Chris Offerman
  */
 public class BlockingOutputStream extends OutputStream {
-    
+
     private BlockingInputStream bis;
     
     /** Create a new BlockingOutputStream adapter.
@@ -41,7 +41,7 @@ public class BlockingOutputStream extends OutputStream {
     public BlockingOutputStream(BlockingInputStream stream) {
         bis = stream;
     }
-    
+
     /**
      * BlockingInputStream of this BlockingOutputStream.
      */
@@ -62,10 +62,11 @@ public class BlockingOutputStream extends OutputStream {
      *             an <code>ExistIOException</code> may be thrown if the 
      *             output stream has been closed.
      */
+    @Override
     public void write(int b) throws IOException {
         bis.writeOutputStream(b);
     }
-    
+
     /**
      * Writes <code>len</code> bytes from the specified byte array 
      * starting at offset <code>off</code> to this output stream. 
@@ -83,10 +84,11 @@ public class BlockingOutputStream extends OutputStream {
      *             an <code>IOException</code> is thrown if the output 
      *             stream is closed.
      */
+    @Override
     public void write(byte b[], int off, int len) throws IOException {
         bis.writeOutputStream(b, off, len);
     }
-    
+
     /**
      * Closes this output stream.
      * A closed stream cannot perform output operations and cannot be reopened.
@@ -96,22 +98,22 @@ public class BlockingOutputStream extends OutputStream {
      * 
      * @throws IOException  if an I/O error occurs.
      */
+    @Override
     public void close() throws IOException {
         bis.closeOutputStream();
     }
-    
+
     /**
      * Closes this output stream, specifying that an exception has occurred.
      * This will cause all consumer calls to be unblocked and throw an
      * IOException with this exception as its cause.
      * <code>BlockingInputStream</code> specific method.
-
      * @throws IOException  if an I/O error occurs.
      */
     public void close(Exception ex) throws IOException {
         bis.closeOutputStream(ex);
     }
-    
+
     /**
      * Flushes this output stream and forces any buffered output bytes 
      * to be written out.
@@ -122,6 +124,7 @@ public class BlockingOutputStream extends OutputStream {
      * 
      * @throws IOException  if an I/O error occurs.
      */
+    @Override
     public void flush() throws IOException {
         bis.flushOutputStream();
     }

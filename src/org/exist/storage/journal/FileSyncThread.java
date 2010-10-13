@@ -40,13 +40,13 @@ import java.nio.channels.FileChannel;
 public class FileSyncThread extends Thread {
 
     private FileChannel endOfLog;
-    
+
     private boolean syncTriggered = false;
-    
+
     private boolean shutdown = false;
-    
+
     private Object latch;
-    
+
     /**
      * Create a new FileSyncThread, using the specified latch
      * to synchronize on.
@@ -68,7 +68,7 @@ public class FileSyncThread extends Thread {
     public void setChannel(FileChannel channel) {
         endOfLog = channel;
     }
-    
+
     /**
      * Trigger a sync on the journal. If a sync is already in progress,
      * the method will just wait until the sync has completed.
@@ -78,7 +78,7 @@ public class FileSyncThread extends Thread {
         syncTriggered = true;
         notifyAll();
     }
-    
+
     /**
      * Shutdown the sync thread.
      */
@@ -86,7 +86,7 @@ public class FileSyncThread extends Thread {
         shutdown = true;
         interrupt();
     }
-    
+
     /**
      * Close the underlying channel.
      */
@@ -95,21 +95,23 @@ public class FileSyncThread extends Thread {
             try {
                 endOfLog.close();
             } catch (IOException e) {
+                //Nothing to do
             }
         }
     }
-    
+
     /**
      * Wait for a sync event or shutdown.
      */
+    @Override
     public void run() {
         while (!shutdown) {
             synchronized (this) { 
                 try {
                     wait();
                 } catch (InterruptedException e) {
+                    //Nothing to do
                 }
-                
                 if (syncTriggered) {
                     sync();
                 }
@@ -119,7 +121,7 @@ public class FileSyncThread extends Thread {
         sync();
         closeChannel();
     }
-    
+
     private void sync() {
         synchronized (latch) {
             try {

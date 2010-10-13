@@ -53,9 +53,8 @@ public class BlockingInputStream extends InputStream {
     private boolean   outClosed;     // Is the output stream closed?
     private Exception  inException;  // Specified when closing input.
     private Exception outException;  // Specified when closing output.
-    
-    private BlockingOutputStream bos = new BlockingOutputStream(this);
 
+    private BlockingOutputStream bos = new BlockingOutputStream(this);
 
     /**
      * BlockingOutputStream adapter for this BlockingInputStream.
@@ -84,6 +83,7 @@ public class BlockingInputStream extends InputStream {
      *             stream is reached.
      * @throws IOException  if an I/O error occurs.
      */
+    @Override
     public synchronized int read() throws IOException {
         byte bb[] = new byte[1];
         return (read(bb, 0, 1) == EOS) ? EOS : bb[0];
@@ -109,6 +109,7 @@ public class BlockingInputStream extends InputStream {
      * @throws IOException  if an I/O error occurs.
      * @throws NullPointerException  if <code>b</code> is <code>null</code>.
      */
+    @Override
     public synchronized int read(byte b[], int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
@@ -129,7 +130,7 @@ public class BlockingInputStream extends InputStream {
                 System.arraycopy(buffer, head, b, off, count1);
                 int count2 = count - count1;
                 if (count2 > 0) {
-                    System.arraycopy(buffer, 0, b, off + count1, count2);                    
+                    System.arraycopy(buffer, 0, b, off + count1, count2);
                 }
                 head = next(head, count);
                 if (empty()) head = tail = 0; // Reset to optimal situation.
@@ -146,6 +147,7 @@ public class BlockingInputStream extends InputStream {
      * Closes this input stream and releases the buffer associated
      * with this stream.
      */
+    @Override
     public synchronized void close() {
         inClosed = true;
         buffer = null;
@@ -174,6 +176,7 @@ public class BlockingInputStream extends InputStream {
      *             without blocking.
      * @throws ExistIOException  if an I/O error occurs.
      */
+    @Override
     public synchronized int available() {
         return (tail - head + SIZE) % SIZE;
     }
@@ -225,8 +228,7 @@ public class BlockingInputStream extends InputStream {
      *             an <code>IOException</code> is thrown if the output 
      *             stream is closed.
      */
-    synchronized void writeOutputStream(byte b[], int off, int len)
-    throws IOException {
+    synchronized void writeOutputStream(byte b[], int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||

@@ -46,14 +46,15 @@ public class VariableByteInputStream extends AbstractVariableByteInput {
     /* (non-Javadoc)
      * @see java.io.InputStream#read()
      */
+    @Override
     public int read() throws IOException {
         return is.read();
     }
-    
-    
+
     /* (non-Javadoc)
      * @see java.io.InputStream#available()
      */
+    @Override
     public int available() throws IOException {
         return is.available();
     } 
