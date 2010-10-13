@@ -58,6 +58,9 @@ public class LdapContextFactory implements Configurable {
 	@ConfigurationFieldAsElement("url")
 	protected String url = null;
 
+        @ConfigurationFieldAsElement("base")
+	protected String base = null;
+
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
 
 	protected String systemUsername = null;
@@ -132,4 +135,8 @@ public class LdapContextFactory implements Configurable {
 	public Configuration getConfiguration() {
 		return configuration;
 	}
+
+        public String getBase() {
+           return base;
+        }
 }

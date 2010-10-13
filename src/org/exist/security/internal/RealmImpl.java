@@ -144,10 +144,12 @@ public class RealmImpl extends AbstractRealm {
 		return created_group;
 	}
 
+    @Override
 	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
 		return addGroup(group.getName());
 	}
 
+    @Override
 	public synchronized Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
 		if (account.getRealmId() == null)
 			throw new ConfigurationException("Account's realmId is null.");
@@ -158,7 +160,8 @@ public class RealmImpl extends AbstractRealm {
 		return sm.addAccount(account);
 	}
 
-	public synchronized boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+    @Override
+	public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
 			broker = sm.getDatabase().get(null);
@@ -169,7 +172,7 @@ public class RealmImpl extends AbstractRealm {
 						" you are not allowed to change '"+account.getName()+"' account");
 	
 	
-			Account updatingAccount = getAccount(account.getName());
+			Account updatingAccount = getAccount(invokingUser, account.getName());
 			if (updatingAccount == null)
 				throw new PermissionDeniedException( //XXX: different exception
 					"account " + account.getName() + " does not exist");
@@ -203,7 +206,8 @@ public class RealmImpl extends AbstractRealm {
 		}
 	}
 
-	public synchronized boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
+    @Override
+	public synchronized boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
 		if(account == null)
 			return false;
 		
@@ -248,11 +252,13 @@ public class RealmImpl extends AbstractRealm {
 		}
 	}
 
+    @Override
 	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
 		//nothing to do: the name or id can't be changed
 		return false;
 	}
 
+    @Override
 	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
 		if(group == null)
 			return false;
@@ -300,7 +306,7 @@ public class RealmImpl extends AbstractRealm {
 	
 	@Override
 	public synchronized Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
-		Account user = getAccount(accountName);
+		Account user = getAccount(null, accountName);
 		if (user == null)
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,

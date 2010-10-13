@@ -683,7 +683,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 	        broker = pool.get(user);
 
-	        return manager.getAccount(name);
+	        return manager.getAccount(user, name);
 
 		} catch (EXistException e) {
 			throw new XMLDBException(
@@ -724,7 +724,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 	        broker = pool.get(user);
 	        
-	        return manager.getGroup(name);
+	        return manager.getGroup(user, name);
 
 		} catch (EXistException e) {
 			throw new XMLDBException(
@@ -780,7 +780,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 	        broker = pool.get(user);
 	        
-			manager.deleteAccount(u);
+			manager.deleteAccount(user, u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -808,7 +808,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 	        broker = pool.get(user);
 	        
-			manager.deleteGroup(role.getName());
+			manager.deleteGroup(user, role.getName());
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
@@ -842,7 +842,7 @@ public class LocalUserManagementService implements UserManagementService {
 		try {
 			broker = pool.get(user);
 		
-			manager.updateAccount(u);
+			manager.updateAccount(user, u);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
 		} catch (Exception e) {

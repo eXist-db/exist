@@ -200,7 +200,7 @@ public class CollectionConfiguration {
 			    	String groupOpt = elem.getAttribute(RESOURCE_ATTR);
 					if (groupOpt != null && groupOpt.length() > 0) {
 						LOG.debug("RESOURCE: " + groupOpt);
-						if (pool.getSecurityManager().getGroup(groupOpt)!=null){
+						if (pool.getSecurityManager().getGroup(broker.getUser(), groupOpt)!=null){
 							defResGroup = groupOpt;	
 						} else {
                             if (checkOnly)
@@ -212,7 +212,7 @@ public class CollectionConfiguration {
 					groupOpt = elem.getAttribute(COLLECTION_ATTR);
 					if (groupOpt != null && groupOpt.length() > 0) {
 						LOG.debug("COLLECTION: " + groupOpt);
-						if (pool.getSecurityManager().getGroup(groupOpt)!=null){
+						if (pool.getSecurityManager().getGroup(broker.getUser(), groupOpt)!=null){
 							defCollGroup = groupOpt;	
 						} else {
                             if (checkOnly)
@@ -524,6 +524,7 @@ public class CollectionConfiguration {
 		}
 	}
 
+    @Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		if (indexSpec != null)

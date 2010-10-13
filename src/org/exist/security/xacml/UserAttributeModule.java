@@ -45,6 +45,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	{
 		this.pdp = pdp;
 	}
+    @Override
 	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context, int designatorType)
 	{
 		if(designatorType != AttributeDesignator.SUBJECT_TARGET)
@@ -77,7 +78,7 @@ public class UserAttributeModule extends AttributeFinderModule
 			return errorResult("Error finding attribute: Subject-id attribute must be a string.");
 		
 		String uid = ((StringAttribute)value).getValue();
-		Account user = pdp.getBrokerPool().getSecurityManager().getAccount(uid);
+		Account user = pdp.getBrokerPool().getSecurityManager().getAccount(null, uid);
 		if(user == null)
 			return errorResult("No user exists for UID '" + uid + "'");
 		
@@ -117,6 +118,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	* @return true to indicate that this module supports
 	* this method of looking up attributes 
 	*/
+    @Override
 	public boolean isDesignatorSupported()
 	{
 		return true;
@@ -130,6 +132,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	* @return A <code>Set</code> indicating the supported
 	* designator type.
 	*/
+    @Override
 	public Set<Integer> getSupportedDesignatorTypes()
 	{
 		return Collections.singleton(new Integer(AttributeDesignator.SUBJECT_TARGET));
@@ -144,6 +147,7 @@ public class UserAttributeModule extends AttributeFinderModule
 	* @return A <code>Set</code> indicating the supported
 	* attribute ids.
 	*/
+    @Override
 	public Set<URI> getSupportedIds()
 	{
 		Set<URI> set = new HashSet<URI>(4);

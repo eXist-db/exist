@@ -59,6 +59,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		super(sm, config);
 	}
 
+    @Override
 	protected LdapContextFactory ensureContextFactory() {
 		if (this.ldapContextFactory == null) {
 
@@ -89,6 +90,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 * @see org.exist.security.Realm#authenticate(java.lang.String,
 	 * java.lang.Object)
 	 */
+    @Override
 	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
 
 		String returnedAtts[] = { "sn", "givenName", "mail" };
@@ -133,7 +135,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		}
 
 		if (ldapUser) {
-			AbstractAccount account = (AbstractAccount) getAccount(username);
+			AbstractAccount account = (AbstractAccount) getAccount(null, username);
 			if (account == null) {
 				Subject currentSubject = getDatabase().getSubject();
 				try {

@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,7 +35,7 @@ public interface GroupsManagement {
 
 	public Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public Group getGroup(String name);
+	public Group getGroup(Subject invokingUser, String name);
 
 	public boolean hasGroup(Group group);
 	public boolean hasGroup(String name);

@@ -21,8 +21,6 @@
  */
 package org.exist.security.internal.aider;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.exist.security.Group;
@@ -77,6 +75,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return The groupPermissions value
      */
+    @Override
     public int getGroupPermissions() {
         return ( permissions & 0x38 ) >> 3;
     }
@@ -87,6 +86,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The owner value
      */
+    @Override
     public Account getOwner() {
         return owner;
     }
@@ -97,6 +97,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The ownerGroup value
      */
+    @Override
     public Group getOwnerGroup() {
         return ownerGroup;
     }
@@ -107,6 +108,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The permissions value
      */
+    @Override
     public int getPermissions() {
         return permissions;
     }
@@ -117,6 +119,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The publicPermissions value
      */
+    @Override
     public int getPublicPermissions() {
         return permissions & 0x7;
     }
@@ -127,6 +130,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return    The userPermissions value
      */
+    @Override
     public int getUserPermissions() {
         return ( permissions & 0x1c0 ) >> 6;
     }
@@ -137,7 +141,8 @@ public class UnixStylePermission implements Permission {
      *
      * @param  group  The group value
      */
-    public void setGroup( Group group ) {
+    @Override
+    public void setGroup(Subject invokingUser, Group group) {
         this.ownerGroup = group;
     }
 
@@ -146,7 +151,8 @@ public class UnixStylePermission implements Permission {
      *
      * @param  group  The group name
      */
-    public void setGroup( String group ) {
+    @Override
+    public void setGroup(Subject invokingUser, String group) {
         this.ownerGroup = new GroupAider(group);
     }
 
@@ -155,6 +161,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new groupPermissions value
      */
+    @Override
     public void setGroupPermissions( int perm ) {
         permissions = permissions | ( perm << 3 );
     }
@@ -165,7 +172,8 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( Account user ) {
+    @Override
+    public void setOwner(Subject invokingUser, Account user) {
    		this.owner = user;
     }
 
@@ -175,7 +183,8 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( String user ) {
+    @Override
+    public void setOwner(Subject invokingUser, String user) {
         this.owner = new UserAider(user);
     }
 
@@ -195,6 +204,7 @@ public class UnixStylePermission implements Permission {
      *@param  str                  The new permissions
      *@exception  SyntaxException  Description of the Exception
      */
+    @Override
     public void setPermissions( String str ) throws SyntaxException {
         StringTokenizer tokenizer = new StringTokenizer( str, ",= " );
         String token;
@@ -241,6 +251,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new permissions value
      */
+    @Override
     public void setPermissions( int perm ) {
         this.permissions = perm;
     }
@@ -251,6 +262,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new publicPermissions value
      */
+    @Override
     public void setPublicPermissions( int perm ) {
         permissions = permissions | perm;
     }
@@ -261,6 +273,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new userPermissions value
      */
+    @Override
     public void setUserPermissions( int perm ) {
         permissions = permissions | ( perm << 6 );
     }
@@ -271,6 +284,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    Description of the Return Value
      */
+    @Override
     public String toString() {
         final char ch[] = {
                 ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
@@ -322,21 +336,49 @@ public class UnixStylePermission implements Permission {
         return new UnixStylePermission(permission);
     }
     
+    @Override
     public boolean validate( Subject user, int perm ) {
     	return false;
-    }
-    
-    public void read( DataInput istream ) throws IOException {
     }
 
 
 	@Override
-	public void setGroup(int id) {
+	public void setGroup(Subject invokingUser, int id) {
 		ownerGroup = new GroupAider(id);
 	}
 
 	@Override
-	public void setOwner(int id) {
+	public void setOwner(Subject invokingUser, int id) {
 		owner = new UserAider(id);
 	}
+
+           @Override
+    public void setGroup(int id) {
+        setGroup(null, id);
+    }
+
+    @Override
+    public void setGroup(Group group) {
+        setGroup(null, group);
+    }
+
+    @Override
+    public void setGroup(String name) {
+        setGroup(null, name);
+    }
+
+    @Override
+    public void setOwner(int id) {
+        setOwner(null, id);
+    }
+
+    @Override
+    public void setOwner(Account user) {
+        setOwner(null, user);
+    }
+
+    @Override
+    public void setOwner(String user) {
+        setOwner(null, user);
+    }
 }

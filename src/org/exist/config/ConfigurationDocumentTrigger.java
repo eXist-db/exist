@@ -52,7 +52,7 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 		
 		if (documentPath.equals("/db/system/users.xml")) {
 			try {
-				ConverterFrom1_0.convert(
+				ConverterFrom1_0.convert(broker.getUser(),
 						broker.getBrokerPool().getSecurityManager(),
 						document);
 			} catch (PermissionDeniedException e) {

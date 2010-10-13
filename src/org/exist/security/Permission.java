@@ -21,9 +21,6 @@
  */
 package org.exist.security;
 
-import java.io.DataInput;
-import java.io.IOException;
-
 import org.exist.util.SyntaxException;
 
 
@@ -75,36 +72,33 @@ public interface Permission {
      * @return The userPermissions value
      */
     public int getUserPermissions();
-
-    /**
-     * Read the Permission from an input stream
-     *
-     * @param  istream          Description of the Parameter
-     * @exception  IOException  Description of the Exception
-     * @deprecated use one on implementation level
-     */
-    public void read(DataInput istream) throws IOException;
     
     /**
      * Set the owner group by group id
      *
      * @param  group  The group id
      */
+    @Deprecated
     public void setGroup(int id);
+    public void setGroup(Subject invokingUser, int id);
 
     /**
      * Set the owner group
      *
      * @param  group  The group value
      */
+    @Deprecated
     public void setGroup(Group group);
+    public void setGroup(Subject invokingUser, Group group);
 
     /**
      * Set the owner group
      *
      * @param  name The group's name
      */
+    @Deprecated
     public void setGroup(String name);
+    public void setGroup(Subject invokingUser, String name);
 
     /**
      * Sets permissions for group
@@ -118,21 +112,27 @@ public interface Permission {
      *
      * @param  user  The new owner id
      */
+    @Deprecated
     public void setOwner(int id);
+    public void setOwner(Subject invokingUser, int id);
 
     /**
      * Set the owner passed as User object
      *
      * @param  user  The new owner value
      */
+    @Deprecated
     public void setOwner(Account user);
+    public void setOwner(Subject invokingUser, Account user);
 
     /**
      * Set the owner
      *
      * @param  user  The new owner value
      */
+    @Deprecated
     public void setOwner(String user);
+    public void setOwner(Subject invokingUser, String user);
 
     /**
      *  Set permissions using a string. The string has the

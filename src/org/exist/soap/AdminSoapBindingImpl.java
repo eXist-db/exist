@@ -803,7 +803,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             u = new UserAider(name);
             ((UserAider)u).setPasswordDigest(password);
         } else {
-            u = manager.getAccount(name);
+            u = manager.getAccount(session.getUser(), name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new RemoteException(
@@ -856,7 +856,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
-        Account u = pool.getSecurityManager().getAccount(user);
+        Session session = getSession(sessionId);
+        Account u = pool.getSecurityManager().getAccount(session.getUser(), user);
         if (u == null)
             throw new RemoteException("user " + user + " does not exist");
         UserDesc desc = new UserDesc();
@@ -887,7 +888,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         try {
         	broker = pool.get(user);
         	
-            manager.deleteAccount(name);
+            manager.deleteAccount(user, name);
         } catch (Exception e) {
             throw new RemoteException(e.getMessage());
 		} finally {
@@ -920,10 +921,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
-    	java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
+        java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
         List<String> v = new ArrayList<String>(roles.size());
         for (Group role : roles) {
-            v.addElement(role.getName());
+            v.add(role.getName());
         }
         return new Strings(v.toArray(new String[v.size()]));
     }
@@ -980,7 +981,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
-            Account lo = manager.getAccount(userName);
+            Account lo = manager.getAccount(session.getUser(), userName);
             doc.setUserLock(lo);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);

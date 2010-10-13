@@ -68,7 +68,7 @@ import org.exist.xmldb.XmldbURI;
  */
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
-public class SecurityManagerImpl implements SecurityManager {
+public class SecurityManagerImpl implements SecurityManager<String> {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
 	public static final String COLLECTION_ATTRIBUTE = "collection";
@@ -125,6 +125,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	 * @param pool
 	 * @param sysBroker
 	 */
+    @Override
     public void attach(BrokerPool pool, DBBroker broker) throws EXistException {
 //    	groups = new Int2ObjectHashMap<Group>(65);
 //    	users = new Int2ObjectHashMap<User>(65);
@@ -185,52 +186,62 @@ public class SecurityManagerImpl implements SecurityManager {
 		}
     }
     
+    @Override
 	public boolean isXACMLEnabled() {
 		return pdp != null;
 	}
+    @Override
 	public ExistPDP getPDP() {
 		return pdp;
 	}
 	
-	public synchronized boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-		return defaultRealm.updateAccount(account);
+    @Override
+	public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+		return defaultRealm.updateAccount(invokingUser, account);
 	}
 
-	public synchronized void deleteGroup(String name) throws PermissionDeniedException, EXistException {
-		Group group = defaultRealm.getGroup(name);
+    @Override
+	public synchronized void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
+		Group group = defaultRealm.getGroup(invokingUser, name);
 		if (group == null) return;
 		
 		defaultRealm.deleteGroup(group);
 	}
 
-	public synchronized void deleteAccount(String name) throws PermissionDeniedException, EXistException {
-		deleteAccount(getAccount(name));
+    @Override
+	public synchronized void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
+		deleteAccount(invokingUser, getAccount(invokingUser, name));
 	}
 	
-	public synchronized void deleteAccount(Account user) throws PermissionDeniedException, EXistException {
+    @Override
+	public synchronized void deleteAccount(Subject invokingUser, Account user) throws PermissionDeniedException, EXistException {
 		if(user == null)
 			return;
 		
-		defaultRealm.deleteAccount(user);
+		defaultRealm.deleteAccount(invokingUser, user);
 	}
 
-	public synchronized Account getAccount(String name) {
+    @Override
+	public synchronized Account getAccount(Subject invokingUser, String name) {
 		for (Realm realm : realms) {
-			Account account = realm.getAccount(name);
+			Account account = realm.getAccount(invokingUser, name);
 			if (account != null) return account;
 		}
 		LOG.debug("user " + name + " not found");
 		return null;
 	}
 
+    @Override
 	public final synchronized Account getAccount(int id) {
 		return usersById.get(id);
 	}
-	
-    public synchronized void addGroup(Group name) throws PermissionDeniedException, EXistException {
-    	defaultRealm.addGroup(name.getName());
+
+    @Override
+    public synchronized Group addGroup(Group name) throws PermissionDeniedException, EXistException {
+    	return defaultRealm.addGroup(name.getName());
     }
 
+    @Override
     public synchronized boolean hasGroup(String name) {
     	for (Realm realm : realms) {
     		if (realm.hasGroup(name)) return true;
@@ -238,26 +249,31 @@ public class SecurityManagerImpl implements SecurityManager {
     	return false;
 	}
 
+    @Override
     public boolean hasGroup(Group group) {
     	return hasGroup(group.getName());
     }
 
-    public synchronized Group getGroup(String name) {
+    @Override
+    public synchronized Group getGroup(Subject invokingUser, String name) {
     	for (Realm realm : realms) {
-    		Group group = realm.getGroup(name);
+    		Group group = realm.getGroup(invokingUser, name);
     		if (group != null) return group;
     	}
 		return null;
 	}
 
+    @Override
 	public final synchronized Group getGroup(int id) {
 		return groupsById.get(id);
 	}
 	
+    @Override
 	public synchronized boolean hasAdminPrivileges(Account user) {
 		return user.hasDbaRole();
 	}
 
+    @Override
 	public synchronized boolean hasAccount(String name) {
     	for (Realm realm : realms) {
     		if (realm.hasAccount(name)) return true;
@@ -288,7 +304,8 @@ public class SecurityManagerImpl implements SecurityManager {
 		}
 	}
 
-	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
+    @Override
+	public synchronized Subject authenticate(String username, String credentials) throws AuthenticationException {
 		if ("jsessionid".equals(username)) {
 			Subject subject = sessions.get(credentials);
 			
@@ -370,6 +387,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		addGroup(new GroupAider(name));
 	}
 	
+    @Override
 	public final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
 		if (account.getRealmId() == null) 
 			throw new ConfigurationException("Account must have realm id.");

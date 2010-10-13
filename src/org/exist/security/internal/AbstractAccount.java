@@ -37,6 +37,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
+import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -79,12 +80,14 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, configuration);
 	}
 
+        @Override
 	public final Group addGroup(Group group) throws PermissionDeniedException {
 		return addGroup(group.getName());
 	}
 
+        @Override
 	public final Group addGroup(String name) throws PermissionDeniedException {
-		Group group = realm.getGroup(name);
+		Group group = realm.getGroup(null, name);
 		if (group == null)
 			return null;
 		

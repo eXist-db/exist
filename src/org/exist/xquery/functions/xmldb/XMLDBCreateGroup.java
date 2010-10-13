@@ -42,7 +42,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -119,7 +118,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                 for(SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
                     String groupManager = i.nextItem().getStringValue();
 
-                    Account groupManagerAccount = sm.getAccount(groupManager);
+                    Account groupManagerAccount = sm.getAccount(broker.getUser(), groupManager);
                     if(groupManagerAccount == null) {
                         logger.error("Could not find the user: " + groupManager);
                         return BooleanValue.FALSE;
@@ -138,7 +137,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                 //add the managers to the group
                 for(Account groupManagerAccount : groupManagerAccounts) {
                     groupManagerAccount.addGroup(group);
-                    sm.updateAccount(groupManagerAccount);
+                    sm.updateAccount(broker.getUser(), groupManagerAccount);
                 }
             } else {
                 //deprecated, create the group

@@ -27,11 +27,11 @@ import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.Realm;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
@@ -57,7 +57,7 @@ public class ConverterFrom1_0 {
 	public static void convert(EXistInputSource is) {
 	}
 	
-	public static void convert(SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
+	public static void convert(Subject invokingUser, SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
 		Element docElement = null;
 		if (acl != null)
 			docElement = acl.getDocumentElement();
@@ -101,7 +101,7 @@ public class ConverterFrom1_0 {
 							account = createAccount(major, minor, (Element) node);
 							
 							if (realm.hasAccount(account.getName())) {
-								realm.updateAccount(account);
+								realm.updateAccount(invokingUser, account);
 							} else {
 								realm.addAccount(account);
 							}
