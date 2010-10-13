@@ -7,6 +7,8 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir" name="Core"/>
+                <root id="src.src10.dir" name="Extensions Security - ActiveDirectory"/>
+                <root id="src.src11.dir" name="Extensions Security - LDAP"/>
                 <root id="src.src2.dir" name="Index NGram"/>
                 <root id="src.src4.dir" name="Index Lucene"/>
                 <root id="src.src9.dir" name="Index Sort"/>
