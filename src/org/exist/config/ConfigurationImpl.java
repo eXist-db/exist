@@ -33,7 +33,6 @@ import java.util.Set;
 import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
