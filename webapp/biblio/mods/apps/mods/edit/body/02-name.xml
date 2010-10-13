@@ -1,7 +1,91 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="name" tab-id="name"><div class="block-form"><xf:group appearance="full">
             <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records requires the use of at least one name element to describe the creator of the intellectual content of the resource, if available. The guidelines recommend the use of the type attribute with all name elements whenever possible for greater control and interoperability. In addition, they require the use of namePart as a subelement of name. This element is repeatable. --><fieldset class="level-1"><div class="join"><legend>Names</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> In Names are catalogued the names of the persons, organisations, or events (conferences, meetings, etc.) that are associated with the resource being catalogued. These relationship between these named entities and the resource is described in Role. </p><p>Include as many Names blocks as needed. </p><p> In addition to describing named entities associated with the creation of a resource, Names is also used as a kind of Subject. For names used as subjects, to note that the resource is about a named entity, see the Subjects tab. </p><p> For textual materials, include the names of all known authors, translators, compilers, and editors. </p><p> For images, include the name of the creator of the original intellectual content (the original photographer, painter, architect, etc.) and the name of anyone capturing that content in a new medium (for a photograph of a building, include both the architect and the photographer). </p><p> If no known person or organisation etc. is known to be associated with the resource, or if the person or organisation etc. is anonymous, do not use "unknown," "anonymous," or similar annotations; rather, leave the Names block empty. </p></div></span></div>
                 <!--name repeat begins--><xf:repeat nodeset="mods:name" id="name-repeat">
-                    
+                    <!--name node-add begins-->
+                    <!--NB: @altRepGroup, @nameTitleGroup, @usage missing--><xf:group appearance="full" ref=".[not(mods:namePart)] | .[not(mods:displayForm)] | .[not(mods:affiliation)] | .[not(mods:role)] | .[not(mods:description)]"><xf:switch><xf:case id="name-add-node-hide"><div class="node-adds-title"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Show Additional Fields</xf:label><xf:toggle case="name-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="name-add-node-unhide"><div class="node-adds-title"><xf:trigger><xf:label class="xforms-group-label-centered">Hide Additional Fields</xf:label><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="name-add-node-recommended" appearance="full"><xf:label class="xforms-group-label-centered">Recommended Fields</xf:label><xf:group ref=".[not(mods:namePart)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Name Part</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:namePart" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:namePart"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:displayForm)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Display Form</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:displayForm" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:displayForm"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:affiliation)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Affiliation</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:affiliation" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:affiliation"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:role)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Role</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:role" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:role"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:description)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Description</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:description" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:description"/></xf:action></xf:trigger></xf:group>
+                                        <!-- 
+                                            <xf:group ref=".[not(@type)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Type</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@type"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group>
+                                            <xf:group ref=".[not(@authority)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Authority</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@authority"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> 
+                                            <xf:group ref=".[not(@lang)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Language</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@lang"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group>
+                                            <xf:group ref=".[not(@transliteration)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Transliteration</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@transliteration"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> 
+                                            <xf:group ref=".[not(@script)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Script</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@script"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> --></xf:group><xf:group id="name-add-node-optional" ref=".[not(@xlink:href)] or .[not(@displayLabel)]" appearance="full"><xf:label class="xforms-group-label-centered">Optional Fields</xf:label>
+                                        <!-- 
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add XLink</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@xlink:href"/>
+                                            </xf:action>
+                                            </xf:trigger> </xf:group>
+                                            <xf:group ref=".[not(@displayLabel)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add Display Label</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@displayLabel"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> --></xf:group><xf:group id="name-add-node-not-recommended" ref=".[not(@ID)] or .[not(@xml:lang)]" appearance="full"><xf:label class="xforms-group-label-centered">Deprecated Fields</xf:label>
+                                        <!-- 
+                                            <xf:group ref=".[not(@ID)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add ID</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@ID"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> 
+                                            <xf:group ref=".[not(@xml:lang)]" appearance="full">
+                                            <xf:trigger class="add-button">
+                                            <xf:label class="xforms-group-label-centered">Add xml:lang</xf:label>
+                                            <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@xml:lang"/>
+                                            </xf:action>
+                                            </xf:trigger>
+                                            </xf:group> --></xf:group></div></xf:case></xf:switch></xf:group>
+                    <!--name node-add ends-->
                     <!--name input begins-->
                     <!--DLF/Aquifer: OPTIONAL-->
                     <!--Cluster: omit--><xf:group ref=".[@ID]" appearance="full"><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint><p>ID is used to link among records inside the database and to reference a field inside the database from the outside.</p></xf:hint></xf:input>
@@ -124,91 +208,7 @@
                     <!--Cluster: hide--><xf:group ref=".[@usage]" appearance="full"><xf:select1 ref="./@usage"><xf:label>Usage: </xf:label><xf:hint><p>Usage with the value "primary" can be used with repeated fields to indicate special prominence of one that is useful for various special purposes such as indexing.</p><p>When applied to Name, "primary" indicates the name that would probably be used when citing the resource. This is useful when there are several authors and for citation purposes one is to be selected. The "primary" name would be used with the resource title for the citation, and also would be the name that would be associated with the uniform title when one is present.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- <xf:trigger> <xf:label class="xforms-label-small">-</xf:label> <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/@usage" at="index('name-repeat')"/> </xf:trigger> --></xf:group>
                     <!--name input ends-->
-                    <!--name node-add begins-->
-                    <!--NB: @altRepGroup, @nameTitleGroup, @usage missing--><xf:group appearance="full" ref=".[not(mods:namePart)] | .[not(mods:displayForm)] | .[not(mods:affiliation)] | .[not(mods:role)] | .[not(mods:description)]"><xf:switch><xf:case id="name-add-node-hide"><div class="node-adds-title"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Show Additional Fields</xf:label><xf:toggle case="name-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="name-add-node-unhide"><div class="node-adds-title"><xf:trigger><xf:label class="xforms-group-label-centered">Hide Additional Fields</xf:label><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="name-add-node-recommended" appearance="full"><xf:label class="xforms-group-label-centered">Recommended Fields</xf:label><xf:group ref=".[not(mods:namePart)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Name Part</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:namePart" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:namePart"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:displayForm)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Display Form</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:displayForm" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:displayForm"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:affiliation)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Affiliation</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:affiliation" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:affiliation"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:role)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Role</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:role" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:role"/></xf:action></xf:trigger></xf:group><xf:group ref=".[not(mods:description)]" appearance="full"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Description</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:description" at="index('name-repeat')" position="after" origin="instance('insert-templates')/mods:name/mods:description"/></xf:action></xf:trigger></xf:group>
-                            <!-- 
-                                        <xf:group ref=".[not(@type)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add Type</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@type"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group>
-                                        <xf:group ref=".[not(@authority)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add Authority</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@authority"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group> 
-                                        <xf:group ref=".[not(@lang)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add Language</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@lang"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group>
-                                        <xf:group ref=".[not(@transliteration)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add Transliteration</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@transliteration"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group> 
-                                        <xf:group ref=".[not(@script)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add Script</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@script"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group> --></xf:group><xf:group id="name-add-node-optional" ref=".[not(@xlink:href)] or .[not(@displayLabel)]" appearance="full"><xf:label class="xforms-group-label-centered">Optional Fields</xf:label>
-                            <!-- 
-                                        <xf:trigger class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add XLink</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                            <xf:insert context="." origin="instance('insert-templates')/mods:name/@xlink:href"/>
-                                            </xf:action>
-                                        </xf:trigger> </xf:group>
-                                    <xf:group ref=".[not(@displayLabel)]" appearance="full">
-                                        <xf:trigger class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Display Label</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                            <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert context="." origin="instance('insert-templates')/mods:name/@displayLabel"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                    </xf:group> --></xf:group><xf:group id="name-add-node-not-recommended" ref=".[not(@ID)] or .[not(@xml:lang)]" appearance="full"><xf:label class="xforms-group-label-centered">Deprecated Fields</xf:label>
-                                        <!-- 
-                                        <xf:group ref=".[not(@ID)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add ID</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@ID"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group> 
-                                        <xf:group ref=".[not(@xml:lang)]" appearance="full">
-                                            <xf:trigger class="add-button">
-                                                <xf:label class="xforms-group-label-centered">Add xml:lang</xf:label>
-                                                <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                                    <xf:insert context="." origin="instance('insert-templates')/mods:name/@xml:lang"/>
-                                                </xf:action>
-                                            </xf:trigger>
-                                        </xf:group> --></xf:group></div></xf:case></xf:switch></xf:group>
-                    <!--name node-add ends-->
+                    
                     <!--namePart begins--><xf:group id="fieldset-namePart" ref=".[(mods:namePart)]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Name Part</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>The name itself is always entered into a Name Part. This is the case even if it is not possible to parse the name into separate units.</p></div></span></div>
                             <!--namePart repeat begins--><xf:repeat nodeset="./mods:namePart" id="namePart-repeat">
                                 <!--namePart input begins-->
@@ -351,7 +351,7 @@
                                 <!--roleTerm begins-->
                                 <!--DLF/Aquifer: OPTIONAL-->
                                 <!--Cluster: include-->
-                                <!--role node-add begins--><xf:group id="fieldset-roleTerm" ref=".[(mods:roleTerm)]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Role Term</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the An authority should be indicated if using a coded form for role. </p><p> Coded input is preselected as Type. The MARC Code List for Relators is preselected as Authority, with the most common roles placed at the top. </p><p> If both a coded term and a textual term are given that represent the same role, use one Role and two occurrences of Role Term.</p></div></span></div>
+                                <!--role node-add begins--><xf:group id="fieldset-roleTerm" ref=".[(mods:roleTerm)]" appearance="full"><fieldset class="level-3"><div class="join"><legend>Role Term</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>Role contains a coded and/or textual description of the role of the person, corporation or conference entered into Name Part to the An authority should be indicated if using a coded form for role. </p><p> Coded input is preselected as Type. The MARC Code List for Relators is preselected as Authority, with the most common roles placed at the top. </p><p> If both a coded term and a textual term are given that represent the same role, use one Role and two occurrences of Role Term.</p></div></span></div>
                                         <!--roleTerm repeat begins--><xf:repeat nodeset="./mods:roleTerm" id="roleTerm-repeat">
                                             <!--roleTerm input begins-->
                                             <!--DLF/Aquifer: RECOMMENDED]-->

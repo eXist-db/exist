@@ -16,13 +16,13 @@
                                     The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
                     </p></xf:hint></xf:input></xf:group>
                 <!--DLF/Aquifer: OPTIONAL-->
-                <!--Cluster: omit--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p> This field is intended to be used when additional text associated with the title is needed for display. The Display Label field may be used whenever appropriate to indicate the preferred labeling when displayed by a metadata aggregator. Appropriate cases include titles other than the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p></xf:hint></xf:input></xf:group>
+                <!--Cluster: omit--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_100"><xf:label>Display Label: </xf:label><xf:hint><p> This field is intended to be used when additional text associated with the title is needed for display. The Display Label field may be used whenever appropriate to indicate the preferred labeling when displayed by a metadata aggregator. Appropriate cases include titles other than the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p></xf:hint></xf:input></xf:group>
                 <!--relatedItem/part begins-->
                 <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend that the part element be used in cases where the part of a resource being represented is a physical or structural part of another resource. Examples include an issue of a journal or a single story from a collection. This element is repeatable. --><xf:group id="fieldset-relatedItem-part" ref=".[mods:part]"><fieldset class="level-2"><div class="join"><legend>Part</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The designation of physical parts of a resource in a detailed form. Part is used to provide detailed coding for physical parts of
                         a resource. It may be used as a top level element to designate physical parts or under Related Item. It may be used under Related Item
                         for generating citations about the location of a part within a host/parent item.</p><p> Use Part when the record in question refers to
                         either a physical or structural part of a resource, rather than an intellectual part. An intellectual part of a resource should be
-                        recorded in various subelements under Title. A newspaper issue would generally be indicated with Part, rather than indicating the issue
+                        recorded in various fields under Title. A newspaper issue would generally be indicated with Part, rather than indicating the issue
                         number as part of the title. The Part element at the top level would also be used to describe one reel of microfilm in a set, or in any
                         other case in which the part being described is not an intellectual whole by itself. When in doubt, and only part numbers or names are
                         needed, use Part Number and/or Part Name under Title under Title Information. </p></div></span></div>
@@ -34,38 +34,43 @@
                         <!--Cluster: omit--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_50"><xf:label>Type: </xf:label><xf:hint><p> A designation of a document segment type. See the MODS User Guidelines for suggested values. However, since there is not a controlled set of terms for type, if used, the value should be expressed clearly and be generally understandable outside of the local context of the resource. </p></xf:hint></xf:input></xf:group>
                         <!--DLF/Aquifer: OPTIONAL-->
                         <!--Cluster: omit--><xf:group ref=".[@order]" appearance="full"><xf:input ref="./@order" class="text_50"><xf:label>Order:</xf:label><xf:hint><p> An integer that designates the sequence of parts. </p></xf:hint></xf:input></xf:group>
-                        <!--relatedItem/part input ends-->
+                        <!--NB 3.4 adds languagePlusDisplayLabelGroup-->
+                        <!--NB 3.4 adds altRepGroup-->
+                                    <!--relatedItem/part input ends-->
                         <!--relatedItem/part/detail begins-->
                         <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                        <!--Cluster: include--><xf:group id="fieldset-relatedItem-detail" ref=".[mods:detail]"><fieldset class="level-3"><div class="join"><legend>Detail</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subelement to indicate the numbering and type of designation of the part in relation to the parent item. Detail
-                                contains numbering and type of designation of the part in relation to the host/parent item in which a host item resides. </p></div></span></div>
+                        <!--Cluster: include--><xf:group id="fieldset-relatedItem-detail" ref=".[mods:detail]"><fieldset class="level-3"><div class="join"><legend>Detail</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this field to indicate the numbering and type of designation of the part in relation to the
+                                                            parent item. Detail contains numbering and type of designation of the part in relation to the
+                                                            host/parent item in which a host item resides. </p></div></span></div>
                             <!--relatedItem/part/detail repeat begins--><xf:repeat nodeset="./mods:detail" id="related-item-part-detail-repeat">
                                 <!--relatedItem/part/detail input begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_50"><xf:label>Type:</xf:label><xf:hint><p> Use this field to indicate the type of the part described. Suggested values include part, volume, issue,
-                                        chapter, section, paragraph, track. Other values may be used as needed. However, since there is not a controlled set of
-                                        terms for type, if used, the value should be expressed clearly and be generally understandable outside of the local
-                                        context of the resource. <!--NB: make open selcetion with code table?--></p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: include--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_50"><xf:label>Type:</xf:label><xf:hint><p> Use this field to indicate the type of the part described. Suggested values include part,
+                                                                volume, issue, chapter, section, paragraph, track. Other values may be used as needed. However,
+                                                                since there is not a controlled set of terms for type, if used, the value should be expressed
+                                                                clearly and be generally understandable outside of the local context of the resource.
+                                                                <!--NB: make open selection with code table.--></p></xf:hint></xf:input></xf:group>
                                 <!--DLF/Aquifer: OPTIONAL-->
-                                <!--Cluster: omit--><xf:group ref=".[@order]" appearance="full"><xf:input ref="./@order" class="text_50"><xf:label>Order:</xf:label><xf:hint><p> An integer that designates the sequence of parts. </p></xf:hint></xf:input></xf:group>
-                                <!--DLF/Aquifer: N/A-->
-                                <!--Cluster: omit--><xf:group ref=".[@level]" appearance="full"><xf:input ref="./@level" class="text_50"><xf:label>Level:</xf:label><xf:hint><p> Describes the level of numbering in the host/parent item. This is used to ensure that the numbering is retained in the proper order. An example is: "v. 2, no. 3". </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: omit--><xf:group ref=".[@level]" appearance="full"><xf:select1 ref="./@level"><xf:label>Level:</xf:label><xf:hint><p> Describes the level of numbering in the host/parent item. This is used to ensure that the numbering is retained in the proper order, with "vol." before "no.".</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='altRepGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--relatedItem/part/detail input ends-->
                                                 
                                 <!--relatedItem/part/detail/number begins-->
                                 <!--DLF/Aquifer: OPTIONAL-->
-                                <!--Cluster: ?--><xf:group ref=".[mods:number]" appearance="full"><xf:input ref="./mods:number" class="text_50"><xf:label>Number:</xf:label><xf:hint><p> Contains the actual number within the part. </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: ?-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:number]" appearance="full"><xf:input ref="./mods:number" class="text_50"><xf:label>Number:</xf:label><xf:hint><p> Contains the actual number within the part. Numbering can be sequencing in any form, e.g., Part 1, Supplement A, Book two.</p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/detail/number ends-->
                                                 
                                 <!--relatedItem/part/detail/caption begins-->
                                 <!--DLF/Aquifer: OPTIONAL-->
-                                <!--Cluster: ?--><xf:group ref=".[mods:caption]" appearance="full"><xf:input ref="./mods:caption" class="text_50"><xf:label>Caption:</xf:label><xf:hint><p> Contains the caption describing the enumeration within a part. This may be the same as type, but conveys what is
+                                <!--Cluster: ?-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:caption]" appearance="full"><xf:input ref="./mods:caption" class="text_50"><xf:label>Caption:</xf:label><xf:hint><p> Contains the caption describing the enumeration within a part. This may be the same as type, but conveys the actual text of what is
                                         on the item being described. </p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/detail/caption ends-->
                                                 
                                 <!--relatedItem/part/detail/title begins-->
                                 <!--DLF/Aquifer: OPTIONAL-->
-                                <!--Cluster: ?--><xf:group ref=".[mods:title]" appearance="full"><xf:input ref="./mods:title" class="text_50"><xf:label>Title:</xf:label><xf:hint><p> Contains the title of the part. Only include if this is different than the Title in Title Information. </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: ?-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:title]" appearance="full"><xf:input ref="./mods:title" class="text_50"><xf:label>Title:</xf:label><xf:hint><p> Contains the title of the part. Only include if this is different than the Title in Title Information. </p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/detail/title ends-->
                                                 
                                 <!--relatedItem/part/detail delete begins--><xf:trigger ref=".[count(../mods:detail) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Detail</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:detail" at="index('related-item-part-detail-repeat')"/></xf:trigger>
@@ -76,31 +81,34 @@
                                     <!--relatedItem/part/detail ends-->
                         <!--relatedItem/part/extent begins-->
                         <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                        <!--Cluster: include--><xf:group id="fieldset-relatedItem-extent" ref=".[mods:extent]"><fieldset class="level-3"><div class="join"><legend>Extent</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subelement to indicate the measured units making up the part (for example pages, minutes, etc.). </p></div></span></div>
+                        <!--Cluster: include--><xf:group id="fieldset-relatedItem-extent" ref=".[mods:extent]"><fieldset class="level-3"><div class="join"><legend>Extent</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this field to indicate the measured units making up the part (for example volumes, pages, square centimeters, minutes, etc.). </p></div></span></div>
                             <!--relatedItem/part/extent repeat begins--><xf:repeat nodeset="./mods:extent" id="related-item-extent-repeat">
                                 <!--relatedItem/part/extent input begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[@unit]" appearance="full"><xf:select1 ref="./@unit"><xf:label>Unit:</xf:label><xf:hint><p> Suggested values include page, minute, etc. <!--NB: make code table with open selection?--></p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='part-extent-unit-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: include--><xf:group ref=".[@unit]" appearance="full"><xf:select1 ref="./@unit" selection="open"><xf:label>Unit:</xf:label><xf:hint><p> Suggested values include page, minute, etc.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='part-extent-unit-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                 <!--relatedItem/part/extent input ends-->
                                                 
                                 <!--relatedItem/part/start begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[mods:start]" appearance="full"><xf:input ref="./mods:start" class="text_50"><xf:label>Start:</xf:label><xf:hint><p> Contains the beginning unit of the extent within a part (e.g., first page). </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: include-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:start]" appearance="full"><xf:input ref="./mods:start" class="text_50"><xf:label>Start:</xf:label><xf:hint><p> Contains the beginning unit of the extent within a part (e.g., first page). </p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/start ends-->
                                                 
                                 <!--relatedItem/part/end begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[mods:end]" appearance="full"><xf:input ref="./mods:end" class="text_50"><xf:label>End:</xf:label><xf:hint><p> Contains the ending unit of the extent within a part. </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: include-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:end]" appearance="full"><xf:input ref="./mods:end" class="text_50"><xf:label>End:</xf:label><xf:hint><p> Contains the ending unit of the extent within a part. </p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/end ends-->
                                                 
                                 <!--relatedItem/part/total begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[mods:total]" appearance="full"><xf:input ref="./mods:total" class="text_50"><xf:label>Total:</xf:label><xf:hint><p> Contains the total number of units within a part, rather than specific units. </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: include--><xf:group ref=".[mods:total]" appearance="full"><xf:input ref="./mods:total" class="text_50"><xf:label>Total:</xf:label><xf:hint><p> Contains the total number of units within a part, rather than specific units. Use positive numbers only. For example, use "5" to indicate a total of five pages.</p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/total ends-->
                                                 
                                 <!--relatedItem/part/list begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[mods:list]" appearance="full"><xf:input ref="./mods:list" class="text_50"><xf:label>List:</xf:label><xf:hint><p> Contains a textual listing of the units within a part (e.g., "pp. 5-9".) </p></xf:hint></xf:input></xf:group>
+                                <!--Cluster: include-->
+                                                <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[mods:list]" appearance="full"><xf:input ref="./mods:list" class="text_50"><xf:label>List:</xf:label><xf:hint><p> Contains a textual listing of the units within a part (e.g., "pp. 5-9".) </p></xf:hint></xf:input></xf:group>
                                 <!--relatedItem/part/list ends-->
                                                 
                                 <!--relatedItem/part/extent delete begins--><xf:trigger ref=".[count(../mods:extent) &gt; 1]" class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Extent</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:extent" at="index('related-item-extent-repeat')"/></xf:trigger>
@@ -116,13 +124,17 @@
                             <!--relatedItem/part/date repeat begins--><xf:repeat nodeset="./mods:date" id="related-item-part-date-repeat"><div class="block-form">
                                     <!--relatedItem/part/date input begins-->
                                     <!--DLF/Aquifer: RECOMMENDED-->
-                                    <!--Cluster: include--><xf:group ref=".[@encoding]" appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> If a structured date is used, indicate the formatting source using the encoding field. These guidelines
-                                                                recommend using the following value for the encoding field: "w3cdtf" This encoding is used to specify YYYY-MM-DD
-                                            date patterns. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    <!--Cluster: include-->
+                                                    <!-- NB: 3.4 adds languageAttributeGroup --><xf:group ref=".[@encoding]" appearance="full"><xf:select1 ref="./@encoding"><xf:label>Encoding:</xf:label><xf:hint><p> If a structured date is used, indicate the formatting source using the encoding field. These guidelines recommend
+                                                                    using the following value for the encoding field: "w3cdtf" This encoding is used to specify YYYY-MM-DD date patterns.
+                                                                    "iso8601" is used for formatted dates which use pattern: YYYYMMDD (hours, minutes, seconds may also be added). "marc" is used
+                                                                    only for dates coded according to MARC 21 rules in field 008/07-14 for dates of publication/issuance. Thus, this would only
+                                                                    apply to the field in Date Issued. Examples include: 19uu (a MARC convention to show unknown digits in a date), 9999 (a MARC
+                                                                    convention showing that the end date has not occurred or is not known). </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-encoding-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                                     
                                     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                                    <!--Cluster: include--><xf:group ref=".[@point]" appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> Used to note whether the date noted is a start point or an end point. If no point is specified, date
-                                            is assumed to be a single date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='start-end-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    <!--Cluster: include--><xf:group ref=".[@point]" appearance="full"><xf:select1 ref="./@point"><xf:label>Point:</xf:label><xf:hint><p> The point field can be used to encode date ranges using the following values: "start" and "end". If no point is specified, date
+                                                                    is assumed to be a single date. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='start-end-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
                                     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
                                     <!--Cluster: include--><xf:group ref=".[@qualifier]" appearance="full"><xf:select1 ref="./@qualifier"><xf:label>Qualifier:</xf:label><xf:hint><p> The Qualifier field has three allowed values: approximate, inferred, and questionable. Best practice is to
                                                                 use this field with the appropriate value when a date is approximate, inferred, or questionable, rather than
@@ -136,7 +148,7 @@
                             <!--relatedItem/part/date add begins--><xf:trigger ref=".[count(mods:date) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:date" at="index('related-item-part-date-repeat')" position="after" origin="instance('insert-templates')/mods:part/mods:date"/><xf:setvalue ref="instance('save-data')/mods:part/mods:date[last()]" value="''"/></xf:action></xf:trigger>
                             <!--relatedItem/part/date add ends--></fieldset></xf:group>
                                     <!--relatedItem/part/date ends-->
-                        <!--relatedItem/part/text begins--><xf:group ref=".[mods:part/mods:text]" appearance="full"><xf:textarea ref="instance('save-data')/mods:part/mods:text" class="textarea" mediatype="dojo"><xf:label>Text:</xf:label><xf:hint><p> Use this subelement to record information in textual form. Use this subelement when other subelements will not capture the
+                        <!--relatedItem/part/text begins--><xf:group ref=".[mods:part/mods:text]" appearance="full"><xf:textarea ref="instance('save-data')/mods:part/mods:text" class="textarea" mediatype="dojo"><xf:label>Text:</xf:label><xf:hint><p> Use this field to record information in textual form. Use this field when other fields will not capture the
                                 appropriate information. </p></xf:hint></xf:textarea></xf:group>
                         <!--relatedItem/part/text ends-->
                                     
