@@ -400,7 +400,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		
 		createUserHome(new_account);
 
-		return account;
+		return new_account;
 	}
 	
 	protected void save() throws PermissionDeniedException, EXistException {
