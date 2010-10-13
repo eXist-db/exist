@@ -44,32 +44,32 @@ public class LogEntryTypes {
      * Used to register a class for a given log entry type.
      */
     private static class LogEntry {
-        
+
         private static Class<?> constructorArgs[] = { DBBroker.class, long.class };
-        
+
         @SuppressWarnings("unused")
-		private byte type;
+        private byte type;
         private Class<Loggable> clazz;
-        
+
         @SuppressWarnings("unchecked")
-		public LogEntry(byte type, Class myClass) {
+        public LogEntry(byte type, Class myClass) {
             this.type = type;
             this.clazz = myClass;
         }
-        
+
         public Loggable newInstance(DBBroker broker, long transactId) throws Exception {
             Constructor<Loggable> constructor = clazz.getConstructor(constructorArgs);
             return constructor.newInstance(new Object[] { broker, new Long(transactId) });
         }
     }
-    
-	public final static byte TXN_START = 0;
-	public final static byte TXN_COMMIT = 1;
-	public final static byte CHECKPOINT = 2;
-	public final static byte TXN_ABORT = 3;
-	
-    private final static Int2ObjectHashMap entryTypes = new Int2ObjectHashMap();
-    
+
+    public final static byte TXN_START = 0;
+    public final static byte TXN_COMMIT = 1;
+    public final static byte CHECKPOINT = 2;
+    public final static byte TXN_ABORT = 3;
+
+    private final static Int2ObjectHashMap<LogEntry> entryTypes = new Int2ObjectHashMap<LogEntry>();
+
     // register the common entry types
     static {
         addEntryType(TXN_START, TxnStart.class);
@@ -77,7 +77,7 @@ public class LogEntryTypes {
         addEntryType(CHECKPOINT, Checkpoint.class);
         addEntryType(TXN_ABORT, TxnAbort.class);
     }
-    
+
     /**
      * Add an entry type to the registry.
      * 
@@ -88,7 +88,7 @@ public class LogEntryTypes {
         LogEntry entry = new LogEntry(type, clazz);
         entryTypes.put(type, entry);
     }
-    
+
     /**
      * Create a new loggable object for the given type.
      * 
@@ -96,8 +96,8 @@ public class LogEntryTypes {
      * @param transactId the id of the current transaction.
      * @throws LogException
      */
-	public final static Loggable create(byte type, DBBroker broker, long transactId) throws LogException {
-		LogEntry entry = (LogEntry) entryTypes.get(type);
+    public final static Loggable create(byte type, DBBroker broker, long transactId) throws LogException {
+        LogEntry entry = entryTypes.get(type);
         if (entry == null)
             return null;
         try {
@@ -105,6 +105,6 @@ public class LogEntryTypes {
         } catch (Exception e) {
             throw new LogException("Failed to create log entry object", e);
         }
-	}
+    }
 
 }
