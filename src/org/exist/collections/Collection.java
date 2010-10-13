@@ -447,6 +447,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
      *
      * @return A boolean value where true indicates it may be unloaded.
      */
+    @Override
     public boolean allowUnload() {
         for (DocumentImpl doc : documents.values()) {
             if (doc.isLockedForWrite())
@@ -469,6 +470,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
 //		return false;
     }
     
+    @Override
     public int compareTo(Collection other) {
         if (collectionId == other.collectionId)
             return Constants.EQUAL;
@@ -478,6 +480,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             return Constants.SUPERIOR;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Collection))
             return false;
@@ -927,6 +930,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
+            @Override
             public void run() throws EXistException, SAXException {
                 try {
                     final InputStream is = source.getByteStream();
@@ -975,6 +979,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final String data, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
+            @Override
             public void run() throws SAXException, EXistException {
                 
                 CollectionConfiguration colconf 
@@ -1013,6 +1018,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
+            @Override
             public void run() throws EXistException, SAXException {
                 info.getDOMStreamer().serialize(node, true);
             }
@@ -1147,6 +1153,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
         return validateXMLResourceInternal(transaction, broker, docUri, colconf, new ValidateBlock() {
+            @Override
             public void run(IndexInfo info) throws SAXException, EXistException {
                 XMLReader reader = getReader(broker, true, colconf);
 
@@ -1185,6 +1192,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, docUri, getConfiguration(broker), new ValidateBlock() {
+            @Override
             public void run(IndexInfo info) throws SAXException {
                 info.setDOMStreamer(new DOMStreamer());
                 info.getDOMStreamer().serialize(node, true);
@@ -1750,6 +1758,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see java.util.Observable#addObserver(java.util.Observer)
      */
+    @Override
     public void addObserver(Observer o) {
         if (hasObserver(o)) return;
         if (observers == null) {
@@ -1776,6 +1785,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         /* (non-Javadoc)
          * @see java.util.Observable#deleteObservers()
          */
+    @Override
     public void deleteObservers() {
         if (observers != null)
             observers = null;
@@ -1784,6 +1794,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         /* (non-Javadoc)
          * @see org.exist.storage.cache.Cacheable#getKey()
          */
+    @Override
     public long getKey() {
         return collectionId;
     }
@@ -1791,6 +1802,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         /* (non-Javadoc)
          * @see org.exist.storage.cache.Cacheable#getReferenceCount()
          */
+    @Override
     public int getReferenceCount() {
         return refCount;
     }
@@ -1798,6 +1810,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         /* (non-Javadoc)
          * @see org.exist.storage.cache.Cacheable#incReferenceCount()
          */
+    @Override
     public int incReferenceCount() {
         return ++refCount;
     }
@@ -1805,6 +1818,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#decReferenceCount()
      */
+    @Override
     public int decReferenceCount() {
         return refCount > 0 ? --refCount : 0;
     }
@@ -1812,6 +1826,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
      */
+    @Override
     public void setReferenceCount(int count) {
         refCount = count;
     }
@@ -1819,6 +1834,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
      */
+    @Override
     public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
@@ -1826,6 +1842,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#getTimestamp()
      */
+    @Override
     public int getTimestamp() {
         return timestamp;
     }
@@ -1833,6 +1850,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#release()
      */
+    @Override
     public boolean sync(boolean syncJournal) {
         return false;
     }
@@ -1840,10 +1858,12 @@ public  class Collection extends Observable implements Comparable<Collection>, C
     /* (non-Javadoc)
      * @see org.exist.storage.cache.Cacheable#isDirty()
      */
+    @Override
     public boolean isDirty() {
         return false;
     }
     
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
