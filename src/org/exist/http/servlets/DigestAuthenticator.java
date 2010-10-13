@@ -33,6 +33,7 @@ import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.storage.BrokerPool;
 
 /**
@@ -69,7 +70,7 @@ public class DigestAuthenticator implements Authenticator {
 			sendChallenge(request, response);
 			return null;
 		}
-		return (Subject) user; //XXX: digest authenticator
+		return new SubjectAccreditedImpl(user, this);
 	}
 
 	public void sendChallenge(HttpServletRequest request,
