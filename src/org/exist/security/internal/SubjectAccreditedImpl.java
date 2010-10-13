@@ -25,7 +25,7 @@ package org.exist.security.internal;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public final class SubjectAccreditedImpl extends AbstractSubject {
+public class SubjectAccreditedImpl extends AbstractSubject {
 
 	private final Object letterOfCredit;
 	

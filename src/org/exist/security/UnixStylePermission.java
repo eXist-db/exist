@@ -21,8 +21,6 @@
  */
 package org.exist.security;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.exist.util.SyntaxException;
@@ -72,15 +70,16 @@ public class UnixStylePermission implements Permission {
     /**
      * Construct a permission with given user, group and permissions
      *
+     * @param  invokingUser Description of the Parameter
      * @param  sm           Description of the Parameter
      * @param  user         Description of the Parameter
      * @param  group        Description of the Parameter
      * @param  permissions  Description of the Parameter
      */
-    public UnixStylePermission(SecurityManager sm, String user, String group, int permissions) {
+    public UnixStylePermission(Subject invokingUser, SecurityManager sm, String user, String group, int permissions) {
     	this(sm, permissions);
-        owner = sm.getAccount(user);
-        ownerGroup = sm.getGroup(group);
+        owner = sm.getAccount(invokingUser, user);
+        ownerGroup = sm.getGroup(invokingUser, group);
         
         check(user, group);
     }
@@ -92,6 +91,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The groupPermissions value
      */
+    @Override
     public int getGroupPermissions() {
         return ( permissions & 0x38 ) >> 3;
     }
@@ -102,6 +102,7 @@ public class UnixStylePermission implements Permission {
      *
      * @return The owner value
      */
+    @Override
     public Account getOwner() {
         return owner;
     }
@@ -112,6 +113,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The ownerGroup value
      */
+    @Override
     public Group getOwnerGroup() {
         return ownerGroup;
     }
@@ -122,6 +124,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The permissions value
      */
+    @Override
     public int getPermissions() {
         return permissions;
     }
@@ -132,6 +135,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The publicPermissions value
      */
+    @Override
     public int getPublicPermissions() {
         return permissions & 0x7;
     }
@@ -142,23 +146,9 @@ public class UnixStylePermission implements Permission {
      *
      *@return    The userPermissions value
      */
+    @Override
     public int getUserPermissions() {
         return ( permissions & 0x1c0 ) >> 6;
-    }
-
-
-    /**
-     *  Read the Permission from an input stream
-     *
-     *@param  istream          Description of the Parameter
-     *@exception  IOException  Description of the Exception
-     */
-    public void read( DataInput istream ) throws IOException {
-        owner = sm.getAccount(istream.readUTF());
-        ownerGroup = sm.getGroup(istream.readUTF());
-        permissions = istream.readByte();
-        
-        check(null, null);
     }
     
 	/**
@@ -166,13 +156,15 @@ public class UnixStylePermission implements Permission {
      *
      *@param  group  The new group value
      */
-    public void setGroup( String groupName ) {
-        Group group = sm.getGroup(groupName);
+    @Override
+    public void setGroup(Subject invokingUser, String groupName ) {
+        Group group = sm.getGroup(invokingUser, groupName);
         if (group != null) ownerGroup = group;
     }
 
-    public void setGroup( Group group ) {
-    	if (group != null) setGroup(group.getName());
+    @Override
+    public void setGroup(Subject invokingUser, Group group ) {
+    	if (group != null) setGroup(invokingUser, group.getName());
     }
 
     /**
@@ -180,6 +172,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new groupPermissions value
      */
+    @Override
     public void setGroupPermissions( int perm ) {
         permissions = permissions | ( perm << 3 );
     }
@@ -190,12 +183,13 @@ public class UnixStylePermission implements Permission {
      *
      *@param  user  The new owner value
      */
-    public void setOwner( Account account ) {
+    @Override
+    public void setOwner(Subject invokingUser, Account account ) {
     	//assume SYSTEM identity if user gets lost due to a database corruption
     	if(account == null) {
     		this.owner = sm.getSystemSubject();
     	} else
-    		setOwner(account.getName());
+    		setOwner(invokingUser, account.getName());
     }
 
 
@@ -204,8 +198,9 @@ public class UnixStylePermission implements Permission {
      *
      *@param  name  The new owner value
      */
-    public void setOwner( String name ) {
-    	Account account = sm.getAccount( name );
+    @Override
+    public void setOwner(Subject invokingUser, String name) {
+    	Account account = sm.getAccount(invokingUser, name);
     	if (account != null) owner = account; 
     }
 
@@ -225,6 +220,7 @@ public class UnixStylePermission implements Permission {
      *@param  str                  The new permissions
      *@exception  SyntaxException  Description of the Exception
      */
+    @Override
     public void setPermissions( String str ) throws SyntaxException {
         StringTokenizer tokenizer = new StringTokenizer( str, ",= " );
         String token;
@@ -271,6 +267,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new permissions value
      */
+    @Override
     public void setPermissions( int perm ) {
         this.permissions = perm;
     }
@@ -281,6 +278,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new publicPermissions value
      */
+    @Override
     public void setPublicPermissions( int perm ) {
         permissions = permissions | perm;
     }
@@ -291,6 +289,7 @@ public class UnixStylePermission implements Permission {
      *
      *@param  perm  The new userPermissions value
      */
+    @Override
     public void setUserPermissions( int perm ) {
         permissions = permissions | ( perm << 6 );
     }
@@ -301,6 +300,7 @@ public class UnixStylePermission implements Permission {
      *
      *@return    Description of the Return Value
      */
+    @Override
     public String toString() {
         final char ch[] = {
                 ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
@@ -324,6 +324,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
+    @Override
     public boolean validate( Subject user, int perm ) {
         // group dba has full access
         if ( user.hasDbaRole() )
@@ -342,16 +343,16 @@ public class UnixStylePermission implements Permission {
         return validatePublic( perm );
     }
 
-    private final boolean validateGroup( int perm ) {
+    private boolean validateGroup( int perm ) {
         perm = perm << 3;
         return ( permissions & perm ) == perm;
     }
 
-    private final boolean validatePublic( int perm ) {
+    private boolean validatePublic( int perm ) {
         return ( permissions & perm ) == perm;
     }
 
-    private final boolean validateUser( int perm ) {
+    private boolean validateUser( int perm ) {
         perm = perm << 6;
         return ( permissions & perm ) == perm;
     }
@@ -373,7 +374,7 @@ public class UnixStylePermission implements Permission {
 
 
 	@Override
-	public void setGroup(int id) {
+	public void setGroup(Subject invokingUser, int id) {
 		Group group = sm.getGroup(id);
 		if (group == null)
 			group = sm.getDBAGroup();
@@ -383,12 +384,42 @@ public class UnixStylePermission implements Permission {
 
 
 	@Override
-	public void setOwner(int id) {
+	public void setOwner(Subject invokingUser, int id) {
 		Account account = sm.getAccount(id);
 		if (account == null)
 			account = sm.getSystemSubject();
 		
 		owner = account;
 	}
+
+    @Override
+    public void setGroup(int id) {
+        setGroup(null, id);
+    }
+
+    @Override
+    public void setGroup(Group group) {
+        setGroup(null, group);
+    }
+
+    @Override
+    public void setGroup(String name) {
+        setGroup(null, name);
+    }
+
+    @Override
+    public void setOwner(int id) {
+        setOwner(null, id);
+    }
+
+    @Override
+    public void setOwner(Account user) {
+        setOwner(null, user);
+    }
+
+    @Override
+    public void setOwner(String user) {
+        setOwner(null, user);
+    }
 }
 

@@ -41,7 +41,7 @@ import org.exist.xmldb.XmldbURI;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
-public interface SecurityManager extends Configurable {
+public interface SecurityManager<T> extends Configurable {
 
    public final static String ACL_FILE = "users.xml";
    public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
@@ -69,28 +69,28 @@ public interface SecurityManager extends Configurable {
 
    Account addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   void deleteAccount(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
-   void deleteAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
+   void deleteAccount(Subject invokingUser, Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
+   boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   Account getAccount(String name);
+   Account getAccount(Subject invokingUser, String name);
 
-   void addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    @Deprecated
    void addGroup(String group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    boolean hasGroup(String name);
    boolean hasGroup(Group group);
 
-   Group getGroup(String name);
+   Group getGroup(Subject invokingUser, String name);
    Group getGroup(int gid);
 
-   void deleteGroup(String name) throws PermissionDeniedException, EXistException;
+   void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException;
 
    boolean hasAdminPrivileges(Account user);
 
-   public Subject authenticate(String username, Object credentials) throws AuthenticationException;
+   public Subject authenticate(String username, T credentials) throws AuthenticationException;
 
    public Subject getSystemSubject();
    public Subject getGuestSubject();

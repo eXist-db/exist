@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
@@ -84,9 +85,10 @@ public class ResourcePropertyDialog extends JDialog {
         this.mimeType = mimeType == null ? "N/A" : mimeType;
 		setupComponents();
 		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent ev) {
-				cancelAction();
-			}
+                    @Override
+                    public void windowClosing(WindowEvent ev) {
+                            cancelAction();
+                    }
 		});
 		pack();
 	}
@@ -242,16 +244,18 @@ public class ResourcePropertyDialog extends JDialog {
 
 		JButton button = new JButton("Apply");
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				applyAction();
-			}
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        applyAction();
+                    }
 		});
 		buttonBox.add(button);
 		button = new JButton("Cancel");
 		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				cancelAction();
-			}
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelAction();
+                    }
 		});
 		buttonBox.add(button);
 
@@ -317,8 +321,8 @@ public class ResourcePropertyDialog extends JDialog {
 	}
 
 	private void applyAction() {
-		permissions.setOwner((String) owners.getSelectedItem());
-		permissions.setGroup((String) groups.getSelectedItem());
+		permissions.setOwner(null, (String) owners.getSelectedItem());
+		permissions.setGroup(null, (String) groups.getSelectedItem());
 		int perms =
 			(checkPermissions(userPerms) << 6)
 				| (checkPermissions(groupPerms) << 3)

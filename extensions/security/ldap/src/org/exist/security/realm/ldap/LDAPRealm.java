@@ -21,7 +21,11 @@
  */
 package org.exist.security.realm.ldap;
 
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
@@ -37,6 +41,7 @@ import org.exist.security.internal.AbstractAccount;
 import org.exist.security.internal.AbstractRealm;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 
@@ -47,116 +52,282 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("realm") //TODO: id = LDAP
 public class LDAPRealm extends AbstractRealm {
 
-	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+    private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+    public static String ID = "LDAP";
+    protected LdapContextFactory ldapContextFactory = null;
 
-	public static String ID = "LDAP";
+    public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
+        super(sm, config);
+    }
 
-	protected LdapContextFactory ldapContextFactory = null;
+    protected LdapContextFactory ensureContextFactory() {
+        if(this.ldapContextFactory == null) {
 
-	public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
-		super(sm, config);
-	}
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("No LdapContextFactory specified - creating a default instance.");
+            }
 
-	protected LdapContextFactory ensureContextFactory() {
-		if (this.ldapContextFactory == null) {
+            LdapContextFactory factory = new LdapContextFactory(configuration);
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("No LdapContextFactory specified - creating a default instance.");
-			}
+            this.ldapContextFactory = factory;
+        }
+        return this.ldapContextFactory;
+    }
 
-			LdapContextFactory factory = new LdapContextFactory(configuration);
+    @Override
+    public String getId() {
+        return ID;
+    }
 
-			this.ldapContextFactory = factory;
-		}
-		return this.ldapContextFactory;
-	}
+    @Override
+    public void startUp(DBBroker broker) throws EXistException {
+        super.startUp(broker);
+    }
 
-	@Override
-	public String getId() {
-		return ID;
-	}
+    @Override
+    public Subject authenticate(String username, Object credentials) throws AuthenticationException {
+        // Binds using the username and password provided by the user.
+        LdapContext ctx = null;
+        try {
+            ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
-	@Override
-	public void startUp(DBBroker broker) throws EXistException {
-		super.startUp(broker);
-	}
+        } catch(NamingException e) {
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
 
-	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
-		// Binds using the username and password provided by the user.
-		LdapContext ctx = null;
-		try {
-			ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
+        } finally {
+            LdapUtils.closeContext(ctx);
+        }
 
-		} catch (NamingException e) {
-			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+        AbstractAccount account = (AbstractAccount) getAccount(null, username);
+        if(account == null) {
+            account = (AbstractAccount) createAccountInDatabase(username);
+        }
 
-		} finally {
-			LdapUtils.closeContext(ctx);
-		}
-		
-		AbstractAccount account = (AbstractAccount) getAccount(username);
-		if (account == null) {
-			Subject currentSubject = getDatabase().getSubject();
-			try {
-				getDatabase().setSubject(sm.getSystemSubject());
-				account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
-			} catch (Exception e) {
-				throw new AuthenticationException(
-						AuthenticationException.UNNOWN_EXCEPTION,
-						e.getMessage(), e);
-			} finally {
-				getDatabase().setSubject(currentSubject);
-			}
-		}
+        return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
+    }
 
-		return new SubjectAccreditedImpl(account, ctx);
-	}
+    private Account createAccountInDatabase(String username) throws AuthenticationException {
+        Subject currentSubject = getDatabase().getSubject();
+        try {
+            getDatabase().setSubject(sm.getSystemSubject());
+            return sm.addAccount(new UserAider(ID, username));
+        } catch(Exception e) {
+            throw new AuthenticationException(
+                    AuthenticationException.UNNOWN_EXCEPTION,
+                    e.getMessage(), e);
+        } finally {
+            getDatabase().setSubject(currentSubject);
+        }
+    }
 
-	// configurable methods
-	@Override
-	public boolean isConfigured() {
-		return (configuration != null);
-	}
+    private Group createGroupInDatabase(String groupname) throws AuthenticationException {
+        Subject currentSubject = getDatabase().getSubject();
+        try {
+            getDatabase().setSubject(sm.getSystemSubject());
+            return sm.addGroup(new GroupAider(ID, groupname));
+        } catch(Exception e) {
+            throw new AuthenticationException(
+                    AuthenticationException.UNNOWN_EXCEPTION,
+                    e.getMessage(), e);
+        } finally {
+            getDatabase().setSubject(currentSubject);
+        }
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+    @Override
+    public final synchronized Account getAccount(Subject invokingUser, String name) {
 
-	@Override
-	public Account addAccount(Account account) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        //first attempt to get the cached account
+        Account acct = super.getAccount(invokingUser, name);
+        if(acct != null) {
+            return acct;
+        } else {
+            if(invokingUser != null) {
+                if(invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
 
-	@Override
-	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+                    //if the account is not cached, we should try and find it in LDAP and cache it if it exists
+                    LdapContext ctx = null;
+                    try {
 
-	@Override
-	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+                        ctx = ensureContextFactory().getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
 
-	@Override
-	public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+                        SearchResult ldapUser = findUserByAccountName(ctx, name);
 
-	@Override
-	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+                        if(ldapUser == null) {
+                            return null;
+                        } else {
+                            //found a user from ldap so cache them and return
+                            try {
+                                return createAccountInDatabase(name);
+                                //registerAccount(acct); //TODO do we need this
+                            } catch(AuthenticationException ae) {
+                                LOG.error(ae.getMessage(), ae);
+                                return null;
+                            }
+                        }
+                    } catch(NamingException e) {
+                        LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage()));
+                        return null;
+                    } finally {
+                        LdapUtils.closeContext(ctx);
+                    }
+                }
+            }
+            return null;
+        }
+    }
 
-	@Override
-	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public final synchronized Group getGroup(Subject invokingUser, String name) {
+        Group grp = groupsByName.get(name);
+        if(grp != null) {
+            return grp;
+        } else {
+            if(invokingUser != null) {
+                if(invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
+                    //if the group is not cached, we should try and find it in LDAP and cache it if it exists
+                    LdapContext ctx = null;
+                    try {
 
+                        ctx = ensureContextFactory().getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
+
+                        SearchResult ldapGroup = findGroupByGroupName(ctx, name);
+
+                        if(ldapGroup == null) {
+                            return null;
+                        } else {
+                            //found a user from ldap so cache them and return
+                            try {
+                                return createGroupInDatabase(name);
+                                //registerGroup(grp); //TODO do we need to do this?
+                            } catch(AuthenticationException ae) {
+                                LOG.error(ae.getMessage(), ae);
+                                return null;
+                            }
+                        }
+                    } catch(NamingException e) {
+                        LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage()));
+                        return null;
+                    } finally {
+                        LdapUtils.closeContext(ctx);
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    private SearchResult findUserByAccountName(DirContext ctx, String accountName) throws NamingException {
+
+        String userName = accountName;
+        if(userName.indexOf("@") > -1) {
+            userName = userName.substring(0, userName.indexOf("@"));
+        }
+
+        String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userName + "))";
+
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+        //TODO dont hardcode the search base!
+        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getBase(), searchFilter, searchControls);
+
+        if(results.hasMoreElements()) {
+            SearchResult searchResult = (SearchResult) results.nextElement();
+
+            //make sure there is not another item available, there should be only 1 match
+            if(results.hasMoreElements()) {
+                LOG.error("Matched multiple users for the accountName: " + accountName);
+                return null;
+            } else {
+                return searchResult;
+            }
+        }
+        return null;
+    }
+
+    private SearchResult findGroupByGroupName(DirContext ctx, String groupName) throws NamingException {
+
+        String searchFilter = "(&(objectClass=group)(sAMAccountName=" + groupName + "))";
+
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+        //TODO dont hardcode the search base!
+        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getBase(), searchFilter, searchControls);
+
+        if(results.hasMoreElements()) {
+            SearchResult searchResult = (SearchResult) results.nextElement();
+
+            //make sure there is not another item available, there should be only 1 match
+            if(results.hasMoreElements()) {
+                LOG.error("Matched multiple groups for the groupName: " + groupName);
+                return null;
+            } else {
+                return searchResult;
+            }
+        }
+        return null;
+    }
+
+    // configurable methods
+    @Override
+    public boolean isConfigured() {
+        return (configuration != null);
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    @Override
+    public Account addAccount(Account account) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    private final class AuthenticatedLdapSubjectAccreditedImpl extends SubjectAccreditedImpl {
+
+        private final String authenticatedCredentials;
+
+        private AuthenticatedLdapSubjectAccreditedImpl(AbstractAccount account, LdapContext ctx, String authenticatedCredentials) {
+            super(account, ctx);
+            this.authenticatedCredentials = authenticatedCredentials;
+        }
+
+        private String getAuthenticatedCredentials() {
+            return authenticatedCredentials;
+        }
+    }
 }

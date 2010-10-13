@@ -49,6 +49,7 @@ public class DigestAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
+    @Override
 	public Subject authenticate(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 		String credentials = request.getHeader("Authorization");
@@ -59,7 +60,7 @@ public class DigestAuthenticator implements Authenticator {
 		Digest digest = new Digest(request.getMethod());
 		parseCredentials(digest, credentials);
 		SecurityManager secman = pool.getSecurityManager();
-		AccountImpl user = (AccountImpl)secman.getAccount(digest.username);
+		AccountImpl user = (AccountImpl)secman.getAccount(null, digest.username);
 		if (user == null) {
 			// If user does not exist then send a challenge request again
 			sendChallenge(request, response);
@@ -73,6 +74,7 @@ public class DigestAuthenticator implements Authenticator {
 		return new SubjectAccreditedImpl(user, this);
 	}
 
+    @Override
 	public void sendChallenge(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 		response.setHeader("WWW-Authenticate", "Digest realm=\"exist\", "
@@ -91,7 +93,7 @@ public class DigestAuthenticator implements Authenticator {
 
 	private static void parseCredentials(Digest digest, String credentials) {
 		credentials = credentials.substring("Digest ".length());
-		StringBuffer current = new StringBuffer();
+		StringBuilder current = new StringBuilder();
 		String name = null, value;
 		boolean inQuotedString = false;
 		for (int i = 0; i < credentials.length(); i++) {

@@ -77,6 +77,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
  *
  */
 	
+    @Override
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 
@@ -100,7 +101,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 }
                 
                 // Must actually get a User object for the Permission...
-                Permission perms = PermissionFactory.getPermission(user, group, mode);
+                Permission perms = PermissionFactory.getPermission(context.getBroker().getUser(), user, group, mode);
                 Account usr = ums.getAccount(user);
                 if (usr == null) {
                     logger.error("Needs a valid user name, not: " + user);

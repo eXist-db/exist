@@ -820,7 +820,7 @@ public class RpcConnection implements RpcAPI {
             
             return xml;
         } catch (NoSuchMethodError nsme) {
-            nsme.printStackTrace();
+            LOG.error(nsme.getMessage(), nsme);
             return null;
         } finally {
             if(collection != null)
@@ -897,7 +897,7 @@ public class RpcConnection implements RpcAPI {
 
     			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
     			result.put("handle", Integer.toString(handle));
-    			result.put("supports-long-offset", new Boolean(true));
+    			result.put("supports-long-offset", Boolean.TRUE);
     		} else {
     			vtempFile.delete();
     		}
@@ -1684,7 +1684,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public HashMap<String, Object> getAccount(String name) throws EXistException,
             PermissionDeniedException {
-        Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
+        Account u = factory.getBrokerPool().getSecurityManager().getAccount(user, name);
         if (u == null)
             throw new EXistException("account '" + name + "' does not exist");
         HashMap<String, Object> tab = new HashMap<String, Object>();
@@ -1747,7 +1747,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public HashMap<String, Object> getGroup(String name) throws EXistException, PermissionDeniedException {
-        Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
+        Group group = factory.getBrokerPool().getSecurityManager().getGroup(user, name);
         if(group != null){
             HashMap<String, Object> map = new HashMap<String, Object>();
             map.put("id", group.getId());
@@ -1767,7 +1767,7 @@ public class RpcConnection implements RpcAPI {
         try {
         	broker = database.get(user);
 
-            database.getSecurityManager().deleteGroup(name);
+            database.getSecurityManager().deleteGroup(user, name);
         } finally {
         	database.release(broker);
         }
@@ -1996,7 +1996,7 @@ public class RpcConnection implements RpcAPI {
     @SuppressWarnings("unused")
 	private boolean parseLocalExt(String localFile, XmldbURI docUri,
             int overwrite, String mimeType, int isXML) throws Exception {
-        return parseLocal(localFile, docUri, overwrite, mimeType, new Boolean(isXML!=0), null, null);
+        return parseLocal(localFile, docUri, overwrite, mimeType, Boolean.valueOf(isXML!=0), null, null);
     }
     
     /**
@@ -2030,7 +2030,7 @@ public class RpcConnection implements RpcAPI {
      */
     public boolean parseLocalExt(String localFile, String documentPath, int overwrite,
                               String mimeType, int isXML, Date created, Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
-    	return parseLocal(localFile,XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, new Boolean(isXML!=0), created, modified);
+    	return parseLocal(localFile,XmldbURI.xmldbUriFor(documentPath), overwrite, mimeType, Boolean.valueOf(isXML!=0), created, modified);
     }
     
     /**
@@ -2794,7 +2794,7 @@ public class RpcConnection implements RpcAPI {
         try {
         	broker = factory.brokerPool.get(user);
 
-        	manager.deleteAccount(name);
+        	manager.deleteAccount(user, name);
         	return true;
         } finally {
         	factory.brokerPool.release(broker);
@@ -2947,7 +2947,7 @@ public class RpcConnection implements RpcAPI {
 
     			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
     			result.put("handle", Integer.toString(handle));
-    			result.put("supports-long-offset", new Boolean(true));
+    			result.put("supports-long-offset", Boolean.TRUE);
     		} else {
     			vtempFile.delete();
     		}
@@ -3128,7 +3128,7 @@ public class RpcConnection implements RpcAPI {
 
     			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
     			result.put("handle", Integer.toString(handle));
-    			result.put("supports-long-offset", new Boolean(true));
+    			result.put("supports-long-offset", Boolean.TRUE);
     		} else {
     			vtempFile.delete();
     		}
@@ -3332,7 +3332,7 @@ public class RpcConnection implements RpcAPI {
 
     			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
     			result.put("handle", Integer.toString(handle));
-    			result.put("supports-long-offset", new Boolean(true));
+    			result.put("supports-long-offset", Boolean.TRUE);
     		} else {
     			vtempFile.delete();
     		}
@@ -3596,7 +3596,7 @@ public class RpcConnection implements RpcAPI {
             ((UserAider)u).setEncodedPassword(passwd);
             ((UserAider)u).setPasswordDigest(passwdDigest);
         } else {
-            u = manager.getAccount(name);
+            u = manager.getAccount(user, name);
             if (!(u.getName().equals(user.getName()) || manager
                     .hasAdminPrivileges(user)))
                 throw new PermissionDeniedException(
@@ -3667,7 +3667,7 @@ public class RpcConnection implements RpcAPI {
         try {
         	broker = factory.getBrokerPool().get(user);
 
-        	return manager.updateAccount(account);
+        	return manager.updateAccount(user, account);
         } finally {
         	factory.getBrokerPool().release(broker);
         }
@@ -3705,7 +3705,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserAider(name);
     	} else {
-    		u = manager.getAccount(name);
+    		u = manager.getAccount(user, name);
     		if (!(u.getName().equals(user.getName()) || manager
     			.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -3740,7 +3740,7 @@ public class RpcConnection implements RpcAPI {
                 	"not allowed to create user");
     		u = new UserAider(name);
     	} else {
-    		u = manager.getAccount(name);
+    		u = manager.getAccount(user, name);
     		if (!(u.getName().equals(user.getName()) || manager
     				.hasAdminPrivileges(user)))
     			throw new PermissionDeniedException(
@@ -5071,6 +5071,7 @@ public class RpcConnection implements RpcAPI {
             throw new PermissionDeniedException("not allowed to shut down" + "the database");
         if (delay > 0) {
             TimerTask task = new TimerTask() {
+                @Override
                 public void run() {
                     try {
                         BrokerPool.stop();

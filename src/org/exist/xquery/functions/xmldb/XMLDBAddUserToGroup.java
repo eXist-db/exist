@@ -108,12 +108,12 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             try {
             	database.setSubject(sm.getSystemSubject());
             	
-            	Group group = sm.getGroup(groupName);
+            	Group group = sm.getGroup(context.getBroker().getUser(), groupName);
             
-            	Account account = sm.getAccount(userName);
+            	Account account = sm.getAccount(context.getBroker().getUser(), userName);
 
 	            account.addGroup(group);
-	            sm.updateAccount(account);
+	            sm.updateAccount(context.getBroker().getUser(), account);
             } finally {
             	database.setSubject(currentSubject);
             }

@@ -187,14 +187,14 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         if (isNew) {
         	Account user = broker.getUser();
             child.setCreationTime(System.currentTimeMillis());
-        	child.permissions.setOwner(user);
+        	child.permissions.setOwner(broker.getUser(), user);
             CollectionConfiguration config = getConfiguration(broker);
             String group = user.getPrimaryGroup();
             if (config != null){
             	group = config.getDefCollGroup(user);
                 child.permissions.setPermissions(config.getDefCollPermissions());
             }
-            child.permissions.setGroup(group);
+            child.permissions.setGroup(broker.getUser(), group);
         }
     }
     
@@ -742,13 +742,13 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
         if (secman == null) {
             //TODO : load default permissions ? -pb
-            permissions.setOwner(SecurityManager.DBA_USER);
-            permissions.setGroup(SecurityManager.DBA_GROUP);
+            permissions.setOwner(broker.getUser(), SecurityManager.DBA_USER);
+            permissions.setGroup(broker.getUser(), SecurityManager.DBA_GROUP);
         } else {
-            permissions.setOwner(secman.getAccount(uid));
+            permissions.setOwner(broker.getUser(), secman.getAccount(uid));
             Group group = secman.getGroup(gid);
             if (group != null)
-                permissions.setGroup(group.getName());
+                permissions.setGroup(broker.getUser(), group.getName());
         }
         ///TODO : why this mask ? -pb
         permissions.setPermissions(perm & 0777);
@@ -1356,7 +1356,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
         } else {
         	Account user = broker.getUser();
             metadata.setCreated(System.currentTimeMillis());
-            document.getPermissions().setOwner(user);
+            document.getPermissions().setOwner(broker.getUser(), user);
             String group; 
             CollectionConfiguration config = getConfiguration(broker);
             if (config != null) {
@@ -1365,7 +1365,7 @@ public  class Collection extends Observable implements Comparable<Collection>, C
             } else {
             	group = user.getPrimaryGroup();
             }
-            document.getPermissions().setGroup(group);
+            document.getPermissions().setGroup(broker.getUser(), group);
         }
         document.setMetadata(metadata);
     }

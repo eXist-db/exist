@@ -90,6 +90,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          this.node = node;
       }
       
+        @Override
       public void nodeChanged(StoredNode newNode) {
          final long address = newNode.getInternalAddress();
          if (StorageAddress.equals(node.getInternalAddress(), address)) {
@@ -102,6 +103,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    public AtomProtocol() {
    }
    
+    @Override
    public void doPost(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -434,6 +436,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
    }
 
+    @Override
    public void doPut(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -671,6 +674,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
    }
    
+    @Override
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException
    {
@@ -769,6 +773,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    public void mergeEntry(final Txn transaction,final ElementImpl target,Element source,final String updated) {
       final List<Node> toRemove = new ArrayList<Node>();
       DOM.forEachChild(target,new NodeHandler() {
+         @Override
          public void process(Node parent, Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
                String ns = child.getNamespaceURI();
@@ -802,6 +807,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
       
       DOM.forEachChild(source,new NodeHandler() {
+         @Override
          public void process(Node parent,Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
                String ns = child.getNamespaceURI();
@@ -832,6 +838,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       final DocumentImpl ownerDocument = (DocumentImpl)target.getOwnerDocument();
       final List<Node> toRemove = new ArrayList<Node>();
       DOM.forEachChild(target,new NodeHandler() {
+         @Override
          public void process(Node parent, Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
                String ns = child.getNamespaceURI();
@@ -940,7 +947,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
          if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
-         collection.getPermissions().setOwner(owner);
+         collection.getPermissions().setOwner(broker.getUser(), owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
 			try {
@@ -971,7 +978,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
          if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
-         resource.getPermissions().setOwner(owner);
+         resource.getPermissions().setOwner(broker.getUser(), owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
 			try {

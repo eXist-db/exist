@@ -34,7 +34,7 @@ public class PermissionFactory
 	
 	public static SecurityManager sm = null;
 	
-	public static final Permission getPermission()
+	public static Permission getPermission()
 	{
 		try
 		{
@@ -48,7 +48,7 @@ public class PermissionFactory
 		return null;
 	}
 	
-	public static final Permission getPermission(int perm)
+	public static Permission getPermission(int perm)
 	{
 		try
 		{
@@ -62,12 +62,12 @@ public class PermissionFactory
 		return null;
 	}
 	
-	public static final Permission getPermission(String user, String group, int permissions)
+	public static Permission getPermission(Subject invokingUser, String user, String group, int permissions)
 	{
 		try
 		{
 			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(sm, user, group, permissions);
+	        return (Permission)new UnixStylePermission(invokingUser, sm, user, group, permissions);
 		}
 		catch(Throwable ex)
 		{

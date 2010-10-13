@@ -36,6 +36,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.security.utils.Utils;
 import org.exist.storage.BrokerPool;
@@ -74,6 +75,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 		return sm.getDatabase();
 	}
 
+        @Override
 	public void startUp(DBBroker broker) throws EXistException {
 
 		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());
@@ -205,7 +207,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public final synchronized Account getAccount(String name) {
+	public synchronized Account getAccount(Subject invokingUser, String name) {
 		return usersByName.get(name);
 	}
 
@@ -225,18 +227,22 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	//Groups management methods
+        @Override
 	public final synchronized boolean hasGroup(String name) {
 		return groupsByName.containsKey(name);
 	}
 
+        @Override
 	public final synchronized boolean hasGroup(Group role) {
 		return groupsByName.containsKey(role.getName());
 	}
 
-	public final synchronized Group getGroup(String name) {
+        @Override
+	public synchronized Group getGroup(Subject invokingUser, String name) {
 		return groupsByName.get(name);
 	}
 	
+        @Override
 	public final synchronized java.util.Collection<Group> getRoles() {
 		return groupsByName.values();
 	}
