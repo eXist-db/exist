@@ -121,6 +121,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public boolean createCollection(String name) throws EXistException, PermissionDeniedException {
         return createCollection(name, null);
     }
@@ -134,6 +135,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean createCollection(String name, Date created) throws EXistException, PermissionDeniedException {
         try {
             return createCollection(XmldbURI.xmldbUriFor(name),created);
@@ -187,6 +189,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean configureCollection(String collName, String configuration)
             throws EXistException, PermissionDeniedException {
         try {
@@ -400,6 +403,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public String printDiagnostics(String query, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
@@ -448,6 +452,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public int executeQuery(byte[] xpath, String encoding, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         String xpathString = null;
         if (encoding != null)
@@ -472,6 +477,7 @@ public class RpcConnection implements RpcAPI {
      * @return an <code>int</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
@@ -532,6 +538,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<String, Object> getCollectionDesc(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return getCollectionDesc((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
@@ -602,6 +609,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<String, Object> describeResource(String resourceName)
     throws EXistException, PermissionDeniedException {
         try {
@@ -663,6 +671,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<String, Object> describeCollection(String rootCollection) throws EXistException, PermissionDeniedException {
         try {
             return describeCollection((rootCollection==null)?XmldbURI.ROOT_COLLECTION_URI:XmldbURI.xmldbUriFor(rootCollection));
@@ -708,7 +717,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-
+    @Override
     public byte[] getDocument(String name, HashMap<String, Object> parametri) throws EXistException,
             PermissionDeniedException {
 
@@ -762,6 +771,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public String getDocumentAsString(String docName, HashMap<String, Object> parametri) throws EXistException, PermissionDeniedException {
         try {
             return getDocumentAsString(XmldbURI.xmldbUriFor(docName), parametri);
@@ -829,6 +839,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> getDocumentData(String docName, HashMap<String, Object> parameters)
     	throws EXistException, PermissionDeniedException
     {
@@ -915,6 +926,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> getNextChunk(String handle, int offset)
     	throws EXistException, PermissionDeniedException
     {
@@ -956,6 +968,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> getNextExtendedChunk(String handle, String offset)
     	throws EXistException, PermissionDeniedException
     {
@@ -1000,6 +1013,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public byte[] getBinaryResource(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getBinaryResource(XmldbURI.xmldbUriFor(name));
@@ -1056,6 +1070,7 @@ public class RpcConnection implements RpcAPI {
      * @exception XPathException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public int xupdate(String collectionName, byte[] xupdate) throws PermissionDeniedException, EXistException {
         try {
             return xupdate(XmldbURI.xmldbUriFor(collectionName), new String(xupdate, DEFAULT_ENCODING));
@@ -1126,6 +1141,7 @@ public class RpcConnection implements RpcAPI {
      * @exception XPathException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public int xupdateResource(String resource, byte[] xupdate, String encoding) throws PermissionDeniedException, EXistException {
         try {
             return xupdateResource(XmldbURI.xmldbUriFor(resource), new String(xupdate, encoding));
@@ -1193,6 +1209,7 @@ public class RpcConnection implements RpcAPI {
      *
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean sync() {
         DBBroker broker = null;
         try {
@@ -1211,6 +1228,7 @@ public class RpcConnection implements RpcAPI {
      *
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean isXACMLEnabled() {
     	return factory.getBrokerPool().getSecurityManager().isXACMLEnabled();
     }
@@ -1221,6 +1239,7 @@ public class RpcConnection implements RpcAPI {
      * @param dest a <code>String</code> value
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean dataBackup(String dest ) {
         factory.getBrokerPool().triggerSystemTask( new DataBackup(dest));
         return true;
@@ -1232,6 +1251,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>Vector</code> value
      * @exception EXistException if an error occurs
      */
+    @Override
     public Vector<String> getDocumentListing() throws EXistException {
         DBBroker broker = null;
         try {
@@ -1257,6 +1277,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Vector<String> getDocumentListing(String collName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getDocumentListing(XmldbURI.xmldbUriFor(collName));
@@ -1303,6 +1324,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public int getResourceCount(String collectionName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getResourceCount(XmldbURI.xmldbUriFor(collectionName));
@@ -1340,6 +1362,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public String createResourceId(String collectionName)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return createResourceId(XmldbURI.xmldbUriFor(collectionName));
@@ -1391,6 +1414,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<String, List<Object>> listDocumentPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listDocumentPermissions(XmldbURI.xmldbUriFor(name));
@@ -1443,6 +1467,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<XmldbURI, List<Object>> listCollectionPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return listCollectionPermissions(XmldbURI.xmldbUriFor(name));
@@ -1494,6 +1519,7 @@ public class RpcConnection implements RpcAPI {
      * @return an <code>int</code> value
      * @exception EXistException if an error occurs
      */
+    @Override
     public int getHits(int resultId) throws EXistException {
         QueryResult qr = factory.resultSets.getResult(resultId);
         if (qr == null)
@@ -1513,6 +1539,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public HashMap<String, Object> getPermissions(String name)
     throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getPermissions(XmldbURI.xmldbUriFor(name));
@@ -1569,6 +1596,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Date getCreationDate(String collectionPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getCreationDate(XmldbURI.xmldbUriFor(collectionPath));
@@ -1608,6 +1636,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Vector<Date> getTimestamps(String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getTimestamps(XmldbURI.xmldbUriFor(documentPath));
@@ -1652,6 +1681,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public HashMap<String, Object> getAccount(String name) throws EXistException,
             PermissionDeniedException {
         Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
@@ -1676,6 +1706,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public Vector<HashMap<String, Object>> getAccounts() throws EXistException,
             PermissionDeniedException {
     	java.util.Collection<Account> users = factory.getBrokerPool().getSecurityManager().getUsers();
@@ -1703,6 +1734,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public Vector<String> getGroups() throws EXistException,
             PermissionDeniedException {
     	java.util.Collection<Group> roles = factory.getBrokerPool().getSecurityManager().getGroups();
@@ -1751,6 +1783,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean hasDocument(String documentPath) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return hasDocument(XmldbURI.xmldbUriFor(documentPath));
     }
@@ -1780,6 +1813,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean hasCollection(String collectionName) throws EXistException, URISyntaxException {
     	return hasCollection(XmldbURI.xmldbUriFor(collectionName));
     }
@@ -1811,6 +1845,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean parse(byte[] xml, String documentPath, int overwrite) throws URISyntaxException, EXistException, PermissionDeniedException {
         return parse(xml,documentPath, overwrite, null, null);
     }
@@ -1826,6 +1861,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean parse(byte[] xml, String documentPath,
             int overwrite, Date created, Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return parse(xml,XmldbURI.xmldbUriFor(documentPath),overwrite,created,modified);
@@ -2523,6 +2559,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> execute(String pathToQuery, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         byte[] doc = getBinaryResource(XmldbURI.createInternal(pathToQuery));
@@ -2536,7 +2573,7 @@ public class RpcConnection implements RpcAPI {
         String sortBy = (String) parameters.get(RpcAPI.SORT_EXPR);
         
         HashMap<String, Object> ret = new HashMap<String, Object>();
-        Vector<Object> result = new Vector<Object>();
+        List<Object> result = new ArrayList<Object>();
         NodeSet nodes = null;
         QueryResult queryResult;
         Sequence resultSeq = null;
@@ -2568,7 +2605,7 @@ public class RpcConnection implements RpcAPI {
                 resultSeq = sorted;
             }
             NodeProxy p;
-            Vector<String> entry;
+            List<String> entry;
             if (resultSeq != null) {
                 SequenceIterator i = resultSeq.iterate();
                 if (i != null) {
@@ -2576,21 +2613,21 @@ public class RpcConnection implements RpcAPI {
                     while (i.hasNext()) {
                         next = i.nextItem();
                         if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                            entry = new Vector<String>();
+                            entry = new ArrayList<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.addElement(p.getDocument().getURI().toString());
-                                entry.addElement(p.getNodeId().toString());
+                                entry.add(p.getDocument().getURI().toString());
+                                entry.add(p.getNodeId().toString());
                             } else {
-                                entry.addElement("temp_xquery/"
+                                entry.add("temp_xquery/"
                                         + next.hashCode());
-                                entry.addElement(String
+                                entry.add(String
                                         .valueOf(((NodeImpl) next)
                                         .getNodeNumber()));
                             }
-                            result.addElement(entry);
+                            result.add(entry);
                         } else
-                            result.addElement(next.getStringValue());
+                            result.add(next.getStringValue());
                     }
                 } else {
                     LOG.debug("sequence iterator is null. Should not");
@@ -2618,12 +2655,14 @@ public class RpcConnection implements RpcAPI {
      *
      * @param handle an <code>int</code> value
      */
+    @Override
     public boolean releaseQueryResult(int handle) {
         factory.resultSets.remove(handle);
         LOG.debug("removed query result with handle " + handle);
         return true;
     }
 
+    @Override
     public boolean releaseQueryResult(int handle, int hash) {
         factory.resultSets.remove(handle, hash);
         LOG.debug("removed query result with handle " + handle);
@@ -2637,6 +2676,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean remove(String documentPath) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return remove(XmldbURI.xmldbUriFor(documentPath));
     }    
@@ -2692,6 +2732,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean removeCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return removeCollection(XmldbURI.xmldbUriFor(collectionName));
     } 
@@ -2740,6 +2781,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public boolean removeAccount(String name) throws EXistException,
             PermissionDeniedException {
         SecurityManager manager = factory.getBrokerPool().getSecurityManager();
@@ -2759,6 +2801,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public byte[] retrieve(String doc, String id, HashMap<String, Object> parameters)
             throws EXistException, PermissionDeniedException {
         String xml = null;
@@ -2790,6 +2833,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public String retrieveAsString(String documentPath, String s_id,
             HashMap<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return retrieve(XmldbURI.xmldbUriFor(documentPath),s_id,parameters);
@@ -2837,6 +2881,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> retrieveFirstChunk(String docName, String id, HashMap<String, Object> parameters)
     	throws EXistException, PermissionDeniedException
     {
@@ -2918,6 +2963,7 @@ public class RpcConnection implements RpcAPI {
     	}
     }
 
+    @Override
     public byte[] retrieve(int resultId, int num, HashMap<String, Object> parameters)
             throws EXistException, PermissionDeniedException {
         String compression = "no";
@@ -3003,6 +3049,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
     	throws EXistException, PermissionDeniedException
     {
@@ -3098,6 +3145,7 @@ public class RpcConnection implements RpcAPI {
     }
 
 
+    @Override
     public byte[] retrieveAll(int resultId, HashMap<String, Object> parameters) throws EXistException,
             PermissionDeniedException {
         try {
@@ -3186,6 +3234,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>String</code> value
      * @exception Exception if an error occurs
      */
+    @Override
     public HashMap<String, Object> retrieveAllFirstChunk(int resultId, HashMap<String, Object> parameters)
     	throws EXistException, PermissionDeniedException
     {
@@ -3311,6 +3360,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean setPermissions(String resource, String owner,
             String ownerGroup, String permissions) throws EXistException,
             PermissionDeniedException, URISyntaxException {
@@ -3424,6 +3474,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean setPermissions(String resource, String owner,
             String ownerGroup, int permissions) throws EXistException,
             PermissionDeniedException, URISyntaxException {
@@ -3528,6 +3579,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public boolean addAccount(String name, String passwd, String passwdDigest,
             Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
         
@@ -3581,12 +3633,14 @@ public class RpcConnection implements RpcAPI {
         
         return true;
     }
-    
+
+    @Override
     public boolean updateAccount(String name, String passwd, String passwdDigest,
             Vector<String> groups) throws EXistException, PermissionDeniedException {
     	return updateAccount(name, passwd, passwdDigest, groups, null);
     }
 
+    @Override
     public boolean updateAccount(String name, String passwd, String passwdDigest,
             Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
         if (passwd.length() == 0)
@@ -3619,6 +3673,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public boolean addGroup(String name) throws EXistException, PermissionDeniedException {
         
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
@@ -3713,6 +3768,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean lockResource(String documentPath, String userName) throws EXistException, PermissionDeniedException, URISyntaxException {
     	return lockResource(XmldbURI.xmldbUriFor(documentPath),userName);
     }    
@@ -3772,6 +3828,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public String hasUserLock(String documentPath) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return hasUserLock(XmldbURI.xmldbUriFor(documentPath));
     }    
@@ -3815,6 +3872,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean unlockResource(String documentPath) throws URISyntaxException, EXistException, PermissionDeniedException {
     	return unlockResource(XmldbURI.xmldbUriFor(documentPath));
     }    
@@ -4039,6 +4097,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Vector<Vector<Object>> getIndexedElements(String collectionName,
             boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
     	return getIndexedElements(XmldbURI.xmldbUriFor(collectionName),inclusive);
@@ -4094,6 +4153,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Vector<Vector<Object>> scanIndexTerms(String collectionName,
             String start, String end, boolean inclusive)
             throws PermissionDeniedException, EXistException, URISyntaxException {
@@ -4144,6 +4204,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception XPathException if an error occurs
      */
+    @Override
     public Vector<Vector<Object>> scanIndexTerms(String xpath,
             String start, String end)
             throws PermissionDeniedException, EXistException, XPathException {
@@ -4267,6 +4328,7 @@ public class RpcConnection implements RpcAPI {
     }
     
 //	FIXME: Check it for possible security hole. Check name.
+    @Override
     public byte[] getDocumentChunk(String name, int start, int len)
     throws EXistException, PermissionDeniedException, IOException {
         File file = new File(System.getProperty("java.io.tmpdir")
@@ -4452,6 +4514,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean reindexCollection(String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
     	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
         return true;
@@ -4489,6 +4552,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
+    @Override
     public boolean backup(String userbackup, String password,
 	String destcollection, String collection) throws EXistException, PermissionDeniedException {
     	try {
@@ -4513,6 +4577,7 @@ public class RpcConnection implements RpcAPI {
      * @throws PermissionDeniedException  User is not allowed to perform action.
      * @return TRUE if document is valid, FALSE if not or errors or.....
      */
+    @Override
     public boolean isValid(String documentPath)
             throws PermissionDeniedException, URISyntaxException, EXistException {
     	return isValid(XmldbURI.xmldbUriFor(documentPath));
@@ -4560,6 +4625,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public Vector<String> getDocType(String documentPath)
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getDocType(XmldbURI.xmldbUriFor(documentPath));
@@ -4629,6 +4695,7 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      * @exception URISyntaxException if an error occurs
      */
+    @Override
     public boolean setDocType(String documentPath, String doctypename, String publicid, String systemid) throws
             URISyntaxException, EXistException, PermissionDeniedException {
     	return setDocType(XmldbURI.xmldbUriFor(documentPath),doctypename, publicid, systemid);
@@ -4686,22 +4753,27 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public boolean copyResource(String docPath, String destinationPath, String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyResource(docPath, destinationPath, newName, false);
     }
 
+    @Override
     public boolean copyCollection(String collectionPath, String destinationPath, String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyCollection(collectionPath, destinationPath, newName, false);
     }
 
+    @Override
     public boolean moveResource(String docPath, String destinationPath, String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyResource(docPath, destinationPath, newName, true);
     }
 
+    @Override
     public boolean moveCollection(String collectionPath, String destinationPath, String newName) throws EXistException, PermissionDeniedException, URISyntaxException {
         return moveOrCopyCollection(collectionPath, destinationPath, newName, true);
     }
 
+    @Override
     public List<String> getDocumentChunk(String name, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException, IOException {
         List<String> result = new ArrayList<String>(2);
         File file;
@@ -4715,6 +4787,7 @@ public class RpcConnection implements RpcAPI {
         return result;
     }
 
+    @Override
     public boolean copyCollection(String name, String namedest) throws PermissionDeniedException, EXistException {
         try {
             createCollection(namedest);
@@ -4758,70 +4831,87 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public int xupdateResource(String resource, byte[] xupdate) throws PermissionDeniedException, EXistException, SAXException {
         return xupdateResource(resource, xupdate, DEFAULT_ENCODING);
     }
 
+    @Override
     public boolean setPermissions(String resource, int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
         return setPermissions(resource, null, null, permissions);
     }
 
+    @Override
     public boolean setPermissions(String resource, String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
         return setPermissions(resource, null, null, permissions);
     }
-
+    
+    @Override
     public boolean addAccount(String name, String passwd, String digestPassword, Vector<String> groups) throws EXistException, PermissionDeniedException {
         return addAccount(name, passwd, digestPassword,groups, null);
     }
 
+    @Override
     public HashMap<String, Object> querySummary(int resultId) throws EXistException, PermissionDeniedException, XPathException {
         return summary(resultId);
     }
 
+    @Override
     public int executeQuery(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return executeQuery(xpath, null, parameters);
     }
 
+    @Override
     public boolean storeBinary(byte[] data, String docName, String mimeType, boolean replace, Date created, Date modified) throws EXistException, PermissionDeniedException, URISyntaxException {
         return storeBinary(data, docName, mimeType, replace ? 1 : 0, created, modified);
     }
 
+    @Override
     public boolean storeBinary(byte[] data, String docName, String mimeType, boolean replace) throws EXistException, PermissionDeniedException, URISyntaxException {
         return storeBinary(data, docName, mimeType, replace ? 1 : 0, null, null);
     }
 
+    @Override
     public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML, Date created, Date modified) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
         return parseLocalExt(localFile, docName, replace ? 1 : 0, mimeType, treatAsXML ? 1 : 0, created, modified);
     }
 
+    @Override
     public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType, Date created, Date modified) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
         return parseLocal(localFile, docName, replace ? 1 : 0, mimeType, created, modified);
     }
 
+    @Override
     public boolean parseLocalExt(String localFile, String docName, boolean replace, String mimeType, boolean treatAsXML) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
         return parseLocalExt(localFile, docName, replace ? 1 : 0, mimeType, treatAsXML ? 1 : 0, null, null);
     }
 
+    @Override
     public boolean parseLocal(String localFile, String docName, boolean replace, String mimeType) throws EXistException, PermissionDeniedException, SAXException, URISyntaxException {
         return parseLocal(localFile, docName, replace ? 1 : 0, mimeType, null, null);
     }
 
+    @Override
     public String uploadCompressed(String file, byte[] data, int length) throws EXistException, PermissionDeniedException, IOException {
         return upload(data, length, file, true);
     }
 
+    @Override
     public String uploadCompressed(byte[] data, int length) throws EXistException, PermissionDeniedException, IOException {
         return upload(data, length, null, true);
     }
 
+    @Override
     public String upload(String file, byte[] chunk, int length) throws EXistException, PermissionDeniedException, IOException {
         return upload(chunk, length, file, false);
     }
 
+    @Override
     public String upload(byte[] chunk, int length) throws EXistException, PermissionDeniedException, IOException {
         return upload(chunk, length, null, false);
     }
 
+    @Override
     public boolean parse(String xml, String docName) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return parse(xml.getBytes(DEFAULT_ENCODING), docName, 0);
@@ -4832,6 +4922,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public boolean parse(String xml, String docName, int overwrite) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return parse(xml.getBytes(DEFAULT_ENCODING), docName, overwrite);
@@ -4842,16 +4933,19 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public boolean parse(byte[] xmlData, String docName) throws EXistException, PermissionDeniedException, URISyntaxException {
         return parse(xmlData, docName, 0);
     }
 
     /** @deprecated Use XmldbURI version instead */
+    @Override
     public HashMap<String, Object> querySummary(String xquery) throws EXistException, PermissionDeniedException {
         return summary(xquery);
     }
 
     /** @deprecated Use XmldbURI version instead */
+    @Override
     public byte[] query(byte[] xquery, int howmany, int start, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             String result = query(new String(xquery, DEFAULT_ENCODING), howmany, start, parameters);
@@ -4863,6 +4957,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public HashMap<String, Object> queryP(byte[] xpath, String docName, String s_id, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
         try {
             return queryP(new String(xpath, DEFAULT_ENCODING), docName, s_id, parameters);
@@ -4872,6 +4967,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public HashMap<String, Object> queryP(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             return queryP(new String(xpath, DEFAULT_ENCODING), (XmldbURI) null, null, parameters);
@@ -4882,6 +4978,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public HashMap<String, Object> compile(byte[] xquery, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         try {
             return compile(new String(xquery, DEFAULT_ENCODING), parameters);
@@ -4892,10 +4989,12 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
     public byte[] retrieve(String doc, String id) throws EXistException, PermissionDeniedException {
         return retrieve(doc, id, null);
     }
 
+    @Override
     public String getDocumentAsString(String name, int prettyPrint, String stylesheet) throws EXistException, PermissionDeniedException {
         HashMap<String, Object> parametri = new HashMap<String, Object>();
 
@@ -4911,10 +5010,12 @@ public class RpcConnection implements RpcAPI {
         return getDocumentAsString(name, parametri);
     }
 
+    @Override
     public String getDocumentAsString(String name, int prettyPrint) throws EXistException, PermissionDeniedException {
         return getDocumentAsString(name, prettyPrint, null);
     }
 
+    @Override
     public byte[] getDocument(String name, String encoding, int prettyPrint, String stylesheet) throws EXistException, PermissionDeniedException {
         HashMap<String, Object> parametri = new HashMap<String, Object>();
 
@@ -4938,6 +5039,7 @@ public class RpcConnection implements RpcAPI {
         return xml;
     }
 
+    @Override
     public byte[] getDocument(String name, String encoding, int prettyPrint) throws EXistException, PermissionDeniedException {
         return getDocument(name, encoding, prettyPrint, null);
     }
@@ -4957,11 +5059,13 @@ public class RpcConnection implements RpcAPI {
 		}
     	return true;
     }
-    
+
+    @Override
     public boolean shutdown() throws PermissionDeniedException {
         return shutdown(0);
     }
 
+    @Override
     public boolean shutdown(long delay) throws PermissionDeniedException {
         if (!user.hasDbaRole())
             throw new PermissionDeniedException("not allowed to shut down" + "the database");
