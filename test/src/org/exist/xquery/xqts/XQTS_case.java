@@ -63,10 +63,10 @@ import org.xmldb.api.modules.XMLResource;
 public class XQTS_case extends TestCase {
 
     protected static final String XQTS_folder = "test/external/XQTS_1_0_3/";
-    
+
     private static Map<String, String> sources = null;
     private static Map<String, String> moduleSources = null;
-    
+
     @Override
     public void loadTS() throws Exception {
         testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
@@ -122,8 +122,8 @@ public class XQTS_case extends TestCase {
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
             String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
-            "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
-            "return $XQTSCatalog//catalog:sources//catalog:module";
+                "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
+                "return $XQTSCatalog//catalog:sources//catalog:module";
 
             ResourceSet results = service.query(query);
             for (int i = 0; i < results.getSize(); i++) {
@@ -170,13 +170,12 @@ public class XQTS_case extends TestCase {
                 return;
         } else if (testGroup.equals("STFLWORExpr")) {
             /*UNDERSTAND: why it must throw FORG0006?
-				The test description: 
-					Test 'where' clause with heterogenous sequences. First item is a node
-			
-				The XQuery 1.0: An XML Query Language (W3C Recommendation 23 January 2007)
-				2.4.3 Effective Boolean Value
-					If its operand is a sequence whose first item is a node, fn:boolean returns true. 
-			*/
+                The test description: 
+                    Test 'where' clause with heterogenous sequences. First item is a node
+                The XQuery 1.0: An XML Query Language (W3C Recommendation 23 January 2007)
+                2.4.3 Effective Boolean Value
+                    If its operand is a sequence whose first item is a node, fn:boolean returns true. 
+            */
             if (testCase.equals("ST-WhereExpr001"))
                 return;
         }
@@ -259,7 +258,7 @@ public class XQTS_case extends TestCase {
                     context = xquery.newContext(AccessContext.TEST);
 
                     //map modules' namespaces to location 
-                    Map<String, String> moduleMap = (Map)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+                    Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
                     for (int i = 0; i < modules.getLength(); i++) {
                         ElementImpl module = (ElementImpl)modules.item(i);
                         String id = module.getNodeValue();
@@ -280,10 +279,10 @@ public class XQTS_case extends TestCase {
                     String id = inputFile.getNodeValue();
 
                     //use DocUtils
-//                  context.declareVariable( 
-//                  inputFile.getAttribute("variable"),
-//                  DocUtils.getDocument(context, sources.get(id))
-//                  );
+                    //context.declareVariable( 
+                        //inputFile.getAttribute("variable"),
+                        //DocUtils.getDocument(context, sources.get(id))
+                    //);
 
                     //in-memory nodes
                     context.declareVariable(inputFile.getAttribute("variable"), loadVarFromURI(context, sources.get(id)));
@@ -457,9 +456,9 @@ public class XQTS_case extends TestCase {
             if (group.equals("ContextImplicitTimezoneFunc")) {
                 TimeZone implicitTimeZone = TimeZone.getTimeZone("GMT-5:00");// getDefault();
 
-//              if( implicitTimeZone.inDaylightTime( new Date() ) ) {
-//                  implicitTimeZone.setRawOffset( implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings() );
-//              }
+                //if( implicitTimeZone.inDaylightTime( new Date() ) ) {
+                    //implicitTimeZone.setRawOffset( implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings() );
+                //}
 
                 context.setTimeZone(implicitTimeZone);
             } else if (group.equals("ContextCurrentDatetimeFunc") ||
