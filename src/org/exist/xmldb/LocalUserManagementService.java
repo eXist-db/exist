@@ -42,6 +42,7 @@ public class LocalUserManagementService implements UserManagementService {
 		this.user = user;
 	}
 
+    @Override
 	public void addAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -75,6 +76,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void addGroup(Group group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		
@@ -110,6 +112,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void setPermissions(Resource resource, Permission perm) throws XMLDBException {
 		
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -150,6 +153,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void setPermissions(Collection child, Permission perm)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -206,6 +210,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chmod(String modeStr) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
@@ -265,6 +270,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chmod(Resource resource, int mode) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
@@ -295,6 +301,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chmod(int mode) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		org.exist.collections.Collection coll = null;
@@ -348,6 +355,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chmod(Resource resource, String modeStr)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -384,6 +392,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chown(Account u, String group) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAccount(u.getName()))
@@ -426,6 +435,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void chown(Resource res, Account u, String group)
 		throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
@@ -470,6 +480,7 @@ public class LocalUserManagementService implements UserManagementService {
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.UserManagementService#hasUserLock(org.xmldb.api.base.Resource)
 	 */
+    @Override
 	public String hasUserLock(Resource res) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
@@ -489,6 +500,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 	
+    @Override
 	public void lockResource(Resource res, Account u) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
@@ -527,6 +539,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 	
+    @Override
 	public void unlockResource(Resource res) throws XMLDBException {
 		DocumentImpl doc = null;
 		DBBroker broker = null;
@@ -557,16 +570,19 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 	
+    @Override
 	public String getName() {
 		return "UserManagementService";
 	}
 
+    @Override
 	public Permission getPermissions(Collection coll) throws XMLDBException {
 		if (coll instanceof LocalCollection)
 			return ((LocalCollection) coll).getCollection().getPermissions();
 		return null;
 	}
 
+    @Override
 	public Permission getPermissions(Resource resource) throws XMLDBException {
 	    DBBroker broker = null;
 	    DocumentImpl doc = null;
@@ -585,6 +601,7 @@ public class LocalUserManagementService implements UserManagementService {
 	    }
 	}
 
+    @Override
 	public Permission[] listResourcePermissions() throws XMLDBException {
 		DBBroker broker = null;
 		org.exist.collections.Collection c = null;
@@ -614,6 +631,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public Permission[] listCollectionPermissions() throws XMLDBException {
 		DBBroker broker = null;
 		org.exist.collections.Collection c = null;
@@ -652,10 +670,12 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public String getProperty(String property) throws XMLDBException {
 		return null;
 	}
 
+    @Override
 	public Account getAccount(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		
@@ -675,6 +695,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public Account[] getAccounts() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 
@@ -695,6 +716,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public Group getGroup(String name) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 
@@ -714,6 +736,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public String[] getGroups() throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 
@@ -740,10 +763,12 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public String getVersion() {
 		return "1.0";
 	}
 
+    @Override
 	public void removeAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -771,6 +796,7 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void removeGroup(Group role) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		if (!manager.hasAdminPrivileges(user))
@@ -798,14 +824,17 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 
+    @Override
 	public void setCollection(Collection collection) throws XMLDBException {
 		this.collection = (LocalCollection) collection;
 	}
 
+    @Override
 	public void setProperty(String property, String value)
 		throws XMLDBException {
 	}
 
+    @Override
 	public void updateAccount(Account u) throws XMLDBException {
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		
@@ -823,10 +852,12 @@ public class LocalUserManagementService implements UserManagementService {
 		}
 	}
 	
+    @Override
 	public void addUserGroup(Account user) throws XMLDBException {
 		
 	}
 	
+    @Override
 	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
 		
 	}
