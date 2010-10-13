@@ -30,19 +30,37 @@ legend {
     display:none;
 }
 
-button {
-    margin: 1ex 1ex 1ex 1ex;
-    1margin-right: 1ex; 
-    1padding: 0ex;
-    1vertical-align: middle;
-    1text-align: center;
-    1height: 5ex;
+button { 
+    margin: .5em;
+    background-color: #eeeeee;
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    1padding: .1em .5em .1em .5em; /*defines the smallest button, the field delete button; all the other buttons have labels with classes that expand them to their proper size*/
+    1height: 2em;
+    1width: 2em;
+    padding: .2em;
+    1padding-right: .5em;
+    vertical-align:middle;
+    text-align: center;
+    -moz-border-radius: .4em;
+    border-bottom-left-radius: 5px 5px;
+    border-bottom-right-radius: 5px 5px;
+    border-top-left-radius: 5px 5px;
+    border-top-right-radius: 5px 5px;
     }
-    
+
+.xforms-group-label-centered { 
+    padding: .5em 1em .5em 1em !important;
+    width: 15em !important;/*same as .join*/
+    1height: 5em !important;
+    }
+
 .container {
     border-color: gray !important;/*overrules xsltforms.css*/
     border-width: 2px !important;/*overrules xsltforms.css*/
-    margin-bottom: 2ex !important;/*overrules xsltforms.css*/
+    margin-bottom: 1em !important;/*overrules xsltforms.css*/
+    width: 1050px !important;/*overrules xsltforms.css*/
     }
 
 /* style every table data as a tab if the table has a class of tabs */
@@ -67,15 +85,16 @@ button {
     /* white-space:nowrap; */
     }
 
-.value {
-    width: 1em;
-}
-
 fieldset,
-.xforms-repeat-item,
-.xforms-repeat-item-selected,
+.block-form .xforms-repeat-item,
+.block-form .xforms-repeat-item-selected,
 .node-adds
     {
+    border-width: 2px !important; /*it should not be necessary to overrule here; otherwise outer fieldset is only 1px in FireFox*/
+    border-width: 2px;
+    border-style: solid;
+    padding: 1.5ex;
+    margin-bottom: 2.5ex;
     -moz-border-radius: .75em;
     border-bottom-left-radius: 10px 10px;
     border-bottom-right-radius: 10px 10px;
@@ -83,62 +102,51 @@ fieldset,
     border-top-right-radius: 10px 10px;
     }
 
-
-.block-form {
-   /* border: solid blue 1px; */
-   margin: 0 10px;
-    }
-
 .block-form xf|label {
     display: inline-block;
-    width: 25ex; /* fix the width of all the labels in the block form */
-    margin-right: 3px; /* margin to the right of the colon before the input area */
+    width: 12em; /* fix the width of all the labels in the block form */
+    margin-right: 5px; /* margin to the right of the colon before the input area */
     text-align: right; /* right justification makes the text easier to read */
     vertical-align: top;
-    padding-top: 1ex;
-    margin-bottom: .25ex;
+    padding-top: .5em;
+    margin-bottom: .1em;
     }
 
-.xforms-repeat-item, 
-.xforms-repeat-item-selected 
-    {
-    border-width: 2px;
-    border-style: solid;
-    padding: 1.5ex;
-    margin-bottom: 2.5ex;
-    }
 
-.join {
-    margin-bottom: 1.5ex !important; /*why is it necessary to force this through?*/
+.join { /*bad class name used for aligning hint in fieldset labels with title*/
+    margin-bottom: .75em;
     font-weight: bold;
     border-width: 2px;
     border-style: solid;
     background-color: #eeeeee;
     border-width: 2px;
-    padding: 0.65ex 1em 0.65ex 1em;
-    width: 30ex;
-    margin-top: -5ex;
+    padding: .3em 1em .3em 1em;
+    width: 15em;
+    margin-top: -2.75em; /*to make the fieldset border hit the centre of the box*/
     text-align: center;
-    margin-bottom: .5ex;    
+    margin-bottom: .75em;    
 }
 
 input {
-    padding: .5ex;    
-}
-.block-form .xforms-group-label-centered {
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    width: 30ex;
-    height: 5.1ex;
-    margin-bottom: -.8ex;
+    padding: .2em; /*to give a little less cramped input field*/    
 }
 
-.xforms-group-label-centered-general {
+.block-form .xforms-group-label-centered { /*button text*/
     color: gray;
     display: inline-block;
     text-align: center;
+    padding: 0;
     vertical-align: middle;
+    1width: 30ex;
+    margin: auto;
+}
+
+xf|submit xf|label.xforms-group-label-centered-general { /*buttons outside the form*/
+    color: gray;
+    text-align: center;
+    padding: 0;
+    vertical-align: middle;
+    margin: auto;
 }
 
 .xforms-case {
@@ -146,24 +154,28 @@ input {
     margin-top: auto;
 }
 
+.xforms-group-content {
+    vertical-align:top;    
+}
 
-xf|trigger.delete-button { /*works in FireFox only*/
-    vertical-align: top;    
+xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not work*/
+    vertical-align: top;
+    width: 4px !important;
+    margin-right: -5em;    
 }
 
 .text_10 .xforms-value {
-    width: 10ex;
+    width: 5em;
     }
 .text_50 .xforms-value {
-    width: 50ex;
+    width: 25em;
     }
 .text_100 .xforms-value {
-    width: 80ex;
+    width: 40em;
     }
-
 .textarea .xforms-value {
-    width: 80ex; 
-    height: 5ex; 
+    width: 40em; 
+    height: 3em; 
     padding-top: 2px;
     }
 
@@ -175,16 +187,19 @@ div.join span.xforms-hint { /*the fieldset hints*/
     color: #cccccc;
     cursor:help;
 }
+
 span.xforms-hint-icon:after { /*the regular hints*/
-    color: #cccccc;
+    color: #B3B3B3;
     padding: 1px;
     content: "?";
-    margin-left: -1.5em;
-    background-image:url("");
+    margin-left: -1.2em;
+    margin-right: .2em;
+    margin-bottom: 2em;
 }
+
 span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     background-image:url("x.xxx");
-    width: 0;
+    1width: 0;
     display: inline;
 }
 
@@ -202,12 +217,6 @@ div.xforms-hint-value
 	margin-top: 1em;
 	margin-left: -1em;
 	padding: 1em;
-	-moz-border-radius: .75em;
-    border-bottom-left-radius: 10px 10px;
-    border-bottom-right-radius: 10px 10px;
-    border-top-left-radius: 10px 10px;
-    border-top-right-radius: 10px 10px;
-	
 }
 
 .xforms-value {
@@ -221,18 +230,6 @@ bbaabb: unselected border
 eeddee: tab background
 */
 
-.title fieldset,
-.title .xforms-repeat-item,
-.title .xforms-repeat-item-selected
-    {
-    border-width: 2px;    
-    }
-
-.title .xforms-case {
-    margin-bottom: 0;
-    margin-top:auto;
-}
-
 .title .join { 
     color: #886699;    
     border-color: #886699;
@@ -244,41 +241,38 @@ eeddee: tab background
 
 .title .xforms-repeat-item {
     border-color: #bbaabb;
+    padding-bottom: .75em;
 }
 
 .title fieldset,
 .title .xforms-repeat-item-selected
     {
     border-color: #886699;
-    padding-bottom: 1.5ex;
+    padding-bottom: .75em;
     }
 
 .title .node-adds-title, 
 .title .node-adds 
     {
     padding: .5em;
-    margin: 1em;    
-    border: #eeddee 1px solid;
+    margin: .5em;    
+    border-color: #eeddee; 
+    border-width: 1px;
 }
 
-.title .node-adds 
-    {
-    border: #eeddee 1px solid;
+.title .xforms-label-small { 
+    text-align: center;
+    vertical-align: middle;
+    width: .2em;
+    height: .2em;
+    padding-top: 0px;
+    padding-bottom: 10px;
+    margin: auto;    
 }
 
-.title .node-adds-title {
-    border: 0;
-}
-
-.title .xforms-label-small {
-    display: block;
-    width: 4px;
-    height: 11px;
-    padding: 1px;    
-}
-
-.title .xforms-group-content {
-    vertical-align:top;    
+.title xf|trigger.delete-button span[id="xf-trigger-14"] { /*does not work*/    
+    1border-color: #886699;
+    1width: 3em !important;
 }
 
 /*name
@@ -326,11 +320,18 @@ eeeedd
     margin-top: 1.25em;
     }
 .name button {
-    width: 35ex;
-    height: 5.1ex;
+    border-color: #669966;
 }
 .name #name-add-node-unhide {
     padding-bottom: 2.5ex;    
+}
+.name .node-adds-title, 
+.name .node-adds 
+    {
+    padding: .5em;
+    margin: .5em;    
+    border-color: #669966; 
+    border-width: 1px;
 }
 
 /*origin
@@ -362,8 +363,8 @@ ccddee: tab background
 .origin .level-2 {
     margin-top: 3ex;
     margin-bottom: 4ex;
-    margin-left: -0.5ex;
-    margin-right: -0.5ex;
+    margin-left: 1.5ex;
+    margin-right: 1.5ex;
     }
 .origin .level-2 .join {
     margin-bottom: 3ex;
@@ -380,11 +381,17 @@ ccddee: tab background
     1margin-bottom: 1.5em;
     }
 .origin button {
-    width: 35ex;
-    height: 5.1ex;
+    width: 40ex;
+    1height: 5.1ex;
     }
-
-
+.origin .node-adds-title, 
+.origin .node-adds 
+    {
+    border-color: #668899;
+    border-width: 1px;
+    padding: .5em;
+    margin: .5em;
+    }
 
 
 /*part
@@ -414,13 +421,15 @@ eeddcc
 }
 .part fieldset .level-2 
     {
-    margin-left: -.5ex;
-    margin-right: -.5ex;
-    margin-top: 1.5em;
+    margin-top: 3ex;
+    margin-bottom: 4ex;
+    margin-left: 1.5ex;
+    margin-right: 1.5ex;
+
 }
 .part button {
     width: 35ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
 
 
@@ -456,8 +465,8 @@ ddcccc
     {
     border-color: #996688;
     border-width: 2px;
-    margin-right: -0.5ex;
-    margin-left: -0.5ex;
+    margin-right: 1.5ex;
+    margin-left: 1.5ex;
     margin-top: 2em;
     }
 .physical-description fieldset .level-3 
@@ -478,7 +487,7 @@ ddcccc
     }
 .physical-description button {
     width: 50ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
 
 /*target-audience
@@ -512,7 +521,7 @@ eedddd/f6eeee
     }
 .target-audience button {
     width: 40ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
     
 /*language
@@ -547,6 +556,8 @@ eeddee: tab background
     }
 .language fieldset .level-2 
     {
+    margin-right: 1.5ex;
+    margin-left: 1.5ex;
     margin-top: 2em;
     }
 .language .node-adds-title, .node-adds 
@@ -562,7 +573,7 @@ eeddee: tab background
     }
 .language button {
     width: 40ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
 
 /*type
@@ -593,7 +604,7 @@ eeeedd
     }
 .type button {
     width: 40ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
     
 /*genre
@@ -627,7 +638,7 @@ ccddee: tab background
     }
 .genre button {
     width: 40ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
 
 /*subject
@@ -668,12 +679,14 @@ ddcccc*/
     }
 .subject fieldset .level-2
     {
-    margin-left: -.5ex;
-    margin-right: -.5ex;
+    margin-top: 3ex;
+    margin-bottom: 4ex;
+    margin-left: 1.5ex;
+    margin-right: 1.5ex;
     }
 .subject button {
     width: 40ex;
-    height: 5.1ex;
+    1height: 5.1ex;
 }
 .subject fieldset {
     margin-top: 2.5ex;
@@ -710,7 +723,7 @@ ddddcc
 .classification button 
     {
     width: 40ex;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 /*abstract
@@ -744,7 +757,7 @@ ddddcc
 .abstract button 
     {
     width: 40ex;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 /*table-of-contents
@@ -778,7 +791,7 @@ ddddcc
 .table-of-contents button 
     {
     width: 40ex;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 
@@ -813,7 +826,7 @@ ddddcc
 .note button 
     {
     width: 40ex;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 
@@ -852,8 +865,8 @@ eeeedd
     {
     border-color: #669966;
     border-width: 2px;
-    margin-left: -2ex;
-    margin-right: -2ex;
+    margin-left: 1.5ex;
+    margin-right: 1.5ex;
     margin-top: 1.5em;
     }
 .related fieldset .level-3 
@@ -862,12 +875,12 @@ eeeedd
     border-width: 2px;
     margin-left: 1ex;
     margin-right: 1ex;
-    margin-top: 1.5em;
+    margin-top: 2em;
     }
 .related button 
     {
     width: 300px;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 
@@ -905,7 +918,7 @@ ddddcc
 }
 .identifier button
     {
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 /*record-info
@@ -945,7 +958,7 @@ ccddcc
     border-width: 2px;
     margin-left: 1ex;
     margin-right: 1ex;
-    margin-top: 1.5em;
+    margin-top: 2.5em;
     }
 .record-info fieldset .level-3 
     {
@@ -953,7 +966,7 @@ ccddcc
     border-width: 2px;
     margin-left: 1ex;
     margin-right: 1ex;
-    margin-top: 1.5em;
+    margin-top: 2.5em;
     }
 .record-info button .xforms-group-label-centered 
     {
@@ -965,7 +978,7 @@ ccddcc
     }
 .record-info button
     {
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 /*location
@@ -1004,9 +1017,9 @@ ccddee: tab background
     }
 .location .level-2 
     {
-    margin-top: 2ex;
-    margin-left: -0.5ex;
-    margin-right: -0.5ex;
+    margin-top: 3.5ex;
+    margin-left: 1.5ex;
+    margin-right: 1.5ex;
     }
 .location .level-3 
     {
@@ -1036,7 +1049,7 @@ ccddee: tab background
 .location button
     {
     width: 50ex;
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 
@@ -1073,7 +1086,7 @@ ddddcc
 }
 .access-condition button
     {
-    height: 5.1ex;    
+    1height: 5.1ex;    
     }
 
 </css>

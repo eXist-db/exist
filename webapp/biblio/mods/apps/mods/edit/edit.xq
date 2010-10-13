@@ -144,18 +144,21 @@ let $content :=
     <!-- import the correct form body for this tab -->
     {$form-body}
     
+    <!--
     <br/>
     <xf:submit submission="save-submission">
         <xf:label class="xforms-group-label-centered-general">Save</xf:label>
     </xf:submit>
-
+    -->
+    <!--
     <xf:submit submission="echo-post-submission">
         <xf:label class="xforms-group-label-centered-general">Echo Post (no save)</xf:label>
     </xf:submit>
     
     <br/>
     Body Elements = {count($form-body/*/*)}
-    
+    -->
+    <!--
     <div class="debug">
         <xf:output value="count(instance('save-data')/*)">
            <xf:label>Root Element Count: </xf:label>
@@ -165,13 +168,13 @@ let $content :=
            <xf:label>Message: </xf:label>
         </xf:output>
         
-        <!--<xf:output ref="instance('save-results')//mods:message ">
+        <xf:output ref="instance('save-results')//mods:message ">
            <xf:label>MODS Message: </xf:label>
-        </xf:output>-->
+        </xf:output>
     </div>
-    
+    -->
     <a href="../views/get-instance.xq?id={$id}">View XML for the whole MODS record</a> -
-    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View XML for the current tab (top level element)</a>
+    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View XML for the current tab</a>
 </div>
 
 return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, true())
