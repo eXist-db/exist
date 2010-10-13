@@ -178,6 +178,7 @@ public interface Permission {
      *
      *@return    Description of the Return Value
      */
+    @Override
     public String toString();
 
     /**
