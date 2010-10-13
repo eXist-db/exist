@@ -12,11 +12,15 @@ let $content :=
        <p>Collection: {$data-collection}</p>
        <ol>{
          for $item in collection($data-collection)//mods
-            (: if we don't find a modes identifier then use the file name :)
+            (: if we don't find a mods identifier then use the file name :)
             let $id :=
                if ($item/@ID) then string($item/@ID)
                else substring-before(util:document-name($item), '.xml')
-            let $title := $item/titleInfo[1]/title[1]/text()
+            let $title := if($item/titleInfo[1]/title[1]/text())
+            then
+            $item/titleInfo[1]/title[1]/text()
+            else
+            '(no title)'
             order by $title
             return
                <li>
