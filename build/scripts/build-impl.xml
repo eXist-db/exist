@@ -590,6 +590,7 @@
         <delete failonerror="no">
             <fileset dir="${junit.reports}/external" includes="*.zip"/>
         </delete>
+        <delete failonerror="no" dir="cat"/>
         
 
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
