@@ -26,7 +26,14 @@
         <echo message="---------------------------------"/>
         <echo message="Loading XQTS sources from directory: ${config.basedir}"/>
         
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db"
+    	<!-- workaround ENTITY problem -->
+    	<copy todir="${server.dir}">
+    	  <fileset dir="${config.basedir}"
+    	           includes="**/cat/*"
+    	  />
+    	</copy>
+    	
+    	<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db"
     		user="admin" password=""
     		createcollection="true">
             <fileset dir=".">
