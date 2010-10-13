@@ -42,8 +42,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 /**
  *  Provides the actual implementations for the methods defined in
@@ -66,6 +67,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
     	try {
     		Subject u = pool.getSecurityManager().authenticate(userId, password);
@@ -78,6 +80,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
     }
     
+    @Override
     public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
         SessionManager manager = SessionManager.getInstance();
         Session session = manager.getSession(sessionId);
@@ -87,6 +90,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public boolean createCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return createCollection(sessionId,XmldbURI.xmldbUriFor(path));
@@ -122,6 +126,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public boolean removeCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return removeCollection(sessionId,XmldbURI.xmldbUriFor(path));
@@ -153,6 +158,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public boolean removeDocument(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return removeDocument(sessionId,XmldbURI.xmldbUriFor(path));
@@ -199,6 +205,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void store(java.lang.String sessionId, byte[] data, java.lang.String encoding, java.lang.String path, boolean replace) throws java.rmi.RemoteException {
     	try {
     		store(sessionId,data,encoding,XmldbURI.xmldbUriFor(path),replace);
@@ -261,6 +268,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         return session;
     }
     
+    @Override
     public int xupdate(java.lang.String sessionId, java.lang.String collectionName, java.lang.String xupdate) throws java.rmi.RemoteException {
     	try {
     		return xupdate(sessionId,XmldbURI.xmldbUriFor(collectionName), xupdate);
@@ -320,6 +328,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public int xupdateResource(java.lang.String sessionId, java.lang.String documentName, java.lang.String xupdate) throws java.rmi.RemoteException {
     	try {
     		return xupdateResource(sessionId,XmldbURI.xmldbUriFor(documentName), xupdate);
@@ -386,6 +395,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         
     }
     
+    @Override
     public void storeBinary(java.lang.String sessionId, byte[] data, java.lang.String path, java.lang.String mimeType, boolean replace) throws java.rmi.RemoteException {
     	try {
     		storeBinary(sessionId,data,XmldbURI.xmldbUriFor(path), mimeType, replace);
@@ -438,6 +448,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 //        return doc != null;
     }
     
+    @Override
     public byte[] getBinaryResource(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return getBinaryResource(sessionId,XmldbURI.xmldbUriFor(path));
@@ -475,6 +486,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public org.exist.soap.CollectionDesc getCollectionDesc(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return getCollectionDesc(sessionId,XmldbURI.xmldbUriFor(path));
@@ -496,8 +508,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new EXistException("collection " + collectionName
                         + " not found!");
             CollectionDesc desc = new CollectionDesc();
-            Vector<DocumentDesc> docs = new Vector<DocumentDesc>();
-            Vector<String> collections = new Vector<String>();
+            List<DocumentDesc> docs = new ArrayList<DocumentDesc>();
+            List<String> collections = new ArrayList<String>();
             if (collection.getPermissions().validate(session.getUser(), Permission.READ)) {
                 DocumentImpl doc;
 //              Hashtable hash;
@@ -514,10 +526,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     dd.setType(doc.getResourceType() == DocumentImpl.BINARY_FILE
                             ? DocumentType.BinaryResource
                             : DocumentType.XMLResource);
-                    docs.addElement(dd);
+                    docs.add(dd);
                 }
                 for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
-                    collections.addElement(i.next().toString());
+                    collections.add(i.next().toString());
             }
             Permission perms = collection.getPermissions();
             desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
@@ -537,6 +549,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void setPermissions(java.lang.String sessionId, java.lang.String resource, java.lang.String owner, java.lang.String ownerGroup, int permissions) throws java.rmi.RemoteException {
     	try {
     		setPermissions(sessionId,XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
@@ -752,10 +765,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void copyResource(java.lang.String sessionId, java.lang.String docPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         moveOrCopyResource(sessionId,docPath,destinationPath,newName,false);
     }
     
+    @Override
     public void copyCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         try {
             moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,false);
@@ -768,6 +783,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void setUser(java.lang.String sessionId, java.lang.String name, java.lang.String password, org.exist.soap.Strings groups, java.lang.String home) throws java.rmi.RemoteException {
         if (password.length() == 0)
             password = null;
@@ -838,6 +854,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
     }
     
+    @Override
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
         Account u = pool.getSecurityManager().getAccount(user);
         if (u == null)
@@ -857,6 +874,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         return desc;
     }
     
+    @Override
     public void removeUser(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
         Subject user = getSession(sessionId).getUser();
         org.exist.security.SecurityManager manager = pool
@@ -877,6 +895,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		}
     }
     
+    @Override
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {
     	java.util.Collection<Account> users = pool.getSecurityManager().getUsers();
         UserDesc[] r = new UserDesc[users.size()];
@@ -899,15 +918,17 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         return new UserDescs(r);
     }
     
+    @Override
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
     	java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
-        Vector<String> v = new Vector<String>(roles.size());
+        List<String> v = new ArrayList<String>(roles.size());
         for (Group role : roles) {
             v.addElement(role.getName());
         }
         return new Strings(v.toArray(new String[v.size()]));
     }
     
+    @Override
     public void moveCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         try {
             moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,true);
@@ -920,10 +941,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void moveResource(java.lang.String sessionId, java.lang.String docPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         moveOrCopyResource(sessionId,docPath,destinationPath,newName,true);
     }
     
+    @Override
     public void lockResource(java.lang.String sessionId, java.lang.String path, java.lang.String userName) throws java.rmi.RemoteException {
     	try {
     		lockResource(sessionId,XmldbURI.xmldbUriFor(path),userName);
@@ -974,6 +997,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public void unlockResource(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		unlockResource(sessionId,XmldbURI.xmldbUriFor(path));
@@ -1018,6 +1042,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public java.lang.String hasUserLock(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return hasUserLock(sessionId,XmldbURI.xmldbUriFor(path));
@@ -1053,6 +1078,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, java.lang.String resource) throws java.rmi.RemoteException {
     	try {
     		return getPermissions(sessionId,XmldbURI.xmldbUriFor(resource));
@@ -1102,6 +1128,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
     	try {
     		return listCollectionPermissions(sessionId,XmldbURI.xmldbUriFor(name));
@@ -1149,6 +1176,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
     	try {
     		return listDocumentPermissions(sessionId,XmldbURI.xmldbUriFor(name));
@@ -1193,6 +1221,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         }
     }
     
+    @Override
     public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, java.lang.String collectionName, boolean inclusive) throws java.rmi.RemoteException {
     	try {
     		return getIndexedElements(sessionId,XmldbURI.xmldbUriFor(collectionName),inclusive);
