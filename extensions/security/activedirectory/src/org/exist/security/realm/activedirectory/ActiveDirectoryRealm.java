@@ -34,14 +34,13 @@ import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
-import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
 import org.exist.security.internal.AbstractAccount;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.AccountImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.security.realm.ldap.LdapContextFactory;
 
@@ -134,19 +133,22 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		}
 
 		if (ldapUser) {
-			try {
-				AbstractAccount account = (AbstractAccount) getAccount(username);
-				if (account == null) {
-					account = new AccountImpl(this, username);
-					//TODO: addAccount(account);
+			AbstractAccount account = (AbstractAccount) getAccount(username);
+			if (account == null) {
+				Subject currentSubject = getDatabase().getSubject();
+				try {
+					getDatabase().setSubject(sm.getSystemSubject());
+					account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
+				} catch (Exception e) {
+					throw new AuthenticationException(
+							AuthenticationException.UNNOWN_EXCEPTION,
+							e.getMessage(), e);
+				} finally {
+					getDatabase().setSubject(currentSubject);
 				}
-	
-				return new SubjectAccreditedImpl(account, ctxGC);
-			} catch (ConfigurationException e) {
-				throw new AuthenticationException(
-						AuthenticationException.UNNOWN_EXCEPTION,
-						e.getMessage(), e);
 			}
+
+			return new SubjectAccreditedImpl(account, ctxGC);
 		}
 		
 		return null;
