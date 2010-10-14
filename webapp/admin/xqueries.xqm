@@ -176,6 +176,7 @@ declare function xqueries:display-xqueries() as element()
             <th>ID</th>
             <th>Type</th>
             <th>Source</th>
+            <th>Started</th˘
             <th>Status</th>
         </tr>
         {
@@ -192,6 +193,7 @@ declare function xqueries:display-xquery() as element()*
     let $type 	:= $xquery/@sourceType
     let $key 	:= $xquery/system:sourceKey/text()
     let $src    := if( $type != "String" or string-length( $key ) < $xqueries:MAX-STRING-KEY-LENGTH ) then $key else concat( substring( $key, 0, $xqueries:MAX-STRING-KEY-LENGTH - 1 ), "..." )
+    let $started  := $xquery/@started
     let $status := if( $xquery/@terminating = "true" ) then "terminating" else "running"
         
     order by $id 
@@ -201,6 +203,7 @@ declare function xqueries:display-xquery() as element()*
             <td valign="top">{ xs:string( $id ) }</td>
             <td valign="top">{ xs:string( $type ) }</td>
             <td valign="top">{ $src }</td>
+            <td valign="top">{ xs:string($started) }</td>
             <td valign="top">{ $status }</td>
         </tr>
 };
