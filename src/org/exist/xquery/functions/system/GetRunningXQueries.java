@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
+import java.util.Date;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -31,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -78,7 +80,7 @@ public class GetRunningXQueries extends BasicFunction
 	}
 	
 	
-	private Sequence getRunningXQueries()
+	private Sequence getRunningXQueries() throws XPathException
 	{
 		Sequence    xmlResponse     = null;
         
@@ -102,12 +104,13 @@ public class GetRunningXQueries extends BasicFunction
         return( xmlResponse );
 	}
 	
-	private void getRunningXQuery( MemTreeBuilder builder, XQueryContext context, XQueryWatchDog watchdog ) 
+	private void getRunningXQuery( MemTreeBuilder builder, XQueryContext context, XQueryWatchDog watchdog ) throws XPathException
 	{
 		builder.startElement( new QName( "xquery", NAMESPACE_URI, PREFIX ), null );
 		
 		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
 		builder.addAttribute( new QName( "sourceType", null, null ), context.getSourceType() );
+                builder.addAttribute( new QName( "started", null, null), new DateTimeValue(new Date(watchdog.getStartTime())).getStringValue());
 		builder.addAttribute( new QName( "terminating", null, null ), ( watchdog.isTerminating() ? "true" : "false" ) );
 		
 		builder.startElement( new QName( "sourceKey", NAMESPACE_URI, PREFIX ), null );
