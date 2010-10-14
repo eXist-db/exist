@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.request;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
@@ -91,7 +93,7 @@ public class GetCookieValue extends BasicFunction {
 				{
 					if(cookies[c].getName().equals(cookieName))
 					{
-						return new StringValue(cookies[c].getValue());
+						return new StringValue(decode(cookies[c].getValue()));
 					}
 				}
 			}
@@ -100,5 +102,15 @@ public class GetCookieValue extends BasicFunction {
 		}
 		else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+	}
+	
+	// TODO: remove this hack after fixing HTTP 1.1	
+	private String decode (String value)
+	{
+		try {
+			return new String(value.getBytes("ISO-8859-1"));
+		} catch (UnsupportedEncodingException e) {
+			return value;
+		}
 	}
 }
