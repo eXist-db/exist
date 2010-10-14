@@ -176,7 +176,7 @@ declare function xqueries:display-xqueries() as element()
             <th>ID</th>
             <th>Type</th>
             <th>Source</th>
-            <th>Started</th˘
+            <th>Started</th>
             <th>Status</th>
         </tr>
         {
