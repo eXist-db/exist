@@ -21,13 +21,15 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
+import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.w3c.dom.Element;
 
 public class PassThrough extends URLRewrite {
 
@@ -43,7 +45,7 @@ public class PassThrough extends URLRewrite {
 
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        setHeaders(response);
+        setHeaders(new HttpResponseWrapper(response));
         chain.doFilter(request, response);
     }
 }

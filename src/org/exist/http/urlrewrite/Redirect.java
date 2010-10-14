@@ -21,6 +21,7 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +45,7 @@ public class Redirect extends URLRewrite {
 
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        setHeaders(response);
+        setHeaders(new HttpResponseWrapper(response));
         response.sendRedirect(target);
     }
 }

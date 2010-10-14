@@ -21,21 +21,25 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.exist.Namespaces;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.exist.Namespaces;
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 
 /**
  * Base class for all rewritten URLs.
@@ -197,7 +201,7 @@ public abstract class URLRewrite {
         }
     }
 
-    protected void setHeaders(HttpServletResponse response) {
+    protected void setHeaders(HttpResponseWrapper response) {
         if (headers != null) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 response.setHeader(entry.getKey().toString(), entry.getValue().toString());

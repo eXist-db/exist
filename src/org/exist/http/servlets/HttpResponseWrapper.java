@@ -24,6 +24,7 @@ package org.exist.http.servlets;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 */
 	public void addCookie(String name, String value)
 	{
-		response.addCookie(new Cookie(name, value));
+		response.addCookie(new Cookie(name, encode(value)));
 	}
 	
 	/**
@@ -63,7 +64,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
      */
 	public void addCookie(final String name, final String value, final int maxAge)
 	{
-		Cookie cookie = new Cookie(name, value);
+		Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		response.addCookie(cookie);
 	}
@@ -78,7 +79,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
      */
 	public void addCookie(final String name, final String value, final int maxAge, boolean secure)
 	{
-		Cookie cookie = new Cookie(name, value);
+		Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
 		response.addCookie(cookie);
@@ -96,7 +97,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 */
 	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path)
 	{
-		Cookie cookie = new Cookie(name, value);
+		Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
 		if(domain!=null)
@@ -127,7 +128,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * @param arg1
 	 */
 	public void addHeader(String arg0, String arg1) {
-		response.addHeader(arg0, arg1);
+		response.addHeader(arg0, encode(arg1));
 	}
 	
 	/**
@@ -213,7 +214,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * @param arg1
 	 */
 	public void setHeader(String arg0, String arg1) {
-		response.setHeader(arg0, arg1);
+		response.setHeader(arg0, encode(arg1));
 	}
 	
 	/**
@@ -240,5 +241,14 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	
 	public OutputStream getOutputStream() throws IOException {
 		return response.getOutputStream();
+	}
+	
+	// TODO: remove this hack after fixing HTTP 1.1 :)
+	private String encode(String value){
+		try {
+			return new String(value.getBytes(), "ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			return value;
+		}
 	}
 }
