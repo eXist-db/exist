@@ -62,7 +62,7 @@ public class ReamlImpl implements Realm {
 	 * @see org.exist.security.management.AccountsManagement#getAccount(java.lang.String)
 	 */
 	@Override
-	public Account getAccount(String name) {
+	public Account getAccount(Subject invokingUser, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -89,7 +89,7 @@ public class ReamlImpl implements Realm {
 	 * @see org.exist.security.management.AccountsManagement#updateAccount(org.exist.security.User)
 	 */
 	@Override
-	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -98,7 +98,7 @@ public class ReamlImpl implements Realm {
 	 * @see org.exist.security.management.AccountsManagement#deleteAccount(org.exist.security.User)
 	 */
 	@Override
-	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -116,7 +116,7 @@ public class ReamlImpl implements Realm {
 	 * @see org.exist.security.management.GroupsManagement#getGroup(java.lang.String)
 	 */
 	@Override
-	public Group getGroup(String name) {
+	public Group getGroup(Subject invokingUser, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
