@@ -412,9 +412,7 @@ eeddcc
     border-width: 2px;
 }
 .part .xforms-repeat-item-selected,
-.part fieldset,
-.part .node-adds-title, 
-.node-adds
+.part fieldset
     {
     border-color: #aa8866;
     border-width: 2px;
@@ -431,6 +429,15 @@ eeddcc
     width: 35ex;
     1height: 5.1ex;
 }
+.part .node-adds-title, 
+.part .node-adds 
+    {
+    border-color: #aa8866;
+    border-width: 1px;
+    padding: .5em;
+    margin: .5em;
+    border-color: #aa8866;
+    }
 
 
 /*physical-description
@@ -486,9 +493,16 @@ ddcccc
     border-width: 2px;
     }
 .physical-description button {
-    width: 50ex;
-    1height: 5.1ex;
+    width: 25em;
 }
+.physical-description .node-adds-title, 
+.physical-description .node-adds 
+    {
+    border-color: #996688;
+    border-width: 1px;
+    padding: .5em;
+    margin: .5em;
+    }
 
 /*target-audience
 
@@ -541,7 +555,7 @@ eeddee: tab background
 .language .join 
     {
     color: #886699;
-    border-color: #8c9e42;
+    border-color: #886699;
     }
 .language .xforms-repeat-item 
     {
@@ -558,7 +572,7 @@ eeddee: tab background
     {
     margin-right: 1.5ex;
     margin-left: 1.5ex;
-    margin-top: 2em;
+    margin-top: 1em;
     }
 .language .node-adds-title, .node-adds 
     {
@@ -698,7 +712,7 @@ bbaa88
 ddddcc
 */
 .classification .xforms-label {
-    color: #8c9e42;
+    color: #aa8866;
     }
 .classification .join {
     color: #aa8866;
@@ -732,10 +746,10 @@ bbaa88
 ddddcc
 */
 .abstract .xforms-label {
-    color: #8c9e42;
+    color: #aa8866;
     }
 .abstract .join {
-    color: aa8866;
+    color: #aa8866;
     border-color: #aa8866;
     }
 .abstract .xforms-repeat-item {
@@ -766,26 +780,26 @@ bbaa88
 ddddcc
 */
 .table-of-contents .xforms-label {
-    color: #8c9e42;
+    color: #669966;
     }
 .table-of-contents .join {
-    color: aa8866;
-    border-color: #aa8866;
+    color: #669966;
+    border-color: #669966;
     }
 .table-of-contents .xforms-repeat-item {
-    border-color: #bbaa88;
+    border-color: #88aa88;
     border-width: 2px;
     }
 .table-of-contents fieldset {
-    border-color: #aa8866;
+    border-color: #669966;
     border-width: 2px;
     }
 .table-of-contents .node-adds-title, .node-adds {
-    border-color: #aa8866;
+    border-color: #669966;
     border-width: 2px;
     }
 .table-of-contents .xforms-repeat-item-selected {
-    border-color: #aa8866;
+    border-color: #669966;
     border-width: 2px;
     }
 .table-of-contents button 
@@ -801,26 +815,26 @@ bbaa88
 ddddcc
 */
 .note .xforms-label {
-    color: #8c9e42;
+    color: #668899;
     }
 .note .join {
-    color: aa8866;
-    border-color: #aa8866;
+    color: #668899;
+    border-color: #668899;
     }
 .note .xforms-repeat-item {
-    border-color: #bbaa88;
+    border-color: #88aabb;
     border-width: 2px;
     }
 .note fieldset {
-    border-color: #aa8866;
+    border-color: #668899;
     border-width: 2px;
     }
 .note .node-adds-title, .node-adds {
-    border-color: #aa8866;
+    border-color: #668899;
     border-width: 2px;
     }
 .note .xforms-repeat-item-selected {
-    border-color: #aa8866;
+    border-color: #668899;
     border-width: 2px;
     }
 .note button 
@@ -839,31 +853,31 @@ eeeedd
 
 .related .join 
     {
-    color: #669966;
-    border-color: #669966;
+    color: #aa8866;
+    border-color: #aa8866;
     width: 200px;
     }
 .related .xforms-label 
     {
-    color: #669966;
+    color: #aa8866;
     }
 .related .xforms-repeat-item 
     {
-    border-color: #88aa88;
+    border-color: #ccaa88;
     }
 .related .xforms-repeat-item-selected 
     {
-    border-color: #669966;
+    border-color: #aa8866;
     border-width: 2px;
     }
 .related .level-1 
     {
-    border-color: #669966;
+    border-color: #aa8866;
     border-width: 2px;
     }
 .related fieldset .level-2 
     {
-    border-color: #669966;
+    border-color: #aa8866;
     border-width: 2px;
     margin-left: 1.5ex;
     margin-right: 1.5ex;
@@ -871,7 +885,7 @@ eeeedd
     }
 .related fieldset .level-3 
     {
-    border-color: #669966;
+    border-color: #aa8866;
     border-width: 2px;
     margin-left: 1ex;
     margin-right: 1ex;
@@ -891,26 +905,26 @@ ddddcc
 */
 
 .identifier .xforms-label {
-    color: #8c9e42;
+    color: #886699;
     }
 .identifier .join {
-    color: aa8866;
-    border-color: #aa8866;
+    color: #886699;
+    border-color: #886699;
     }
 .identifier .xforms-repeat-item {
-    border-color: #bbaa88;
+    border-color: #bbaabb;
     border-width: 2px;
     }
 .identifier fieldset {
-    border-color: #aa8866;
+    border-color: #886699;
     border-width: 2px;
     }
 .identifier .node-adds-title, .node-adds {
-    border-color: #aa8866;
+    border-color: #886699;
     border-width: 2px;
     }
 .identifier .xforms-repeat-item-selected {
-    border-color: #aa8866;
+    border-color: #886699;
     border-width: 2px;
     }
 .identifier .block-form button {
@@ -1059,14 +1073,14 @@ bbaa88
 ddddcc
 */
 .access-condition .xforms-label {
-    color: #8c9e42;
+    color: #aa8866;
     }
 .access-condition .join {
-    color: aa8866;
+    color: #aa8866;
     border-color: #aa8866;
     }
 .access-condition .xforms-repeat-item {
-    border-color: #bbaa88;
+    border-color: #ccaa88;
     border-width: 2px;
     }
 .access-condition fieldset {

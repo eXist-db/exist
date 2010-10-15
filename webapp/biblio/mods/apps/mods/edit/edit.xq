@@ -45,7 +45,7 @@ let $new := if ($id-param = '' or $id-param = 'new')
 :)
 let $id :=
    if ($new)
-        then substring(util:uuid(), 5)
+        then util:uuid()
         else $id-param
 
 (: if we are creating a new record then we need to call get-instance.xq with new=true to tell it to get the entire template :)
