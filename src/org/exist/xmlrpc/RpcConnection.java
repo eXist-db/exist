@@ -936,6 +936,8 @@ public class RpcConnection implements RpcAPI {
 
     		if(sr==null)
     			throw new EXistException("Invalid handle specified");
+    		// This will keep the serialized result in the cache
+    		sr.touch();
     		VirtualTempFile vfile = sr.result;
 
     		if(offset <= 0 || offset > vfile.length()) {
@@ -978,6 +980,8 @@ public class RpcConnection implements RpcAPI {
 
     		if(sr==null)
     			throw new EXistException("Invalid handle specified");
+    		// This will keep the serialized result in the cache
+    		sr.touch();
     		VirtualTempFile vfile = sr.result; 
 
     		long longOffset=new Long(offset).longValue();
@@ -1524,7 +1528,7 @@ public class RpcConnection implements RpcAPI {
         QueryResult qr = factory.resultSets.getResult(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
-        qr.timestamp = System.currentTimeMillis();
+        qr.touch();
         if (qr.result == null)
             return 0;
         return qr.result.getItemCount();
@@ -2277,6 +2281,8 @@ public class RpcConnection implements RpcAPI {
         		SerializedResult sr = factory.resultSets.getSerializedResult(handle);
         		if(sr==null)
         			throw new EXistException("Invalid handle specified");
+        		// This will keep the serialized result in the cache
+        		sr.touch();
         		vtempFile = sr.result;
         	} catch(NumberFormatException nfe) {
        			throw new EXistException("Syntactically invalid handle specified");
@@ -3018,7 +3024,7 @@ public class RpcConnection implements RpcAPI {
             QueryResult qr = factory.resultSets.getResult(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
-            qr.timestamp = System.currentTimeMillis();
+            qr.touch();
             Item item = qr.result.itemAt(num);
             if (item == null)
                 throw new EXistException("index out of range");
@@ -3066,7 +3072,7 @@ public class RpcConnection implements RpcAPI {
     		QueryResult qr = factory.resultSets.getResult(resultId);
     		if (qr == null)
     			throw new EXistException("result set unknown or timed out: " + resultId);
-    		qr.timestamp = System.currentTimeMillis();
+    		qr.touch();
     		Item item = qr.result.itemAt(num);
     		if (item == null)
     			throw new EXistException("index out of range");
@@ -3181,7 +3187,7 @@ public class RpcConnection implements RpcAPI {
             QueryResult qr = factory.resultSets.getResult(resultId);
             if (qr == null)
                 throw new EXistException("result set unknown or timed out");
-            qr.timestamp = System.currentTimeMillis();
+            qr.touch();
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             serializer.setProperties(qr.serialization);
@@ -3251,7 +3257,7 @@ public class RpcConnection implements RpcAPI {
     		QueryResult qr = factory.resultSets.getResult(resultId);
     		if (qr == null)
     			throw new EXistException("result set unknown or timed out");
-    		qr.timestamp = System.currentTimeMillis();
+    		qr.touch();
     		Serializer serializer = broker.getSerializer();
     		serializer.reset();
     		for (Map.Entry<Object, Object> entry : qr.serialization.entrySet()) {
@@ -4017,7 +4023,7 @@ public class RpcConnection implements RpcAPI {
         QueryResult qr = factory.resultSets.getResult(resultId);
         if (qr == null)
             throw new EXistException("result set unknown or timed out");
-        qr.timestamp = System.currentTimeMillis();
+        qr.touch();
         HashMap<String, Object> result = new HashMap<String, Object>();
         result.put("queryTime", new Integer((int) qr.queryTime));
         if (qr.result == null) {
