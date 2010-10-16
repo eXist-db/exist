@@ -10,6 +10,7 @@ package org.exist.xmlrpc;
 public abstract class AbstractCachedResult {
 	
 	protected long queryTime = 0;
+	protected long creationTimestamp = 0; 
 	protected long timestamp = 0; 
 	
 	public AbstractCachedResult() {
@@ -18,7 +19,8 @@ public abstract class AbstractCachedResult {
 	
 	public AbstractCachedResult(long queryTime) {
 		this.queryTime = queryTime;
-		this.timestamp = System.currentTimeMillis();
+		touch();
+		this.creationTimestamp = this.timestamp;
 	}
 	
 	/**
@@ -33,6 +35,21 @@ public abstract class AbstractCachedResult {
 	 */
 	public long getTimestamp() {
 		return timestamp;
+	}
+
+	/**
+	 * This method can be used to explicitly update the
+	 * last time the cached result has been used
+	 */
+	public void touch() {
+		timestamp = System.currentTimeMillis();
+	}
+	
+	/**
+	 * @return Returns the timestamp.
+	 */
+	public long getCreationTimestamp() {
+		return creationTimestamp;
 	}
 	
 	/**
