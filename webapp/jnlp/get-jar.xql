@@ -9,8 +9,9 @@ let $name := request:get-attribute("name"),
     $last-modified := system:get-lib-info($name)/@modified,
     $type := if (ends-with($name, ".jar"))
                 then "application/x-java-archive"
-                else if (ends-with($name, ".jar"))
+                else if (ends-with($name, ".jar.pack.gz"))
                         then "application/x-java-pack200"
                         else "application/octet-stream",
     $dummy := response:set-date-header("Last-Modified", $last-modified)
-return response:stream-binary($jar, $type, $name)    
+return response:stream-binary($jar, $type, $name)
+
