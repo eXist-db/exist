@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace t="http://exist-db.org/xquery/testing";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
 
 declare function t:setup-action($action) {
     typeswitch ($action)
@@ -10,6 +11,8 @@ declare function t:setup-action($action) {
             xdb:create-collection($action/@parent, $action/@name)
         case element(store) return
 			t:store($action)
+		case element(store-files) return
+            t:store-files($action)
         case element(remove-collection) return
             xdb:remove($action/@collection)
         case element(remove-document) return
@@ -27,6 +30,12 @@ declare function t:store($action as element(store)) {
 			$action/string()
 	return
         xdb:store($action/@collection, $action/@name, $data, $type)
+};
+
+declare function t:store-files($action as element(store-files)) {
+    let $type := if ($action/@type) then $action/@type/string() else "application/xml"
+    return
+        xdb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };
 
 declare function t:setup($setup as element(setup)) {
@@ -70,6 +79,24 @@ declare function t:test($result as item()*) {
         exists($result)
 };
 
+declare function t:compare-xml($output as node()*, $expected as node()*) {
+    if (empty($output)) then
+        true()
+    else
+        let $firstEqual :=
+            if ($output[1] instance of text()) then
+                deep-equal($output[1], $expected[1])
+            else
+                t:compare-xml(subsequence($output, 2), subsequence($expected, 2))
+        return
+            if (not($firstEqual)) then
+                false()
+            else if (count($output) gt 1) then
+                t:compare-xml(subsequence($output, 2), subsequence($expected, 2))
+            else
+                true()
+};
+
 declare function t:run-test($test as element(test), $count as xs:integer) {
 	let $context := t:init-prolog($test)
 	let $null := 
@@ -92,7 +119,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         else if ($test/@output eq 'text') then
             normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
         else
-            deep-equal($output, $expected)
+            t:compare-xml($output, $expected)
     let $expanded :=
 		if ($output instance of node()) then
         	util:expand($output)

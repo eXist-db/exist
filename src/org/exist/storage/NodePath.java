@@ -68,6 +68,10 @@ public class NodePath {
         init(namespaces, path);
     }
     
+    public NodePath(QName qname) {
+    	addComponent(qname);
+    }
+    
     public void addComponent(QName component) {
         if(pos == components.length) {
             QName[] t = new QName[pos + 1];
@@ -112,6 +116,21 @@ public class NodePath {
         return null;
     }
 
+    public boolean hasWildcard() {
+    	for (int i = 0; i < pos; i++) {
+    		if (components[i] == WILDCARD)
+    			return true;
+    	}
+    	return false;
+    }
+    
+    public boolean match(QName qname) {
+    	if (pos > 0) {
+    		return components[pos - 1].equals(qname);
+    	}
+    	return false;
+    }
+    
     public final boolean match(NodePath other) {
         boolean skip = false;
         int i = 0, j = 0;
