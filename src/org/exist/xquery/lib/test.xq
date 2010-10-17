@@ -3,7 +3,8 @@ xquery version "1.0";
 module namespace t="http://exist-db.org/xquery/testing";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
-import module namespace xdiff="http://exist-db.org/xquery/xmldiff";
+import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
+at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
 
 declare function t:setup-action($action) {
     typeswitch ($action)
