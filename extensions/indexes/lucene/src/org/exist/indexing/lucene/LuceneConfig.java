@@ -19,12 +19,15 @@ public class LuceneConfig {
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
 
-    private Map<QName, LuceneIndexConfig> qnames = new TreeMap<QName, LuceneIndexConfig>();
-    private LuceneIndexConfig paths[] = null;
-
+    private Map<QName, LuceneIndexConfig> paths = new TreeMap<QName, LuceneIndexConfig>();
+    private List<LuceneIndexConfig> wildcardPaths = new ArrayList<LuceneIndexConfig>();
+    private Map<String, LuceneIndexConfig> namedIndexes = new TreeMap<String, LuceneIndexConfig>();
+    
     private Set<QName> inlineNodes = null;
     private Set<QName> ignoreNodes = null;
 
+    private PathIterator iterator = new PathIterator();
+    
     private float boost = -1;
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
@@ -34,47 +37,45 @@ public class LuceneConfig {
     }
 
     public boolean matches(NodePath path) {
-        QName qn = path.getComponent(path.length() - 1);
-        if (qnames.containsKey(qn))
-            return true;
-        if (paths != null) {
-            for (int i = 0; i < paths.length; i++) {
-                if (paths[i].match(path))
-                    return true;
-            }
-        }
+    	LuceneIndexConfig idxConf = paths.get(path.getLastComponent());
+    	while (idxConf != null) {
+    		if (idxConf.match(path))
+    			return true;
+    		idxConf = idxConf.getNext();
+    	}
+    	for (LuceneIndexConfig config : wildcardPaths) {
+    		if (config.match(path))
+    			return true;
+    	}
         return false;
     }
-
-    public LuceneIndexConfig getConfig(NodePath path) {
-        QName qn = path.getComponent(path.length() - 1);
-        LuceneIndexConfig config = qnames.get(qn);
-        if (config == null && paths != null) {
-            for (int i = 0; i < paths.length; i++) {
-                if (paths[i].match(path)) {
-                    config = paths[i];
-                    break;
-                }
-            }
-        }
-        return config;
+    
+    public Iterator<LuceneIndexConfig> getConfig(NodePath path) {
+    	iterator.reset(path);
+    	return iterator;
     }
-
+    
+    protected LuceneIndexConfig getWildcardConfig(NodePath path) {
+    	LuceneIndexConfig config;
+    	for (int i = 0; i < wildcardPaths.size(); i++) {
+    		config = wildcardPaths.get(i);
+    		if (config.match(path))
+    			return config;
+    	}
+    	return null;
+    }
+    
     public Analyzer getAnalyzer(QName qname) {
-        LuceneIndexConfig config = qnames.get(qname);
-        if (config == null && paths != null) {
-            for (int i = 0; i < paths.length; i++) {
-                LuceneIndexConfig path = paths[i];
-                if (path.getQName().compareTo(qname) == 0) {
-                    config = path;
-                    break;
-                }
-            }
-        }
-        if (config != null) {
-            String id = config.getAnalyzerId();
+    	LuceneIndexConfig idxConf = paths.get(qname);
+    	while (idxConf != null) {
+    		if (idxConf.getNodePath().match(qname))
+    			break;
+    		idxConf = idxConf.getNext();
+    	}
+    	if (idxConf != null) {
+            String id = idxConf.getAnalyzerId();
             if (id != null)
-                return analyzers.getAnalyzerById(config.getAnalyzerId());
+                return analyzers.getAnalyzerById(idxConf.getAnalyzerId());
         }
         return analyzers.getDefaultAnalyzer();
     }
@@ -82,27 +83,42 @@ public class LuceneConfig {
     public Analyzer getAnalyzer(NodePath nodePath) {
         if (nodePath.length() == 0)
             throw new RuntimeException();
-        LuceneIndexConfig config = getConfig(nodePath);
-        if (config != null) {
-            String id = config.getAnalyzerId();
+        LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
+    	while (idxConf != null) {
+    		if (idxConf.getNodePath().match(nodePath))
+    			break;
+    		idxConf = idxConf.getNext();
+    	}
+    	if (idxConf == null) {
+    		for (LuceneIndexConfig config : wildcardPaths) {
+    			if (config.match(nodePath))
+    				return config.getAnalyzer();
+    		}
+    	}
+    	if (idxConf != null) {
+            String id = idxConf.getAnalyzerId();
             if (id != null)
-                return analyzers.getAnalyzerById(config.getAnalyzerId());
+                return analyzers.getAnalyzerById(idxConf.getAnalyzerId());
         }
         return analyzers.getDefaultAnalyzer();
     }
 
+    public Analyzer getAnalyzer(String field) {
+    	LuceneIndexConfig config = namedIndexes.get(field);
+    	if (config != null) {
+    		String id = config.getAnalyzerId();
+            if (id != null)
+                return analyzers.getAnalyzerById(config.getAnalyzerId());
+    	}
+    	return analyzers.getDefaultAnalyzer();
+    }
+    
     public boolean isInlineNode(QName qname) {
         return inlineNodes != null && inlineNodes.contains(qname);
     }
 
     public boolean isIgnoredNode(QName qname) {
         return ignoreNodes != null && ignoreNodes.contains(qname);
-    }
-    
-    public void getDefinedIndexes(List<QName> indexes) {
-        for (QName qn : qnames.keySet()) {
-            indexes.add(qn);
-        }
     }
 
     public float getBoost() {
@@ -137,20 +153,22 @@ public class LuceneConfig {
                 } else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
                     analyzers.addAnalyzer((Element) node);
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
+                	// found an index definition
                     Element elem = (Element) node;
                     LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers);
-                    if (config.getNodePath() == null)
-                        qnames.put(config.getQName(), config);
-                    else {
-                        if (paths == null) {
-                            paths = new LuceneIndexConfig[1];
-                            paths[0] = config;
-                        } else {
-                            LuceneIndexConfig np[] = new LuceneIndexConfig[paths.length + 1];
-                            System.arraycopy(paths, 0, np, 0, paths.length);
-                            np[paths.length] = config;
-                            paths = np;
-                        }
+                    // if it is a named index, add it to the namedIndexes map
+                    if (config.getName() != null)
+                    	namedIndexes.put(config.getName(), config);
+                    
+                    // register index either by QName or path
+                    if (config.getNodePath().hasWildcard()) {
+                    	wildcardPaths.add(config);
+                    } else {
+	                    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
+	                    if (idxConf == null)
+	                    	paths.put(config.getNodePath().getLastComponent(), config);
+	                    else
+	                    	idxConf.add(config);
                     }
                 } else if (INLINE_ELEMENT.equals(node.getLocalName())) {
                     Element elem = (Element) node;
@@ -167,5 +185,46 @@ public class LuceneConfig {
                 }
             }
         }
+    }
+    
+    private class PathIterator implements Iterator<LuceneIndexConfig> {
+
+    	private LuceneIndexConfig nextConfig;
+    	private NodePath path;
+    	private boolean atLast = false;
+    	
+    	protected void reset(NodePath path) {
+    		this.atLast = false;
+    		this.path = path;
+    		nextConfig = paths.get(path.getLastComponent());
+    		if (nextConfig == null) {
+				nextConfig = getWildcardConfig(path);
+				atLast = true;
+    		}
+    	}
+    	
+		@Override
+		public boolean hasNext() {
+			return (nextConfig != null);
+		}
+
+		@Override
+		public LuceneIndexConfig next() {
+			if (nextConfig == null)
+				return null;
+			
+			LuceneIndexConfig currentConfig = nextConfig;
+			nextConfig = nextConfig.getNext();
+			if (nextConfig == null && !atLast) {
+				nextConfig = getWildcardConfig(path);
+				atLast = true;
+			}
+			return currentConfig;
+		}
+
+		@Override
+		public void remove() {
+		}
+    	
     }
 }

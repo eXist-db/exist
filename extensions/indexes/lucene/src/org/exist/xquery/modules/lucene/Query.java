@@ -251,7 +251,7 @@ public class Query extends Function implements Optimizable {
         return result;
     }
 
-    private Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
         Sequence keySeq = getArgument(1).eval(contextSequence, contextItem);
         Item key = keySeq.itemAt(0);
         if (!(Type.subTypeOf(key.getType(), Type.STRING) || Type.subTypeOf(key.getType(), Type.NODE)))
@@ -274,7 +274,7 @@ public class Query extends Function implements Optimizable {
         return Type.NODE;
     }
 
-    private Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
         if (getArgumentCount() < 3)
             return null;
         Properties options = new Properties();

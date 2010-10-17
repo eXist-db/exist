@@ -39,7 +39,7 @@ public interface TextExtractor {
 
     public int characters(XMLString value);
 
-    public float getBoost();
+    public LuceneIndexConfig getIndexConfig();
     
     public XMLString getText();
 }

@@ -36,8 +36,8 @@ public abstract class AbstractTextExtractor implements TextExtractor {
         this.idxConfig = idxConfig;
     }
 
-    public float getBoost() {
-        return config.getBoost();
+    public LuceneIndexConfig getIndexConfig() {
+    	return idxConfig;
     }
 
     public XMLString getText() {
