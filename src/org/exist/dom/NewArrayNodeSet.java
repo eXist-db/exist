@@ -850,7 +850,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             NodeId parentId = reference.getNodeId().getParentId();
             int docIdx = findDoc(reference.getDocument());
             if (docIdx < 0)
-                return null;
+                continue;
             // do a binary search to pick some node in the range of valid
             // child ids
             int low = documentOffsets[docIdx];
