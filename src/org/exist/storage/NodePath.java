@@ -32,7 +32,7 @@ import org.exist.util.FastStringBuffer;
 /**
  * @author wolf
  */
-public class NodePath {
+public class NodePath implements Comparable<NodePath>{
 
     private final static Logger LOG = Logger.getLogger(NodePath.class);
     
@@ -230,4 +230,35 @@ public class NodePath {
         if (token.length() > 0)
             addComponent(namespaces, token.toString());
     }
+    
+    public boolean equals(Object obj) {
+    	if (obj == null) return false;
+    	
+    	if (obj instanceof NodePath) {
+    		NodePath nodePath = (NodePath) obj;
+    		if (nodePath.pos == pos) {
+                for(int i = 0; i < pos; i++) {
+                	if (!nodePath.components[i].equals(components[i])) {
+                		return false;
+                	}
+                }
+                return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    public int hashCode() {
+    	int h = 0;
+        for(int i = 0; i < pos; i++) {
+        	h = 31*h + components[i].hashCode();
+        }
+        return h;
+    }
+
+	@Override
+	public int compareTo(NodePath o) {
+		return toString().compareTo(o.toString()); //TODO: optimize
+	}
 }
