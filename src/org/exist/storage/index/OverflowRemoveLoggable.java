@@ -71,6 +71,7 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.put(status);
@@ -83,6 +84,7 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         status = in.get();
@@ -96,18 +98,22 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 13 + length;
     }
 
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoRemoveOverflow(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoRemoveOverflow(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - remove overflow page " + pageNum;
     }

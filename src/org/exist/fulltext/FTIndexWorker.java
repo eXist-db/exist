@@ -109,7 +109,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setMode(int newMode) {
         mode = newMode;
         // wolf: unnecessary call to setDocument?
-//        setDocument(document, newMode);
+        // setDocument(document, newMode);
     }
 
     public DocumentImpl getDocument() {
@@ -207,8 +207,10 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private Stack<ElementContent> contentStack = new Stack<ElementContent>();
 
         public FTStreamListener() {
+            //Nothing to do
         }
 
+        @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
                 boolean mixedContent = config.matchMixedElement(path);
@@ -221,11 +223,12 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.startElement(transaction, element, path);
         }
 
+        @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
                 boolean mixedContent = config.matchMixedElement(path);
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
-                    ElementContent contentBuf = (ElementContent) contentStack.pop();
+                    ElementContent contentBuf = contentStack.pop();
                     element.getQName().setNameType(ElementValue.ELEMENT);
                     engine.storeText(element, contentBuf,
                             mixedContent ? NativeTextEngine.FOURTH_OPTION : NativeTextEngine.TEXT_BY_QNAME,
@@ -241,6 +244,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          * @param text
          * @param path
          */
+        @Override
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (config == null) {
                 engine.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
@@ -250,13 +254,14 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             if (!contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
-                    ElementContent next = (ElementContent) contentStack.get(i);
+                    ElementContent next = contentStack.get(i);
                     next.append(text.getXMLString());
                 }
             }
             super.characters(transaction, text, path);
         }
 
+        @Override
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
             path.addComponent(attrib.getQName());
             if (config == null || config.matchAttribute(path)) {
@@ -269,6 +274,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.attribute(transaction, attrib, path);
         }
 
+        @Override
         public IndexWorker getWorker() {
             return FTIndexWorker.this;
         }

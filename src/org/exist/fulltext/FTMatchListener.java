@@ -1,5 +1,15 @@
 package org.exist.fulltext;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Stack;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.Match;
@@ -8,19 +18,11 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.util.FastQSort;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
 
 /**
  * Implementation of {@link org.exist.indexing.MatchListener} for the fulltext index.
@@ -77,10 +79,10 @@ public class FTMatchListener extends AbstractMatchListener {
                     XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                     while (reader.hasNext()) {
                         int ev = reader.next();
-                        NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         if (nodeId.equals(proxy.getNodeId()))
                             break;
-                        if (ev == XMLStreamReader.CHARACTERS)
+                        if (ev == XMLStreamConstants.CHARACTERS)
                             startOffset += reader.getText().length();
                     }
                 } catch (IOException e) {
@@ -95,6 +97,7 @@ public class FTMatchListener extends AbstractMatchListener {
         }
     }
 
+    @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
         Match nextMatch = match;
         // check if there are any matches in the current element
@@ -112,6 +115,7 @@ public class FTMatchListener extends AbstractMatchListener {
         super.startElement(qname, attribs);
     }
 
+    @Override
     public void endElement(QName qname) throws SAXException {
         Match nextMatch = match;
         // check if we need to pop the stack
@@ -125,13 +129,14 @@ public class FTMatchListener extends AbstractMatchListener {
         super.endElement(qname);
     }
 
+    @Override
     public void characters(CharSequence seq) throws SAXException {
         List<Match.Offset> offsets = null;    // a list of offsets to process
         if (offsetStack != null) {
             // walk through the stack to find matches which start in
             // the current string of text
             for (int i = 0; i < offsetStack.size(); i++) {
-                NodeOffset no = (NodeOffset) offsetStack.get(i);
+                NodeOffset no = offsetStack.get(i);
                 int end = no.offset + seq.length();
                 // scan all matches
                 Match next = match;
@@ -185,7 +190,7 @@ public class FTMatchListener extends AbstractMatchListener {
             String s = seq.toString();
             int pos = 0;
             for (int i = 0; i < offsets.size(); i++) {
-                Match.Offset offset = (Match.Offset) offsets.get(i);
+                Match.Offset offset = offsets.get(i);
                 if (offset.getOffset() > pos) {
                     super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
                 }

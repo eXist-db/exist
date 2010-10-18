@@ -38,14 +38,17 @@ public class FTMatch extends Match {
         super(match);
     }
 
+    @Override
     public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
         return new FTMatch(contextId, nodeId, matchTerm);
     }
 
+    @Override
     public Match newCopy() {
         return new FTMatch(this);
     }
 
+    @Override
     public String getIndexId() {
         return FTIndex.ID;
     }

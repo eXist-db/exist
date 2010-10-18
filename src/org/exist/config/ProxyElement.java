@@ -195,14 +195,16 @@ public class ProxyElement<E extends ElementAtExist> extends ProxyNode<E> impleme
 	/**
 	 * @return the element
 	 */
+	@Override
 	public E getProxyObject() {
 		return element;
 	}
 
+	@Override
 	public void setProxyObject(E object) {
-		if (object instanceof ElementAtExist) {
+		//if (object instanceof ElementAtExist) {
 			this.element = (E) object;
-		} else
-			throw new IllegalArgumentException("Only ElementAtExist allowed");
+		//} else
+			//throw new IllegalArgumentException("Only ElementAtExist allowed");
 	}
 }

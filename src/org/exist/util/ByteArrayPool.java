@@ -10,51 +10,53 @@ package org.exist.util;
  */
 public class ByteArrayPool {
 
-	public static final int POOL_SIZE = 32;
-	public static final int MAX = 128;
-	public static final ThreadLocal<byte[][]> pools_ = new PoolThreadLocal();
-	private static int slot_ = 0;
-	
-	public ByteArrayPool() {
-	}
+    public static final int POOL_SIZE = 32;
+    public static final int MAX = 128;
+    public static final ThreadLocal<byte[][]> pools_ = new PoolThreadLocal();
+    private static int slot_ = 0;
 
-	public static byte[] getByteArray(int size) {
-		byte[][] pool = pools_.get();
-		if(size < MAX) {
-			for(int i = pool.length; i-- > 0; ) {
-				if(pool[i] != null && pool[i].length == size) {
-					//System.out.println("found byte[" + size + "]");
-					byte[] b = pool[i];
-					pool[i] = null;
-					return b;
-				}
-			}
-		}
-		return new byte[size];
-	}
-	
-	public static void releaseByteArray(final byte[] b) {
-		if(b == null || b.length > MAX)
-			return;
-		//System.out.println("releasing byte[" + b.length + "]");
-		byte[][] pool = pools_.get();
-		for(int i = pool.length; i-- > 0;) {
-			if(pool[i] == null) {
-				pool[i] = b;
-				return;
-			}
-		}
-		
-		int s = slot_++;
-		if (s < 0)
-			s = -s;
-		pool[s % pool.length] = b;
-	}
-	
-	private static final class PoolThreadLocal extends ThreadLocal<byte[][]> {
-		
-		protected byte[][] initialValue() {
-			return new byte[POOL_SIZE][];
-		}
-	}
+    public ByteArrayPool() {
+        //Nothing to do
+    }
+
+    public static byte[] getByteArray(int size) {
+        byte[][] pool = pools_.get();
+        if(size < MAX) {
+            for(int i = pool.length; i-- > 0; ) {
+                if(pool[i] != null && pool[i].length == size) {
+                    //System.out.println("found byte[" + size + "]");
+                    byte[] b = pool[i];
+                    pool[i] = null;
+                    return b;
+                }
+            }
+        }
+        return new byte[size];
+    }
+
+    public static void releaseByteArray(final byte[] b) {
+        if(b == null || b.length > MAX)
+            return;
+        //System.out.println("releasing byte[" + b.length + "]");
+        byte[][] pool = pools_.get();
+        for(int i = pool.length; i-- > 0;) {
+            if(pool[i] == null) {
+                pool[i] = b;
+                return;
+            }
+        }
+        int s = slot_++;
+        if (s < 0)
+            s = -s;
+        pool[s % pool.length] = b;
+    }
+
+    private static final class PoolThreadLocal extends ThreadLocal<byte[][]> {
+
+        @Override
+        protected byte[][] initialValue() {
+            return new byte[POOL_SIZE][];
+        }
+
+    }
 }

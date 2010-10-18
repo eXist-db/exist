@@ -44,7 +44,7 @@ public class ElementContent {
         else
             appendSpan(string);
     }
-    
+
     public void appendSpan(XMLString string) {
         if (first == null) {
             first = new TextSpan(string);
@@ -77,6 +77,7 @@ public class ElementContent {
         return first;
     }
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         TextSpan span = getFirst();

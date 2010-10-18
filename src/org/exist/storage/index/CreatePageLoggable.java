@@ -50,10 +50,11 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
     public CreatePageLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) newPage);
@@ -62,6 +63,7 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         newPage = in.getInt();
@@ -70,18 +72,22 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 4;
     }
 
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoCreatePage(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoCreatePage(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - create new page " + newPage;
     }

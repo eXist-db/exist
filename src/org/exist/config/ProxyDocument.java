@@ -274,13 +274,14 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 	public E getProxyObject() {
 		return document;
 	}
-    
+
+	@Override
 	public void setProxyObject(E object) {
-		if (object instanceof DocumentAtExist) {
+		//if (object instanceof DocumentAtExist) {
 			document = (E) object;
 			super.setProxyObject(document);
-		} else
-			throw new IllegalArgumentException("Only DocumentAtExist allowed");
+		//} else
+			//throw new IllegalArgumentException("Only DocumentAtExist allowed");
 	}
 
 	public NodeAtExist getNode(int nodeNr) throws DOMException {

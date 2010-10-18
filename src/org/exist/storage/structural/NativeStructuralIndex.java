@@ -36,6 +36,7 @@ public class NativeStructuralIndex extends AbstractIndex {
     protected SymbolTable symbols;
 
     public NativeStructuralIndex() {
+        //Nothing to do
     }
 
     @Override
@@ -44,6 +45,7 @@ public class NativeStructuralIndex extends AbstractIndex {
         symbols = pool.getSymbols();
     }
 
+    @Override
     public void open() throws DatabaseConfigurationException {
         File file = new File(getDataDir(), FILE_NAME);
         LOG.debug("Creating '" + file.getName() + "'...");
@@ -56,11 +58,13 @@ public class NativeStructuralIndex extends AbstractIndex {
         }
     }
 
+    @Override
     public void close() throws DBException {
         btree.close();
         btree = null;
     }
 
+    @Override
     public void sync() throws DBException {
         if (btree == null)
             return;
@@ -79,6 +83,7 @@ public class NativeStructuralIndex extends AbstractIndex {
         }
     }
 
+    @Override
     public void remove() throws DBException {
         btree.closeAndRemove();
     }

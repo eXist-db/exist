@@ -39,7 +39,7 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
     protected ByteArray data;
     protected int chunkSize;
     protected int startOffset;
-    
+
     /**
      * 
      * 
@@ -51,7 +51,7 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
      * @param transaction 
      */
     public OverflowAppendLoggable(byte fileId, Txn transaction, long page, 
-			ByteArray chunk, int startOffset, int chunkSize) {
+            ByteArray chunk, int startOffset, int chunkSize) {
         super(BFile.LOG_OVERFLOW_APPEND, fileId, transaction);
         this.pageNum = page;
         this.data = chunk;
@@ -67,35 +67,41 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
         out.putInt(chunkSize);
         data.copyTo(startOffset, out, chunkSize);
     }
-	
-	public void read(ByteBuffer in) {
-		super.read(in);
-		pageNum = in.getInt();
-		chunkSize = in.getInt();
-		byte b[] = new byte[chunkSize];
-		in.get(b);
-		data = new FixedByteArray(b);
-	}
-	
-	public int getLogSize() {
-		return super.getLogSize() + 8 + chunkSize;
-	}
-	
-	public void redo() throws LogException {
-		getIndexFile().redoAppendOverflow(this);
-	}
-	
+
+    @Override
+    public void read(ByteBuffer in) {
+        super.read(in);
+        pageNum = in.getInt();
+        chunkSize = in.getInt();
+        byte b[] = new byte[chunkSize];
+        in.get(b);
+        data = new FixedByteArray(b);
+    }
+
+    @Override
+    public int getLogSize() {
+        return super.getLogSize() + 8 + chunkSize;
+    }
+
+    @Override
+    public void redo() throws LogException {
+        getIndexFile().redoAppendOverflow(this);
+    }
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoAppendOverflow(this);
     }
-    
-	public String dump() {
-		return super.dump() + " - append to overflow page " + pageNum;
-	}
+
+    @Override
+    public String dump() {
+        return super.dump() + " - append to overflow page " + pageNum;
+    }
 }
