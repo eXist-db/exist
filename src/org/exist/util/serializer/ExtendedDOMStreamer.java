@@ -41,7 +41,7 @@ public class ExtendedDOMStreamer extends DOMStreamer {
     public ExtendedDOMStreamer() {
         super();
     }
-    
+
     /**
      * 
      */
@@ -63,10 +63,11 @@ public class ExtendedDOMStreamer extends DOMStreamer {
     public void setSerializer(Serializer serializer) {
         this.xmlSerializer = serializer;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.util.serializer.DOMStreamer#startNode(org.w3c.dom.Node)
      */
+    @Override
     protected void startNode(Node node) throws SAXException {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
             if(xmlSerializer == null)
@@ -75,11 +76,11 @@ public class ExtendedDOMStreamer extends DOMStreamer {
         } else
             super.startNode(node);
     }
-    
-    
+
     /* (non-Javadoc)
      * @see org.exist.util.serializer.DOMStreamer#reset()
      */
+    @Override
     public void reset() {
         super.reset();
         xmlSerializer = null;

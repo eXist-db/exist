@@ -38,7 +38,7 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     protected byte[] oldData;
     protected int offset = 0;
     protected int len;
-    
+
     /**
      * 
      * 
@@ -67,6 +67,7 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) page);
@@ -74,7 +75,8 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
         out.putShort((short) len);
         out.put(oldData, offset, len);
     }
-    
+
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         page = in.getInt();
@@ -83,19 +85,23 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
         oldData = new byte[len];
         in.get(oldData);
     }
-    
+
+    @Override
     public int getLogSize() {
         return super.getLogSize() + len + 8;
     }
-    
+
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoRemoveValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoRemoveValue(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - remove value with tid " + tid + " from page " + page;
     }

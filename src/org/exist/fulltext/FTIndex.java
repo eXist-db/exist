@@ -56,10 +56,12 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
     private File dataFile;
 
     private BFile db;
-    
+
     public FTIndex() {
+        //Nothing to do
     }
 
+    @Override
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = FILE_NAME;
@@ -68,10 +70,11 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         dataFile = new File(dataDir + File.separatorChar + fileName);
     }
 
+    @Override
     public void open() throws DatabaseConfigurationException {
         double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
+        double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
+        double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
         LOG.debug("Creating '" + dataFile.getName() + "'...");
         try {
             db = new BFile(pool, (byte)0, false, dataFile, pool.getCacheManager(),
@@ -82,19 +85,23 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         }
     }
 
+    @Override
     public void close() throws DBException {
         db.close();
     }
 
+    @Override
     public void sync() throws DBException {
         db.flush();
     }
 
+    @Override
     public void remove() throws DBException {
         db.closeAndRemove();
         db = null;
     }
 
+    @Override
     public IndexWorker getWorker(DBBroker broker) {
         //TODO : ensure singleton ? a pool ?
         try {
@@ -105,6 +112,7 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         return null;
     }
 
+    @Override
     public boolean checkIndex(DBBroker broker) {
         return false;
     }

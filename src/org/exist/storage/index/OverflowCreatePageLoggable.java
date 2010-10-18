@@ -35,7 +35,7 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
 
     protected long newPage;
     protected long prevPage;
-    
+
     /**
      * 
      * 
@@ -53,10 +53,11 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
     public OverflowCreatePageLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) newPage);
@@ -66,6 +67,7 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         newPage = in.getInt();
@@ -75,18 +77,22 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 8;
     }
 
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoCreateOverflowPage(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoCreateOverflowPage(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - create new overflow page " + newPage;
     }

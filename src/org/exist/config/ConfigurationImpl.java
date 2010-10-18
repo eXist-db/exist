@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
@@ -45,137 +45,128 @@ import org.w3c.dom.NodeList;
  *
  */
 public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements Configuration {
-	
-	private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
-	
-	protected WeakReference<Configurable> configuredObjectReferene = null;
-	
-	private ConfigurationImpl() {
-	}
 
-	protected ConfigurationImpl(ElementAtExist element) {
-		this();
-		setProxyObject(element);
-	}
-	
-	@Override
-	public ElementAtExist getElement() {
-		return getProxyObject();
-	}
+    private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 
-	@Override
-	public String getName() {
-		return getLocalName();
-	}
-
-	public Configuration getConfiguration(String name) {
-		if (getLocalName().equals(name)) {
-			return this;
-		}
-		
-		List<Configuration> list = getConfigurations(name);
-		
-		if (list == null)
-			return null;
-		
-		if (list.size() > 0)
-			return list.get(0);
-		
-		return null;
-	}
-
-	public List<Configuration> getConfigurations(String name) {
-		NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
-
-		List<Configuration> list = new ArrayList<Configuration>();
-		if (nodes.getLength() > 0) { 
-		
-			for (int i = 0; i < nodes.getLength(); i++) {
-				Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
-				list.add(config);
-			}
-		}
-		
-		return list;
-	}
-
-	public String getProperty(String name) {
-		if (hasAttribute(name))
-			return getAttribute(name);
-		
-		NodeList nodes = getElementsByTagNameNS(NS, name);
-		if (nodes.getLength() == 1) {
-			return nodes.item(0).getNodeValue();
-		}
-			
-		return null;
-    }
+    protected WeakReference<Configurable> configuredObjectReference = null;
     
-	public String getProperty(String name, String default_property) {
-		String property = getProperty(name);
-		if (property == null)
-			return default_property;
-		
+    private ConfigurationImpl() {
+        //Nothing to do
+    }
+
+    protected ConfigurationImpl(ElementAtExist element) {
+        this();
+        setProxyObject(element);
+    }
+
+    @Override
+    public ElementAtExist getElement() {
+        return getProxyObject();
+    }
+
+    @Override
+    public String getName() {
+        return getLocalName();
+    }
+
+    public Configuration getConfiguration(String name) {
+        if (getLocalName().equals(name)) {
+            return this;
+        }
+
+        List<Configuration> list = getConfigurations(name);
+
+        if (list == null)
+            return null;
+
+        if (list.size() > 0)
+            return list.get(0);
+
+        return null;
+    }
+
+    public List<Configuration> getConfigurations(String name) {
+        NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
+        List<Configuration> list = new ArrayList<Configuration>();
+        if (nodes.getLength() > 0) {
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
+                list.add(config);
+            }
+        }
+        return list;
+    }
+
+    public String getProperty(String name) {
+        if (hasAttribute(name))
+            return getAttribute(name);
+        NodeList nodes = getElementsByTagNameNS(NS, name);
+        if (nodes.getLength() == 1) {
+            return nodes.item(0).getNodeValue();
+        }
+        return null;
+    }
+
+    public String getProperty(String name, String default_property) {
+        String property = getProperty(name);
+        if (property == null)
+            return default_property;
         return property;
     }
 
-	public boolean hasProperty(String name) {
-        if (hasAttribute(name)) return true;
-
+    public boolean hasProperty(String name) {
+        if (hasAttribute(name))
+            return true;
         return (getElementsByTagName(name).getLength() == 1);
     }
-    
+
     public void setProperty(String name, String value) {
-    	//detect save place: attribute or element's text
+        //detect save place: attribute or element's text
         setAttribute(name, value);
     }
 
-	@Override
-	public void setProperty(String property, Integer value) {
-		setProperty(property, String.valueOf(value));
-	}
-    
+    @Override
+    public void setProperty(String property, Integer value) {
+        setProperty(property, String.valueOf(value));
+    }
+
     public Object getRuntimeProperty(String name) {
         return runtimeProperties.get(name);
     }
 
-	public boolean hasRuntimeProperty(String name) {
+    public boolean hasRuntimeProperty(String name) {
         return runtimeProperties.containsKey(name);
     }
 
-	public void setRuntimeProperty(String name, Object obj) {
+    public void setRuntimeProperty(String name, Object obj) {
         runtimeProperties.put(name, obj);
     }
-    
+
     public Boolean getPropertyBoolean(String name) {
-    	String value = getProperty(name);
-        
-    	if(value == null)
+        String value = getProperty(name);
+        if(value == null)
             return null;
-        
-    	if ("yes".equalsIgnoreCase(value))
-    		return true;
-    	else if ("no".equalsIgnoreCase(value))
-    		return false;
-    	else if ("true".equalsIgnoreCase(value))
-    		return true;
-    	else if ("false".equalsIgnoreCase(value))
-    		return false;
-    	
-    	//???
-    	return null;
+        if ("yes".equalsIgnoreCase(value))
+            return true;
+        else if ("no".equalsIgnoreCase(value))
+            return false;
+        else if ("true".equalsIgnoreCase(value))
+            return true;
+        else if ("false".equalsIgnoreCase(value))
+            return false;
+        //???
+        return null;
     }
 
-	public Boolean getPropertyBoolean(String name, boolean defaultValue) {
-    	String value = getProperty(name);
+    public Boolean getPropertyBoolean(String name, boolean defaultValue) {
+        String value = getProperty(name);
         if(value == null)
-            return Boolean.valueOf(defaultValue);     
+            return Boolean.valueOf(defaultValue);
         return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
     }
-    
+
     public Integer getPropertyInteger(String name) {
         String value = getProperty(name);
-        
         if (value == null)
             return null;
         
@@ -184,184 +175,139 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     public Integer getPropertyInteger(String name, Integer defaultValue, boolean positive) {
         String value = getProperty(name);
-        
         if (value == null)
             return defaultValue;
-        
         Integer result = Integer.valueOf(value);
         if ((positive) && (result < 0))
             return defaultValue.intValue();
-        
         return result;
     }
 
     public Long getPropertyLong(String name) {
         String value = getProperty(name);
-        
         if (value == null)
             return null;
-        
         return Long.valueOf(value);
     }
-    
+
     public Long getPropertyLong(String name, Long defaultValue, boolean positive) {
         String value = getProperty(name);
-        
         if (value == null)
             return defaultValue;
-        
         long result = Long.valueOf(value);
         if ((positive) && (result < 0))
             return defaultValue.longValue();
-        
         return result;
     }
 
     public Integer getPropertyMegabytes(String name, Integer defaultValue) {
-    	String cacheMem = getAttribute(name);
-    	if (cacheMem != null) {
-    		if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
-    			cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
-    		
-    		Integer result = new Integer(cacheMem);
-    		if (result < 0)
-    			return defaultValue;
-   			return result;
-    	}
-    	return defaultValue;
+        String cacheMem = getAttribute(name);
+        if (cacheMem != null) {
+            if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
+                cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
+            Integer result = new Integer(cacheMem);
+            if (result < 0)
+                return defaultValue;
+            return result;
+        }
+        return defaultValue;
     }
-    
+
     public String getConfigFilePath() {
-    	return "";//XXX: put config url
+        return "";//XXX: put config url
     }
 
-	
     public Set<String> getProperties() {
-    	Set<String> properties = new HashSet<String>();
-    	
-    	NamedNodeMap attrs = getAttributes();
-    	for (int i = 0; i < attrs.getLength(); i++) {
-    		//ignore namespace declarations
-    		if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
-    			properties.add(attrs.item(i).getNodeName());
-    	}
-    	
-    	Map<String, Boolean> map = new HashMap<String, Boolean>(); 
-    	
-    	//XXX: detect single element as field value
-    	NodeList children = getChildNodes();
-    	for (int i = 0; i < children.getLength(); i++) {
-    		Node child = children.item(i);
-    		
-    		if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-    			//properties.add(child.getNodeName());
-    		} else if (child.getNodeType() == Node.ELEMENT_NODE) {
-       			map.put(child.getNodeName(), map.containsKey(child.getNodeName()));
-    		}
-    	}
-    	
-    	for (Entry<String, Boolean> entry : map.entrySet()) {
-    		if (!entry.getValue())
-    			properties.add(entry.getKey());
-    	}
-    	
-    	return properties;
-	}
+        Set<String> properties = new HashSet<String>();
+        NamedNodeMap attrs = getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            //ignore namespace declarations
+            if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
+                properties.add(attrs.item(i).getNodeName());
+        }
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
+        //XXX: detect single element as field value
+        NodeList children = getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+                //properties.add(child.getNodeName());
+            } else if (child.getNodeType() == Node.ELEMENT_NODE) {
+                map.put(child.getNodeName(), map.containsKey(child.getNodeName()));
+            }
+        }
+        for (Entry<String, Boolean> entry : map.entrySet()) {
+            if (!entry.getValue())
+                properties.add(entry.getKey());
+        }
+        return properties;
+    }
 
-	@Override
-	public Class<?> getPropertyClass(String propertySecurityClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Class<?> getPropertyClass(String propertySecurityClass) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	//related objects
-	Map<String, Object> objects = new HashMap<String, Object>();
-	
-	@Override
-	public Object putObject(String name, Object object) {
-		return objects.put(name, object);
-	}
+    //related objects
+    Map<String, Object> objects = new HashMap<String, Object>();
 
-	@Override
-	public Object getObject(String name) {
-		return objects.get(name);
-	}
+    @Override
+    public Object putObject(String name, Object object) {
+        return objects.put(name, object);
+    }
 
-	private boolean saving = false;
-	
-	@Override
-	public void checkForUpdates(ElementAtExist element) {
-		if (!saving && configuredObjectReferene != null && configuredObjectReferene.get() != null) {
-			setProxyObject(element);
-			Configurator.configure(configuredObjectReferene.get(), this);
-		}
-	}
+    @Override
+    public Object getObject(String name) {
+        return objects.get(name);
+    }
 
-	@Override
-	public void save() throws PermissionDeniedException, EXistException {
+    private boolean saving = false;
 
-		//ignore in-memory nodes
-		if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
-			return; 
-		
-		synchronized (this) {
-			try {
-				saving = true;
-				if (configuredObjectReferene != null && configuredObjectReferene.get() != null)
-					Configurator.save(
-							configuredObjectReferene.get(), 
-							getProxyObject().getDocumentAtExist().getURI());
-				
-				//Configurator.save(getProxyObject().getDocumentAtExist());
-			
-			} catch (Exception e) {
-				//throw new EXistException(e);
-			} finally {
-				saving = false;
-			}
-		}
-	}
-	
-	public boolean equals(Object obj) {
-		if (obj instanceof ConfigurationImpl) {
-			ConfigurationImpl conf = (ConfigurationImpl) obj;
+    @Override
+    public void checkForUpdates(ElementAtExist element) {
+        if (!saving && configuredObjectReference != null && configuredObjectReference.get() != null) {
+            setProxyObject(element);
+            Configurator.configure(configuredObjectReference.get(), this);
+        }
+    }
 
-			if (!(getName().equals( conf.getName() )))
-					return false;
-			
-//			if ( conf.getNamespaceURI().equals(Configuration.NS_REF) ) {
-//
-//				NamedNodeMap attrs = conf.getAttributes();
-//				if (attrs.getLength() != 1)
-//					return false;
-//				
-//				Attr attr = (Attr) attrs.item(0);
-//				
-//				if (attr.getValue().equals( getProperty(attr.getLocalName()) ))
-//					return true;
-//				
-//			} else if ( getNamespaceURI().equals(Configuration.NS_REF) ) {
-//
-//				NamedNodeMap attrs = getAttributes();
-//				if (attrs.getLength() != 1)
-//					return false;
-//				
-//				Attr attr = (Attr) attrs.item(0);
-//				
-//				if (attr.getValue().equals( conf.getProperty(attr.getLocalName()) ))
-//					return true;
-//				
-//			} else {
-				String id = getProperty(Configuration.ID);
-				if (id == null) {
-					//LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
-					return false;
-				}
-				
-				if ( id.equals( conf.getProperty( Configuration.ID ) ) ) 
-					return true;
-//			}
-		}
-		return false;
-	}
+    @Override
+    public void save() throws PermissionDeniedException, EXistException {
+        //ignore in-memory nodes
+        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
+            return; 
+        synchronized (this) {
+            try {
+                saving = true;
+                if (configuredObjectReference != null && configuredObjectReference.get() != null)
+                    Configurator.save(
+                        configuredObjectReference.get(), 
+                        getProxyObject().getDocumentAtExist().getURI()
+                    );
+                //Configurator.save(getProxyObject().getDocumentAtExist());
+            } catch (Exception e) {
+                //throw new EXistException(e);
+            } finally {
+                saving = false;
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ConfigurationImpl) {
+            ConfigurationImpl conf = (ConfigurationImpl) obj;
+            if (!(getName().equals( conf.getName() )))
+                return false;
+            String id = getProperty(Configuration.ID);
+            if (id == null) {
+                //LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
+                return false;
+            }
+            if ( id.equals( conf.getProperty( Configuration.ID ) ) )
+                return true;
+        }
+        return false;
+    }
 }

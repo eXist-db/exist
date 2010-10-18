@@ -91,7 +91,7 @@ public class DeadlockDetection {
             return waitForResource.get(thread);
         }
     }
-    
+
     /**
      * Check if there's a risk for a circular wait between threadA and threadB. The method tests if
      * threadB is currently waiting for a resource lock (read or write). It then checks
@@ -149,9 +149,9 @@ public class DeadlockDetection {
                 Lock l = wt.getLock();
                 Thread t = ((MultiReadReentrantLock) l).getWriteLockedThread();
                 if (t == owner) {
-    //                System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName() +
-    //                    " type: " + wt.getLockType());
-    //                debug(t.getName(), l.getLockInfo());
+                    //System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName() +
+                    //" type: " + wt.getLockType());
+                    //debug(t.getName(), l.getLockInfo());
                     // the thread acquired the lock in the meantime
                     return false;
                 }
@@ -159,23 +159,22 @@ public class DeadlockDetection {
                     if (t == waiter)
                         return true;
                     return wouldDeadlock(waiter, t, waiters);
-                } else
+                }
+                return false;
+            }
+            Lock l = waitForCollection.get(owner);
+            if (l != null) {
+                Thread t = ((ReentrantReadWriteLock) l).getOwner();
+                if (t == owner) {
+                    //System.out.println("Thread " + t.getName() + " == " + owner.getName());
+                    //debug(t.getName(), l.getLockInfo());
+                    //the thread acquired the lock in the meantime
                     return false;
-            } else {
-                Lock l = waitForCollection.get(owner);
-                if (l != null) {
-                    Thread t = ((ReentrantReadWriteLock) l).getOwner();
-                    if (t == owner) {
-    //                    System.out.println("Thread " + t.getName() + " == " + owner.getName());
-    //                    debug(t.getName(), l.getLockInfo());
-                        // the thread acquired the lock in the meantime
-                        return false;
-                    }
-                    if (t != null) {
-                        if (t == waiter)
-                            return true;
-                        return wouldDeadlock(waiter, t, waiters);
-                    }
+                }
+                if (t != null) {
+                    if (t == waiter)
+                        return true;
+                    return wouldDeadlock(waiter, t, waiters);
                 }
             }
             return false;

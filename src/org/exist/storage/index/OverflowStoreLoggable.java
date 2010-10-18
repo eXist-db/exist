@@ -34,13 +34,13 @@ import org.exist.storage.txn.Txn;
  */
 public class OverflowStoreLoggable extends AbstractBFileLoggable {
 
-	protected long pageNum;
-	protected long prevPage;
+    protected long pageNum;
+    protected long prevPage;
     protected byte[] data;
     protected int startOffset;
-	protected int size;
-	
-	/**
+    protected int size;
+
+    /**
      * 
      * 
      * @param page 
@@ -51,50 +51,55 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
      * @param fileId 
      * @param transaction 
      */
-	public OverflowStoreLoggable(byte fileId, Txn transaction, long page, long prevPage, 
-			byte[] chunk, int startOffset, int chunkSize) {
-		super(BFile.LOG_OVERFLOW_STORE, fileId, transaction);
-		this.pageNum = page;
+    public OverflowStoreLoggable(byte fileId, Txn transaction, long page, long prevPage, 
+            byte[] chunk, int startOffset, int chunkSize) {
+        super(BFile.LOG_OVERFLOW_STORE, fileId, transaction);
+        this.pageNum = page;
         this.data = chunk;
-		this.size = chunkSize;
-		this.prevPage = prevPage;
+        this.size = chunkSize;
+        this.prevPage = prevPage;
         this.startOffset = startOffset;
-	}
+    }
 
-	/**
-	 * @param broker
-	 * @param transactionId
-	 */
-	public OverflowStoreLoggable(DBBroker broker, long transactionId) {
-		super(broker, transactionId);
-	}
+    /**
+     * @param broker
+     * @param transactionId
+     */
+    public OverflowStoreLoggable(DBBroker broker, long transactionId) {
+        super(broker, transactionId);
+    }
 
-	public void write(ByteBuffer out) {
+    @Override
+    public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
-		out.putInt((int) prevPage);
+        out.putInt((int) prevPage);
         out.putInt(size);
         out.put(data, startOffset, size);
     }
-	
-	public void read(ByteBuffer in) {
-		super.read(in);
-		pageNum = in.getInt();
-		prevPage = in.getInt();
-		size = in.getInt();
-		data = new byte[size];
-		in.get(data);
-	}
-	
-	public int getLogSize() {
-		return super.getLogSize() + 12 + size;
-	}
-	
+
+    @Override
+    public void read(ByteBuffer in) {
+        super.read(in);
+        pageNum = in.getInt();
+        prevPage = in.getInt();
+        size = in.getInt();
+        data = new byte[size];
+        in.get(data);
+    }
+
+    @Override
+    public int getLogSize() {
+        return super.getLogSize() + 12 + size;
+    }
+
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoStoreOverflow(this);
     }
-    
-	public String dump() {
-		return super.dump() + " - stored overflow page " + pageNum;
-	}
+
+    @Override
+    public String dump() {
+        return super.dump() + " - stored overflow page " + pageNum;
+    }
 }

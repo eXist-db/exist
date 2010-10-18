@@ -36,47 +36,39 @@ import java.util.Map;
 public class FileLockHeartBeat implements JobDescription, Job {
 
     private String JOB_NAME = "FileLockHeartBeat";
-	
-	public FileLockHeartBeat()
-	{
-	}
-	
-	public FileLockHeartBeat(String lockName)
-	{
-		JOB_NAME += ": " + lockName;
-	}
-	
-	public String getName()
-	{
-		return JOB_NAME;
-	}
+
+    public FileLockHeartBeat() {
+        //Nothing to do
+    }
+
+    public FileLockHeartBeat(String lockName) {
+        JOB_NAME += ": " + lockName;
+    }
+
+    public String getName() {
+        return JOB_NAME;
+    }
 
     public void setName(String name) {
+        //Nothing to do
     }
 
     public String getGroup() {
         return "eXist.internal";
     }
 
-    @SuppressWarnings("unchecked")
-	public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        Map<String, FileLock> params = (Map)jobDataMap.get("params");
+        Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get("params");
         FileLock lock = params.get(FileLock.class.getName());
-
-		if(lock != null)
-		{
-			try
-			{
-				lock.save();
-	        }
-			catch(IOException e)
-			{
-	            lock.message("Caught exception while trying to write lock file", e);
-	        }
-		}
-		else {
+        if(lock != null) {
+            try {
+                lock.save();
+            } catch(IOException e) {
+                lock.message("Caught exception while trying to write lock file", e);
+            }
+        } else {
             //abort this job
             JobExecutionException jat = new JobExecutionException("Unable to write heart-beat: lock was null");
             jat.setUnscheduleFiringTrigger(true);

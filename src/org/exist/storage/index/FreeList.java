@@ -26,7 +26,6 @@ import java.io.RandomAccessFile;
 import org.apache.log4j.Logger;
 import org.exist.util.ByteConversion;
 
-
 /**
  * Manages a list of pages containing unused sections.
  * 
@@ -44,105 +43,106 @@ import org.exist.util.ByteConversion;
  */
 public class FreeList {
 
-	@SuppressWarnings("unused")
-	private final static Logger LOG = Logger.getLogger(FreeList.class);
-	
-	public final static int MAX_FREE_LIST_LEN = 128;
-	
-	protected FreeSpace header = null;
-	protected FreeSpace last = null;
-	protected int size = 0;
-	
-	public FreeList() {
-	}
-	
-	/**
-	 * Append a new {@link FreeSpace} object to the list,
-	 * describing the amount of free space available on a page.
-	 *  
-	 * @param free
-	 */
-	public void add( FreeSpace free ) {
-		if(header == null) {
-			header = free;
-			last = free;
-		} else {
-			last.next = free;
-			free.previous = last;
-			last = free;
-		}
-		++size;
-	}
-	
-	/**
-	 * Remove a record from the list.
-	 * 
-	 * @param node
-	 */
-	public void remove(FreeSpace node) {
-		--size;
-		if (node.previous == null) {
-			if (node.next != null) {
-				node.next.previous = null;
-				header = node.next;
-			} else
-				header = null;
-		} else {
-			node.previous.next = node.next;
-			if (node.next != null)
-				node.next.previous = node.previous;
+    private final static Logger LOG = Logger.getLogger(FreeList.class);
+
+    public final static int MAX_FREE_LIST_LEN = 128;
+
+    protected FreeSpace header = null;
+    protected FreeSpace last = null;
+    protected int size = 0;
+
+    public FreeList() {
+        //Nothing to do
+    }
+
+    /**
+     * Append a new {@link FreeSpace} object to the list,
+     * describing the amount of free space available on a page.
+     *  
+     * @param free
+     */
+    public void add( FreeSpace free ) {
+        if(header == null) {
+            header = free;
+            last = free;
+        } else {
+            last.next = free;
+            free.previous = last;
+            last = free;
+        }
+        ++size;
+    }
+
+    /**
+     * Remove a record from the list.
+     * 
+     * @param node
+     */
+    public void remove(FreeSpace node) {
+        --size;
+        if (node.previous == null) {
+            if (node.next != null) {
+                node.next.previous = null;
+                header = node.next;
+            } else
+                header = null;
+        } else {
+            node.previous.next = node.next;
+            if (node.next != null)
+                node.next.previous = node.previous;
             else
                 last = node.previous;
-		}
-	}
-	
-	/**
-	 * Retrieve the record stored for the given page number.
-	 * 
-	 * @param pageNum
-	 */
-	public FreeSpace retrieve(long pageNum) {
-		FreeSpace next = header;
-		while(next != null) {
-			if(next.page == pageNum)
-				return next;
-			next = next.next;
-		}
-		return null;
-	}
-	
-	/**
-	 * Try to find a page that has at least requiredSize bytes
-	 * available. This method selects the page with the smallest
-	 * possible space. This guarantees that all pages will be filled before
-	 * creating a new page. 
-	 * 
-	 * @param requiredSize
-	 */
-	public FreeSpace find(int requiredSize) {
-		FreeSpace next = header;
-		FreeSpace found = null;
-		while(next != null) {
-			if(next.free >= requiredSize) {
-				if(found == null || next.free < found.free)
-					found = next;
-			}
-			next = next.next;
-		}
-		return found;
-	}
-	
-	public String toString() {
-		StringBuilder buf = new StringBuilder();
-		FreeSpace next = header;
-		while(next != null) {
-			buf.append("[").append(next.page).append(", ");
-			buf.append(next.free).append("] ");
-			next = next.next;
-		}
-		return buf.toString();
-	}
-	
+        }
+    }
+
+    /**
+     * Retrieve the record stored for the given page number.
+     * 
+     * @param pageNum
+     */
+    public FreeSpace retrieve(long pageNum) {
+        FreeSpace next = header;
+        while(next != null) {
+            if(next.page == pageNum)
+                return next;
+            next = next.next;
+        }
+        return null;
+    }
+
+    /**
+     * Try to find a page that has at least requiredSize bytes
+     * available. This method selects the page with the smallest
+     * possible space. This guarantees that all pages will be filled before
+     * creating a new page. 
+     * 
+     * @param requiredSize
+     */
+    public FreeSpace find(int requiredSize) {
+        FreeSpace next = header;
+        FreeSpace found = null;
+        while(next != null) {
+            if(next.free >= requiredSize) {
+                if(found == null || next.free < found.free)
+                    found = next;
+            }
+            next = next.next;
+        }
+        return found;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        FreeSpace next = header;
+        while(next != null) {
+            buf.append("[").append(next.page).append(", ");
+            buf.append(next.free).append("] ");
+            next = next.next;
+        }
+        return buf.toString();
+    }
+
     /**
      * Read the list from a {@link RandomAccessFile}.
      * 
@@ -165,7 +165,7 @@ public class FreeList {
         }
         return offset;
     }
-    
+
     /**
      * Write the list to a {@link RandomAccessFile}.
      * 
@@ -175,17 +175,15 @@ public class FreeList {
      * rest. Usually, this should not happen very often, so it is ok to
      * waste some space.
      * 
-     * 
      * @param buf 
      * @param offset 
      * @throws IOException 
      */
     public int write(byte[] buf, int offset) throws IOException {
-//       does the free-space list fit into the file header?
+        //does the free-space list fit into the file header?
         int skip = 0;
         if (size > MAX_FREE_LIST_LEN) {
-//            LOG.warn("removing " + (size - MAX_FREE_LIST_LEN)
-//                    + " free pages.");
+            //LOG.warn("removing " + (size - MAX_FREE_LIST_LEN) + " free pages.");
             // no: remove some smaller entries to make it fit
             skip = size - MAX_FREE_LIST_LEN;
         }

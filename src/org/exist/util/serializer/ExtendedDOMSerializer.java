@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import javax.xml.transform.TransformerException;
 
-import org.exist.dom.NodeProxy;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
 import org.exist.storage.DBBroker;
@@ -44,7 +43,7 @@ import org.xml.sax.SAXNotSupportedException;
 public class ExtendedDOMSerializer extends DOMSerializer {
 
     private DBBroker broker;
-    
+
     /**
      * 
      */
@@ -66,6 +65,7 @@ public class ExtendedDOMSerializer extends DOMSerializer {
     /* (non-Javadoc)
      * @see org.exist.util.serializer.DOMSerializer#startNode(org.w3c.dom.Node)
      */
+    @Override
     protected void startNode(Node node) throws TransformerException {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
             SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -76,12 +76,14 @@ public class ExtendedDOMSerializer extends DOMSerializer {
                 serializer.setProperties(outputProperties);
                 serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
             } catch (SAXNotRecognizedException e) {
+                //Nothing to do ?
             } catch (SAXNotSupportedException e) {
+                //Nothing to do ?
             }
             try {
-                serializer.toSAX((NodeProxy)((ReferenceNode)node).getReference());
+                serializer.toSAX(((ReferenceNode)node).getReference());
             } catch (SAXException e) {
-				throw new TransformerException(e.getMessage(), e);
+                throw new TransformerException(e.getMessage(), e);
             } finally {
                 SerializerPool.getInstance().returnObject(handler);
             }

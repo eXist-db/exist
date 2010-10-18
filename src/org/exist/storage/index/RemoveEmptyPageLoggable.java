@@ -55,28 +55,34 @@ public class RemoveEmptyPageLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) page);
     }
-    
+
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         page = in.getInt();
     }
-    
+
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 4;
     }
-    
+
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoRemovePage(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoRemovePage(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - remove page " + page;
     }

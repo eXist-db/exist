@@ -37,7 +37,7 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
     protected long lastInChain;
     protected int length;
     protected int oldLength;
-    
+
     /**
      * 
      * 
@@ -64,7 +64,8 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
     public OverflowModifiedLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }
-    
+
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
@@ -72,7 +73,8 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
         out.putInt(oldLength);
         out.putInt((int) lastInChain);
     }
-    
+
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getInt();
@@ -80,19 +82,23 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
         oldLength = in.getInt();
         lastInChain = in.getInt();
     }
-    
+
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 16;
     }
-    
+
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoModifiedOverflow(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoModifiedOverflow(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - update overflow page " + pageNum;
     }

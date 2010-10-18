@@ -127,6 +127,7 @@ public class FileLock {
                         message("Waiting a short time for the lock to be released...", null);
                         wait(HEARTBEAT + 100);
                     } catch (InterruptedException e) {
+                        //Nothing to do
                     }
                 }
                 try {
@@ -135,6 +136,7 @@ public class FileLock {
                         channel.close();
                     channel = null;
                 } catch (IOException e) {
+                    //Nothing to do
                 }
             }
         }
@@ -165,15 +167,15 @@ public class FileLock {
      * open channels.
      */
     public void release() {
-	try {
-	    if (channel.isOpen())
-		channel.close();
-	    channel = null;
-	} catch (Exception e) {
-	    message("Failed to close lock file", e);
-	}
-	LOG.info("Deleting lock file: " + lockFile.getAbsolutePath());
-	lockFile.delete();
+        try {
+            if (channel.isOpen())
+                channel.close();
+            channel = null;
+        } catch (Exception e) {
+            message("Failed to close lock file", e);
+        }
+        LOG.info("Deleting lock file: " + lockFile.getAbsolutePath());
+        lockFile.delete();
     }
 
     /**
@@ -182,7 +184,7 @@ public class FileLock {
      * @return last heartbeat
      */
     public Date getLastHeartbeat() {
-	return new Date(lastHeartbeat);
+        return new Date(lastHeartbeat);
     }
 
     /**
@@ -192,7 +194,7 @@ public class FileLock {
      * @return lock file
      */
     public File getFile() {
-	return lockFile;
+        return lockFile;
     }
 
     /**
@@ -202,79 +204,70 @@ public class FileLock {
      * @return true if there's an active heartbeat
      */
     private boolean checkHeartbeat() {
-	long now = System.currentTimeMillis();
-	if (lastHeartbeat < 0 || now - lastHeartbeat > HEARTBEAT) {
-	    message("Found a stale lockfile. Trying to remove it: ", null);
-	    release();
-	    return false;
-	}
-	return true;
+        long now = System.currentTimeMillis();
+        if (lastHeartbeat < 0 || now - lastHeartbeat > HEARTBEAT) {
+            message("Found a stale lockfile. Trying to remove it: ", null);
+            release();
+            return false;
+        }
+        return true;
     }
 
     private void open() throws IOException {
-	RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
-	channel = raf.getChannel();
+        RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+        channel = raf.getChannel();
     }
 
-    protected void save() throws IOException
-    {
-    	try
-    	{
-	    if (channel == null)
-		open();
-	    long now = System.currentTimeMillis();
-	    buf.clear();
-	    buf.put(MAGIC);
-	    buf.putLong(now);
-	    buf.flip();
-	    channel.position(0);
-	    channel.write(buf);
-	    channel.force(true);
-	    lastHeartbeat = now;
-    	}
-    	catch(NullPointerException npe)
-    	{
-    		if(pool.isShuttingDown())
-    		{
-		LOG.info("No need to save FileLock, database is shutting down");
-    		}
-    		else
-    		{
-		throw npe;
-	    }
-	}
+    protected void save() throws IOException {
+        try {
+            if (channel == null)
+                open();
+            long now = System.currentTimeMillis();
+            buf.clear();
+            buf.put(MAGIC);
+            buf.putLong(now);
+            buf.flip();
+            channel.position(0);
+            channel.write(buf);
+            channel.force(true);
+            lastHeartbeat = now;
+        } catch(NullPointerException npe) {
+            if(pool.isShuttingDown()) {
+                LOG.info("No need to save FileLock, database is shutting down");
+            } else {
+                throw npe;
+            }
+        }
     }
 
     private void read() throws IOException {
-	if (channel == null)
-	    open();
-	channel.read(buf);
-	buf.flip();
-	if (buf.limit() < 16) {
-	    buf.clear();
-	    throw new IOException(message("Could not read file lock.", null));
-	}
-	byte[] magic = new byte[8];
-	buf.get(magic);
-	if (!Arrays.equals(magic, MAGIC))
+        if (channel == null)
+            open();
+        channel.read(buf);
+        buf.flip();
+        if (buf.limit() < 16) {
+            buf.clear();
+            throw new IOException(message("Could not read file lock.", null));
+        }
+        byte[] magic = new byte[8];
+        buf.get(magic);
+        if (!Arrays.equals(magic, MAGIC))
             throw new IOException(message("Bad signature in lock file. It does not seem to be an eXist lock file", null));
-	lastHeartbeat = buf.getLong();
-	buf.clear();
-
-	DateFormat df = DateFormat.getDateInstance();
+        lastHeartbeat = buf.getLong();
+        buf.clear();
+        DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
 
     protected String message(String message, Exception e) {
-	StringBuilder str = new StringBuilder(message);
-	str.append(' ').append(lockFile.getAbsolutePath());
-	if (e != null)
-	    str.append(": ").append(e.getMessage());
-	message = str.toString();
-
-	if (LOG.isInfoEnabled())
-	    LOG.info(message);
-	System.err.println(message);
-	return message;
+        StringBuilder str = new StringBuilder(message);
+        str.append(' ').append(lockFile.getAbsolutePath());
+        if (e != null)
+            str.append(": ").append(e.getMessage());
+        message = str.toString();
+        if (LOG.isInfoEnabled())
+            LOG.info(message);
+        System.err.println(message);
+        return message;
     }
 }

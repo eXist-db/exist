@@ -38,7 +38,7 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     protected long page;
     protected short tid;
     protected ByteArray value;
-    
+
     /**
      * 
      * 
@@ -58,10 +58,11 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     public StoreValueLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) page);
@@ -73,6 +74,7 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         page = in.getInt();
@@ -86,18 +88,22 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 8 + value.size();
     }
 
+    @Override
     public void redo() throws LogException {
         getIndexFile().redoStoreValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoStoreValue(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - stored value with tid " + tid + " on page " + page;
     }

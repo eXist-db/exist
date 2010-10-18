@@ -591,6 +591,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     private class NativeStructuralStreamListener extends AbstractStreamListener {
 
         private NativeStructuralStreamListener() {
+            //Nothing to do
         }
 
         @Override

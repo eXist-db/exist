@@ -34,51 +34,57 @@ import org.exist.storage.txn.Txn;
  */
 public class OverflowCreateLoggable extends AbstractBFileLoggable {
 
-	protected long pageNum;
-	
-	/**
+    protected long pageNum;
+
+    /**
      * 
      * 
      * @param pageNum 
      * @param fileId 
      * @param transaction 
      */
-	public OverflowCreateLoggable(byte fileId, Txn transaction, long pageNum) {
-		super(BFile.LOG_OVERFLOW_CREATE, fileId, transaction);
-		this.pageNum = pageNum;
-	}
+    public OverflowCreateLoggable(byte fileId, Txn transaction, long pageNum) {
+        super(BFile.LOG_OVERFLOW_CREATE, fileId, transaction);
+        this.pageNum = pageNum;
+    }
 
-	/**
-	 * @param broker
-	 * @param transactionId
-	 */
-	public OverflowCreateLoggable(DBBroker broker, long transactionId) {
-		super(broker, transactionId);
-	}
+    /**
+     * @param broker
+     * @param transactionId
+     */
+    public OverflowCreateLoggable(DBBroker broker, long transactionId) {
+        super(broker, transactionId);
+    }
 
-	public void write(ByteBuffer out) {
+    @Override
+    public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
     }
-	
-	public void read(ByteBuffer in) {
-		super.read(in);
-		pageNum = in.getInt();
-	}
-	
-	public int getLogSize() {
-		return super.getLogSize() + 4;
-	}
-	
-	public void redo() throws LogException {
-		getIndexFile().redoCreateOverflow(this);
-	}
-	
+
+    @Override
+    public void read(ByteBuffer in) {
+        super.read(in);
+        pageNum = in.getInt();
+    }
+
+    @Override
+    public int getLogSize() {
+        return super.getLogSize() + 4;
+    }
+
+    @Override
+    public void redo() throws LogException {
+        getIndexFile().redoCreateOverflow(this);
+    }
+
+    @Override
     public void undo() throws LogException {
         getIndexFile().undoCreateOverflow(this);
     }
-    
-	public String dump() {
-		return super.dump() + " - create new overflow page " + pageNum;
-	}
+
+    @Override
+    public String dump() {
+        return super.dump() + " - create new overflow page " + pageNum;
+    }
 }
