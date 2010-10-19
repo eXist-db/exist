@@ -187,7 +187,7 @@ public class XQTS_To_junit {
                         allTests.write(",\n");
                     else
                         first = false;
-                    allTests.write("\t\ttorg.exist.xquery.xqts"+subPackage+".AllTests.class");
+                    allTests.write("\t\torg.exist.xquery.xqts"+subPackage+".AllTests.class");
                 } else if (testCases(groupName, folder, _package_)) {
                     if (!first)
                         allTests.write(",\n");
