@@ -29,12 +29,14 @@ import java.util.Set;
 
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.SubjectImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
+@ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
 
 	@ConfigurationFieldAsElement("home")
