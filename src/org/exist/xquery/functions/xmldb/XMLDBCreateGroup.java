@@ -70,7 +70,7 @@ public class XMLDBCreateGroup extends BasicFunction {
             "Create a new user group, with an initial member. $group is the group name, $group-manager-username is the groups manager.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name"),
-                new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE, "The name of the iser who will be the groups manager")
+                new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE, "The name of the user who will be the groups manager")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")),
     };
