@@ -132,7 +132,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                 broker.setUser(systemUser);
 
                 //create the group
-                sm.addGroup(group);
+                group = sm.addGroup(group);
 
                 //add the managers to the group
                 for(Account groupManagerAccount : groupManagerAccounts) {
@@ -141,7 +141,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                 }
             } else {
                 //deprecated, create the group
-                sm.addGroup(group);
+                group = sm.addGroup(group);
             }
 
             return BooleanValue.TRUE;
