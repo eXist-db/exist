@@ -536,7 +536,11 @@ public class Configurator {
                     simple = false;
                     List<Configurable> list = (List<Configurable>) field.get(instance);
                     for (Configurable el : list) {
-                        asXMLtoBuffer(el, bufferToUse, referenceBy);
+                    	if (referenceBy == null) {
+                    		asXMLtoBuffer(el, bufferToUse);
+                    	} else {
+                    		asXMLtoBuffer(el, bufferToUse, referenceBy);
+                    	}
                     }
                 } else {
                     LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
