@@ -431,7 +431,9 @@ public class SecurityManagerImpl implements SecurityManager {
 
             AbstractRealm<Account, G> registeredRealm = (AbstractRealm<Account, G>)findRealmForRealmId(group.getRealmId());
 
-            return registeredRealm.addGroup(group.getName());
+            G newGroup = registeredRealm.addGroup(group.getName());
+            save();
+            return newGroup;
             //return defaultRealm.addGroup(group.getName());
         }
 
@@ -473,9 +475,10 @@ public class SecurityManagerImpl implements SecurityManager {
 		return new_account;
 	}
 	
-	protected void save() throws PermissionDeniedException, EXistException {
-		if (configuration != null)
-			configuration.save();
+	private void save() throws PermissionDeniedException, EXistException {
+            if (configuration != null) {
+                configuration.save();
+            }
 	}
 
 	@Override
