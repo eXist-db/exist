@@ -25,7 +25,9 @@ import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractGroup;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
 
+@ConfigurationClass("group")
 public class GroupImpl extends AbstractGroup {
 
     public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {

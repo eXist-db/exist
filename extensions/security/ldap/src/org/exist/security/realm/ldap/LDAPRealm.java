@@ -41,7 +41,6 @@ import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.aider.GroupAider;
 import org.exist.storage.DBBroker;
 
 /**

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UserAttributes;
@@ -40,6 +41,7 @@ import org.openid4java.discovery.Identifier;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+@ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
 
 	Identifier  _identifier = null;

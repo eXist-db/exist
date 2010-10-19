@@ -28,11 +28,9 @@ import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
-import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.internal.GroupImpl;
 
-@ConfigurationClass("group")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
     @ConfigurationFieldAsElement("members-manager")
