@@ -2,6 +2,7 @@ package org.exist.security.realm.ldap;
 
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
@@ -12,6 +13,7 @@ import org.exist.security.internal.AccountImpl;
  *
  * @author aretter
  */
+@ConfigurationClass("account")
 public class LDAPAccountImpl extends AccountImpl {
 
     public LDAPAccountImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {

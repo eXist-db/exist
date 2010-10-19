@@ -40,7 +40,6 @@ import org.exist.security.Subject;
 import org.exist.security.AbstractAccount;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.security.realm.ldap.LdapContextFactory;
 
