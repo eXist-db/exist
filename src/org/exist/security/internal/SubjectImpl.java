@@ -21,6 +21,9 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractSubject;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -28,9 +31,9 @@ package org.exist.security.internal;
 public final class SubjectImpl extends AbstractSubject {
 
 	public SubjectImpl(AbstractAccount account, Object credentials) {
-		super(account);
+            super(account);
 		
-		authenticate(credentials);
+            authenticate(credentials);
 	}
 	
 	private boolean authenticated = false;
@@ -40,8 +43,8 @@ public final class SubjectImpl extends AbstractSubject {
 	 */
 	@Override
 	public boolean authenticate(Object credentials) {
-    	authenticated = account._cred!=null && account._cred.check(credentials);
-		return authenticated;
+            authenticated = account.checkCredentials(credentials);
+            return authenticated;
 	}
 
 	/* (non-Javadoc)

@@ -35,13 +35,13 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement {
+public interface Realm<A extends Account, G extends Group> extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement<A>, GroupsManagement<G> {
 	
 	public String getId();
 	
-	public Collection<Account> getAccounts();
+	public Collection<A> getAccounts();
 	
-	public Collection<Group> getRoles();
+	public Collection<G> getRoles();
 
 	public void startUp(DBBroker broker) throws EXistException;
 

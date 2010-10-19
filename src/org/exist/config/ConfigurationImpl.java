@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.w3c.dom.NamedNodeMap;
@@ -69,6 +68,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return getLocalName();
     }
 
+    @Override
     public Configuration getConfiguration(String name) {
         if (getLocalName().equals(name)) {
             return this;
@@ -85,6 +85,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return null;
     }
 
+    @Override
     public List<Configuration> getConfigurations(String name) {
         NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
         List<Configuration> list = new ArrayList<Configuration>();
@@ -97,6 +98,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return list;
     }
 
+    @Override
     public String getProperty(String name) {
         if (hasAttribute(name))
             return getAttribute(name);
@@ -114,12 +116,14 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return property;
     }
 
+    @Override
     public boolean hasProperty(String name) {
         if (hasAttribute(name))
             return true;
         return (getElementsByTagName(name).getLength() == 1);
     }
 
+    @Override
     public void setProperty(String name, String value) {
         //detect save place: attribute or element's text
         setAttribute(name, value);
@@ -142,6 +146,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         runtimeProperties.put(name, obj);
     }
 
+    @Override
     public Boolean getPropertyBoolean(String name) {
         String value = getProperty(name);
         if(value == null)
@@ -165,6 +170,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
     }
 
+    @Override
     public Integer getPropertyInteger(String name) {
         String value = getProperty(name);
         if (value == null)
@@ -183,6 +189,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return result;
     }
 
+    @Override
     public Long getPropertyLong(String name) {
         String value = getProperty(name);
         if (value == null)
@@ -217,6 +224,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return "";//XXX: put config url
     }
 
+    @Override
     public Set<String> getProperties() {
         Set<String> properties = new HashSet<String>();
         NamedNodeMap attrs = getAttributes();
@@ -273,7 +281,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     @Override
-    public void save() throws PermissionDeniedException, EXistException {
+    public void save() throws PermissionDeniedException {
         //ignore in-memory nodes
         if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
             return; 

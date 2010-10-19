@@ -21,57 +21,27 @@
  */
 package org.exist.security.internal;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import org.exist.security.AbstractRealm;
+import org.exist.security.AbstractGroup;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.Configurator;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.security.Account;
-import org.exist.security.Group;
 
-@ConfigurationClass("group")
-public class GroupImpl extends AbstractPrincipal implements Comparable<Object>, Group {
+public class GroupImpl extends AbstractGroup {
 
-	@ConfigurationFieldAsElement("members-manager")
-	private Set<Account> membersManagers = new HashSet<Account>();
-	
-	public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
-		super(realm, realm.collectionGroups, id, name);
-	}
+    public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+        super(realm, configuration);
+    }
 
-	@Deprecated //remove after old LDAP security manager remove
-	public GroupImpl(String name, int id) throws ConfigurationException {
-		super(null, null, id, name);
-	}
+    public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
+        super(realm, id, name);
+    }
 
-	public GroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
-		super(realm, configuration);
-		
-		//it require, because class's fields initializing after super constructor
-		if (this.configuration != null)
-			this.configuration = Configurator.configure(this, this.configuration);
-	}
+    GroupImpl(AbstractRealm realm, Configuration configuration, boolean removed) throws ConfigurationException {
+        super(realm, configuration);
+        this.removed = removed;
+    }
 
-	public int compareTo(Object other) {
-		if(!(other instanceof GroupImpl))
-			throw new IllegalArgumentException("wrong type");
-		return name.compareTo(((GroupImpl)other).name);
-	}
-
-	public String toString() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("<group name=\"");
-		buf.append(name);
-		buf.append("\" id=\"");
-		buf.append(Integer.toString(id));
-		buf.append("\"/>");
-		return buf.toString();
-	}
-
-	public boolean isMembersManager(Account account) {
-		return membersManagers.contains(account);
-	}
+    GroupImpl(AbstractRealm realm, String name) throws ConfigurationException {
+        super(realm, name);
+    }
 }

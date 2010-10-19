@@ -44,22 +44,27 @@ public class SessionAuthentication extends UserAuthentication implements HttpSes
         _session=session;
     }
 
+    @Override
     public void attributeAdded(HttpSessionBindingEvent event) {
     }
 
+    @Override
     public void attributeRemoved(HttpSessionBindingEvent event) {
         super.logout();
     }
     
+    @Override
     public void attributeReplaced(HttpSessionBindingEvent event) {
         if (event.getValue()==null)
             super.logout();
     }
 
+    @Override
     public void logout() {    
         _session.removeAttribute(SessionAuthentication.__J_AUTHENTICATED);
     }
     
+    @Override
     public String toString() {
         return "Session"+super.toString();
     }

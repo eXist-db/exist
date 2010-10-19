@@ -21,6 +21,10 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractSubject;
+import org.exist.security.AbstractAccount;
+import org.exist.security.PermissionDeniedException;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -55,5 +59,4 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	public boolean isAuthenticated() {
 		return (letterOfCredit != null);
 	}
-
 }

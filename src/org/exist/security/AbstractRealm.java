@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,13 +30,9 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Account;
-import org.exist.security.SecurityManager;
-import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.security.utils.Utils;
 import org.exist.storage.BrokerPool;
@@ -49,12 +45,12 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class AbstractRealm implements Realm, Configurable {
+public abstract class AbstractRealm<A extends Account, G extends Group> implements Realm<A, G>, Configurable {
 
-	protected final Map<String, Group> groupsByName = new HashMap<String, Group>(65);
-	protected final Map<String, Account> usersByName = new HashMap<String, Account>(65);
+	protected final Map<String, G> groupsByName = new HashMap<String, G>(65);
+	protected final Map<String, A> usersByName = new HashMap<String, A>(65);
 
-	protected SecurityManagerImpl sm;
+	protected SecurityManager sm;
 	
 	protected Configuration configuration;
 	
@@ -64,7 +60,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	protected Collection collectionRemovedAccounts = null;
 	protected Collection collectionRemovedGroups = null;
 	
-	public AbstractRealm(SecurityManagerImpl sm, Configuration config) {
+	public AbstractRealm(SecurityManager sm, Configuration config) {
 		this.sm = sm;
 		
 		configuration = Configurator.configure(this, config);
@@ -120,25 +116,28 @@ public abstract class AbstractRealm implements Realm, Configurable {
 				}
 			}
 			
-			for (Account account : usersByName.values()) {
+			for (A account : usersByName.values()) {
 				if (account.getId() > 0)
 					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
 			}
 			
-			for (Group group : groupsByName.values()) {
+			for (G group : groupsByName.values()) {
 				if (group.getId() > 0)
 					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
 			}
-			
-	        //load groups information
+
+                //load groups information
 	        if (collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
 	            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
 	            	Configuration conf = Configurator.parse(i.next());
 
 	            	String name = conf.getProperty("name");
 	            	if (name != null && !groupsByName.containsKey(name)) {
-	            		GroupImpl group = new GroupImpl(this, conf);
-	            		sm.groupsById.put(group.getId(), group);
+	            		
+                                G group = instantiateGroup(this, conf);
+                                //GroupImpl group = new GroupImpl(this, conf);
+
+	            		sm.addGroup(group.getId(), group);
 	            		groupsByName.put(group.getName(), group);
 	            	}
 	            }
@@ -150,10 +149,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            	Configuration conf = Configurator.parse(i.next());
 
 	            	Integer id = conf.getPropertyInteger("id");
-	            	if (id != null && !sm.groupsById.containsKey(id)) {
-	            		GroupImpl group = new GroupImpl(this, conf);
-	            		group.removed = true;
-	            		sm.groupsById.put(group.getId(), group);
+	            	if (id != null && !sm.hasGroup(id)) {
+	            		G group = instantiateGroup(this, conf, true);
+                                //GroupImpl group = new GroupImpl(this, conf);
+	            		//group.removed = true;
+	            		sm.addGroup(group.getId(), group);
 	            	}
 	            }
 	        }
@@ -165,8 +165,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            	
 	            	String name = conf.getProperty("name");
 	            	if (name != null && !usersByName.containsKey(name)) {
-	            		AccountImpl account = new AccountImpl( this, conf );
-		            	sm.usersById.put(account.getId(), account);
+                                A account = instantiateAccount(this, conf);
+	            		//AccountImpl account = new AccountImpl( this, conf );
+		            	sm.addUser(account.getId(), account);
 		            	usersByName.put(account.getName(), account);
 	            	}
 	            }
@@ -178,10 +179,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            	Configuration conf = Configurator.parse(i.next());
 	            	
 	            	Integer id = conf.getPropertyInteger("id");
-	            	if (id != null && !sm.usersById.containsKey(id)) {
-	            		AccountImpl account = new AccountImpl( this, conf );
-	            		account.removed = true;
-		            	sm.usersById.put(account.getId(), account);
+	            	if (id != null && !sm.hasUser(id)) {
+                                A account = instantiateAccount(this, conf, true);
+	            		//AccountImpl account = new AccountImpl( this, conf );
+	            		//account.removed = true;
+		            	sm.addUser(account.getId(), account);
 	            	}
 	            }
 	        }
@@ -191,13 +193,22 @@ public abstract class AbstractRealm implements Realm, Configurable {
 			e.printStackTrace();
 		}
 	}
+
+        public abstract G instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException;
+        public abstract G instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException;
+        public abstract G instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException;
+        public abstract G instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException;
+        public abstract A instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException;
+        public abstract A instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException;
+        public abstract A instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException;
+        public abstract A instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException;
 	
 	public void save() throws PermissionDeniedException, EXistException, IOException {
 		configuration.save();
 	}
 
 	//Accounts management methods
-	protected final synchronized Account registerAccount(Account account)  {
+	public final synchronized A registerAccount(A account)  {
 		if (usersByName.containsKey(account.getName()))
 			throw new IllegalArgumentException("User "+account.getName()+" exist.");
 		
@@ -207,7 +218,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public synchronized Account getAccount(Subject invokingUser, String name) {
+	public synchronized A getAccount(Subject invokingUser, String name) {
 		return usersByName.get(name);
 	}
 
@@ -217,12 +228,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public final synchronized boolean hasAccount(Account account) {
+	public final synchronized boolean hasAccount(A account) {
 		return usersByName.containsKey(account.getName());
 	}
 
 	@Override
-	public final synchronized java.util.Collection<Account> getAccounts() {
+	public final synchronized java.util.Collection<A> getAccounts() {
 		return usersByName.values();
 	}
 
@@ -233,17 +244,17 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
         @Override
-	public final synchronized boolean hasGroup(Group role) {
+	public final synchronized boolean hasGroup(G role) {
 		return groupsByName.containsKey(role.getName());
 	}
 
         @Override
-	public synchronized Group getGroup(Subject invokingUser, String name) {
+	public synchronized G getGroup(Subject invokingUser, String name) {
 		return groupsByName.get(name);
 	}
 	
         @Override
-	public final synchronized java.util.Collection<Group> getRoles() {
+	public final synchronized java.util.Collection<G> getRoles() {
 		return groupsByName.values();
 	}
 
@@ -262,4 +273,56 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	protected Collection getCollection() {
 		return collectionRealm;
 	}
+
+    private G _addGroup(String name) throws ConfigurationException {
+            if (groupsByName.containsKey(name))
+                    throw new IllegalArgumentException("Group "+name+" exist.");
+
+
+            //G group = new GroupImpl(this, sm.getNextGroupId(), name);
+            G group = instantiateGroup(this, sm.getNextGroupId(), name);
+            sm.addGroup(group.getId(), group);
+            groupsByName.put(name, group);
+
+            return group;
+    }
+
+    private G _addGroup(int id, String name) throws ConfigurationException {
+            if (groupsByName.containsKey(name))
+                    throw new IllegalArgumentException("Group "+name+" exist.");
+
+            if (sm.hasGroup(id))
+                    throw new IllegalArgumentException("Group id "+id+" allready used.");
+
+            //Group group = new GroupImpl(this, id, name);
+            G group = instantiateGroup(this, id, name);
+            sm.addGroup(id, group);
+            groupsByName.put(name, group);
+
+            return group;
+    }
+
+    public synchronized G addGroup(String name) throws PermissionDeniedException, EXistException {
+            G created_group = _addGroup(name);
+
+            ((AbstractPrincipal)created_group).save();
+
+            return created_group;
+    }
+
+    @Override
+    public synchronized G addGroup(G group) throws PermissionDeniedException, EXistException {
+            return addGroup(group.getName());
+    }
+
+    @Override
+    public synchronized A addAccount(A account) throws PermissionDeniedException, EXistException, ConfigurationException {
+        if (account.getRealmId() == null)
+                throw new ConfigurationException("Account's realmId is null.");
+
+        if (!getId().equals(account.getRealmId()))
+                throw new ConfigurationException("Account from different realm");
+
+        return (A)sm.addAccount(account);
+    }
 }

@@ -21,14 +21,18 @@
  */
 package org.exist.security.openid;
 
-import java.lang.Override;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.exist.config.ConfigurationException;
+import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.UserAttributes;
-import org.exist.security.internal.AbstractAccount;
-import org.exist.security.internal.AbstractRealm;
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractRealm;
+import org.exist.security.Account;
+import org.exist.security.internal.GroupImpl;
+import org.exist.security.SecurityManager;
 import org.exist.xmldb.XmldbURI;
 import org.openid4java.discovery.Identifier;
 
@@ -119,4 +123,29 @@ public class AccountImpl extends AbstractAccount {
 		
 		return attributes.get(name);
 	}
+
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException {
+
+        if(group == null){
+            return null;
+        }
+
+        Account user = getDatabase().getSubject();
+
+
+        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){
+                throw new PermissionDeniedException("not allowed to change group memberships");
+        }
+
+        if(!groups.contains(group)) {
+            groups.add(group);
+
+            if(SecurityManager.DBA_GROUP.equals(name)) {
+                hasDbaRole = true;
+            }
+        }
+
+        return group;
+    }
 }

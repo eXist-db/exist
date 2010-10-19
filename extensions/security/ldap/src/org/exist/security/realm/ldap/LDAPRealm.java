@@ -31,18 +31,17 @@ import javax.naming.ldap.LdapContext;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
+import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
+import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
-import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.Account;
-import org.exist.security.internal.AbstractAccount;
-import org.exist.security.internal.AbstractRealm;
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractRealm;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 
 /**
@@ -50,7 +49,7 @@ import org.exist.storage.DBBroker;
  * 
  */
 @ConfigurationClass("realm") //TODO: id = LDAP
-public class LDAPRealm extends AbstractRealm {
+public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
 
     private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
     public static String ID = "LDAP";
@@ -106,11 +105,12 @@ public class LDAPRealm extends AbstractRealm {
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private Account createAccountInDatabase(String username) throws AuthenticationException {
+    private LDAPAccountImpl createAccountInDatabase(String username) throws AuthenticationException {
         Subject currentSubject = getDatabase().getSubject();
         try {
             getDatabase().setSubject(sm.getSystemSubject());
-            return sm.addAccount(new UserAider(ID, username));
+            //return sm.addAccount(new UserAider(ID, username));
+            return (LDAPAccountImpl)sm.addAccount(instantiateAccount(this, username));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
@@ -120,11 +120,12 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    private Group createGroupInDatabase(String groupname) throws AuthenticationException {
+    private LDAPGroupImpl createGroupInDatabase(String groupname) throws AuthenticationException {
         Subject currentSubject = getDatabase().getSubject();
         try {
             getDatabase().setSubject(sm.getSystemSubject());
-            return sm.addGroup(new GroupAider(ID, groupname));
+            return (LDAPGroupImpl)sm.addGroup(instantiateGroup(this, groupname));
+            //return sm.addGroup(new GroupAider(ID, groupname));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
@@ -135,102 +136,111 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public final synchronized Account getAccount(Subject invokingUser, String name) {
+    public final synchronized LDAPAccountImpl getAccount(Subject invokingUser, String name) {
 
         //first attempt to get the cached account
-        Account acct = super.getAccount(invokingUser, name);
+        LDAPAccountImpl acct = super.getAccount(invokingUser, name);
+
         if(acct != null) {
             return acct;
         } else {
-            if(invokingUser != null) {
-                if(invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
+            //if the account is not cached, we should try and find it in LDAP and cache it if it exists
+            LdapContext ctx = null;
+            try{
+                LdapContextFactory ctxFactory = ensureContextFactory();
+                if(invokingUser != null && invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
+                    //use the provided credentials for the lookup
+                    ctx = ctxFactory.getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
+                } else {
+                    //use the default credentials for lookup
+                    LDAPSearchContext searchCtx = ctxFactory.getSearch();
+                    ctx = ctxFactory.getLdapContext(searchCtx.getDefaultUsername(), searchCtx.getDefaultPassword());
+                }
 
-                    //if the account is not cached, we should try and find it in LDAP and cache it if it exists
-                    LdapContext ctx = null;
+                //do the lookup
+                SearchResult ldapUser = findAccountByAccountName(ctx, name);
+                if(ldapUser == null) {
+                    return null;
+                } else {
+                    //found a user from ldap so cache them and return
                     try {
-
-                        ctx = ensureContextFactory().getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
-
-                        SearchResult ldapUser = findUserByAccountName(ctx, name);
-
-                        if(ldapUser == null) {
-                            return null;
-                        } else {
-                            //found a user from ldap so cache them and return
-                            try {
-                                return createAccountInDatabase(name);
-                                //registerAccount(acct); //TODO do we need this
-                            } catch(AuthenticationException ae) {
-                                LOG.error(ae.getMessage(), ae);
-                                return null;
-                            }
-                        }
-                    } catch(NamingException e) {
-                        LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage()));
+                        return createAccountInDatabase(name);
+                        //registerAccount(acct); //TODO do we need this
+                    } catch(AuthenticationException ae) {
+                        LOG.error(ae.getMessage(), ae);
                         return null;
-                    } finally {
-                        LdapUtils.closeContext(ctx);
                     }
                 }
+            } catch(NamingException ne) {
+                LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+                            return null;
+            } finally {
+                if(ctx != null){
+                    LdapUtils.closeContext(ctx);
+                }
             }
-            return null;
         }
     }
 
     @Override
-    public final synchronized Group getGroup(Subject invokingUser, String name) {
-        Group grp = groupsByName.get(name);
+    public final synchronized LDAPGroupImpl getGroup(Subject invokingUser, String name) {
+        LDAPGroupImpl grp = groupsByName.get(name);
         if(grp != null) {
             return grp;
         } else {
-            if(invokingUser != null) {
-                if(invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
-                    //if the group is not cached, we should try and find it in LDAP and cache it if it exists
-                    LdapContext ctx = null;
+            //if the group is not cached, we should try and find it in LDAP and cache it if it exists
+            LdapContext ctx = null;
+            try {
+                LdapContextFactory ctxFactory = ensureContextFactory();
+                if(invokingUser != null && invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
+                    //use the provided credentials for the lookup
+                    ctx = ensureContextFactory().getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
+                } else {
+                    //use the default credentials for lookup
+                    LDAPSearchContext searchCtx = ctxFactory.getSearch();
+                    ctx = ctxFactory.getLdapContext(searchCtx.getDefaultUsername(), searchCtx.getDefaultPassword());
+                }
+
+                //do the lookup
+                SearchResult ldapGroup = findGroupByGroupName(ctx, name);
+                if(ldapGroup == null) {
+                    return null;
+                } else {
+                    //found a group from ldap so cache them and return
                     try {
-
-                        ctx = ensureContextFactory().getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
-
-                        SearchResult ldapGroup = findGroupByGroupName(ctx, name);
-
-                        if(ldapGroup == null) {
-                            return null;
-                        } else {
-                            //found a user from ldap so cache them and return
-                            try {
-                                return createGroupInDatabase(name);
-                                //registerGroup(grp); //TODO do we need to do this?
-                            } catch(AuthenticationException ae) {
-                                LOG.error(ae.getMessage(), ae);
-                                return null;
-                            }
-                        }
-                    } catch(NamingException e) {
-                        LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage()));
+                        return createGroupInDatabase(name);
+                        //registerGroup(grp); //TODO do we need to do this?
+                    } catch(AuthenticationException ae) {
+                        LOG.error(ae.getMessage(), ae);
                         return null;
-                    } finally {
-                        LdapUtils.closeContext(ctx);
                     }
                 }
+            } catch(NamingException ne) {
+                LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+                return null;
+            } finally {
+                if(ctx != null) {
+                    LdapUtils.closeContext(ctx);
+                }
             }
-            return null;
         }
     }
 
-    private SearchResult findUserByAccountName(DirContext ctx, String accountName) throws NamingException {
+    private SearchResult findAccountByAccountName(DirContext ctx, String accountName) throws NamingException {
 
         String userName = accountName;
         if(userName.indexOf("@") > -1) {
             userName = userName.substring(0, userName.indexOf("@"));
         }
 
-        String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userName + "))";
+        String searchFilter = ensureContextFactory().getSearch().getAccountSearchFilter().replace("${account-name}", userName);
+        //String searchFilter = "(&(objectClass=user)(sAMAccountName=" + userName + "))";
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
         //TODO dont hardcode the search base!
-        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getBase(), searchFilter, searchControls);
+        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getSearch().getBase(), searchFilter, searchControls);
 
         if(results.hasMoreElements()) {
             SearchResult searchResult = (SearchResult) results.nextElement();
@@ -248,13 +258,14 @@ public class LDAPRealm extends AbstractRealm {
 
     private SearchResult findGroupByGroupName(DirContext ctx, String groupName) throws NamingException {
 
-        String searchFilter = "(&(objectClass=group)(sAMAccountName=" + groupName + "))";
+        String searchFilter = ensureContextFactory().getSearch().getGroupSearchFilter().replace("${group-name}", groupName);
+        //String searchFilter = "(&(objectClass=group)(sAMAccountName=" + groupName + "))";
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
         //TODO dont hardcode the search base!
-        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getBase(), searchFilter, searchControls);
+        NamingEnumeration<SearchResult> results = ctx.search(ensureContextFactory().getSearch().getBase(), searchFilter, searchControls);
 
         if(results.hasMoreElements()) {
             SearchResult searchResult = (SearchResult) results.nextElement();
@@ -282,39 +293,67 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public Account addAccount(Account account) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+    public boolean updateAccount(Subject invokingUser, LDAPAccountImpl account) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+    public boolean deleteAccount(Subject invokingUser, LDAPAccountImpl account) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
+    public boolean updateGroup(LDAPGroupImpl group) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
+    public boolean deleteGroup(LDAPGroupImpl group) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
+        return new LDAPGroupImpl(realm, config);
+    }
+
+    @Override
+    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+        return new LDAPGroupImpl(realm, config, removed);
+    }
+
+    @Override
+    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
+        return new LDAPGroupImpl(realm, id, name);
+    }
+
+    @Override
+    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
+        return new LDAPGroupImpl(realm, name);
+    }
+
+    @Override
+    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
+        return new LDAPAccountImpl(realm, username);
+    }
+
+    @Override
+    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
+        return new LDAPAccountImpl(realm, config);
+    }
+
+    @Override
+    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+        return new LDAPAccountImpl(realm, config, removed);
+    }
+
+    @Override
+    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
+        return new LDAPAccountImpl(realm, id, from_account);
     }
 
     private final class AuthenticatedLdapSubjectAccreditedImpl extends SubjectAccreditedImpl {

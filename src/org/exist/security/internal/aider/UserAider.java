@@ -28,6 +28,7 @@ import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
@@ -307,4 +308,9 @@ public class UserAider implements Account {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+    @Override
+    public void save() throws PermissionDeniedException {
+        //do nothing
+    }
 }
