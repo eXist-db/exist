@@ -41,7 +41,7 @@ import org.exist.xmldb.XmldbURI;
  * may lead to unexpected results, since SecurityManager reads 
  * users.xml only during database startup and shutdown.
  */
-public interface SecurityManager<T> extends Configurable {
+public interface SecurityManager extends Configurable {
 
    public final static String ACL_FILE = "users.xml";
    public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
@@ -67,16 +67,17 @@ public interface SecurityManager<T> extends Configurable {
 
    boolean hasAccount(String name);
 
-   Account addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> A addAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
-   void deleteAccount(Subject invokingUser, Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> void deleteAccount(Subject invokingUser, A user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    Account getAccount(Subject invokingUser, String name);
 
-   Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <G extends Group> G addGroup(G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   
    @Deprecated
    void addGroup(String group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
@@ -90,7 +91,7 @@ public interface SecurityManager<T> extends Configurable {
 
    boolean hasAdminPrivileges(Account user);
 
-   public Subject authenticate(String username, T credentials) throws AuthenticationException;
+   public Subject authenticate(String username, Object credentials) throws AuthenticationException;
 
    public Subject getSystemSubject();
    public Subject getGuestSubject();
@@ -98,11 +99,11 @@ public interface SecurityManager<T> extends Configurable {
 
    //TODO needs javadoc saying what to replace with?
    @Deprecated
-   java.util.Collection<Account> getUsers();
+   <A extends Account> java.util.Collection<A> getUsers();
 
    //TODO needs javadoc saying what to replace with?
    @Deprecated
-   java.util.Collection<Group> getGroups();
+   <G extends Group> java.util.Collection<G> getGroups();
 
    Realm getRealm(String iD);
 
@@ -111,4 +112,15 @@ public interface SecurityManager<T> extends Configurable {
    
    Subject getSubjectBySessionId(String sessionid);
 
+   void addGroup(int id, Group group);
+
+   void addUser(int id, Account account);
+
+   boolean hasGroup(int id);
+
+   boolean hasUser(int id);
+
+   public int getNextGroupId();
+
+   public int getNextAccountId();
 }

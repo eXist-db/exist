@@ -21,6 +21,9 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractRealm;
+import org.exist.security.AbstractPrincipal;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
@@ -42,7 +45,7 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class RealmImpl extends AbstractRealm {
+public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 	
 	public static String ID = "exist"; //TODO: final "eXist-db";
 
@@ -54,20 +57,19 @@ public class RealmImpl extends AbstractRealm {
 
     protected final AccountImpl ACCOUNT_SYSTEM;
     protected final AccountImpl ACCOUNT_GUEST;
-    protected final Group GROUP_DBA;
-    protected final Group GROUP_GUEST;
+    protected final GroupImpl GROUP_DBA;
+    protected final GroupImpl GROUP_GUEST;
 
     protected final AccountImpl ACCOUNT_UNKNOW;
-    protected final Group GROUP_UNKNOW;
+    protected final GroupImpl GROUP_UNKNOWN;
 
     protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
 
     	super(sm, config);
 
-		//Build-in accounts
-		GROUP_UNKNOW = new GroupImpl(this, -1, "");
-    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", (String)null);
-    	ACCOUNT_UNKNOW.groups.add(GROUP_UNKNOW);
+        //Build-in accounts
+        GROUP_UNKNOWN = new GroupImpl(this, -1, "");
+    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", (String)null, GROUP_UNKNOWN);
 
     	//DBA group & account
     	GROUP_DBA = new GroupImpl(this, 1, SecurityManager.DBA_GROUP);
@@ -75,16 +77,12 @@ public class RealmImpl extends AbstractRealm {
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
 
     	//System account
-    	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "");
-    	ACCOUNT_SYSTEM.groups.add(GROUP_DBA);
-    	ACCOUNT_SYSTEM.hasDbaRole = true;
+    	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "", GROUP_DBA, true);
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
     	//Administrator account
-    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "");
-    	ACCOUNT_ADMIN.groups.add(GROUP_DBA);
-    	ACCOUNT_ADMIN.hasDbaRole = true;
+    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "", GROUP_DBA, true);
     	sm.usersById.put(ACCOUNT_ADMIN.getId(), ACCOUNT_ADMIN);
     	usersByName.put(ACCOUNT_ADMIN.getName(), ACCOUNT_ADMIN);
 
@@ -93,75 +91,26 @@ public class RealmImpl extends AbstractRealm {
     	sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
-    	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER);
-    	ACCOUNT_GUEST.groups.add(GROUP_GUEST);
+    	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
     	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
     	
     	sm.lastUserId = 3;
     	sm.lastGroupId = 3;
-	}
+    }
 
 	@Override
 	public String getId() {
 		return ID;
 	}
 
+    @Override
 	public void startUp(DBBroker broker) throws EXistException {
 		super.startUp(broker);
 	}
 
-	private Group _addGroup(String name) throws ConfigurationException {
-		if (groupsByName.containsKey(name))
-			throw new IllegalArgumentException("Group "+name+" exist.");
-		
-		Group group = new GroupImpl(this, sm.getNextGroupId(), name);
-		sm.groupsById.put(group.getId(), group);
-		groupsByName.put(name, group);
-		
-		return group;
-	}
-
-	private Group _addGroup(int id, String name) throws ConfigurationException {
-		if (groupsByName.containsKey(name))
-			throw new IllegalArgumentException("Group "+name+" exist.");
-		
-		if (sm.groupsById.containsKey(id))
-			throw new IllegalArgumentException("Group id "+id+" allready used.");
-
-		Group group = new GroupImpl(this, id, name);
-		sm.groupsById.put(id, group);
-		groupsByName.put(name, group);
-		
-		return group;
-	}
-
-	public synchronized Group addGroup(String name) throws PermissionDeniedException, EXistException {
-		Group created_group = _addGroup(name);
-		
-		((AbstractPrincipal)created_group).save();
-		
-		return created_group;
-	}
-
     @Override
-	public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-		return addGroup(group.getName());
-	}
-
-    @Override
-	public synchronized Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
-		if (account.getRealmId() == null)
-			throw new ConfigurationException("Account's realmId is null.");
-		
-		if (!getId().equals(account.getRealmId()))
-			throw new ConfigurationException("Account from different realm");
-
-		return sm.addAccount(account);
-	}
-
-    @Override
-	public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean updateAccount(Subject invokingUser, AccountImpl account) throws PermissionDeniedException, EXistException {
 		DBBroker broker = null;
 		try {
 			broker = sm.getDatabase().get(null);
@@ -207,7 +156,7 @@ public class RealmImpl extends AbstractRealm {
 	}
 
     @Override
-	public synchronized boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteAccount(Subject invokingUser, AccountImpl account) throws PermissionDeniedException, EXistException {
 		if(account == null)
 			return false;
 		
@@ -223,7 +172,7 @@ public class RealmImpl extends AbstractRealm {
 					throw new PermissionDeniedException(
 						" you are not allowed to delete '"+account.getName()+"' user");
 
-			remove_account.removed = true;
+			remove_account.setRemoved(true);
 			remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 			
 	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
@@ -243,7 +192,7 @@ public class RealmImpl extends AbstractRealm {
 				LOG.debug("loading configuration failed: " + e.getMessage());
 			}
 			
-			sm.usersById.put(remove_account.getId(), remove_account);
+			sm.addUser(remove_account.getId(), remove_account);
 			usersByName.remove(remove_account.getName());
 
 			return true;
@@ -253,13 +202,13 @@ public class RealmImpl extends AbstractRealm {
 	}
 
     @Override
-	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
+	public synchronized boolean updateGroup(GroupImpl group) throws PermissionDeniedException {
 		//nothing to do: the name or id can't be changed
 		return false;
 	}
 
     @Override
-	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteGroup(GroupImpl group) throws PermissionDeniedException, EXistException {
 		if(group == null)
 			return false;
 		
@@ -275,7 +224,7 @@ public class RealmImpl extends AbstractRealm {
 					throw new PermissionDeniedException(
 						" you ["+user.getName()+"] are not allowed to delete '"+remove_group.getName()+"' group");
 
-			remove_group.removed = true;
+			remove_group.setRemoved(true);
 			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 			
 	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
@@ -295,7 +244,7 @@ public class RealmImpl extends AbstractRealm {
 				LOG.debug("loading configuration failed: " + e.getMessage());
 			}
 			
-			sm.groupsById.put(remove_group.getId(), (Group)remove_group);
+			sm.addGroup(remove_group.getId(), (Group)remove_group);
 			groupsByName.remove(remove_group.getName());
 
 			return true;
@@ -321,4 +270,44 @@ public class RealmImpl extends AbstractRealm {
 				AuthenticationException.WRONG_PASSWORD,
 				"Wrong password for user [" + accountName + "] ");
 	}
+
+    @Override
+    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
+        return new GroupImpl(realm, config);
+    }
+
+    @Override
+    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
+        return new AccountImpl(realm, config);
+    }
+
+    @Override
+    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+        return new GroupImpl(realm, config, true);
+    }
+
+    @Override
+    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+        return new AccountImpl(realm, config, true);
+    }
+
+    @Override
+    public GroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
+        return new GroupImpl(realm, id, name);
+    }
+
+    @Override
+    public GroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
+        return new GroupImpl(realm, name);
+    }
+
+    @Override
+    public AccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
+        return new AccountImpl(realm, id, from_account);
+    }
+
+    @Override
+    public AccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
+        return new AccountImpl(realm, username);
+    }
 }

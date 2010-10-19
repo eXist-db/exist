@@ -4,7 +4,13 @@ To enable LDAP authentication you need to replace the file /db/system/security/c
     <realm id="LDAP">
         <context>
             <url>ldap://directory.mydomain.com:389</url>
-            <base>ou=department,dc=directory,dc=mydomain,dc=com</base>
+            <search>
+                <base>ou=department,dc=directory,dc=mydomain,dc=com</base>
+                <default-username>some-ldap-user</default-username>
+                <default-password>some-ldap-password</default-password>
+                <account-search-filter>(&amp;(objectClass=user)(sAMAccountName=${account-name}))</account-search-filter>
+                <group-search-filter>(&amp;(objectClass=group)(sAMAccountName=${group-name}))</group-search-filter>
+            </search>
         </context>
     </realm>
 </security-manager>

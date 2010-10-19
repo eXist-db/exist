@@ -19,16 +19,12 @@
  *  
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security;
 
 import java.util.Set;
 
 import org.exist.EXistException;
 import org.exist.config.Configuration;
-import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
-import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
@@ -271,4 +267,10 @@ public abstract class AbstractSubject implements Subject {
 		}
 		return sessionId;
 	}
+
+
+        @Override
+        public void save() throws PermissionDeniedException {
+            //do nothing
+        }
 }

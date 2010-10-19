@@ -39,9 +39,8 @@ import org.eclipse.jetty.server.UserIdentity;
 import org.exist.config.ConfigurationException;
 import org.exist.security.UserAttributes;
 import org.exist.security.Account;
-import org.exist.security.internal.AbstractRealm;
+import org.exist.security.AbstractRealm;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.SubjectImpl;
 import org.exist.security.openid.OpenIDUtility;
 import org.exist.security.openid.SessionAuthentication;
 import org.exist.security.openid.AccountImpl;
@@ -76,6 +75,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 	public AuthenticatorOpenId() throws ConsumerException {
 	}
 
+    @Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
@@ -97,11 +97,13 @@ public class AuthenticatorOpenId extends HttpServlet {
 		manager.setMinAssocSessEnc(AssociationSessionType.DH_SHA256);
 	}
 
+    @Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		doPost(req, resp);
 	}
 
+    @Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		if ("true".equals(req.getParameter("is_return"))) {

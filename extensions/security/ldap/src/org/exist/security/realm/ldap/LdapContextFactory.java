@@ -58,9 +58,6 @@ public class LdapContextFactory implements Configurable {
 	@ConfigurationFieldAsElement("url")
 	protected String url = null;
 
-        @ConfigurationFieldAsElement("base")
-	protected String base = null;
-
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
 
 	protected String systemUsername = null;
@@ -72,12 +69,14 @@ public class LdapContextFactory implements Configurable {
 	private Map<String, String> additionalEnvironment;
 
 	private Configuration configuration = null;
+        private final LDAPSearchContext search;
 
 	protected LdapContextFactory(Configuration config) {
-		configuration = Configurator.configure(this, config);
-
-		if (principalPattern != null)
-			principalPatternFormat = new MessageFormat(principalPattern);
+            configuration = Configurator.configure(this, config);
+            this.search = new LDAPSearchContext(configuration);
+            if (principalPattern != null) {
+                    principalPatternFormat = new MessageFormat(principalPattern);
+            }
 	}
 
 	public LdapContext getSystemLdapContext() throws NamingException {
@@ -125,6 +124,10 @@ public class LdapContextFactory implements Configurable {
 		return new InitialLdapContext(env, null);
 	}
 
+        public LDAPSearchContext getSearch() {
+            return search;
+        }
+
 	// configurable methods
 	@Override
 	public boolean isConfigured() {
@@ -135,8 +138,4 @@ public class LdapContextFactory implements Configurable {
 	public Configuration getConfiguration() {
 		return configuration;
 	}
-
-        public String getBase() {
-           return base;
-        }
 }

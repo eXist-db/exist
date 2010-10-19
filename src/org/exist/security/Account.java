@@ -38,6 +38,7 @@ public interface Account extends Principal, User {
 	 * @param  group  The feature to be added to the Group attribute
 	 * @throws PermissionDeniedException 
 	 */
+    @Override
 	public Group addGroup(String name) throws PermissionDeniedException;
 
 	/**
@@ -46,6 +47,7 @@ public interface Account extends Principal, User {
 	 * @param  group  The feature to be added to the Group attribute
 	 * @throws PermissionDeniedException 
 	 */
+    @Override
 	public Group addGroup(Group group) throws PermissionDeniedException;
 
 	/**
@@ -54,6 +56,7 @@ public interface Account extends Principal, User {
 	 *
 	 *@param  group  The feature to be removed to the Group attribute
 	 */
+    @Override
 	public void remGroup(String group);
 
 	/**
@@ -61,8 +64,10 @@ public interface Account extends Principal, User {
 	 *
 	 *@return    The groups value
 	 */
+    @Override
 	public String[] getGroups();
 
+    @Override
 	public boolean hasDbaRole();
 
 	/**
@@ -70,7 +75,9 @@ public interface Account extends Principal, User {
 	 *
 	 *@return    The primaryGroup value
 	 */
+    @Override
 	public String getPrimaryGroup();
+    @Override
 	public Group getDefaultGroup();
 
 	/**
@@ -79,6 +86,7 @@ public interface Account extends Principal, User {
 	 *@param  group  Description of the Parameter
 	 *@return        Description of the Return Value
 	 */
+    @Override
 	public boolean hasGroup(String group);
 
 	/**
@@ -86,12 +94,16 @@ public interface Account extends Principal, User {
 	 *
 	 * @param  passwd  The new password value
 	 */
+    @Override
 	public void setPassword(String passwd);
 
+    @Override
 	public void setHome(XmldbURI homeCollection);
 
+    @Override
 	public XmldbURI getHome();
 
+    @Override
 	public Realm getRealm();
 
 	/**
@@ -100,12 +112,15 @@ public interface Account extends Principal, User {
 	 * @return Description of the Return Value
 	 * @deprecated
 	 */
+    @Override
 	public String getPassword();
 
 	@Deprecated
+    @Override
 	public String getDigestPassword();
 
 	@Deprecated
+    @Override
 	public void setGroups(String[] groups);
 	
     /**
@@ -114,6 +129,7 @@ public interface Account extends Principal, User {
      * @param name
      * @param value
      */
+    @Override
 	public void setAttribute(String name, Object value);
 
     /**
@@ -122,6 +138,7 @@ public interface Account extends Principal, User {
      * @param name The String that is the name of the attribute.
      * @return The value associated with the name or null if no value is associated with the name.
      */
+    @Override
 	public Object getAttribute(String name);
 
     /**
@@ -129,6 +146,7 @@ public interface Account extends Principal, User {
      *
      * @return the Set of attribute names.
      */
+    @Override
     public Set<String> getAttributeNames();
     
     /**
@@ -136,6 +154,7 @@ public interface Account extends Principal, User {
      *
      * @return the person full name or account name
      */
+    @Override
     String getUsername();
 
     /**
@@ -143,6 +162,7 @@ public interface Account extends Principal, User {
      *
      * @return <code>true</code> if the account is valid (ie non-expired), <code>false</code> if no longer valid (ie expired)
      */
+    @Override
     boolean isAccountNonExpired();
 
     /**
@@ -150,6 +170,7 @@ public interface Account extends Principal, User {
      *
      * @return <code>true</code> if the account is not locked, <code>false</code> otherwise
      */
+    @Override
     boolean isAccountNonLocked();
 
     /**
@@ -157,6 +178,7 @@ public interface Account extends Principal, User {
      *
      * @return <code>true</code> if the account's credentials are valid (ie non-expired), <code>false</code> if no longer valid (ie expired)
      */
+    @Override
     boolean isCredentialsNonExpired();
 
     /**
@@ -164,6 +186,6 @@ public interface Account extends Principal, User {
      *
      * @return <code>true</code> if the account is enabled, <code>false</code> otherwise
      */
+    @Override
     boolean isEnabled();
-
 }

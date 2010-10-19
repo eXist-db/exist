@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -29,8 +29,6 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Principal;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -55,7 +53,7 @@ public abstract class AbstractPrincipal implements Principal {
 
 	protected Configuration configuration = null;
 	
-	public AbstractPrincipal(AbstractRealm realm, Collection collection, int id, String name) throws ConfigurationException {
+	public AbstractPrincipal(Realm realm, Collection collection, int id, String name) throws ConfigurationException {
 		this.realm = realm;
 		this.id = id;
 		this.name = name;
@@ -92,19 +90,24 @@ public abstract class AbstractPrincipal implements Principal {
 		
 	}
 
-	protected void save() throws PermissionDeniedException, EXistException {
-		if (configuration != null)
-			configuration.save();
+        @Override
+	public void save() throws PermissionDeniedException {
+            if (configuration != null) {
+                configuration.save();
+            }
 	}
 	
+    @Override
 	public final String getName() {
 		return name;
 	}
 
+    @Override
 	public final int getId() {
 		return id;
 	}
 
+    @Override
 	public final String getRealmId() {
 		return realm.getId();
 	}
@@ -140,4 +143,8 @@ public abstract class AbstractPrincipal implements Principal {
 	protected BrokerPool getDatabase() {
 		return realm.getDatabase();
 	}
+
+        public void setRemoved(boolean removed) {
+            this.removed = removed;
+        }
 }

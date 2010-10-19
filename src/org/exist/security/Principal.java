@@ -32,4 +32,6 @@ public interface Principal extends java.security.Principal, Configurable {
 	public int getId();
 	
 	public String getRealmId();
+
+        public void save() throws PermissionDeniedException;
 }

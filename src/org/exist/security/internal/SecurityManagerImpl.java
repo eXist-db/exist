@@ -21,6 +21,7 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractRealm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +69,7 @@ import org.exist.xmldb.XmldbURI;
  */
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
-public class SecurityManagerImpl implements SecurityManager<String> {
+public class SecurityManagerImpl implements SecurityManager {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
 	public static final String COLLECTION_ATTRIBUTE = "collection";
@@ -196,16 +197,35 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 	}
 	
     @Override
-	public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
-		return defaultRealm.updateAccount(invokingUser, account);
-	}
+    public synchronized <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+        if(account == null){
+            return false;
+        }
+
+        if(account.getRealmId() == null) {
+            throw new ConfigurationException("Account must have realm id.");
+        }
+
+        AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
+
+        return registeredRealm.updateAccount(invokingUser, account);
+    }
 
     @Override
 	public synchronized void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
-		Group group = defaultRealm.getGroup(invokingUser, name);
-		if (group == null) return;
-		
-		defaultRealm.deleteGroup(group);
+
+            Group group = getGroup(invokingUser, name);
+            if(group == null){
+                return;
+            }
+
+            if(group.getRealmId() == null) {
+                throw new ConfigurationException("Group must have realm id.");
+            }
+
+            AbstractRealm<Account, Group> registeredRealm = (AbstractRealm<Account, Group>)findRealmForRealmId(group.getRealmId());
+
+            registeredRealm.deleteGroup(group);
 	}
 
     @Override
@@ -214,12 +234,20 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 	}
 	
     @Override
-	public synchronized void deleteAccount(Subject invokingUser, Account user) throws PermissionDeniedException, EXistException {
-		if(user == null)
-			return;
-		
-		defaultRealm.deleteAccount(invokingUser, user);
-	}
+    public synchronized <A extends Account> void deleteAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+
+        if(account == null){
+            return;
+        }
+
+        if(account.getRealmId() == null) {
+            throw new ConfigurationException("Account must have realm id.");
+        }
+
+        AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
+
+        registeredRealm.deleteAccount(invokingUser, account);
+    }
 
     @Override
 	public synchronized Account getAccount(Subject invokingUser, String name) {
@@ -235,11 +263,6 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 	public final synchronized Account getAccount(int id) {
 		return usersById.get(id);
 	}
-
-    @Override
-    public synchronized Group addGroup(Group name) throws PermissionDeniedException, EXistException {
-    	return defaultRealm.addGroup(name.getName());
-    }
 
     @Override
     public synchronized boolean hasGroup(String name) {
@@ -305,7 +328,7 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 	}
 
     @Override
-	public synchronized Subject authenticate(String username, String credentials) throws AuthenticationException {
+	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
 		if ("jsessionid".equals(username)) {
 			Subject subject = sessions.get(credentials);
 			
@@ -364,57 +387,86 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 		return pool;
 	}
 	
-	protected synchronized int getNextGroupId() {
+        @Override
+	public synchronized int getNextGroupId() {
 		return ++lastGroupId; 
 	}
-	
-	protected synchronized int getNextAccoutId() {
+
+        @Override
+	public synchronized int getNextAccountId() {
 		return ++lastUserId; 
 	}
 
+        @Deprecated
 	@Override
-	public java.util.Collection<Account> getUsers() {
-		return defaultRealm.getAccounts();
+	public <A extends Account> java.util.Collection<A> getUsers() {
+		return (java.util.Collection<A>)defaultRealm.getAccounts();
+
+                //TODO should be refactored to get users from all realms
 	}
 
+        @Deprecated
 	@Override
-	public java.util.Collection<Group> getGroups() {
-		return defaultRealm.getRoles();
+	public <G extends Group> java.util.Collection<G> getGroups() {
+		return (java.util.Collection<G>)defaultRealm.getRoles();
+
+                //TODO should be refactored to get groups from all realms
 	}
 
 	@Override
 	public void addGroup(String name) throws PermissionDeniedException, EXistException {
 		addGroup(new GroupAider(name));
 	}
-	
-    @Override
-	public final synchronized Account addAccount(Account account) throws EXistException, PermissionDeniedException {
-		if (account.getRealmId() == null) 
-			throw new ConfigurationException("Account must have realm id.");
+
+        @Override
+        public synchronized <G extends Group> G addGroup(G group) throws PermissionDeniedException, EXistException {
+
+            if (group.getRealmId() == null) {
+                throw new ConfigurationException("Group must have realm id.");
+            }
+
+            if(group.getName() == null || group.getName().isEmpty()) {
+                throw new ConfigurationException("Group must have name.");
+            }
+
+            AbstractRealm<Account, G> registeredRealm = (AbstractRealm<Account, G>)findRealmForRealmId(group.getRealmId());
+
+            return registeredRealm.addGroup(group.getName());
+            //return defaultRealm.addGroup(group.getName());
+        }
+
+        private Realm findRealmForRealmId(String realmId) throws ConfigurationException {
+            for(Realm realm : realms) {
+                if(realm.getId().equals(realmId)) {
+                    return realm;
+                }
+            }
+            throw new ConfigurationException("The realm id = '" + realmId + "' not found.");
+        }
+
+        @Override
+	public final synchronized <A extends Account> A addAccount(A account) throws  PermissionDeniedException, EXistException{
+		if(account.getRealmId() == null) {
+                    throw new ConfigurationException("Account must have realm id.");
+                }
 		
-		if (account.getName() == null || account.getName().isEmpty()) 
-			throw new ConfigurationException("Account must have name.");
+		if(account.getName() == null || account.getName().isEmpty()) {
+                    throw new ConfigurationException("Account must have name.");
+                }
 		
-		AbstractRealm registeredRealm = null;
-		for (Realm realm : realms) {
-			if (realm.getId().equals( account.getRealmId() )) {
-				registeredRealm = (AbstractRealm)realm;
-				break;
-			}
-		}
-		if (registeredRealm == null) 
-			throw new ConfigurationException("The realm id = '"+account.getRealmId()+"' not found.");
+                AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
 		
-		int id = getNextAccoutId();
-		
-		AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
+		int id = getNextAccountId();
+
+                A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
+		//AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
 		
 		usersById.put(id, new_account);
 		registeredRealm.registerAccount(new_account);
 		
 		//XXX: one transaction?
 		save();
-		new_account.save();
+                new_account.save();
 		
 		createUserHome(new_account);
 
@@ -528,4 +580,24 @@ public class SecurityManagerImpl implements SecurityManager<String> {
 		//TODO: validate
 		return sessions.get(sessionid);
 	}
+
+    @Override
+    public void addGroup(int id, Group group) {
+        groupsById.put(id, group);
+    }
+
+    @Override
+    public void addUser(int id, Account account) {
+        usersById.put(id, account);
+    }
+
+    @Override
+    public boolean hasGroup(int id) {
+        return groupsById.containsKey(id);
+    }
+
+    @Override
+    public boolean hasUser(int id) {
+        return usersById.containsKey(id);
+    }
 }

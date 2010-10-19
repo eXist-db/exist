@@ -64,5 +64,5 @@ public interface Configuration {
 
 	public void checkForUpdates(ElementAtExist document);
 
-	public void save() throws PermissionDeniedException, EXistException;
+	public void save() throws PermissionDeniedException;
 }

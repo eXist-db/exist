@@ -37,7 +37,7 @@ import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
-import org.exist.security.internal.AbstractAccount;
+import org.exist.security.AbstractAccount;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.UserAider;
@@ -140,7 +140,8 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 				Subject currentSubject = getDatabase().getSubject();
 				try {
 					getDatabase().setSubject(sm.getSystemSubject());
-					account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
+                                        account = sm.addAccount(instantiateAccount(this, username));
+					//account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
 				} catch (Exception e) {
 					throw new AuthenticationException(
 							AuthenticationException.UNNOWN_EXCEPTION,

@@ -21,6 +21,8 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractRealm;
+import org.exist.security.AbstractAccount;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
@@ -140,6 +142,19 @@ public class AccountImpl extends AbstractAccount {
 		setPassword(password);
 	}
 
+        public AccountImpl(AbstractRealm realm, int id, String name, String password, Group group, boolean hasDbaRole) throws ConfigurationException {
+		super(realm, id, name);
+		setPassword(password);
+                this.groups.add(group);
+                this.hasDbaRole = hasDbaRole;
+	}
+
+        public AccountImpl(AbstractRealm realm, int id, String name, String password, Group group) throws ConfigurationException {
+		super(realm, id, name);
+		setPassword(password);
+                this.groups.add(group);
+	}
+
 	/**
 	 * Create a new user with name
 	 * 
@@ -221,9 +236,15 @@ public class AccountImpl extends AbstractAccount {
 		super( realm, configuration );
 		
 		//it require, because class's fields initializing after super constructor
-		if (this.configuration != null)
+		if(this.configuration != null) {
 			this.configuration = Configurator.configure(this, this.configuration);
+                }
 	}
+
+        public AccountImpl(AbstractRealm realm, Configuration configuration, boolean removed) throws ConfigurationException {
+            this(realm, configuration);
+            this.removed = removed;
+        }
 
 	/**
 	 * Get the user's password
@@ -351,4 +372,29 @@ public class AccountImpl extends AbstractAccount {
 			return false;
 		return digest(passwd).equals(digestPassword);
 	}
+
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException {
+
+        if(group == null){
+            return null;
+        }
+
+        Account user = getDatabase().getSubject();
+
+
+        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){
+                throw new PermissionDeniedException("not allowed to change group memberships");
+        }
+
+        if(!groups.contains(group)) {
+            groups.add(group);
+
+            if(SecurityManager.DBA_GROUP.equals(name)) {
+                hasDbaRole = true;
+            }
+        }
+
+        return group;
+    }
 }

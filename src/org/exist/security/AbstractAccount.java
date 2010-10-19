@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.security.internal;
+package org.exist.security;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,12 +32,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
-import org.exist.security.Credential;
-import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
-import org.exist.security.Account;
-import org.exist.security.Subject;
+import org.exist.security.internal.SubjectImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -80,34 +75,15 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, configuration);
 	}
 
-        @Override
-	public final Group addGroup(Group group) throws PermissionDeniedException {
-		return addGroup(group.getName());
-	}
+
+        public boolean checkCredentials(Object credentials) {
+            return _cred == null ? false : _cred.check(credentials);
+        }
 
         @Override
 	public final Group addGroup(String name) throws PermissionDeniedException {
 		Group group = realm.getGroup(null, name);
-		if (group == null)
-			return null;
-		
-		Account user = getDatabase().getSubject();
-
-		
-		if ( !( (user != null && user.hasDbaRole()) 
-				|| ((GroupImpl)group).isMembersManager(user)))
-			
-			throw new PermissionDeniedException(
-				"not allowed to change group memberships");
-
-		if (!groups.contains(group)) {
-			groups.add(group);
-		
-			if (SecurityManager.DBA_GROUP.equals(name))
-				hasDbaRole = true;
-		}
-		
-		return group;
+		return addGroup(group);
 	}
 
 	//this method used by Configurator
@@ -120,6 +96,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return addGroup(name);
 	}
 	
+    @Override
 	public final void remGroup(String name) {
 		for (Group group : groups) {
 			if (group.getName().equals(name)) {
@@ -132,6 +109,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 			hasDbaRole = false;
 	}
 
+    @Override
 	public final void setGroups(String[] groups) {
 //		this.groups = groups;
 //		for (int i = 0; i < groups.length; i++)
@@ -139,6 +117,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 //				hasDbaRole = true;
 	}
 
+    @Override
 	public final String[] getGroups() {
 		if (groups == null) return new String[0];
 		
@@ -152,6 +131,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return names;
 	}
 
+    @Override
 	public final boolean hasGroup(String name) {
 		if (groups == null)
 			return false;
@@ -164,10 +144,12 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return false;
 	}
 
+    @Override
 	public final boolean hasDbaRole() {
 		return hasDbaRole;
 	}
 
+    @Override
 	public final String getPrimaryGroup() {
 		if (groups != null && groups.size() > 0)
 			return groups.get(0).getName();
@@ -175,8 +157,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return null;
 	}
 
+    @Override
 	public final String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("<account name=\"");
 		buf.append(name);
 		buf.append("\" ");
@@ -200,10 +183,12 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return buf.toString();
 	}
 
+    @Override
 	public XmldbURI getHome() {
 		return home;
 	}
 
+    @Override
 	public boolean equals(Object obj) {
 		AbstractAccount other;
 		
@@ -268,26 +253,32 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return null;
 	}
 
+    @Override
 	public void setHome(XmldbURI homeCollection) {
 		home = homeCollection;
 	}
 
+    @Override
     public String getUsername() {
     	return getName();
     }
 
+    @Override
     public boolean isAccountNonExpired() {
     	return !accountExpired;
     }
 
+    @Override
     public boolean isAccountNonLocked() {
     	return !accountLocked;
     }
 
+    @Override
     public boolean isCredentialsNonExpired() {
     	return !credentialsExpired;
     }
 
+    @Override
     public boolean isEnabled() {
     	return enabled;
     }

@@ -104,18 +104,18 @@ public class XMLDBAddUserToGroup extends BasicFunction {
 			
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
             
-            Subject currentSubject = database.getSubject();
+            //Subject currentSubject = database.getSubject();
             try {
-            	database.setSubject(sm.getSystemSubject());
+            //	database.setSubject(sm.getSystemSubject());
             	
             	Group group = sm.getGroup(context.getBroker().getUser(), groupName);
             
             	Account account = sm.getAccount(context.getBroker().getUser(), userName);
 
-	            account.addGroup(group);
-	            sm.updateAccount(context.getBroker().getUser(), account);
+                account.addGroup(group);
+                sm.updateAccount(context.getBroker().getUser(), account);
             } finally {
-            	database.setSubject(currentSubject);
+            //	database.setSubject(currentSubject);
             }
 
             return BooleanValue.TRUE;
