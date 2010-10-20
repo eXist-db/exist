@@ -71,7 +71,7 @@ public class LdapContextFactory implements Configurable {
 	private Configuration configuration = null;
         private final LDAPSearchContext search;
 
-	protected LdapContextFactory(Configuration config) {
+	public LdapContextFactory(Configuration config) {
             configuration = Configurator.configure(this, config);
             this.search = new LDAPSearchContext(configuration);
             if (principalPattern != null) {

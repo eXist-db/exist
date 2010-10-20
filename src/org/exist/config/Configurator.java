@@ -226,6 +226,8 @@ public class Configurator {
                     value = org.exist.xmldb.XmldbURI.create(
                             configuration.getProperty(property)
                     );
+                } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
+                    value = new org.exist.security.realm.ldap.LdapContextFactory(configuration);
                 } else {
                     LOG.warn("skip unsupported configuration value type "+field.getType());
                 }
