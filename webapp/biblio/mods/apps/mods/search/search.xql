@@ -32,7 +32,9 @@ import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql"
 import module namespace sort="http://exist-db.org/xquery/sort" at "java:org.exist.xquery.modules.sort.SortModule";
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
 import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
-	
+
+import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
+
 declare option exist:serialize "method=xhtml media-type=application/xhtml+xml omit-xml-declaration=no enforce-xhtml=yes";
 
 declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string, $replacement as xs:string )  as xs:string {       
@@ -499,7 +501,33 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:form-add-member-to-sharing-group) return
             biblio:form-add-member-to-sharing-group()
         case element(biblio:form-add-sharing-group) return
-            biblio:form-add-sharing-group()        
+            biblio:form-add-sharing-group()
+        case element(biblio:resource-types) return
+            let $app-collection := $style:db-path-to-app
+            let $code-tables := concat($app-collection, '/apps/mods/code-tables')
+            let $document-path := concat($code-tables, '/document-type-codes.xml')
+            let $code-table := doc($document-path)/code-table
+            return 
+                <div class="content">
+                    <form id="new-resource-form" action="../edit/edit.xq" method="GET">
+                        <ul>
+                            <li>
+                                <input type="radio" name="type" value="default" selected="selected"/><span> default</span>
+                            </li>
+                        {
+                            for $item in $code-table//item
+                            let $label := $item/label/text()
+                            order by $label
+                            return
+                                <li>
+                                  <input type="radio" name="type" value="{$item/value/text()}"/><span> {$item/value/text()}</span>
+                                </li>
+                        }
+                        </ul>
+                        <input type="hidden" name="collection"/>
+                        <input type="hidden" name="host"/>
+                    </form>
+                </div>
         case element() return
             element { node-name($node) } {
                 $node/@*,
@@ -744,13 +772,16 @@ session:create(),
 let $input := request:get-data()
 let $filter := request:get-parameter("filter", ())
 let $history := request:get-parameter("history", ())
+let $reload := request:get-parameter("reload", ())
 let $clear := request:get-parameter("clear", ())
 let $mylist := request:get-parameter("mylist", ())
 let $collection := request:get-parameter("collection", ())
 
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
-    if ($history) then
+    if ($reload) then
+        session:get-attribute('query')
+    else if ($history) then
         biblio:query-from-history($history)
     else if ($clear) then
         biblio:clear()

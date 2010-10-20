@@ -13,6 +13,8 @@ $(document).ready(function(){
     $('#collection-move-folder').hide();
     $('#collection-remove-folder').hide();
     $('#collection-sharing').hide();
+    $('#collection-create-resource').hide();
+    
 });
 
 /* sharing dialog actions */
@@ -84,6 +86,10 @@ function getActiveGroup()
     }
 }
 
+function getCurrentCollection() {
+    $('#simple-search-form input[name = collection]').val();
+}
+
 /*
     Initialize the collection tree. Connect toolbar button events.
  */
@@ -106,6 +112,10 @@ function initCollectionTree() {
             }
             updateSharingOtherCheckboxes();
 //            form.submit();
+        },
+        onPostInit: function () {
+            // when tree is reloaded, reactivate the current node to trigger an onActivate event
+            this.reactivate();
         }
     });
     $('#toggle-collection-tree').click(function () {
@@ -138,7 +148,6 @@ function initCollectionTree() {
 }
 
 function updateCollectionPaths(title, key) {
-    
     //search forms
     var form = $('#simple-search-form');
     $('input[name = collection]', form).val(key);
@@ -150,17 +159,20 @@ function updateCollectionPaths(title, key) {
     $('span[id $= collection-path_]').text(title);
     $('input[id $= collection-path_]').val(key);
     
+    // $('#collection-create-resource').attr("href", "../edit/edit.xq?type=book-chapter&collection=" + key);
 };
 
 function showHideCollectionWriteableControls() {
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     
     var params = { action: "can-write-collection", collection: collection };
     $.get("checkuser.xql", params, function(data) {
         if($(data).text() == 'true') {
             $('#collection-create-folder').show();
+            $('#collection-create-resource').show();
         } else {
             $('#collection-create-folder').hide();
+            $('#collection-create-resource').hide();
         }
     });
     
@@ -177,7 +189,7 @@ function showHideCollectionWriteableControls() {
 };
 
 function showHideCollectionOwnerControls() {
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: "is-collection-owner-and-not-home", collection: collection };
     $.get("checkuser.xql", params, function(data) {
         if($(data).text() == 'true') {
@@ -196,7 +208,7 @@ function removeResource(dialog) {
     var params = { action: 'remove-resource', resource: resource };
     $.get("operations.xql", params, function (data) {
         dialog.dialog("close");
-        $(location).attr('href', 'index.xml');
+        $(location).attr('href', 'index.xml?reload=true&collection=' + getCurrentCollection());
     });
 }
 
@@ -217,7 +229,7 @@ function moveResource(dialog) {
  */
 function createCollection(dialog) {
     var name = $('#create-collection-form input[name = name]').val();
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: 'create-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
@@ -230,7 +242,7 @@ function createCollection(dialog) {
  */
 function moveCollection(dialog) {
     var path = $('#move-collection-form select[name = path]').val();
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: 'move-collection', path: path, collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
@@ -242,7 +254,7 @@ function moveCollection(dialog) {
     Called when the user clicks on the "remove" button in the remove collection dialog.
  */
 function removeCollection(dialog) {
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: 'remove-collection', collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
@@ -254,7 +266,7 @@ function removeCollection(dialog) {
     Called when the user clicks on the "save" button in the collection sharing dialog
  */
 function updateCollectionSharing(dialog) {
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
    
     var sharingCollectionWith = [];   
     $('input:checked[type="checkbox"][name="sharing-collection-with"]').each(function() {
@@ -297,11 +309,19 @@ function login() {
     $.ajax({
         url: "checkuser.xql",
         data: "user=" + user.val() + "&password=" + password.val(),
-        type: 'POST',
+        type: 'GET',
         success:
-            function(data, message) { $('#login-form').submit(); },
+            function(data, message) { 
+                $('#login-form').submit(); 
+            },
         error: function (response, message) { $('#login-message').html('Login failed: ' + response.responseText); }
     });
+}
+
+function newResource() {
+    var collection = getCurrentCollection();
+    $("#new-resource-form input[name = collection]").val(collection);
+    $("#new-resource-form").submit();
 }
 
 /**
@@ -392,19 +412,26 @@ function resultsLoaded(options) {
     });
     
     /** add remove resource action */
-    $('.actions-toolbar .remove-resource', this).click(function() {{
-    	alert("FOUND");
-        $('#remove-resource-id').val($('#' + this.id).attr('href').substr(1));
+    $('.actions-toolbar .remove-resource', this).click(function(ev) {
+        ev.preventDefault();
+        $('#remove-resource-id').val($(this).attr('href').substr(1));
         $('#remove-resource-dialog').dialog('open');
-        return false;
-    }});
+    });
     
     /** add move resource action */
-    $('.actions-toolbar .move-resource', this).click(function() {{
-        $('#move-resource-id').val($('#' + this.id).attr('href').substr(1));
+    $('.actions-toolbar .move-resource', this).click(function() {
+        $('#move-resource-id').val($(this).attr('href').substr(1));
         $('#move-resource-dialog').dialog('open');
         return false;
-    }});
+    });
+    
+    $('.actions-toolbar .add-related', this).click(function(ev) {
+        ev.preventDefault();
+        var params = this.hash.substring(1).split('#');
+        $('#new-resource-form input[name = collection]').val(params[0]);
+        $('#new-resource-form input[name = host]').val(params[1]);
+        $('#new-resource-dialog').dialog('open');
+    });
 }
 
 function searchTabSelected(ev, ui) {
@@ -446,7 +473,7 @@ function updateSharingGroupMembers(groupId) {
 
 function updateSharingGroupCheckboxes(groupId) {
     //set the read/write checkboxes
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: "get-group-permissions", groupId: groupId, collection: collection };
     $.get("operations.xql", params, function(data) {
     
@@ -485,7 +512,7 @@ function updateSharingGroupCheckboxes(groupId) {
 
 function updateSharingOtherCheckboxes() {
      //set the read/write checkboxes
-    var collection = $('#simple-search-form input[name = collection]').val();
+    var collection = getCurrentCollection();
     var params = { action: "get-other-permissions", collection: collection };
     $.get("operations.xql", params, function(data) {
     

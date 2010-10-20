@@ -5,6 +5,7 @@ import module namespace mods = "http://www.loc.gov/mods/v3" at "../modules/mods.
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
+declare namespace xlink="http://www.w3.org/1999/xlink";
 
 let $title := 'MODS Record Editor'
 
@@ -12,6 +13,9 @@ let $title := 'MODS Record Editor'
 let $id-param := request:get-parameter('id', 'new')
 let $show-all-string := request:get-parameter('show-all', 'false')
 let $show-all := if ($show-all-string = 'true') then true() else false()
+
+(: check if a host is specified for related item :)
+let $host := request:get-parameter('host', ())
 
 (: if no tab is specified, we default to the title tab :)
 let $tab-id := request:get-parameter('tab-id', 'title')
@@ -61,16 +65,21 @@ let $create-new-from-template :=
          let $new-file-name := concat($id, '.xml')
          
          (: uncomment the following line in for testing if you are not admin :)
-         let $login := xmldb:login($data-collection, 'admin', 'admin123')
+         (: let $login := xmldb:login($data-collection, 'admin', ()) :)
          
          (: store it in the right location :)
          let $store := xmldb:store($data-collection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
-         return update value doc($new-file-path)/mods:mods/@ID with $id
+         return (
+            update value doc($new-file-path)/mods:mods/@ID with $id,
+            if ($host) then (
+                update value doc($new-file-path)/mods:mods/mods:relatedItem/@xlink:href with $host,
+                update value doc($new-file-path)/mods:mods/mods:relatedItem/@type with "host"
+            ) else ()
          )
-      else ()
+      ) else ()
 
 (: this is the string we pass to instance id='save-data' src attribute :)
 let $instance-src :=  concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $data-collection)
@@ -116,7 +125,7 @@ let $model :=
                   
        <xf:submission id="save-submission" method="post"
           ref="instance('save-data')"
-          action="save.xq" replace="instance"
+          action="save.xq?collection={$data-collection}" replace="instance"
           instance="save-results">
        </xf:submission>
        
@@ -130,15 +139,21 @@ let $model :=
 let $content :=
 <div class="content">
     
-    <a href="../index.xq">MODS <!--XRX--> Application Home</a>
     <span class="float-right">editing record <strong>{$id}</strong> on the <strong>{$tab-label}</strong> tab</span>
     
     
-    {mods:tabs($tab-id, $id, $show-all)}
+    {mods:tabs($tab-id, $id, $show-all, $data-collection)}
     
     <xf:submit submission="save-submission">
         <xf:label class="xforms-group-label-centered-general">Save</xf:label>
     </xf:submit>
+    <xf:trigger>
+        <xf:label class="xforms-group-label-centered-general">Save and Close</xf:label>
+        <xf:action ev:event="DOMActivate">
+            <xf:send submission="save-submission"/>
+            <xf:load resource="../search/index.xml?reload=true" show="replace"/>
+        </xf:action>
+     </xf:trigger>
     <br/><br/>
     
     <!-- import the correct form body for this tab -->
@@ -173,8 +188,8 @@ let $content :=
         </xf:output>
     </div>
     -->
-    <a href="../views/get-instance.xq?id={$id}">View XML for the whole MODS record</a> -
-    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}">View XML for the current tab</a>
+    <a href="../views/get-instance.xq?id={$id}&amp;data={$data-collection}">View XML for the whole MODS record</a> -
+    <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}&amp;data={$data-collection}">View XML for the current tab</a>
 </div>
 
-return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, true())
+return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, false())

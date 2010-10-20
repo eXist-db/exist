@@ -3,7 +3,8 @@
 
 body
     {
-  background-color: #eeeeee !important;/*overrules xsltforms.css*/
+  /* background-color: #eeeeee !important;/*overrules xsltforms.css*/
+  background-color: #ffffff !important;
 }
 
 caption, 
@@ -21,6 +22,62 @@ legend {
 .float-right {
     float: right; 
     margin-right: 2px;
+}
+
+#page-head {
+	position: relative;
+    margin: 25px 50px 5px 50px;
+    height: 185px;
+}
+#page-head #navbar {
+    margin: 10px 0 0 0;
+    border-top: 1px solid #DEDEDE;
+    border-bottom: 1px solid #DEDEDE;
+}
+#page-head h1 {
+    color: #0A0AA0;
+    background-color: #FFF;
+    border: 0;
+    font-size: 1.375em;
+    font-weight: normal;
+    margin: 0;
+    padding: 5px 0;
+}
+#page-head #menu {
+    margin: 0.3em 0 0 0;
+    padding: 0 0 0 0;
+    float: right;
+}
+#menu li {
+    list-style: none;
+    float: left;
+    margin: 0;
+    white-space: nowrap;
+    padding: 0px 20px 0px 20px;
+}
+#menu li.last {
+    padding: 0 0 0 20px;
+}
+#menu li a {
+    color: #666666;
+}
+
+#quicksearch {
+	position: absolute;
+	top: 92px;
+	right: 0px;
+	padding: 7px;
+}
+
+#quicksearch input {
+	color: #666666;
+	background-color: #F6F6F6;
+}
+
+@media print {
+    #page-head {
+        display: none;
+    }
 }
 
 /*That an input is required is shown by the absence of a delete button.*/

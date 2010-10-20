@@ -511,7 +511,7 @@ declare function mods:get-language-name() {
 (: ### <typeOfResource> begins ### :)
 
 declare function mods:return-type($id as xs:string, $entry as element(mods:mods)) {
-let $type := $entry/mods:typeOfResource/string()
+let $type := $entry/mods:typeOfResource[1]/string()
     return
      <span>{ 
         replace(
@@ -770,8 +770,8 @@ let $names := $entry/mods:name
         <tr>
             <td class="label">
             {
-            if ($name/mods:role/mods:roleTerm) then
-                functx:capitalize-first($name/mods:role/mods:roleTerm)
+            if ($name/mods:role/mods:roleTerm[@type = 'text']) then
+                functx:capitalize-first($name/mods:role/mods:roleTerm[@type = 'text'])
             else 'Author'
             }
             </td>
@@ -869,7 +869,7 @@ declare function mods:entry-full($entry as element())
     (: NB! [1] should not be necessary. :)
     mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
     if ($entry/mods:extent) then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") else (),
-    mods:simple-row($entry/mods:typeOfResource/string(), "Type of Resource"),
+    mods:simple-row($entry/mods:typeOfResource[1]/string(), "Type of Resource"),
     
     for $genre in ($entry/mods:genre)
     let $authority := $genre/@authority/string()

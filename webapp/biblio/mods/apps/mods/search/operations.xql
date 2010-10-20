@@ -141,13 +141,17 @@ declare function op:get-collection-sharing($collection as xs:string) as element(
 :)
 declare function op:remove-resource($resource-id as xs:string) as element(status) {
     
-    let $path := substring-before($resource-id, "#"),
-    $id := substring-after($resource-id, "#") return
+    let $path := substring-before($resource-id, "#")
+    let $id := substring-after($resource-id, "#")
+    let $doc := doc($path)
+    return (
+        if ($id eq "1") then
+            xmldb:remove(util:collection-name($doc), util:document-name($doc))
+        else
+            update delete util:node-by-id($doc, $id),
     
-        update delete util:node-by-id(doc($path), $id),
-    
-    
-    <status id="removed">{$resource-id}</status>
+        <status id="removed">{$resource-id}</status>
+    )
 };
 
 (:~
@@ -155,32 +159,34 @@ declare function op:remove-resource($resource-id as xs:string) as element(status
 : @ resource-id has the format db-document-path#node-id e.g. /db/mods/eXist/exist-articles.xml#1.36
 :)
 declare function op:move-resource($resource-id as xs:string, $destination-collection as xs:string) as element(status) {
-    
-    let $path := substring-before($resource-id, "#"),
-    $id := substring-after($resource-id, "#"),
-    $resource := util:node-by-id(doc($path), $id),
-    $destination-resource-name := replace($path, ".*/", ""),
-    $destination-path := concat($destination-collection, "/", $destination-resource-name) return
-    
-    let $mods-destination := if(doc-available($destination-path))then
-        (
-            doc($destination-path)/mods:modsCollection
-        )
-        else
-        (
-            doc(
-                xmldb:store($destination-collection, $destination-resource-name,
-                    <modsCollection xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 ../../webapp/WEB-INF/entities/mods-3-3.xsd"/>
-                )
-            )/mods:modsCollection
-        )
+    let $path := substring-before($resource-id, "#")
+    let $id := substring-after($resource-id, "#")
+    let $destination-resource-name := replace($path, ".*/", "")
+    let $destination-path := concat($destination-collection, "/", $destination-resource-name)
+    let $sourceDoc := doc($path)
     return
-    (
-        update insert util:node-by-id(doc($path), $id) into $mods-destination,
-        update delete util:node-by-id(doc($path), $id),
-        
-        <status id="moved" from="{$resource-id}">{$destination-path}</status>
-    )
+        if (contains($id, ".")) then
+            let $resource := util:node-by-id($sourceDoc, $id)
+            let $mods-destination := 
+                if(doc-available($destination-path))then
+                    doc($destination-path)/mods:modsCollection
+                else
+                    doc(
+                        xmldb:store($destination-collection, $destination-resource-name,
+                            <modsCollection xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 ../../webapp/WEB-INF/entities/mods-3-3.xsd"/>
+                        )
+                    )/mods:modsCollection
+            return
+            (
+                update insert util:node-by-id(doc($path), $id) into $mods-destination,
+                update delete util:node-by-id(doc($path), $id),
+                
+                <status id="moved" from="{$resource-id}">{$destination-path}</status>
+            )
+        else (
+            xmldb:move(util:collection-name($sourceDoc), $destination-collection, util:document-name($sourceDoc)),
+            <status id="moved" from="{$resource-id}">{$destination-path}</status>
+        )
 };
 
 declare function op:get-sharing-group-members($groupId as xs:string) as element(members){
