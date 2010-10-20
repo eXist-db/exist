@@ -228,6 +228,8 @@ public class Configurator {
                     );
                 } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
                     value = new org.exist.security.realm.ldap.LdapContextFactory(configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
+                    value = new org.exist.security.realm.ldap.LDAPSearchContext(configuration);
                 } else {
                     LOG.warn("skip unsupported configuration value type "+field.getType());
                 }
