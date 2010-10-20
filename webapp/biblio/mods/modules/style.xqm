@@ -9,12 +9,21 @@ declare namespace xrx="http://code.google.com/p/xrx";
 declare variable $style:context := request:get-context-path();
 declare variable $style:site-home := '/';
 declare variable $style:web-path-to-site := '/db/org/library';
-declare variable $style:web-path-to-app := style:substring-before-last-slash(style:substring-before-last-slash(substring-after(request:get-uri(), '/rest')));
+declare variable $style:web-path-to-app :=
+    let $root := request:get-attribute("exist:root")
+    let $path := request:get-attribute("exist:path")
+    return
+        if ($root) then
+            concat($root, style:substring-before-last-slash(style:substring-before-last-slash($path)))
+        else
+            style:substring-before-last-slash(style:substring-before-last-slash(substring-after(request:get-uri(), '/rest')))
+;
 declare variable $style:db-path-to-site  := concat('xmldb:exist://',  $style:web-path-to-site);
 declare variable $style:db-path-to-app  := concat('xmldb:exist://', $style:web-path-to-app) ;
 declare variable $style:db-path-to-app-data := concat($style:db-path-to-app, '/data');
 
 declare variable $style:site-resources := concat(request:get-context-path(), '/rest', $style:web-path-to-site, '/resources');
+declare variable $style:site-styles := concat(request:get-context-path(), '/rest', $style:web-path-to-site, '/styles');
 declare variable $style:site-images := concat($style:site-resources, '/images');
 declare variable $style:site-css := concat($style:site-resources, '/css');
 declare variable $style:site-info-file := concat($style:web-path-to-site, '/site-info.xml');
@@ -152,13 +161,29 @@ as node()+ {
             { $model }
         </head>
         <body>
+            <div id="page-head">
+                <a href="index.xml" style="text-decoration: none">
+                    <img src="{$style:site-resources}/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
+                </a>
+                <div id="quicksearch">
+                    <form action="" method="GET">
+                        <input type="text" size="20" name="q"/>
+                        <input type="submit" value="Search"/>
+                    </form>
+                </div>
+                <div id="navbar">
+                    <h1>Open Source Native XML Database</h1>
+                </div>
+            </div>
+            <div id="content1col">
             <div class="container">
-                { style:header() } 
+                { style:header() }
                 <div class="inner">
                     <h2>{$title}</h2>
                     { $content }
                 </div>
                 { style:footer() }
+            </div>
             </div>
         </body>
     </html>
@@ -169,14 +194,15 @@ as node()+ {
     if ($page-type eq 'xhtml') then 
         (
        
-        <link rel="stylesheet" href="{$style:site-css}/blueprint/screen.css" type="text/css" media="screen, projection" />,
-        <link rel="stylesheet" href="{$style:site-css}/blueprint/print.css" type="text/css" media="print" />,<!--[if IE ]><link rel="stylesheet" href="{$style:site-css}/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->,
+        (: <link rel="stylesheet" href="{$style:site-css}/blueprint/screen.css" type="text/css" media="screen, projection" />,
+        <link rel="stylesheet" href="{$style:site-css}/blueprint/print.css" type="text/css" media="print" />,<!--[if IE ]><link rel="stylesheet" href="{$style:site-css}/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->, :)
         <link rel="stylesheet" href="{$style:site-css}/style.css" type="text/css" media="screen, projection" />
 
     )
-    else if ($page-type eq 'xforms') then 
-        <link rel="stylesheet" href="{$style:site-css}/xforms.css.xq" type="text/css" />
-    else ()
+    else if ($page-type eq 'xforms') then (
+        <link rel="stylesheet" href="{$style:site-css}/xforms.css.xq" type="text/css" />,
+        <link rel="stylesheet" type="text/css" href="{$style:site-styles}/default-style2.css"/>
+    ) else ()
 };
 
 declare function style:header() as node()+  {

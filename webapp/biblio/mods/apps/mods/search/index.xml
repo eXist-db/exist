@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns:biblio="http:/exist-db.org/xquery/biblio" xmlns:jquery="http://exist-db.org/xquery/jquery">
     <head>
         <!--XXX<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
@@ -67,7 +68,11 @@
                 <jquery:tab id="advanced-search-form" label="Advanced Search">
                     <jquery:form-repeat trigger="#add-field" delete="#remove-field" form=".search-form" on-ready="repeatCallback"/>
                     <form class="search-form" action="index.xml" name="advanced-search" method="POST">
-                        <table><tr><td></td><td colspan="2">Search for</td></tr>
+                        <table>
+                            <tr>
+                                <td/>
+                                <td colspan="2">Search for</td>
+                            </tr>
                             <biblio:form-from-query/>
                             <tr>
                                 <td class="label">inside </td>
@@ -85,15 +90,15 @@
                                         <jquery:option value="Date Issued"/>
                                     </jquery:select>
                                 </td>
-                                <td></td>
+                                <td/>
                             </tr>
                             <tr>
-                                <td></td>
+                                <td/>
                                 <td class="add-field" align="center" colspan="2">
-                                <button class="button" id="add-field">
-                                    <span>+</span> Add search field</button>
-                                <button class="button" id="remove-field">
-                                    <span>-</span> Remove selected search field</button>
+                                    <button class="button" id="add-field">
+                                        <span>+</span> Add search field</button>
+                                    <button class="button" id="remove-field">
+                                        <span>-</span> Remove selected search field</button>
                                 </td>
                             </tr>
                             <tr>
@@ -101,10 +106,10 @@
                                 <td colspan="2">
                                     <button class="button" name="clear" value="clear" type="submit">Clear all</button>
                                     <div class="advanced-search">
-                                    <button class="advanced-search" name="action" id="form-submit" type="submit">Search</button>
-                                    </div>                                        
+                                        <button class="advanced-search" name="action" id="form-submit" type="submit">Search</button>
+                                    </div>
                                 </td>
-                                <td></td>
+                                <td/>
                             </tr>
                         </table>
                         <input type="hidden" name="query-tabs" value="advanced-search-form"/>
@@ -174,6 +179,13 @@
                             </a>
                         </li>
                         <!-- end collection owner -->
+                        <!-- create new resource -->
+                        <li>
+                            <a href="#" id="collection-create-resource">
+                                <img src="../../../resources/images/page_add.png" title="New Resource"/>
+                            </a>
+                        </li>
+                        <!-- end create new resource -->
                     </ul>
                     <div id="collection-tree-tree"/>
                 </div>
@@ -297,6 +309,11 @@
                     </div>
                     <input id="move-resource-id" name="resource" type="hidden" value=""/>
                 </form>
+            </jquery:dialog>
+            <jquery:dialog id="new-resource-dialog" modal="true" title="New Resource" trigger="#collection-create-resource" width="450">
+                <jquery:button id="create" label="Create" function="newResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <biblio:resource-types/>
             </jquery:dialog>
             <jquery:javascript/>
         </div>

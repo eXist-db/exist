@@ -13,10 +13,22 @@ xquery version "1.0";
 
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
+import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
+import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
+import module namespace clean="http:/exist-db.org/xquery/mods/cleanup" at "cleanup.xql";
 
 declare namespace bs="http://exist-db.org/xquery/biblio/session";
 
 declare option exist:serialize "media-type=application/xhtml+xml";
+
+declare variable $bs:USER := security:get-user-credential-from-session()[1];
+
+declare function bs:collection-is-writable($collection as xs:string) {
+    if ($collection eq $sharing:groups-collection) then
+        false()
+    else
+        security:can-write-collection($bs:USER, $collection)
+};
 
 declare function bs:retrieve($start as xs:int, $count as xs:int) {
     let $cached := session:get-attribute("mods:cached")
@@ -61,15 +73,28 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                        <img title="save to my list" 
                                            src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                            class="{if ($saved) then 'stored' else ''}"/>
-                                   </a>
-                                   {
-                                       if($count eq 1)then(
+                                    </a>
+                                    {
+                                        if (bs:collection-is-writable(util:collection-name($item))) then (
+                                            <a href="../edit/edit.xq?id={$item/@ID}&amp;collection={util:collection-name($item)}">
+                                                <img title="edit" src="../../../resources/images/page_edit.png"/>
+                                            </a>,
+                                            (: <a class="add-related" href="../edit/edit.xq?type=default&amp;collection={util:collection-name($item)}&amp;host={$item/@ID}">:)
+                                            <a class="add-related" href="#{util:collection-name($item)}#{$item/@ID}">
+                                                <img title="add related item" src="../../../resources/images/page_add.png"/>
+                                            </a>,
                                            <a class="remove-resource" href="#{$id}"><img title="delete" src="../../../resources/images/delete.png"/></a>,
                                            <a class="move-resource" href="#{$id}"><img title="move" src="../../../resources/images/shape_move_front.png"/></a>
-                                       )else()
-                                   }
+                                        ) else
+                                            ()
+                                    }
                                 </div>
-                                { mods:format-full(string($currentPos), $item) }
+                                {
+                                    let $clean := clean:cleanup($item)
+                                    let $log := util:log("DEBUG", ("RECORD: ", $clean))
+                                    return
+                                        mods:format-full(string($currentPos), $clean) 
+                                }
                             </td>
                         else
                             <td class="pagination-toggle"><a>{mods:format-short(string($currentPos), $item)}</a></td>

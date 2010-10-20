@@ -68,6 +68,8 @@
 				<include name="default-style2.css"/>
 			</fileset>
 		</xdb:store>
+		
+		<xdb:adduser uri="${server-uri}" name="editor" secret="editor" primaryGroup="biblio.users" />
 	</target>
 
 </project>

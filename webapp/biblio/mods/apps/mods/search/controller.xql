@@ -49,6 +49,8 @@ else if ($exist:resource eq 'index.xml') then
                 <forward url="search.xql">
                     <!-- Errors should be passed through instead of terminating the request -->
             		<set-attribute name="xquery.report-errors" value="yes"/>
+            		<set-attribute name="exist:root" value="{$exist:root}"/>
+                    <set-attribute name="exist:path" value="{$exist:path}"/>
                 </forward>
     		</view>
     	</dispatch>
@@ -62,8 +64,9 @@ else if ($exist:resource eq 'retrieve') then
 		<forward url="{$exist:controller}/session.xql">
 		</forward>
 	</dispatch>
-else if (matches($exist:path, '(resources/|styles/syntax|scripts/|logo.jpg|default-style2.css|curvycorners.js)')) then
-    let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo).*)$', '/$1')
+else if (matches($exist:path, '(scripts/|styles/)')) then
+    let $newPath := replace($exist:path, '^.*((styles/|scripts/).*)$', '/$1')
+    let $log := util:log("DEBUG", ("NEW PATH: ", $newPath))
     return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<forward url="{$newPath}"/>

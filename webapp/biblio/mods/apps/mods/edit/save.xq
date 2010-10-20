@@ -15,8 +15,17 @@ let $title := 'MODS Record Save'
 (: note that in this version, the incoming @ID is required :)
 (: the user must have write and update access to the data collection :)
 
+(: The data collection passed in the URL :)
+let $collection := request:get-parameter('collection', ())
+
 let $app-collection := $style:db-path-to-app
-let $data-collection := $style:db-path-to-app-data
+
+let $data-collection :=
+    if ($collection) then
+        $collection
+    else
+        $style:db-path-to-app-data
+let $log := util:log("DEBUG", ("Saving to collection: ", $data-collection))
 
 (: this is where the form "POSTS" documents to this XQuery using the POST method of a submission :)
 let $item := request:get-data()
@@ -39,7 +48,7 @@ let $file-to-update := concat($incoming-id, '.xml')
 let $file-path := concat($data-collection, '/', $file-to-update)
 
 (: uncomment the following line in for testing if you have not run the security setup tools :)
-let $login := xmldb:login($style:db-path-to-app-data, 'admin', 'admin123')
+(: let $login := xmldb:login($style:db-path-to-app-data, 'admin', 'admin123') :)
  
 (: this is the document on disk to be updated :)
 let $doc := doc($file-path)/mods:mods

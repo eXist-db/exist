@@ -31,7 +31,7 @@ declare function mods:simple-tabs($tab-id as xs:string, $id as xs:string) as nod
 };
 
 (: Display all the tabs in a div using triggers. :)
-declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as xs:boolean) as node()  {
+declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as xs:boolean, $data-collection as xs:string) as node()  {
 
     (: we get a sequence of tab records from the tab database :)
     let $tabs-data := doc($mods:tabs-file)/tabs/tab
@@ -66,7 +66,7 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
         </xf:label><br/>
         <xf:action ev:event="DOMActivate">
             <xf:send submission="save-submission"></xf:send>
-            <xf:load resource="edit.xq?tab-id={$tab-id}&amp;id={$id}&amp;show-all={not($show-all)}" show="replace">
+            <xf:load resource="edit.xq?tab-id={$tab-id}&amp;id={$id}&amp;show-all={not($show-all)}&amp;collection={$data-collection}" show="replace">
             </xf:load>
         </xf:action>
     </xf:trigger>
@@ -101,7 +101,7 @@ declare function mods:tabs($tab-id as xs:string, $id as xs:string, $show-all as 
                 <xf:label>{$tab/label/text()}</xf:label>
                 <xf:action ev:event="DOMActivate">
                     <xf:send submission="save-submission"/>
-                    <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}&amp;show-all={$show-all}" show="replace"/>
+                    <xf:load resource="edit.xq?tab-id={$tab/tab-id/text()}&amp;id={$id}&amp;show-all={$show-all}&amp;collection={$data-collection}" show="replace"/>
                 </xf:action>
              </xf:trigger>
            </td>

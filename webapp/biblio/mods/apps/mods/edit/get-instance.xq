@@ -25,8 +25,15 @@ let $new := request:get-parameter('new', '')
 let $tab-id := request:get-parameter('tab-id', 'title')
 let $debug := request:get-parameter('debug', 'false')
 
+(: The data collection passed in the URL :)
+let $collection := request:get-parameter('data', ())
+
 let $app-collection := $style:db-path-to-app
-let $data-collection := $style:db-path-to-app-data
+let $data-collection :=
+    if ($collection) then
+        $collection
+    else
+        $style:db-path-to-app-data
 
 (: If we are creating a new form, then just get the part of the new-instance.  Else get the data from the correct document
    in the mods data collection that has the correct collection id :)
