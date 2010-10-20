@@ -69,7 +69,8 @@
 			</fileset>
 		</xdb:store>
 		
-		<xdb:adduser uri="${server-uri}" name="editor" secret="editor" primaryGroup="biblio.users" />
+		<xdb:adduser user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}" name="editor" secret="editor" primaryGroup="biblio.users" />
 	</target>
 
 </project>
