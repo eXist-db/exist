@@ -52,6 +52,8 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
 
     private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
     public static String ID = "LDAP";
+
+    @ConfigurationFieldAsElement("context")
     protected LdapContextFactory ldapContextFactory = null;
 
     public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
