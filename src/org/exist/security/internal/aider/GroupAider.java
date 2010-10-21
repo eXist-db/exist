@@ -98,4 +98,9 @@ public class GroupAider implements Group {
         //do nothing
     }
 
+    @Override
+    public boolean isMembersManager(Account account) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

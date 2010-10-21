@@ -325,4 +325,50 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 
         return (A)sm.addAccount(account);
     }
+
+    @Override
+    public synchronized boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+        DBBroker broker = null;
+        try {
+            broker = sm.getDatabase().get(null);
+            Account user = broker.getUser();
+
+            if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
+                            throw new PermissionDeniedException(
+                                    " you are not allowed to change '"+account.getName()+"' account");
+
+
+            Account updatingAccount = getAccount(invokingUser, account.getName());
+            if (updatingAccount == null)
+                    throw new PermissionDeniedException( //XXX: different exception
+                            "account " + account.getName() + " does not exist");
+
+            //check: add account to group
+            String[] groups = account.getGroups();
+            for (int i = 0; i < groups.length; i++) {
+                    if (!(updatingAccount.hasGroup(groups[i]))) {
+                                    updatingAccount.addGroup(groups[i]);
+                            }
+            }
+            //check: remove account from group
+            groups = updatingAccount.getGroups();
+            for (int i = 0; i < groups.length; i++) {
+                    if (!(account.hasGroup(groups[i]))) {
+                                    if ( !user.hasDbaRole() )
+                                            throw new PermissionDeniedException(
+                                                    "not allowed to change group memberships");
+
+                                    updatingAccount.remGroup(groups[i]);
+                            }
+            }
+
+            updatingAccount.setPassword(account.getPassword());
+
+            ((AbstractPrincipal)updatingAccount).save();
+
+            return true;
+        } finally {
+            sm.getDatabase().release(broker);
+        }
+    }
 }

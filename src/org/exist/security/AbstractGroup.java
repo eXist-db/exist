@@ -74,6 +74,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         return buf.toString();
     }
 
+    @Override
     public boolean isMembersManager(Account account) {
         return membersManagers.contains(account);
     }

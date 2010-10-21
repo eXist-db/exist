@@ -23,6 +23,6 @@ package org.exist.security;
 
 public interface Group extends Principal {
 
-	//boolean isMembersManager(Account account);
+    boolean isMembersManager(Account account);
 
 }
