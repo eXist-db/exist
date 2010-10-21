@@ -559,10 +559,11 @@ public class RESTServer {
 	 * @param path
 	 * @throws BadRequestException
 	 * @throws PermissionDeniedException
+	 * @throws NotFoundException 
 	 */
 	public void doPost(DBBroker broker, HttpServletRequest request,
 			HttpServletResponse response, String path)
-			throws BadRequestException, PermissionDeniedException, IOException {
+			throws BadRequestException, PermissionDeniedException, IOException, NotFoundException {
 		// if required, set character encoding
 		if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
@@ -646,203 +647,221 @@ public class RESTServer {
 				resource.getUpdateLock().release(Lock.READ_LOCK);
 		}
 
-		// third, normal POST: read the request content and check if
-		// it is an XUpdate or a query request.
-		int howmany = 10;
-		int start = 1;
-                boolean typed = false;
-                Node variables = null;
-		boolean enclose = true;
-		boolean cache = false;
-		@SuppressWarnings("unused")
-		String mime = MimeType.XML_TYPE.getName();
-		String query = null;
-		TransactionManager transact = broker.getBrokerPool()
-				.getTransactionManager();
-		Txn transaction = transact.beginTransaction();
-		try {
-			String content = getRequestContent(request);
-			NamespaceExtractor nsExtractor = new NamespaceExtractor();
-			Element root = parseXML(content, nsExtractor);
-			String rootNS = root.getNamespaceURI();
-			if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
-				if (root.getLocalName().equals("query")) {
-					// process <query>xpathQuery</query>
-					String option = root.getAttribute("start");
-					if (option != null)
-						try {
-							start = Integer.parseInt(option);
-						} catch (NumberFormatException e) {
+		String requestType = request.getContentType();
+		if (requestType == null)
+			requestType = MimeType.XML_TYPE.getName();
+		int semicolon = requestType.indexOf(';');
+		if (semicolon > 0)
+			requestType = requestType.substring(0, semicolon).trim();
+		MimeType requestTypeMime = MimeTable.getInstance().getContentType(requestType);
+		if (requestTypeMime.isXMLType()) {
+			// third, normal POST: read the request content and check if
+			// it is an XUpdate or a query request.
+			int howmany = 10;
+			int start = 1;
+			boolean typed = false;
+			Node variables = null;
+			boolean enclose = true;
+			boolean cache = false;
+			@SuppressWarnings("unused")
+			String mime = MimeType.XML_TYPE.getName();
+			String query = null;
+			TransactionManager transact = broker.getBrokerPool()
+					.getTransactionManager();
+			Txn transaction = transact.beginTransaction();
+			try {
+				String content = getRequestContent(request);
+				NamespaceExtractor nsExtractor = new NamespaceExtractor();
+				Element root = parseXML(content, nsExtractor);
+				String rootNS = root.getNamespaceURI();
+				if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
+					if (root.getLocalName().equals("query")) {
+						// process <query>xpathQuery</query>
+						String option = root.getAttribute("start");
+						if (option != null)
+							try {
+								start = Integer.parseInt(option);
+							} catch (NumberFormatException e) {
+							}
+						option = root.getAttribute("max");
+						if (option != null)
+							try {
+								howmany = Integer.parseInt(option);
+							} catch (NumberFormatException e) {
+							}
+
+						option = root.getAttribute("enclose");
+						if (option != null) {
+							if (option.equals("no"))
+								enclose = false;
 						}
-					option = root.getAttribute("max");
-					if (option != null)
-						try {
-							howmany = Integer.parseInt(option);
-						} catch (NumberFormatException e) {
+
+						option = root.getAttribute("typed");
+						if (option != null) {
+							if (option.equals("yes"))
+								typed = true;
 						}
 
-					option = root.getAttribute("enclose");
-					if (option != null) {
-						if (option.equals("no"))
-							enclose = false;
-					}
+						option = root.getAttribute("mime");
+						mime = MimeType.XML_TYPE.getName();
+						if ((option != null) && (!option.equals(""))) {
+							mime = option;
+						}
 
-                                        option = root.getAttribute("typed");
-					if (option != null) {
-						if (option.equals("yes"))
-							typed = true;
-					}
+						if ((option = root.getAttribute("cache")) != null) {
+							cache = option.equals("yes");
+						}
 
-					option = root.getAttribute("mime");
-					mime = MimeType.XML_TYPE.getName();
-					if ((option != null) && (!option.equals(""))) {
-						mime = option;
-					}
-
-					if ((option = root.getAttribute("cache")) != null) {
-						cache = option.equals("yes");
-					}
-
-					if ((option = root.getAttribute("session")) != null
-							&& option.length() > 0) {
-						outputProperties.setProperty(
-								Serializer.PROPERTY_SESSION_ID, option);
-					}
-					NodeList children = root.getChildNodes();
-					for (int i = 0; i < children.getLength(); i++) {
-						Node child = children.item(i);
-						if (child.getNodeType() == Node.ELEMENT_NODE
-								&& child.getNamespaceURI().equals(
-										Namespaces.EXIST_NS)) {
-							if (child.getLocalName().equals("text")) {
-								StringBuilder buf = new StringBuilder();
-								Node next = child.getFirstChild();
-								while (next != null) {
-									if (next.getNodeType() == Node.TEXT_NODE
-											|| next.getNodeType() == Node.CDATA_SECTION_NODE)
-										buf.append(next.getNodeValue());
-									next = next.getNextSibling();
-								}
-								query = buf.toString();
-                                                        } else if(child.getLocalName().equals("variables")) {
-								variables = child;
-							} else if (child.getLocalName()
-									.equals("properties")) {
-								Node node = child.getFirstChild();
-								while (node != null) {
-									if (node.getNodeType() == Node.ELEMENT_NODE
-											&& node.getNamespaceURI().equals(
-													Namespaces.EXIST_NS)
-											&& node.getLocalName().equals(
-													"property")) {
-										Element property = (Element) node;
-										String key = property
-												.getAttribute("name");
-										String value = property
-												.getAttribute("value");
-										LOG.debug(key + " = " + value);
-										if (key != null && value != null)
-											outputProperties.setProperty(key,
-													value);
+						if ((option = root.getAttribute("session")) != null
+								&& option.length() > 0) {
+							outputProperties.setProperty(
+									Serializer.PROPERTY_SESSION_ID, option);
+						}
+						NodeList children = root.getChildNodes();
+						for (int i = 0; i < children.getLength(); i++) {
+							Node child = children.item(i);
+							if (child.getNodeType() == Node.ELEMENT_NODE
+									&& child.getNamespaceURI().equals(
+											Namespaces.EXIST_NS)) {
+								if (child.getLocalName().equals("text")) {
+									StringBuilder buf = new StringBuilder();
+									Node next = child.getFirstChild();
+									while (next != null) {
+										if (next.getNodeType() == Node.TEXT_NODE
+												|| next.getNodeType() == Node.CDATA_SECTION_NODE)
+											buf.append(next.getNodeValue());
+										next = next.getNextSibling();
 									}
-									node = node.getNextSibling();
+									query = buf.toString();
+								} else if (child.getLocalName().equals(
+										"variables")) {
+									variables = child;
+								} else if (child.getLocalName().equals(
+										"properties")) {
+									Node node = child.getFirstChild();
+									while (node != null) {
+										if (node.getNodeType() == Node.ELEMENT_NODE
+												&& node.getNamespaceURI()
+														.equals(Namespaces.EXIST_NS)
+												&& node.getLocalName().equals(
+														"property")) {
+											Element property = (Element) node;
+											String key = property
+													.getAttribute("name");
+											String value = property
+													.getAttribute("value");
+											LOG.debug(key + " = " + value);
+											if (key != null && value != null)
+												outputProperties.setProperty(
+														key, value);
+										}
+										node = node.getNextSibling();
+									}
 								}
 							}
 						}
 					}
-				}
-				// execute query
-				if (query != null) {
-					@SuppressWarnings("unused")
-					String result;
-					try {
-						search(broker, query, path, nsExtractor.getNamespaces(), variables, howmany, start, typed,
-								outputProperties, enclose, cache, request,
-								response);
-					} catch (XPathException e) {
-						result = e.getMessage();
-                        if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                            writeXPathException(response, HttpServletResponse.SC_ACCEPTED, encoding, null, path,
-                                    e);
-                        } else {
-                            writeXPathExceptionHtml(response, HttpServletResponse.SC_ACCEPTED, encoding, null,
-                                    path, e);
-                        }
+					// execute query
+					if (query != null) {
+						@SuppressWarnings("unused")
+						String result;
+						try {
+							search(broker, query, path,
+									nsExtractor.getNamespaces(), variables,
+									howmany, start, typed, outputProperties,
+									enclose, cache, request, response);
+						} catch (XPathException e) {
+							result = e.getMessage();
+							if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+								writeXPathException(response,
+										HttpServletResponse.SC_ACCEPTED,
+										encoding, null, path, e);
+							} else {
+								writeXPathExceptionHtml(response,
+										HttpServletResponse.SC_ACCEPTED,
+										encoding, null, path, e);
+							}
+						}
+
+					} else {
+						transact.abort(transaction);
+						throw new BadRequestException("No query specified");
+					}
+				} else if (rootNS != null
+						&& rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+					LOG.debug("Got xupdate request: " + content);
+					MutableDocumentSet docs = new DefaultDocumentSet();
+					Collection collection = broker.getCollection(pathUri);
+					if (collection != null) {
+						collection.allDocs(broker, docs, true, true);
+					} else {
+						DocumentImpl xupdateDoc = (DocumentImpl) broker
+								.getXMLResource(pathUri);
+						if (xupdateDoc != null) {
+							if (!xupdateDoc.getPermissions().validate(
+									broker.getUser(), Permission.READ)) {
+								transact.abort(transaction);
+								throw new PermissionDeniedException(
+										"Not allowed to read collection");
+							}
+							docs.add(xupdateDoc);
+						} else
+							broker.getAllXMLResources(docs);
 					}
 
+					XUpdateProcessor processor = new XUpdateProcessor(broker,
+							docs, AccessContext.REST);
+					Modification modifications[] = processor
+							.parse(new InputSource(new StringReader(content)));
+					long mods = 0;
+					for (int i = 0; i < modifications.length; i++) {
+						mods += modifications[i].process(transaction);
+						broker.flush();
+					}
+					transact.commit(transaction);
+
+					// FD : Returns an XML doc
+					writeXUpdateResult(response, encoding, mods);
+					// END FD
 				} else {
 					transact.abort(transaction);
-					throw new BadRequestException("No query specified");
+					throw new BadRequestException("Unknown XML root element: "
+							+ root.getNodeName());
 				}
-			} else if (rootNS != null
-					&& rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
-				LOG.debug("Got xupdate request: " + content);
-				MutableDocumentSet docs = new DefaultDocumentSet();
-				Collection collection = broker.getCollection(pathUri);
-				if (collection != null) {
-					collection.allDocs(broker, docs, true, true);
-				} else {
-					DocumentImpl xupdateDoc = (DocumentImpl) broker
-							.getXMLResource(pathUri);
-					if (xupdateDoc != null) {
-						if (!xupdateDoc.getPermissions().validate(
-								broker.getUser(), Permission.READ)) {
-							transact.abort(transaction);
-							throw new PermissionDeniedException(
-									"Not allowed to read collection");
-						}
-						docs.add(xupdateDoc);
-					} else
-						broker.getAllXMLResources(docs);
-				}
-
-				XUpdateProcessor processor = new XUpdateProcessor(broker, docs,
-						AccessContext.REST);
-				Modification modifications[] = processor.parse(new InputSource(
-						new StringReader(content)));
-				long mods = 0;
-				for (int i = 0; i < modifications.length; i++) {
-					mods += modifications[i].process(transaction);
-					broker.flush();
-				}
-				transact.commit(transaction);
-
-				// FD : Returns an XML doc
-				writeXUpdateResult(response, encoding, mods);
-				// END FD
-			} else {
+			} catch (SAXException e) {
 				transact.abort(transaction);
-				throw new BadRequestException("Unknown XML root element: "
-						+ root.getNodeName());
+				Exception cause = e;
+				if (e.getException() != null)
+					cause = e.getException();
+				LOG.debug(
+						"SAX exception while parsing request: "
+								+ cause.getMessage(), cause);
+				throw new BadRequestException(
+						"SAX exception while parsing request: "
+								+ cause.getMessage());
+			} catch (ParserConfigurationException e) {
+				transact.abort(transaction);
+				throw new BadRequestException(
+						"Parser exception while parsing request: "
+								+ e.getMessage());
+			} catch (XPathException e) {
+				transact.abort(transaction);
+				throw new BadRequestException(
+						"Query exception while parsing request: "
+								+ e.getMessage());
+			} catch (IOException e) {
+				transact.abort(transaction);
+				throw new BadRequestException(
+						"IO exception while parsing request: " + e.getMessage());
+			} catch (EXistException e) {
+				transact.abort(transaction);
+				throw new BadRequestException(e.getMessage());
+			} catch (LockException e) {
+				transact.abort(transaction);
+				throw new PermissionDeniedException(e.getMessage());
 			}
-		} catch (SAXException e) {
-			transact.abort(transaction);
-			Exception cause = e;
-			if (e.getException() != null)
-				cause = e.getException();
-			LOG.debug("SAX exception while parsing request: "
-					+ cause.getMessage(), cause);
-			throw new BadRequestException(
-					"SAX exception while parsing request: "
-							+ cause.getMessage());
-		} catch (ParserConfigurationException e) {
-			transact.abort(transaction);
-			throw new BadRequestException(
-					"Parser exception while parsing request: " + e.getMessage());
-		} catch (XPathException e) {
-			transact.abort(transaction);
-			throw new BadRequestException(
-					"Query exception while parsing request: " + e.getMessage());
-		} catch (IOException e) {
-			transact.abort(transaction);
-			throw new BadRequestException(
-					"IO exception while parsing request: " + e.getMessage());
-		} catch (EXistException e) {
-			transact.abort(transaction);
-			throw new BadRequestException(e.getMessage());
-		} catch (LockException e) {
-			transact.abort(transaction);
-			throw new PermissionDeniedException(e.getMessage());
+		} else {
+			doGet(broker, request, response, path);
 		}
 	}
 
