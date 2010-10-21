@@ -814,5 +814,6 @@ let $output :=
     jquery:process(
         biblio:process-templates(if ($queryAsXML//field) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
     )
+let $header := response:set-header("Content-Type", "application/xhtml+xml")
 return
     $output
