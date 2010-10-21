@@ -87,7 +87,7 @@ function getActiveGroup()
 }
 
 function getCurrentCollection() {
-    $('#simple-search-form input[name = collection]').val();
+    return $('#simple-search-form input[name = collection]').val();
 }
 
 /*
