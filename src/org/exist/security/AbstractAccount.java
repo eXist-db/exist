@@ -282,4 +282,29 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     public boolean isEnabled() {
     	return enabled;
     }
+
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException {
+
+        if(group == null){
+            return null;
+        }
+
+        Account user = getDatabase().getSubject();
+
+
+        if(!((user != null && user.hasDbaRole()) || group.isMembersManager(user))){
+                throw new PermissionDeniedException("not allowed to change group memberships");
+        }
+
+        if(!groups.contains(group)) {
+            groups.add(group);
+
+            if(SecurityManager.DBA_GROUP.equals(name)) {
+                hasDbaRole = true;
+            }
+        }
+
+        return group;
+    }
 }

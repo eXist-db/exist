@@ -372,29 +372,4 @@ public class AccountImpl extends AbstractAccount {
 			return false;
 		return digest(passwd).equals(digestPassword);
 	}
-
-    @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
-
-        if(group == null){
-            return null;
-        }
-
-        Account user = getDatabase().getSubject();
-
-
-        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){
-                throw new PermissionDeniedException("not allowed to change group memberships");
-        }
-
-        if(!groups.contains(group)) {
-            groups.add(group);
-
-            if(SecurityManager.DBA_GROUP.equals(name)) {
-                hasDbaRole = true;
-            }
-        }
-
-        return group;
-    }
 }

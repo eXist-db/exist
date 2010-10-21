@@ -42,7 +42,13 @@ public class LDAPAccountImpl extends AccountImpl {
 
     @Override
     public Group addGroup(Group group) throws PermissionDeniedException {
-        //if(group instanceof Ldap)
-        return null; //TODO
+        if(group instanceof LDAPGroupImpl) {
+            //TODO
+            //we dont support writes to LDAP yet!
+            return null;
+        } else {
+            //adds an LDAP User to a group from a different Realm
+            return super.addGroup(group);
+        }
     }
 }

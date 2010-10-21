@@ -300,7 +300,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     @Override
     public boolean updateAccount(Subject invokingUser, LDAPAccountImpl account) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
-        return false;
+        return super.updateAccount(invokingUser, account);
     }
 
     @Override
