@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -231,9 +232,9 @@ public class Configurator {
                             configuration.getProperty(property)
                     );
                 } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
-                    value = new org.exist.security.realm.ldap.LdapContextFactory(configuration);
+                    value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
-                    value = new org.exist.security.realm.ldap.LDAPSearchContext(configuration);
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchContext", configuration);
                 } else {
                     LOG.warn("skip unsupported configuration value type "+field.getType());
                 }
@@ -260,6 +261,9 @@ public class Configurator {
             } catch (IllegalAccessException e) {
                 LOG.error("security error: "+e.getMessage());
                 return null; //XXX: throw configuration error
+            } catch(ConfigurationException ce) {
+                LOG.error(ce.getMessage(), ce);
+                return null;
             }
         }
         //process simple structures: List
@@ -782,6 +786,16 @@ public class Configurator {
                     }
                 }
             }
+        }
+    }
+
+    private static Object instantiateObject(String className, Configuration configuration) throws ConfigurationException {
+        try {
+            Class clazz = Class.forName(className);
+            Constructor cstr = clazz.getConstructor(Configuration.class);
+            return cstr.newInstance(configuration);
+        } catch(Exception e) {
+            throw new ConfigurationException(e.getMessage(), e);
         }
     }
 }
