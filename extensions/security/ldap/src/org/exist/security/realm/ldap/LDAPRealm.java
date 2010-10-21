@@ -54,7 +54,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     public static String ID = "LDAP";
 
     @ConfigurationFieldAsElement("context")
-    protected LdapContextFactory ldapContextFactory = null;
+    protected LdapContextFactory ldapContextFactory;
 
     public LDAPRealm(SecurityManagerImpl sm, Configuration config) {
         super(sm, config);
