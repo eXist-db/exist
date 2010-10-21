@@ -300,17 +300,23 @@ public class Configurator {
                                 iterator.remove();
                                 continue;
                             }
+                            
+                            //lookup for new configuration, update if found
+                            boolean found = false;
                             for (Iterator<Configuration> i = confs.iterator() ; i.hasNext() ;) {
                                 Configuration conf = i.next();
                                 if (current_conf.equals( conf )) {
                                     current_conf.checkForUpdates(conf.getElement());
                                     i.remove();
+                                    found = true;
                                     break;
                                 }
                             }
 
-                            LOG.info("Configuration was removed, remove the object ["+obj+"].");
-                            iterator.remove();
+                            if (!found) {
+	                            LOG.info("Configuration was removed, remove the object ["+obj+"].");
+	                            iterator.remove();
+                            }
                         }
                         //create
                         for (Configuration conf : confs) {
