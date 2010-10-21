@@ -422,6 +422,15 @@ public class Configurator {
             throw new ConfigurationException(e);
         }
     }
+    
+    private static Boolean implementsInterface(Class object, Class interf){
+        for (Class c : object.getInterfaces()) {
+            if (c.equals(interf)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf, String referenceBy) {
         Class<?> clazz = instance.getClass();
@@ -484,7 +493,7 @@ public class Configurator {
         buf.append(" xmlns='");
         buf.append(Configuration.NS);
         buf.append("'");
-
+        
         StringBuilder bufContext = new StringBuilder();
         StringBuilder bufferToUse;
         boolean simple = true;
@@ -552,6 +561,11 @@ public class Configurator {
                     		asXMLtoBuffer(el, bufferToUse, referenceBy);
                     	}
                     }
+                } else if (implementsInterface(field.getType(), Configurable.class)) {
+                    simple = false;
+                    Configurable subInstance = (Configurable) field.get(instance);
+            		asXMLtoBuffer(subInstance, bufferToUse);
+            		
                 } else {
                     LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
                     //unsupported type - skip
