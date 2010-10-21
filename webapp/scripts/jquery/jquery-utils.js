@@ -70,6 +70,8 @@
             readyCallback: function() { },
             itemCallback: function () { }
         }, opts || {});
+        if (options.totalItems == 1)
+            options.itemsPerPage = 1;
         if (options.totalItems > 0)
             retrievePage(1);
         return target;
