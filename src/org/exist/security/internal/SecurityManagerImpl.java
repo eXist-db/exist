@@ -419,7 +419,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
         @Override
-        public synchronized <G extends Group> G addGroup(G group) throws PermissionDeniedException, EXistException {
+        public synchronized <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException {
 
             if (group.getRealmId() == null) {
                 throw new ConfigurationException("Group must have realm id.");
@@ -447,7 +447,7 @@ public class SecurityManagerImpl implements SecurityManager {
         }
 
         @Override
-	public final synchronized <A extends Account> A addAccount(A account) throws  PermissionDeniedException, EXistException{
+	public final synchronized <A extends Account> A addAccount(Account account) throws  PermissionDeniedException, EXistException{
 		if(account.getRealmId() == null) {
                     throw new ConfigurationException("Account must have realm id.");
                 }

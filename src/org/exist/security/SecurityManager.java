@@ -67,7 +67,7 @@ public interface SecurityManager extends Configurable {
 
    boolean hasAccount(String name);
 
-   <A extends Account> A addAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> A addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
    <A extends Account> void deleteAccount(Subject invokingUser, A user) throws PermissionDeniedException, EXistException, ConfigurationException;
@@ -76,7 +76,7 @@ public interface SecurityManager extends Configurable {
 
    Account getAccount(Subject invokingUser, String name);
 
-   <G extends Group> G addGroup(G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    
    @Deprecated
    void addGroup(String group) throws PermissionDeniedException, EXistException, ConfigurationException;

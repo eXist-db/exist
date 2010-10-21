@@ -41,6 +41,8 @@ import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 
 /**
@@ -112,8 +114,8 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
         Subject currentSubject = getDatabase().getSubject();
         try {
             getDatabase().setSubject(sm.getSystemSubject());
-            //return sm.addAccount(new UserAider(ID, username));
-            return (LDAPAccountImpl)sm.addAccount(instantiateAccount(this, username));
+            return (LDAPAccountImpl)sm.addAccount(new UserAider(ID, username));
+            //return sm.addAccount(instantiateAccount(ID, username));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
@@ -127,8 +129,8 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
         Subject currentSubject = getDatabase().getSubject();
         try {
             getDatabase().setSubject(sm.getSystemSubject());
-            return (LDAPGroupImpl)sm.addGroup(instantiateGroup(this, groupname));
-            //return sm.addGroup(new GroupAider(ID, groupname));
+            //return sm.addGroup(instantiateGroup(this, groupname));
+            return (LDAPGroupImpl)sm.addGroup(new GroupAider(ID, groupname));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
