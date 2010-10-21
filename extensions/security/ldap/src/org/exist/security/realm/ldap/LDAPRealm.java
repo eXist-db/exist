@@ -51,6 +51,8 @@ import org.exist.storage.DBBroker;
 public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
 
     private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+
+    @ConfigurationFieldAsAttribute("id")
     public static String ID = "LDAP";
 
     @ConfigurationFieldAsElement("context")
