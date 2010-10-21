@@ -699,9 +699,9 @@ public class XQueryURLRewrite implements Filter {
                         LOG.debug("Bad collection URI: " + path);
                         break;
                     } finally {
-                        if (doc != null)
+                        if (doc != null && controllerDoc == null)
                             doc.getUpdateLock().release(Lock.READ_LOCK);
-                        if (subColl != null)
+                        if (subColl != null && subColl != collection)
                             subColl.getLock().release(Lock.READ_LOCK);
                     }
                 }
