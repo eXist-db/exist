@@ -647,14 +647,15 @@ public class RESTServer {
 				resource.getUpdateLock().release(Lock.READ_LOCK);
 		}
 
+		// check the content type to see if its XML or a parameter string
 		String requestType = request.getContentType();
-		if (requestType == null)
-			requestType = MimeType.XML_TYPE.getName();
-		int semicolon = requestType.indexOf(';');
-		if (semicolon > 0)
-			requestType = requestType.substring(0, semicolon).trim();
-		MimeType requestTypeMime = MimeTable.getInstance().getContentType(requestType);
-		if (requestTypeMime.isXMLType()) {
+		if (requestType != null) {
+			int semicolon = requestType.indexOf(';');
+			if (semicolon > 0)
+				requestType = requestType.substring(0, semicolon).trim();
+		}
+		// content type != application/x-www-form-urlencoded
+		if (!requestType.equals(MimeType.URL_ENCODED_TYPE.getName())) {
 			// third, normal POST: read the request content and check if
 			// it is an XUpdate or a query request.
 			int howmany = 10;
@@ -860,6 +861,7 @@ public class RESTServer {
 				transact.abort(transaction);
 				throw new PermissionDeniedException(e.getMessage());
 			}
+		// content type = application/x-www-form-urlencoded
 		} else {
 			doGet(broker, request, response, path);
 		}
