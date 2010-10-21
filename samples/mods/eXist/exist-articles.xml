@@ -2,7 +2,7 @@
 <modsCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.loc.gov/mods/v3 ../../webapp/WEB-INF/entities/mods-3-3.xsd"
  xmlns="http://www.loc.gov/mods/v3">
-    <mods>
+    <mods ID="exist01">
         <titleInfo>
             <title>XRX: XQueries in eXist</title>
         </titleInfo>
@@ -20,7 +20,7 @@
             <url>http://news.oreilly.com/2008/07/xrx-xqueries-in-exist.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist02">
         <titleInfo>
             <title>XRX: Performing Updates</title>
         </titleInfo>
@@ -36,7 +36,7 @@
             <url>http://news.oreilly.com/2008/07/xrx-performing-updates.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist03">
         <titleInfo>
             <title>XRX: Mapping URLs with Orbeon Forms</title>
         </titleInfo>
@@ -52,7 +52,7 @@
             <url>http://news.oreilly.com/2008/07/xrx-mapping-urls-with-orbeon-f.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist04">
         <titleInfo>
             <title>A Faculty Staff and Student Portal</title>
         </titleInfo>
@@ -75,7 +75,7 @@
             <url>http://atomic.exist-db.org/articles/Faculty%20Staff.pdf</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist05">
         <titleInfo>
             <title>eXist at ASML</title>
         </titleInfo>
@@ -98,7 +98,7 @@
             <url>http://atomic.exist-db.org/articles/ASML%20and%20eXist.pdf</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist06">
         <titleInfo>
             <title>Index-driven XQuery processing in the eXist XML database</title>
         </titleInfo>
@@ -133,7 +133,7 @@
             Based on this foundation, we should have a look at some central aspects of XQuery
             processing and optimization.</abstract>
     </mods>
-    <mods>
+    <mods ID="exist07">
         <titleInfo>
             <title>IT-based collaborative learning in Grammar</title>
         </titleInfo>
@@ -156,7 +156,7 @@
             <url>http://atomic.exist-db.org/articles/ITG-xml-prague-20060618.pdf</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist08">
         <titleInfo>
             <title>Schema Validation</title>
         </titleInfo>
@@ -179,7 +179,7 @@
             <url>http://atomic.exist-db.org/articles/Validating%20XML%20in%20eXist.pdf</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist09">
         <titleInfo>
             <title>The Devon Portal Community Directory</title>
         </titleInfo>
@@ -202,7 +202,7 @@
             <url>http://atomic.exist-db.org/articles/XML%20Prague%20-%20Community%20Directory.pdf</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist10">
         <titleInfo>
             <title>XForms and the eXist XML database: a perfect couple</title>
         </titleInfo>
@@ -225,7 +225,7 @@
             <url>http://2007.xmlconference.org/public/schedule/detail/426</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist11">
         <titleInfo>
             <title>The Pure Declarative Approach: XForms in Real Estate Forms Case Study</title>
         </titleInfo>
@@ -248,7 +248,7 @@
             <url>http://2007.xmlconference.org/public/schedule/detail/425</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist12">
         <titleInfo>
             <title>TEI Day in Kyoto 2006</title>
         </titleInfo>
@@ -271,7 +271,7 @@
             <url>http://coe21.zinbun.kyoto-u.ac.jp/tei-day/</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist13">
         <titleInfo>
             <title>Dr. Data Dictionary: And the Winner is: eXist-db.org My Award for the Most
                 Innovative Product of 2007</title>
@@ -291,7 +291,7 @@
             <url>http://datadictionary.blogspot.com/2007/12/and-winner-is-exist-dborg-my-award-for.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist14">
         <titleInfo>
             <title>XQuery takes center stage in eXist database</title>
         </titleInfo>
@@ -308,7 +308,7 @@
             <url>http://www.infoworld.com/article/05/05/23/21TCxmldbsb_1.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist15">
         <titleInfo>
             <title>XRX: Simple, Elegant, Disruptive - O'Reilly XML Blog</title>
         </titleInfo>
@@ -326,7 +326,7 @@
             <url>http://www.oreillynet.com/xml/blog/2008/05/xrx_a_simple_elegant_disruptiv_1.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist16">
         <titleInfo>
             <title>XSLT 2, XPath 2, XQuery 1 ... Yeeaahhhhhh!</title>
         </titleInfo>
@@ -345,7 +345,7 @@
             <url>http://www.oreillynet.com/xml/blog/2007/01/xslt_2_xpath_2_xquery_1_yeeaah.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist17">
         <titleInfo>
             <title>XML databases with eXist and ColdFusion</title>
         </titleInfo>
@@ -361,7 +361,7 @@
             <url>http://www.throwingbeans.org/xml_databases_with_exist_and_coldfusion.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist18">
         <titleInfo>
             <title>XQuery, the Server Language</title>
         </titleInfo>
@@ -377,7 +377,7 @@
             <url>http://www.xml.com/pub/a/2007/06/01/xquery-the-server-language.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist19">
         <titleInfo>
             <title>eXist 1.0: Open Source XML Database</title>
         </titleInfo>
@@ -395,7 +395,7 @@
             <url>http://www.theserverside.com/news/thread.tss?thread_id=29811</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist20">
         <titleInfo>
             <title>Understanding XForms</title>
         </titleInfo>
@@ -413,7 +413,7 @@
             <url>http://www.ibm.com/developerworks/xml/library/x-xformsxadventure/</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist21">
         <titleInfo>
             <title>Dr. Data Dictionary: The eXist OpenSource Native XML Database</title>
         </titleInfo>
@@ -431,7 +431,7 @@
             <url>http://datadictionary.blogspot.com/2007/02/exist-opensource-native-xml-database.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist22">
         <titleInfo>
             <title>XForms/eXist - Wikibooks, collection of open-content textbooks</title>
         </titleInfo>
@@ -445,7 +445,7 @@
             <url>http://en.wikibooks.org/wiki/XForms/eXist</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist23">
         <titleInfo>
             <title>I Think, Therefore I eXist ...</title>
         </titleInfo>
@@ -463,7 +463,7 @@
             <url>http://www.oreillynet.com/xml/blog/2006/09/i_think_therefore_i_exist.html</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist24">
         <titleInfo>
             <title>Managing XML data: eXist -- an open source native XML database</title>
         </titleInfo>
@@ -481,7 +481,7 @@
             <url>http://www.ibm.com/developerworks/library/x-mxd5/</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist25">
         <titleInfo>
             <title>Making XQuery Control Structures Work for You</title>
         </titleInfo>
@@ -499,7 +499,7 @@
             <url>http://www.devx.com/xml/Article/38898</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist26">
         <titleInfo>
             <title>From Social to Serious: Combining Twitter and RESTful Web Services</title>
         </titleInfo>
@@ -520,7 +520,7 @@
             <url>http://www.devx.com/webdev/Article/41337</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist27">
         <titleInfo>
             <title>eXist - An Introduction To Open Source Native XML Database | XML Journal</title>
         </titleInfo>
@@ -538,7 +538,7 @@
             <url>http://xml.sys-con.com/node/155664</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist28">
         <titleInfo>
             <title>Introducing XQueryURLRewrite</title>
         </titleInfo>
@@ -553,7 +553,7 @@
             <url>http://atomic.exist-db.org/blogs/eXist/IntroducingXQueryURLRewrite</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist29">
         <titleInfo>
             <title>Another Old Problem is Solved: Processing In-Memory Fragments</title>
         </titleInfo>
@@ -568,7 +568,7 @@
             <url>http://atomic.exist-db.org/blogs/eXist/InMemoryFragments</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist30">
         <titleInfo>
             <title>Understanding the New Indexing Features</title>
         </titleInfo>
@@ -583,7 +583,7 @@
             <url>http://atomic.exist-db.org/blogs/eXist/NewIndexing</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist31">
         <titleInfo>
             <title>New Full Text Index is Based on Lucene</title>
         </titleInfo>
@@ -598,7 +598,7 @@
             <url>http://atomic.exist-db.org/blogs/eXist/LuceneIndexModule</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist32">
         <titleInfo>
             <title>XQuery/Keyword Search</title>
         </titleInfo>
@@ -614,7 +614,7 @@
             <url>http://en.wikibooks.org/wiki/XQuery/Keyword_Search</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist33">
         <titleInfo>
             <title>Advancing with XQuery: Develop application idioms</title>
         </titleInfo>
@@ -630,7 +630,7 @@
             <url>http://jim.fuller.name/x-advxquery-pdf.pdf</url>
         </location>
     </mods>
-        <mods>
+    <mods ID="exist34">
         <titleInfo>
             <title>Dashboards with XQuery: Present business data with a Web-based dashboard</title>
         </titleInfo>
@@ -646,7 +646,7 @@
             <url>http://www.ibm.com/developerworks/xml/library/x-xqdashboard/</url>
         </location>
     </mods>
-        <mods>
+    <mods ID="exist35">
         <titleInfo>
             <title>Implement Web cut-and-paste using Atom XML and Firefox XUL: Create AtomClip: A Web clipboard</title>
         </titleInfo>
@@ -662,7 +662,7 @@
             <url>http://www.ibm.com/developerworks/xml/library/x-cldexp/</url>
         </location>
     </mods>
-    <mods>
+    <mods ID="exist36">
         <titleInfo>
             <title>eXist: An Open Source Native XML Database</title>
         </titleInfo>
