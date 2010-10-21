@@ -50,6 +50,8 @@ public class MimeType {
         new MimeType("text/html", BINARY);
     public final static MimeType TEXT_TYPE =
         new MimeType("text/plain", BINARY);
+    public final static MimeType URL_ENCODED_TYPE =
+    	new MimeType("application/x-www-form-urlencoded", BINARY);
 
 
     private String name;
