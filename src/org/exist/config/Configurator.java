@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -59,6 +60,7 @@ import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
+import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -69,6 +71,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.MimeType;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -432,7 +435,7 @@ public class Configurator {
         return false;
     }
 
-    protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf, String referenceBy) {
+    protected static void serialize(Configurable instance, SAXSerializer serializer, String referenceBy) throws SAXException {
         Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
@@ -465,20 +468,43 @@ public class Configurator {
             return;
         }
         String configName = clazz.getAnnotation(ConfigurationClass.class).value();
-        //open tag
-        buf.append("<");
-        buf.append(configName);
-        //buf.append(" xmlns='");
-        //buf.append(Configuration.NS_REF);
-        //buf.append("'");
-        buf.append(" ");
-        buf.append(referenceBy);
-        buf.append("='");
-        buf.append(value);
-        buf.append("'/>");
+
+        QName qnConfig = new QName(configName, Configuration.NS);
+        serializer.startElement(qnConfig, null);
+        serializer.attribute(new QName(referenceBy, null), value.toString());
+        serializer.endElement(qnConfig);
     }
 
-    protected static void asXMLtoBuffer(Configurable instance, StringBuilder buf) throws ConfigurationException {
+    private static String extractFieldValue(Field field, Configurable instance) throws IllegalArgumentException, IllegalAccessException {
+        String typeName = field.getType().getName();
+        if (typeName.equals("java.lang.String")) {
+            return field.get(instance).toString();
+        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+            if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
+                String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+                int radix = 10;
+                if (settings.startsWith("radix=")) {
+                    try {
+                        radix = Integer.valueOf(settings.substring(6));
+                    } catch (Exception e) {
+                        //UNDERSTAND: ignore, set back to default or throw error?
+                        radix = 10;
+                    }
+                }
+                return Integer.toString((Integer)field.get(instance), radix);
+            } else {
+                return field.get(instance).toString();
+            }
+        } else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+            return field.get(instance).toString();
+        } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+            return Boolean.valueOf(field.get(instance).toString()).toString();
+        }
+
+        return null;
+    }
+
+    protected static void serialize(Configurable instance, SAXSerializer serializer) throws ConfigurationException {
         Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
@@ -487,117 +513,108 @@ public class Configurator {
 
         String configName = clazz.getAnnotation(ConfigurationClass.class).value();
 
-        //open tag
-        buf.append("<");
-        buf.append(configName);
-        buf.append(" xmlns='");
-        buf.append(Configuration.NS);
-        buf.append("'");
-        
-        StringBuilder bufContext = new StringBuilder();
-        StringBuilder bufferToUse;
-        boolean simple = true;
+        try
+        {
+            //open tag
+            QName qnConfig = new QName(configName, Configuration.NS);
+            serializer.startElement(qnConfig, null);
+            boolean simple = true;
 
-        //store field's values as attributes or elements depends on annotation
-        Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
-        for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
-            simple = true;
-            final Field field = entry.getValue();
-            field.setAccessible(true);
+            //store field's values as attributes or elements depends on annotation
+            Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+
             try {
-                //skip null values
-                if (field.get(instance) == null)
-                    continue;
-                boolean storeAsAttribute = true;
-                if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-                    storeAsAttribute = false;
+                //pass one - extract just attributes
+                for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
+                    final Field field = entry.getValue();
+                    field.setAccessible(true);
+
+                    //skip elements
+                    if(field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+                        continue;
+                    }
+
+                    //skip null values
+                    if(field.get(instance) == null) {
+                        continue;
+                    }
+
+                    //now we just have attributes
+                    String value = extractFieldValue(field, instance);
+                    serializer.attribute(new QName(entry.getKey(), null), value);
                 }
-                String referenceBy = null;
-                if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
-                    referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
-                }
-                if (storeAsAttribute) {
-                    buf.append(" ");
-                    buf.append(entry.getKey());
-                    buf.append("='");
-                    bufferToUse = buf;
-                } else {
-                    bufferToUse = new StringBuilder();
-                }
-                String typeName = field.getType().getName();
-                if (typeName.equals("java.lang.String")) {
-                    bufferToUse.append(field.get(instance));
-                } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
-                    if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
-                        String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
-                        int radix = 10;
-                        if (settings.startsWith("radix=")) {
-                            try {
-                                radix = Integer.valueOf(settings.substring(6));
-                            } catch (Exception e) {
-                                //UNDERSTAND: ignore, set back to default or throw error? 
-                                radix = 10;
+
+                //pass two - just elements or text nodes
+                for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
+                    simple = true;
+                    final Field field = entry.getValue();
+                    field.setAccessible(true);
+                
+                    //skip attributes
+                    if(!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+                        continue;
+                    }
+
+                    //skip null values
+                    if(field.get(instance) == null) {
+                        continue;
+                    }
+                    
+                    String referenceBy = null;
+                    if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+                        referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
+                    }
+
+                    String value = null;
+                    String typeName = field.getType().getName();
+                    if(typeName.equals("java.util.List")) {
+                        simple = false;
+                        List<Configurable> list = (List<Configurable>) field.get(instance);
+                        for (Configurable el : list) {
+                            if (referenceBy == null) {
+                                    serialize(el, serializer);
+                            } else {
+                                    serialize(el, serializer, referenceBy);
                             }
                         }
-                        bufferToUse.append(Integer.toString((Integer)field.get(instance), radix) );
-                    } else { 
-                        bufferToUse.append(field.get(instance));
+                    } else if(implementsInterface(field.getType(), Configurable.class)) {
+                        simple = false;
+                        Configurable subInstance = (Configurable) field.get(instance);
+                        serialize(subInstance, serializer);
+                    } else {
+
+                        value = extractFieldValue(field, instance);
+
+                        if(value == null) {
+                            LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
+                            //unsupported type - skip
+                            //buf.append(field.get(instance));
+                        }
                     }
-                } else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
-                    bufferToUse.append(field.get(instance));
-                } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
-                    if ((Boolean) field.get(instance)) {
-                        bufferToUse.append("true");
-                    } else { 
-                        bufferToUse.append("false");
-                    }
-                } else if (typeName.equals("java.util.List")) {
-                    simple = false;
-                    List<Configurable> list = (List<Configurable>) field.get(instance);
-                    for (Configurable el : list) {
-                    	if (referenceBy == null) {
-                    		asXMLtoBuffer(el, bufferToUse);
-                    	} else {
-                    		asXMLtoBuffer(el, bufferToUse, referenceBy);
-                    	}
-                    }
-                } else if (implementsInterface(field.getType(), Configurable.class)) {
-                    simple = false;
-                    Configurable subInstance = (Configurable) field.get(instance);
-            		asXMLtoBuffer(subInstance, bufferToUse);
-            		
-                } else {
-                    LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
-                    //unsupported type - skip
-                    //buf.append(field.get(instance));
-                }
-                if (storeAsAttribute) {
-                    buf.append("'");
-                } else if (bufferToUse.length() > 0){
-                    if (simple) {
-                        bufContext.append("<");
-                        bufContext.append(entry.getKey());
-                        bufContext.append(">");
-                    }
-                    bufContext.append(bufferToUse);
-                    if (simple) {
-                        bufContext.append("</");
-                        bufContext.append(entry.getKey());
-                        bufContext.append(">");
+                    
+                    if (value != null && value.length() > 0){
+                        if (simple) {
+                            QName qnSimple = new QName(entry.getKey(), Configuration.NS);
+                            serializer.startElement(qnSimple, null);
+                            serializer.characters(value);
+                            serializer.endElement(new QName(entry.getKey(), null));
+                        } else {
+                            serializer.characters(value);
+                        }
                     }
                 }
+
             } catch (IllegalArgumentException e) {
                 throw new ConfigurationException(e.getMessage(), e);
             } catch (IllegalAccessException e) {
                 throw new ConfigurationException(e.getMessage(), e);
             }
+
+            //close tag
+            serializer.endElement(qnConfig);
+        } catch(SAXException saxe) {
+            throw new ConfigurationException(saxe.getMessage(), saxe);
         }
-        buf.append(">");
-        buf.append(bufContext);
-        //close tag
-        buf.append("</");
-        buf.append(configName);
-        buf.append(">");
     }
 
     public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
@@ -614,14 +631,24 @@ public class Configurator {
                 //database in read-only mode & there no configuration file, 
                 //create in memory document & configuration 
                 try {
-                    StringBuilder buf = new StringBuilder();
-                    asXMLtoBuffer(instance, buf);
-                    if (buf.length() == 0)
+                        StringWriter writer = new StringWriter();
+                        SAXSerializer serializer = new SAXSerializer(writer, null);
+                        serializer.startDocument();
+                        serialize(instance, serializer);
+                        serializer.endDocument();
+
+                        String data = writer.toString();
+
+                        if (data == null || data.length() == 0){
+                            return null;
+                        }
+
+                        return parse( new ByteArrayInputStream(data.getBytes("UTF-8")) );
+                    } catch (SAXException saxe){
+                        throw new ConfigurationException(saxe.getMessage(), saxe);
+                    } catch (UnsupportedEncodingException e) {
                         return null;
-                    return parse( new ByteArrayInputStream(buf.toString().getBytes("UTF-8")) );
-                } catch (UnsupportedEncodingException e) {
-                    return null;
-                }
+                    }
             }
             try {
                 document = save(instance, broker, collection, fileURL);
@@ -685,10 +712,23 @@ public class Configurator {
     }
 
     public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {
-        StringBuilder buf = new StringBuilder();
-        asXMLtoBuffer(instance, buf);
-        if (buf.length() == 0)
+
+        StringWriter writer = new StringWriter();
+        SAXSerializer serializer = new SAXSerializer(writer, null);
+
+        try{
+            serializer.startDocument();
+            serialize(instance, serializer);
+            serializer.endDocument();
+        } catch (SAXException saxe){
+            throw new ConfigurationException(saxe.getMessage(), saxe);
+        }
+
+        String data = writer.toString();
+
+        if (data == null || data.length() == 0) {
             return null;
+        }
         BrokerPool pool = broker.getBrokerPool();
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
@@ -696,7 +736,7 @@ public class Configurator {
         Subject currentUser = broker.getUser();
         try {
             broker.setUser(pool.getSecurityManager().getSystemSubject());
-            String data = buf.toString();
+            //String data = buf.toString();
             txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
             IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             DocumentImpl doc = info.getDocument();
