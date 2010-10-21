@@ -80,7 +80,7 @@ declare variable $biblio:FIELDS :=
         <field name="All">(
         mods:mods[ft:query(.//*, '$q', $options)]
 		)</field>
-        
+        <field name="Id">mods:mods[@ID = '$q']</field>
 	</fields>;
 
 (:
@@ -94,7 +94,7 @@ declare variable $biblio:TEMPLATE_QUERY :=
             <field m="1" name="All"></field>
         </and>
     </query>;
-
+    
 (:~
     Regenerate the HTML form to match the query, e.g. after adding more filter
     clauses.
@@ -776,6 +776,7 @@ let $reload := request:get-parameter("reload", ())
 let $clear := request:get-parameter("clear", ())
 let $mylist := request:get-parameter("mylist", ())
 let $collection := request:get-parameter("collection", ())
+let $id := request:get-parameter("id", ())
 
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
@@ -787,6 +788,11 @@ let $queryAsXML :=
         biblio:clear()
     else if ($filter) then 
         biblio:apply-filter()
+    else if ($id) then
+        <query>
+            <collection>{$config:mods-root}</collection>
+            <field m="1" name="Id">{$id}</field>
+        </query>
     else if ($mylist eq 'display') then
         ()
     else 
