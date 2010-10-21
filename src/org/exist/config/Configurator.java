@@ -90,6 +90,7 @@ public class Configurator {
     private static Map<Class<Configurable>, Map<String, Field>> map = 
         new HashMap<Class<Configurable>, Map<String, Field>>();
 
+    //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
     protected static Map<String, Field> getProperyFieldMap(Class<?> clazz) {
         if (map.containsKey(clazz))
             return map.get(clazz);
