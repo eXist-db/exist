@@ -21,11 +21,26 @@
  */
 package org.exist.dom;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -41,9 +56,6 @@ import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -56,18 +68,6 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
 
 /**
  * ElementImpl.java
@@ -852,8 +852,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker = ownerDocument.getBrokerPool().get(null);
             for (EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true); reader.hasNext(); ) {
                 int status = reader.next();
-                if (status != XMLStreamReader.END_ELEMENT) {
-                    if (((NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId))
+                if (status != XMLStreamConstants.END_ELEMENT) {
+                    if (((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId))
                         childList.add(reader.getNode());
                 }
             }
@@ -1769,14 +1769,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     @Override
-    public boolean accept(Iterator iterator, NodeVisitor visitor) {
+    public boolean accept(Iterator<StoredNode> iterator, NodeVisitor visitor) {
         if (!visitor.visit(this))
             return false;
         if (hasChildNodes()) {
             final int ccount = getChildCount();
             StoredNode next;
             for (int i = 0; i < ccount; i++) {
-                next = (StoredNode) iterator.next();
+                next = iterator.next();
                 if (!next.accept(iterator, visitor))
                     return false;
             }

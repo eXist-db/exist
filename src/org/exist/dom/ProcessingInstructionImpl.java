@@ -37,8 +37,8 @@ import java.io.UnsupportedEncodingException;
  * @author wolf
  */
 public class ProcessingInstructionImpl extends StoredNode implements ProcessingInstruction {
-	
-	public static final int LENGTH_TARGET_DATA = 4; //Sizeof int;
+
+    public static final int LENGTH_TARGET_DATA = 4; //Sizeof int;
 
     protected String target = null;
     protected String data = null;
@@ -46,17 +46,18 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public ProcessingInstructionImpl() {
         super(Node.PROCESSING_INSTRUCTION_NODE);
     }
-    
+
     public ProcessingInstructionImpl(NodeId nodeId, String target, String data) {
         super(Node.PROCESSING_INSTRUCTION_NODE, nodeId);
         this.target = target;
         this.data = data;
     }
-    
+
     public ProcessingInstructionImpl(String target, String data) {
         this(null, target, data);
     }
-    
+
+    @Override
     public void clear() {
         super.clear();
         target = null;
@@ -81,20 +82,23 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         this.target = target;
     }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Node#getNodeName()
-	 */
-	public String getNodeName() {
-		return target;
-	}
-	
-	public String getLocalName() {
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Node#getNodeName()
+     */
+    @Override
+    public String getNodeName() {
         return target;
-	}  	
-	
-	public String getNamespaceURI() {
+    }
+
+    @Override
+    public String getLocalName() {
+        return target;
+    }
+
+    @Override
+    public String getNamespaceURI() {
         return "";
-	}		
+    }
 
     /**
      *  Gets the data attribute of the ProcessingInstructionImpl object
@@ -114,21 +118,22 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         this.data = data;
     }
 
-	/** ? @see org.w3c.dom.Node#getBaseURI()
-	 */
-	public String getBaseURI() {
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+     */
+    @Override
+    public String getBaseURI() {
         StoredNode parent = getParentStoredNode();
         if (parent != null )
-        	return parent.getBaseURI();
-
+            return parent.getBaseURI();
         return getDocument().getBaseURI();
-	}
+    }
 
     /**
      *  Description of the Method
      *
      *@return    Description of the Return Value
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append( "<?" );
@@ -139,19 +144,20 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         return buf.toString();
     }
 
+    @Override
     public byte[] serialize() {
         byte[] td;
         try {
             td = target.getBytes( "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             td = target.getBytes();
         }
         byte[] dd;
         try {
             dd = data.getBytes( "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             dd = data.getBytes();
         }
         int nodeIdLen = nodeId.size();
@@ -172,8 +178,8 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     }
 
     public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
-    	int pos = start;
-    	pos += LENGTH_SIGNATURE_LENGTH;
+        int pos = start;
+        pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
@@ -185,7 +191,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         try {
             target = new String(data, pos, l, "UTF-8");
         } catch (UnsupportedEncodingException uee) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             target = new String(data, pos, l);
         }
         pos += l;
@@ -193,15 +199,15 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         try {
             cdata = new String(data, pos, len - (pos - start), "UTF-8");
         } catch (UnsupportedEncodingException uee) {
-        	LOG.warn(uee);
+            LOG.warn(uee);
             cdata = new String(data, pos, len - (pos - start));
         }
         //OK : we have the necessary material to build the processing instruction
         ProcessingInstructionImpl pi;
         if(pooled)
             pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
-//            pi = (ProcessingInstructionImpl)
-//				NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
+            //pi = (ProcessingInstructionImpl)
+                //NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
         else
             pi = new ProcessingInstructionImpl();
         pi.setTarget(target);
@@ -209,18 +215,21 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         pi.setNodeId(dln);
         return pi;
     }
-    
+
+    @Override
     public boolean hasChildNodes() {
-        return false;        
+        return false;
     }
-    
+
+    @Override
     public int getChildCount() {
-    	return 0;
+        return 0;
     }
-    
-    public Node getFirstChild() {   
+
+    @Override
+    public Node getFirstChild() {
         //bad implementations don't call hasChildNodes before
         return null;
-    }       
+    }
 
 }

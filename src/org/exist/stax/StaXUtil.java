@@ -22,30 +22,30 @@
 
 package org.exist.stax;
 
+import javax.xml.stream.XMLStreamConstants;
+
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamReader;
 
 public class StaXUtil {
 
     public static int streamType2Type(int type) {
         int xpathType;
         switch (type) {
-            case XMLStreamReader.START_ELEMENT :
+            case XMLStreamConstants.START_ELEMENT :
                 xpathType = Type.ELEMENT;
                 break;
-            case XMLStreamReader.ATTRIBUTE :
+            case XMLStreamConstants.ATTRIBUTE :
                 xpathType = Type.ATTRIBUTE;
                 break;
-            case XMLStreamReader.CHARACTERS :
-            case XMLStreamReader.CDATA :
+            case XMLStreamConstants.CHARACTERS :
+            case XMLStreamConstants.CDATA :
                 xpathType = Type.TEXT;
                 break;
-            case XMLStreamReader.COMMENT :
+            case XMLStreamConstants.COMMENT :
                 xpathType = Type.COMMENT;
                 break;
-            case XMLStreamReader.PROCESSING_INSTRUCTION :
+            case XMLStreamConstants.PROCESSING_INSTRUCTION :
                 xpathType = Type.PROCESSING_INSTRUCTION;
                 break;
             default:
@@ -57,22 +57,22 @@ public class StaXUtil {
     public static short streamType2DOM(int type) {
         short domType;
         switch (type) {
-            case XMLStreamReader.START_ELEMENT :
+            case XMLStreamConstants.START_ELEMENT :
                 domType = Node.ELEMENT_NODE;
                 break;
-            case XMLStreamReader.ATTRIBUTE :
+            case XMLStreamConstants.ATTRIBUTE :
                 domType = Node.ATTRIBUTE_NODE;
                 break;
-            case XMLStreamReader.CHARACTERS :
+            case XMLStreamConstants.CHARACTERS :
                 domType = Node.TEXT_NODE;
                 break;
-            case XMLStreamReader.CDATA :
+            case XMLStreamConstants.CDATA :
                 domType = Node.CDATA_SECTION_NODE;
                 break;
-            case XMLStreamReader.COMMENT :
+            case XMLStreamConstants.COMMENT :
                 domType = Node.COMMENT_NODE;
                 break;
-            case XMLStreamReader.PROCESSING_INSTRUCTION :
+            case XMLStreamConstants.PROCESSING_INSTRUCTION :
                 domType = Node.PROCESSING_INSTRUCTION_NODE;
                 break;
             default:

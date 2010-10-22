@@ -33,14 +33,15 @@ import org.exist.dom.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -173,17 +174,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
             while (reader.hasNext()) {
                 int ev = reader.next();
                 switch (ev) {
-                    case XMLStreamReader.END_ELEMENT:
+                    case XMLStreamConstants.END_ELEMENT:
                         if (--level < 0)
                             break;
                         textOffset += extractor.endElement(reader.getQName());
                         break;
-                    case XMLStreamReader.START_ELEMENT:
+                    case XMLStreamConstants.START_ELEMENT:
                         ++level;
                         textOffset += extractor.startElement(reader.getQName());
                         break;
-                    case XMLStreamReader.CHARACTERS:
-                        NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                    case XMLStreamConstants.CHARACTERS:
+                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         offsets.add(textOffset, nodeId);
                         textOffset += extractor.characters(reader.getXMLText());
                         break;

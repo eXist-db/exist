@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -58,7 +59,7 @@ import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
@@ -108,7 +109,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final byte IDX_QNAME = 0;
     @SuppressWarnings("unused")
-	private static final byte IDX_GENERIC = 1;
+    private static final byte IDX_GENERIC = 1;
 
     private int mode = 0;
     private final org.exist.indexing.ngram.NGramIndex index;
@@ -441,14 +442,13 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         //Expects a StringValue
-    	Object start = hints == null ? null : hints.get(START_VALUE);
-    	//Expects a StringValue
-    	Object end = hints == null ? null : hints.get(END_VALUE); 
-    	//TODO : does this fallback make sense ? I guess yes.
-    	if (qnames == null || qnames.isEmpty())
+        Object start = hints == null ? null : hints.get(START_VALUE);
+        //Expects a StringValue
+        Object end = hints == null ? null : hints.get(END_VALUE); 
+        if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
-    	//TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
-    	final Lock lock = index.db.getLock(); 
+        //TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
+        final Lock lock = index.db.getLock(); 
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
         for (int q = 0; q < qnames.size(); q++) {
             for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
@@ -487,7 +487,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         Occurrences[] result = new Occurrences[cb.map.size()];
         return cb.map.values().toArray(result);
     }
-    
+
     //This listener is always the same whatever the document and the mode
     //It should thus be declared static
     private final StreamListener listener = new NGramStreamListener();
@@ -637,6 +637,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private class NGramStreamListener extends AbstractStreamListener {
 
         public NGramStreamListener() {
+            //Nothing to do
         }
 
         @Override
@@ -697,12 +698,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         protected void setMatchCallback(NGramMatchCallback cb) {
             this.callback = cb;
         }
-        
+
         protected void reset(DBBroker broker, NodeProxy proxy) {
             this.root = proxy;
             this.match = proxy.getMatches();
             setNextInChain(null);
-            
             /* Check if an index is defined on an ancestor of the current node.
              * If yes, scan the ancestor to get the offset of the first character
              * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
@@ -726,10 +726,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                         while (reader.hasNext()) {
                             int ev = reader.next();
-                            NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                            NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                             if (nodeId.equals(proxy.getNodeId()))
                                 break;
-                            if (ev == XMLStreamReader.CHARACTERS)
+                            if (ev == XMLStreamConstants.CHARACTERS)
                                 startOffset += reader.getText().length();
                         }
                     } catch (IOException e) {
@@ -877,8 +877,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             int cmp = qname.compareTo(other.qname);
             if (cmp == 0)
                 return term.compareTo(other.term);
-            else
-                return cmp;
+            return cmp;
         }
     }
 
@@ -897,18 +896,19 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
         }
 
-        @SuppressWarnings("unused")
-		public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
+        /*
+        public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols) {
             len = NGRAM_OFFSET;
             data = new byte[len];
             data[0] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-			final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[NAMETYPE_OFFSET] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, NAMESPACE_OFFSET);
-			ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
+            ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
         }
+        */
 
         public NGramQNameKey(int collectionId, QName qname, SymbolTable symbols, String ngram) {
             len = UTF8.encoded(ngram) + NGRAM_OFFSET;
@@ -916,11 +916,10 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             data[0] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-			final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[NAMETYPE_OFFSET] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, NAMESPACE_OFFSET);
-			ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
-
+            ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
             UTF8.encode(ngram, data, NGRAM_OFFSET);
         }
     }
@@ -928,8 +927,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private final class SearchCallback implements BTreeCallback {
 
         private final int contextId;
-        @SuppressWarnings("unused")
-		private final String query;
+        private final String query;
         private final String ngram;
         private final DocumentSet docs;
         private final NodeSet contextSet;
@@ -938,7 +936,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final boolean returnAncestor;
 
         public SearchCallback(int contextId, String query, String ngram, DocumentSet docs, NodeSet contextSet,
-                              XQueryContext context, NodeSet result, boolean returnAncestor) {
+                  XQueryContext context, NodeSet result, boolean returnAncestor) {
             this.contextId = contextId;
             this.query = query;
             this.ngram = ngram;
@@ -982,7 +980,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         previous = nodeId;
                         int freq = is.readInt();
                         NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
-
                         // if a context set is specified, we can directly check if the
                         // matching node is a descendant of one of the nodes
                         // in the context set.
@@ -1031,25 +1028,24 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final class IndexScanCallback implements BTreeCallback {
 
-		private final DocumentSet docs;
-		private NodeSet contextSet;
-		private final Map<String, Occurrences> map = new TreeMap<String, Occurrences>();
+        private final DocumentSet docs;
+        private NodeSet contextSet;
+        private final Map<String, Occurrences> map = new TreeMap<String, Occurrences>();
 
-		@SuppressWarnings("unused")
-		IndexScanCallback(DocumentSet docs) {
-			this.docs = docs;
-		}
-		
-		IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
-			this.docs = docs;
-			this.contextSet = contextSet;
-		}
+        //IndexScanCallback(DocumentSet docs) {
+            //this.docs = docs;
+        //}
 
-		/* (non-Javadoc)
-		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
-		 */
+        IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+            this.docs = docs;
+            this.contextSet = contextSet;
+        }
+
+        /* (non-Javadoc)
+         * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
+         */
         @Override
-		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String term;
             try {
                 term = new String(key.getData(), NGramQNameKey.NGRAM_OFFSET, key.getLength() - NGramQNameKey.NGRAM_OFFSET, "UTF-8");
@@ -1064,23 +1060,20 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LOG.error(e.getMessage(), e);
                 return true;
             }
-			try {
-				while (is.available() > 0) {
+            try {
+                while (is.available() > 0) {
                     boolean docAdded = false;
-
                     int storedDocId = is.readInt();
-                    @SuppressWarnings("unused")
-					byte nameType = is.readByte();
+                    byte nameType = is.readByte();
                     int occurrences = is.readInt();
                     //Read (variable) length of node IDs + frequency + offsets
                     int length = is.readFixedInt();
-
                     DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
-					if (storedDocument == null) {
-						is.skipBytes(length);
-						continue;
-					}
+                    if (storedDocument == null) {
+                        is.skipBytes(length);
+                        continue;
+                    }
                     NodeId previous = null;
                     for (int m = 0; m < occurrences; m++) {
                         NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromStream(previous, is);
@@ -1094,25 +1087,25 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             include = (parentNode != null);
                         }
                         if (include) {
-	                        Occurrences oc = map.get(term);
-	                        if (oc == null) {
-	                            oc = new Occurrences(term);
-	                            map.put(term, oc);
-	                        }
-	                        if (!docAdded) {
-	                            oc.addDocument(storedDocument);
-	                            docAdded = true;
-	                        }
-	                        oc.addOccurrences(freq);
+                            Occurrences oc = map.get(term);
+                            if (oc == null) {
+                                oc = new Occurrences(term);
+                                map.put(term, oc);
+                            }
+                            if (!docAdded) {
+                                oc.addDocument(storedDocument);
+                                docAdded = true;
+                            }
+                            oc.addOccurrences(freq);
                         }
                     }
                 }
-			} catch(IOException e) {
+            } catch(IOException e) {
                 LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
-			}
-			return true;
-		}
-	}
+            }
+            return true;
+        }
+    }
 
     public class NGramMatch extends Match {
 
@@ -1143,4 +1136,5 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return org.exist.indexing.ngram.NGramIndex.ID;
         }
     }
+
 }

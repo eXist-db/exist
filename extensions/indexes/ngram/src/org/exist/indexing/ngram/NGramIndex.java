@@ -40,7 +40,7 @@ import java.io.OutputStream;
 /**
  */
 public class NGramIndex extends AbstractIndex implements RawBackupSupport {
-	
+
     public final static String ID = NGramIndex.class.getName();
 
     private final static Logger LOG = Logger.getLogger(NGramIndex.class);
@@ -50,10 +50,12 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     private File dataFile = null;
     
     public NGramIndex() {
+        //Nothing to do
     }
-    
+
+    @Override
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-    	super.configure(pool, dataDir, config);
+        super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";
         if (config.hasAttribute("file"))
             fileName = config.getAttribute("file");
@@ -65,7 +67,8 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
             }
         dataFile = new File(dataDir, fileName);
     }
-    
+
+    @Override
     public void open() throws DatabaseConfigurationException {
         try {
             db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 1.4, 0.01, 0.07);
@@ -77,26 +80,31 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
             LOG.debug("Created NGram index: " + dataFile.getAbsolutePath());
     }
 
+    @Override
     public void close() throws DBException {
-		LOG.debug("SYNC NGRAM");
+        LOG.debug("SYNC NGRAM");
         db.close();
     }
 
+    @Override
     public void sync() throws DBException {
-		LOG.debug("SYNC NGRAM");
+        LOG.debug("SYNC NGRAM");
         db.flush();
     }
 
+    @Override
     public void remove() throws DBException {
         db.closeAndRemove();
     }
-    
+
+    @Override
     public boolean checkIndex(DBBroker broker) {
         return true;
-    }    
+    }
 
+    @Override
     public IndexWorker getWorker(DBBroker broker) {
-    	//TODO : ensure singleton ? a pool ?    	
+        //TODO : ensure singleton ? a pool ?
         return new NGramIndexWorker(broker, this);
     }
 

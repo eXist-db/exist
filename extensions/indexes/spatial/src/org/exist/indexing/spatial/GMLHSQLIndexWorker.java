@@ -67,7 +67,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             conn = DriverManager.getConnection("jdbc:hsqldb:" + index.getDataDir() + "/" + 
                 index.db_file_name_prefix + ";shutdown=true", "sa", "");
         } catch (SQLException e) {
-	        LOG.error(e);
+            LOG.error(e);
         }
         */
     }
@@ -255,36 +255,36 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
 
         switch (spatialOp) {
-            //BBoxes are equal
-            case SpatialOperator.EQUALS:
-                bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
-                    " AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)";
-                break;
-            //Nothing much we can do with the BBox at this stage
-            case SpatialOperator.DISJOINT:
-                //Retrieve the BBox though...
-                extraSelection = ", EPSG4326_MINX, EPSG4326_MAXX, EPSG4326_MINY, EPSG4326_MAXY";
-                break;
-            //BBoxes intersect themselves
-            case SpatialOperator.INTERSECTS:
-            case SpatialOperator.TOUCHES:
-            case SpatialOperator.CROSSES:
-            case SpatialOperator.OVERLAPS:
-                bboxConstraint = "(EPSG4326_MAXX >= ? AND EPSG4326_MINX <= ?)" +
-                " AND (EPSG4326_MAXY >= ? AND EPSG4326_MINY <= ?)";
-                break;
-            //BBox is fully within
-            case SpatialOperator.WITHIN:
-                bboxConstraint = "(EPSG4326_MINX >= ? AND EPSG4326_MAXX <= ?)" +
-                " AND (EPSG4326_MINY >= ? AND EPSG4326_MAXY <= ?)";
-                break;
-            //BBox fully contains
-            case SpatialOperator.CONTAINS: 
-                bboxConstraint = "(EPSG4326_MINX <= ? AND EPSG4326_MAXX >= ?)" +
-                " AND (EPSG4326_MINY <= ? AND EPSG4326_MAXY >= ?)";
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
+        //BBoxes are equal
+        case SpatialOperator.EQUALS:
+            bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
+                " AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)";
+            break;
+        //Nothing much we can do with the BBox at this stage
+        case SpatialOperator.DISJOINT:
+            //Retrieve the BBox though...
+            extraSelection = ", EPSG4326_MINX, EPSG4326_MAXX, EPSG4326_MINY, EPSG4326_MAXY";
+            break;
+        //BBoxes intersect themselves
+        case SpatialOperator.INTERSECTS:
+        case SpatialOperator.TOUCHES:
+        case SpatialOperator.CROSSES:
+        case SpatialOperator.OVERLAPS:
+            bboxConstraint = "(EPSG4326_MAXX >= ? AND EPSG4326_MINX <= ?)" +
+            " AND (EPSG4326_MAXY >= ? AND EPSG4326_MINY <= ?)";
+            break;
+        //BBox is fully within
+        case SpatialOperator.WITHIN:
+            bboxConstraint = "(EPSG4326_MINX >= ? AND EPSG4326_MAXX <= ?)" +
+            " AND (EPSG4326_MINY >= ? AND EPSG4326_MAXY <= ?)";
+            break;
+        //BBox fully contains
+        case SpatialOperator.CONTAINS: 
+            bboxConstraint = "(EPSG4326_MINX <= ? AND EPSG4326_MAXX >= ?)" +
+            " AND (EPSG4326_MINY <= ? AND EPSG4326_MAXY >= ?)";
+            break;
+        default:
+            throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
         }
         PreparedStatement ps = conn.prepareStatement(
             "SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +

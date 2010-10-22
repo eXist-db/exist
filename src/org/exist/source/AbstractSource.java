@@ -44,6 +44,7 @@ public abstract class AbstractSource implements Source {
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(Object obj) {
         return getKey().equals(((Source)obj).getKey());
     }
@@ -51,6 +52,7 @@ public abstract class AbstractSource implements Source {
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
+    @Override
     public int hashCode() {
         return getKey().hashCode();
     }
@@ -83,8 +85,11 @@ public abstract class AbstractSource implements Source {
         try {
             scanner.versionDecl();
         } catch (RecognitionException e) {
+            //Nothing to do
         } catch (TokenStreamException e) {
+            //Nothing to do
         } catch (XPathException e) {
+            //Nothing to do
         }
         return scanner.getEncoding();
     }
