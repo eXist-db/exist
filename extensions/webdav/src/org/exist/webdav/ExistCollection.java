@@ -381,13 +381,13 @@ public class ExistCollection extends ExistResource {
                 InputSource is = new InputSource(url);
                 IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, is);
                 DocumentImpl doc = info.getDocument();
-                doc.getMetadata().setMimeType(contentType);
+                doc.getMetadata().setMimeType(mime.getName());
                 collection.store(txn, broker, info, is, false);
 
             } else {
                 LOG.debug("Inserting BINARY document '" + mime.getName() + "'");
                 DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, dis,
-                        contentType, length.intValue());
+                        mime.getName(), length.intValue());
                 dis.close();
             }
 
