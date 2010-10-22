@@ -346,6 +346,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             }
             catch( SAXException se ) {
                 //could not parse to xml
+                logger.debug("Could not parse http response content as XML: " + se.getMessage(), se);
             }
 
             if( responseNode == null ) {
@@ -367,6 +368,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     }
                     catch( SAXException se ) {
                         //could not parse to xml(html)
+                        logger.debug("Could not parse http response content from HTML to XML: " + se.getMessage(), se);
                     }
                 }
             }
