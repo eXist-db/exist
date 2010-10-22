@@ -118,26 +118,25 @@ public class XMLToQuery {
             if (slop > -1)
                 query.setSlop(slop);
             return query;
-        } else {
-            MultiPhraseQuery query = new MultiPhraseQuery();
-            for (int i = 0; i < termList.getLength(); i++) {
-                Element elem = (Element) termList.item(i);
-                String text = getText(elem);
-                if (text.indexOf('?') > -1 || text.indexOf('*') > 0) {
-                    Term[] expanded = expandTerms(field, text);
-                    if (expanded.length > 0)
-                        query.add(expanded);
-                } else {
-                	String termStr = getTerm(field, text, analyzer);
-                	if (termStr != null)
-                		query.add(new Term(field, text));
-                }
-            }
-            int slop = getSlop(node);
-            if (slop > -1)
-                query.setSlop(slop);
-            return query;
         }
+        MultiPhraseQuery query = new MultiPhraseQuery();
+        for (int i = 0; i < termList.getLength(); i++) {
+            Element elem = (Element) termList.item(i);
+            String text = getText(elem);
+            if (text.indexOf('?') > -1 || text.indexOf('*') > 0) {
+                Term[] expanded = expandTerms(field, text);
+                if (expanded.length > 0)
+                    query.add(expanded);
+            } else {
+                String termStr = getTerm(field, text, analyzer);
+                if (termStr != null)
+                    query.add(new Term(field, text));
+            }
+        }
+        int slop = getSlop(node);
+        if (slop > -1)
+            query.setSlop(slop);
+        return query;
     }
 
     private SpanQuery nearQuery(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -164,10 +163,9 @@ public class XMLToQuery {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
             return new SpanNearQuery(list.toArray(new SpanTermQuery[list.size()]), slop, inOrder);
-        } else {
-            SpanQuery[] children = parseSpanChildren(field, node, analyzer);
-            return new SpanNearQuery(children, slop, inOrder);
         }
+        SpanQuery[] children = parseSpanChildren(field, node, analyzer);
+        return new SpanNearQuery(children, slop, inOrder);
     }
 
     private SpanQuery[] parseSpanChildren(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -312,7 +310,7 @@ public class XMLToQuery {
         return new FuzzyQuery(new Term(field, getText(node)), minSimilarity);
     }
 
-    private Query regexQuery(String field, Element node, Properties options) throws XPathException {
+    private Query regexQuery(String field, Element node, Properties options) {
         RegexQuery query = new RegexQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;

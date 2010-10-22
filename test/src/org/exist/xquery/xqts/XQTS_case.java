@@ -128,7 +128,7 @@ public class XQTS_case extends TestCase {
             ResourceSet results = service.query(query);
             for (int i = 0; i < results.getSize(); i++) {
                 ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
-                moduleSources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_2/"+source.getAttribute("FileName")+".xq");
+                moduleSources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_3/"+source.getAttribute("FileName")+".xq");
             }
         }
     }

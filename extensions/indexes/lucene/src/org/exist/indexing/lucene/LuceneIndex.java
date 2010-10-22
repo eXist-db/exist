@@ -289,12 +289,12 @@ public class LuceneIndex extends AbstractIndex {
             throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
         searcherUseCount--;
         notifyAll();
-//        try {
-//            cachedSearcher.close();
-//        } catch (IOException e) {
-//            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-//        } finally {
-//            cachedSearcher = null;
-//        }
+        //try {
+            //cachedSearcher.close();
+        //} catch (IOException e) {
+            //LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+        //} finally {
+            //cachedSearcher = null;
+        //}
     }
 }

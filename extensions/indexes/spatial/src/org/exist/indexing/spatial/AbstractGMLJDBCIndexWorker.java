@@ -150,7 +150,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         this.controller = controller;
         Map<String, GMLIndexConfig> map = null;
         for(int i = 0; i < configNodes.getLength(); i++) {
-        	Node node = configNodes.item(i);
+            Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap<String, GMLIndexConfig>();

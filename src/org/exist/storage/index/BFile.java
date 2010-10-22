@@ -369,14 +369,14 @@ public class BFile extends BTree {
         }
     }
 
-    public ArrayList findEntries(IndexQuery query) throws IOException,
+    public ArrayList<Value> findEntries(IndexQuery query) throws IOException,
             BTreeException, TerminatedException {
         FindCallback cb = new FindCallback(FindCallback.BOTH);
         query(query, cb);
         return cb.getValues();
     }
 
-    public ArrayList findKeys(IndexQuery query) 
+    public ArrayList<Value> findKeys(IndexQuery query) 
         throws IOException, BTreeException, TerminatedException {
         FindCallback cb = new FindCallback(FindCallback.KEYS);
         query(query, cb);
@@ -588,21 +588,21 @@ public class BFile extends BTree {
         return wp;
     }
 
-    public ArrayList getEntries() throws IOException, BTreeException, TerminatedException {
+    public ArrayList<Value> getEntries() throws IOException, BTreeException, TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.BOTH);
         query(query, cb);
         return cb.getValues();
     }
 
-    public ArrayList getKeys() throws IOException, BTreeException, TerminatedException {
+    public ArrayList<Value> getKeys() throws IOException, BTreeException, TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.KEYS);
         query(query, cb);
         return cb.getValues();
     }
 
-    public ArrayList getValues() throws IOException, BTreeException, TerminatedException {
+    public ArrayList<Value> getValues() throws IOException, BTreeException, TerminatedException {
         IndexQuery query = new IndexQuery(IndexQuery.ANY, "");
         FindCallback cb = new FindCallback(FindCallback.VALUES);
         query(query, cb);

@@ -70,15 +70,15 @@ public class LuceneUtil {
     }
 
     private static void extractTermsFromWildcard(WildcardQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
-    	extractTerms(rewrite(query, reader), terms, reader);
+        extractTerms(rewrite(query, reader), terms, reader);
     }
 
     private static void extractTermsFromRegex(RegexQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
-    	extractTerms(rewrite(query, reader), terms, reader);
+        extractTerms(rewrite(query, reader), terms, reader);
     }
-    
+
     private static void extractTermsFromFuzzy(FuzzyQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
-    	extractTerms(query.rewrite(reader), terms, reader);
+        extractTerms(query.rewrite(reader), terms, reader);
     }
 
     private static void extractTermsFromPrefix(PrefixQuery query, Map<String, Query> terms, IndexReader reader) throws IOException {
@@ -91,9 +91,9 @@ public class LuceneUtil {
             terms.put(t[i].text(), query);
         }
     }
-    
+
     private static Query rewrite(MultiTermQuery query, IndexReader reader) throws IOException {
-    	query.setRewriteMethod(PrefixQuery.SCORING_BOOLEAN_QUERY_REWRITE);
-    	return query.rewrite(reader);
+        query.setRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
+        return query.rewrite(reader);
     }
 }

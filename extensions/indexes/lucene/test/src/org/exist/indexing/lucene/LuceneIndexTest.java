@@ -19,7 +19,6 @@ import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -583,7 +582,8 @@ public class LuceneIndexTest {
 
             System.out.println("Test PASSED.");
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -594,8 +594,7 @@ public class LuceneIndexTest {
     @Test
     public void dropDocuments() {
         System.out.println("Test removal of multiple documents ...");
-        @SuppressWarnings("unused")
-		DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;
@@ -633,7 +632,8 @@ public class LuceneIndexTest {
 
             System.out.println("Test PASSED.");
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -678,7 +678,8 @@ public class LuceneIndexTest {
 
             System.out.println("Test PASSED.");
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -794,7 +795,8 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -979,7 +981,8 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -1070,7 +1073,8 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -1154,7 +1158,8 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
          } catch (Exception e) {
-            transact.abort(transaction);
+             if (transact != null)
+                 transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -1189,8 +1194,9 @@ public class LuceneIndexTest {
             docs.add(info.getDocument());
             transact.commit(transaction);
         } catch (Exception e) {
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
-            transact.abort(transaction);
             fail(e.getMessage());
         } finally {
             pool.release(broker);
@@ -1234,8 +1240,9 @@ public class LuceneIndexTest {
             }
             transact.commit(transaction);
         } catch (Exception e) {
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
-            transact.abort(transaction);
             fail(e.getMessage());
         } finally {
             pool.release(broker);
@@ -1243,7 +1250,8 @@ public class LuceneIndexTest {
         return docs;
     }
 
-    private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
+    private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, 
+            String term, int expected) {
         LuceneIndexWorker index = (LuceneIndexWorker)
             broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         Map<String, Object> hints = new HashMap<String, Object>();
@@ -1289,8 +1297,9 @@ public class LuceneIndexTest {
             savedConfig = (Boolean) config.getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT);
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.TRUE);
         } catch (Exception e) {
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
-            transact.abort(transaction);
             fail(e.getMessage());
         } finally {
             if (pool != null)
@@ -1328,7 +1337,8 @@ public class LuceneIndexTest {
             Configuration config = BrokerPool.getInstance().getConfiguration();
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
         } catch (Exception e) {
-            transact.abort(transaction);
+            if (transact != null)
+                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -1345,7 +1355,7 @@ public class LuceneIndexTest {
             config.setProperty(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE);
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
+            assertNotNull(pool);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

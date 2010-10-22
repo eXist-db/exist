@@ -21,6 +21,14 @@
  */
 package org.exist;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Stack;
+
+//import javax.xml.parsers.ParserConfigurationException;
+//import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.AttrImpl;
@@ -35,9 +43,9 @@ import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
-import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
@@ -53,17 +61,10 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
+//import org.xml.sax.SAXNotRecognizedException;
+//import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Stack;
 
 /**
  * Parses a given input document via SAX, stores it to the database and handles
@@ -73,74 +74,74 @@ import java.util.Stack;
  * 
  */
 public class Indexer extends Observable implements ContentHandler,
-		LexicalHandler, ErrorHandler {
+        LexicalHandler, ErrorHandler {
 
-	private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
+    private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
-	public static final String ATTR_ID_TYPE = "ID";
-	public static final String ATTR_IDREF_TYPE = "IDREF";
-	public static final String ATTR_IDREFS_TYPE = "IDREFS";
+    public static final String ATTR_ID_TYPE = "ID";
+    public static final String ATTR_IDREF_TYPE = "IDREF";
+    public static final String ATTR_IDREFS_TYPE = "IDREFS";
 
-	private final static Logger LOG = Logger.getLogger(Indexer.class);
+    private final static Logger LOG = Logger.getLogger(Indexer.class);
 
-	public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
-	public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
-	public static final String SUPPRESS_WHITESPACE_ATTRIBUTE = "suppress-whitespace";
-	public static final String PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE = "preserve-whitespace-mixed-content";
+    public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
+    public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
+    public static final String SUPPRESS_WHITESPACE_ATTRIBUTE = "suppress-whitespace";
+    public static final String PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE = "preserve-whitespace-mixed-content";
 
-	public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
-	public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
-	public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = "indexer.preserve-whitespace-mixed-content";
+    public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
+    public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
+    public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = "indexer.preserve-whitespace-mixed-content";
 
-	protected DBBroker broker = null;
-	protected Txn transaction;
+    protected DBBroker broker = null;
+    protected Txn transaction;
 
-	protected StreamListener indexListener;
+    protected StreamListener indexListener;
 
-	protected XMLString charBuf = new XMLString();
-	protected boolean inCDATASection = false;
-	protected int currentLine = 0;
-	protected NodePath currentPath = new NodePath();
+    protected XMLString charBuf = new XMLString();
+    protected boolean inCDATASection = false;
+    protected int currentLine = 0;
+    protected NodePath currentPath = new NodePath();
 
-	protected DocumentImpl document = null;
-	protected IndexSpec indexSpec = null;
+    protected DocumentImpl document = null;
+    protected IndexSpec indexSpec = null;
 
-	protected boolean insideDTD = false;
-	protected boolean validate = false;
-	protected int level = 0;
-	protected Locator locator = null;
-	protected int normalize = XMLString.SUPPRESS_BOTH;
-	protected Map<String, String> nsMappings = new HashMap<String, String>();
-	protected Element rootNode;
+    protected boolean insideDTD = false;
+    protected boolean validate = false;
+    protected int level = 0;
+    protected Locator locator = null;
+    protected int normalize = XMLString.SUPPRESS_BOTH;
+    protected Map<String, String> nsMappings = new HashMap<String, String>();
+    protected Element rootNode;
 
-	protected Stack<ElementImpl> stack = new Stack<ElementImpl>();
-	protected Stack<XMLString> nodeContentStack = new Stack<XMLString>();
+    protected Stack<ElementImpl> stack = new Stack<ElementImpl>();
+    protected Stack<XMLString> nodeContentStack = new Stack<XMLString>();
 
-	protected StoredNode prevNode = null;
+    protected StoredNode prevNode = null;
 
-	protected String ignorePrefix = null;
-	protected ProgressIndicator progress;
+    protected String ignorePrefix = null;
+    protected ProgressIndicator progress;
 
-	protected boolean suppressWSmixed = false;
+    protected boolean suppressWSmixed = false;
 
-	protected int docSize = 0;
+    protected int docSize = 0;
 
-	/*
-	 * used to record the number of children of an element during validation
-	 * phase. later, when storing the nodes, we already know the child count and
-	 * don't need to update the element a second time.
-	 */
-	private int childCnt[] = new int[0x1000];
+    /*
+     * used to record the number of children of an element during validation
+     * phase. later, when storing the nodes, we already know the child count and
+     * don't need to update the element a second time.
+     */
+    private int childCnt[] = new int[0x1000];
 
-	// the current position in childCnt
-	private int elementCnt = 0;
+    // the current position in childCnt
+    private int elementCnt = 0;
 
-	// the current nodeFactoryInstanceCnt
-	private int nodeFactoryInstanceCnt = 0;
+    // the current nodeFactoryInstanceCnt
+    private int nodeFactoryInstanceCnt = 0;
 
-	// reusable fields
-	private TextImpl text = new TextImpl();
-	private Stack<ElementImpl> usedElements = new Stack<ElementImpl>();
+    // reusable fields
+    private TextImpl text = new TextImpl();
+    private Stack<ElementImpl> usedElements = new Stack<ElementImpl>();
 
     // when storing the document data, validation will be switched off, so
     // entities will not be reported. We thus have to cache all needed entities
@@ -148,590 +149,566 @@ public class Indexer extends Observable implements ContentHandler,
     private Map<String, String> entityMap = null;
     private String currentEntityName = null;
     private XMLString currentEntityValue = new XMLString();
+
+    /**
+     * Create a new parser using the given database broker and user to store the
+     * document.
+     * 
+     *@param broker
+     *@exception EXistException
+     */
+    public Indexer(DBBroker broker, Txn transaction) throws EXistException {
+    	this(broker, transaction, false);
+    }
     
-	/**
-	 * Create a new parser using the given database broker and user to store the
-	 * document.
-	 * 
-	 *@param broker
-	 *@exception EXistException
-	 */
-	public Indexer(DBBroker broker, Txn transaction) throws EXistException {
-		this(broker, transaction, false);
-	}
+    /**
+     * Create a new parser using the given database broker and user to store the
+     * document.
+     * 
+     *@param broker
+     *            The database broker to use.
+     *@param transaction
+     *            The transaction to use for indexing
+     *@param priv
+     *            used by the security manager to indicate that it needs
+     *            privileged access to the db.
+     *@exception EXistException
+     */
+    public Indexer(DBBroker broker, Txn transaction, boolean priv)
+            throws EXistException {
+        this.broker = broker;
+        this.transaction = transaction;
+        // TODO : move the configuration in the constructor or in a dedicated
+        // method
+        Configuration config = broker.getConfiguration();
+        String suppressWS = (String) config
+            .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
+        if (suppressWS != null) {
+            if ("leading".equals(suppressWS))
+                normalize = XMLString.SUPPRESS_LEADING_WS;
+            else if ("trailing".equals(suppressWS))
+                normalize = XMLString.SUPPRESS_TRAILING_WS;
+            else if ("none".equals(suppressWS))
+                normalize = 0;
+        }
+        Boolean temp;
+        if ((temp = (Boolean) config
+                .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null)
+            suppressWSmixed = temp.booleanValue();
+    }
 
-	/**
-	 * Create a new parser using the given database broker and user to store the
-	 * document.
-	 * 
-	 *@param broker
-	 *            The database broker to use.
-	 *@param transaction
-	 *            The transaction to use for indexing
-	 *@param priv
-	 *            used by the security manager to indicate that it needs
-	 *            privileged access to the db.
-	 *@exception EXistException
-	 */
-	public Indexer(DBBroker broker, Txn transaction, boolean priv)
-			throws EXistException {
-		this.broker = broker;
-		this.transaction = transaction;
+    public void setValidating(boolean validate) {
+        this.validate = validate;
+        if (!validate) {
+            broker.getIndexController().setDocument(document,
+                    StreamListener.STORE);
+            this.indexListener = broker.getIndexController()
+                .getStreamListener();
+        }
+    }
 
-		// TODO : move the configuration in the constructor or in a dedicated
-		// method
-		Configuration config = broker.getConfiguration();
-		String suppressWS = (String) config
-				.getProperty(PROPERTY_SUPPRESS_WHITESPACE);
-		if (suppressWS != null) {
-			if ("leading".equals(suppressWS))
-				normalize = XMLString.SUPPRESS_LEADING_WS;
-			else if ("trailing".equals(suppressWS))
-				normalize = XMLString.SUPPRESS_TRAILING_WS;
-			else if ("none".equals(suppressWS))
-				normalize = 0;
-		}
+    /**
+     * Prepare the indexer for parsing a new document. This will reset the
+     * internal state of the Indexer object.
+     * 
+     * @param doc
+     */
+    public void setDocument(DocumentImpl doc,
+            CollectionConfiguration collectionConfig) {
+        document = doc;
+        if (collectionConfig != null)
+            indexSpec = collectionConfig.getIndexConfiguration();
+        // reset internal fields
+        level = 0;
+        currentPath.reset();
+        stack = new Stack<ElementImpl>();
+        docSize = 0;
+        nsMappings.clear();
+        indexListener = null;
+        rootNode = null;
+        setPrevious(null);
+    }
 
-		Boolean temp;
-		if ((temp = (Boolean) config
-				.getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null)
-			suppressWSmixed = temp.booleanValue();
-	}
+    /**
+     * Set the document object to be used by this Indexer. This method doesn't
+     * reset the internal state.
+     * 
+     * @param doc
+     */
+    public void setDocumentObject(DocumentImpl doc) {
+        document = doc;
+    }
 
-	public void setValidating(boolean validate) {
-		this.validate = validate;
-		if (!validate) {
-			broker.getIndexController().setDocument(document,
-					StreamListener.STORE);
-			this.indexListener = broker.getIndexController()
-					.getStreamListener();
-		}
-	}
+    public DocumentImpl getDocument() {
+        return document;
+    }
 
-	/**
-	 * Prepare the indexer for parsing a new document. This will reset the
-	 * internal state of the Indexer object.
-	 * 
-	 * @param doc
-	 */
-	public void setDocument(DocumentImpl doc,
-			CollectionConfiguration collectionConfig) {
-		document = doc;
-		if (collectionConfig != null)
-			indexSpec = collectionConfig.getIndexConfiguration();
-		// reset internal fields
-		level = 0;
-		currentPath.reset();
-		stack = new Stack<ElementImpl>();
-		docSize = 0;
-		nsMappings.clear();
-		indexListener = null;
-		rootNode = null;
-		setPrevious(null);
-	}
+    public int getDocSize() {
+        return docSize;
+    }
 
-	/**
-	 * Set the document object to be used by this Indexer. This method doesn't
-	 * reset the internal state.
-	 * 
-	 * @param doc
-	 */
-	public void setDocumentObject(DocumentImpl doc) {
-		document = doc;
-	}
-
-	public DocumentImpl getDocument() {
-		return document;
-	}
-
-	public int getDocSize() {
-		return docSize;
-	}
-
-	public void characters(char[] ch, int start, int length) {
-		if (length <= 0)
-			return;
-		if (charBuf != null) {
-			charBuf.append(ch, start, length);
-		} else {
-			charBuf = new XMLString(ch, start, length);
-		}
+    public void characters(char[] ch, int start, int length) {
+        if (length <= 0)
+            return;
+        if (charBuf != null) {
+            charBuf.append(ch, start, length);
+        } else {
+            charBuf = new XMLString(ch, start, length);
+        }
         if (currentEntityName != null)
             currentEntityValue.append(ch, start, length);
-	}
+    }
 
-	public void comment(char[] ch, int start, int length) {
-		if (insideDTD)
-			return;
-		CommentImpl comment = new CommentImpl(ch, start, length);
-		comment.setOwnerDocument(document);
-		if (stack.empty()) {
-			comment.setNodeId(broker.getBrokerPool().getNodeFactory()
-					.createInstance(nodeFactoryInstanceCnt++));
-			if (!validate) {
-				broker.storeNode(transaction, comment, currentPath, indexSpec);
-			}
-			document.appendChild(comment);
-		} else {
-			ElementImpl last = stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				text.setData(charBuf);
-				text.setOwnerDocument(document);
-				last.appendChildInternal(prevNode, text);
-				if (!validate) {
-					storeText();
-				}
-				setPrevious(text);
-				charBuf.reset();
-			}
-			last.appendChildInternal(prevNode, comment);
-			setPrevious(comment);
-			if (!validate) {
-				broker.storeNode(transaction, comment, currentPath, indexSpec);
-			}
-		}
-	}
+    public void comment(char[] ch, int start, int length) {
+        if (insideDTD)
+            return;
+        CommentImpl comment = new CommentImpl(ch, start, length);
+        comment.setOwnerDocument(document);
+        if (stack.empty()) {
+            comment.setNodeId(broker.getBrokerPool().getNodeFactory()
+                    .createInstance(nodeFactoryInstanceCnt++));
+            if (!validate) {
+                broker.storeNode(transaction, comment, currentPath, indexSpec);
+            }
+            document.appendChild(comment);
+        } else {
+            ElementImpl last = stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                text.setData(charBuf);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, text);
+                if (!validate) {
+                    storeText();
+                }
+                setPrevious(text);
+                charBuf.reset();
+            }
+            last.appendChildInternal(prevNode, comment);
+            setPrevious(comment);
+            if (!validate) {
+                broker.storeNode(transaction, comment, currentPath, indexSpec);
+            }
+        }
+    }
 
-	public void endCDATA() {
-		if (!stack.isEmpty()) {
-			ElementImpl last = stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
-				cdata.setOwnerDocument(document);
-				last.appendChildInternal(prevNode, cdata);
-				if (!validate) {
-					broker
-							.storeNode(transaction, cdata, currentPath,
-									indexSpec);
-					if (indexListener != null) {
-						indexListener.characters(transaction, cdata,
-								currentPath);
-					}
-				}
-				setPrevious(cdata);
+    public void endCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
+                cdata.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, cdata);
+                if (!validate) {
+                    broker.storeNode(transaction, cdata, currentPath, indexSpec);
+                    if (indexListener != null) {
+                        indexListener.characters(transaction, cdata, currentPath);
+                    }
+                }
+                setPrevious(cdata);
+                if (!nodeContentStack.isEmpty()) {
+                    for (XMLString next : nodeContentStack) {
+                        next.append(charBuf);
+                    }
+                }
+                charBuf.reset();
+            }
+        }
+        inCDATASection = false;
+    }
 
-				if (!nodeContentStack.isEmpty()) {
-					for (XMLString next : nodeContentStack) {
-						next.append(charBuf);
-					}
-				}
-				charBuf.reset();
-			}
-		}
-		inCDATASection = false;
-	}
+    public void endDTD() {
+        insideDTD = false;
+    }
 
-	public void endDTD() {
-		insideDTD = false;
-	}
+    public void endDocument() {
+        if (!validate) {
+            progress.finish();
+            setChanged();
+            notifyObservers(progress);
+        }
+        //LOG.debug("elementCnt = " + childCnt.length);
+    }
 
-	public void endDocument() {
-		if (!validate) {
-			progress.finish();
-			setChanged();
-			notifyObservers(progress);
-		}
-		// LOG.debug("elementCnt = " + childCnt.length);
-	}
+    public void endElement(String namespace, String name, String qname) {
+        final ElementImpl last = stack.peek();
+        if (last.getNodeName().equals(qname)) {
+            if (charBuf != null && charBuf.length() > 0) {
+                // remove whitespace if the node has just a single text child,
+                // keep whitespace for mixed content.
+                final XMLString normalized;
+                if ((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
+                    normalized = charBuf;
+                } else {
+                    normalized = last.getChildCount() == 0 ? 
+                        charBuf.normalize(normalize) : 
+                            (charBuf.isWhitespaceOnly() ? null : charBuf);
+                }
+                if (normalized != null && normalized.length() > 0) {
+                    text.setData(normalized);
+                    text.setOwnerDocument(document);
+                    last.appendChildInternal(prevNode, text);
+                    if (!validate)
+                        storeText();
+                    setPrevious(text);
+                }
+                charBuf.reset();
+            }
+            stack.pop();
+            XMLString elemContent = null;
+            if (!validate && RangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
+                elemContent = nodeContentStack.pop();
+            }
+            if (!validate) {
+                final String content = elemContent == null ?
+                        null : elemContent.toString();
+                broker.endElement(last, currentPath, content);
+                if (indexListener != null)
+                    indexListener.endElement(transaction, last, currentPath);
+            }
+            currentPath.removeLastComponent();
+            if (validate) {
+                if (childCnt != null)
+                    setChildCount(last);
+            } else {
+                document.setOwnerDocument(document);
+                if ((childCnt == null && last.getChildCount() > 0)
+                    || (childCnt != null && childCnt[last.getPosition()] != last.getChildCount())) {
+                    broker.updateNode(transaction, last, false);
+                }
+            }
+            setPrevious(last);
+            level--;
+        }
+    }
 
-	public void endElement(String namespace, String name, String qname) {
-		final ElementImpl last = stack.peek();
-		if (last.getNodeName().equals(qname)) {
-			if (charBuf != null && charBuf.length() > 0) {
-				// remove whitespace if the node has just a single text child,
-				// keep whitespace for mixed content.
-				final XMLString normalized;
-				if ((charBuf.isWhitespaceOnly() && suppressWSmixed)
-						|| last.preserveSpace()) {
-					normalized = charBuf;
-				} else {
-					normalized = last.getChildCount() == 0 ? charBuf
-							.normalize(normalize)
-							: (charBuf.isWhitespaceOnly() ? null : charBuf);
-				}
-				if (normalized != null && normalized.length() > 0) {
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate)
-						storeText();
-					setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			stack.pop();
+    /**
+     * @param last
+     */
+    private void setChildCount(final ElementImpl last) {
+        if (last.getPosition() >= childCnt.length) {
+            if (childCnt.length > CACHE_CHILD_COUNT_MAX) {
+                childCnt = null;
+                return;
+            }
+            int n[] = new int[childCnt.length * 2];
+            System.arraycopy(childCnt, 0, n, 0, childCnt.length);
+            childCnt = n;
+        }
+        childCnt[last.getPosition()] = last.getChildCount();
+    }
 
-			XMLString elemContent = null;
-			if (!validate
-					&& GeneralRangeIndexSpec.hasQNameOrValueIndex(last
-							.getIndexType())) {
-				elemContent = nodeContentStack.pop();
-			}
+    public void endPrefixMapping(String prefix) {
+        if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
+            ignorePrefix = null;
+        } else {
+            nsMappings.remove(prefix);
+        }
+    }
 
-			if (!validate) {
-				final String content = elemContent == null ? null : elemContent
-						.toString();
-				broker.endElement(last, currentPath, content);
-				if (indexListener != null)
-					indexListener.endElement(transaction, last, currentPath);
-			}
+    public void error(SAXParseException e) throws SAXException {
+        String msg = "error at (" + e.getLineNumber() + ","
+            + e.getColumnNumber() + ") : " + e.getMessage();
+        LOG.debug(msg);
+        throw new SAXException(msg, e);
+    }
 
-			currentPath.removeLastComponent();
-			if (validate) {
-				if (childCnt != null)
-					setChildCount(last);
-			} else {
-				document.setOwnerDocument(document);
-				if ((childCnt == null && last.getChildCount() > 0)
-						|| (childCnt != null && childCnt[last.getPosition()] != last
-								.getChildCount())) {
-					broker.updateNode(transaction, last, false);
-				}
-			}
-			setPrevious(last);
-			level--;
-		}
-	}
+    public void fatalError(SAXParseException e) throws SAXException {
+        String msg = "fatal error at (" + e.getLineNumber() + ","
+            + e.getColumnNumber() + ") : " + e.getMessage();
+        LOG.debug(msg);
+        throw new SAXException(msg, e);
+    }
 
-	/**
-	 * @param last
-	 */
-	private void setChildCount(final ElementImpl last) {
-		if (last.getPosition() >= childCnt.length) {
-			if (childCnt.length > CACHE_CHILD_COUNT_MAX) {
-				childCnt = null;
-				return;
-			}
-			int n[] = new int[childCnt.length * 2];
-			System.arraycopy(childCnt, 0, n, 0, childCnt.length);
-			childCnt = n;
-		}
-		childCnt[last.getPosition()] = last.getChildCount();
-	}
+    public void ignorableWhitespace(char[] ch, int start, int length) {
+        //Nothing to do
+    }
 
-	public void endPrefixMapping(String prefix) {
-		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
-			ignorePrefix = null;
-		} else {
-			nsMappings.remove(prefix);
-		}
-	}
+    public void processingInstruction(String target, String data) {
+        ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
+        pi.setOwnerDocument(document);
+        if (stack.isEmpty()) {
+            pi.setNodeId(broker.getBrokerPool().getNodeFactory()
+                .createInstance(nodeFactoryInstanceCnt++));
+            if (!validate) {
+                broker.storeNode(transaction, pi, currentPath, indexSpec);
+            }
+            document.appendChild(pi);
+        } else {
+            ElementImpl last = stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                XMLString normalized = charBuf.normalize(normalize);
+                if (normalized.length() > 0) {
+                    // TextImpl text =
+                    // new TextImpl( normalized );
+                    text.setData(normalized);
+                    text.setOwnerDocument(document);
+                    last.appendChildInternal(prevNode, text);
+                    if (!validate) {
+                        storeText();
+                    }
+                    setPrevious(text);
+                }
+                charBuf.reset();
+            }
+            last.appendChildInternal(prevNode, pi);
+            setPrevious(pi);
+            if (!validate) {
+                broker.storeNode(transaction, pi, currentPath, indexSpec);
+            }
+        }
+    }
 
-	public void error(SAXParseException e) throws SAXException {
-		String msg = "error at (" + e.getLineNumber() + ","
-				+ e.getColumnNumber() + ") : " + e.getMessage();
-		LOG.debug(msg);
-		throw new SAXException(msg, e);
-	}
+    public void setDocumentLocator(Locator locator) {
+        this.locator = locator;
+    }
 
-	public void fatalError(SAXParseException e) throws SAXException {
-		String msg = "fatal error at (" + e.getLineNumber() + ","
-				+ e.getColumnNumber() + ") : " + e.getMessage();
-		LOG.debug(msg);
-		throw new SAXException(msg, e);
-	}
+    /**
+     * set SAX parser feature. This method will catch (and ignore) exceptions if
+     * the used parser does not support a feature.
+     * 
+     *@param factory
+     *@param feature
+     *@param value
+     */
+    //private void setFeature(SAXParserFactory factory, String feature, boolean value) {
+        //try {
+            //factory.setFeature(feature, value);
+        //} catch (SAXNotRecognizedException e) {
+            //LOG.warn(e);
+        //} catch (SAXNotSupportedException snse) {
+            //LOG.warn(snse);
+        //} catch (ParserConfigurationException pce) {
+            //LOG.warn(pce);
+        //}
+    //}
 
-	public void ignorableWhitespace(char[] ch, int start, int length) {
-	}
+    public void startCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                text.setData(charBuf);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, text);
+                if (!validate)
+                    storeText();
+                setPrevious(text);
+                charBuf.reset();
+            }
+        }
+        inCDATASection = true;
+    }
 
-	public void processingInstruction(String target, String data) {
-		ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target,
-				data);
-		pi.setOwnerDocument(document);
-		if (stack.isEmpty()) {
-			pi.setNodeId(broker.getBrokerPool().getNodeFactory()
-					.createInstance(nodeFactoryInstanceCnt++));
-			if (!validate) {
-				broker.storeNode(transaction, pi, currentPath, indexSpec);
-			}
-			document.appendChild(pi);
-		} else {
-			ElementImpl last = stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
-					// TextImpl text =
-					// new TextImpl( normalized );
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate) {
-						storeText();
-					}
-					setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			last.appendChildInternal(prevNode, pi);
-			setPrevious(pi);
-			if (!validate) {
-				broker.storeNode(transaction, pi, currentPath, indexSpec);
-			}
-		}
-	}
+    // Methods of interface LexicalHandler
+    // used to determine Doctype
 
-	public void setDocumentLocator(Locator locator) {
-		this.locator = locator;
-	}
+    public void startDTD(String name, String publicId, String systemId) {
+        DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId,
+                systemId);
+        document.setDocumentType(docType);
+        insideDTD = true;
+    }
 
-	/**
-	 * set SAX parser feature. This method will catch (and ignore) exceptions if
-	 * the used parser does not support a feature.
-	 * 
-	 *@param factory
-	 *@param feature
-	 *@param value
-	 */
-	@SuppressWarnings("unused")
-	private void setFeature(SAXParserFactory factory, String feature, boolean value) {
-		try {
-			factory.setFeature(feature, value);
-		} catch (SAXNotRecognizedException e) {
-			LOG.warn(e);
-		} catch (SAXNotSupportedException snse) {
-			LOG.warn(snse);
-		} catch (ParserConfigurationException pce) {
-			LOG.warn(pce);
-		}
-	}
+    public void startDocument() {
+        if (!validate) {
+            progress = new ProgressIndicator(currentLine, 100);
+            document.setChildCount(0);
+            elementCnt = 0;
+        }
+        docSize = 0;
+    }
 
-	public void startCDATA() {
-		if (!stack.isEmpty()) {
-			ElementImpl last = stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				text.setData(charBuf);
-				text.setOwnerDocument(document);
-				last.appendChildInternal(prevNode, text);
-				if (!validate)
-					storeText();
-				setPrevious(text);
-				charBuf.reset();
-			}
-		}
-		inCDATASection = true;
-	}
+    public void startElement(String namespace, String name, String qname,
+            Attributes attributes) throws SAXException {
+        // calculate number of real attributes:
+        // don't store namespace declarations
+        int attrLength = attributes.getLength();
+        String attrQName;
+        String attrNS;
+        for (int i = 0; i < attributes.getLength(); i++) {
+            attrNS = attributes.getURI(i);
+            attrQName = attributes.getQName(i);
+            if (attrQName.startsWith("xmlns")
+                    || attrNS.equals(Namespaces.EXIST_NS))
+                --attrLength;
+        }
+        ElementImpl last;
+        ElementImpl node;
+        int p = qname.indexOf(':');
+        String prefix = (p != Constants.STRING_NOT_FOUND) ? 
+                qname.substring(0, p) : "";
+        QName qn = broker.getBrokerPool().getSymbols().getQName(
+                Node.ELEMENT_NODE, namespace, name, prefix);
+        if (!stack.empty()) {
+            last = stack.peek();
+            if (charBuf != null) {
+                if (charBuf.isWhitespaceOnly()) {
+                    if (suppressWSmixed) {
+                        if (charBuf.length() > 0 && last.getChildCount() > 0) {
+                            text.setData(charBuf);
+                            text.setOwnerDocument(document);
+                            last.appendChildInternal(prevNode, text);
+                            if (!validate)
+                                storeText();
+                            setPrevious(text);
+                        }
+                    }
+                } else if (charBuf.length() > 0) {
+                    // mixed element content: don't normalize the text node,
+                    // just check
+                    // if there is any text at all
+                    text.setData(charBuf);
+                    text.setOwnerDocument(document);
+                    last.appendChildInternal(prevNode, text);
+                    if (!validate)
+                        storeText();
+                    setPrevious(text);
+                }
+                charBuf.reset();
+            }
+            if (!usedElements.isEmpty()) {
+                node = usedElements.pop();
+                node.setNodeName(qn);
+            } else {
+                node = new ElementImpl(qn);
+            }
+            // copy xml:space setting
+            node.setPreserveSpace(last.preserveSpace());
+            // append the node to its parent
+            // (computes the node id and updates the parent's child count)
+            last.appendChildInternal(prevNode, node);
+            setPrevious(null);
+            node.setOwnerDocument(document);
+            node.setAttributes((short) attrLength);
+            if (nsMappings != null && nsMappings.size() > 0) {
+                node.setNamespaceMappings(nsMappings);
+                nsMappings.clear();
+            }
+            stack.push(node);
+            currentPath.addComponent(qn);
+            node.setPosition(elementCnt++);
+            if (!validate) {
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+                }
+                storeElement(node);
+            }
+        } else {
+            if (validate) {
+                node = new ElementImpl(qn);
+            } else {
+                node = new ElementImpl(qn);
+            }
+            rootNode = node;
+            setPrevious(null);
+            node.setOwnerDocument(document);
+            node.setNodeId(broker.getBrokerPool().getNodeFactory()
+                .createInstance(nodeFactoryInstanceCnt++));
+            node.setAttributes((short) attrLength);
+            if (nsMappings != null && nsMappings.size() > 0) {
+                node.setNamespaceMappings(nsMappings);
+                nsMappings.clear();
+            }
+            stack.push(node);
+            currentPath.addComponent(qn);
+            node.setPosition(elementCnt++);
+            if (!validate) {
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+                }
+                storeElement(node);
+            }
+            document.appendChild(node);
+        }
+        level++;
 
-	// Methods of interface LexicalHandler
-	// used to determine Doctype
+        String attrPrefix;
+        String attrLocalName;
+        for (int i = 0; i < attributes.getLength(); i++) {
+            attrNS = attributes.getURI(i);
+            attrLocalName = attributes.getLocalName(i);
+            attrQName = attributes.getQName(i);
+            // skip xmlns-attributes and attributes in eXist's namespace
+            if (attrQName.startsWith("xmlns")
+                    || attrNS.equals(Namespaces.EXIST_NS))
+                --attrLength;
+            else {
+                p = attrQName.indexOf(':');
+                attrPrefix = (p != Constants.STRING_NOT_FOUND) ?
+                    attrQName.substring(0, p) : null;
+                final AttrImpl attr = (AttrImpl) NodePool.getInstance()
+                    .borrowNode(Node.ATTRIBUTE_NODE);
+                attr.setNodeName(broker.getBrokerPool().getSymbols()
+                    .getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
+                attr.setValue(attributes.getValue(i));
+                attr.setOwnerDocument(document);
+                if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
+                    attr.setType(AttrImpl.ID);
+                } else if (attributes.getType(i).equals(ATTR_IDREF_TYPE)) {
+                    attr.setType(AttrImpl.IDREF);
+                } else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
+                    attr.setType(AttrImpl.IDREFS);
+                } else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
+                    // an xml:id attribute. Normalize the attribute and set its
+                    // type to ID
+                    attr.setValue(StringValue.trimWhitespace(StringValue
+                            .collapseWhitespace(attr.getValue())));
+                    if (!XMLChar.isValidNCName(attr.getValue()))
+                        throw new SAXException(
+                            "Value of xml:id attribute is not a valid NCName: "
+                            + attr.getValue());
+                    attr.setType(AttrImpl.ID);
+                } else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
+                    node.setPreserveSpace("preserve".equals(attr.getValue()));
+                }
+                node.appendChildInternal(prevNode, attr);
+                setPrevious(attr);
+                if (!validate) {
+                    broker.storeNode(transaction, attr, currentPath, indexSpec);
+                    if (indexListener != null)
+                        indexListener.attribute(transaction, attr, currentPath);
+                }
+            }
+        }
+        if (attrLength > 0)
+            node.setAttributes((short) attrLength);
+        // notify observers about progress every 100 lines
+        if (locator != null) {
+            currentLine = locator.getLineNumber();
+            if (!validate) {
+                progress.setValue(currentLine);
+                if (progress.changed()) {
+                    setChanged();
+                    notifyObservers(progress);
+                }
+            }
+        }
+        ++docSize;
+    }
 
-	public void startDTD(String name, String publicId, String systemId) {
-		DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId,
-				systemId);
-		document.setDocumentType(docType);
-		insideDTD = true;
-	}
+    private void storeText() {
+        if (!nodeContentStack.isEmpty()) {
+            for (XMLString next : nodeContentStack) {
+                next.append(charBuf);
+            }
+        }
+        broker.storeNode(transaction, text, currentPath, indexSpec);
+        if (indexListener != null) {
+            indexListener.characters(transaction, text, currentPath);
+        }
+    }
 
-	public void startDocument() {
-		if (!validate) {
-			progress = new ProgressIndicator(currentLine, 100);
-			document.setChildCount(0);
-			elementCnt = 0;
-		}
-		docSize = 0;
-	}
+    private void storeElement(ElementImpl node) {
+        broker.storeNode(transaction, node, currentPath, indexSpec);
+        if (indexListener != null)
+            indexListener.startElement(transaction, node, currentPath);
+        node.setChildCount(0);
+        if (RangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
+            XMLString contentBuf = new XMLString();
+            nodeContentStack.push(contentBuf);
+        }
+    }
 
-	public void startElement(String namespace, String name, String qname,
-			Attributes attributes) throws SAXException {
-		// calculate number of real attributes:
-		// don't store namespace declarations
-		int attrLength = attributes.getLength();
-		String attrQName;
-		String attrNS;
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attrNS = attributes.getURI(i);
-			attrQName = attributes.getQName(i);
-			if (attrQName.startsWith("xmlns")
-					|| attrNS.equals(Namespaces.EXIST_NS))
-				--attrLength;
-		}
-
-		ElementImpl last;
-		ElementImpl node;
-		int p = qname.indexOf(':');
-		String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0,
-				p) : "";
-		QName qn = broker.getBrokerPool().getSymbols().getQName(
-				Node.ELEMENT_NODE, namespace, name, prefix);
-		if (!stack.empty()) {
-			last = stack.peek();
-			if (charBuf != null) {
-				if (charBuf.isWhitespaceOnly()) {
-					if (suppressWSmixed) {
-						if (charBuf.length() > 0 && last.getChildCount() > 0) {
-							text.setData(charBuf);
-							text.setOwnerDocument(document);
-							last.appendChildInternal(prevNode, text);
-							if (!validate)
-								storeText();
-							setPrevious(text);
-						}
-					}
-
-				} else if (charBuf.length() > 0) {
-					// mixed element content: don't normalize the text node,
-					// just check
-					// if there is any text at all
-					text.setData(charBuf);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate)
-						storeText();
-					setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			if (!usedElements.isEmpty()) {
-				node = usedElements.pop();
-				node.setNodeName(qn);
-			} else
-				node = new ElementImpl(qn);
-			// copy xml:space setting
-			node.setPreserveSpace(last.preserveSpace());
-			// append the node to its parent
-			// (computes the node id and updates the parent's child count)
-			last.appendChildInternal(prevNode, node);
-			setPrevious(null);
-			node.setOwnerDocument(document);
-			node.setAttributes((short) attrLength);
-			if (nsMappings != null && nsMappings.size() > 0) {
-				node.setNamespaceMappings(nsMappings);
-				nsMappings.clear();
-			}
-
-			stack.push(node);
-			currentPath.addComponent(qn);
-
-			node.setPosition(elementCnt++);
-			if (!validate) {
-				if (childCnt != null) {
-					node.setChildCount(childCnt[node.getPosition()]);
-				}
-				storeElement(node);
-			}
-		} else {
-			if (validate) {
-				node = new ElementImpl(qn);
-			} else {
-				node = new ElementImpl(qn);
-			}
-			rootNode = node;
-			setPrevious(null);
-			node.setOwnerDocument(document);
-			node.setNodeId(broker.getBrokerPool().getNodeFactory()
-					.createInstance(nodeFactoryInstanceCnt++));
-
-			node.setAttributes((short) attrLength);
-			if (nsMappings != null && nsMappings.size() > 0) {
-				node.setNamespaceMappings(nsMappings);
-				nsMappings.clear();
-			}
-
-			stack.push(node);
-			currentPath.addComponent(qn);
-
-			node.setPosition(elementCnt++);
-			if (!validate) {
-				if (childCnt != null) {
-					node.setChildCount(childCnt[node.getPosition()]);
-				}
-				storeElement(node);
-			}
-			document.appendChild(node);
-		}
-		level++;
-
-		String attrPrefix;
-		String attrLocalName;
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attrNS = attributes.getURI(i);
-			attrLocalName = attributes.getLocalName(i);
-			attrQName = attributes.getQName(i);
-			// skip xmlns-attributes and attributes in eXist's namespace
-			if (attrQName.startsWith("xmlns")
-					|| attrNS.equals(Namespaces.EXIST_NS))
-				--attrLength;
-			else {
-				p = attrQName.indexOf(':');
-				attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName
-						.substring(0, p) : null;
-				final AttrImpl attr = (AttrImpl) NodePool.getInstance()
-						.borrowNode(Node.ATTRIBUTE_NODE);
-				attr
-						.setNodeName(broker.getBrokerPool().getSymbols()
-								.getQName(Node.ATTRIBUTE_NODE, attrNS,
-										attrLocalName, attrPrefix));
-				attr.setValue(attributes.getValue(i));
-				attr.setOwnerDocument(document);
-				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
-					attr.setType(AttrImpl.ID);
-				} else if (attributes.getType(i).equals(ATTR_IDREF_TYPE)) {
-					attr.setType(AttrImpl.IDREF);
-				} else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
-					attr.setType(AttrImpl.IDREFS);
-				} else if (attr.getQName()
-						.equalsSimple(Namespaces.XML_ID_QNAME)) {
-					// an xml:id attribute. Normalize the attribute and set its
-					// type to ID
-					attr.setValue(StringValue.trimWhitespace(StringValue
-							.collapseWhitespace(attr.getValue())));
-					if (!XMLChar.isValidNCName(attr.getValue()))
-						throw new SAXException(
-								"Value of xml:id attribute is not a valid NCName: "
-										+ attr.getValue());
-					attr.setType(AttrImpl.ID);
-				} else if (attr.getQName().equalsSimple(
-						Namespaces.XML_SPACE_QNAME)) {
-					node.setPreserveSpace("preserve".equals(attr.getValue()));
-				}
-				node.appendChildInternal(prevNode, attr);
-				setPrevious(attr);
-				if (!validate) {
-					broker.storeNode(transaction, attr, currentPath, indexSpec);
-					if (indexListener != null)
-						indexListener.attribute(transaction, attr, currentPath);
-				}
-			}
-		}
-		if (attrLength > 0)
-			node.setAttributes((short) attrLength);
-		// notify observers about progress every 100 lines
-		if (locator != null) {
-			currentLine = locator.getLineNumber();
-			if (!validate) {
-				progress.setValue(currentLine);
-				if (progress.changed()) {
-					setChanged();
-					notifyObservers(progress);
-				}
-			}
-		}
-		++docSize;
-	}
-
-	private void storeText() {
-		if (!nodeContentStack.isEmpty()) {
-			for (XMLString next : nodeContentStack) {
-				next.append(charBuf);
-			}
-		}
-		broker.storeNode(transaction, text, currentPath, indexSpec);
-		if (indexListener != null) {
-			indexListener.characters(transaction, text, currentPath);
-		}
-	}
-
-	private void storeElement(ElementImpl node) {
-		broker.storeNode(transaction, node, currentPath, indexSpec);
-		if (indexListener != null)
-			indexListener.startElement(transaction, node, currentPath);
-		node.setChildCount(0);
-		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
-			XMLString contentBuf = new XMLString();
-			nodeContentStack.push(contentBuf);
-		}
-	}
-
-	public void startEntity(String name) {
+    public void startEntity(String name) {
         // while validating, all entities are put into a map
         // to cache them for later use
         if (validate) {
@@ -739,7 +716,7 @@ public class Indexer extends Observable implements ContentHandler,
                 entityMap = new HashMap<String, String>();
             currentEntityName = name;
         }
-	}
+    }
 
     public void endEntity(String name) {
         // store the entity into a map for later
@@ -748,7 +725,7 @@ public class Indexer extends Observable implements ContentHandler,
             currentEntityName = null;
             currentEntityValue.reset();
         }
-	}
+    }
 
     public void skippedEntity(String name) {
         if (!validate && entityMap != null) {
@@ -758,38 +735,38 @@ public class Indexer extends Observable implements ContentHandler,
         }
 	}
 
-	public void startPrefixMapping(String prefix, String uri) {
-		// skip the eXist namespace
-		// if (uri.equals(Namespaces.EXIST_NS)) {
-		// ignorePrefix = prefix;
-		// return;
-		// }
-		nsMappings.put(prefix, uri);
-	}
+    public void startPrefixMapping(String prefix, String uri) {
+        // skip the eXist namespace
+        // if (uri.equals(Namespaces.EXIST_NS)) {
+        // ignorePrefix = prefix;
+        // return;
+        // }
+        nsMappings.put(prefix, uri);
+    }
 
-	public void warning(SAXParseException e) throws SAXException {
-		String msg = "warning at (" + e.getLineNumber() + ","
-				+ e.getColumnNumber() + ") : " + e.getMessage();
-		throw new SAXException(msg, e);
-	}
+    public void warning(SAXParseException e) throws SAXException {
+        String msg = "warning at (" + e.getLineNumber() + ","
+            + e.getColumnNumber() + ") : " + e.getMessage();
+        throw new SAXException(msg, e);
+    }
 
-	private void setPrevious(StoredNode previous) {
-		if (prevNode != null) {
-			switch (prevNode.getNodeType()) {
-			case Node.ATTRIBUTE_NODE:
-				prevNode.release();
-				break;
-			case Node.ELEMENT_NODE:
-				if (prevNode != rootNode) {
-					prevNode.clear();
-					usedElements.push((ElementImpl) prevNode);
-				}
-				break;
-			case Node.TEXT_NODE:
-				prevNode.clear();
-				break;
-			}
-		}
-		prevNode = previous;
-	}
+    private void setPrevious(StoredNode previous) {
+        if (prevNode != null) {
+            switch (prevNode.getNodeType()) {
+            case Node.ATTRIBUTE_NODE:
+                prevNode.release();
+                break;
+            case Node.ELEMENT_NODE:
+                if (prevNode != rootNode) {
+                    prevNode.clear();
+                    usedElements.push((ElementImpl) prevNode);
+                }
+                break;
+            case Node.TEXT_NODE:
+                prevNode.clear();
+                break;
+            }
+        }
+        prevNode = previous;
+    }
 }

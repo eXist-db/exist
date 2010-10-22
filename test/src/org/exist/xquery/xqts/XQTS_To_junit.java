@@ -94,7 +94,7 @@ public class XQTS_To_junit {
             loadXQTS();
             collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
             if (collection == null) {
-                throw new IOException("There is no XQTS data at database");
+                throw new IOException("There are no XQTS data in the database");
             }
         }
 
@@ -152,7 +152,7 @@ public class XQTS_To_junit {
         else
             query += "for $testGroup in $XQTSCatalog//catalog:test-group[@name = '"+parentName+"']/catalog:test-group";
 
-        query += "	return xs:string($testGroup/@name)";
+        query += "\treturn xs:string($testGroup/@name)";
         ResourceSet results = service.query(query);
         if (results.getSize() != 0) {
             File subfolder;
@@ -206,14 +206,14 @@ public class XQTS_To_junit {
         folder.mkdirs();
         File jTest = new File(folder.getAbsolutePath()+sep+"AllTests.java");
         FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
-   	    BufferedWriter out = new BufferedWriter(fstream);
+        BufferedWriter out = new BufferedWriter(fstream);
 
-   	    out.write("package org.exist.xquery.xqts"+_package_+";\n\n" +
+        out.write("package org.exist.xquery.xqts"+_package_+";\n\n" +
             "import org.junit.runner.RunWith;\n" +
             "import org.junit.runners.Suite;\n\n" +
             "@RunWith(Suite.class)\n" +
-   	        "@Suite.SuiteClasses({\n");
-   	    return out;
+            "@Suite.SuiteClasses({\n");
+        return out;
     }
 
     private void endAllTests(BufferedWriter out) throws IOException {
@@ -247,7 +247,7 @@ public class XQTS_To_junit {
 
             for (int i = 0; i < results.getSize(); i++) {
                 String caseName = (String) results.getResource(i).getContent();
-                out.write("	/* "+caseName+" */" +
+                out.write("\t/* "+caseName+" */" +
                     "\t@Test\n" +
                     "\tpublic void test_"+adoptString(caseName)+"() {\n" +
                     "\tgroupCase(testGroup, \""+caseName+"\");"+
@@ -256,8 +256,8 @@ public class XQTS_To_junit {
             out.write("}");
             out.close();
             return true;
-       	}
-       	return false;
+        }
+        return false;
     }
 
     private String adoptString(String caseName) {

@@ -27,8 +27,9 @@ import java.util.Iterator;
  * Visitor pattern: interface to be implemented by a visitable node.
  * @deprecated replaced by XMLStreamListener
  */
-public interface Visitable {
-    
+    @Deprecated
+    public interface Visitable {
+
     /**
      * Visit the current node. For element nodes,
      * the method recursively traverses through the child nodes and
@@ -39,5 +40,6 @@ public interface Visitable {
      * @return the value returned by the NodeVisitor.visit method.
      * @deprecated
      */
-    public boolean accept(Iterator iterator, NodeVisitor visitor);  
+    @Deprecated
+    public boolean accept(Iterator<StoredNode> iterator, NodeVisitor visitor);  
 }
