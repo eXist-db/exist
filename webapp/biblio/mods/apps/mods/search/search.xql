@@ -468,6 +468,12 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                 else
                     <div id="login">Logged in as <span class="username">{$user}</span>. <a href="?logout=1">Logout</a></div>
             )
+        case element(biblio:collection-tree) return
+            let $show := request:get-parameter("collection-tree", "hidden")
+            return
+                <div id="collection-tree" class="{$show}">
+                {for $child in $node/node() return biblio:process-templates($query, $hitCount, $child)}
+                </div>
         case element(biblio:form-from-query) return
             biblio:form-from-query($query)
         case element(biblio:result-count) return

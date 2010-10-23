@@ -63,6 +63,7 @@
                             </tr>
                         </table>
                         <input type="hidden" name="query-tabs" value="simple"/>
+                        <input type="hidden" name="collection-tree" value="hidden"/>
                     </form>
                 </jquery:tab>
                 <jquery:tab id="advanced-search-form" label="Advanced Search">
@@ -113,6 +114,7 @@
                             </tr>
                         </table>
                         <input type="hidden" name="query-tabs" value="advanced-search-form"/>
+                        <input type="hidden" name="collection-tree" value="hidden"/>
                     </form>
                 </jquery:tab>
                 <jquery:tab id="query-history" label="Query History">
@@ -134,7 +136,7 @@
                     </p>
                 </jquery:tab>
             </jquery:tabset>
-            <div id="collection-tree">
+            <biblio:collection-tree id="collection-tree">
                 <div class="collection-tree-head">
                     <img id="toggle-collection-tree" src="../../../resources/images/tree.gif"/>
                 </div>
@@ -188,8 +190,13 @@
                         <!-- end create new resource -->
                     </ul>
                     <div id="collection-tree-tree"/>
+                    <div class="box">
+                        <p>
+                            To view all records in a collection, select it and run an empty search. 
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </biblio:collection-tree>
             <div id="main-content">
                 <div id="results-head">
                     <div id="messages">Found: <biblio:result-count/>
