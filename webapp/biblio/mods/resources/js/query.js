@@ -111,22 +111,18 @@ function initCollectionTree() {
                 updateSharingGroupCheckboxes(groupId);
             }
             updateSharingOtherCheckboxes();
-//            form.submit();
         },
         onPostInit: function () {
             // when tree is reloaded, reactivate the current node to trigger an onActivate event
             this.reactivate();
         }
     });
+    toggleCollectionTree($('#collection-tree').hasClass('show'));
     $('#toggle-collection-tree').click(function () {
         if (treeDiv.css('display') == 'none') {
-            $('#collection-tree').css({width: '300px', height: 'auto', 'background-color': 'transparent'});
-            $('#main-content').css('margin-left', '310px');
-            treeDiv.css('display', '');
+            toggleCollectionTree(true);
         } else {
-            $('#collection-tree').css({width: '40px', height: '400px', 'background-color': '#CCC'});
-            $('#main-content').css('margin-left', '50px');
-            treeDiv.css('display', 'none');
+            toggleCollectionTree(false);
         }
     });
     $('#collection-expand-all').click(function () {
@@ -145,6 +141,22 @@ function initCollectionTree() {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         return false;
     });
+}
+
+function toggleCollectionTree(show) {
+    if (show) {
+        $('#collection-tree').css({width: '300px', height: 'auto', 'background-color': 'transparent'});
+        $('#main-content').css('margin-left', '310px');
+        $('#collection-tree-main').css('display', '');
+        $('#simple-search-form input[name = collection-tree]').val('show');
+        $('#advanced-search-form input[name = collection-tree]').val('show');
+    } else {
+        $('#collection-tree').css({width: '40px', height: '400px', 'background-color': '#CCC'});
+        $('#main-content').css('margin-left', '50px');
+        $('#collection-tree-main').css('display', 'none');
+        $('#simple-search-form input[name = collection-tree]').val('hidden');
+        $('#advanced-search-form input[name = collection-tree]').val('hidden');
+    }
 }
 
 function updateCollectionPaths(title, key) {

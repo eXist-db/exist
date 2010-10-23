@@ -42,6 +42,22 @@ div.ui-dynatree-container {
     border: 0;
 }
 
+.box {
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    background-color: #707071;
+    color: #FFFFFF;
+    margin-top: 100px;
+    width: 240px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.box p {
+    margin: 8px 8px;
+}
+
 #main-content {
     margin-left: 50px;
 }
