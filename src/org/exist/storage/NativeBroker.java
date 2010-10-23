@@ -1992,8 +1992,6 @@ public class NativeBroker extends DBBroker {
                         newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
                     }
                 }
-            } catch (EXistException e) {
-                LOG.warn("An error occurred while copying resource", e);
             } catch (IOException e) {
                 LOG.warn("An error occurred while copying resource", e);
             } catch (TriggerException e) {

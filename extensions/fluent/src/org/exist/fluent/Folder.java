@@ -396,8 +396,6 @@ public class Folder extends NamedResource implements Cloneable {
 				InputStream inputStream = source.toInputStream();
 				try {
 					handle.addBinaryResource(tx.tx, broker, XmldbURI.create(name.get()), inputStream, null, source.getLength());
-				} catch (EXistException e) {
-					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 				} catch (PermissionDeniedException e) {
 					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 				} catch (LockException e) {
