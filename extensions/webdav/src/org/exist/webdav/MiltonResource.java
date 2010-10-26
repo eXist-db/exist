@@ -271,7 +271,7 @@ public class MiltonResource implements Resource {
 
     @Override
     public String getName() {
-        return decodePath( "" + resourceXmldbUri.lastSegment() );
+        return ""+resourceXmldbUri.lastSegment();
     }
 
     @Override

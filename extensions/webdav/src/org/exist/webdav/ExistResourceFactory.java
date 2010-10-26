@@ -140,6 +140,7 @@ public class ExistResourceFactory implements ResourceFactory {
             // yet. In MiltonResource the actual authentication and authorization
             // is performed.
             broker = brokerPool.get(brokerPool.getSecurityManager().getSystemSubject());
+
             
             // First check if resource is a collection
             collection = broker.openCollection(uri, Lock.READ_LOCK);
@@ -163,6 +164,7 @@ public class ExistResourceFactory implements ResourceFactory {
                     type = ResourceType.NOT_EXISTING;
                 }
             }
+           
 
         } catch (Exception ex) {
             LOG.error("Error determining nature of resource " + uri.toString(), ex);

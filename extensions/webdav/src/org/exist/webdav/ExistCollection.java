@@ -21,7 +21,10 @@
  */
 package org.exist.webdav;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -328,15 +331,44 @@ public class ExistCollection extends ExistResource {
         return newCollection;
     }
 
-    public XmldbURI createFile(String newName, InputStream dis, Long length, String contentType)
+    
+    public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
+
         LOG.debug("Create '" + newName + "' in '" + xmldbUri + "'");
      
         XmldbURI newNameUri = XmldbURI.create(newName);
 
+        // Get mime, or NULL when not available
+        MimeType mime = MimeTable.getInstance().getContentTypeFor(newName);
+        if (mime == null) {
+            mime = MimeType.BINARY_TYPE;
+        }
+
+        // References to the database
         DBBroker broker = null;
         Collection collection = null;
-        File tmpFile = null;
+
+        // create temp file and store. Existdb needs to read twice from a stream.
+        BufferedInputStream bis = new BufferedInputStream(is);
+
+        File tmpFile = File.createTempFile("Miltonwebdavtmp", "tmp");
+        FileOutputStream fos = new FileOutputStream(tmpFile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+
+        // Perform actual copy
+        IOUtils.copy(bis, bos);
+        bis.close();
+        bos.close();
+
+        // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
+        // XML documents are not supported a small file will be created.
+        if(mime.isXMLType() && tmpFile.length()==0L){
+            LOG.debug("Creating dummy XML file for null resource lock '" + newNameUri + "'");
+            fos = new FileOutputStream(tmpFile);
+            IOUtils.write("<null_resource/>", fos);
+            fos.close();
+        }
 
         // Start transaction
         TransactionManager transact = brokerPool.getTransactionManager();
@@ -355,40 +387,26 @@ public class ExistCollection extends ExistResource {
             }
             
 
-            // Get mime, or NULL when not available
-            MimeType mime = MimeTable.getInstance().getContentTypeFor(newName);
-            if (mime == null) {
-                mime = MimeType.BINARY_TYPE;
-            }
-
-
             if (mime.isXMLType()) {
                 LOG.debug("Inserting XML document '" + mime.getName() + "'");
 
-                // create temp file and store. Existdb needs to read twice from a stream.
-                tmpFile = File.createTempFile("Miltonwebdavtmpxml", "tmp");
-                FileOutputStream fos = new FileOutputStream(tmpFile);
-                IOUtils.copy(dis, fos);
-                dis.close();
-
-//                if(tmpFile.length()==0){
-//                    FileOutputStream fos2 = new FileOutputStream(tmpFile);
-//                    IOUtils.write("<null_resource/>", fos2);
-//                    fos2.close();
-//                }
-
+                // Stream into database
                 String url = tmpFile.toURI().toASCIIString();
-                InputSource is = new InputSource(url);
-                IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, is);
+                InputSource inputSource = new InputSource(url);
+                IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, inputSource);
                 DocumentImpl doc = info.getDocument();
                 doc.getMetadata().setMimeType(mime.getName());
-                collection.store(txn, broker, info, is, false);
+                collection.store(txn, broker, info, inputSource, false);
 
             } else {
                 LOG.debug("Inserting BINARY document '" + mime.getName() + "'");
-                DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, dis,
+
+                // Stream into database
+                FileInputStream fis = new FileInputStream(tmpFile);
+                bis = new BufferedInputStream(fis);
+                DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, bis,
                         mime.getName(), length.intValue());
-                dis.close();
+                bis.close();
             }
 
             // Commit change
@@ -443,7 +461,9 @@ public class ExistCollection extends ExistResource {
             LOG.debug("Finished creation");
         }
 
+        // Send the result back to the client
         XmldbURI newResource = xmldbUri.append(newName);
+        
         return newResource;
     }
 

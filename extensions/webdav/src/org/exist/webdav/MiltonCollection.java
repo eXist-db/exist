@@ -74,7 +74,7 @@ import org.exist.xmldb.XmldbURI;
 public class MiltonCollection extends MiltonResource
         implements CollectionResource, GetableResource, PropFindableResource,
         DeletableResource, MakeCollectionableResource, PutableResource, LockingCollectionResource 
-        /*, DigestResource , LockNullResource*/, MoveableResource, CopyableResource {
+        /*, DigestResource */, MoveableResource, CopyableResource, LockNullResource {
 
     private ExistCollection existCollection;
 
@@ -259,6 +259,9 @@ public class MiltonCollection extends MiltonResource
             LOG.debug(e.getMessage());
             throw new ConflictException(this);
 
+        } catch (IOException e){
+            LOG.debug(e.getMessage());
+            throw e;
         }
         return resource;
     }
