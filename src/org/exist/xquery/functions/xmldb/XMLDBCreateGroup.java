@@ -57,7 +57,7 @@ public class XMLDBCreateGroup extends BasicFunction {
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Create a new user group. $group is the group name.",
+            "Create a new user group. $group is the group name. The current user will be the groups manager.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
             },
@@ -70,7 +70,7 @@ public class XMLDBCreateGroup extends BasicFunction {
             "Create a new user group, with an initial member. $group is the group name, $group-manager-username is the groups manager.",
             new SequenceType[]{
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name"),
-                new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE, "The name of the user who will be the groups manager")
+                new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE, "The name of the user(s) who will be the groups manager")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")),
     };
@@ -110,11 +110,9 @@ public class XMLDBCreateGroup extends BasicFunction {
 
             SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 
+            List<Account> groupManagerAccounts = new ArrayList<Account>();
             if(args.length == 2) {
-
-
                 //find the group managers, this makes sure they all exist first!
-                List<Account> groupManagerAccounts = new ArrayList<Account>();
                 for(SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
                     String groupManager = i.nextItem().getStringValue();
 
@@ -125,23 +123,23 @@ public class XMLDBCreateGroup extends BasicFunction {
                     }
                     groupManagerAccounts.add(groupManagerAccount);
                 }
-
-                //TODO remove this once the security implementation supports group managers
-                //elevate to system user, so we can add groups to the user
-                Subject systemUser = sm.authenticate(SecurityManager.SYSTEM, "");
-                broker.setUser(systemUser);
-
-                //create the group
-                group = sm.addGroup(group);
-
-                //add the managers to the group
-                for(Account groupManagerAccount : groupManagerAccounts) {
-                    groupManagerAccount.addGroup(group);
-                    sm.updateAccount(broker.getUser(), groupManagerAccount);
-                }
             } else {
-                //deprecated, create the group
-                group = sm.addGroup(group);
+                //no group manager specified, so use the current user
+                groupManagerAccounts.add(currentUser);
+            }
+
+            //TODO remove this once the security implementation supports group managers
+            //elevate to system user, so we can add groups to the user
+            Subject systemUser = sm.authenticate(SecurityManager.SYSTEM, "");
+            broker.setUser(systemUser);
+
+            //create the group
+            group = sm.addGroup(group);
+
+            //add the managers to the group
+            for(Account groupManagerAccount : groupManagerAccounts) {
+                groupManagerAccount.addGroup(group);
+                sm.updateAccount(broker.getUser(), groupManagerAccount);
             }
 
             return BooleanValue.TRUE;
