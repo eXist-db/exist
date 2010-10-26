@@ -99,7 +99,8 @@ declare variable $biblio:TEMPLATE_QUERY :=
     Regenerate the HTML form to match the query, e.g. after adding more filter
     clauses.
 :)
-declare function biblio:form-from-query($query as element()) as element()+ {
+declare function biblio:form-from-query($incomingQuery as element()?) as element()+ {
+    let $query := if ($incomingQuery//field) then $incomingQuery else $biblio:TEMPLATE_QUERY
     for $field at $pos in $query//field
     return
     
@@ -786,7 +787,9 @@ let $id := request:get-parameter("id", ())
 
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
-    if ($reload) then
+    if (empty($collection)) then
+        () (: no parameters sent :)
+    else if ($reload) then
         session:get-attribute('query')
     else if ($history) then
         biblio:query-from-history($history)
@@ -824,7 +827,8 @@ let $results :=
 (:  Process the HTML template received as input :)
 let $output :=
     jquery:process(
-        biblio:process-templates(if ($queryAsXML//field) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input)
+        biblio:process-templates($queryAsXML, $results, $input)
+        (: biblio:process-templates(if ($queryAsXML//field) then $queryAsXML else $biblio:TEMPLATE_QUERY, $results, $input) :)
     )
 let $header := response:set-header("Content-Type", "application/xhtml+xml")
 return
