@@ -50,7 +50,7 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	protected final Map<String, G> groupsByName = new HashMap<String, G>(65);
 	protected final Map<String, A> usersByName = new HashMap<String, A>(65);
 
-	protected SecurityManager sm;
+	private SecurityManager sm;
 	
 	protected Configuration configuration;
 	
@@ -68,8 +68,12 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 
 	@Override
 	public BrokerPool getDatabase() {
-		return sm.getDatabase();
+		return getSecurityManager().getDatabase();
 	}
+
+        protected SecurityManager getSecurityManager() {
+            return sm;
+        }
 
         @Override
 	public void startUp(DBBroker broker) throws EXistException {
@@ -127,7 +131,7 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
                                 G group = instantiateGroup(this, conf);
                                 //GroupImpl group = new GroupImpl(this, conf);
 
-	            		sm.addGroup(group.getId(), group);
+	            		getSecurityManager().addGroup(group.getId(), group);
 	            		groupsByName.put(group.getName(), group);
 	            	}
 	            }
@@ -139,11 +143,11 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	            	Configuration conf = Configurator.parse(i.next());
 
 	            	Integer id = conf.getPropertyInteger("id");
-	            	if (id != null && !sm.hasGroup(id)) {
+	            	if (id != null && !getSecurityManager().hasGroup(id)) {
 	            		G group = instantiateGroup(this, conf, true);
                                 //GroupImpl group = new GroupImpl(this, conf);
 	            		//group.removed = true;
-	            		sm.addGroup(group.getId(), group);
+	            		getSecurityManager().addGroup(group.getId(), group);
 	            	}
 	            }
 	        }
@@ -157,7 +161,7 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	            	if (name != null && !usersByName.containsKey(name)) {
                                 A account = instantiateAccount(this, conf);
 	            		//AccountImpl account = new AccountImpl( this, conf );
-		            	sm.addUser(account.getId(), account);
+		            	getSecurityManager().addUser(account.getId(), account);
 		            	usersByName.put(account.getName(), account);
 	            	}
 	            }
@@ -169,11 +173,11 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	            	Configuration conf = Configurator.parse(i.next());
 	            	
 	            	Integer id = conf.getPropertyInteger("id");
-	            	if (id != null && !sm.hasUser(id)) {
+	            	if (id != null && !getSecurityManager().hasUser(id)) {
                                 A account = instantiateAccount(this, conf, true);
 	            		//AccountImpl account = new AccountImpl( this, conf );
 	            		//account.removed = true;
-		            	sm.addUser(account.getId(), account);
+		            	getSecurityManager().addUser(account.getId(), account);
 	            	}
 	            }
 	        }
@@ -284,8 +288,8 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 
 
             //G group = new GroupImpl(this, sm.getNextGroupId(), name);
-            G group = instantiateGroup(this, sm.getNextGroupId(), name);
-            sm.addGroup(group.getId(), group);
+            G group = instantiateGroup(this, getSecurityManager().getNextGroupId(), name);
+            getSecurityManager().addGroup(group.getId(), group);
             groupsByName.put(name, group);
 
             return group;
@@ -295,12 +299,12 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
             if (groupsByName.containsKey(name))
                     throw new IllegalArgumentException("Group "+name+" exist.");
 
-            if (sm.hasGroup(id))
+            if (getSecurityManager().hasGroup(id))
                     throw new IllegalArgumentException("Group id "+id+" allready used.");
 
             //Group group = new GroupImpl(this, id, name);
             G group = instantiateGroup(this, id, name);
-            sm.addGroup(id, group);
+            getSecurityManager().addGroup(id, group);
             groupsByName.put(name, group);
 
             return group;
@@ -327,14 +331,14 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
         if (!getId().equals(account.getRealmId()))
                 throw new ConfigurationException("Account from different realm");
 
-        return (A)sm.addAccount(account);
+        return (A)getSecurityManager().addAccount(account);
     }
 
     @Override
     public synchronized boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         try {
-            broker = sm.getDatabase().get(null);
+            broker = getDatabase().get(null);
             Account user = broker.getUser();
 
             if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
@@ -372,7 +376,14 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 
             return true;
         } finally {
-            sm.getDatabase().release(broker);
+            getDatabase().release(broker);
         }
     }
+
+    @Override
+    public Group getExternalGroup(Subject invokingUser, String name) {
+        return getSecurityManager().getGroup(invokingUser, name);
+    }
+
+
 }
