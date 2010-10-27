@@ -60,6 +60,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -195,8 +196,10 @@ public abstract class Modification extends AbstractExpression
 				out.add(item);
 			}
 			return out;
-		} catch(SAXException e) {
-			throw new XPathException(this, e.getMessage(), e);
+        } catch(SAXException e) {
+            throw new XPathException(this, e.getMessage(), e);
+		} catch (DOMException e) {
+		    throw new XPathException(this, e.getMessage(), e);
 		} finally {
 			context.popDocumentContext();
 		}

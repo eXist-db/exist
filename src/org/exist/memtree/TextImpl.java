@@ -26,6 +26,9 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 
@@ -212,6 +215,27 @@ public class TextImpl extends NodeImpl implements Text
         result.append( getData() );
         result.append( "} " );
         return( result.toString() );
+    }
+
+    @Override
+    public void selectAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectChildren(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectDescendantAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

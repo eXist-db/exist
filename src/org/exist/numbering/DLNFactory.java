@@ -37,22 +37,22 @@ public class DLNFactory implements NodeIdFactory {
     }
 
     public NodeId createInstance(int id) {
-    	return new DLN(id);
+        return new DLN(id);
     }
     
     public NodeId createFromStream(VariableByteInput is) throws IOException {
         short bitCnt = is.readShort();
-        return bitCnt == 0 ? DLN.END_OF_DOCUMENT : new DLN(bitCnt, is);
+        return bitCnt == 0 ? NodeId.END_OF_DOCUMENT : new DLN(bitCnt, is);
     }
 
     public NodeId createFromStream(NodeId previous, VariableByteInput is) throws IOException {
-//        if (previous == null)
-//            return createFromStream(is);
+        //if (previous == null)
+        //  return createFromStream(is);
         byte prefix = is.readByte();
         if (prefix == 0)
             return createFromStream(is);
         short bitCnt = is.readShort();
-        return bitCnt == 0 ? DLN.END_OF_DOCUMENT : new DLN(prefix, (DLN) previous, bitCnt, is);
+        return bitCnt == 0 ? NodeId.END_OF_DOCUMENT : new DLN(prefix, (DLN) previous, bitCnt, is);
     }
 
     public NodeId createFromData(int sizeHint, byte[] data, int startOffset) {
@@ -62,15 +62,15 @@ public class DLNFactory implements NodeIdFactory {
     public NodeId createFromString(String string) {
     	return new DLN(string);
     }
-    
+
     public NodeId documentNodeId() {
-        return DLN.DOCUMENT_NODE;
+        return NodeId.DOCUMENT_NODE;
     }
 
     public int lengthInBytes(int units, byte[] data, int startOffset) {
-        return DLN.getLengthInBytes(units, data, startOffset);
+        return DLNBase.getLengthInBytes(units, data, startOffset);
     }
-    
+
     public void writeEndOfDocument(VariableByteOutputStream os) {
         os.writeByte((byte) 0);
         os.writeShort(0);

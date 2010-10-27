@@ -239,4 +239,18 @@ public class AttributeImpl extends NodeImpl implements Attr {
         result.append( "} " );
         return( result.toString() );
     }
+
+    @Override
+    public void selectAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectChildren(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
 }

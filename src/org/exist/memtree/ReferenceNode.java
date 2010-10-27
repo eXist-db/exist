@@ -26,6 +26,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import org.exist.dom.NodeProxy;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 
 
 /**
@@ -82,5 +85,26 @@ public class ReferenceNode extends NodeImpl {
         //TODO : improve performance ?
         //TODO : how to make this node a reference as well ?
         return( getReference().getNode().getFirstChild() );
+    }
+
+    @Override
+    public void selectAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectChildren(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectDescendantAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
     }
 }

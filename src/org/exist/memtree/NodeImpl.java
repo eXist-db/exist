@@ -33,6 +33,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentSet;
@@ -64,7 +65,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 
-public class NodeImpl implements NodeAtExist, NodeValue {
+public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;
@@ -801,20 +802,11 @@ public class NodeImpl implements NodeAtExist, NodeValue {
         return( null );
     }
 
-    public void selectAttributes( NodeTest test, Sequence result ) throws XPathException {
-        // do nothing
-        //TODO : make abstract
-    }
+    public abstract void selectAttributes( NodeTest test, Sequence result ) throws XPathException;
+    
+    public abstract void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException;
 
-    public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException {
-        // do nothing
-        //TODO : make abstract
-    }
-
-    public void selectChildren( NodeTest test, Sequence result ) throws XPathException {
-        // do nothing
-        //TODO : make abstract
-    }
+    public abstract void selectChildren( NodeTest test, Sequence result ) throws XPathException;
 
     public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) 
             throws XPathException {
@@ -998,7 +990,8 @@ public class NodeImpl implements NodeAtExist, NodeValue {
         return( false );
     }
 
-    public boolean matchPreceding( NodeTest test, int position ) {
+    public boolean matchPreceding( NodeTest test, int position ) 
+            throws EXistException {
         NodeId myNodeId = getNodeId();
         int    count    = 0;
         for( int i = nodeNumber - 1; i > 0; i-- ) {
@@ -1045,7 +1038,8 @@ public class NodeImpl implements NodeAtExist, NodeValue {
         return( false );
     }
 
-    public boolean matchFollowing( NodeTest test, int position ) throws XPathException {
+    public boolean matchFollowing( NodeTest test, int position ) 
+            throws XPathException, EXistException {
         int parent = document.getParentNodeFor( nodeNumber );
         if( parent == 0 ) {
             // parent is the document node
