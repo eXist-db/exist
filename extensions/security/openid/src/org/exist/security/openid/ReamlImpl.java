@@ -199,4 +199,9 @@ public class ReamlImpl implements Realm {
 		return null;
 	}
 
+    @Override
+    public Group getExternalGroup(Subject invokingUser, String name) {
+        return null;
+    }
+
 }
