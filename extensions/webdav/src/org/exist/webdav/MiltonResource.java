@@ -162,6 +162,17 @@ public class MiltonResource implements Resource {
 
         // Lock Timeout
         Long timeout = existLT.getTimeOut();
+
+        // Special treatment when no LOCK was present
+        if(timeout==existLT.NO_LOCK_TIMEOUT){
+            timeout=null;
+        }
+
+        // Special treatment infinite lock
+        if(timeout==existLT.LOCK_TIMEOUT_INFINITE){
+            timeout=Long.MAX_VALUE;
+        }
+
         LockTimeout lt = new LockTimeout(timeout);
 
         // Token Id
@@ -215,7 +226,12 @@ public class MiltonResource implements Resource {
 
 
         // Set timeouts
-        existToken.setTimeOut(timeout.getSeconds());
+        if(timeout==null){
+            existToken.setTimeOut(existToken.NO_LOCK_TIMEOUT);
+
+        } else {
+            existToken.setTimeOut(timeout.getSeconds());
+        }
 
         return existToken;
     }
