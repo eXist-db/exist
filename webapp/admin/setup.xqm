@@ -255,12 +255,19 @@ declare function setup:create-collection($parent as xs:string, $name as xs:strin
 
 declare function setup:create-group($group as xs:string) as element()
 {
-    let $result := xdb:create-group($group, xdb:get-current-user()) return
-        if($result)then (
-            <li class="high">Created group: {$group}</li>
-        ) else (
-            <li class="error">Failed to create group: {$group}</li>
-        )
+    if(xdb:group-exists($group))then
+    (
+        <li class="high">Verified group: {$group} exists</li>
+    )
+    else
+    (
+        let $result := xdb:create-group($group, xdb:get-current-user()) return
+            if($result)then (
+                <li class="high">Created group: {$group}</li>
+            ) else (
+                <li class="error">Failed to create group: {$group}</li>
+            )
+    )
 };
 
 declare function setup:set-collection-group($collection as xs:string, $group as xs:string) as element() {
