@@ -115,8 +115,8 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     private LDAPAccountImpl createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
         Subject currentSubject = getDatabase().getSubject();
         try {
-            getDatabase().setSubject(sm.getSystemSubject());
-            LDAPAccountImpl account = (LDAPAccountImpl)sm.addAccount(new UserAider(ID, username));
+            getDatabase().setSubject(getSecurityManager().getSystemSubject());
+            LDAPAccountImpl account = (LDAPAccountImpl)getSecurityManager().addAccount(new UserAider(ID, username));
             //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
             //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -125,7 +125,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                 List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
                 if(additionalGroupNames != null) {
                     for(String additionalGroupName : additionalGroupNames) {
-                        Group additionalGroup = sm.getGroup(invokingUser, additionalGroupName);
+                        Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
                         if(additionalGroup != null) {
                             account.addGroup(additionalGroup);
                             updatedAccount = true;
@@ -134,7 +134,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                 }
             }
             if(updatedAccount) {
-                boolean updated = sm.updateAccount(invokingUser, account);
+                boolean updated = getSecurityManager().updateAccount(invokingUser, account);
                 if(!updated) {
                     LOG.error("Could not update account");
                 }
@@ -154,9 +154,9 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     private LDAPGroupImpl createGroupInDatabase(String groupname) throws AuthenticationException {
         Subject currentSubject = getDatabase().getSubject();
         try {
-            getDatabase().setSubject(sm.getSystemSubject());
+            getDatabase().setSubject(getSecurityManager().getSystemSubject());
             //return sm.addGroup(instantiateGroup(this, groupname));
-            return (LDAPGroupImpl)sm.addGroup(new GroupAider(ID, groupname));
+            return (LDAPGroupImpl)getSecurityManager().addGroup(new GroupAider(ID, groupname));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,

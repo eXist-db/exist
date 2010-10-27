@@ -119,7 +119,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 		
 		DBBroker broker = null;
 		try {
-			broker = sm.getDatabase().get(null);
+			broker = getDatabase().get(null);
 			Account user = broker.getUser();
 			
 			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
@@ -129,7 +129,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 			remove_account.setRemoved(true);
 			remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 			
-	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
+	        TransactionManager transaction = getDatabase().getTransactionManager();
 	        Txn txn = null;
 	        try {
 				txn = transaction.beginTransaction();
@@ -146,12 +146,12 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 				LOG.debug("loading configuration failed: " + e.getMessage());
 			}
 			
-			sm.addUser(remove_account.getId(), remove_account);
+			getSecurityManager().addUser(remove_account.getId(), remove_account);
 			usersByName.remove(remove_account.getName());
 
 			return true;
 		} finally {
-			sm.getDatabase().release(broker);
+			getDatabase().release(broker);
 		}
 	}
 
@@ -171,7 +171,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 		
 		DBBroker broker = null;
 		try {
-			broker = sm.getDatabase().get(null);
+			broker = getDatabase().get(null);
 			Account user = broker.getUser();
 			
 			if ( ! ( user.hasDbaRole() ) )
@@ -181,7 +181,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 			remove_group.setRemoved(true);
 			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 			
-	        TransactionManager transaction = sm.getDatabase().getTransactionManager();
+	        TransactionManager transaction = getDatabase().getTransactionManager();
 	        Txn txn = null;
 	        try {
 				txn = transaction.beginTransaction();
@@ -198,12 +198,12 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 				LOG.debug("loading configuration failed: " + e.getMessage());
 			}
 			
-			sm.addGroup(remove_group.getId(), (Group)remove_group);
+			getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
 			groupsByName.remove(remove_group.getName());
 
 			return true;
 		} finally {
-			sm.getDatabase().release(broker);
+			getDatabase().release(broker);
 		}
 	}
 	

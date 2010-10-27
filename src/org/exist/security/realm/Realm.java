@@ -26,6 +26,7 @@ import java.util.Collection;
 import org.exist.EXistException;
 import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.Subject;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
 import org.exist.storage.BrokerPool;
@@ -46,4 +47,6 @@ public interface Realm<A extends Account, G extends Group> extends Authenticatin
 	public void startUp(DBBroker broker) throws EXistException;
 
 	public BrokerPool getDatabase();
+
+        public Group getExternalGroup(Subject invokingUser, String name);
 }

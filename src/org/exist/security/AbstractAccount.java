@@ -81,9 +81,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         }
 
         @Override
-	public final Group addGroup(String name) throws PermissionDeniedException {
-		Group group = realm.getGroup(null, name);
-		return addGroup(group);
+	public Group addGroup(String name) throws PermissionDeniedException {
+            Group group = realm.getGroup(null, name);
+            return addGroup(group);
 	}
 
 	//this method used by Configurator
