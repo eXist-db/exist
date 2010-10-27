@@ -138,8 +138,8 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 			if (account == null) {
 				Subject currentSubject = getDatabase().getSubject();
 				try {
-					getDatabase().setSubject(sm.getSystemSubject());
-                                        account = sm.addAccount(instantiateAccount(this, username));
+					getDatabase().setSubject(getSecurityManager().getSystemSubject());
+                                        account = getSecurityManager().addAccount(instantiateAccount(this, username));
 					//account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
 				} catch (Exception e) {
 					throw new AuthenticationException(
