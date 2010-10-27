@@ -95,6 +95,7 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBDeleteUser.signature, XMLDBDeleteUser.class),
         new FunctionDef(XMLDBCreateGroup.signatures[0], XMLDBCreateGroup.class),
         new FunctionDef(XMLDBCreateGroup.signatures[1], XMLDBCreateGroup.class),
+        new FunctionDef(XMLDBGroupExists.signatures[0], XMLDBGroupExists.class),
         new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
         new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
         new FunctionDef(XMLDBCollectionAvailable.signatures[0], XMLDBCollectionAvailable.class),
