@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="82A4E365-4D7C-4A9A-A032-5626C731FAF3">
+    <titleInfo>
+        <title>Understanding XForms</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <name type="personal">
+        <namePart type="family">Cagle</namePart>
+        <namePart type="given">Kurt</namePart>
+    </name>
+    <originInfo>
+        <dateCreated>2007-06-05</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://www.ibm.com/developerworks/xml/library/x-xformsxadventure/</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="4E052566-A86B-46C6-81B7-3C0E5191AE40">
+    <titleInfo>
+        <title>I Think, Therefore I eXist ...</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <name type="personal">
+        <namePart type="family">Cagle</namePart>
+        <namePart type="given">Kurt</namePart>
+    </name>
+    <originInfo>
+        <dateCreated>2006-09-17</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://www.oreillynet.com/xml/blog/2006/09/i_think_therefore_i_exist.html</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

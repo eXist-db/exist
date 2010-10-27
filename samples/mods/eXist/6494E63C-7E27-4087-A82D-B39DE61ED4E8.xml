@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="6494E63C-7E27-4087-A82D-B39DE61ED4E8">
+    <titleInfo>
+        <title>XForms and the eXist XML database</title>
+        <subTitle>a perfect couple</subTitle>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">conferencePaper</genre>
+    <name type="personal">
+        <namePart type="family">Bruchez</namePart>
+        <namePart type="given">Erik</namePart>
+    </name>
+    <name type="conference">
+        <namePart>XML 2007</namePart>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text">Boston, MA</placeTerm>
+        </place>
+        <dateCreated>2007-12-03</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://2007.xmlconference.org/public/schedule/detail/426</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

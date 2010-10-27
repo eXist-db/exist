@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="4802D531-1978-411C-A6A6-BBB2479195E3">
+    <titleInfo>
+        <title>XForms/eXist</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <originInfo>
+        <dateCreated>2008-08-18</dateCreated>
+    </originInfo>
+    <location>
+        <relatedItem type="host">
+            <titleInfo>
+                <title>Wikibooks</title>
+                <subTitle>Open books for an open world</subTitle>
+            </titleInfo>
+        </relatedItem>
+        <url>http://datadictionary.blogspot.com/2007/02/exist-opensource-native-xml-database.html</url>
+    </location>
+    <location>
+        <url>http://en.wikibooks.org/wiki/XForms/eXist</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>
