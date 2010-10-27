@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="D8FD9B70-68D8-4C31-86DA-CF1A11B3D94E">
+    <titleInfo>
+        <title>From Social to Serious</title>
+        <subTitle>Combining Twitter and RESTful Web Services</subTitle>
+    </titleInfo>
+    <abstract>
+        Twitter is ideal for performing all kinds of useful programmatic projects. See how to create a RESTful data application around an XML database, and you will learn how to make the Twitter API work with virtual collections. 
+    </abstract>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <name type="personal">
+        <namePart type="family">Cagle</namePart>
+        <namePart type="given">Kurt</namePart>
+    </name>
+    <originInfo>
+        <dateCreated>2009-03-30</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://www.devx.com/webdev/Article/41337</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

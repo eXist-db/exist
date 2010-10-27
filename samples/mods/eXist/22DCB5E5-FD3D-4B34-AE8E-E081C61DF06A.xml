@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="22DCB5E5-FD3D-4B34-AE8E-E081C61DF06A">
+    <titleInfo>
+        <title>Index-driven XQuery processing in the eXist XML database</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">conferencePaper</genre>
+    <name type="personal">
+        <namePart type="family">Meier</namePart>
+        <namePart type="given">Wolfgang</namePart>
+    </name>
+    <name type="conference">
+        <namePart>eXist Workshop at XML Prague</namePart>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text">Prague</placeTerm>
+        </place>
+        <dateCreated>2006-06-17</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://exist-db.org/xmlprague06.html</url>
+        <url displayLabel="slides">http://atomic.exist-db.org/articles/wolfgangs_talk.pdf</url>
+    </location>
+    <abstract>eXist provides its own XQuery implementation, which is backed by an efficient
+        indexing scheme at the database core to support quick identification of structural node
+        relationships. eXist's approach to XQuery processing can thus not be understood without
+        knowing the indexing scheme and vice versa. Over the past years, two different indexing
+        schemes for XML documents were implemented in eXist: while the first was based on an
+        extended level-order numbering scheme, we recently switched to hierarchical node ids to
+        overcome the limitations imposed by the former approach. The presentation provides a
+        quick overview of these developments. I will try to summarize the logic behind both
+        indexing schemes we implemented in eXist, and point out their strengths and deficencies.
+        Based on this foundation, we should have a look at some central aspects of XQuery
+        processing and optimization.</abstract>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>
