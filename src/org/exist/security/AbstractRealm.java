@@ -115,17 +115,7 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 					e.printStackTrace();
 				}
 			}
-			
-			for (A account : usersByName.values()) {
-				if (account.getId() > 0)
-					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
-			}
-			
-			for (G group : groupsByName.values()) {
-				if (group.getId() > 0)
-					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
-			}
-
+           
                 //load groups information
 	        if (collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
 	            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
@@ -187,6 +177,20 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	            	}
 	            }
 	        }
+
+
+                        //set collections
+			for (G group : groupsByName.values()) {
+				if (group.getId() > 0)
+					((AbstractPrincipal)group).setCollection(broker, collectionGroups);
+			}
+
+                        for (A account : usersByName.values()) {
+				if (account.getId() > 0)
+					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
+			}
+
+
 
 
 		} catch (Exception e) {
