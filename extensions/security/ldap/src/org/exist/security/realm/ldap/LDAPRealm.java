@@ -21,6 +21,7 @@
  */
 package org.exist.security.realm.ldap;
 
+import java.util.List;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
@@ -39,6 +40,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
+import org.exist.security.Group;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
@@ -104,18 +106,42 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
 
         AbstractAccount account = (AbstractAccount) getAccount(null, username);
         if(account == null) {
-            account = (AbstractAccount) createAccountInDatabase(username);
+            account = (AbstractAccount) createAccountInDatabase(null, username);
         }
 
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private LDAPAccountImpl createAccountInDatabase(String username) throws AuthenticationException {
+    private LDAPAccountImpl createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
         Subject currentSubject = getDatabase().getSubject();
         try {
             getDatabase().setSubject(sm.getSystemSubject());
-            return (LDAPAccountImpl)sm.addAccount(new UserAider(ID, username));
-            //return sm.addAccount(instantiateAccount(ID, username));
+            LDAPAccountImpl account = (LDAPAccountImpl)sm.addAccount(new UserAider(ID, username));
+            //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
+
+            //TODO expand to a general method that rewrites the useraider based on the realTransformation
+            boolean updatedAccount = false;
+            if(ensureContextFactory().getTransformationContext() != null){
+                List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
+                if(additionalGroupNames != null) {
+                    for(String additionalGroupName : additionalGroupNames) {
+                        Group additionalGroup = sm.getGroup(invokingUser, additionalGroupName);
+                        if(additionalGroup != null) {
+                            account.addGroup(additionalGroup);
+                            updatedAccount = true;
+                        }
+                    }
+                }
+            }
+            if(updatedAccount) {
+                boolean updated = sm.updateAccount(invokingUser, account);
+                if(!updated) {
+                    LOG.error("Could not update account");
+                }
+            }
+
+            return account;
+
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
@@ -169,7 +195,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                 } else {
                     //found a user from ldap so cache them and return
                     try {
-                        return createAccountInDatabase(name);
+                        return createAccountInDatabase(invokingUser, name);
                         //registerAccount(acct); //TODO do we need this
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
