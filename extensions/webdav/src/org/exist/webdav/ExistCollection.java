@@ -50,6 +50,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.VirtualTempFile;
+import org.exist.util.VirtualTempFileInputSource;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
@@ -331,12 +333,11 @@ public class ExistCollection extends ExistResource {
         return newCollection;
     }
 
-    
     public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
 
         LOG.debug("Create '" + newName + "' in '" + xmldbUri + "'");
-     
+
         XmldbURI newNameUri = XmldbURI.create(newName);
 
         // Get mime, or NULL when not available
@@ -352,22 +353,23 @@ public class ExistCollection extends ExistResource {
         // create temp file and store. Existdb needs to read twice from a stream.
         BufferedInputStream bis = new BufferedInputStream(is);
 
-        File tmpFile = File.createTempFile("Miltonwebdavtmp", "tmp");
-        FileOutputStream fos = new FileOutputStream(tmpFile);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        VirtualTempFile vtf = new VirtualTempFile();
+
+        BufferedOutputStream bos = new BufferedOutputStream(vtf);
 
         // Perform actual copy
         IOUtils.copy(bis, bos);
         bis.close();
         bos.close();
+        vtf.close();
 
         // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
         // XML documents are not supported a small file will be created.
-        if(mime.isXMLType() && tmpFile.length()==0L){
+        if (mime.isXMLType() && vtf.length() == 0L) {
             LOG.debug("Creating dummy XML file for null resource lock '" + newNameUri + "'");
-            fos = new FileOutputStream(tmpFile);
-            IOUtils.write("<null_resource/>", fos);
-            fos.close();
+            vtf = new VirtualTempFile();
+            IOUtils.write("<null_resource/>", vtf);
+            vtf.close();
         }
 
         // Start transaction
@@ -385,24 +387,23 @@ public class ExistCollection extends ExistResource {
                 transact.abort(txn);
                 throw new CollectionDoesNotExistException(xmldbUri + "");
             }
-            
+
 
             if (mime.isXMLType()) {
                 LOG.debug("Inserting XML document '" + mime.getName() + "'");
 
                 // Stream into database
-                String url = tmpFile.toURI().toASCIIString();
-                InputSource inputSource = new InputSource(url);
-                IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, inputSource);
+                VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf);
+                IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, vtfis);
                 DocumentImpl doc = info.getDocument();
                 doc.getMetadata().setMimeType(mime.getName());
-                collection.store(txn, broker, info, inputSource, false);
+                collection.store(txn, broker, info, vtfis, false);
 
             } else {
                 LOG.debug("Inserting BINARY document '" + mime.getName() + "'");
 
                 // Stream into database
-                FileInputStream fis = new FileInputStream(tmpFile);
+                InputStream fis = vtf.getByteStream();
                 bis = new BufferedInputStream(fis);
                 DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, bis,
                         mime.getName(), length.intValue());
@@ -447,8 +448,8 @@ public class ExistCollection extends ExistResource {
 
         } finally {
 
-            if(tmpFile!=null){
-                tmpFile.delete();
+            if (vtf != null) {
+                vtf.delete();
             }
 
             // TODO: check if can be done earlier
@@ -463,7 +464,7 @@ public class ExistCollection extends ExistResource {
 
         // Send the result back to the client
         XmldbURI newResource = xmldbUri.append(newName);
-        
+
         return newResource;
     }
 
