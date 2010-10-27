@@ -233,13 +233,27 @@ public class OptimizerTest {
 
     @Test
     public void reversePaths() {
+
         int r = execute("/root//b/parent::c[b = 'two']", false);
         Assert.assertEquals(1, r);
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
 
         r = execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", false);
-        Assert.assertEquals(17, r);
+        Assert.assertEquals(13, r);
         execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
+    }
+
+    @Test
+    public void reversePathsWithWildcard() {
+        //parent with wildcard
+        int r = execute("/root//b/parent::*[b = 'two']", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b/parent::*[b = 'two']", true, MSG_OPT_ERROR, r);
+
+        //ancestor with wildcard
+        r = execute("//mods:url/ancestor::*[mods:titleInfo/mods:title &= 'and']", false);
+        Assert.assertEquals(13, r);
+        execute("//mods:url/ancestor::*[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
     @Test
@@ -359,13 +373,18 @@ public class OptimizerTest {
                 resource.setContent(file);
                 testCollection.storeResource(resource);
             }
-            
-            File modsFile = new File(dir, "eXist/exist-articles.xml");
-            XMLResource doc =
+
+            File eXistModsFilesDir = new File(dir, "eXist");
+            File eXistModsFiles[] = eXistModsFilesDir.listFiles(new XMLFilenameFilter());
+
+            for(File eXistModsFile : eXistModsFiles) {
+                System.out.println("Create resource from "+eXistModsFile.getAbsolutePath());
+                XMLResource doc =
             	(XMLResource) testCollection.createResource(
-            			modsFile.getName(), "XMLResource" );
-            			doc.setContent(modsFile);
-            			testCollection.storeResource(doc);
+            			eXistModsFile.getName(), "XMLResource" );
+                doc.setContent(eXistModsFile);
+                testCollection.storeResource(doc);
+            }
         } catch (Exception e) {
 			e.printStackTrace();
             Assert.fail(e.getMessage());
