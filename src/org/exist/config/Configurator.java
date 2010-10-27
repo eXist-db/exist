@@ -35,15 +35,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -88,29 +86,35 @@ public class Configurator {
 
     protected static ConcurrentMap<XmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<XmldbURI, Configuration>();
 
-    private static Map<Class<Configurable>, Map<String, Field>> map = 
+    /*private static Map<Class<Configurable>, Map<String, Field>> map =
         new HashMap<Class<Configurable>, Map<String, Field>>();
+    */
 
     //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
-    protected static Map<String, Field> getProperyFieldMap(Class<?> clazz) {
-        if (map.containsKey(clazz))
-            return map.get(clazz);
-        Map<String, Field> link = new HashMap<String, Field>();
+    protected static ConfigurationAnnotatedFields getConfigurationAnnotatedFields(Class<?> clazz) {
+
+        /*if (map.containsKey(clazz))
+            return map.get(clazz);*/
+
+        ConfigurationAnnotatedFields fields = new ConfigurationAnnotatedFields();
+
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(ConfigurationFieldAsAttribute.class)) {
-                link.put(field.getAnnotation(ConfigurationFieldAsAttribute.class).value(), field);
+                fields.addAttribute(new ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>(field.getAnnotation(ConfigurationFieldAsAttribute.class), field));
             } else if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-                link.put(field.getAnnotation(ConfigurationFieldAsElement.class).value(), field);
+                fields.addElement(new ConfigurationAnnotatedField<ConfigurationFieldAsElement>(field.getAnnotation(ConfigurationFieldAsElement.class), field));
             }
         }
 
         Class<?> superClass = clazz.getSuperclass();
         if (superClass.isAnnotationPresent(ConfigurationClass.class)) {
-            //if (superClass.getAnnotation(ConfigurationClass.class).value().equals( clazz.getAnnotation(ConfigurationClass.class).value() ))
-            link.putAll( getProperyFieldMap(superClass) );
+            ConfigurationAnnotatedFields superFields = getConfigurationAnnotatedFields(superClass);
+
+            fields.addAllAttributes(superFields.getAttributes());
+            fields.addAllElements(superFields.getElements());
         }
 
-        return link;
+        return fields;
     }
 
     public static Method searchForSetMethod(Class<?> clazz, Field field) {
@@ -187,7 +191,7 @@ public class Configurator {
     }
 
     private static Configuration configureByCurrent(Configurable instance, Configuration configuration) {
-        Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+        ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
         Set<String> properties = configuration.getProperties();
 
         if (properties.size() == 0) {
@@ -197,12 +201,13 @@ public class Configurator {
 
         //process simple types: String, int, long, boolean
         for (String property : properties) {
-            if (!properyFieldMap.containsKey(property)) {
+            ConfigurationAnnotatedField annotatedField = annotatedFields.findByAnnotationValue(property);
+            if(annotatedField == null) {
                 System.out.println("unused property "+property+" @"+configuration.getName());
                 continue;
             }
 
-            Field field = properyFieldMap.get(property);
+            Field field = annotatedField.getField();
             field.setAccessible(true);
 
             Object value = null;
@@ -227,6 +232,7 @@ public class Configurator {
                     value = configuration.getPropertyBoolean(property);
                 } else if (typeName.equals("java.util.List")) {
                     //skip, it will be processed as structure
+                    //TODO what about simple generic types?
                 } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
                     value = org.exist.xmldb.XmldbURI.create(
                             configuration.getProperty(property)
@@ -235,6 +241,8 @@ public class Configurator {
                     value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchContext", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPTransformationContext")) {
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPTransformationContext", configuration);
                 } else {
                     LOG.warn("skip unsupported configuration value type "+field.getType());
                 }
@@ -268,14 +276,12 @@ public class Configurator {
         }
         //process simple structures: List
         try {
-            for (Field field : properyFieldMap.values()) {
+            for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
+                final Field field = element.getField();
                 String typeName = field.getType().getName();
                 if (typeName.equals("java.util.List")) {
-                    if (!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-                        LOG.warn("Wrong annotation for structure: "+field.getName()+", list can't be configurated throw attribute.");
-                        continue;
-                    }
-                    String confName = field.getAnnotation(ConfigurationFieldAsElement.class).value();
+                
+                    String confName = element.getAnnotation().value();
                     field.setAccessible(true);
                     List<Configurable> list = (List<Configurable>) field.get(instance);
 
@@ -446,8 +452,14 @@ public class Configurator {
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return; //UNDERSTAND: throw exception
         }
-        Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
-        final Field field = properyFieldMap.get(referenceBy);
+        
+        ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+        ConfigurationAnnotatedField annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
+        if(annotatedField == null) {
+            return; //UNDERSTAND: throw exception
+        }
+
+        final Field field = annotatedField.getField();
         if (field == null) {
             LOG.warn("Reference field '"+referenceBy+"' can't be found for class '"+clazz+"'");
             return;
@@ -526,12 +538,12 @@ public class Configurator {
             boolean simple = true;
 
             //store field's values as attributes or elements depends on annotation
-            Map<String, Field> properyFieldMap = getProperyFieldMap(instance.getClass());
+            ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
 
             try {
                 //pass one - extract just attributes
-                for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
-                    final Field field = entry.getValue();
+                for (ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attr : annotatedFields.getAttributes()) {
+                    final Field field = attr.getField();
                     field.setAccessible(true);
 
                     //skip elements
@@ -546,13 +558,13 @@ public class Configurator {
 
                     //now we just have attributes
                     String value = extractFieldValue(field, instance);
-                    serializer.attribute(new QName(entry.getKey(), null), value);
+                    serializer.attribute(new QName(attr.getAnnotation().value(), null), value);
                 }
 
                 //pass two - just elements or text nodes
-                for (Entry<String, Field> entry : properyFieldMap.entrySet()) {
+                for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                     simple = true;
-                    final Field field = entry.getValue();
+                    final Field field = element.getField();
                     field.setAccessible(true);
                 
                     //skip attributes
@@ -599,10 +611,10 @@ public class Configurator {
                     
                     if (value != null && value.length() > 0){
                         if (simple) {
-                            QName qnSimple = new QName(entry.getKey(), Configuration.NS);
+                            QName qnSimple = new QName(element.getAnnotation().value(), Configuration.NS);
                             serializer.startElement(qnSimple, null);
                             serializer.characters(value);
-                            serializer.endElement(new QName(entry.getKey(), null));
+                            serializer.endElement(new QName(element.getAnnotation().value(), null));
                         } else {
                             serializer.characters(value);
                         }
@@ -771,7 +783,7 @@ public class Configurator {
             }
             hotConfigs.clear();
         }
-        map.clear();
+        //map.clear();
     }
 
     public static void unregister(Configuration configuration) {
@@ -796,6 +808,100 @@ public class Configurator {
             return cstr.newInstance(configuration);
         } catch(Exception e) {
             throw new ConfigurationException(e.getMessage(), e);
+        }
+    }
+
+    private static class ConfigurationAnnotatedFields implements Iterable<ConfigurationAnnotatedField> {
+        private List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> attributes = new ArrayList<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>>();
+        private List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> elements = new ArrayList<ConfigurationAnnotatedField<ConfigurationFieldAsElement>>();
+
+        public void addAttribute(ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attribute) {
+            this.attributes.add(attribute);
+        }
+
+        public void addAllAttributes(List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> attributes) {
+            this.attributes.addAll(attributes);
+        }
+
+        public void addElement(ConfigurationAnnotatedField<ConfigurationFieldAsElement> element) {
+            this.elements.add(element);
+        }
+
+        public void addAllElements(List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> elements) {
+            this.elements.addAll(elements);
+        }
+
+        public List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> getAttributes() {
+            return attributes;
+        }
+
+        public List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> getElements() {
+            return elements;
+        }
+
+        public ConfigurationAnnotatedField findByAnnotationValue(String value) {
+            for(ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attr : attributes) {
+                if(attr.getAnnotation().value().equals(value)) {
+                    return attr;
+                }
+            }
+
+            for(ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : elements) {
+                if(element.getAnnotation().value().equals(value)) {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public Iterator<ConfigurationAnnotatedField> iterator() {
+            return new Iterator<ConfigurationAnnotatedField>(){
+
+                private Iterator<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> itAttributes = attributes.iterator();
+                private Iterator<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> itElements = elements.iterator();
+
+                @Override
+                public boolean hasNext() {
+                    return itAttributes.hasNext() | itElements.hasNext();
+                }
+
+                @Override
+                public ConfigurationAnnotatedField next() {
+                    if(itAttributes.hasNext()){
+                        return itAttributes.next();
+                    } else if(itElements.hasNext()){
+                        return itElements.next();
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+            };
+        }
+    }
+
+    private static class ConfigurationAnnotatedField<T> {
+        private final T annotation;
+        private final Field field;
+
+        public ConfigurationAnnotatedField(T annotation, Field field) {
+            this.annotation = annotation;
+            this.field = field;
+        }
+
+        public T getAnnotation() {
+            return annotation;
+        }
+
+        public Field getField() {
+            return field;
         }
     }
 }
