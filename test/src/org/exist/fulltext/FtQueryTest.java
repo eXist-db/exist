@@ -124,19 +124,11 @@ public class FtQueryTest extends XMLTestCase {
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
 	        assertEquals(1, result.getSize());
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
-	        assertEquals(3, result.getSize());
+	        assertEquals(2, result.getSize());
 
             result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
                     "//mods:titleInfo/mods:title[. &= 'alternative']");
             assertEquals(0, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[attribute() &= 'alternative']");
-            assertEquals(9, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[@type &= 'alternative']");
-            assertEquals(9, result.getSize());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -176,19 +168,11 @@ public class FtQueryTest extends XMLTestCase {
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, ('self', 'employed'))]");
 	        assertEquals(1, result.getSize());
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
-	        assertEquals(3, result.getSize());
+	        assertEquals(2, result.getSize());
 
             result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
                     "//mods:titleInfo/mods:title[. &= 'alternative']");
             assertEquals(0, result.getSize());
-
-//            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-//                    "//mods:titleInfo/mods:title[text:match-all(attribute(), 'alternative')]");
-//            assertEquals(9, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[text:match-all(@type, 'alternative')]");
-            assertEquals(9, result.getSize());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -224,7 +208,7 @@ public class FtQueryTest extends XMLTestCase {
 
 	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
-	        assertEquals(32, result.getSize());
+	        assertEquals(14, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -462,7 +446,7 @@ public class FtQueryTest extends XMLTestCase {
                 Resource resource = i.nextResource();
                 System.out.println(resource.getContent());
             }
-            assertEquals(5, result.getSize());
+            assertEquals(8, result.getSize());
 
             query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//node, " +
                 "xs:QName('node'), (), util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
@@ -688,7 +672,7 @@ public class FtQueryTest extends XMLTestCase {
      */
     protected void tearDown() {
     	try {
-	        TestUtils.cleanupDB();
+//	        TestUtils.cleanupDB();
 
             DatabaseManager.deregisterDatabase(database);
 	        DatabaseInstanceManager dim =
