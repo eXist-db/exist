@@ -49,14 +49,15 @@ public class DLNBase {
     public final static int BITS_PER_UNIT = 4;
 
     public final static int[] BIT_MASK = new int[8];
+
     static {
-    	BIT_MASK[0] = 0x80;
-    	for (int i = 1; i < 8; i++) {
-    		int mask = 1 << (7 - i);
-    		BIT_MASK[i] = mask + BIT_MASK[i - 1];
-    	}
+        BIT_MASK[0] = 0x80;
+        for (int i = 1; i < 8; i++) {
+            int mask = 1 << (7 - i);
+            BIT_MASK[i] = mask + BIT_MASK[i - 1];
+        }
     }
-    
+
     /**
      * Lists the maximum number that can be encoded
      * by a given number of units. PER_COMPONENT_SIZE[0]
@@ -83,7 +84,7 @@ public class DLNBase {
 
     /** A 0-bit is used to mark the start of a new level */
     protected final static int LEVEL_SEPARATOR = 0;
-    
+
     /** 
      * A 1-bit marks the start of a sub level, which is logically a part
      * of the current level.
@@ -139,7 +140,7 @@ public class DLNBase {
     public DLNBase(short bitCnt, VariableByteInput is) throws IOException {
         int blen = bitCnt / 8;
         if (bitCnt % 8 > 0)
-        	++blen;
+            ++blen;
         bits = new byte[blen];
         is.read(bits);
         bitIndex = bitCnt - 1;
@@ -148,7 +149,7 @@ public class DLNBase {
     public DLNBase(byte prefixLen, DLNBase previous, short bitCnt, VariableByteInput is) throws IOException {
         int blen = bitCnt / 8;
         if (bitCnt % 8 > 0)
-        	++blen;
+            ++blen;
         bits = new byte[blen];
         if (previous.bits.length < prefixLen)
             throw new IOException("Found wrong prefix len: " + prefixLen + ". Previous: " + previous.toString());
@@ -179,7 +180,7 @@ public class DLNBase {
         if (bitIndex > -1) setNextBit(isSubLevel);
         setCurrentLevelId(levelId);
     }
-    
+
     /**
      * Increments the last level id by one.
      */
@@ -196,14 +197,13 @@ public class DLNBase {
         if (levelId < 1)
             levelId = 0;
         setCurrentLevelId(levelId);
-
         // after decrementing, the DLN may need less bytes
         // than before. Remove the unused bytes, otherwise binary
         // comparisons may get wrong.
         int len = bitIndex + 1;
         int blen = len / 8;
         if (len % 8 > 0)
-        	++blen;
+            ++blen;
         if (blen < bits.length) {
             byte[] nbits = new byte[blen];
             System.arraycopy(bits, 0, nbits, 0, blen);
@@ -226,9 +226,7 @@ public class DLNBase {
         for (int i = 1; i < units; i++) {
             setNextBit(true);
         }
-
         setNextBit(false);
-
         for (int i = numBits - 1; i >= 0; i--) {
             setNextBit(((levelId >>> i) & 1) != 0);
         }
@@ -244,9 +242,9 @@ public class DLNBase {
         int units = unitsUsed(startBit, bits);
         startBit += units;
         int numBits = bitWidth(units);
-//            System.err.println("startBit: " + startBit + "; bitIndex: " + bitIndex + 
-//                    "; units: " + units + ": numBits: " + numBits + " " + toBitString() +
-//                    "; bits: " + bits.length);
+        //System.err.println("startBit: " + startBit + "; bitIndex: " + bitIndex + 
+        //"; units: " + units + ": numBits: " + numBits + " " + toBitString() +
+        //"; bits: " + bits.length);
         int id = 0;
         for (int i = numBits - 1; i >= 0; i--) {
             if ((bits[startBit >> UNIT_SHIFT] & (1 << ((7 - startBit++) & 7))) != 0) {
@@ -305,10 +303,10 @@ public class DLNBase {
             bit += units;
             bit += bitWidth(units);
             if (bit < bitIndex) {
-            	if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
-            		++count;
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
+                    ++count;
             } else
-            	++count;
+                ++count;
         }
         return count;
     }
@@ -337,7 +335,7 @@ public class DLNBase {
         }
         return count;
     }
-    
+
     /**
      * Return all level ids converted to int.
      *
@@ -360,14 +358,14 @@ public class DLNBase {
      * @return start-offset of the last level id.
      */
     public int lastLevelOffset() {
-    	int bit = 0;
+        int bit = 0;
         int lastOffset = 0;
         while (bit <= bitIndex) {
-        	// check if the next bit starts a new level or just a sub-level component
+            // check if the next bit starts a new level or just a sub-level component
             if (bit > 0) {
-            	if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR)
-            		lastOffset = bit + 1;
-            	++bit;
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR)
+                    lastOffset = bit + 1;
+                ++bit;
             }
             int units = unitsUsed(bit, bits);
             bit += units;
@@ -375,7 +373,7 @@ public class DLNBase {
         }
         return lastOffset;
     }
-    
+
     protected int lastFieldPosition() {
         int bit = 0;
         int lastOffset = 0;
@@ -403,7 +401,6 @@ public class DLNBase {
             System.arraycopy(bits, 0, new_bits, 0, bits.length);
             bits = new_bits;
         }
-
         if (value)
             bits[bitIndex >> UNIT_SHIFT] |= 1 << ((7 - bitIndex) & 7);
         else
@@ -440,15 +437,15 @@ public class DLNBase {
     }
 
     protected void compact() {
-    	int units = bitIndex + 1;
-    	int blen = units / 8;
+        int units = bitIndex + 1;
+        int blen = units / 8;
         if (units % 8 > 0)
-        	++blen;
+            ++blen;
         byte[] nbits = new byte[blen];
         System.arraycopy(bits, 0, nbits, 0, blen);
         this.bits = nbits;
     }
-    
+
     public void serialize(byte[] data, int offset) {
         System.arraycopy(bits, 0, data, offset, bits.length);
     }
@@ -495,7 +492,7 @@ public class DLNBase {
         return (bits[bytes] & BIT_MASK[remaining]) - 
             (other.bits[bytes] & BIT_MASK[remaining]);
     }
-    
+
     /**
      * Checks if the current DLN starts with the
      * same bit sequence as other. This is used
@@ -504,17 +501,17 @@ public class DLNBase {
      * @param other
      */
     public boolean startsWith(DLNBase other) {
-    	if (other.bitIndex > bitIndex)
-    		return false;
-    	int bytes = other.bitIndex / 8;
-    	int remaining = other.bitIndex % 8;
-    	for (int i = 0; i < bytes; i++) {
-    		if (bits[i] != other.bits[i])
-    			return false;
-    	}
-    	return (bits[bytes] & BIT_MASK[remaining]) == (other.bits[bytes] & BIT_MASK[remaining]);
+        if (other.bitIndex > bitIndex)
+            return false;
+        int bytes = other.bitIndex / 8;
+        int remaining = other.bitIndex % 8;
+        for (int i = 0; i < bytes; i++) {
+            if (bits[i] != other.bits[i])
+                return false;
+        }
+        return (bits[bytes] & BIT_MASK[remaining]) == (other.bits[bytes] & BIT_MASK[remaining]);
     }
-    
+
     public String debug() {
         StringBuilder buf = new StringBuilder();
         buf.append(toString());
@@ -526,15 +523,16 @@ public class DLNBase {
         return buf.toString();
     }
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         int offset = 0;
         while (offset <= bitIndex) {
             if (offset > 0) { 
-            	if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
-            		buf.append('.');
-            	else
-            		buf.append('/');
+                if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
+                    buf.append('.');
+                else
+                    buf.append('/');
             }
             int id = getLevelId(offset);
             buf.append(id);

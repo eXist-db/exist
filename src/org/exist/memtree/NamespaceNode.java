@@ -31,6 +31,9 @@ import org.w3c.dom.TypeInfo;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 
@@ -197,5 +200,26 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
         result.append( getValue() );
         result.append( "} " );
         return( result.toString() );
+    }
+
+    @Override
+    public void selectAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectChildren(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void selectDescendantAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
     }
 }

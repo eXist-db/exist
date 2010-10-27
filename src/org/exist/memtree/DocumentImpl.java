@@ -288,7 +288,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if( nodeKind == null ) {
             init();
         }
-
         if( ( references == null ) || ( nextRef == references.length ) ) {
             growReferences();
         }
@@ -310,12 +309,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if( nodeKind == null ) {
             init();
         }
-
         if( ( nodeNr > 0 ) && ( nodeKind[nodeNr] != Node.ELEMENT_NODE ) ) {
             throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node." ) );
         }
         int prevAttr = nextAttr - 1;
-
         // check if an attribute with the same qname exists in the parent element
         while( ( nodeNr > 0 ) && ( prevAttr > -1 ) && ( attrParent[prevAttr] == nodeNr ) ) {
             QName prevQn = attrName[prevAttr--];
@@ -323,7 +320,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                 throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQDY0025: element has more than one attribute '" + qname + "'" ) );
             }
         }
-
         if( nextAttr == attrName.length ) {
             growAttributes();
         }
@@ -332,7 +328,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         attrName[nextAttr]   = namePool.getSharedName( qname );
         attrValue[nextAttr]  = value;
         attrType[nextAttr]   = type;
-
         if( alpha[nodeNr] < 0 ) {
             alpha[nodeNr] = nextAttr;
         }
@@ -376,32 +371,25 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     private void grow() {
         int     newSize     = ( size * 3 ) / 2;
-
         short[] newNodeKind = new short[newSize];
         System.arraycopy( nodeKind, 0, newNodeKind, 0, size );
         nodeKind = newNodeKind;
-
         short[] newTreeLevel = new short[newSize];
         System.arraycopy( treeLevel, 0, newTreeLevel, 0, size );
         treeLevel = newTreeLevel;
-
         int[] newNext = new int[newSize];
         Arrays.fill( newNext, -1 );
         System.arraycopy( next, 0, newNext, 0, size );
         next = newNext;
-
         QName[] newNodeName = new QName[newSize];
         System.arraycopy( nodeName, 0, newNodeName, 0, size );
         nodeName = newNodeName;
-
         NodeId[] newNodeId = new NodeId[newSize];
         System.arraycopy( nodeId, 0, newNodeId, 0, size );
         nodeId = newNodeId;
-
         int[] newAlpha = new int[newSize];
         System.arraycopy( alpha, 0, newAlpha, 0, size );
         alpha = newAlpha;
-
         int[] newAlphaLen = new int[newSize];
         Arrays.fill( newAlphaLen, -1 );
         System.arraycopy( alphaLen, 0, newAlphaLen, 0, size );
@@ -411,23 +399,18 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     private void growAttributes() {
         int     size        = attrName.length;
         int     newSize     = ( size * 3 ) / 2;
-
         QName[] newAttrName = new QName[newSize];
         System.arraycopy( attrName, 0, newAttrName, 0, size );
         attrName = newAttrName;
-
         int[] newAttrParent = new int[newSize];
         System.arraycopy( attrParent, 0, newAttrParent, 0, size );
         attrParent = newAttrParent;
-
         String[] newAttrValue = new String[newSize];
         System.arraycopy( attrValue, 0, newAttrValue, 0, size );
         attrValue = newAttrValue;
-
         int[] newAttrType = new int[newSize];
         System.arraycopy( attrType, 0, newAttrType, 0, size );
         attrType = newAttrType;
-
         NodeId[] newNodeId = new NodeId[newSize];
         System.arraycopy( attrNodeId, 0, newNodeId, 0, size );
         attrNodeId = newNodeId;
@@ -439,7 +422,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         } else {
             int         size            = references.length;
             int         newSize         = ( size * 3 ) / 2;
-
             NodeProxy[] newReferences   = new NodeProxy[newSize];
             System.arraycopy( references, 0, newReferences, 0, size );
             references = newReferences;
@@ -454,11 +436,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         } else {
             int     size     = namespaceCode.length;
             int     newSize  = ( size * 3 ) / 2;
-
             QName[] newCodes = new QName[newSize];
             System.arraycopy( namespaceCode, 0, newCodes, 0, size );
             namespaceCode = newCodes;
-
             int[] newParents = new int[newSize];
             System.arraycopy( namespaceParent, 0, newParents, 0, size );
             namespaceParent = newParents;
@@ -484,37 +464,30 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         NodeImpl node;
 
         switch( nodeKind[nodeNr] ) {
-
             case Node.ELEMENT_NODE: {
                 node = new ElementImpl( this, nodeNr );
                 break;
             }
-
             case Node.TEXT_NODE: {
                 node = new TextImpl( this, nodeNr );
                 break;
             }
-
             case Node.COMMENT_NODE: {
                 node = new CommentImpl( this, nodeNr );
                 break;
             }
-
             case Node.PROCESSING_INSTRUCTION_NODE: {
                 node = new ProcessingInstructionImpl( this, nodeNr );
                 break;
             }
-
             case Node.CDATA_SECTION_NODE: {
                 node = new CDATASectionImpl( this, nodeNr );
                 break;
             }
-
             case NodeImpl.REFERENCE_NODE: {
                 node = new ReferenceNode( this, nodeNr );
                 break;
             }
-
             default: {
                 throw( new DOMException( DOMException.NOT_FOUND_ERR, "node not found" ) );
             }
@@ -560,16 +533,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                     DocumentType doctype ) throws DOMException {
                 return( null );
             }
-
             public DocumentType createDocumentType( String qualifiedName, 
                     String publicId, String systemId ) throws DOMException {
                 return( null );
             }
-
             public Object getFeature( String feature, String version ) {
                 return( null );
             }
-
             public boolean hasFeature( String feature, String version ) {
                 return( "XML".equals( feature ) && ( "1.0".equals( version ) || "2.0".equals( version ) ) );
             }
@@ -659,27 +629,21 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  an <code>int</code> value
      */
-    public int getParentNodeFor( int nodeNumber )
-    {
+    public int getParentNodeFor( int nodeNumber ) {
         int nextNode = next[nodeNumber];
-
         while( nextNode > nodeNumber ) {
             nextNode = next[nextNode];
         }
         return( nextNode );
     }
 
-
     @Override
-    public void selectChildren( NodeTest test, Sequence result ) throws XPathException
-    {
+    public void selectChildren( NodeTest test, Sequence result ) throws XPathException {
         if( size == 1 ) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 result.add( next );
             }
@@ -687,21 +651,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
     @Override
-    public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) throws XPathException
-    {
+    public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result )
+            throws XPathException {
         if( includeSelf && test.matches( this ) ) {
             result.add( this );
         }
-
         if( size == 1 ) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 result.add( next );
             }
@@ -710,17 +670,14 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
     @Override
-    public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException
-    {
+    public void selectDescendantAttributes( NodeTest test, Sequence result )
+            throws XPathException {
         if( size == 1 ) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 result.add( next );
             }
@@ -729,7 +686,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-    public NodeImpl selectById( String id ) throws XPathException {
+    public NodeImpl selectById( String id ) {
         if( size == 1 ) {
             return( null );
         }
@@ -747,19 +704,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( null );
     }
 
-    public NodeImpl selectByIdref( String id ) throws XPathException {
+    public NodeImpl selectByIdref( String id ) {
         if( size == 1 ) {
             return( null );
         }
         ElementImpl   root = (ElementImpl)getDocumentElement();
         AttributeImpl attr = getIdrefAttribute( root.getNodeNumber(), id );
-
         if( attr != null ) {
             return( attr );
         }
         int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode  = root.getNodeNumber();
-
         while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
             if( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) {
                 attr = getIdrefAttribute( nextNode, id );
@@ -771,14 +726,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( null );
     }
 
-    private boolean hasIdAttribute( int nodeNumber, String id )
-    {
+    private boolean hasIdAttribute( int nodeNumber, String id ) {
         int attr = document.alpha[nodeNumber];
-
         if( -1 < attr ) {
-
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-
                 if( ( document.attrType[attr] == AttributeImpl.ATTR_ID_TYPE ) && id.equals( document.attrValue[attr] ) ) {
                     return( true );
                 }
@@ -788,15 +739,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( false );
     }
 
-
-    private AttributeImpl getIdrefAttribute( int nodeNumber, String id )
-    {
+    private AttributeImpl getIdrefAttribute( int nodeNumber, String id ) {
         int attr = document.alpha[nodeNumber];
-
         if( -1 < attr ) {
-
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-
                 if( ( document.attrType[attr] == AttributeImpl.ATTR_IDREF_TYPE ) && id.equals( document.attrValue[attr] ) ) {
                     return( new AttributeImpl( this, attr ) );
                 }
@@ -806,17 +752,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( null );
     }
 
-
     @Override
-    public boolean matchChildren( NodeTest test ) throws XPathException
-    {
+    public boolean matchChildren( NodeTest test ) throws XPathException {
         if( size == 1 ) {
             return( false );
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 return( true );
             }
@@ -825,25 +767,19 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( false );
     }
 
-
     @Override
-    public boolean matchDescendants( boolean includeSelf, NodeTest test ) throws XPathException
-    {
+    public boolean matchDescendants( boolean includeSelf, NodeTest test ) throws XPathException {
         if( includeSelf && test.matches( this ) ) {
             return( true );
         }
-
         if( size == 1 ) {
             return( true );
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 return( true );
             }
-
             if( next.matchDescendants( includeSelf, test ) ) {
                 return( true );
             }
@@ -852,21 +788,16 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( false );
     }
 
-
     @Override
-    public boolean matchDescendantAttributes( NodeTest test ) throws XPathException
-    {
+    public boolean matchDescendantAttributes( NodeTest test ) throws XPathException {
         if( size == 1 ) {
             return( false );
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-
         while( next != null ) {
-
             if( test.matches( next ) ) {
                 return( true );
             }
-
             if( next.matchDescendantAttributes( test ) ) {
                 return( true );
             }
@@ -875,16 +806,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( false );
     }
 
-
     /*
     * (non-Javadoc)
     *
     * @see org.w3c.dom.Document#createElement(java.lang.String)
     */
-    public Element createElement( String tagName ) throws DOMException
-    {
+    public Element createElement( String tagName ) throws DOMException {
         QName qn;
-
         try {
             qn = QName.parse( getContext(), tagName );
         }
@@ -892,58 +820,48 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             throw( new DOMException( DOMException.NAMESPACE_ERR, e.getMessage() ) );
         }
         int nodeNr = addNode( Node.ELEMENT_NODE, (short)1, qn );
-
         return( new ElementImpl( this, nodeNr ) );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createDocumentFragment()
      */
-    public DocumentFragment createDocumentFragment()
-    {
+    public DocumentFragment createDocumentFragment() {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createTextNode(java.lang.String)
      */
-    public Text createTextNode( String arg0 )
-    {
+    public Text createTextNode( String arg0 ) {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createComment(java.lang.String)
      */
-    public Comment createComment( String arg0 )
-    {
+    public Comment createComment( String arg0 ) {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createCDATASection(java.lang.String)
      */
-    public CDATASection createCDATASection( String arg0 ) throws DOMException
-    {
+    public CDATASection createCDATASection( String arg0 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
@@ -951,52 +869,43 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createProcessingInstruction(java.lang.String,
      *           java.lang.String)
      */
-    public ProcessingInstruction createProcessingInstruction( String arg0, String arg1 ) throws DOMException
-    {
+    public ProcessingInstruction createProcessingInstruction( String arg0, String arg1 )
+            throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createAttribute(java.lang.String)
      */
-    public Attr createAttribute( String arg0 ) throws DOMException
-    {
+    public Attr createAttribute( String arg0 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#createEntityReference(java.lang.String)
      */
-    public EntityReference createEntityReference( String arg0 ) throws DOMException
-    {
+    public EntityReference createEntityReference( String arg0 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
      */
-    public NodeList getElementsByTagName( String name )
-    {
+    public NodeList getElementsByTagName( String name ) {
         NodeListImpl nl = new NodeListImpl();
-
         //int nodeNr = 1;
         for( int i = 1; i < size; i++ ) {
-
             if( nodeKind[i] == Node.ELEMENT_NODE ) {
                 QName qn = nodeName[i];
-
                 if( qn.getStringValue().equals( name ) ) {
                     nl.add( getNode( i ) );
                 }
@@ -1005,18 +914,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( nl );
     }
 
-
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#importNode(org.w3c.dom.Node, boolean)
      */
-    public Node importNode( Node arg0, boolean arg1 ) throws DOMException
-    {
+    public Node importNode( Node arg0, boolean arg1 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
@@ -1024,12 +930,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createElementNS(java.lang.String,
      *           java.lang.String)
      */
-    public Element createElementNS( String arg0, String arg1 ) throws DOMException
-    {
+    public Element createElementNS( String arg0, String arg1 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
@@ -1037,12 +941,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createAttributeNS(java.lang.String,
      *           java.lang.String)
      */
-    public Attr createAttributeNS( String arg0, String arg1 ) throws DOMException
-    {
+    public Attr createAttributeNS( String arg0, String arg1 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
@@ -1050,24 +952,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String,
      *           java.lang.String)
      */
-    public NodeList getElementsByTagNameNS( String arg0, String arg1 )
-    {
+    public NodeList getElementsByTagNameNS( String arg0, String arg1 ) {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
      *
      * @see org.w3c.dom.Document#getElementById(java.lang.String)
      */
-    public Element getElementById( String arg0 )
-    {
+    public Element getElementById( String arg0 ) {
         // TODO Auto-generated method stub
         return( null );
     }
-
 
     /*
      * (non-Javadoc)
@@ -1075,11 +973,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Node#getOwnerDocument()
      */
     @Override
-    public org.w3c.dom.Document getOwnerDocument()
-    {
+    public org.w3c.dom.Document getOwnerDocument() {
         return( this );
     }
-
 
     /**
      * Copy the document fragment starting at the specified node to the given document builder.
@@ -1089,43 +985,33 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  SAXException  DOCUMENT ME!
      */
-    public void copyTo( NodeImpl node, DocumentBuilderReceiver receiver ) throws SAXException
-    {
+    public void copyTo( NodeImpl node, DocumentBuilderReceiver receiver ) throws SAXException {
         copyTo( node, receiver, false );
     }
 
-
-    protected void copyTo( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs ) throws SAXException
-    {
+    protected void copyTo( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs )
+            throws SAXException {
         NodeImpl top = node;
-
         while( node != null ) {
             copyStartNode( node, receiver, expandRefs );
             NodeImpl nextNode;
-
             if( node instanceof ReferenceNode ) {
-
                 //Nothing more to stream ?
                 nextNode = null;
             } else {
                 nextNode = (NodeImpl)node.getFirstChild();
             }
-
             while( nextNode == null ) {
                 copyEndNode( node, receiver );
-
                 if( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) {
                     break;
                 }
-
                 //No nextNode if the top node is a Document node
 //                if (top != null && top.nodeNumber == 0)
 //                    break;
                 nextNode = (NodeImpl)node.getNextSibling();
-
                 if( nextNode == null ) {
                     node = (NodeImpl)node.getParentNode();
-
                     if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
                         copyEndNode( node, receiver );
                         break;
@@ -1136,88 +1022,69 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
-    private void copyStartNode( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs ) throws SAXException
-    {
+    private void copyStartNode( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs )
+            throws SAXException {
         int nr = node.nodeNumber;
-
         switch( node.getNodeType() ) {
-
-            case Node.ELEMENT_NODE: {
-                QName nodeName = document.nodeName[nr];
-                receiver.startElement( nodeName, null );
-                int attr = document.alpha[nr];
-                if( -1 < attr ) {
-
-                    while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
-                        QName attrQName = document.attrName[attr];
-                        receiver.attribute( attrQName, attrValue[attr] );
-                        ++attr;
-                    }
+        case Node.ELEMENT_NODE: {
+            QName nodeName = document.nodeName[nr];
+            receiver.startElement( nodeName, null );
+            int attr = document.alpha[nr];
+            if( -1 < attr ) {
+                while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
+                    QName attrQName = document.attrName[attr];
+                    receiver.attribute( attrQName, attrValue[attr] );
+                    ++attr;
                 }
-                int ns = document.alphaLen[nr];
-                if( -1 < ns ) {
-
-                    while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
-                        QName nsQName = document.namespaceCode[ns];
-                        receiver.addNamespaceNode( nsQName );
-                        ++ns;
-                    }
+            }
+            int ns = document.alphaLen[nr];
+            if( -1 < ns ) {
+                while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
+                    QName nsQName = document.namespaceCode[ns];
+                    receiver.addNamespaceNode( nsQName );
+                    ++ns;
                 }
-                break;
             }
-
-            case Node.TEXT_NODE: {
-                receiver.characters( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                break;
+            break;
+        }
+        case Node.TEXT_NODE:
+            receiver.characters( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            break;
+        case Node.CDATA_SECTION_NODE:
+            receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            break;
+        case Node.ATTRIBUTE_NODE:
+            QName attrQName = document.attrName[nr];
+            receiver.attribute( attrQName, attrValue[nr] );
+            break;
+        case Node.COMMENT_NODE:
+            receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            break;
+        case Node.PROCESSING_INSTRUCTION_NODE:
+            QName  qn   = document.nodeName[nr];
+            String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.processingInstruction( qn.getLocalName(), data );
+            break;
+        case NodeImpl.REFERENCE_NODE:
+            if( expandRefs ) {
+                Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
+                serializer.setReceiver( receiver );
+                serializer.toReceiver( document.references[document.alpha[nr]], false, false );
+            } else {
+                receiver.addReferenceNode( document.references[document.alpha[nr]] );
             }
-
-            case Node.CDATA_SECTION_NODE: {
-                receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                break;
-            }
-
-            case Node.ATTRIBUTE_NODE: {
-                QName attrQName = document.attrName[nr];
-                receiver.attribute( attrQName, attrValue[nr] );
-                break;
-            }
-
-            case Node.COMMENT_NODE: {
-                receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                break;
-            }
-
-            case Node.PROCESSING_INSTRUCTION_NODE: {
-                QName  qn   = document.nodeName[nr];
-                String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                receiver.processingInstruction( qn.getLocalName(), data );
-                break;
-            }
-
-            case NodeImpl.REFERENCE_NODE: {
-                if( expandRefs ) {
-                    Serializer serializer = context.getBroker().getSerializer();
-                    serializer.reset();
-                    serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
-                    serializer.setReceiver( receiver );
-                    serializer.toReceiver( document.references[document.alpha[nr]], false, false );
-                } else {
-                    receiver.addReferenceNode( document.references[document.alpha[nr]] );
-                }
-                break;
-            }
+            break;
         }
     }
 
-
-    private void copyEndNode( NodeImpl node, DocumentBuilderReceiver receiver ) throws SAXException
-    {
+    private void copyEndNode( NodeImpl node, DocumentBuilderReceiver receiver )
+            throws SAXException {
         if( node.getNodeType() == Node.ELEMENT_NODE ) {
             receiver.endElement( node.getQName() );
         }
     }
-
 
     /**
      * Expand all reference nodes in the current document, i.e. replace them by real nodes. Reference nodes are just pointers to nodes from other
@@ -1228,8 +1095,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @throws  DOMException  DOCUMENT ME!
      */
     @Override
-    public void expand() throws DOMException
-    {
+    public void expand() throws DOMException {
         if( size == 0 ) {
             return;
         }
@@ -1237,41 +1103,36 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         copyDocContents( newDoc );
     }
 
-
-    public DocumentImpl expandRefs( NodeImpl rootNode ) throws DOMException
-    {
-        if( nextRef == 0 ) {
-            computeNodeIds();
-            return( this );
-        }
-        MemTreeBuilder          builder  = new MemTreeBuilder( context );
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder );
-
+    public DocumentImpl expandRefs( NodeImpl rootNode ) throws DOMException {
         try {
-            builder.startDocument();
-            NodeImpl node = ( rootNode == null ) ? (NodeImpl)getFirstChild() : rootNode;
-
-            while( node != null ) {
-                copyTo( node, receiver, true );
-                node = (NodeImpl)node.getNextSibling();
+            if( nextRef == 0 ) {
+                computeNodeIds();
+                return( this );
             }
-            receiver.endDocument();
-        }
-        catch( SAXException e ) {
+            MemTreeBuilder          builder  = new MemTreeBuilder( context );
+            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder );
+            try {
+                builder.startDocument();
+                NodeImpl node = ( rootNode == null ) ? (NodeImpl)getFirstChild() : rootNode;
+                while( node != null ) {
+                    copyTo( node, receiver, true );
+                    node = (NodeImpl)node.getNextSibling();
+                }
+                receiver.endDocument();
+            } catch( SAXException e ) {
+                throw( new DOMException( DOMException.INVALID_STATE_ERR, e.getMessage() ) );
+            }
+            DocumentImpl newDoc = builder.getDocument();
+            newDoc.computeNodeIds();
+            return( newDoc );
+        } catch (EXistException e) {
             throw( new DOMException( DOMException.INVALID_STATE_ERR, e.getMessage() ) );
         }
-        DocumentImpl newDoc = builder.getDocument();
-        newDoc.computeNodeIds();
-        return( newDoc );
     }
 
-
-    public NodeImpl getNodeById( NodeId id )
-    {
+    public NodeImpl getNodeById( NodeId id ) {
         expand();
-
         for( int i = 0; i < size; i++ ) {
-
             if( id.equals( nodeId[i] ) ) {
                 return( getNode( i ) );
             }
@@ -1279,35 +1140,22 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( null );
     }
 
-
-    private void computeNodeIds()
-    {
+    private void computeNodeIds() throws EXistException {
         if( nodeId[0] != null ) {
             return;
         }
-
         NodeIdFactory nodeFactory;
-
         if( context == null ) {
-
-            try {
-                nodeFactory = BrokerPool.getInstance().getNodeFactory();
-            }
-            catch( EXistException e ) {
-                nodeFactory = null; //TODO: fix NPE, raise error???
-            }
+            nodeFactory = BrokerPool.getInstance().getNodeFactory();
         } else {
             nodeFactory = context.getBroker().getBrokerPool().getNodeFactory();
         }
-
         nodeId[0] = nodeFactory.documentNodeId();
-
         if( size == 1 ) {
             return;
         }
         NodeId   nextId = nodeFactory.createInstance();
         NodeImpl next   = (NodeImpl)getFirstChild();
-
         while( next != null ) {
             computeNodeIds( nextId, next.nodeNumber );
             next   = (NodeImpl)next.getNextSibling();
@@ -1315,30 +1163,22 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
-    private void computeNodeIds( NodeId id, int nodeNr )
-    {
+    private void computeNodeIds( NodeId id, int nodeNr ) {
         nodeId[nodeNr] = id;
-
         if( nodeKind[nodeNr] == Node.ELEMENT_NODE ) {
             NodeId nextId = id.newChild();
             int    attr   = document.alpha[nodeNr];
-
             if( -1 < attr ) {
-
                 while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNr ) ) {
                     attrNodeId[attr] = nextId;
                     nextId           = nextId.nextSibling();
                     ++attr;
                 }
             }
-
             int nextNode = getFirstChildFor( nodeNr );
-
             while( nextNode > nodeNr ) {
                 computeNodeIds( nextId, nextNode );
                 nextNode = document.next[nextNode];
-
                 if( nextNode > nodeNr ) {
                     nextId = nextId.nextSibling();
                 }
@@ -1346,14 +1186,12 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
     /**
      * DOCUMENT ME!
      *
      * @param  newDoc
      */
-    private void copyDocContents( DocumentImpl newDoc )
-    {
+    private void copyDocContents( DocumentImpl newDoc ) {
         namePool         = newDoc.namePool;
         nodeKind         = newDoc.nodeKind;
         treeLevel        = newDoc.treeLevel;
@@ -1378,7 +1216,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         nextRef          = newDoc.nextRef;
     }
 
-
     /**
      * Stream the specified document fragment to a receiver. This method is called by the serializer to output in-memory nodes.
      *
@@ -1388,33 +1225,26 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  SAXException
      */
-    public void streamTo( Serializer serializer, NodeImpl node, Receiver receiver ) throws SAXException
-    {
+    public void streamTo( Serializer serializer, NodeImpl node, Receiver receiver )
+            throws SAXException {
         NodeImpl top = node;
-
         while( node != null ) {
             startNode( serializer, node, receiver );
             NodeImpl nextNode;
-
             if( node instanceof ReferenceNode ) {
-
                 //Nothing more to stream ?
                 nextNode = null;
             } else {
                 nextNode = (NodeImpl)node.getFirstChild();
             }
-
             while( nextNode == null ) {
                 endNode( node, receiver );
-
                 if( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) {
                     break;
                 }
                 nextNode = (NodeImpl)node.getNextSibling();
-
                 if( nextNode == null ) {
                     node = (NodeImpl)node.getParentNode();
-
                     if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
                         endNode( node, receiver );
                         break;
@@ -1425,98 +1255,71 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
-    private void startNode( Serializer serializer, NodeImpl node, Receiver receiver ) throws SAXException
-    {
+    private void startNode( Serializer serializer, NodeImpl node, Receiver receiver )
+            throws SAXException {
         int nr = node.nodeNumber;
-
         switch( node.getNodeType() ) {
-
-            case Node.ELEMENT_NODE: {
-                QName nodeName = document.nodeName[nr];
-
-                // output required namespace declarations
-                int   ns       = document.alphaLen[nr];
-                if( -1 < ns ) {
-
-                    while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
-                        QName nsQName = document.namespaceCode[ns];
-
-                        if( "xmlns".equals( nsQName.getLocalName() ) ) {
-                            receiver.startPrefixMapping( "", nsQName.getNamespaceURI() );
-                        } else {
-                            receiver.startPrefixMapping( nsQName.getLocalName(), nsQName.getNamespaceURI() );
-                        }
-                        ++ns;
+        case Node.ELEMENT_NODE:
+            QName nodeName = document.nodeName[nr];
+            // output required namespace declarations
+            int   ns       = document.alphaLen[nr];
+            if( -1 < ns ) {
+                while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
+                    QName nsQName = document.namespaceCode[ns];
+                    if( "xmlns".equals( nsQName.getLocalName() ) ) {
+                        receiver.startPrefixMapping( "", nsQName.getNamespaceURI() );
+                    } else {
+                        receiver.startPrefixMapping( nsQName.getLocalName(), nsQName.getNamespaceURI() );
                     }
+                    ++ns;
                 }
-
-                // create the attribute list
-                AttrList attribs = null;
-                int      attr    = document.alpha[nr];
-                if( -1 < attr ) {
-                    attribs = new AttrList();
-
-                    while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
-                        QName attrQName = document.attrName[attr];
-                        attribs.addAttribute( attrQName, attrValue[attr] );
-                        ++attr;
-                    }
+            }
+            // create the attribute list
+            AttrList attribs = null;
+            int      attr    = document.alpha[nr];
+            if( -1 < attr ) {
+                attribs = new AttrList();
+                while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
+                    QName attrQName = document.attrName[attr];
+                    attribs.addAttribute( attrQName, attrValue[attr] );
+                    ++attr;
                 }
-                receiver.startElement( nodeName, attribs );
-                break;
             }
-
-            case Node.TEXT_NODE: {
-                receiver.characters( new String( document.characters, document.alpha[nr], document.alphaLen[nr] ) );
-                break;
-            }
-
-            case Node.ATTRIBUTE_NODE: {
-                QName attrQName = document.attrName[nr];
-                receiver.attribute( attrQName, attrValue[nr] );
-                break;
-            }
-
-            case Node.COMMENT_NODE: {
-                receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                break;
-            }
-
-            case Node.PROCESSING_INSTRUCTION_NODE: {
-                QName  qn   = document.nodeName[nr];
-                String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                receiver.processingInstruction( qn.getLocalName(), data );
-                break;
-            }
-
-            case Node.CDATA_SECTION_NODE: {
-                receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
-                break;
-            }
-
-            case NodeImpl.REFERENCE_NODE: {
-                serializer.toReceiver( document.references[document.alpha[nr]], true, false );
-                break;
-            }
+            receiver.startElement( nodeName, attribs );
+            break;
+        case Node.TEXT_NODE:
+            receiver.characters( new String( document.characters, document.alpha[nr], document.alphaLen[nr] ) );
+            break;
+        case Node.ATTRIBUTE_NODE:
+            QName attrQName = document.attrName[nr];
+            receiver.attribute( attrQName, attrValue[nr] );
+            break;
+        case Node.COMMENT_NODE:
+            receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            break;
+        case Node.PROCESSING_INSTRUCTION_NODE:
+            QName  qn   = document.nodeName[nr];
+            String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.processingInstruction( qn.getLocalName(), data );
+            break;
+        case Node.CDATA_SECTION_NODE:
+            receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            break;
+        case NodeImpl.REFERENCE_NODE:
+            serializer.toReceiver( document.references[document.alpha[nr]], true, false );
+            break;
         }
     }
 
-
-    private void endNode( NodeImpl node, Receiver receiver ) throws SAXException
-    {
+    private void endNode( NodeImpl node, Receiver receiver ) throws SAXException {
         if( node.getNodeType() == Node.ELEMENT_NODE ) {
             receiver.endElement( node.getQName() );
-
             // end all prefix mappings used for the element
             int nr = node.nodeNumber;
             int ns = document.alphaLen[nr];
-
             if( -1 < ns ) {
-
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
                     QName nsQName = document.namespaceCode[ns];
-
                     if( "xmlns".equals( nsQName.getLocalName() ) ) {
                         receiver.endPrefixMapping( "" );
                     } else {
@@ -1528,21 +1331,16 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-
-    public org.exist.dom.DocumentImpl makePersistent() throws XPathException
-    {
+    public org.exist.dom.DocumentImpl makePersistent() throws XPathException {
         if( size <= 1 ) {
             return( null );
         }
         return( context.storeTemporaryDoc( this ) );
     }
 
-
-    public int getChildCount()
-    {
+    public int getChildCount() {
         int count = 0;
         int top   = ( size > 1 ) ? 1 : -1;
-
         while( top > 0 ) {
             ++count;
             top = getNextSiblingFor( top );
@@ -1550,62 +1348,50 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return( count );
     }
 
-
-    public boolean hasChildNodes()
-    {
+    @Override
+    public boolean hasChildNodes() {
         return( getChildCount() > 0 );
     }
 
-
     @Override
-    public String getLocalName()
-    {
+    public String getLocalName() {
         return( "" );
     }
 
-
     @Override
-    public String getNamespaceURI()
-    {
+    public String getNamespaceURI() {
         return( "" );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getInputEncoding()
      *
      * @return  DOCUMENT ME!
      */
-    public String getInputEncoding()
-    {
+    public String getInputEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getXmlEncoding()
      *
      * @return  DOCUMENT ME!
      */
-    public String getXmlEncoding()
-    {
+    public String getXmlEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getXmlStandalone()
      *
      * @return  DOCUMENT ME!
      */
-    public boolean getXmlStandalone()
-    {
+    public boolean getXmlStandalone() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
@@ -1614,24 +1400,19 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public void setXmlStandalone( boolean xmlStandalone ) throws DOMException
-    {
+    public void setXmlStandalone( boolean xmlStandalone ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getXmlVersion()
      *
      * @return  DOCUMENT ME!
      */
-    public String getXmlVersion()
-    {
+    public String getXmlVersion() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
@@ -1640,58 +1421,46 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public void setXmlVersion( String xmlVersion ) throws DOMException
-    {
+    public void setXmlVersion( String xmlVersion ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getStrictErrorChecking()
      *
      * @return  DOCUMENT ME!
      */
-    public boolean getStrictErrorChecking()
-    {
+    public boolean getStrictErrorChecking() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#setStrictErrorChecking(boolean)
      *
      * @param  strictErrorChecking  DOCUMENT ME!
      */
-    public void setStrictErrorChecking( boolean strictErrorChecking )
-    {
+    public void setStrictErrorChecking( boolean strictErrorChecking ) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getDocumentURI()
      *
      * @return  DOCUMENT ME!
      */
-    public String getDocumentURI()
-    {
+    public String getDocumentURI() {
         return( documentURI );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
      *
      * @param  documentURI  DOCUMENT ME!
      */
-    public void setDocumentURI( String documentURI )
-    {
+    public void setDocumentURI( String documentURI ) {
         this.documentURI = documentURI;
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#adoptNode(org.w3c.dom.Node)
@@ -1702,34 +1471,27 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public Node adoptNode( Node source ) throws DOMException
-    {
+    public Node adoptNode( Node source ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#getDomConfig()
      *
      * @return  DOCUMENT ME!
      */
-    public DOMConfiguration getDomConfig()
-    {
+    public DOMConfiguration getDomConfig() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
-
     /**
      * ? @see org.w3c.dom.Document#normalizeDocument()
      */
-    public void normalizeDocument()
-    {
+    public void normalizeDocument() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-
     }
-
 
     /**
      * ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
@@ -1742,34 +1504,28 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public Node renameNode( Node n, String namespaceURI, String qualifiedName ) throws DOMException
-    {
+    public Node renameNode( Node n, String namespaceURI, String qualifiedName )
+            throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
-
-    public void setContext( XQueryContext context )
-    {
+    public void setContext( XQueryContext context ) {
         this.context = context;
     }
 
-
-    public XQueryContext getContext()
-    {
+    public XQueryContext getContext() {
         return( context );
     }
-
 
     /**
      * ? @see org.w3c.dom.Node#getBaseURI()
      *
      * @return  DOCUMENT ME!
      */
-    public String getBaseURI()
-    {
+    @Override
+    public String getBaseURI() {
         if( context.isBaseURIDeclared() ) {
-
             try {
                 return( context.getBaseURI() + "" );
             }
@@ -1778,49 +1534,47 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             }
         }
         return( XmldbURI.EMPTY_URI.toString() );
-            //return XmldbURI.ROOT_COLLECTION_URI.toString();
+        //return XmldbURI.ROOT_COLLECTION_URI.toString();
     }
 
-
     @Override
-    public int getItemType()
-    {
+    public int getItemType() {
         return( Type.DOCUMENT );
     }
 
-
-    public String toString()
-    {
+    @Override
+    public String toString() {
         StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "document {" );
-
         if( size != 1 ) {
             int nodeNr = 1;
-
             while( true ) {
                 result.append( getNode( nodeNr ).toString() );
-
                 if( next[nodeNr] < nodeNr ) {
                     break;
-                } else {
-                    nodeNr = next[nodeNr];
                 }
+                nodeNr = next[nodeNr];
             }
         }
         result.append( "} " );
         return( result.toString() );
     }
 
-
-    public int getNextNodeNumber( int nextNode ) throws DOMException
-    {
+    public int getNextNodeNumber( int nextNode ) throws DOMException {
         return( document.next[nextNode] );
     }
 
-	@Override
-	public XmldbURI getURI() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public XmldbURI getURI() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void selectAttributes(NodeTest test, Sequence result)
+            throws XPathException {
+        // TODO Auto-generated method stub
+        
+    }
 }

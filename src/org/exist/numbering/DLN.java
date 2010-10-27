@@ -42,10 +42,10 @@ import java.io.IOException;
  */
 public class DLN extends DLNBase implements NodeId {
 
-	/**
-	 * Constructs a new DLN with a single id with value 1.
-	 *
-	 */
+    /**
+     * Constructs a new DLN with a single id with value 1.
+     *
+     */
     public DLN() {
         this(1);
     }
@@ -74,7 +74,7 @@ public class DLN extends DLNBase implements NodeId {
             addLevelId(Integer.parseInt(buf.toString()), subValue);
         }
     }
-    
+
     /**
      * Constructs a new DLN, using the passed id as its
      * single level value.
@@ -189,19 +189,19 @@ public class DLN extends DLNBase implements NodeId {
         }
         return newNode;
     }
-    
+
     public NodeId insertBefore() {
         int lastPos = lastFieldPosition();
         int lastId = getLevelId(lastPos);
         DLN newNode = new DLN(this);
-//        System.out.println("insertBefore: " + newNode.toString() + " = " + newNode.bitIndex);
+        //System.out.println("insertBefore: " + newNode.toString() + " = " + newNode.bitIndex);
         if (lastId == 1) {
             newNode.setLevelId(lastPos, 0);
             newNode.addLevelId(35, true);
         } else {
             newNode.setLevelId(lastPos, lastId - 1);
             newNode.compact();
-//            System.out.println("newNode: " + newNode.toString() + " = " + newNode.bitIndex + "; last = " + lastPos);
+            //System.out.println("newNode: " + newNode.toString() + " = " + newNode.bitIndex + "; last = " + lastPos);
         }
         return newNode;
     }
@@ -216,7 +216,7 @@ public class DLN extends DLNBase implements NodeId {
                 subLevel = ((other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0);
             int id = other.getLevelId(offset);
             newId.addLevelId(id, subLevel);
-            offset += DLN.getUnitsRequired(id) * BITS_PER_UNIT;
+            offset += DLNBase.getUnitsRequired(id) * BITS_PER_UNIT;
         }
         return newId;
     }
@@ -240,48 +240,46 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public boolean isDescendantOf(NodeId ancestor) {
-    	DLN other = (DLN) ancestor;
-    	return startsWith(other) && bitIndex > other.bitIndex
+        DLN other = (DLN) ancestor;
+        return startsWith(other) && bitIndex > other.bitIndex
             && isLevelSeparator(other.bitIndex + 1);
     }
 
     public boolean isDescendantOrSelfOf(NodeId other) {
-    	DLN ancestor = (DLN) other;
+        DLN ancestor = (DLN) other;
         return startsWith(ancestor) &&
-        	(bitIndex == ancestor.bitIndex || isLevelSeparator((ancestor).bitIndex + 1));
+            (bitIndex == ancestor.bitIndex || isLevelSeparator((ancestor).bitIndex + 1));
     }
 
     public boolean isChildOf(NodeId parent) {
-    	DLN other = (DLN) parent;
-    	if(!startsWith(other))
-    		return false;
-    	int levels = getLevelCount(other.bitIndex + 2);
-    	return levels == 1;
+        DLN other = (DLN) parent;
+        if(!startsWith(other))
+            return false;
+        int levels = getLevelCount(other.bitIndex + 2);
+        return levels == 1;
     }
-    
+
     public int computeRelation(NodeId ancestor) {
         DLN other = (DLN) ancestor;
         if (other == NodeId.DOCUMENT_NODE)
-        	return getLevelCount(0) == 1 ? IS_CHILD : IS_DESCENDANT;
-
+            return getLevelCount(0) == 1 ? IS_CHILD : IS_DESCENDANT;
         if (startsWith(other)) {
-        	if (bitIndex == other.bitIndex)
-        		return IS_SELF;
-        	if (bitIndex > other.bitIndex && isLevelSeparator(other.bitIndex + 1)) {
-        		if (getLevelCount(other.bitIndex + 2) == 1)
+            if (bitIndex == other.bitIndex)
+                return IS_SELF;
+            if (bitIndex > other.bitIndex && isLevelSeparator(other.bitIndex + 1)) {
+                if (getLevelCount(other.bitIndex + 2) == 1)
                     return IS_CHILD;
                 return IS_DESCENDANT;
-        	}
+            }
         }
         return -1;
     }
-    
+
     public boolean isSiblingOf(NodeId sibling) {
-        //DLN other = (DLN) sibling;
         NodeId parent = getParentId();
         return sibling.isChildOf(parent);
     }
-    
+
     /**
      * Returns the level within the document tree at which
      * this node occurs.
@@ -297,11 +295,9 @@ public class DLN extends DLNBase implements NodeId {
     public int compareTo(NodeId otherId) {
         if (otherId == null)
             return 1;
-        
         final DLN other = (DLN) otherId;
         final int a1len = bits.length;
         final int a2len = other.bits.length;
-
         int limit = a1len <= a2len ? a1len : a2len;
         byte[] obits = other.bits;
         for (int i = 0; i < limit; i++) {
@@ -317,22 +313,20 @@ public class DLN extends DLNBase implements NodeId {
         if (compareTo(other) > 0) {
             if (isFollowing)
                 return !isDescendantOf(other);
-            else
-                return true;
+            return true;
         }
         return false;
     }
-    
+
     public boolean before(NodeId other, boolean isPreceding) {
         if (compareTo(other) < 0) {
             if (isPreceding)
                 return !other.isDescendantOf(this);
-            else
-                return true;
+            return true;
         }
         return false;
     }
-    
+
     /**
      * Write the node id to a {@link VariableByteOutputStream}.
      *
@@ -345,10 +339,6 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public NodeId write(NodeId prevId, VariableByteOutputStream os) throws IOException {
-//        if (prevId == null) {
-//            write(os);
-//            return this;
-//        }
         int i = 0;
         if (prevId != null) {
             DLN previous = (DLN) prevId;
@@ -365,18 +355,16 @@ public class DLN extends DLNBase implements NodeId {
         return this;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         DLN left1 = new DLN("5.6.2.6");
         DLN left2 = new DLN("5.6.2.7");
         DLN right = new DLN("5.6.2.7.1");
         byte[] nodeIdData1 = new byte[left1.size()];
         left1.serialize(nodeIdData1, 0);
         System.out.println(left1.units() + ": " +left1 + ": " + MessageDigester.byteArrayToHex(nodeIdData1) + Integer.toHexString(left1.units()));
-
         byte[] nodeIdData2 = new byte[left2.size()];
         left2.serialize(nodeIdData2, 0);
         System.out.println(left2.units() + ": " + left2 + ": " + MessageDigester.byteArrayToHex(nodeIdData2) + Integer.toHexString(left2.units()));
-
         byte[] nodeIdData3 = new byte[right.size()];
         right.serialize(nodeIdData3, 0);
         System.out.println(right.units() + ": " + right + ": " + MessageDigester.byteArrayToHex(nodeIdData3) + Integer.toHexString(right.units()));
