@@ -31,6 +31,7 @@ import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -243,7 +244,7 @@ public class OptimizerTest {
         execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test
+    @Test @Ignore
     public void reversePathsWithWildcard() {
         //parent with wildcard
         int r = execute("/root//b/parent::*[b = 'two']", false);
