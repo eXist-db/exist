@@ -61,6 +61,7 @@ import java.util.List;
  * 
  * @author wolf
  */
+@Deprecated
 public class DeprecatedExtDocument extends Function {
 	protected static final Logger logger = Logger.getLogger(DeprecatedExtDocument.class);
 	public final static FunctionSignature signature =

@@ -190,7 +190,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(ExtCollection.signature, ExtCollection.class),
 		new FunctionDef(DeprecatedExtXCollection.signature, DeprecatedExtXCollection.class),
 		new FunctionDef(DeprecatedExtDoctype.signature, DeprecatedExtDoctype.class),
-		new FunctionDef(DeprecatedExtDocument.signature, DeprecatedExtDocument.class),
+//		new FunctionDef(DeprecatedExtDocument.signature, DeprecatedExtDocument.class),
 		new FunctionDef(DeprecatedExtRegexp.signature, DeprecatedExtRegexp.class),
 		new FunctionDef(DeprecatedExtRegexpOr.signature, DeprecatedExtRegexpOr.class),
 		new FunctionDef(QNameFunctions.localNameFromQName, QNameFunctions.class),
