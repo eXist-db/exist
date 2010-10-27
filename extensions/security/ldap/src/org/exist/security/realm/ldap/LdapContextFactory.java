@@ -73,6 +73,9 @@ public class LdapContextFactory implements Configurable {
         @ConfigurationFieldAsElement("search")
         private LDAPSearchContext search;
 
+        @ConfigurationFieldAsElement("transformation")
+        private LDAPTransformationContext realmTransformation;
+
 	public LdapContextFactory(Configuration config) {
             configuration = Configurator.configure(this, config);
             if (principalPattern != null) {
@@ -127,6 +130,10 @@ public class LdapContextFactory implements Configurable {
 
         public LDAPSearchContext getSearch() {
             return search;
+        }
+
+        public LDAPTransformationContext getTransformationContext() {
+            return realmTransformation;
         }
 
 	// configurable methods
