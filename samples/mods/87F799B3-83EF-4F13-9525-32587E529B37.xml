@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="87F799B3-83EF-4F13-9525-32587E529B37">
+    <titleInfo>
+        <title>Motivational and Structural Prerequisites of Knowledge Management</title>
+        <subTitle>Paper presented at the XV World Congress of
+            Sociology, Brisbane, Australia, July 7-13, 2002, RC 30
+            Sociology of Work: Thematic Seminar II: The organisation of
+            knowledge production</subTitle>
+    </titleInfo>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>Diskussionspapiere aus der Fakultät für Sozialwissenschaft, Ruhr-Universität Bochum, Nr. 02-2</title>
+        </titleInfo>
+    </relatedItem>
+    <abstract>Our main question in this paper is: Which
+            motivational and structural prerequisites support knowledge
+            management? We will develop a theoretical model to answer
+            these questions and illustrate it with three case studies.</abstract>
+    <name type="personal">
+        <namePart>Wilkesmann, Uwe</namePart>
+    </name>
+    <name type="personal">
+        <namePart>Rascher, Ingolf</namePart>
+    </name>
+    <location>
+        <url>http://www.ruhr-uni-bochum.de/sowi/top/sowibibliothek/dkpaper/dp02-2.pdf</url>
+    </location>
+    <originInfo>
+        <publisher>Fakultät für Sozialwissenschaft, Ruhr-Universität Bochum</publisher>
+        <dateCreated encoding="w3cdtf">2002-06-12</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/pdf</internetMediaType>
+    </physicalDescription>
+    <subject>
+        <topic>knowledge management</topic>
+    </subject>
+    <classification authority="IZSOZ">10204</classification>
+    <classification authority="IZSOZ">10207</classification>
+    <classification authority="IZSOZ">10219</classification>
+    <subject authority="IZSOZ">
+        <topic>Bedingung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Informationsmanagement</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Informationssystem</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Wissenssoziologie</topic>
+    </subject>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

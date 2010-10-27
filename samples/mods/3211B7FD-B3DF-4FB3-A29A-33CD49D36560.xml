@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="3211B7FD-B3DF-4FB3-A29A-33CD49D36560">
+    <titleInfo>
+        <title>Demography of Germany</title>
+        <subTitle>Concepts, Data and Methods</subTitle>
+    </titleInfo>
+    <abstract>This text is an introduction to concepts and methods of demographic description and analysis. The substantial focus is on the demographic
+        development ofgermany, all data refer to this country. The main reason for this focus on a single country is that we want to show how the tools of
+        demography can actually be used for theanalysis of demographic problems. The text consists of two parts. Part I introduces the conceptual framework and
+        explains basic statistical notions. This part also includesa short chapter that explains how we speak of "models" and why we do not make a sharp
+        distinction between "describing" and "modeling" demographic processes. Then followsPart II that deals with data and methods. In the present version of
+        the text, we almost exclusively discuss mortality and fertility data.</abstract>
+    <name type="personal">
+        <namePart>Rohwer, Götz</namePart>
+    </name>
+    <name type="personal">
+        <namePart>Pötter, Ulrich</namePart>
+    </name>
+    <location>
+        <url>ftp://ftp.stat.ruhr-uni-bochum.de/pub/eha/ddem.ps</url>
+    </location>
+    <originInfo>
+        <dateCreated encoding="w3cdtf">2002-10-01</dateCreated>
+        <dateModified encoding="w3cdtf">2003-03-01</dateModified>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>application/postscript</internetMediaType>
+    </physicalDescription>
+    <classification authority="IZSOZ">10301</classification>
+    <classification authority="IZSOZ">10303</classification>
+    <classification authority="IZSOZ">10105</classification>
+    <subject authority="IZSOZ">
+        <topic>Altersstruktur</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Bevölkerungsstatistik</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Kohortenanalyse</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Lebensdauer</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Lebenserwartung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Methodenlehre</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Panel</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Volkszählung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>amtliche Statistik</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>deskriptive Statistik</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>statistische Analyse</topic>
+    </subject>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="641DE84F-55F0-4344-B395-64D664EB2551">
+    <titleInfo>
+        <title>The Development of Trade Unions in Western Europe</title>
+        <subTitle>Global Convergence or Cross-national Diversity?</subTitle>
+    </titleInfo>
+    <abstract>Trade unions play an important role in Western Europe. They have been subject to, and agents of, social and political changes that reshaped the post-war industrial society. In recent years, trade unions have been facing the threat of membership decline and the challenges of global competition and European economic integration. This poses the question whether union movements are under pressure to adapt in a similar way or whether they differ in their responses. Do we find a trend towards global convergence or does cross-national diversity persist among union movements in Western Europe? Drawing on comparative data from an international research project, we will provide a short portrait of the main patterns in union density and organisational concentration. Instead of a general trend toward convergence, we find signs of persisting diversity across Western Europe in union responses to both social changes and global challenges.</abstract>
+    <name type="personal">
+        <namePart>Ebbinghaus,Bernhard</namePart>
+    </name>
+    <location>
+        <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no2/feature.html</url>
+    </location>
+    <originInfo>
+        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
+        <dateCreated encoding="w3cdtf">1995</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>text/html</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>EURODATA Newsletter No.2</title>
+        </titleInfo>
+    </relatedItem>
+    <classification authority="IZSOZ">10204</classification>
+    <classification authority="IZSOZ">10504</classification>
+    <subject authority="IZSOZ">
+        <topic>Europa</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Gewerkschaft</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>Gewerkschaftsbewegung</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>historische Entwicklung</topic>
+    </subject>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>
