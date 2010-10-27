@@ -3039,7 +3039,7 @@ public class XQueryTest extends XMLTestCase {
         try {
             service = storeXMLStringAndGetQueryService("baseuri.xml", xmldoc);
             
-            String query="document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+            String query="xmldb:document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
             
            
             ResourceSet result = service.query(query);
@@ -3053,7 +3053,7 @@ public class XQueryTest extends XMLTestCase {
         }
         
         try {
-            String query="document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
+            String query="xmldb:document('/db/test/baseuri.xml')/Root/Node1/base-uri()";
 
             ResourceSet result = service.query(query);
 
@@ -3066,7 +3066,7 @@ public class XQueryTest extends XMLTestCase {
         }
         
         try {
-            String query="document('/db/test/baseuri.xml')/Root/Node1/Node2/base-uri()";
+            String query="xmldb:document('/db/test/baseuri.xml')/Root/Node1/Node2/base-uri()";
 
             ResourceSet result = service.query(query);
 
@@ -3079,7 +3079,7 @@ public class XQueryTest extends XMLTestCase {
         }
         
         try {
-            String query="document('/db/test/baseuri.xml')/Root/Node1/Node2/Node3/base-uri()";
+            String query="xmldb:document('/db/test/baseuri.xml')/Root/Node1/Node2/Node3/base-uri()";
 
             ResourceSet result = service.query(query);
 
