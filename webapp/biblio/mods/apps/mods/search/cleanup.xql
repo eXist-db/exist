@@ -10,7 +10,9 @@ declare function clean:remove-if-empty-text($node as element()) {
     if (empty($node//text())) then
         ()
     else
-        for $child in $node/node() return clean:cleanup($child)
+        element { node-name($node) } {
+            $node/@*, for $child in $node/node() return clean:cleanup($child)
+        }
 };
 
 declare function clean:remove-if-empty-attribute($node as element(), $attr as attribute()?) {
@@ -58,7 +60,7 @@ declare function clean:cleanup($node as node()) {
             clean:remove-if-empty-attribute($node, $node/@xlink:href)
         case element() return
             element { node-name($node) } {
-                for $child in $node/node() return clean:cleanup($child)
+                $node/@*, for $child in $node/node() return clean:cleanup($child)
             }
         default return
             $node
