@@ -137,52 +137,52 @@ public class XQTS_case extends TestCase {
 
     protected void groupCase(String testGroup, String testCase) {
         //ignore tests
-        if (testGroup.equals("FunctionCallExpr") && testCase.equals("K-FunctionCallExpr-11"))
-            return;
-        else if (testGroup.equals("SeqCollectionFunc")) {
-            if (testCase.equals("fn-collection-4d")
-                || testCase.equals("fn-collection-5d")
-                || testCase.equals("fn-collection-9")
-                || testCase.equals("fn-collection-10d"))
-                return;
-        } else if (testGroup.equals("SeqExprCastSI") && testCase.equals("casthcds9")) {
-            return;
-        } else if (testGroup.equals("NotationEQSI")) {
-            if (testCase.equals("Comp-notation-5")
-                || testCase.equals("Comp-notation-8")
-                || testCase.equals("Comp-notation-10")
-                || testCase.equals("Comp-notation-11")
-                || testCase.equals("Comp-notation-12")
-                || testCase.equals("Comp-notation-13")
-                || testCase.equals("Comp-notation-14")
-                || testCase.equals("Comp-notation-19")
-                || testCase.equals("Comp-notation-20")
-                || testCase.equals("Comp-notation-21"))
-                return;
-        } else if (testGroup.equals("SchemaImportProlog")) {
-            if (testCase.equals("schema-import-1")
-                || testCase.equals("schema-import-2")
-                || testCase.equals("schema-import-5")
-                || testCase.equals("schema-import-9")
-                || testCase.equals("schema-import-13")
-                || testCase.equals("schema-import-17")
-                || testCase.equals("schema-import-25"))
-                return;
-        } else if (testGroup.equals("STFLWORExpr")) {
-            /*UNDERSTAND: why it must throw FORG0006?
-                The test description: 
-                    Test 'where' clause with heterogenous sequences. First item is a node
-                The XQuery 1.0: An XML Query Language (W3C Recommendation 23 January 2007)
-                2.4.3 Effective Boolean Value
-                    If its operand is a sequence whose first item is a node, fn:boolean returns true. 
-            */
-            if (testCase.equals("ST-WhereExpr001"))
-                return;
-        }
-        if (testCase.equals("K2-NodeTest-11"))
-            return; //Added by p.b. as a quick attempt to work around current blocking code
-        if (testCase.equals("Constr-cont-document-3"))
-            return; //Added by p.b. as a quick attempt to work around current blocking code
+//        if (testGroup.equals("FunctionCallExpr") && testCase.equals("K-FunctionCallExpr-11"))
+//            return;
+//        else if (testGroup.equals("SeqCollectionFunc")) {
+//            if (testCase.equals("fn-collection-4d")
+//                || testCase.equals("fn-collection-5d")
+//                || testCase.equals("fn-collection-9")
+//                || testCase.equals("fn-collection-10d"))
+//                return;
+//        } else if (testGroup.equals("SeqExprCastSI") && testCase.equals("casthcds9")) {
+//            return;
+//        } else if (testGroup.equals("NotationEQSI")) {
+//            if (testCase.equals("Comp-notation-5")
+//                || testCase.equals("Comp-notation-8")
+//                || testCase.equals("Comp-notation-10")
+//                || testCase.equals("Comp-notation-11")
+//                || testCase.equals("Comp-notation-12")
+//                || testCase.equals("Comp-notation-13")
+//                || testCase.equals("Comp-notation-14")
+//                || testCase.equals("Comp-notation-19")
+//                || testCase.equals("Comp-notation-20")
+//                || testCase.equals("Comp-notation-21"))
+//                return;
+//        } else if (testGroup.equals("SchemaImportProlog")) {
+//            if (testCase.equals("schema-import-1")
+//                || testCase.equals("schema-import-2")
+//                || testCase.equals("schema-import-5")
+//                || testCase.equals("schema-import-9")
+//                || testCase.equals("schema-import-13")
+//                || testCase.equals("schema-import-17")
+//                || testCase.equals("schema-import-25"))
+//                return;
+//        } else if (testGroup.equals("STFLWORExpr")) {
+//            /*UNDERSTAND: why it must throw FORG0006?
+//                The test description: 
+//                    Test 'where' clause with heterogenous sequences. First item is a node
+//                The XQuery 1.0: An XML Query Language (W3C Recommendation 23 January 2007)
+//                2.4.3 Effective Boolean Value
+//                    If its operand is a sequence whose first item is a node, fn:boolean returns true. 
+//            */
+//            if (testCase.equals("ST-WhereExpr001"))
+//                return;
+//        }
+//        if (testCase.equals("K2-NodeTest-11"))
+//            return; //Added by p.b. as a quick attempt to work around current blocking code
+//        if (testCase.equals("Constr-cont-document-3"))
+//            return; //Added by p.b. as a quick attempt to work around current blocking code
 
         try {
             XQueryService service = (XQueryService) testCollection.getService(
@@ -320,54 +320,57 @@ public class XQTS_case extends TestCase {
 
                 //collect information if result is wrong
                 if (!ok) {
-                    String exp = "";
-                    try {
-                        for (int i = 0; i < outputFiles.getLength(); i++) {
-                            exp += "{'";
-                            ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
-                            File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
-                            if (!expectedResult.canRead())
-                                Assert.fail("can't read expected result");
-                            Reader reader = new BufferedReader(new FileReader(expectedResult));
-                            char ch;
-                            while (reader.ready()) {
-                                ch = (char)reader.read();
-                                if (ch == '\r')
-                                    ch = (char)reader.read();
-                                exp += String.valueOf(ch); 
-                            }
-                            exp += "'}";
-                        }
-                    } catch (Exception e) {
-                        exp += e.getMessage();
-                    }
-
-                    String res = sequenceToString(result);
-                    if (exp.isEmpty())
-                        exp += "error "+expectedError;
-
-                    StringBuilder data = new StringBuilder();
-                    for (int i = 0; i < inputFiles.getLength(); i++) {
-                        ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
-                        String id = inputFile.getNodeValue();
-                        data.append(inputFile.getAttribute("variable"));
-                        data.append(" = \n");
-                        data.append(readFileAsString(new File(sources.get(id))));
-                        data.append("\n");
-                    }
-
                     StringBuilder message = new StringBuilder();
-                    message.append("\n");
-                    message.append("expected ");
-                    message.append("[" + exp + "]");
-                    message.append(" got ");
-                    message.append("[" + res + "]\n");
-                    message.append("script:\n");
-                    message.append(readFileAsString(caseScript));
-                    message.append("\n");
-                    message.append("data:\n");
-                    message.append(data);
-
+                    
+                    //do not sysout extected & getted results (temporarily)
+                	if (false) {
+	                    String exp = "";
+	                    try {
+	                        for (int i = 0; i < outputFiles.getLength(); i++) {
+	                            exp += "{'";
+	                            ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
+	                            File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
+	                            if (!expectedResult.canRead())
+	                                Assert.fail("can't read expected result");
+	                            Reader reader = new BufferedReader(new FileReader(expectedResult));
+	                            char ch;
+	                            while (reader.ready()) {
+	                                ch = (char)reader.read();
+	                                if (ch == '\r')
+	                                    ch = (char)reader.read();
+	                                exp += String.valueOf(ch); 
+	                            }
+	                            exp += "'}";
+	                        }
+	                    } catch (Exception e) {
+	                        exp += e.getMessage();
+	                    }
+	
+	                    String res = sequenceToString(result);
+	                    if (exp.isEmpty())
+	                        exp += "error "+expectedError;
+	
+	                    StringBuilder data = new StringBuilder();
+	                    for (int i = 0; i < inputFiles.getLength(); i++) {
+	                        ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
+	                        String id = inputFile.getNodeValue();
+	                        data.append(inputFile.getAttribute("variable"));
+	                        data.append(" = \n");
+	                        data.append(readFileAsString(new File(sources.get(id))));
+	                        data.append("\n");
+	                    }
+	
+	                    message.append("\n");
+	                    message.append("expected ");
+	                    message.append("[" + exp + "]");
+	                    message.append(" got ");
+	                    message.append("[" + res + "]\n");
+	                    message.append("script:\n");
+	                    message.append(readFileAsString(caseScript));
+	                    message.append("\n");
+	                    message.append("data:\n");
+	                    message.append(data);
+                	}
                     Assert.fail(message.toString());
                 }
             } catch (XPathException e) {
