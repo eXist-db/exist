@@ -175,9 +175,8 @@ public class AtomServlet extends HttpServlet {
 
 		// Configure BrokerPool
 		try {
-			if (BrokerPool.isConfigured()) {
-				LOG
-						.debug("Database already started. Skipping configuration ...");
+			if (BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
+				LOG.debug("Database already started. Skipping configuration ...");
 			} else {
 				// The database isn't started, so we'll start it
 				String confFile = config.getInitParameter("configuration");
@@ -609,7 +608,7 @@ public class AtomServlet extends HttpServlet {
 		}
 		LOG.info("configuring eXist instance");
 		try {
-			if (!BrokerPool.isConfigured()) {
+			if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
 				BrokerPool.configure(1, 5, configuration);
 			}
 		} catch (EXistException e) {

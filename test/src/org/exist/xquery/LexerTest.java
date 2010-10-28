@@ -151,7 +151,7 @@ public class LexerTest extends TestCase {
 	}
 
 	protected void setUp() {
-		if (!BrokerPool.isConfigured())
+		if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME))
 			configure();
 	}
 

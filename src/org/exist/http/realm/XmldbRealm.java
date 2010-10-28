@@ -205,7 +205,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 	public synchronized void startExistDb() throws LifecycleException {
 		try {
 			
-			if (!BrokerPool.isConfigured()) {
+			if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
 				this.log("Starting Database");
 				
 				this.log("exist.home=" + basedir);
