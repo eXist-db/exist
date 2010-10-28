@@ -4,8 +4,8 @@
     <xsl:template match="build">
         <project basedir="." default="jar" name="indexes">
             
-            <!-- This is a generated build file. Do not edit. Change the stylesheet -->
-            <!-- generate.xsl instead. -->
+            <xsl:comment>This is a generated build file. Do not edit. Change the stylesheet
+generate.xsl instead.</xsl:comment>
             
             <property file="local.properties"/>
             <property file="build.properties"/>

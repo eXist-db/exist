@@ -33,7 +33,7 @@ public class XSLModule extends AbstractInternalModule {
 	public final static String NAMESPACE_URI = "http://www.w3.org/1999/XSL/Transform";
 	public final static String PREFIX = "xsl";
 
-    public final static String RELEASED_IN_VERSION = "eXist-1.5.0";
+    public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
     private final static FunctionDef[] functions = {
 		new FunctionDef(Current.signatures[0], Current.class),

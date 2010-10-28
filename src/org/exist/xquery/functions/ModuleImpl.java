@@ -37,7 +37,7 @@ public class ModuleImpl extends AbstractInternalModule {
 
 	public final static String PREFIX = "";
     public final static String INCLUSION_DATE = "2004-01-29";
-    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0";
+    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
 	
 	public final static FunctionDef[] functions = {
 		new FunctionDef(FunAbs.signature, FunAbs.class),
