@@ -38,7 +38,7 @@ public class TextModule extends AbstractInternalModule {
     
     public static final String PREFIX = "text";
     public final static String INCLUSION_DATE = "2004-03-01";
-    public final static String RELEASED_IN_VERSION = "&lt; eXist-1.0";
+    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(FuzzyMatchAll.signature, FuzzyMatchAll.class),
