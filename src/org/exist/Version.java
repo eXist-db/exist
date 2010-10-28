@@ -39,4 +39,8 @@ public final class Version {
 	public static String getVersion() {
 		return VERSION;
 	}
+
+	public static int[] getStructuredVersion() {
+		return STRUCTURED_VERSION;
+	}
 }
