@@ -25,7 +25,6 @@ package org.exist.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
-import org.exist.dom.*;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
@@ -36,7 +35,6 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
-import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.*;
@@ -48,6 +46,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
