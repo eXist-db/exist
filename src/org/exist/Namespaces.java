@@ -38,7 +38,11 @@ public interface Namespaces {
     // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
 	public final static String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
     public final static String XQUERY_LOCAL_NS = "http://www.w3.org/2005/xquery-local-functions";
-	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";	
+	public final static String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";
+
+        public final static String XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors/";
+        public final static String XQUERY_XPATH_ERROR_PREFIX = "err";
+
 	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
 	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";

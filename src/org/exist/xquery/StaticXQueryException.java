@@ -20,6 +20,7 @@ public class StaticXQueryException extends XPathException
 		super(message, cause);
 	}
 
+        //TODO add in ErrorCode and ErrorVal
 	public StaticXQueryException(int line, int column, String message, Throwable cause) {
 		super(line, column, message, cause);
 	}
