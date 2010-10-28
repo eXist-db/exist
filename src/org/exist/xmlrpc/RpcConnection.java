@@ -24,6 +24,7 @@ package org.exist.xmlrpc;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.Version;
 import org.exist.backup.Backup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -120,6 +121,12 @@ public class RpcConnection implements RpcAPI {
             throw new EXistException(e);
         }
     }
+    
+    @Override
+    public String getVersion() {
+        return Version.getVersion();
+    }
+
 
     @Override
     public boolean createCollection(String name) throws EXistException, PermissionDeniedException {

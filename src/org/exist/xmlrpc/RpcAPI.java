@@ -53,6 +53,13 @@ public interface RpcAPI {
 	public static final String COLUMN = "column";
 	
 	/**
+	 * Return the database version.
+	 * 
+	 * @return
+	 */
+    public String getVersion();
+
+	/**
 	 * Shut down the database immediately.
 	 * 
 	 * @return true if the shutdown succeeded, false otherwise
