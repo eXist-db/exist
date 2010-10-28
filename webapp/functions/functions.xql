@@ -194,12 +194,13 @@ declare function local:list-modules($moduleURIs) {
         	        : for the link, so we just use 'fn' :) 
         	       'fn' 
                else $moduleDocs/xq:module/xq:name/text()
-        	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/node()
-        	order by $moduleURI
+        	let $moduleDescription := string-join(data($moduleDocs/xq:module/xq:comment/xq:description/node()), '')
+        	let $moduleDescription := if (string-length($moduleDescription) lt 90) then $moduleDescription else concat(substring($moduleDescription, 1, 90), '...')
+        	order by $moduleName
             return
                 <tr class="module">
                     <td class="mod-entry"><a href="{local:moduleURI-to-URL($moduleURI)}">{$moduleName}</a></td>
-                    <td class="mod-entry-desc">{$moduleDescription}</td>
+                    <td class="mod-entry-desc">{if ($moduleDescription) then $moduleDescription else <em>No description present</em>}</td>
                     <td class="mod-entry">{$moduleURI}</td>
                 </tr>
         }</tbody>
@@ -334,12 +335,12 @@ declare function local:main() {
             .function {border: 1px black solid; padding:5px; margin:5px; page-break-before: auto; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; }
             .name {font-weight: bold;}
             .signature {margin-left: 50px; font-style: italic;}
-            .description {margin-left: 20px; padding: 5px; white-space: pre-wrap;}
+            .description {margin-left: 20px; padding: 5px;}
             .f-description-para {margin-bottom: 8px; white-space: pre-wrap;}
             .authors {display:none;}
             .parameters {margin-left: 100px;}
             .mod-entry {vertical-align:top;}
-            .mod-entry-desc {width: 250px; vertical-align:top;}
+            .mod-entry-desc {vertical-align:top;}
             .f-params {}
             .f-param1 {width: 250px; vertical-align:top;}
             .f-param2 {white-space: pre-wrap;}

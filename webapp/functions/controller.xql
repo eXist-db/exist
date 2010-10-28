@@ -94,6 +94,14 @@ return
         :)
 
         return
+        (: handle the special case of "xpath-functions", which this app redirects to "fn" :)
+        if ($module eq 'xpath-functions') then
+            let $newPath := string-join(($external-path-to-app, 'fn', $function), '/')
+            return
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <redirect url="{$newPath}"/>
+                </dispatch>
+        else
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<forward url="{$internal-path-to-app}">
         			<add-parameter name="basepath" value="{$external-path-to-app}"/>
