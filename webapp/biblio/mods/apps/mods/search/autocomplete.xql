@@ -4,7 +4,7 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 
 declare option exist:serialize "media-type=text/json";
 
-declare variable $local:COLLECTION := "collection('/db')//";
+declare variable $local:COLLECTION := '/db';
 
 declare variable $local:FIELDS :=
 	<fields>
@@ -27,7 +27,7 @@ let $callback := util:function(xs:QName("local:key"), 2)
 return
     concat("[",
         string-join(
-            util:index-keys-by-qname($qnames, $term, $callback, 20, "lucene-index"),
+            collection($local:COLLECTION)/util:index-keys-by-qname($qnames, $term, $callback, 20, "lucene-index"),
             ', '
         ),
         "]")
