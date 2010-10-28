@@ -91,9 +91,8 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                 </div>
                                 {
                                     let $clean := clean:cleanup($item)
-                                    let $log := util:log("DEBUG", ("RECORD: ", $clean))
                                     return
-                                        mods:format-full(string($currentPos), $clean) 
+                                        mods:format-full(string($currentPos), $clean, $item) 
                                 }
                             </td>
                         else
