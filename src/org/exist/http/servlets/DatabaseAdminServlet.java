@@ -49,7 +49,7 @@ public class DatabaseAdminServlet extends HttpServlet {
         try {
             if ( action != null ) {
                 if ( action.equalsIgnoreCase( "start" ) ) {
-                    if ( !BrokerPool.isConfigured() ) {
+                    if ( !BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME) ) {
                         BrokerPool.configure( 1, 5, configuration );
                         output.println( "<p>Server has been started...</p>" );
                     }
@@ -117,7 +117,7 @@ public class DatabaseAdminServlet extends HttpServlet {
 	 */
     public void init( ServletConfig config ) throws ServletException {
         super.init( config );
-        if(BrokerPool.isConfigured()) {
+        if(BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
         	this.log("database already started. Giving up.");
         	return;
         }
@@ -160,7 +160,7 @@ public class DatabaseAdminServlet extends HttpServlet {
                 "configured" );
         this.log("configuring eXist instance");
         try {
-            if ( !BrokerPool.isConfigured() )
+            if ( !BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME) )
                 BrokerPool.configure( 1, 5, configuration );
         } catch ( EXistException e ) {
             throw new ServletException( e.getMessage() );

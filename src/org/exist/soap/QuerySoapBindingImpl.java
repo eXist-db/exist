@@ -59,7 +59,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     
     public QuerySoapBindingImpl() {
         try {
-            if (!BrokerPool.isConfigured())
+            if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME))
                 configure();
             pool = BrokerPool.getInstance();
         } catch (Exception e) {

@@ -93,7 +93,7 @@ public class EXistServlet extends HttpServlet {
 
 		// Configure BrokerPool
 		try {
-			if (BrokerPool.isConfigured()) {
+			if (BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
 				LOG.info("Database already started. Skipping configuration ...");
 			} else {
 				String confFile = config.getInitParameter("configuration");
@@ -652,7 +652,7 @@ public class EXistServlet extends HttpServlet {
 			throw new ServletException("database has not been " + "configured");
 		LOG.info("configuring eXist instance");
 		try {
-			if (!BrokerPool.isConfigured())
+			if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME))
 				BrokerPool.configure(1, 5, configuration);
 		} catch (EXistException e) {
 			throw new ServletException(e.getMessage(), e);
