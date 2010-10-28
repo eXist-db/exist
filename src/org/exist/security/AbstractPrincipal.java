@@ -21,6 +21,7 @@
  */
 package org.exist.security;
 
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.config.Configuration;
@@ -140,7 +141,7 @@ public abstract class AbstractPrincipal implements Principal {
 		}
 	}
 	
-	protected BrokerPool getDatabase() {
+	protected Database getDatabase() {
 		return realm.getDatabase();
 	}
 

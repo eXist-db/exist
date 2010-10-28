@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.config.Configurable;
@@ -67,15 +68,15 @@ public abstract class AbstractRealm<A extends Account, G extends Group> implemen
 	}
 
 	@Override
-	public BrokerPool getDatabase() {
+	public Database getDatabase() {
 		return getSecurityManager().getDatabase();
 	}
 
-        protected SecurityManager getSecurityManager() {
-            return sm;
-        }
+    protected SecurityManager getSecurityManager() {
+        return sm;
+    }
 
-        @Override
+    @Override
 	public void startUp(DBBroker broker) throws EXistException {
 
 		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());

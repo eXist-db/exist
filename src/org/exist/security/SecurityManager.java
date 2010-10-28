@@ -21,6 +21,7 @@
  */
 package org.exist.security;
 
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
@@ -57,7 +58,7 @@ public interface SecurityManager extends Configurable {
 
    void attach(BrokerPool pool, DBBroker sysBroker) throws EXistException;
    
-   public BrokerPool getDatabase();
+   public Database getDatabase();
 
    boolean isXACMLEnabled();
    

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
@@ -80,7 +81,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
-	private BrokerPool pool;
+	private Database pool;
 
 	protected Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
 	protected Int2ObjectHashMap<Account> usersById = new Int2ObjectHashMap<Account>(65);
@@ -108,8 +109,8 @@ public class SecurityManagerImpl implements SecurityManager {
     
     private Configuration configuration = null;
     
-    public SecurityManagerImpl(BrokerPool pool) throws ConfigurationException {
-    	this.pool = pool;
+    public SecurityManagerImpl(Database db) throws ConfigurationException {
+    	this.pool = db;
     	
     	defaultRealm = new RealmImpl(this, null); //TODO: in-memory configuration???
     	realms.add(defaultRealm);
@@ -383,21 +384,21 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	@Override
-	public BrokerPool getDatabase() {
+	public Database getDatabase() {
 		return pool;
 	}
 	
-        @Override
+    @Override
 	public synchronized int getNextGroupId() {
 		return ++lastGroupId; 
 	}
 
-        @Override
+    @Override
 	public synchronized int getNextAccountId() {
 		return ++lastUserId; 
 	}
 
-        @Deprecated
+    @Deprecated
 	@Override
 	public <A extends Account> java.util.Collection<A> getUsers() {
 		return (java.util.Collection<A>)defaultRealm.getAccounts();
@@ -405,7 +406,7 @@ public class SecurityManagerImpl implements SecurityManager {
                 //TODO should be refactored to get users from all realms
 	}
 
-        @Deprecated
+    @Deprecated
 	@Override
 	public <G extends Group> java.util.Collection<G> getGroups() {
 		return (java.util.Collection<G>)defaultRealm.getRoles();
@@ -418,35 +419,35 @@ public class SecurityManagerImpl implements SecurityManager {
 		addGroup(new GroupAider(name));
 	}
 
-        @Override
-        public synchronized <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException {
+    @Override
+    public synchronized <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException {
 
-            if (group.getRealmId() == null) {
-                throw new ConfigurationException("Group must have realm id.");
-            }
-
-            if(group.getName() == null || group.getName().isEmpty()) {
-                throw new ConfigurationException("Group must have name.");
-            }
-
-            AbstractRealm<Account, G> registeredRealm = (AbstractRealm<Account, G>)findRealmForRealmId(group.getRealmId());
-
-            G newGroup = registeredRealm.addGroup(group.getName());
-            save();
-            return newGroup;
-            //return defaultRealm.addGroup(group.getName());
+        if (group.getRealmId() == null) {
+            throw new ConfigurationException("Group must have realm id.");
         }
 
-        private Realm findRealmForRealmId(String realmId) throws ConfigurationException {
-            for(Realm realm : realms) {
-                if(realm.getId().equals(realmId)) {
-                    return realm;
-                }
-            }
-            throw new ConfigurationException("The realm id = '" + realmId + "' not found.");
+        if(group.getName() == null || group.getName().isEmpty()) {
+            throw new ConfigurationException("Group must have name.");
         }
 
-        @Override
+        AbstractRealm<Account, G> registeredRealm = (AbstractRealm<Account, G>)findRealmForRealmId(group.getRealmId());
+
+        G newGroup = registeredRealm.addGroup(group.getName());
+        save();
+        return newGroup;
+        //return defaultRealm.addGroup(group.getName());
+    }
+
+    private Realm findRealmForRealmId(String realmId) throws ConfigurationException {
+        for(Realm realm : realms) {
+            if(realm.getId().equals(realmId)) {
+                return realm;
+            }
+        }
+        throw new ConfigurationException("The realm id = '" + realmId + "' not found.");
+    }
+
+    @Override
 	public final synchronized <A extends Account> A addAccount(Account account) throws  PermissionDeniedException, EXistException{
 		if(account.getRealmId() == null) {
                     throw new ConfigurationException("Account must have realm id.");
@@ -460,7 +461,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		
 		int id = getNextAccountId();
 
-                A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
+        A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
 		//AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
 		
 		usersById.put(id, new_account);
@@ -476,9 +477,9 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
 	private void save() throws PermissionDeniedException, EXistException {
-            if (configuration != null) {
-                configuration.save();
-            }
+        if (configuration != null) {
+            configuration.save();
+        }
 	}
 
 	@Override
@@ -564,9 +565,10 @@ public class SecurityManagerImpl implements SecurityManager {
 		}
 		return null;
 	}
-	
-	//Session management part
 
+	//Session management part
+	
+	//TODO: validate & remove if session timeout
 	Map<String, Subject> sessions = new HashMap<String, Subject>();
 	
 	@Override
