@@ -1,0 +1,88 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+package org.exist;
+
+import org.exist.config.Configurable;
+import org.exist.indexing.IndexManager;
+import org.exist.security.Account;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.storage.CacheManager;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+
+/**
+ * Database controller, all operation synchronized by this instance. (singleton)
+ * 
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
+ */
+public interface Database {
+
+	//TODO: javadocs
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public SecurityManager getSecurityManager();
+
+	/**
+	 * 
+	 * @return
+	 */
+	public IndexManager getIndexManager();
+
+	/**
+	 * 
+	 * @return
+	 */
+	public TransactionManager getTransactionManager();
+
+	/**
+	 * 
+	 * @return
+	 */
+	public CacheManager getCacheManager();
+
+	/**
+	 * 
+	 */
+	public void shutdown();
+
+	/**
+	 * 
+	 * @return
+	 */
+	public Subject getSubject();
+
+	/**
+	 * 
+	 * @param subject
+	 */
+	public boolean setSubject(Subject subject);
+
+	
+	public DBBroker get(Subject subject) throws EXistException;
+	public void release(DBBroker broker);
+	
+}

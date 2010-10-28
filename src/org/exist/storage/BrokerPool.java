@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
@@ -85,7 +86,7 @@ import org.exist.xquery.PerformanceStats;
  */
 //TODO : in the future, separate the design between the Map of DBInstances and their non static implementation
 @ConfigurationClass("pool")
-public class BrokerPool extends Observable {
+public class BrokerPool extends Observable implements Database {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
