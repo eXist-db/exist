@@ -149,7 +149,10 @@ public class XQuery {
             else
                 treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
+                AST treeAst = treeParser.getAST();
                 throw new StaticXQueryException(
+                        ast.getLine(),
+                        ast.getColumn(),
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
