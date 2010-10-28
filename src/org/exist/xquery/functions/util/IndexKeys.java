@@ -170,7 +170,7 @@ public class IndexKeys extends BasicFunction {
 	            data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
 	            params[1] = data;
 	
-	            result.addAll(call.evalFunction(contextSequence, null, params));
+	            result.addAll(call.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
 	            data.clear();
 	        }
         } else {
@@ -204,7 +204,7 @@ public class IndexKeys extends BasicFunction {
 		        data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
 		        params[1] = data;
 		
-		        result.addAll(call.evalFunction(contextSequence, null, params));
+		        result.addAll(call.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
 		        data.clear();
 		    }
         }
@@ -212,7 +212,17 @@ public class IndexKeys extends BasicFunction {
         return result;
     }
 
-    /**
+    
+    @Override
+	public int getDependencies() {
+    	if (isCalledAs("index-keys-by-qname")) {
+            return Dependency.CONTEXT_SET;
+        } else {
+            return getArgument(0).getDependencies();
+        }
+	}
+
+	/**
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
      *
