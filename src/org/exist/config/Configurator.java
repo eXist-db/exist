@@ -288,6 +288,8 @@ public class Configurator {
                     String referenceBy;
                     List<Configuration> confs;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+
+                        //TOOD The confs is wrong when we are a reference by
                         confs = configuration.getConfigurations(confName);
                         referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
                     } else {
@@ -465,16 +467,11 @@ public class Configurator {
             return;
         }
         field.setAccessible(true);
-        Object value;
+        String value;
         try {
-            if (field.get(instance) == null) {
+            value = extractFieldValue(field, instance);
+            if(value == null) {
                 LOG.warn("Reference field '"+referenceBy+"' for class '"+clazz+"' is NULL");
-                return;
-            }
-            if (field.getType().getName().equals("java.lang.String")) {
-                value = field.get(instance);
-            } else {
-                LOG.warn("Unsupported reference field type '"+field.getType().getName()+"'");
                 return;
             }
         } catch (IllegalArgumentException e) {
@@ -488,7 +485,7 @@ public class Configurator {
 
         QName qnConfig = new QName(configName, Configuration.NS);
         serializer.startElement(qnConfig, null);
-        serializer.attribute(new QName(referenceBy, null), value.toString());
+        serializer.attribute(new QName(referenceBy, null), value);
         serializer.endElement(qnConfig);
     }
 
