@@ -239,15 +239,15 @@ public class ValueIndexFactory {
 			return data;
 		}
 
-                else if(value.getType() == Type.DECIMAL) {
-                        //actually stored as string data due to variable length
+        else if(value.getType() == Type.DECIMAL) {
+            //actually stored as string data due to variable length
 			BigDecimal dec = ((DecimalValue)value).getValue();
-                        String val = dec.toString();
-                        final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
+            String val = dec.toString();
+            final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
 			data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
 			UTF8.encode(val, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
 			return data;
-                }
+        }
 
 		/* unknown! */
 		else {
