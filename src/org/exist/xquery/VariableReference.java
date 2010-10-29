@@ -41,6 +41,10 @@ public class VariableReference extends AbstractExpression {
 		super(context);
 		this.qname = qname;
 	}
+	
+	public String getName() {
+		return qname;
+	}
 
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
