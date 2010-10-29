@@ -174,9 +174,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 			buf.append(">");
 		if (groups != null) {
 			for (Group group : groups) {
-				buf.append("<group>");
-				buf.append(group.getName());
-				buf.append("</group>");
+                            buf.append(group.toString());
 			}
 		}
 		buf.append("</user>");
