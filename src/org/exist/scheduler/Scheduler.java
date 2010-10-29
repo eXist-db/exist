@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2010 The eXist team
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -34,8 +34,6 @@ import org.quartz.SimpleTrigger;
 import org.quartz.impl.StdSchedulerFactory;
 
 import org.exist.EXistException;
-import org.exist.security.SecurityManager;
-import org.exist.security.Account;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.SystemTask;
@@ -77,6 +75,7 @@ public class Scheduler
     public static final String          JOB_TYPE_STARTUP                         = "startup";
     public static final String          JOB_TYPE_SYSTEM                          = "system";
     public static final String          JOB_NAME_ATTRIBUTE                       = "name";
+    public static final String          JOB_UNSCHEDULE_ON_EXCEPTION              = "unschedule-on-exception";
 
     private final static Logger         LOG                                      = Logger.getLogger( Scheduler.class ); //Logger
 
@@ -630,7 +629,7 @@ public class Scheduler
                     } else {
 
                         //schedule job with periodic trigger
-                        createPeriodicJob( Long.parseLong( jobConfig.getSchedule() ), job, jobConfig.getDelay(), jobConfig.getParameters(), jobConfig.getRepeat() );
+                        createPeriodicJob( Long.parseLong( jobConfig.getSchedule() ), job, jobConfig.getDelay(), jobConfig.getParameters(), jobConfig.getRepeat(), jobConfig.unscheduleOnException() );
                     }
                 }
             }

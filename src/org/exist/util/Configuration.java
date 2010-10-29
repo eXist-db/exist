@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -577,12 +577,13 @@ public class Configuration implements ErrorHandler
 
         ArrayList<JobConfig> jobList     = new ArrayList<JobConfig>();
 
-        String               jobType     = null;
-        String               jobName     = null;
-        String               jobResource = null;
-        String               jobSchedule = null;
-        String               jobDelay    = null;
-        String               jobRepeat   = null;
+        String jobType       = null;
+        String jobName       = null;
+        String jobResource   = null;
+        String jobSchedule   = null;
+        String jobDelay      = null;
+        String jobRepeat     = null;
+        String jobUnschedule = null;
 
         for( int i = 0; i < nlJobs.getLength(); i++ ) {
             Element job = (Element)nlJobs.item( i );
@@ -594,7 +595,7 @@ public class Configuration implements ErrorHandler
                 jobType = Scheduler.JOB_TYPE_USER; //default to user if unspecified
             }
 
-            jobName     = getConfigAttributeValue( job, Scheduler.JOB_NAME_ATTRIBUTE );
+            jobName = getConfigAttributeValue( job, Scheduler.JOB_NAME_ATTRIBUTE );
 
             //get the job resource
             jobResource = getConfigAttributeValue( job, Scheduler.JOB_CLASS_ATTRIBUTE );
@@ -610,9 +611,13 @@ public class Configuration implements ErrorHandler
                 jobSchedule = getConfigAttributeValue( job, Scheduler.JOB_PERIOD_ATTRIBUTE );
             }
 
+            if( jobUnschedule == null ) {
+            	jobUnschedule = getConfigAttributeValue( job, Scheduler.JOB_UNSCHEDULE_ON_EXCEPTION );
+            }
+            
             //create the job config
             try {
-                JobConfig jobConfig = new JobConfig( jobType, jobName, jobResource, jobSchedule );
+                JobConfig jobConfig = new JobConfig( jobType, jobName, jobResource, jobSchedule, jobUnschedule );
 
                 //get and set the job delay
                 jobDelay = getConfigAttributeValue( job, Scheduler.JOB_DELAY_ATTRIBUTE );
@@ -1565,9 +1570,10 @@ public class Configuration implements ErrorHandler
         private String     schedule     = null;
         private long       delay        = -1;
         private int        repeat       = SimpleTrigger.REPEAT_INDEFINITELY;
+        private boolean unscheduleOnException = true;
         private Properties parameters   = new Properties();
 
-        public JobConfig( String type, String jobName, String resourceName, String schedule ) throws JobException
+        public JobConfig( String type, String jobName, String resourceName, String schedule, String unscheduleOnException ) throws JobException
         {
             if( type != null ) {
                 this.type = type;
@@ -1587,6 +1593,10 @@ public class Configuration implements ErrorHandler
                 throw( new JobException( JobException.JOB_ABORT, "Job must have a schedule" ) );
             } else {
                 this.schedule = schedule;
+            }
+            
+            if (unscheduleOnException != null) {
+            	this.unscheduleOnException = parseBoolean( unscheduleOnException, true );
             }
         }
 
@@ -1648,6 +1658,11 @@ public class Configuration implements ErrorHandler
         {
             return( parameters );
         }
+
+		public boolean unscheduleOnException() 
+		{
+			return unscheduleOnException;
+		}
 
     }
 
