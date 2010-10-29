@@ -288,8 +288,6 @@ public class Configurator {
                     String referenceBy;
                     List<Configuration> confs;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
-
-                        //TOOD The confs is wrong when we are a reference by
                         confs = configuration.getConfigurations(confName);
                         referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
                     } else {
@@ -321,7 +319,9 @@ public class Configurator {
                             boolean found = false;
                             for (Iterator<Configuration> i = confs.iterator() ; i.hasNext() ;) {
                                 Configuration conf = i.next();
-                                if (current_conf.equals( conf )) {
+
+                                //if there is a referenceBy then compare by reference, otherwise .equals
+                                if((referenceBy == null && current_conf.equals( conf )) || (referenceBy != null && current_conf.getProperty(referenceBy).equals(conf.getProperty(referenceBy)))) {
                                     current_conf.checkForUpdates(conf.getElement());
                                     i.remove();
                                     found = true;
