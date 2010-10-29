@@ -2852,10 +2852,6 @@ public class XQueryContext
             
             modExternal.setRootExpression(path);
 
-            if( modExternal == null ) {
-                throw( new XPathException( "source at " + location + " is not a valid module" ) );
-            }
-
             if( !modExternal.getNamespaceURI().equals( namespaceURI ) ) {
                 throw( new XPathException( "namespace URI declared by module (" + modExternal.getNamespaceURI() + ") does not match namespace URI in import statement, which was: " + namespaceURI ) );
             }

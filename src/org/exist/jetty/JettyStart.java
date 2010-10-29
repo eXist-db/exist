@@ -185,7 +185,6 @@ public class JettyStart implements LifeCycle.Listener {
 
         // start Jetty
         final Server server;
-        int port = 8080;
         try {
             server = new Server();
             InputStream is = new FileInputStream(args[0]);
@@ -212,11 +211,7 @@ public class JettyStart implements LifeCycle.Listener {
                 allPorts.append(connector.getPort());
             }
 
-            if (connectors.length > 0) {
-                port = connectors[0].getPort();
-            }
-            
-            //TODO: use plaggable interface
+            //TODO: use pluggable interface
             Class<?> openid = null;
             try {
             	openid = Class.forName("org.exist.security.openid.servlet.AuthenticatorOpenId");
