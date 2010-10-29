@@ -1242,7 +1242,8 @@ public class BrokerPool extends Observable implements Database {
 			"created broker '" + broker.getId() + " for database instance '" + instanceName + "'");		
 		return broker;
 	}
-    
+
+    //Seems dangerous and redundant as you myst acquire a broker yourself first, just use broker.setUser()
     public boolean setSubject(Subject subject) {
 		synchronized(this) {
 			//Try to get an active broker
@@ -1256,6 +1257,7 @@ public class BrokerPool extends Observable implements Database {
 		return false;
     }
 
+    //Seems dangerous and redundant as you myst acquire a broker yourself first, just use broker.getUser()
     public Subject getSubject() {
 		synchronized(this) {
 			//Try to get an active broker

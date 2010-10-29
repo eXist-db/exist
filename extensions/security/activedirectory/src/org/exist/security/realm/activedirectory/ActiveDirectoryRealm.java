@@ -42,6 +42,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.security.realm.ldap.LdapContextFactory;
+import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -136,9 +137,14 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		if (ldapUser) {
 			AbstractAccount account = (AbstractAccount) getAccount(null, username);
 			if (account == null) {
-				Subject currentSubject = getDatabase().getSubject();
+				//Subject currentSubject = getDatabase().getSubject();
+                                DBBroker broker = null;
 				try {
-					getDatabase().setSubject(getSecurityManager().getSystemSubject());
+                                        broker = getDatabase().get(null);
+
+                                        //elevate to system privs
+					broker.setUser(getSecurityManager().getSystemSubject());
+
                                         account = getSecurityManager().addAccount(instantiateAccount(this, username));
 					//account = (AbstractAccount) sm.addAccount(new UserAider(ID, username));
 				} catch (Exception e) {
@@ -146,7 +152,9 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 							AuthenticationException.UNNOWN_EXCEPTION,
 							e.getMessage(), e);
 				} finally {
-					getDatabase().setSubject(currentSubject);
+					if(broker != null) {
+                                            getDatabase().release(broker);
+                                        }
 				}
 			}
 

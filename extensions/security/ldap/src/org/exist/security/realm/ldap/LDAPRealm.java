@@ -45,6 +45,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -113,9 +114,14 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     }
 
     private LDAPAccountImpl createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
-        Subject currentSubject = getDatabase().getSubject();
+
+        DBBroker broker = null;
         try {
-            getDatabase().setSubject(getSecurityManager().getSystemSubject());
+            broker = getDatabase().get(invokingUser);
+
+            //elevate to system privs
+            broker.setUser(getSecurityManager().getSystemSubject());
+
             LDAPAccountImpl account = (LDAPAccountImpl)getSecurityManager().addAccount(new UserAider(ID, username));
             //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
@@ -147,14 +153,20 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                     AuthenticationException.UNNOWN_EXCEPTION,
                     e.getMessage(), e);
         } finally {
-            getDatabase().setSubject(currentSubject);
+            if(broker != null) {
+                getDatabase().release(broker);
+            }
         }
     }
 
-    private LDAPGroupImpl createGroupInDatabase(String groupname) throws AuthenticationException {
-        Subject currentSubject = getDatabase().getSubject();
+    private LDAPGroupImpl createGroupInDatabase(Subject invokingUser, String groupname) throws AuthenticationException {
+        DBBroker broker = null;
         try {
-            getDatabase().setSubject(getSecurityManager().getSystemSubject());
+            broker = getDatabase().get(invokingUser);
+
+            //elevate to system privs
+            broker.setUser(getSecurityManager().getSystemSubject());
+
             //return sm.addGroup(instantiateGroup(this, groupname));
             return (LDAPGroupImpl)getSecurityManager().addGroup(new GroupAider(ID, groupname));
         } catch(Exception e) {
@@ -162,7 +174,9 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                     AuthenticationException.UNNOWN_EXCEPTION,
                     e.getMessage(), e);
         } finally {
-            getDatabase().setSubject(currentSubject);
+            if(broker != null) {
+                getDatabase().release(broker);
+            }
         }
     }
 
@@ -239,7 +253,7 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
                 } else {
                     //found a group from ldap so cache them and return
                     try {
-                        return createGroupInDatabase(name);
+                        return createGroupInDatabase(invokingUser, name);
                         //registerGroup(grp); //TODO do we need to do this?
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
