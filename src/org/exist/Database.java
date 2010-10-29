@@ -21,9 +21,7 @@
  */
 package org.exist;
 
-import org.exist.config.Configurable;
 import org.exist.indexing.IndexManager;
-import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
