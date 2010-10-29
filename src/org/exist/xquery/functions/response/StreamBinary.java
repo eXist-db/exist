@@ -105,7 +105,7 @@ public class StreamBinary extends BasicFunction
         response.setHeader( "Content-Type", contentType );
 
         if( filename != null ) {
-            response.setHeader( "Content-Disposition", "inline; filename=" + filename );
+            response.setHeader( "Content-Disposition", "inline; filename=\"" + filename + "\"" );
         }
 
         try {
