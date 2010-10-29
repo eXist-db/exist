@@ -485,7 +485,7 @@ public class InteractiveClient {
                 if (args.length < 2 || args[1] == null) {
                     collectionPath = XmldbURI.ROOT_COLLECTION_URI;
                 } else {
-                	collectionPath = XmldbURI.xmldbUriFor(URIUtils.urlEncodeUtf8(args[1]));
+                	collectionPath = XmldbURI.xmldbUriFor(args[1]);
                 }
                 collectionPath = currUri.resolveCollectionPath(collectionPath);
                 if(collectionPath.numSegments()==0) {
