@@ -21,6 +21,11 @@
  */
 package org.exist;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import org.exist.xquery.functions.system.GetVersion;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -29,8 +34,21 @@ public final class Version {
 
 	private static final String NAME = "eXist";
 
-	private static final String VERSION = "1.5.0";
-	private static final int[] STRUCTURED_VERSION = {1,5,0};
+	private static final String VERSION;
+	private static final String BUILD;
+	private static final String SVN_REVISION;
+	
+	static {
+        Properties properties = new Properties();
+		try {
+			properties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+		} catch (IOException e) {
+		}
+		
+		VERSION 		= (String) properties.get("product-version");
+		BUILD 			= (String) properties.get("product-build");
+		SVN_REVISION 	= (String) properties.get("svn-revision");
+	}
 	
 	public static String getProductName() {
 		return NAME;
@@ -40,7 +58,11 @@ public final class Version {
 		return VERSION;
 	}
 
-	public static int[] getStructuredVersion() {
-		return STRUCTURED_VERSION;
+	public static String getBuild() {
+		return BUILD;
+	}
+
+	public static String getSvnRevision() {
+		return SVN_REVISION;
 	}
 }
