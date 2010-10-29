@@ -109,6 +109,17 @@ public class IndexManager {
         return null;
     }
 
+    public Index registerIndex(Index index) throws DatabaseConfigurationException {
+        index.open();
+
+        indexers.put(index.getIndexId(), index);
+
+        if (LOG.isInfoEnabled())
+            LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
+
+        return index;
+    }
+
     /**
      * Returns the {@link org.exist.storage.BrokerPool} on with this IndexManager operates.
      * 
