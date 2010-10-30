@@ -255,11 +255,21 @@ public class ListenerManager {
 			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : document);
 		}
 		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) throws TriggerException {
-			EventKey key = new EventKey(newCollection.getURI().lastSegment().toString(), event, true);
+			EventKey key;
+                        if(event == CollectionTrigger.DELETE_COLLECTION_EVENT) {
+                            key = new EventKey(collection.getURI().lastSegment().toString(), event, true);
+                        } else {
+                            key = new EventKey(newCollection.getURI().lastSegment().toString(), event, true);
+                        }
 			INSTANCE.fire(key, collection);
 		}
 		public void finish(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) {
-			EventKey key = new EventKey(newCollection.getURI().lastSegment().toString(), event, false);
+                        EventKey key;
+                        if(event == CollectionTrigger.DELETE_COLLECTION_EVENT) {
+                            key = new EventKey(collection.getURI().lastSegment().toString(), event, false);
+                        } else {
+                            key = new EventKey(newCollection.getURI().lastSegment().toString(), event, false);
+                        }
 			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : collection);
 		}
 		public boolean isValidating() {
