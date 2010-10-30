@@ -27,6 +27,7 @@
 						<text field="lines" qname="LINE"/>
 						<!-- Additional index on LINE -->
 						<text qname="LINE"/>
+					    <text qname="@type"/>
 					</lucene>
 				</index>
 			</collection>
@@ -47,13 +48,13 @@
 		</store>
 		<store collection="/db/test" name="text2.xml">
 			<test>
-				<div>
+				<div type="chapter">
 					<head>Div1</head>
 					<p>First level</p>
-					<div>
+					<div type="section">
 						<head>Div2</head>
 						<p>Second level</p>
-						<div>
+						<div type="subsection">
 							<head>Div3</head>
 							<p>Third level</p>
 						</div>
@@ -62,10 +63,10 @@
 			</test>
 		</store>
 	</setup>
-	<tearDown>
-		<remove-collection collection="/db/test"/>
-		<remove-document collection="/db/system/config/db" name="collection.xconf"/>
-	</tearDown>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
+    </tearDown>
 	<!-- Following axis tests -->
 	<test output="xml">
 		<task>Case sensitivity</task>
@@ -537,23 +538,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>index-keys test 2</task>
-		<code><![CDATA[
-			declare function local:key($key, $options) {
-				<t>{$key}</t>
-			};
-			
-			<terms>
-			{
-			let $callback := util:function(xs:QName("local:key"), 2)
-			return
-				collection("/db/does/not/exist")/util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index")
-			}
-			</terms>]]></code>
-		<expected/>
-	</test>
-	<test output="xml">
-		<task>index-keys test 2</task>
+		<task>index-keys test 3</task>
 		<code><![CDATA[
 			declare function local:key($key, $options) {
 				<t>{$key}</t>
@@ -574,7 +559,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>index-keys test 2</task>
+		<task>index-keys test 4</task>
 		<code><![CDATA[
 			declare function local:key($key, $options) {
 				<t>{$key}</t>
@@ -593,7 +578,51 @@
 			</terms>
 		</expected>
 	</test>
-	<test output="xml">
+    <test output="text">
+        <task>index-keys test 5</task>
+        <code><![CDATA[
+            declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+            <terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
+				util:index-keys(doc("/db/test/text2.xml")//@type, "", $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+        <expected>
+            <terms>
+                <t>chapter</t>
+                <t>section</t>
+                <t>subsection</t>
+            </terms>
+        </expected>
+    </test>
+    <!--The following test is commented out because it fails-->
+    <!--<test output="text">
+        <task>index-keys test 6</task>
+        <code><![CDATA[
+            declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+            <terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)		
+            return
+                util:index-keys-by-qname(xs:QName("@type"), "", $callback, 10000, "lucene-index")
+			}
+			</terms>]]>
+        </code>
+        <expected>
+            <terms>
+                <t>chapter</t>
+                <t>section</t>
+                <t>subsection</t>
+            </terms>
+        </expected>
+    </test>-->
+    <test output="xml">
 		<task>Analyzer test</task>
 		<code> for $hit in doc("/db/test/text1.xml")//para[ft:query(., '"and indexed"')] return $hit </code>
 		<expected>
