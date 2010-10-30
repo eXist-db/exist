@@ -73,7 +73,7 @@ public class CollectionConfiguration {
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
-	private TriggerConfig[] triggers = new TriggerConfig[6];
+	private TriggerConfig[] triggers = new TriggerConfig[Trigger.MAX_EVENT + 1];
 
 	private IndexSpec indexSpec = null;
     

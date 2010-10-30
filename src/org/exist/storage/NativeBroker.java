@@ -1038,6 +1038,25 @@ public class NativeBroker extends DBBroker {
             File targetDir = getCollectionFile(fsBackupDir,transaction,collection.getURI(),true);
             synchronized(collectionsCache) {
                 canRemoveCollection(collection);
+                
+                //trigger prepare part
+                CollectionTrigger trigger = null;
+                int event = 0;
+
+                CollectionConfiguration config = collection.getConfiguration(this);
+                if (config != null) {
+                	event = Trigger.DELETE_COLLECTION_EVENT;
+
+    				try {
+                        trigger = (CollectionTrigger)config.newTrigger(event, this, collection);
+                    } catch (CollectionConfigurationException e) {
+                        LOG.debug("An error occurred while initializing a trigger for collection " + collection.getURI() + ": " + e.getMessage(), e);
+                    }
+                    if (trigger != null) {
+                        trigger.prepare(event, this, transaction, collection, null);
+                    }
+                }
+
                 final XmldbURI uri = collection.getURI();
                 final String collName = uri.getRawCollectionPath();
                 // Notify the collection configuration manager
@@ -1128,6 +1147,11 @@ public class NativeBroker extends DBBroker {
                         //and its id well never be made available
                         saveCollection(transaction, collection);
                     }
+
+                    if (trigger != null) {
+                        trigger.finish(event, this, transaction, collection, null);
+                    }
+
                 }
                 catch(LockException e) {
                     LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
