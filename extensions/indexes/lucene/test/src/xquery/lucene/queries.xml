@@ -548,6 +548,22 @@
 			{
 			let $callback := util:function(xs:QName("local:key"), 2)
 			return
+				collection("/db/does/not/exist")/util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index")
+			}
+			</terms>]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>index-keys test 4</task>
+		<code><![CDATA[
+			declare function local:key($key, $options) {
+				<t>{$key}</t>
+			};
+			
+			<terms>
+			{
+			let $callback := util:function(xs:QName("local:key"), 2)
+			return
 				util:index-keys(doc("/db/test/text1.xml")//p, "s", $callback, 10000, "lucene-index")
 			}
 			</terms>]]></code>
@@ -559,7 +575,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>index-keys test 4</task>
+		<task>index-keys test 5</task>
 		<code><![CDATA[
 			declare function local:key($key, $options) {
 				<t>{$key}</t>
@@ -579,7 +595,7 @@
 		</expected>
 	</test>
     <test output="text">
-        <task>index-keys test 5</task>
+        <task>index-keys test 6</task>
         <code><![CDATA[
             declare function local:key($key, $options) {
 				<t>{$key}</t>
@@ -601,7 +617,7 @@
     </test>
     <!--The following test is commented out because it fails-->
     <!--<test output="text">
-        <task>index-keys test 6</task>
+        <task>index-keys test 7</task>
         <code><![CDATA[
             declare function local:key($key, $options) {
 				<t>{$key}</t>
