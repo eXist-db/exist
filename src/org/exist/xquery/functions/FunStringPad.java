@@ -41,6 +41,9 @@ import org.exist.xquery.value.Type;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
+
+//fn:string-pad() is not part of the W3C spec
+@Deprecated
 public class FunStringPad extends Function {
 
 	public final static FunctionSignature signature =
@@ -53,7 +56,8 @@ public class FunStringPad extends Function {
 				 new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be duplicated"),
 				 new FunctionParameterSequenceType("count", Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of copies of $arg to be returned")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the duplicated string"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the duplicated string"),
+                        "fn:string-pad(...) is not part of the W3C specification.");
 			
 	/**
 	 * @param context

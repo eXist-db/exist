@@ -31,6 +31,7 @@ import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -113,7 +114,7 @@ public class FunConcat extends Function {
            
 		if(getArgumentCount() < 2) {
             logger.error("fn:concat() requires at least two arguments");
-			throw new XPathException (this, "err:XPST0017: concat requires at least two arguments");
+			throw new XPathException (this, ErrorCodes.XPST0017, "Concat requires at least two arguments");
 		}
         
 		StringBuilder concat = new StringBuilder();     

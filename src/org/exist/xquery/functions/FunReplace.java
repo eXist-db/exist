@@ -30,6 +30,7 @@ import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -161,10 +162,13 @@ public class FunReplace extends FunMatches {
             result = StringValue.EMPTY_STRING;
         else {        
     		String string = stringArg.getStringValue();
-    		String pattern =
-    			translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
-            String replace =
-    			getArgument(2).eval(contextSequence, contextItem).getStringValue();
+    		Sequence patternSeq = getArgument(1).eval(contextSequence, contextItem);
+                String pattern =
+    			translateRegexp(patternSeq.getStringValue());
+            
+                Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
+                String replace =
+    			replaceSeq.getStringValue();
             //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".
             //An error is raised [err:FORX0004] if the value of $replacement contains a "\" character that is not part of a "\\" pair, unless it is immediately followed by a "$" character.            
             for (int i = 0 ; i < replace.length() ; i++) {
@@ -183,11 +187,11 @@ public class FunReplace extends FunMatches {
             	if (replace.charAt(i) == '\\') {
             		try {
             			if (!(replace.charAt(i + 1) == '\\' || replace.charAt(i + 1) == '$'))
-            				throw new XPathException(this, "err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            				throw new XPathException(this, ErrorCodes.FORX0004, "The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.", replaceSeq);
             			i++;
             		//Handle index exceptions
             		} catch (Exception e){
-            			throw new XPathException(this, "err:FORX0004 The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.");
+            			throw new XPathException(this, ErrorCodes.FORX0004, "The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.", replaceSeq);
             		}
             	}
             	
@@ -206,12 +210,12 @@ public class FunReplace extends FunMatches {
                 String r = matcher.replaceAll(replace);
     			result = new StringValue(r);
     		} catch (PatternSyntaxException e) {
-    			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
+    			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), patternSeq, e);
     		} catch (IndexOutOfBoundsException e) {
-    		    throw new XPathException(this, "FORX0001/FORX0003/FORX0004:"+e.getMessage(), e);
+    		    throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage(), patternSeq, e);
        		//Some JVMs seem to raise this one
     		} catch (IllegalArgumentException e) {
-    			throw new XPathException(this, "err:FORX0004: Invalid replace expression: " + e.getMessage(), e);
+    			throw new XPathException(this, ErrorCodes.FORX0004, "Invalid replace expression: " + e.getMessage(), replaceSeq, e);
             }
         }
         

@@ -47,6 +47,15 @@ public class XPathException extends Exception {
         this.source = expr.getSource();
     }
 
+    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
+        super();
+        this.errorCode = errorCode;
+        this.message = errorDesc;
+        this.line = expr.getLine();
+        this.column = expr.getColumn();
+        this.source = expr.getSource();
+    }
+
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal) {
         super();
         this.errorCode = errorCode;
@@ -146,6 +155,10 @@ public class XPathException extends Exception {
         StringBuilder buf = new StringBuilder();
         if(message == null) {
             message = "";
+        }
+        if(errorCode != null) {
+            buf.append(errorCode.getErrorQName()); //TODO consider also displaying the W3C message by calling errorCode.toString()
+            buf.append(" ");
         }
         buf.append(message);
         if(getLine() > 0 || source != null) {

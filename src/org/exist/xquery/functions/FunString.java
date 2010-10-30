@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -86,7 +87,7 @@ public class FunString extends Function {
             if (contextSequence.isEmpty())
                 return StringValue.EMPTY_STRING;
         } else if (contextSequence == null)
-			throw new XPathException(this, "err:XPDY0002 : undefined context sequence for '" + this.toString() + "'");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context sequence for '" + this.toString() + "'", contextSequence);
         // no argument and the context sequence is empty: return the empty sequence
         else if (contextSequence.isEmpty())
             return Sequence.EMPTY_SEQUENCE;

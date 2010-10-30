@@ -88,9 +88,9 @@ public class RangeExpression extends PathExpr {
 		else if (endSeq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
 		else if (startSeq.hasMany())
-			throw new XPathException(this, "XPTY0004: the first operand must have at most one item");
+			throw new XPathException(this, ErrorCodes.XPTY0004, "The first operand must have at most one item", startSeq);
 		else if (endSeq.hasMany())
-			throw new XPathException(this, "XPTY0004: the second operand must have at most one item");
+			throw new XPathException(this, ErrorCodes.XPTY0004, "The second operand must have at most one item", endSeq);
         else {
         	if (context.isBackwardsCompatible()) {
 	        	NumericValue valueStart;
@@ -98,30 +98,30 @@ public class RangeExpression extends PathExpr {
 	        		//Currently breaks 1e3 to 3
 	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
 	        	} catch (XPathException e) {
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'");
+							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
 	        	}
 	        	NumericValue valueEnd;
 	        	try {
 	        		//Currently breaks 3 to 1e3
 	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
 	        	} catch (XPathException e) {
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							endSeq.itemAt(0).getStringValue() + ")'");
+							endSeq.itemAt(0).getStringValue() + ")'", endSeq);
 	        	}
 	        	//Implied by previous conversion
 	        	if (valueStart.hasFractionalPart()) {
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'");
+							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
 				}
 	        	//Implied by previous conversion
 	        	if (valueEnd.hasFractionalPart()) {
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'");
+							startSeq.itemAt(0).getStringValue() + ")'", endSeq);
 	        	}        	
 //	        	result = new ValueSequence();
 //				for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
@@ -134,15 +134,15 @@ public class RangeExpression extends PathExpr {
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'");
+							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(this, "FORG0006: Required type is " +
+					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							endSeq.itemAt(0).getStringValue() + ")'");
+							endSeq.itemAt(0).getStringValue() + ")'", endSeq);
 	        	IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
 	        	IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
 //	       		result = new ValueSequence();

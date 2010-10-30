@@ -235,25 +235,25 @@ public class LetExpr extends BindingExpression {
                     else actualCardinality = Cardinality.ONE;                	
                 	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
             		if (!Cardinality.checkCardinality(sequenceType.getCardinality(), actualCardinality))
-        				throw new XPathException(this, "XPTY0004: Invalid cardinality for variable $" + varName +
+        				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for variable $" + varName +
         						". Expected " +
         						Cardinality.getDescription(sequenceType.getCardinality()) +
-        						", got " + Cardinality.getDescription(actualCardinality));
+        						", got " + Cardinality.getDescription(actualCardinality), in);
             		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
             		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
     	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-    	    				throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
+    	    				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-    	    						", got " +Type.getTypeName(var.getValue().getItemType()));
+    	    						", got " +Type.getTypeName(var.getValue().getItemType()), in);
             		//Here is an attempt to process the nodes correctly
             		} else {
             			//Same as above : we probably may factorize 
     	        		if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-    	    				throw new XPathException(this, "XPTY0004: Invalid type for variable $" + varName +
+    	    				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
     	    						". Expected " +
     	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-    	    						", got " +Type.getTypeName(var.getValue().getItemType()));            			
+    	    						", got " +Type.getTypeName(var.getValue().getItemType()), in);
             		}
                 }
 

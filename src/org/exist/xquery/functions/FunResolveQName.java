@@ -31,6 +31,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -125,8 +126,8 @@ public class FunResolveQName extends BasicFunction {
                 }
 
                 if (uri == null && prefix != null && !"".equals(prefix)) {
-                    throw new XPathException(this, "No namespace found for prefix. No binding for prefix '" + prefix
-                                             + "' was found. err:FONS0004");
+                    throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
+                                             + "' was found.", args[0]);
                 }
                 String localPart = QName.extractLocalName(qnameString);
                 QName qn = new QName(localPart, uri);
@@ -140,8 +141,8 @@ public class FunResolveQName extends BasicFunction {
           
                 return result;
             } else {
-                throw new XPathException(this, "Invalid lexical value. '" + qnameString
-                                         + "' is not a QName. err:FOCA0002");
+                throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical value. '" + qnameString
+                                         + "' is not a QName.", args[0]);
             }
         }
     }

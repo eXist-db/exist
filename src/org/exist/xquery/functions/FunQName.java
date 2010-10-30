@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -36,6 +37,7 @@ import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author wolf
@@ -80,8 +82,8 @@ public class FunQName extends BasicFunction {
 
         //TODO : currently useless (but for empty sequences) since the type is forced :-(
         if (!args[0].isEmpty() && args[0].getItemType() != Type.STRING)
-        	throw new XPathException(this, "err:XPTY0004: namespace URI is of type '" + 
-        			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected");
+        	throw new XPathException(this, ErrorCodes.XPTY0004, "Namespace URI is of type '" +
+        			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected", args[0]);
         String namespace;
 		if (args[0].isEmpty())
 			namespace = "";
@@ -96,11 +98,16 @@ public class FunQName extends BasicFunction {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
         } catch (IllegalArgumentException e) {
-        	throw new XPathException(this, "err:FOCA0002: invalid lexical form of either prefix or local name.");
-		}
+                ValueSequence argsSeq = new ValueSequence(args[0]);
+                argsSeq.addAll(args[1]);
+        	throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical form of either prefix or local name.", argsSeq);
+        }
 
-		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0))
-        	throw new XPathException(this, "err:FOCA0002: non-empty namespace prefix with empty namespace URI");
+		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0)){
+                    ValueSequence argsSeq = new ValueSequence(args[0]);
+                    argsSeq.addAll(args[1]);
+                    throw new XPathException(this, ErrorCodes.FOCA0002, "Non-empty namespace prefix with empty namespace URI", argsSeq);
+                }
 		
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {

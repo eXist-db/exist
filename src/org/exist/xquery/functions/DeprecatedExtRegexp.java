@@ -63,6 +63,7 @@ import java.util.List;
 /**
  * @author wolf
  */
+@Deprecated
 public class DeprecatedExtRegexp extends Function implements Optimizable {
 	protected static final Logger logger = Logger.getLogger(DeprecatedExtRegexp.class);
 

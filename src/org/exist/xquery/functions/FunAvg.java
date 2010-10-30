@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -94,7 +95,7 @@ public class FunAvg extends Function {
             	value = value.convertTo(Type.DOUBLE);
     		if (!(value instanceof ComputableValue)) {
                 logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-				throw new XPathException(this, "err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+				throw new XPathException(this, ErrorCodes.FORG0006, "" + Type.getTypeName(value.getType()) + "(" + value + ") can not be an operand in a sum", value);
             }
     		//Set the first value
     		ComputableValue sum = (ComputableValue) value;
@@ -106,7 +107,7 @@ public class FunAvg extends Function {
                 	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue)) {
                     logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-    				throw new XPathException(this, "err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    				throw new XPathException(this, ErrorCodes.FORG0006, "" + Type.getTypeName(value.getType()) + "(" + value + ") can not be an operand in a sum", value);
                 }
     			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
@@ -121,8 +122,8 @@ public class FunAvg extends Function {
 	    			//Aggregate next values	    	
     				sum = sum.plus((ComputableValue) value);
 				} catch(XPathException e) {
-                    logger.error("FORG0006: " + e.getMessage());
-					throw new XPathException(this, "err:FORG0006: " + e.getMessage(), e);    					
+                                    logger.error(ErrorCodes.FORG0006  + e.getMessage(), e);
+                                    throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage());
 				}
     		}
     		result = sum.div(new IntegerValue(inner.getItemCount()));

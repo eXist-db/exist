@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -86,7 +87,7 @@ public class FunStrLength extends Function {
 			contextSequence = getArgument(0).eval(contextSequence);
 		
 		if (contextSequence == null)
-			throw new XPathException(this, "err:XPDY0002: Undefined context item");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
 		
 		String strval = contextSequence.getStringValue();
 
