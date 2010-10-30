@@ -410,7 +410,7 @@
         <echo message="--------------"/>
         <echo message="XQTS tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="512m">
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
