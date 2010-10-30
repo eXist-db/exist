@@ -22,19 +22,28 @@
 package org.exist.synchro;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+import org.exist.Database;
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.jgroups.*;
 import org.jgroups.blocks.MethodCall;
 import org.jgroups.blocks.MethodLookup;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.util.RspList;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -47,28 +56,46 @@ public class Communicator extends ReceiverAdapter {
 	private String id = "eXist-dzone";
 
 	@ConfigurationFieldAsElement("collection")
-	protected XmldbURI collection = XmldbURI.ROOT_COLLECTION_URI;
+	protected XmldbURI collectionURI = XmldbURI.ROOT_COLLECTION_URI;
 	
 	@ConfigurationFieldAsElement("protocol")
 	private String protocol="udp.xml";
 	
-	private static final short CREATE=1;
-	private static final short UPDATE=2;
-	private static final short DELETE=3;
+	private final static Logger LOG = Logger.getLogger(Communicator.class);
+
+	public static final String COMMUNICATOR = "cluster.communicator";
 	
+	private static final short CREATE_COLLECTION = 1;
+	private static final short UPDATE_COLLECTION = 2;
+	private static final short DELETE_COLLECTION = 3;
+	
+	private static final short CREATE_DOCUMENT = 5;
+	private static final short UPDATE_DOCUMENT = 6;
+	private static final short DELETE_DOCUMENT = 7;
+
 	protected static Map<Short,Method> methods;
 
 	static {
 		try {
-			methods=new HashMap<Short,Method>(3);
-			methods.put(CREATE, 
-					Communicator.class.getMethod("_create",
+			methods=new HashMap<Short,Method>(6);
+			methods.put(CREATE_COLLECTION, 
+					Communicator.class.getMethod("_createCollection",
 						String.class, XmldbURI.class));
-			methods.put(UPDATE, 
-					Communicator.class.getMethod("_update",
+			methods.put(UPDATE_COLLECTION, 
+					Communicator.class.getMethod("_updateCollection",
 						String.class, XmldbURI.class));
-			methods.put(DELETE, 
-					Communicator.class.getMethod("_delete",
+			methods.put(DELETE_COLLECTION, 
+					Communicator.class.getMethod("_deleteCollection",
+						String.class, XmldbURI.class));
+
+			methods.put(CREATE_DOCUMENT, 
+					Communicator.class.getMethod("_createDocument",
+						String.class, XmldbURI.class));
+			methods.put(UPDATE_DOCUMENT, 
+					Communicator.class.getMethod("_updateDocument",
+						String.class, XmldbURI.class));
+			methods.put(DELETE_DOCUMENT, 
+					Communicator.class.getMethod("_deleteDocument",
 						String.class, XmldbURI.class));
 		} catch(NoSuchMethodException e) {
 			throw new RuntimeException(e);
@@ -80,12 +107,45 @@ public class Communicator extends ReceiverAdapter {
 	
 	private RequestOptions opts = RequestOptions.SYNC;
 
-	protected Communicator() throws ChannelException {
-		channel = new JChannel(protocol);
-		
-		init();
+	protected Communicator(Database db) throws EXistException {
+		DBBroker broker = null;
+		try {
+			channel = new JChannel(protocol);
+			
+			init();
 
-		channel.connect(id);
+			channel.connect(id);
+
+			broker = db.get(db.getSecurityManager().getSystemSubject());
+	        
+			//initialize watcher triggers
+	        Collection collection = broker.getCollection(collectionURI);
+	        if (collection != null) {
+	        	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+	        	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+
+        		Map<String, List<?>> params = new HashMap<String, List<?>>();
+        		List<Communicator> val = new ArrayList<Communicator>();
+        		val.add(this);
+        		params.put(COMMUNICATOR, val);
+        		
+        		try {
+					collConf.registerTrigger(broker, 
+							"store,update,remove", 
+							"org.exist.synchro.WatchDocument", params);
+
+					collConf.registerTrigger(broker, 
+							"create-collection,rename-collection,delete-collection", 
+							"org.exist.synchro.WatchCollection", params);
+	        	} catch (CollectionConfigurationException e) {
+					LOG.error("Changers watcher could not the initialized.", e);
+				}
+	        }
+		} catch (ChannelException e) {
+			throw new EXistException(e);
+		} finally {
+			db.release(broker);
+		}
 	}
 
 	public void shutdown() {
@@ -118,31 +178,60 @@ public class Communicator extends ReceiverAdapter {
 		}
 	}
 	
-	public void create(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(CREATE, channel.getName(), uri) );
+	public void createCollection(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(CREATE_COLLECTION, channel.getName(), uri) );
 		
 	}
 
-	public void update(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(UPDATE, channel.getName(), uri) );
+	public void updateCollection(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(UPDATE_COLLECTION, channel.getName(), uri) );
 	}
 	
-	public void delete(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(DELETE, channel.getName(), uri) );
+	public void deleteCollection(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(DELETE_COLLECTION, channel.getName(), uri) );
 	}
 
-	public void _create(String eventOwner, XmldbURI uri) {
-		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" create uri = "+uri);
+	public void createDocument(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(CREATE_DOCUMENT, channel.getName(), uri) );
+		
 	}
 
-	public void _update(String eventOwner, XmldbURI uri) {
-		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" update uri = "+uri);
+	public void updateDocument(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(UPDATE_DOCUMENT, channel.getName(), uri) );
 	}
 	
-	public void _delete(String eventOwner, XmldbURI uri) {
+	public void deleteDocument(XmldbURI uri) {
+		callRemoteMethods( new MethodCall(DELETE_DOCUMENT, channel.getName(), uri) );
+	}
+
+
+	public void _createCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" delete uri = "+uri);
+			System.out.println(""+channel.getName()+" create collection uri = "+uri);
+	}
+
+	public void _updateCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" update collection uri = "+uri);
+	}
+	
+	public void _deleteCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" delete collection uri = "+uri);
+	}
+
+	public void _createDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" create document uri = "+uri);
+	}
+
+	public void _updateDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" update document uri = "+uri);
+	}
+	
+	public void _deleteDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" delete document uri = "+uri);
 	}
 }

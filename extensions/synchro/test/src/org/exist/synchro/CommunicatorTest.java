@@ -42,8 +42,8 @@ public class CommunicatorTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		communicator1 = new Communicator();
-		communicator2 = new Communicator();
+		communicator1 = new Communicator(null);
+		communicator2 = new Communicator(null);
 	}
 
 	/**
@@ -61,11 +61,11 @@ public class CommunicatorTest {
 		View view=communicator1.channel.getView();
 		System.out.println("view channels = " + view);
 		
-		communicator1.create(XmldbURI.create("/db/test"));
+		communicator1.createDocument(XmldbURI.create("/db/test"));
 
-		communicator2.create(XmldbURI.create("/db/test1"));
+		communicator2.createDocument(XmldbURI.create("/db/test1"));
 
-		communicator1.delete(XmldbURI.create("/db/test"));
+		communicator1.deleteDocument(XmldbURI.create("/db/test"));
 	}
 
 }
