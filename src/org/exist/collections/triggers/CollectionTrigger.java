@@ -48,7 +48,7 @@ public interface CollectionTrigger extends Trigger {
         DBBroker broker,
         Txn transaction,
         Collection collection,
-        String newName)
+        Collection newCollection)
         throws TriggerException;
     
     /**
@@ -60,5 +60,5 @@ public interface CollectionTrigger extends Trigger {
         DBBroker broker,
         Txn transaction,
         Collection collection,
-        String newName);
+        Collection newCollection);
 }

@@ -254,12 +254,12 @@ public class ListenerManager {
 			EventKey key = new EventKey(documentPath.getCollectionPath(), event, false);
 			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : document);
 		}
-		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, String newName) throws TriggerException {
-			EventKey key = new EventKey(newName, event, true);
+		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) throws TriggerException {
+			EventKey key = new EventKey(newCollection.getURI().lastSegment().toString(), event, true);
 			INSTANCE.fire(key, collection);
 		}
-		public void finish(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, String newName) {
-			EventKey key = new EventKey(newName, event, false);
+		public void finish(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) {
+			EventKey key = new EventKey(newCollection.getURI().lastSegment().toString(), event, false);
 			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : collection);
 		}
 		public boolean isValidating() {

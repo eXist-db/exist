@@ -650,9 +650,36 @@ public class NativeBroker extends DBBroker {
                         sub.setId(getNextCollectionId(transaction));
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
+                        
+                        //trigger prepare part
+                        CollectionTrigger trigger = null;
+                        int event = 0;
+
+                        CollectionConfiguration config = current.getConfiguration(this);
+                        if (config != null) {
+                        	event = Trigger.CREATE_COLLECTION_EVENT;
+
+            				try {
+                                trigger = (CollectionTrigger)config.newTrigger(event, this, current);
+                            } catch (CollectionConfigurationException e) {
+                                LOG.debug("An error occurred while initializing a trigger for collection " + current.getURI() + ": " + e.getMessage(), e);
+                            }
+                            if (trigger != null) {
+                                trigger.prepare(event, this, transaction, current, sub);
+                            }
+                        }
+
+                        //store collection
                         //TODO : acquire lock manually if transaction is null ?
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
+
+                        //trigger finish part
+                        if (trigger != null) {
+                            trigger.finish(event, this, transaction, current, sub);
+                        }
+
+                        
                         current = sub;
                     }
                 }
@@ -1200,38 +1227,10 @@ public class NativeBroker extends DBBroker {
             // don't cache the collection during initialization: SecurityManager is not yet online
             pool.getCollectionsCache().add(collection);
         
-        CollectionTrigger trigger = null;
-        int event = 0;
-
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             
-            Collection parent;
-            
-            XmldbURI parentURI = collection.getParentURI();
-            if (parentURI != null)
-            	parent = getCollection(parentURI);
-            else 
-            	parent = collection;
-
-            CollectionConfiguration config = parent.getConfiguration(this);
-            if (config != null) {
-                if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
-                	event = Trigger.CREATE_COLLECTION_EVENT;
-                else
-                	event = Trigger.UPDATE_COLLECTION_EVENT;
-
-				try {
-                    trigger = (CollectionTrigger)config.newTrigger(event, this, parent);
-                } catch (CollectionConfigurationException e) {
-                    LOG.debug("An error occurred while initializing a trigger for collection " + collection.getURI() + ": " + e.getMessage(), e);
-                }
-                if (trigger != null) {
-                    trigger.prepare(event, this, transaction, collection, null);
-                }
-            }
-
             if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
                 collection.setId(getNextCollectionId(transaction));
             Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
@@ -1246,10 +1245,6 @@ public class NativeBroker extends DBBroker {
             collection.setAddress(addr);
             ostream.close();
             
-            if (trigger != null) {
-                trigger.finish(event, this, transaction, collection, null);
-            }
-
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch (LockException e) {
