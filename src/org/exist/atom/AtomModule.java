@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
@@ -31,5 +32,5 @@ public interface AtomModule {
    }
    void init(Context context) throws EXistException;
    void process(DBBroker broker,IncomingMessage message,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException;
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException, TriggerException;
 }

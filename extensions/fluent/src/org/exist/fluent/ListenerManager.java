@@ -243,7 +243,7 @@ public class ListenerManager {
 		private ContentHandler contentHandler;
 		private LexicalHandler lexicalHandler;
 		
-		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
 			// nothing to do
 		}
 		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {

@@ -24,6 +24,7 @@ package org.exist.security.utils;
 import java.io.IOException;
 
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -36,7 +37,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class Utils {
 
-	public static Collection createCollection(DBBroker broker, Txn txn, XmldbURI uri) throws PermissionDeniedException, IOException, LockException {
+	public static Collection createCollection(DBBroker broker, Txn txn, XmldbURI uri) throws PermissionDeniedException, IOException, LockException, TriggerException {
 
 		Collection collection = broker.getOrCreateCollection(txn, uri);
 			

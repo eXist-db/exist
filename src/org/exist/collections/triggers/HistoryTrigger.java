@@ -50,7 +50,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
 
     protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
 
-    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException
     {
         super.configure(broker, parent, parameters);
         

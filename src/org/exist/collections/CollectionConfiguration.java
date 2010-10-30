@@ -414,7 +414,7 @@ public class CollectionConfiguration {
 			NodeList nodes = node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             //TODO : rely on schema-driven validation -pb
             if (nodes.getLength() > 0) {
-                Map<String, List> parameters = new HashMap<String, List>(nodes.getLength());
+                Map<String, List<?>> parameters = new HashMap<String, List<?>>(nodes.getLength());
 
                 for (int i = 0 ; i < nodes.getLength();  i++) {
                     Element param = (Element)nodes.item(i);
@@ -463,7 +463,7 @@ public class CollectionConfiguration {
         return null;
     }
 	
-	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, List> parameters) throws CollectionConfigurationException {
+	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
 
 		TriggerConfig trigger = instantiate(broker, classname, parameters);
 
@@ -506,7 +506,7 @@ public class CollectionConfiguration {
 	    }
 	}
 
-	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List> parameters) throws CollectionConfigurationException {
+	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
 		try {
 			Class<?> clazz = Class.forName(classname);
 			if(!Trigger.class.isAssignableFrom(clazz)) {
@@ -549,7 +549,7 @@ public class CollectionConfiguration {
     public static class TriggerConfig {
 
         private Class<Trigger> clazz;
-        private Map<String, List> parameters;
+        private Map<String, List<?>> parameters;
 
         public TriggerConfig(Class<Trigger> clazz) {
             this.clazz = clazz;
@@ -567,11 +567,11 @@ public class CollectionConfiguration {
             }
         }
 
-        public Map<String, List> getParameters() {
+        public Map<String, List<?>> getParameters() {
             return parameters;
         }
 
-        public void setParameters(Map<String, List> parameters) {
+        public void setParameters(Map<String, List<?>> parameters) {
             this.parameters = parameters;
         }
 

@@ -360,7 +360,9 @@ public class ClusterComunication implements MembershipListener {
             return getId(false);
         }catch (Exception e) {
             throw new ClusterException("unable to retrieve the journal id ", e);
-        }
+        } catch (Throwable e) {
+            throw new ClusterException("unable to retrieve the journal id ", e);
+		}
     }
 
     private void realign() throws ClusterException {

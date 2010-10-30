@@ -33,6 +33,7 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
@@ -305,7 +306,7 @@ public class SecurityManagerImpl implements SecurityManager {
     	return false;
 	}
 
-	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException {
+	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException, TriggerException {
 		if(user.getHome() == null)
 			return;
 		
@@ -524,6 +525,16 @@ public class SecurityManagerImpl implements SecurityManager {
 			}
 		
 		} catch (IOException e) {
+			transact.abort(txn);
+			
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(e.getMessage());
+			}
+			e.printStackTrace();
+			
+			throw new EXistException(e);
+		
+		} catch (TriggerException e) {
 			transact.abort(txn);
 			
 			if (LOG.isDebugEnabled()) {

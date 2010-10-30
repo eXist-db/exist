@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -256,7 +257,10 @@ public class Copy extends AbstractWebDAVMethod {
         } catch (TransactionException e) {
             transact.abort(transaction);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		} finally {
             if(destCollection != null)
                 destCollection.release(Lock.WRITE_LOCK);
         }

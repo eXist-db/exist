@@ -58,7 +58,7 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 	 * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
 	 * to later retrieve the collection. 
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
             this.collection = parent;
         }
     

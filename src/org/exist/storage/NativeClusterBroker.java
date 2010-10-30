@@ -9,6 +9,7 @@ import org.exist.cluster.ClusterCollection;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -49,7 +50,7 @@ public class NativeClusterBroker extends NativeBroker {
     }
 
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException,
-    	IOException {
+    	IOException, TriggerException {
         super.saveCollection( transaction, new ClusterCollection( collection ));
     }
 
@@ -63,9 +64,10 @@ public class NativeClusterBroker extends NativeBroker {
 	 * @return The collection or <code>null</code> if no collection matches the path
 	 * @throws PermissionDeniedException
 	 * @throws IOException
+	 * @throws TriggerException 
 	 */    
     public Collection getOrCreateCollection(Txn transaction, XmldbURI uri) throws PermissionDeniedException,
-    	IOException {
+    	IOException, TriggerException {
         Collection c=   super.getOrCreateCollection(transaction, uri);
         return c==null?null:new ClusterCollection(c);
 

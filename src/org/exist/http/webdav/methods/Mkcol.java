@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -107,7 +108,12 @@ public class Mkcol extends AbstractWebDAVMethod {
                 transact.abort(txn);
                 response.sendError(HttpServletResponse.SC_FORBIDDEN,
                         e.getMessage());
-            }
+            } catch (TriggerException e) {
+                transact.abort(txn);
+                //TODO: different error?
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                        e.getMessage());
+			}
             LOG.debug("Created collection " + path);
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch(EXistException e) {

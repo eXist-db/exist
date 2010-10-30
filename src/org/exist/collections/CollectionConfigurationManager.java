@@ -332,7 +332,10 @@ public class CollectionConfigurationManager {
     	} catch (PermissionDeniedException e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
-    	}
+    	} catch (TriggerException e) {
+    		transact.abort(txn);
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+		}
     }
 
     public void checkRootCollectionConfigCollection(DBBroker broker) throws EXistException {
@@ -354,7 +357,10 @@ public class CollectionConfigurationManager {
     	} catch (PermissionDeniedException e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
-    	}
+    	} catch (TriggerException e) {
+    		transact.abort(txn);
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+		}
     }
     
     /** Create a stored default configuration document for the root collection 

@@ -62,7 +62,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
     private static STXTemplatesCache templatesCache = new STXTemplatesCache();
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         String stylesheet = (String)parameters.get("src").get(0);
         if(stylesheet == null) {
