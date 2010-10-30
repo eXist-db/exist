@@ -21,16 +21,27 @@
 package org.exist.collections.triggers;
 
 import static org.custommonkey.xmlunit.XMLAssert.*;
+
+import org.exist.EXistException;
 import org.exist.TestUtils;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Base64Decoder;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -547,7 +558,62 @@ public class XQueryTriggerTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-    	
+    }
+
+    /** test a trigger fired by a Collection manipulations */
+    @Test @Ignore //TODO: code
+    public void renameCollection() {
+		IndexQueryService idxConf;
+		try {
+			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			
+            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection collection = service.createCollection("test");
+            assertNotNull(collection);
+
+    		// remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+            
+	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+	        	        
+	        ResourceSet result = query.query("/events/event[@id = 'trigger4']");
+	        assertEquals(2, result.getSize());
+
+            
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+    }
+    
+    /** test a trigger fired by a Collection manipulations */
+    @Test
+    public void removeCollection() {
+		IndexQueryService idxConf;
+		try {
+			idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			
+            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection collection = service.createCollection("test");
+            assertNotNull(collection);
+
+            service.removeCollection("test");
+
+    		// remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+            
+	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+	        	        
+	        ResourceSet result = query.query("/events/event[@id = 'trigger6']");
+	        assertEquals(2, result.getSize());
+
+            
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
     }
 
 
