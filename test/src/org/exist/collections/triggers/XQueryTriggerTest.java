@@ -85,6 +85,41 @@ public class XQueryTriggerTest {
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
+    private final String COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS =
+    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
+	    "  <exist:triggers>" +
+		"     <exist:trigger event='create-collection'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='query' " +
+		"			value=\"import module namespace log = 'log' at '" +
+						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
+						"log:log('trigger4')\" />" +
+		"	     <exist:parameter name='bindingPrefix' value='log'/>" +
+		"        />" +
+		"     </exist:trigger>" +
+		
+		"     <exist:trigger event='rename-collection'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='query' " +
+		"			value=\"import module namespace log = 'log' at '" +
+						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
+						"log:log('trigger5')\" />" +
+		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
+		"        />" +
+		"     </exist:trigger>" +
+
+		"     <exist:trigger event='delete-collection'" +
+		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
+					URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
+							"log:log('trigger6')\"/>" +
+		"	     <exist:parameter name='bindingPrefix' value='log' />" +
+		"        />" +
+		"     </exist:trigger>" +
+		
+		"  </exist:triggers>" +
+        "</exist:collection>";    
+
     private final String EMPTY_COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
         "</exist:collection>";    
@@ -122,6 +157,8 @@ public class XQueryTriggerTest {
     
     /** XQuery module implementing the trigger under test */
     private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
+
+    private final static String MODULE_COLLECTION_NAME = "XQueryCollectionTriggerLogger.xqm";
     
     /** XQuery module implementing the trigger under test; 
      * the log() XQuery function will add an <event> element inside <events> element */
@@ -153,6 +190,33 @@ public class XQueryTriggerTest {
           ")" +
         "};";
     
+    /** XQuery module implementing the trigger under test; 
+     * the log() XQuery function will add an <event> element inside <events> element */
+    private final static String MODULE_COLLECTION =
+    	"module namespace log='log'; " +
+    	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
+    	"declare variable $log:eventType external;" +
+    	"declare variable $log:collectionName external;" +    	
+    	"declare variable $log:triggerEvent external;" +
+    	"declare function log:log($id as xs:string?) {" +
+    	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
+    	  "xmldb:update(" +
+    	    "'" + URI + "/" + TEST_COLLECTION + "', " +
+            "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
+              "<xu:append select='/events'>" +
+                "<xu:element name='event'>" +
+                  "<xu:attribute name='id'>{$id}</xu:attribute>" +
+                  "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
+                  "<xu:attribute name='type'>{$log:eventType}</xu:attribute>" +
+                  "<xu:element name='collectionName'>{$log:collectionName}</xu:element>" +
+                  "<xu:element name='triggerEvent'>{$log:triggerEvent}</xu:element>" +                 
+                "</xu:element>" +            
+              "</xu:append>" +
+            "</xu:modifications>" +
+          ")" +
+        "};";
+
+    private static Collection root;
     private static Collection testCollection;
 
       /** XQuery module implementing the invalid trigger under test */
@@ -178,7 +242,7 @@ public class XQueryTriggerTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection(URI, "admin", "");
+            root = DatabaseManager.getCollection(URI, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
@@ -223,6 +287,11 @@ public class XQueryTriggerTest {
 			module.setContent(MODULE.getBytes());
 			testCollection.storeResource(module);
 			
+			module = (BinaryResource) testCollection.createResource(MODULE_COLLECTION_NAME, "BinaryResource" );
+			((EXistResource)module).setMimeType("application/xquery");
+			module.setContent(MODULE_COLLECTION.getBytes());
+			testCollection.storeResource(module);
+
     	} catch (XMLDBException e) {
     		fail(e.getMessage());
         }    	
@@ -452,6 +521,36 @@ public class XQueryTriggerTest {
     		fail(e.getMessage());    		
     	}
     }
+    
+    /** test a trigger fired by a Collection manipulations */
+    @Test
+    public void createCollection() {
+		IndexQueryService idxConf;
+		try {
+			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			
+            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+            Collection collection = service.createCollection("test");
+            assertNotNull(collection);
+
+    		// remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+            
+	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+	        	        
+	        //TODO: wrong - it should be 'trigger4' (create)
+	        ResourceSet result = query.query("/events/event[@id = 'trigger5']");
+	        assertEquals(4, result.getSize());
+
+            
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+    	
+    }
+
 
     @Test
     public void storeDocument_invalidTriggerForPrepare()

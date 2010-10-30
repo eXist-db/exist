@@ -196,7 +196,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
         } catch (PermissionDeniedException e) {
             transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+		} finally {
             if(collection != null)
                 collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);

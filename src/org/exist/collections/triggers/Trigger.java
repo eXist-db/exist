@@ -91,7 +91,9 @@ public interface Trigger {
 	public final static int UPDATE_DOCUMENT_EVENT = 1;
 	public final static int REMOVE_DOCUMENT_EVENT = 2;
 	public final static int CREATE_COLLECTION_EVENT = 3;
+	@Deprecated //use UPDATE_COLLECTION_EVENT
 	public final static int RENAME_COLLECTION_EVENT = 4;
+	public final static int UPDATE_COLLECTION_EVENT = 4;
 	public final static int DELETE_COLLECTION_EVENT = 5;
 
 	/**
@@ -105,7 +107,7 @@ public interface Trigger {
 	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
 	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException;
+	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws CollectionConfigurationException;
 
 	/**
 	 * Returns a Logger object. Use this to log debugging information.

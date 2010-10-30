@@ -28,6 +28,11 @@ import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.triggers.CollectionTrigger;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
@@ -582,9 +587,10 @@ public class NativeBroker extends DBBroker {
      * @throws LockException
      * @throws PermissionDeniedException
      * @throws IOException
+     * @throws TriggerException 
      */
     private Collection createTempCollection(Txn transaction) 
-            throws LockException, PermissionDeniedException, IOException {
+            throws LockException, PermissionDeniedException, IOException, TriggerException {
         Subject u = getUser();
         try {
             setUser( pool.getSecurityManager().getSystemSubject() );
@@ -602,7 +608,7 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public Collection getOrCreateCollection(Txn transaction, XmldbURI name) 
-            throws PermissionDeniedException, IOException {
+            throws PermissionDeniedException, IOException, TriggerException {
         name = prepend(name.normalizeCollectionPath());
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
@@ -746,7 +752,7 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newUri)
-            throws PermissionDeniedException, LockException, IOException {
+            throws PermissionDeniedException, LockException, IOException, TriggerException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         //TODO : resolve URIs !!!
@@ -834,7 +840,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void moveCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
-            throws PermissionDeniedException, LockException, IOException {
+            throws PermissionDeniedException, LockException, IOException, TriggerException {
         pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, collection.getURI());
         try {
             // sourceDir must be known in advance, because once moveCollectionRecursive
@@ -881,7 +887,7 @@ public class NativeBroker extends DBBroker {
     }
 
     private void moveCollectionRecursive(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
-            throws PermissionDeniedException, IOException, LockException {
+            throws PermissionDeniedException, IOException, LockException, TriggerException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if(newName!=null && newName.numSegments()!=1) {
@@ -982,17 +988,21 @@ public class NativeBroker extends DBBroker {
      * @param transaction the transaction to use
      * @param collection the collection to remove
      * @return true if the collection was removed, false otherwise
+     * @throws TriggerException 
      */
     @Override
     public boolean removeCollection(final Txn transaction, Collection collection) 
-            throws PermissionDeniedException, IOException {
+            throws PermissionDeniedException, IOException, TriggerException {
         if(readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         XmldbURI parentName = collection.getParentURI();
         final boolean isRoot = parentName == null;
         Collection parent = isRoot ? collection : getCollection(parentName);
+        
+        //canRemoveCollection do check permissions, so remove this one?
         if(!parent.getPermissions().validate(getUser(), Permission.WRITE))
             throw new PermissionDeniedException("User '"+ getUser().getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        
         try {
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
             long start = System.currentTimeMillis();
@@ -1008,6 +1018,8 @@ public class NativeBroker extends DBBroker {
                 // remove child collections
                 if (sourceDir.exists()) {
                    targetDir.getParentFile().mkdirs();
+                   
+                   //XXX: log first, rename second ??? -shabanovd
                    if (sourceDir.renameTo(targetDir)) {
                      Loggable loggable = new RenameBinaryLoggable(this,transaction,sourceDir,targetDir);
                      try {
@@ -1016,11 +1028,14 @@ public class NativeBroker extends DBBroker {
                          LOG.warn(e.getMessage(), e);
                      }
                    } else {
-                      LOG.fatal("Cannot rename "+sourceDir+" to "+targetDir);
+                	   //XXX: throw IOException -shabanovd
+                	   LOG.fatal("Cannot rename "+sourceDir+" to "+targetDir);
                    }
                 }
+                
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
+                
                 for(Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext();) {
                     final XmldbURI childName = i.next();
                     //TODO : resolve from collection's base URI
@@ -1037,8 +1052,10 @@ public class NativeBroker extends DBBroker {
                 }
                 //Drop all index entries
                 notifyDropIndex(collection);
+                
                 // Drop custom indexes
                 indexController.removeCollection(collection, this);
+                
                 if(!isRoot) {
                     // remove from parent collection
                     //TODO : resolve URIs ! (uri.resolve(".."))
@@ -1100,9 +1117,11 @@ public class NativeBroker extends DBBroker {
                 finally {
                     lock.release(Lock.WRITE_LOCK);
                 }
+                
                 //Remove child resources
                 if (LOG.isDebugEnabled())
                     LOG.debug("Removing resources in '" + collName + "'...");
+                
                 for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
                     final DocumentImpl doc = i.next();
                     //Remove doc's metadata
@@ -1145,8 +1164,10 @@ public class NativeBroker extends DBBroker {
                     //Make doc's id available again
                     freeResourceId(transaction, doc.getDocId());
                 }
+                
                 if(LOG.isDebugEnabled())
                     LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
+                
                 return true;
             }
         } finally {
@@ -1160,22 +1181,57 @@ public class NativeBroker extends DBBroker {
      * the changes persistent.
      * 
      * Note: appending a new document to a collection does not require a save.
+     * 
+     * @throws PermissionDeniedException 
+     * @throws IOException 
+     * @throws TriggerException 
      */
     @Override
     public void saveCollection(Txn transaction, Collection collection) 
-            throws PermissionDeniedException, IOException {
+            throws PermissionDeniedException, IOException, TriggerException {
         if (collection == null) {
             LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
             return;
         }
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        
         if (!pool.isInitializing())
             // don't cache the collection during initialization: SecurityManager is not yet online
             pool.getCollectionsCache().add(collection);
+        
+        CollectionTrigger trigger = null;
+        int event = 0;
+
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
+            
+            Collection parent;
+            
+            XmldbURI parentURI = collection.getParentURI();
+            if (parentURI != null)
+            	parent = getCollection(parentURI);
+            else 
+            	parent = collection;
+
+            CollectionConfiguration config = parent.getConfiguration(this);
+            if (config != null) {
+                if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
+                	event = Trigger.CREATE_COLLECTION_EVENT;
+                else
+                	event = Trigger.UPDATE_COLLECTION_EVENT;
+
+				try {
+                    trigger = (CollectionTrigger)config.newTrigger(event, this, parent);
+                } catch (CollectionConfigurationException e) {
+                    LOG.debug("An error occurred while initializing a trigger for collection " + collection.getURI() + ": " + e.getMessage(), e);
+                }
+                if (trigger != null) {
+                    trigger.prepare(event, this, transaction, collection, null);
+                }
+            }
+
             if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
                 collection.setId(getNextCollectionId(transaction));
             Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
@@ -1189,6 +1245,11 @@ public class NativeBroker extends DBBroker {
             }
             collection.setAddress(addr);
             ostream.close();
+            
+            if (trigger != null) {
+                trigger.finish(event, this, transaction, collection, null);
+            }
+
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch (LockException e) {
@@ -1958,10 +2019,11 @@ public class NativeBroker extends DBBroker {
         LOG.debug("Copy took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
-    /** move Resource to another collection, with possible rename */
+    /** move Resource to another collection, with possible rename 
+     * @throws TriggerException */
     @Override
     public void moveResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
-            throws PermissionDeniedException, LockException, IOException {
+            throws PermissionDeniedException, LockException, IOException, TriggerException {
         /* Copy reference to original document */
         File originalDocument = getCollectionFile(fsDir,doc.getURI(),true);
         if (readOnly)

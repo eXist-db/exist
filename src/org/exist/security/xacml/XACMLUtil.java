@@ -52,6 +52,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -246,25 +247,28 @@ public class XACMLUtil implements UpdateListener
 				broker.saveCollection(txn, policyCollection);
 				transact.commit(txn);
 			}
-			catch (IOException e)
-			{
+			catch (IOException e) {
 				transact.abort(txn);
 				LOG.error("Error creating policy collection", e);
 				return null;
-			}
-			catch (EXistException e)
-			{
+			
+			} catch (EXistException e) {
 				transact.abort(txn);
 				LOG.error("Error creating policy collection", e);
 				return null;
-			}
-			catch (PermissionDeniedException e)
-			{
+			
+			} catch (PermissionDeniedException e) {
+				transact.abort(txn);
+				LOG.error("Error creating policy collection", e);
+				return null;
+			
+			} catch (TriggerException e) {
 				transact.abort(txn);
 				LOG.error("Error creating policy collection", e);
 				return null;
 			}
 		}
+		
 		return policyCollection;
 	}
 	

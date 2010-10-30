@@ -97,7 +97,7 @@ public class VersioningTrigger extends FilteringTrigger {
     private String documentRev = null;
     private boolean checkForConflicts = false;
 
-    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters != null) {
             String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE).get(0);
@@ -214,7 +214,9 @@ public class VersioningTrigger extends FilteringTrigger {
                     LOG.warn("Caught exception in VersioningTrigger: " + e.getMessage(), e);
                 } catch (PermissionDeniedException e) {
                     LOG.warn("Permission denied in VersioningTrigger: " + e.getMessage(), e);
-                }
+                } catch (TriggerException e) {
+                    LOG.warn("Caught exception in VersioningTrigger: " + e.getMessage(), e);
+				}
             }
 
             if (lastRev != null || event == REMOVE_DOCUMENT_EVENT)
@@ -344,7 +346,7 @@ public class VersioningTrigger extends FilteringTrigger {
         receiver.endElement(PROPERTIES_ELEMENT);
     }
 
-    private Collection getVersionsCollection(DBBroker broker, Txn transaction, XmldbURI collectionPath) throws IOException, PermissionDeniedException {
+    private Collection getVersionsCollection(DBBroker broker, Txn transaction, XmldbURI collectionPath) throws IOException, PermissionDeniedException, TriggerException {
         XmldbURI path = VERSIONS_COLLECTION.append(collectionPath);
         Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
         if (collection == null) {

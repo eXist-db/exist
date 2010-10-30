@@ -29,6 +29,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
 import java.net.MalformedURLException;
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
  * full uri support.  The create method creates a minimal object to keep memory
  * usage low.
  */
-public class XmldbURI implements Comparable<Object>
+public class XmldbURI implements Comparable<Object>, Serializable
 {
     protected final static Logger LOG                          = Logger.getLogger( XmldbURI.class );
 

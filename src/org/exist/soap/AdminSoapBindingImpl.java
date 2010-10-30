@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -622,7 +623,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(e.getMessage());
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
+		} finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             pool.release(broker);
@@ -698,7 +702,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException("Error commiting transaction " + e.getMessage());
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
+		} finally {
             if(destination != null)
                 destination.release(Lock.WRITE_LOCK);
             if(doc != null)
@@ -756,7 +763,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         } catch (LockException e) {
         	transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
-        } finally {
+        } catch (TriggerException e) {
+        	transact.abort(transaction);
+            throw new RemoteException(e.getMessage());            
+		} finally {
             if(collection != null)
                 collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if(destination != null)

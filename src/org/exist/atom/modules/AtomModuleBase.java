@@ -18,6 +18,7 @@ import org.exist.EXistException;
 import org.exist.atom.AtomModule;
 import org.exist.atom.IncomingMessage;
 import org.exist.atom.OutgoingMessage;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
@@ -46,7 +47,7 @@ public class AtomModuleBase implements AtomModule {
    }
    
    public void process(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException, TriggerException
    {
       String method = request.getMethod();
       if (method.equals("GET")) {
@@ -85,7 +86,7 @@ public class AtomModuleBase implements AtomModule {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException, IOException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException, IOException, TriggerException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }

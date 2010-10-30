@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
@@ -115,6 +116,9 @@ public abstract class DBBroker extends Observable {
 
     protected IndexController indexController;
 
+    //TODO: remove after interface it
+    public DBBroker() {}
+    
     public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
 		this.config = config;
 		Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
@@ -306,9 +310,10 @@ public abstract class DBBroker extends Observable {
 	 * @return The collection or <code>null</code> if no collection matches the path
 	 * @throws PermissionDeniedException
 	 * @throws IOException
+	 * @throws TriggerException 
 	 */
 	public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
-			throws PermissionDeniedException, IOException;
+			throws PermissionDeniedException, IOException, TriggerException;
 
 	/**
 	 * Returns the configuration object used to initialize the current database
@@ -417,9 +422,13 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * Remove the collection and all its subcollections from the database.
 	 * 
+	 * @throws PermissionDeniedException 
+	 * @throws IOException 
+	 * @throws TriggerException 
+	 * 
 	 */
 	public abstract boolean removeCollection(Txn transaction,
-			Collection collection) throws PermissionDeniedException, IOException;
+			Collection collection) throws PermissionDeniedException, IOException, TriggerException;
 
 	/**
 	 * Remove a document from the database.
@@ -457,9 +466,11 @@ public abstract class DBBroker extends Observable {
      * @param transaction 
      * @param collection Collection to store
      * @throws org.exist.security.PermissionDeniedException 
+	 * @throws IOException 
+	 * @throws TriggerException 
      */
 	public abstract void saveCollection(Txn transaction, Collection collection)
-			throws PermissionDeniedException, IOException;
+			throws PermissionDeniedException, IOException, TriggerException;
 
 	public void closeDocument() {
 	}
@@ -579,10 +590,15 @@ public abstract class DBBroker extends Observable {
 	 * @param newName
 	 *            the new name the collection should have in the destination
 	 *            collection
+	 * 
+	 * @throws PermissionDeniedException 
+	 * @throws LockException 
+	 * @throws IOException 
+	 * @throws TriggerException 
 	 */
 	public abstract void moveCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, IOException;
+			throws PermissionDeniedException, LockException, IOException, TriggerException;
 
 	/**
 	 * Move a resource to the destination collection and rename it.
@@ -594,10 +610,15 @@ public abstract class DBBroker extends Observable {
 	 * @param newName
 	 *            the new name the resource should have in the destination
 	 *            collection
+	 * 
+	 * @throws PermissionDeniedException 
+	 * @throws LockException 
+	 * @throws IOException 
+	 * @throws TriggerException 
 	 */
 	public abstract void moveResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, IOException;
+			throws PermissionDeniedException, LockException, IOException, TriggerException;
 
 	/**
 	 * Copy a collection to the destination collection and rename it.
@@ -606,13 +627,15 @@ public abstract class DBBroker extends Observable {
 	 * @param collection The origin collection
 	 * @param destination The destination parent collection
 	 * @param newName The new name of the collection
+	 * 
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 * @throws IOException
+	 * @throws TriggerException 
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, IOException;
+			throws PermissionDeniedException, LockException, IOException, TriggerException;
 
 	/**
 	 * Copy a resource to the destination collection and rename it.

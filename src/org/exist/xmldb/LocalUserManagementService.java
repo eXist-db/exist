@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -263,6 +264,12 @@ public class LocalUserManagementService implements UserManagementService {
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage(),
 				e);
+		} catch (TriggerException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
 		} finally {
 			if(coll != null)
 				coll.release(Lock.WRITE_LOCK);
@@ -343,6 +350,12 @@ public class LocalUserManagementService implements UserManagementService {
 				e.getMessage(),
 				e);
 		} catch (LockException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				"Failed to acquire lock on collections.dbx",
+				e);
+		} catch (TriggerException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,

@@ -43,6 +43,7 @@ import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
@@ -813,7 +814,9 @@ public class BrokerPool extends Observable implements Database {
             			transactionManager.abort(txn);
 	        		} catch (PermissionDeniedException e) {
 	        			transactionManager.abort(txn);
-	        		}
+	        		} catch (TriggerException e) {
+	        			transactionManager.abort(txn);
+					}
             	}
             }
         }

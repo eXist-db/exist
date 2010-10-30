@@ -37,7 +37,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionException;
@@ -155,6 +154,10 @@ public class ExportEditor implements ISVNEditor {
 			throw new SVNException(err);
 
 		} catch (IOException e) {
+			SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR,
+					"error: failed on IO.");
+			throw new SVNException(err);
+		} catch (TriggerException e) {
 			SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR,
 					"error: failed on IO.");
 			throw new SVNException(err);

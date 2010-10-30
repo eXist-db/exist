@@ -83,7 +83,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
 
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
 
         //get the separator

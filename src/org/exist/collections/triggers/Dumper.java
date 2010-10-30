@@ -43,12 +43,12 @@ public class Dumper extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List> parameters)
+	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters)
 		throws CollectionConfigurationException {
 		super.configure(broker, parent, parameters);
 		System.out.println("parameters:");
                 
-                for(Entry<String, List> entry : parameters.entrySet()) {
+                for(Entry<String, List<?>> entry : parameters.entrySet()) {
                     System.out.print(entry.getKey() + " = " + entry.getValue());
                 }
 	}

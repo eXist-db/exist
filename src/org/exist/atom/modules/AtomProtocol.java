@@ -676,7 +676,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    
     @Override
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException, TriggerException
    {
       XmldbURI pathUri = XmldbURI.create(request.getPath());
       XmldbURI srcUri = null;      

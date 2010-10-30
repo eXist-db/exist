@@ -30,6 +30,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.*;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
@@ -3468,7 +3469,11 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
             
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new EXistException(e.getMessage());
+            
+		} finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             factory.getBrokerPool().release(broker);
@@ -3573,6 +3578,10 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
             
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new EXistException(e.getMessage());
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -4432,8 +4441,12 @@ public class RpcConnection implements RpcAPI {
 
         } catch (IOException e) {
             transact.abort(transaction);
-            throw new EXistException("Could not acquire lock on document " + docUri);
+            throw new EXistException("Get exception ["+e.getMessage()+"] on document " + docUri);
             
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new EXistException("Get exception ["+e.getMessage()+"] on document " + docUri);
+
         } finally {
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -4510,7 +4523,10 @@ public class RpcConnection implements RpcAPI {
         } catch (IOException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new EXistException(e.getMessage());
+		} finally {
             if(collection != null)
                 collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if(destination != null)

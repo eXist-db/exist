@@ -28,6 +28,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -119,7 +120,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                 "not allowed to create collection", e );
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
+                "not allowed to create collection", e );
+		} finally {
             brokerPool.release( broker );
         }
         return new LocalCollection( user, brokerPool, parent, collName, accessCtx );
@@ -190,14 +195,17 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 "failed to remove collection " + collName, e );
         } catch ( IOException e ) {
             transact.abort(transaction);
-        	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to remove collection " + collName, e );
         } catch ( PermissionDeniedException e ) {
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                 e.getMessage(), e );
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to remove collection " + collName, e );
+		} finally {
         	if(collection != null)
         		collection.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
@@ -252,7 +260,6 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 "failed to move collection " + collectionPath, e );
         } catch ( IOException e ) {
             transact.abort(transaction);
-        	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to move collection " + collectionPath, e );
         } catch ( PermissionDeniedException e ) {
@@ -263,7 +270,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                     e.getMessage(), e );
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move collection " + collectionPath, e );
+		} finally {
         	if(destination != null)
         		destination.release(Lock.WRITE_LOCK);
         	if(collection != null)
@@ -325,7 +336,6 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 "failed to move resource " + resourcePath, e );
         } catch ( IOException e ) {
             transact.abort(transaction);
-        	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to move resource " + resourcePath, e );
         } catch ( PermissionDeniedException e ) {
@@ -336,7 +346,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                     e.getMessage(), e );
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move resource " + resourcePath, e );
+		} finally {
         	if(source != null)
         		source.release(Lock.WRITE_LOCK);
         	if(destination != null)
@@ -404,7 +418,12 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                     e.getMessage(), e );
-        } finally {
+        } catch (TriggerException e) {
+            transact.abort(transaction);
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move collection " + collectionPath, e );
+		} finally {
         	if(collection != null) collection.release(Lock.READ_LOCK);
         	if(destination != null) destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
