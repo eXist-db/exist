@@ -63,7 +63,7 @@ public class WatchCollection implements CollectionTrigger {
 	 * @see org.exist.collections.triggers.CollectionTrigger#prepare(int, org.exist.storage.DBBroker, org.exist.storage.txn.Txn, org.exist.collections.Collection, java.lang.String)
 	 */
 	@Override
-	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, String newName) throws TriggerException {
+	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
 		if (comm == null) return; 
 	}
 
@@ -71,7 +71,7 @@ public class WatchCollection implements CollectionTrigger {
 	 * @see org.exist.collections.triggers.CollectionTrigger#finish(int, org.exist.storage.DBBroker, org.exist.storage.txn.Txn, org.exist.collections.Collection, java.lang.String)
 	 */
 	@Override
-	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, String newName) {
+	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
 		if (comm == null) return;
 		
 		switch (event) {

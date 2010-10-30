@@ -539,9 +539,8 @@ public class XQueryTriggerTest {
             
 	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 	        	        
-	        //TODO: wrong - it should be 'trigger4' (create)
-	        ResourceSet result = query.query("/events/event[@id = 'trigger5']");
-	        assertEquals(4, result.getSize());
+	        ResourceSet result = query.query("/events/event[@id = 'trigger4']");
+	        assertEquals(2, result.getSize());
 
             
 		} catch (XMLDBException e) {

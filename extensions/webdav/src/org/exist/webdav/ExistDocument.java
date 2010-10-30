@@ -596,7 +596,12 @@ public class ExistDocument extends ExistResource {
             txnManager.abort(txn);
             throw new EXistException(e.getMessage());
 
-        } finally {
+        } catch (TriggerException e) {
+            LOG.error(e);
+            txnManager.abort(txn);
+            throw new EXistException(e.getMessage());
+
+		} finally {
 
             // TODO: check if can be done earlier
             if (destCollection != null) {

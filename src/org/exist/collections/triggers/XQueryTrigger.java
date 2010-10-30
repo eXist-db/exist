@@ -450,7 +450,7 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
     //Collection's methods
 
 	@Override
-	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, String newName) throws TriggerException {
+	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for collection: '" + collection.getURI() + "'");
 		
 		//get the query
@@ -520,7 +520,7 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 	}
 
 	@Override
-	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, String newName) {
+	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
     	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collection.getURI() + "'");
     	
     	//get the query

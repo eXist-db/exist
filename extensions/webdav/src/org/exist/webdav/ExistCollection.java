@@ -251,7 +251,11 @@ public class ExistCollection extends ExistResource {
             LOG.error(e);
             transact.abort(txn);
 
-        } finally {
+        } catch (TriggerException e) {
+            LOG.error(e);
+            transact.abort(txn);
+
+		} finally {
 
             // TODO: check if can be done earlier
             if (collection != null) {
@@ -542,7 +546,12 @@ public class ExistCollection extends ExistResource {
             txnManager.abort(txn);
             throw new EXistException(e.getMessage());
 
-        } finally {
+        } catch (TriggerException e) {
+            LOG.error(e);
+            txnManager.abort(txn);
+            throw new EXistException(e.getMessage());
+
+		} finally {
 
             if (destCollection != null) {
                 destCollection.release(Lock.WRITE_LOCK);
