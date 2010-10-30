@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -77,7 +78,7 @@ public class FunZeroOrOne extends Function {
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
         
 		if(result.hasMany())
-			throw new XPathException(this, "err:FORG0003: fn:zero-or-one called with a sequence containing " + result.getItemCount() + " items");
+			throw new XPathException(this, ErrorCodes.FORG0003, "fn:zero-or-one called with a sequence containing " + result.getItemCount() + " items");
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        

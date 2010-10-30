@@ -299,11 +299,11 @@ public class LocationStep extends Step {
 					
 					if (!Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
 						throw new XPathException(this, 
-								"err:XPST0005: get nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
+								ErrorCodes.XPST0005, "Got nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
 					
 					if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
 						throw new XPathException(this, 
-								"err:XPST0005: self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
+								ErrorCodes.XPST0005, "Self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
 				}
 			}
 			break;
@@ -319,7 +319,7 @@ public class LocationStep extends Step {
 					)
 						&& cStep.getTest() != getTest())
 					throw new XPathException(this, 
-							"err:XPST0005: descendant-or-self::"+getTest()+" from an attribute gets nothing.");
+							ErrorCodes.XPST0005, "Descendant-or-self::"+getTest()+" from an attribute gets nothing.");
 			}
 			break;
 //		case Constants.PARENT_AXIS:
@@ -389,7 +389,7 @@ public class LocationStep extends Step {
 		if (needsComputation()) {
 			if (contextSequence == null)
 				throw new XPathException(this,
-						"XPDY0002 : undefined context sequence for '"
+						ErrorCodes.XPDY0002, "Undefined context sequence for '"
 								+ this.toString() + "'");
 			switch (axis) {
 			case Constants.DESCENDANT_AXIS:
@@ -1645,7 +1645,7 @@ public class LocationStep extends Step {
 		if (needsComputation()) {
 			if (contextSequence == null)
 				throw new XPathException(this,
-						"XPDY0002 : undefined context sequence for '"
+						ErrorCodes.XPDY0002, "Undefined context sequence for '"
 								+ this.toString() + "'");
 			switch (axis) {
 			case Constants.DESCENDANT_AXIS:

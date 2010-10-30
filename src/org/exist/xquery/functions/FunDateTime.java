@@ -26,6 +26,7 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -40,6 +41,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  *
@@ -75,9 +77,9 @@ public class FunDateTime extends BasicFunction {
 		if (args[0].isEmpty() || args[1].isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
 		else if (args[0].hasMany())
-			throw new XPathException(this, "XPTY0004: expected at most one xs:date");
+			throw new XPathException(this, ErrorCodes.XPTY0004, "Expected at most one xs:date", args[0]);
 		else if (args[1].hasMany())
-			throw new XPathException(this, "XPTY0004: expected at most one xs:time");
+			throw new XPathException(this, ErrorCodes.XPTY0004, "Expected at most one xs:time", args[1]);
         else {  
         	DateValue dv = (DateValue)args[0].itemAt(0);
         	TimeValue tv = (TimeValue)args[1].itemAt(0);
@@ -85,17 +87,19 @@ public class FunDateTime extends BasicFunction {
         		//Apparently, the specs have changes in this area
         		if (!tv.getTimezone().isEmpty()) {
         			if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
-    					throw new XPathException(this, "FORG0008: operands have different timezones");
+                                    ValueSequence argsSeq = new ValueSequence(args[0]);
+                                    argsSeq.addAll(args[2]);
+                                    throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones", argsSeq);
     				}
     			} /* else {
     				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    	        		throw new XPathException(this, "FORG0008: operands have different timezones");
+    	        		throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones");
     			} */
     		} else {
     			/*
     			if (!tv.getTimezone().isEmpty()) {
     				if (!((DayTimeDurationValue)tv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    					throw new XPathException(this, "FORG0008: operands have different timezones");
+    					throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones");
     			}
     			*/
     		}

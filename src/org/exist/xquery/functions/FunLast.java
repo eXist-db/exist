@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -84,7 +85,7 @@ public class FunLast extends Function {
         
         Sequence result;
 		if (inSequence == null)
-			throw new XPathException(this, "err:XPDY0002: undefined context item");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "undefined context item");
         else if (inSequence.isEmpty())
         	result = Sequence.EMPTY_SEQUENCE;
         else

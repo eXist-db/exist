@@ -181,6 +181,10 @@ public class ErrorCodes {
             this.description = description;
         }
 
+        public QName getErrorQName() {
+            return errorQName;
+        }
+
         @Override
         public String toString() {
             return "(" + errorQName.getNamespaceURI() + "#" + errorQName.getLocalName() + "):" + description;

@@ -106,8 +106,8 @@ public class FunDoc extends Function {
     		try {
     			result = DocUtils.getDocument(this.context, path);
     			if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
-                    logger.error("FODC0002: can not access '" + path + "'");
-    				throw new XPathException(this, "FODC0002: can not access '" + path + "'");
+                    logger.error(ErrorCodes.FODC0002 + " Can not access '" + path + "'");
+    				throw new XPathException(this, ErrorCodes.FODC0002, "Can not access '" + path + "'", arg);
     			}
     //			TODO: we still need a final decision about this. Also check base-uri.
     //			if (result == Sequence.EMPTY_SEQUENCE)
@@ -120,7 +120,7 @@ public class FunDoc extends Function {
     		}
     		catch (Exception e) {
                 logger.error(e.getMessage());
-    			throw new XPathException(this, "err:FODC0005: "+e.getMessage(), e);
+    			throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg);
     		}
         }
             

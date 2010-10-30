@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -78,7 +79,7 @@ public class FunExactlyOne extends Function {
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if (!result.hasOne()) {
             logger.error("fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
-			throw new XPathException(this, "err:FORG0005: fn:exactly-one called with a sequence containing " + result.getItemCount() + " items");
+			throw new XPathException(this, ErrorCodes.FOCA0005, "fn:exactly-one called with a sequence containing " + result.getItemCount() + " items", result);
         }
 
         if (context.getProfiler().isEnabled()) 

@@ -125,6 +125,10 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     public void visitConditional(ConditionalExpression conditional) {
     }
 
+    @Override
+    public void visitTryCatch(TryCatchExpression conditional) {
+    }
+
     public void visitElementConstructor(ElementConstructor constructor) {
     }
 

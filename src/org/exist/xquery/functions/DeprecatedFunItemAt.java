@@ -42,6 +42,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author wolf
  */
+@Deprecated
 public class DeprecatedFunItemAt extends Function {
 	protected static final Logger logger = Logger.getLogger(DeprecatedFunItemAt.class);
 	public final static FunctionSignature signature =
