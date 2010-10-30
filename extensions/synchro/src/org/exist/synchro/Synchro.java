@@ -66,7 +66,7 @@ public class Synchro {
 	public Communicator getCluster(DocumentImpl document) {
 		XmldbURI uri = document.getURI();
 		for (Communicator cluster : clusters) {
-			if (uri.startsWith(cluster.collection)) 
+			if (uri.startsWith(cluster.collectionURI)) 
 				return cluster;
 		}
 		return null;
