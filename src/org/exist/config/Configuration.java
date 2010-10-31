@@ -24,7 +24,6 @@ package org.exist.config;
 import java.util.List;
 import java.util.Set;
 
-import org.exist.EXistException;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 
@@ -65,4 +64,6 @@ public interface Configuration {
 	public void checkForUpdates(ElementAtExist document);
 
 	public void save() throws PermissionDeniedException;
+
+    public boolean equals(Object obj, String uniqField);
 }

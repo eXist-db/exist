@@ -318,4 +318,20 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         }
         return false;
     }
+
+    public boolean equals(Object obj, String uniqField) {
+        if (obj instanceof ConfigurationImpl) {
+            ConfigurationImpl conf = (ConfigurationImpl) obj;
+            if (!(getName().equals( conf.getName() )))
+                return false;
+            String uniq = getProperty( uniqField );
+            if (uniq == null) {
+                //LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
+                return false;
+            }
+            if ( uniq.equals( conf.getProperty( uniqField ) ) )
+                return true;
+        }
+        return false;
+    }
 }

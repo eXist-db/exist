@@ -305,9 +305,8 @@ public class Configurator {
                             Configurable obj = iterator.next();
                             Configuration current_conf = obj.getConfiguration();
                             if (current_conf == null) {
-                                //skip internal staff
+                                //skip internal staff //TODO: static list
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
-                                    //TODO: static list
                                     continue;
                                 }
                                 LOG.warn("Unconfigured instance ["+obj+"], remove the object.");
@@ -321,8 +320,11 @@ public class Configurator {
                                 Configuration conf = i.next();
 
                                 //if there is a referenceBy then compare by reference, otherwise .equals
-                                if((referenceBy == null && current_conf.equals( conf )) || (referenceBy != null && current_conf.getProperty(referenceBy).equals(conf.getProperty(referenceBy)))) {
-                                    current_conf.checkForUpdates(conf.getElement());
+                                //referenced object must be a reference only, no need to update (by add method?) -shabanovd
+                                if(	(referenceBy == null && current_conf.equals( conf )) ) {  
+//                                	|| (referenceBy != null && current_conf.equals( conf, referenceBy ))) {
+                                    
+                                	current_conf.checkForUpdates(conf.getElement());
                                     i.remove();
                                     found = true;
                                     break;
@@ -688,19 +690,25 @@ public class Configurator {
         if (document == null)
             return null;
         Configuration conf;
+        
         synchronized (hotConfigs) {
             conf = hotConfigs.get(document.getURI());
         }
+        
         if (conf != null)
             return conf;
+        
         ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
         if (confElement == null)
             return null; //possibly on corrupted database, find better solution (recovery flag?)
             //throw new ConfigurationException("The configuration file is empty, url = "+collection.getURI().append(fileURL));
+        
         conf = new ConfigurationImpl(confElement);
+        
         synchronized (hotConfigs) {
             hotConfigs.put(document.getURI(), conf);
         }
+        
         return conf;
     }
 
