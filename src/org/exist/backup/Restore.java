@@ -43,8 +43,6 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.EXistResource;
@@ -402,7 +400,9 @@ public class Restore extends DefaultHandler
                             dialog.setResource( name );
                         }
                         
-                        current.setTriggersEnabled(false);
+                        //triggers should NOT be disabled, because it do used by the system tasks (like security manager)
+                        //UNDERSTAND: split triggers: user & system
+                        //current.setTriggersEnabled(false);
                         
                         Resource res = current.createResource( docUri.toString(), type );
 
@@ -463,7 +463,7 @@ public class Restore extends DefaultHandler
 							}
 							service.chmod(res, Integer.parseInt(perms, 8));
 							
-	                    	current.setTriggersEnabled(true);
+//	                    	current.setTriggersEnabled(true);
 
 						} else {
 	                    	listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) + 
