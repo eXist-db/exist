@@ -8,13 +8,11 @@
         <date>September 2009</date>
         <orgname>The eXist Project</orgname>
     </bookinfo>
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Java Management Extensions (JMX)</title>
-
         <section>
             <title>Intro</title>
-
             <para>eXist now provides access to various management interfaces via Java Management
                 Extensions (JMX). JMX is a standard mechanism available in Java 5 and 6 (though
                 there are some differences between the two versions). A agent in the Java virtual
@@ -23,21 +21,18 @@
                 application can connect to the agent and access the available services in a
                 standardized way. The standard Java installation includes a simple client, jconsole,
                 which will also display the eXist-specific services. However, we also provide a
-                command-line client for quick access to server statistics and other information.</para>
-
+                command-line client for quick access to server statistics and other
+                information.</para>
             <para>Right now, eXist only exports a limited set of read-only services. Most of them
                 are only useful for debugging. This will certainly change in the future as we add
                 more services. We also plan to provide write access to configuration
-            properties.</para>
+                properties.</para>
         </section>
-
         <section>
             <title>Enabling the JMX agent</title>
-
             <para>To enable the platform server within the host virtual machine, you need to pass a
                 few Java system properties to the <filename>java</filename> executable. The
                 properties are:</para>
-
             <synopsis><![CDATA[-Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=1099
 -Dcom.sun.management.jmxremote.authenticate=false
@@ -48,7 +43,6 @@
                         url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html">Sun
                         JMX</ulink> documentation for details.</para>
             </note>
-
             <para>The extension can be activated by passing a command-line parameter to the exist
                 start scripts (<filename>client.sh startup.sh</filename> etc.)</para>
             <variablelist>
@@ -56,11 +50,10 @@
                     <term>-j &lt;argument&gt;, --jmx &lt;argument&gt;</term>
                     <listitem>
                         <para>set port number through which the JMX/RMI connections are
-                        enabled.</para>
+                            enabled.</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
-
             <para>Some examples:</para>
             <synopsis><![CDATA[bin/startup.sh -j 1099
 bin\server.bat -jmx 1099
@@ -71,35 +64,25 @@ bin\server.bat -jmx 1099
                         >enabled</ulink> by default.</para>
             </note>
         </section>
-
-
         <section>
             <title>Monitoring and Management</title>
-
             <section>
                 <title>Use jconsole</title>
-
                 <para>Once you restarted eXist, you can use a JMX-compliant management console to
                     access the management interfaces. For example, I can call jconsole, which is
                     included with Java 5 and 6:</para>
-
                 <synopsis>jconsole localhost:1099</synopsis>
-
                 <para>Clicking on the <menuchoice>
                         <guibutton>MBeans</guibutton>
                     </menuchoice> tab should show some eXist-specific MBeans below the standard Java
                     MBeans in the tree component to the left.</para>
             </section>
-
             <section>
                 <title>Use JMXClient</title>
-
                 <para>eXist includes a simple command-line JMX client which provides a quick access
                     to some important server statistics. The application accepts the following
                     command-line parameters:</para>
-
                 <synopsis>java -jar start.jar org.exist.management.client.JMXClient &lt;params&gt;</synopsis>
-
                 <variablelist>
                     <varlistentry>
                         <term>-a, --address &lt;argument&gt;</term>
@@ -155,9 +138,10 @@ bin\server.bat -jmx 1099
                     </varlistentry>
                     <varlistentry>
                         <term>-s, --report</term>
-                        <listitem><para>Retrieves the most recent sanity/consistency check report</para></listitem>
+                        <listitem>
+                            <para>Retrieves the most recent sanity/consistency check report</para>
+                        </listitem>
                     </varlistentry>
-                    
                     <varlistentry>
                         <term>-w, --wait &lt;argument&gt;</term>
                         <listitem>
@@ -168,9 +152,153 @@ bin\server.bat -jmx 1099
                 </variablelist>
                 <para>The following command should print some statistics about cache usage within
                     eXist:</para>
-
                 <synopsis>java -jar start.jar org.exist.management.client.JMXClient -c -w 2000</synopsis>
-
+            </section>
+            <section>
+                <title>JMXServlet</title>
+                <para>eXist also provides a servlet which connects to the JMX interface and returns
+                    a status report for the database as XML. By default, the servlet listens
+                    on</para>
+                
+                <synopsis><ulink url="http://localhost:8080/exist/status">http://localhost:8080/exist/status</ulink></synopsis>
+                <para>For simplicity, the different JMX objects in eXist are organized into
+                    categories. One or more categories can be passed to the servlet in parameter
+                        <option>c</option>. The following categories are recognized:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>memory</term>
+                        <listitem>
+                            <para>current memory consumption of the Java virtual machine</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>instances</term>
+                        <listitem>
+                            <para>general information about the db instance, active db broker
+                                objects etc.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>disk</term>
+                        <listitem>
+                            <para>current hard disk usage of the database files</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>system</term>
+                        <listitem>
+                            <para>system information: eXist version ...</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>caches</term>
+                        <listitem>
+                            <para>statistics on eXist's internal caches</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>locking</term>
+                        <listitem>
+                            <para>information on collection and resource locks currently being held
+                                by operations</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>sanity</term>
+                        <listitem>
+                            <para>feedback from the latest sanity check or ping request (see
+                                below)</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>all</term>
+                        <listitem>
+                            <para>dumps all known JMX objects in eXist's namespace</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>For example, to get a report on current memory usage and running instances,
+                    use the following URL:</para>
+                
+                <synopsis><ulink url="http://localhost:8080/exist/status?c=memory&amp;c=instances">http://localhost:8080/exist/status?c=memory&amp;c=instances</ulink></synopsis>
+                <para>This should return an XML document as follows:</para>
+                <programlisting language="xml"><![CDATA[<jmx:jmx xmlns:jmx="http://exist-db.org/jmx"> 
+    <jmx:MemoryImpl name="java.lang:type=Memory"> 
+        <jmx:HeapMemoryUsage> 
+            <jmx:committed>128647168</jmx:committed> 
+            <jmx:init>134217728</jmx:init> 
+            <jmx:max>1908932608</jmx:max> 
+            <jmx:used>34854528</jmx:used> 
+        </jmx:HeapMemoryUsage> 
+        <jmx:NonHeapMemoryUsage> 
+            <jmx:committed>42008576</jmx:committed> 
+            <jmx:init>24313856</jmx:init> 
+            <jmx:max>138412032</jmx:max> 
+            <jmx:used>40648936</jmx:used> 
+        </jmx:NonHeapMemoryUsage> 
+        <jmx:ObjectPendingFinalizationCount>0</jmx:ObjectPendingFinalizationCount> 
+        <jmx:Verbose>false</jmx:Verbose> 
+    </jmx:MemoryImpl> 
+    <jmx:Database name="org.exist.management.exist:type=Database"> 
+        <jmx:ReservedMem>671455641</jmx:ReservedMem> 
+        <jmx:ActiveBrokers>0</jmx:ActiveBrokers> 
+        <jmx:InstanceId>exist</jmx:InstanceId> 
+        <jmx:MaxBrokers>2</jmx:MaxBrokers> 
+        <jmx:AvailableBrokers>2</jmx:AvailableBrokers> 
+        <jmx:ActiveBrokersMap/> 
+        <jmx:CacheMem>268435456</jmx:CacheMem>
+        <jmx:CollectionCacheMem>25165824</jmx:CollectionCacheMem> 
+    </jmx:Database> 
+</jmx:jmx>]]></programlisting>
+                
+                <section>
+                    <title>Testing responsiveness using "ping"</title>
+                    
+                    <para>The servlet also implements a simple "ping" operation. Ping will first try to obtain an internal
+                        database broker object. If the db is under very high load or deadlocked, it will run out of broker
+                        objects and ping will not be able to obtain one within a certain time. This is thus a good indication
+                        that the database has become unresponsive for requests. If a broker object could be obtained, the servlet
+                        will run a simple XQuery to test the availability of the XQuery engine.</para>
+                    
+                    <para>To run a "ping", call the servlet with parameter <option>operation=ping</option>.
+                    The operation also accepts an optional timeout parameter, <option>t=timeout-in-ms</option>, which defines
+                    a timeout in milliseconds. For example, the following URL starts a ping with a timeout of 2 seconds:</para>
+                    
+                    <synopsis><ulink url="http://localhost:8080/exist/status?operation=ping&amp;t=2000">http://localhost:8080/exist/status?operation=ping&amp;t=2000</ulink></synopsis>
+                    
+                    <para>If the ping returns within the specified timeout, the servlet returns the attributes of the SanityReport
+                    JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;:</para>
+                    
+                    <programlisting language="xml"><![CDATA[<jmx:jmx xmlns:jmx="http://exist-db.org/jmx"> 
+    <jmx:SanityReport name="org.exist.management.exist.tasks:type=SanityReport"> 
+        <jmx:Status>PING_OK</jmx:Status> 
+        <jmx:LastCheckEnd/> 
+        <jmx:LastCheckStart/> 
+        <jmx:ActualCheckStart/> 
+        <jmx:LastActionInfo>Ping</jmx:LastActionInfo> 
+        <jmx:PingTime>39</jmx:PingTime> 
+        <jmx:Errors/> 
+    </jmx:SanityReport> 
+    </jmx:jmx>]]></programlisting>
+                    
+                    <para>If the ping takes longer than the timeout, you'll instead find an element  &lt;jmx:error&gt; in the returned XML. 
+                    In this case, additional information on running queries, memory consumption and database locks will be provided:</para>
+                    
+                    <programlisting language="xml"><![CDATA[<jmx:jmx xmlns:jmx="http://exist-db.org/jmx"> 
+    <jmx:error>no response on ping after 2000ms</jmx:error> 
+    <jmx:SanityReport name="org.exist.management.exist.tasks:type=SanityReport"> 
+        <jmx:Status>PING_WAIT</jmx:Status> 
+        <jmx:LastCheckEnd/> 
+        <jmx:LastCheckStart/> 
+        <jmx:ActualCheckStart/> 
+        <jmx:LastActionInfo>Ping</jmx:LastActionInfo> 
+        <jmx:PingTime>-1</jmx:PingTime> 
+        <jmx:Errors/> 
+    </jmx:SanityReport>
+    ...
+</jmx:jmx>]]></programlisting>
+                </section>
+                
             </section>
         </section>
     </chapter>
