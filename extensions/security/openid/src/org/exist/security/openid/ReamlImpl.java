@@ -184,6 +184,12 @@ public class ReamlImpl implements Realm {
 		return null;
 	}
 
+	@Override
+	public Collection<Group> getGroups() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.realm.Realm#startUp(org.exist.storage.DBBroker)
 	 */

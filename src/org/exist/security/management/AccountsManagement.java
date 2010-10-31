@@ -31,17 +31,17 @@ import org.exist.security.Subject;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface AccountsManagement<A extends Account> {
+public interface AccountsManagement {
 	
-	public A addAccount(A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public A getAccount(Subject invokingUser, String name);
+	public Account getAccount(Subject invokingUser, String name);
 
-	public boolean hasAccount(A account);
+	public boolean hasAccount(Account account);
 	public boolean hasAccount(String name);
 
-	public boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public boolean deleteAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
 }
