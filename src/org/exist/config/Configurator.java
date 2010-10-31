@@ -319,11 +319,11 @@ public class Configurator {
                             for (Iterator<Configuration> i = confs.iterator() ; i.hasNext() ;) {
                                 Configuration conf = i.next();
 
-                                //if there is a referenceBy then compare by reference, otherwise .equals
-                                //referenced object must be a reference only, no need to update (by add method?) -shabanovd
-                                if(	(referenceBy == null && current_conf.equals( conf )) ) {  
-//                                	|| (referenceBy != null && current_conf.equals( conf, referenceBy ))) {
-                                    
+                                if (referenceBy != null && current_conf.equals( conf, referenceBy )) {
+                                    i.remove();
+                                    found = true;
+                                    break;
+                                } else if (referenceBy == null && current_conf.equals( conf )) {  
                                 	current_conf.checkForUpdates(conf.getElement());
                                     i.remove();
                                     found = true;
