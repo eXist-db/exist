@@ -32,7 +32,6 @@ import javax.naming.ldap.LdapContext;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
-import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
@@ -45,7 +44,6 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 /**
@@ -53,7 +51,7 @@ import org.exist.storage.DBBroker;
  * 
  */
 @ConfigurationClass("realm") //TODO: id = LDAP
-public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
+public class LDAPRealm extends AbstractRealm {
 
     private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
@@ -181,10 +179,10 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     }
 
     @Override
-    public final synchronized LDAPAccountImpl getAccount(Subject invokingUser, String name) {
+    public final synchronized Account getAccount(Subject invokingUser, String name) {
 
         //first attempt to get the cached account
-        LDAPAccountImpl acct = super.getAccount(invokingUser, name);
+        Account acct = super.getAccount(invokingUser, name);
 
         if(acct != null) {
             return acct;
@@ -228,8 +226,8 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     }
 
     @Override
-    public final synchronized LDAPGroupImpl getGroup(Subject invokingUser, String name) {
-        LDAPGroupImpl grp = groupsByName.get(name);
+    public final synchronized Group getGroup(Subject invokingUser, String name) {
+        Group grp = groupsByName.get(name);
         if(grp != null) {
             return grp;
         } else {
@@ -338,68 +336,68 @@ public class LDAPRealm extends AbstractRealm<LDAPAccountImpl, LDAPGroupImpl> {
     }
 
     @Override
-    public boolean updateAccount(Subject invokingUser, LDAPAccountImpl account) throws PermissionDeniedException, EXistException {
+    public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return super.updateAccount(invokingUser, account);
     }
 
     @Override
-    public boolean deleteAccount(Subject invokingUser, LDAPAccountImpl account) throws PermissionDeniedException, EXistException {
+    public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean updateGroup(LDAPGroupImpl group) throws PermissionDeniedException, EXistException {
+    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean deleteGroup(LDAPGroupImpl group) throws PermissionDeniedException, EXistException {
+    public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
-    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
-        return new LDAPGroupImpl(realm, config);
-    }
-
-    @Override
-    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-        return new LDAPGroupImpl(realm, config, removed);
-    }
-
-    @Override
-    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        return new LDAPGroupImpl(realm, id, name);
-    }
-
-    @Override
-    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
-        return new LDAPGroupImpl(realm, name);
-    }
-
-    @Override
-    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
-        return new LDAPAccountImpl(realm, username);
-    }
-
-    @Override
-    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
-        return new LDAPAccountImpl(realm, config);
-    }
-
-    @Override
-    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-        return new LDAPAccountImpl(realm, config, removed);
-    }
-
-    @Override
-    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
-        return new LDAPAccountImpl(realm, id, from_account);
-    }
+//    @Override
+//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
+//        return new LDAPGroupImpl(realm, config);
+//    }
+//
+//    @Override
+//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+//        return new LDAPGroupImpl(realm, config, removed);
+//    }
+//
+//    @Override
+//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
+//        return new LDAPGroupImpl(realm, id, name);
+//    }
+//
+//    @Override
+//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
+//        return new LDAPGroupImpl(realm, name);
+//    }
+//
+//    @Override
+//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
+//        return new LDAPAccountImpl(realm, username);
+//    }
+//
+//    @Override
+//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
+//        return new LDAPAccountImpl(realm, config);
+//    }
+//
+//    @Override
+//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+//        return new LDAPAccountImpl(realm, config, removed);
+//    }
+//
+//    @Override
+//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
+//        return new LDAPAccountImpl(realm, id, from_account);
+//    }
 
     private final class AuthenticatedLdapSubjectAccreditedImpl extends SubjectAccreditedImpl {
 

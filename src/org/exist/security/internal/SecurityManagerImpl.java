@@ -208,7 +208,7 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
 
-        AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
+        Realm registeredRealm = findRealmForRealmId(account.getRealmId());
 
         return registeredRealm.updateAccount(invokingUser, account);
     }
@@ -216,18 +216,18 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
 	public synchronized void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
 
-            Group group = getGroup(invokingUser, name);
-            if(group == null){
-                return;
-            }
+        Group group = getGroup(invokingUser, name);
+        if(group == null){
+            return;
+        }
 
-            if(group.getRealmId() == null) {
-                throw new ConfigurationException("Group must have realm id.");
-            }
+        if(group.getRealmId() == null) {
+            throw new ConfigurationException("Group must have realm id.");
+        }
 
-            AbstractRealm<Account, Group> registeredRealm = (AbstractRealm<Account, Group>)findRealmForRealmId(group.getRealmId());
+        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
 
-            registeredRealm.deleteGroup(group);
+        registeredRealm.deleteGroup(group);
 	}
 
     @Override
@@ -246,7 +246,7 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Account must have realm id.");
         }
 
-        AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
+        Realm registeredRealm = findRealmForRealmId(account.getRealmId());
 
         registeredRealm.deleteAccount(invokingUser, account);
     }
@@ -421,7 +421,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
     @Override
-    public synchronized <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException {
+    public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
 
         if (group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
@@ -431,9 +431,9 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have name.");
         }
 
-        AbstractRealm<Account, G> registeredRealm = (AbstractRealm<Account, G>)findRealmForRealmId(group.getRealmId());
+        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
 
-        G newGroup = registeredRealm.addGroup(group.getName());
+        Group newGroup = registeredRealm.addGroup(group);
         save();
         return newGroup;
         //return defaultRealm.addGroup(group.getName());
@@ -449,21 +449,21 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-	public final synchronized <A extends Account> A addAccount(Account account) throws  PermissionDeniedException, EXistException{
+	public final synchronized Account addAccount(Account account) throws  PermissionDeniedException, EXistException{
 		if(account.getRealmId() == null) {
-                    throw new ConfigurationException("Account must have realm id.");
-                }
+            throw new ConfigurationException("Account must have realm id.");
+        }
 		
 		if(account.getName() == null || account.getName().isEmpty()) {
-                    throw new ConfigurationException("Account must have name.");
-                }
+            throw new ConfigurationException("Account must have name.");
+        }
 		
-                AbstractRealm<A, Group> registeredRealm = (AbstractRealm<A, Group>)findRealmForRealmId(account.getRealmId());
+		AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
 		
 		int id = getNextAccountId();
 
-        A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
-		//AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
+//        A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
+		AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
 		
 		usersById.put(id, new_account);
 		registeredRealm.registerAccount(new_account);

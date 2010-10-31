@@ -45,7 +45,7 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
+public class RealmImpl extends AbstractRealm {
 	
 	public static String ID = "exist"; //TODO: final "eXist-db";
 
@@ -110,7 +110,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 	}
 
     @Override
-	public synchronized boolean deleteAccount(Subject invokingUser, AccountImpl account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
 		if(account == null)
 			return false;
 		
@@ -156,13 +156,13 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 	}
 
     @Override
-	public synchronized boolean updateGroup(GroupImpl group) throws PermissionDeniedException {
+	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
 		//nothing to do: the name or id can't be changed
 		return false;
 	}
 
     @Override
-	public synchronized boolean deleteGroup(GroupImpl group) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
 		if(group == null)
 			return false;
 		
@@ -206,7 +206,7 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 			getDatabase().release(broker);
 		}
 	}
-	
+
 	@Override
 	public synchronized Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
 		Account user = getAccount(null, accountName);
@@ -225,43 +225,43 @@ public class RealmImpl extends AbstractRealm<AccountImpl, GroupImpl> {
 				"Wrong password for user [" + accountName + "] ");
 	}
 
-    @Override
-    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
-        return new GroupImpl(realm, config);
-    }
-
-    @Override
-    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
-        return new AccountImpl(realm, config);
-    }
-
-    @Override
-    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-        return new GroupImpl(realm, config, true);
-    }
-
-    @Override
-    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-        return new AccountImpl(realm, config, true);
-    }
-
-    @Override
-    public GroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        return new GroupImpl(realm, id, name);
-    }
-
-    @Override
-    public GroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
-        return new GroupImpl(realm, name);
-    }
-
-    @Override
-    public AccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
-        return new AccountImpl(realm, id, from_account);
-    }
-
-    @Override
-    public AccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
-        return new AccountImpl(realm, username);
-    }
+//    @Override
+//    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
+//        return new GroupImpl(realm, config);
+//    }
+//
+//    @Override
+//    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
+//        return new AccountImpl(realm, config);
+//    }
+//
+//    @Override
+//    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+//        return new GroupImpl(realm, config, true);
+//    }
+//
+//    @Override
+//    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
+//        return new AccountImpl(realm, config, true);
+//    }
+//
+//    @Override
+//    public GroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
+//        return new GroupImpl(realm, id, name);
+//    }
+//
+//    @Override
+//    public GroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
+//        return new GroupImpl(realm, name);
+//    }
+//
+//    @Override
+//    public AccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
+//        return new AccountImpl(realm, id, from_account);
+//    }
+//
+//    @Override
+//    public AccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
+//        return new AccountImpl(realm, username);
+//    }
 }

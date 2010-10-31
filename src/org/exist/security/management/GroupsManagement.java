@@ -31,17 +31,17 @@ import org.exist.security.Subject;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface GroupsManagement<G extends Group> {
+public interface GroupsManagement {
 
-	public G addGroup(G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public G getGroup(Subject invokingUser, String name);
+	public Group getGroup(Subject invokingUser, String name);
 
-	public boolean hasGroup(G group);
+	public boolean hasGroup(Group group);
 	public boolean hasGroup(String name);
 
-	public boolean updateGroup(G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
-	public boolean deleteGroup(G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
 }
