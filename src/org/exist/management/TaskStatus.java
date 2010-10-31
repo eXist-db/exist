@@ -23,6 +23,9 @@ public class TaskStatus implements Serializable {
     public static final int STOPPED_ERROR = 5;
     public static final int RUNNING_CHECK = 6;
     public static final int RUNNING_BACKUP = 7;
+    public static final int PING_OK = 8;
+    public static final int PING_ERROR = 9;
+    public static final int PING_WAIT = 10;
 
     private static final String[] STATUS_STRINGS = {
     //
@@ -40,7 +43,14 @@ public class TaskStatus implements Serializable {
             //
             "RUNNING_CHECK",
             //
-            "RUNNING_BACKUP" };
+            "RUNNING_BACKUP",
+            //
+            "PING_OK",
+            //
+            "PING_ERROR",
+            //
+            "PING_WAIT"
+    };
 
     private int _status = 0;
     private Date _statusChangeTime = Calendar.getInstance().getTime();
@@ -78,6 +88,9 @@ public class TaskStatus implements Serializable {
         case NA:
         case NEVER_RUN:
         case STOPPED_OK:
+        case PING_ERROR:
+        case PING_OK:
+        case PING_WAIT:
             break;
         default:
             percentageInfo = " - " + _percentageDone + "% done";

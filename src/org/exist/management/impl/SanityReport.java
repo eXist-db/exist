@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-10 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -44,9 +44,17 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ErrorReport;
 import org.exist.management.TaskStatus;
+import org.exist.security.xacml.AccessContext;
+import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ConsistencyCheckTask;
+import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
+import org.exist.storage.XQueryPool;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Sequence;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
@@ -55,6 +63,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";
 
+    public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
+    
+    public final static int PING_WAITING = -1;
+    public final static int PING_ERROR = -2;
+    
     private static String[] itemNames = { "errcode", "description" };
     private static String[] itemDescriptions = { "Error code", "Description of the error" };
     private static String[] indexNames = { "errcode" };
@@ -71,6 +84,8 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private String lastActionInfo = "nothing done";
 
+    private long lastPingRespTime = 0;
+    
     private String output = "";
 
     private TaskStatus taskstatus = new TaskStatus(TaskStatus.NEVER_RUN);
@@ -78,7 +93,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private List<ErrorReport> errors = NO_ERRORS;
 
     private BrokerPool pool;
-
+    
     public SanityReport(BrokerPool pool) {
         this.pool = pool;
     }
@@ -111,6 +126,10 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return lastActionInfo;
     }
 
+    public long getPingTime() {
+    	return lastPingRespTime;
+    }
+    
     public TabularData getErrors() {
         OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
@@ -154,6 +173,51 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         }
     }
 
+    public long ping(boolean checkQueryEngine) {
+    	long start = System.currentTimeMillis();
+    	lastPingRespTime = -1;
+    	lastActionInfo = "Ping";
+    	
+    	taskstatus.setStatus(TaskStatus.PING_WAIT);
+    	
+    	DBBroker broker = null;
+    	try {
+    		// try to acquire a broker. If the db is deadlocked or not responsive,
+    		// this will block forever.
+    		broker = pool.get(pool.getSecurityManager().getGuestSubject());
+    		
+    		if (checkQueryEngine) {
+    			XQuery xquery = broker.getXQueryService();
+    			XQueryPool xqPool = xquery.getXQueryPool();
+    			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
+    			if (compiled == null) {
+    				XQueryContext context = xquery.newContext(AccessContext.TEST);
+    				compiled = xquery.compile(context, TEST_XQUERY);
+    			}
+				try {
+					xquery.execute(compiled, null);
+				} finally {
+					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
+				}
+    		}
+    	} catch (Exception e) {
+			lastPingRespTime = -2;
+			taskstatus.setStatus(TaskStatus.PING_ERROR);
+			taskstatus.setStatusChangeTime();
+			taskstatus.setReason(e.getMessage());
+			changeStatus(taskstatus);
+		} finally {
+    		pool.release(broker);
+    		
+    		lastPingRespTime = System.currentTimeMillis() - start;
+    		taskstatus.setStatus(TaskStatus.PING_OK);
+			taskstatus.setStatusChangeTime();
+			taskstatus.setReason("ping response time: " + lastPingRespTime);
+			changeStatus(taskstatus);
+    	}
+		return lastPingRespTime;
+    }
+    
     private Properties parseParameter(String output, String backup, String incremental) {
         Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");
