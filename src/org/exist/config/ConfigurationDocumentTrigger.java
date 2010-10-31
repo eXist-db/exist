@@ -46,20 +46,34 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 	@Override
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
 
-		Configuration conf = Configurator.hotConfigs.get(documentPath);
-		if (conf != null) 
-			conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+		Configuration conf;
 		
-		if (documentPath.equals("/db/system/users.xml")) {
-			try {
-				ConverterFrom1_0.convert(broker.getUser(),
-						broker.getBrokerPool().getSecurityManager(),
-						document);
-			} catch (PermissionDeniedException e) {
-			} catch (EXistException e) {
+		switch (event) {
+		case DELETE_DOCUMENT_EVENT:
+			conf = Configurator.hotConfigs.get(documentPath);
+			if (conf != null) {
+				Configurator.unregister(conf);
+				; //XXX: inform object that configuration was deleted
 			}
-		}
+			break;
 
+		default:
+			conf = Configurator.hotConfigs.get(documentPath);
+			if (conf != null) 
+				conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+			
+			if (documentPath.equals("/db/system/users.xml")) {
+				try {
+					ConverterFrom1_0.convert(broker.getUser(),
+							broker.getBrokerPool().getSecurityManager(),
+							document);
+				} catch (PermissionDeniedException e) {
+				} catch (EXistException e) {
+				}
+			}
+
+			break;
+		}
 	}
 
 }
