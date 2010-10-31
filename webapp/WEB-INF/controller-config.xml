@@ -20,12 +20,16 @@
     <forward pattern=".*\.jws" servlet="AxisServlet"/>
     <forward pattern="/services" servlet="AxisServlet"/>
     <forward pattern="/axis-servlet/AdminServlet" servlet="AdminServlet"/>
-    
+    <forward pattern="/images" servlet="ScaleImageJAI"/>
+	<!-- The JMX status servlet used to monitor the db -->
+	<forward pattern="/jmx" servlet="JMXServlet"/>
+	    
     <!-- 
         ++ Default configuration: main web application is served from the
         ++ webapp directory. 
     -->
-    <root pattern="/tools" path="xmldb:exist:///db/www"/>
+    <root pattern="/library" path="xmldb:exist:///db/org/library"/>
+    
     <!-- 
         ++ To redirect requests based on the server name (i.e. www.example.com)
 	++ to a specific collection within the database, comment out the following

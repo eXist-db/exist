@@ -37,7 +37,11 @@ public interface SanityReportMBean {
 
     public String getStatus();
 
+    public long getPingTime();
+    
     public TabularData getErrors();
 
     public void triggerCheck(String output, String backup, String incremental);
+    
+    public long ping(boolean checkQueryEngine);
 }
