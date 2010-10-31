@@ -528,6 +528,8 @@ public class XQueryURLRewrite implements Filter {
     }
 
     private void configure() throws ServletException {
+    	if (pool != null)
+    		return;
         try {
             Class<?> driver = Class.forName(DRIVER);
             Database database = (Database) driver.newInstance();
