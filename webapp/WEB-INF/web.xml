@@ -102,6 +102,11 @@
         <load-on-startup>2</load-on-startup>
     </servlet>
 
+	<servlet>
+      <servlet-name>JMXServlet</servlet-name>
+      <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+    </servlet>
+
     <!-- 
         WebDAVServlet provides WebDAV access.
     -->
