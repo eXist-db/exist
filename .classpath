@@ -28,6 +28,7 @@
 	<classpathentry kind="src" path="extensions/svn/test/src"/>
 	<classpathentry kind="src" path="extensions/security/ldap/src"/>
 	<classpathentry kind="src" path="extensions/security/activedirectory/src"/>
+	<classpathentry kind="src" path="extensions/webdav/src"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
