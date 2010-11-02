@@ -98,7 +98,6 @@
 	<classpathentry kind="lib" path="lib/user/avalon-framework-api-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-impl-4.3.jar"/>
 	<classpathentry kind="lib" path="extensions/security/openid/lib/openid4java-0.9.5.jar"/>
-	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.0-RC1.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/activation-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/batik-all-1.7.jar"/>
@@ -130,5 +129,6 @@
 	<classpathentry kind="lib" path="lib/user/memcached-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/user/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
+	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
