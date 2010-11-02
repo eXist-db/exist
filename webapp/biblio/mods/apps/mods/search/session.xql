@@ -39,6 +39,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
             $total - $start + 1
         else
             $count
+    let $home := security:get-home-collection-uri($bs:USER)
     return
         <table xmlns="http://www.w3.org/1999/xhtml">
         {
@@ -67,34 +68,42 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                     </td>
                     {
                         if ($count eq 1) then
-                            <td class="detail-view">
-                                <div class="actions-toolbar">
-                                    <a id="save_{$id}" href="#{$currentPos}" class="save">
-                                       <img title="save to my list" 
-                                           src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
-                                           class="{if ($saved) then 'stored' else ''}"/>
-                                    </a>
+                            let $isWritable := bs:collection-is-writable(util:collection-name($item))
+                            return
+                                <td class="detail-view">
+                                    <div class="actions-toolbar">
+                                        <a id="save_{$id}" href="#{$currentPos}" class="save">
+                                           <img title="save to my list" 
+                                               src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
+                                               class="{if ($saved) then 'stored' else ''}"/>
+                                        </a>
+                                        {
+                                            (: if the item's collection is writable, display edit/delete and move buttons :)
+                                            if ($isWritable) then (
+                                                <a href="../edit/edit.xq?id={$item/@ID}&amp;collection={util:collection-name($item)}">
+                                                    <img title="edit" src="../../../resources/images/page_edit.png"/>
+                                                </a>,
+                                               <a class="remove-resource" href="#{$id}"><img title="delete" src="../../../resources/images/delete.png"/></a>,
+                                               <a class="move-resource" href="#{$id}"><img title="move" src="../../../resources/images/shape_move_front.png"/></a>
+                                            ) else
+                                                ()
+                                        }
+                                        {
+                                            (: button to add a related item :)
+                                            if ($bs:USER ne "guest") then
+                                                <a class="add-related" href="#{if ($isWritable) then util:collection-name($item) else $home}#{$item/@ID}">
+                                                    <img title="add related item" src="../../../resources/images/page_add.png"/>
+                                                </a>
+                                            else
+                                                ()
+                                        }
+                                    </div>
                                     {
-                                        if (bs:collection-is-writable(util:collection-name($item))) then (
-                                            <a href="../edit/edit.xq?id={$item/@ID}&amp;collection={util:collection-name($item)}">
-                                                <img title="edit" src="../../../resources/images/page_edit.png"/>
-                                            </a>,
-                                            (: <a class="add-related" href="../edit/edit.xq?type=default&amp;collection={util:collection-name($item)}&amp;host={$item/@ID}">:)
-                                            <a class="add-related" href="#{util:collection-name($item)}#{$item/@ID}">
-                                                <img title="add related item" src="../../../resources/images/page_add.png"/>
-                                            </a>,
-                                           <a class="remove-resource" href="#{$id}"><img title="delete" src="../../../resources/images/delete.png"/></a>,
-                                           <a class="move-resource" href="#{$id}"><img title="move" src="../../../resources/images/shape_move_front.png"/></a>
-                                        ) else
-                                            ()
+                                        let $clean := clean:cleanup($item)
+                                        return
+                                            mods:format-full(string($currentPos), $clean, $item) 
                                     }
-                                </div>
-                                {
-                                    let $clean := clean:cleanup($item)
-                                    return
-                                        mods:format-full(string($currentPos), $clean, $item) 
-                                }
-                            </td>
+                                </td>
                         else
                             <td class="pagination-toggle"><a>{mods:format-short(string($currentPos), $item)}</a></td>
                     }
