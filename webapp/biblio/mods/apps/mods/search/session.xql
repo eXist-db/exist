@@ -77,6 +77,10 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                                src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                                class="{if ($saved) then 'stored' else ''}"/>
                                         </a>
+                                        <a target="_new" href="../../../../rest/{document-uri(root($item))}?_query=//*[@ID = '{$item/@ID}']&amp;_wrap=no">
+                                            <img title="view XML source"
+                                                src="../../../resources/images/script_code.png"/>
+                                        </a>
                                         {
                                             (: if the item's collection is writable, display edit/delete and move buttons :)
                                             if ($isWritable) then (
