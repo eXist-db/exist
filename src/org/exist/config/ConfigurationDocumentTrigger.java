@@ -36,7 +36,7 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigurationDocumentTrigger  extends FilteringTrigger {
+public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
 	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
@@ -49,7 +49,7 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 		Configuration conf;
 		
 		switch (event) {
-		case DELETE_DOCUMENT_EVENT:
+		case REMOVE_DOCUMENT_EVENT:
 			conf = Configurator.hotConfigs.get(documentPath);
 			if (conf != null) {
 				Configurator.unregister(conf);
@@ -75,5 +75,66 @@ public class ConfigurationDocumentTrigger  extends FilteringTrigger {
 			break;
 		}
 	}
+	
+	private void checkForUpdates(DBBroker broker, XmldbURI uri, DocumentImpl document) {
+		Configuration conf = Configurator.hotConfigs.get(uri);
+		if (conf != null) 
+			conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+		
+		if (uri.equals("/db/system/users.xml")) {
+			try {
+				ConverterFrom1_0.convert(broker.getUser(),
+						broker.getBrokerPool().getSecurityManager(),
+						document);
+			} catch (PermissionDeniedException e) {
+			} catch (EXistException e) {
+			}
+		}
+	}
 
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		checkForUpdates(broker, document.getURI(), document);
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		Configuration conf = Configurator.hotConfigs.get(uri);
+		if (conf != null) {
+			Configurator.unregister(conf);
+			; //XXX: inform object that configuration was deleted
+		}
+	}
 }

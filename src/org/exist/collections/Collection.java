@@ -38,16 +38,8 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
-import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.Trigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.QName;
+import org.exist.collections.triggers.*;
+import org.exist.dom.*;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -55,21 +47,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.storage.DBBroker;
-import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.GeneralRangeIndexSpec;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.ProcessMonitor;
-import org.exist.storage.QNameRangeIndexSpec;
-import org.exist.storage.UpdateListener;
+import org.exist.storage.*;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.lock.ReentrantReadWriteLock;
+import org.exist.storage.lock.*;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -775,45 +758,47 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
             throws PermissionDeniedException, TriggerException, LockException {
         DocumentImpl doc = null;
+        
+        BrokerPool db = broker.getBrokerPool();
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
-            //Doh ! READ lock ?
+        	db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
+
+        	//XXX: Doh ! READ lock ?
             getLock().acquire(Lock.READ_LOCK);
+            
             doc = documents.get(docUri.getRawCollectionPath());
+            
             if (doc == null)
                 return; //TODO should throw an exception!!! Otherwise we dont know if the document was removed
+            
             doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
             if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
                 throw new PermissionDeniedException(
-                    "Write access to collection denied; user=" + broker.getUser().getName());
+                    "Write access to collection denied; account = " + broker.getUser().getName());
             if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
                 throw new PermissionDeniedException("Permission to remove document denied");
+            
             DocumentTrigger trigger = null;
             if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
-                if (triggersEnabled) {
-                    CollectionConfiguration config = getConfiguration(broker);
-                    if (config != null)
-                        try {
-                            trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
-                        } catch (CollectionConfigurationException e) {
-                            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                        }
-                }
+            	trigger = getDocumentTrigger(broker);
             } else {
                 // we remove a collection.xconf configuration file: tell the configuration manager to
                 // reload the configuration.
                 CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
                 confMgr.invalidateAll(getURI());
             }
+            
             if (trigger != null) {
-                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction,
-                    getURI().append(docUri), doc);
+                trigger.beforeDeleteDocument(broker, transaction, doc);
             }
+            
             broker.removeXMLResource(transaction, doc);
             documents.remove(docUri.getRawCollectionPath());
+            
             if (trigger != null) {
-                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, getURI().append(docUri), null);
+                trigger.afterDeleteDocument(broker, transaction, getURI().append(docUri));
             }
+            
             broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
@@ -861,28 +846,23 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     "write access to collection denied; user=" + broker.getUser().getName());
             if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
-            DocumentTrigger trigger = null;
-            if (triggersEnabled) {
-                CollectionConfiguration config = getConfiguration(broker);
-                if (config != null) {
-                    try {
-                        trigger = (DocumentTrigger) config.newTrigger(Trigger.REMOVE_DOCUMENT_EVENT, broker, this);
-                    } catch (CollectionConfigurationException e) {
-                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                    }
-                }
-            }
+
+            DocumentTrigger trigger = getDocumentTrigger(broker);
+
             if (trigger != null)
-                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
+        		trigger.beforeDeleteDocument(broker, transaction, doc);
+
             try {
                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             } catch (IOException ex) {
                throw new PermissionDeniedException("Cannot delete file.");
             }
+            
             documents.remove(doc.getFileURI().getRawCollectionPath());
-            if (trigger != null) {
-                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), null);
-            }
+            
+            if (trigger != null)
+        		trigger.afterDeleteDocument(broker, transaction, doc.getURI());
+
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
             getLock().release(Lock.WRITE_LOCK);
@@ -1372,23 +1352,24 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
         if (!triggersEnabled)
             return null;
+        
         if (config == null)
             return null;
+        
         DocumentTrigger trigger = null;
         try {
-            if (update)
-                trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, this);
-            else
-                trigger = (DocumentTrigger) config.newTrigger(Trigger.STORE_DOCUMENT_EVENT, broker, this);
+            trigger = config.newDocumentTrigger(broker, this);
         } catch (CollectionConfigurationException e) {
             LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
         }
         if(trigger == null)
             return null;
+
         if (update)
             LOG.debug("Using update trigger '" + trigger.getClass().getName() + "'");
         else
             LOG.debug("Using store trigger '" + trigger.getClass().getName() + "'");
+        
         return trigger;
     }
 
@@ -1420,70 +1401,64 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             throws PermissionDeniedException, LockException, TriggerException,IOException {
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
+        
         BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
+        
         //TODO : move later, i.e. after the collection lock is acquired ?
         DocumentImpl oldDoc = getDocument(broker, docUri);
+        
         try {
             broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
-            getLock().acquire(Lock.WRITE_LOCK);
-            checkPermissions(transaction, broker, oldDoc);
-            DocumentTrigger trigger = null;
-            int event = 0;
-            if (triggersEnabled) {
-                CollectionConfiguration config = getConfiguration(broker);
-                if (config != null) {
-                    event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
-                        try {
-                            trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
-                        } catch (CollectionConfigurationException e) {
-                            LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                        }
-                        if (trigger != null) {
-                            trigger.prepare(event, broker, transaction, getURI().append(docUri), oldDoc);
-                        }
-                }
-            }
-            manageDocumentInformation(broker, oldDoc, blob );
-            DocumentMetadata metadata = blob.getMetadata();
-            metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
-            if (oldDoc != null) {
-                if (LOG.isDebugEnabled())
-                    LOG.debug("removing old document " + oldDoc.getFileURI());
-                if (oldDoc instanceof BinaryDocument)
-                    broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                else
-                    broker.removeXMLResource(transaction, oldDoc);
-            }
-            if(created != null)
-                metadata.setCreated(created.getTime());
-            if(modified != null)
-                metadata.setLastModified(modified.getTime());
-            blob.setContentLength(size);
-            broker.storeBinaryResource(transaction, blob, is);
-            addDocument(transaction, broker, blob);
-            broker.storeXMLResource(transaction, blob);
-            /*
-            if (triggersEnabled) {
-                CollectionConfiguration config = getConfiguration(broker);
-                if (config != null) {
-                    event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
-                    try {
-                        trigger = (DocumentTrigger) config.newTrigger(event, broker, this);
-                    } catch (CollectionConfigurationException e) {
-                        LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
-                    }
-                    if (trigger != null) {
-                        trigger.prepare(event, broker, transaction, blob.getURI(), blob);
-                    }
-                }
-            }
-            */
-            // This is no longer needed as the dom.dbx isn't used
-            //broker.closeDocument();
+        	getLock().acquire(Lock.WRITE_LOCK);
+	        
+	        checkPermissions(transaction, broker, oldDoc);
+	        
+	        DocumentTrigger trigger = getDocumentTrigger(broker);
+
+	        manageDocumentInformation(broker, oldDoc, blob );
+	        DocumentMetadata metadata = blob.getMetadata();
+	        metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
+	        
+	        if(created != null)
+	            metadata.setCreated(created.getTime());
+	        
+	        if(modified != null)
+	        	metadata.setLastModified(modified.getTime());
+	        
+	        blob.setContentLength(size);
+	        
             if (trigger != null) {
-                trigger.finish(event, broker, transaction, blob.getURI(), blob);
+            	if (oldDoc == null)
+            		trigger.beforeCreateDocument(broker, transaction, blob.getURI());
+            	else
+            		trigger.beforeUpdateDocument(broker, transaction, oldDoc);
             }
-            return blob;
+	        
+	        if (oldDoc != null) {
+	            LOG.debug("removing old document " + oldDoc.getFileURI());
+	            if (oldDoc instanceof BinaryDocument)
+	                broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
+	            else
+	                broker.removeXMLResource(transaction, oldDoc);
+	        }
+	        
+	        broker.storeBinaryResource(transaction, blob, is);
+	        addDocument(transaction, broker, blob);
+	        
+	        broker.storeXMLResource(transaction, blob);
+	        
+            // This is no longer needed as the dom.dbx isn't used
+	        //broker.closeDocument();
+	        
+	        if (trigger != null) {
+            	if (oldDoc == null)
+            		trigger.afterCreateDocument(broker, transaction, blob);
+            	else
+            		trigger.afterUpdateDocument(broker, transaction, blob);
+	        }
+	        
+	        return blob;
+	        
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
             getLock().release(Lock.WRITE_LOCK);
@@ -1549,12 +1524,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public CollectionConfiguration getConfiguration(DBBroker broker) {
         if (!collectionConfEnabled)
             return null;
+        
         //System collection has no configuration
         //if (DBBroker.SYSTEM_COLLECTION.equals(getURI().getRawCollectionPath()))
-            //return null;
+        //    return null;
+        
         CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
         if (manager == null)
             return null;
+        
         //Attempt to get configuration
         CollectionConfiguration configuration = null;
         try {
@@ -1613,7 +1591,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             getLock().release(Lock.WRITE_LOCK);
         }
     }
-
+    
     /** set user-defined Reader */
     public void setReader(XMLReader reader){
         userReader = reader;
@@ -1823,5 +1801,31 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public FulltextIndexSpec getFulltextIndexConfiguration(DBBroker broker) {
         IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
+    }
+    
+    public DocumentTrigger getDocumentTrigger(DBBroker broker) {
+        if (triggersEnabled) {
+            CollectionConfiguration config = getConfiguration(broker);
+            if (config != null)
+                try {
+                    return config.newDocumentTrigger(broker, this);
+                } catch (CollectionConfigurationException e) {
+                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                }
+        }
+        return null;
+    }
+
+    public CollectionTrigger getCollectionTrigger(DBBroker broker) {
+        if (triggersEnabled) {
+            CollectionConfiguration config = getConfiguration(broker);
+            if (config != null)
+                try {
+                    return config.newCollectionTrigger(broker, this);
+                } catch (CollectionConfigurationException e) {
+                    LOG.debug("An error occurred while initializing a trigger for collection " + getURI() + ": " + e.getMessage(), e);
+                }
+        }
+        return null;
     }
 }

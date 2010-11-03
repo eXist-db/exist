@@ -1,7 +1,6 @@
 /*
- *  Dumper.java - eXist Open Source Native XML Database
- *  Copyright (C) 2003 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2003-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,12 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *  $Id$
  */
 package org.exist.collections.triggers;
 
@@ -38,7 +36,7 @@ import java.util.Map;
 /**
  * @author wolf
  */
-public class Dumper extends FilteringTrigger {
+public class Dumper extends FilteringTrigger implements DocumentTrigger {
 
 	/* (non-Javadoc)
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
@@ -56,13 +54,9 @@ public class Dumper extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(org.exist.storage.DBBroker, org.exist.collections.Collection, java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(
-		int event,
-		DBBroker broker,
-		Txn transaction,
-		XmldbURI documentName, 
-		DocumentImpl existingDocument)
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument)
 		throws TriggerException {
+		
 		System.out.println("\nstoring document " + documentName + " into collection " + collection.getURI());
 		if(existingDocument != null)
 			System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileURI());
@@ -73,9 +67,51 @@ public class Dumper extends FilteringTrigger {
 			System.out.println("\t" + docs.getDocumentAt(i).getFileURI());
 	}
 
-    /* (non-Javadoc)
-     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
-     */
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
     }
+
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		prepare(-1, broker, transaction, uri, null);
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		prepare(-1, broker, transaction, document.getURI(), document);
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		prepare(-1, broker, transaction, newUri, document);
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		prepare(-1, broker, transaction, newUri, document);
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		prepare(-1, broker, transaction, document.getURI(), document);
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
 }

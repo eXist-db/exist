@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
@@ -67,7 +68,7 @@ public class Conditional extends Modification {
 	 * @see org.exist.xupdate.Modification#process()
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
-			EXistException, XPathException {
+			EXistException, XPathException, TriggerException {
 		LOG.debug("Processing xupdate:if ...");
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();

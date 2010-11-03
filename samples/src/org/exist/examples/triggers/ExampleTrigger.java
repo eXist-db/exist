@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2008 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ import java.util.Map;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
@@ -55,7 +56,7 @@ import org.xml.sax.InputSource;
  * 
  * @author wolf
  */
-public class ExampleTrigger extends FilteringTrigger {
+public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger {
 
 	private DocumentImpl doc;
 	
@@ -64,45 +65,6 @@ public class ExampleTrigger extends FilteringTrigger {
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument)
 		throws TriggerException {
-		String xupdate;
-		// we react to the store and remove events
-		if(event == STORE_DOCUMENT_EVENT)
-			// create XUpdate command for inserts
-			xupdate = "<?xml version=\"1.0\"?>" +
-				"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
-				"<xu:append select='/contents'><xu:element name='file'>" +
-				documentName.toString() +
-				"</xu:element></xu:append></xu:modifications>";
-		else if(event == REMOVE_DOCUMENT_EVENT)
-			// create XUpdate command for removals
-			xupdate = "<?xml version=\"1.0\"?>" +
-				"<xu:modifications version=\"1.0\" xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\">" +
-				"<xu:remove select=\"//file[text()='" + documentName.toString() + "']\"></xu:remove>" +
-				"</xu:modifications>";
-		else
-			return;
-		getLogger().debug(xupdate);
-		// create a document set containing "contents.xml"
-		DefaultDocumentSet docs = new DefaultDocumentSet();
-		docs.add(doc);
-		try {
-			// IMPORTANT: temporarily disable triggers on the collection.
-			// We would end up in infinite recursion if we don't do that
-			getCollection().setTriggersEnabled(false);
-			// create the XUpdate processor
-			XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
-			// process the XUpdate
-			Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
-			for(int i = 0; i < modifications.length; i++)
-				modifications[i].process(null);
-			broker.flush();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new TriggerException(e.getMessage(), e);
-		} finally {
-			// IMPORTANT: reenable trigger processing for the collection.
-			getCollection().setTriggersEnabled(true);
-		}
 	}
 
 	/* (non-Javadoc)
@@ -144,9 +106,84 @@ public class ExampleTrigger extends FilteringTrigger {
 	}
 
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-		// TODO Auto-generated method stub
 	}
-	
-	
 
+	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
+		getLogger().debug(xupdate);
+		// create a document set containing "contents.xml"
+		DefaultDocumentSet docs = new DefaultDocumentSet();
+		docs.add(doc);
+		try {
+			// IMPORTANT: temporarily disable triggers on the collection.
+			// We would end up in infinite recursion if we don't do that
+			getCollection().setTriggersEnabled(false);
+			// create the XUpdate processor
+			XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
+			// process the XUpdate
+			Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
+			for(int i = 0; i < modifications.length; i++)
+				modifications[i].process(null);
+			broker.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new TriggerException(e.getMessage(), e);
+		} finally {
+			// IMPORTANT: re-enable trigger processing for the collection.
+			getCollection().setTriggersEnabled(true);
+		}
+	}
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		String xupdate = "<?xml version=\"1.0\"?>" +
+		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
+		"<xu:append select='/contents'><xu:element name='file'>" +
+		uri.toString() +
+		"</xu:element></xu:append></xu:modifications>";
+
+		addRecord(broker, xupdate);
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		String xupdate = "<?xml version=\"1.0\"?>" +
+		"<xu:modifications version=\"1.0\" xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\">" +
+		"<xu:remove select=\"//file[text()='" + document.getURI().toString() + "']\"></xu:remove>" +
+		"</xu:modifications>";
+		
+		addRecord(broker, xupdate);
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
 }

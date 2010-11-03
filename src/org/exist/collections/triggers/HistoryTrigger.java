@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2004-2010 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.collections.triggers;
 
 import java.io.IOException;
@@ -67,7 +88,11 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
         }
     }
     
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException
+    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException {
+    	makeCopy(broker, transaction, doc);
+    }
+
+    public void makeCopy(DBBroker broker, Txn transaction, DocumentImpl doc) throws TriggerException
     {
     	if(doc == null)
     		return;
@@ -108,7 +133,51 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
    	  	}
     }
     
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
     {
     }
+
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    	makeCopy(broker, transaction, document);
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	makeCopy(broker, transaction, document);
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    	makeCopy(broker, transaction, document);
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	makeCopy(broker, transaction, document);
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
 }

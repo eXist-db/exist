@@ -1,33 +1,31 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
- *
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.xquery.update;
 
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -64,8 +62,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import java.util.Iterator;
-
 /**
  * @author wolf
  *
@@ -81,7 +77,7 @@ public abstract class Modification extends AbstractExpression
 	
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap triggers;
+    protected Int2ObjectHashMap<DocumentTrigger> triggers;
     
     /**
 	 * @param context
@@ -90,7 +86,7 @@ public abstract class Modification extends AbstractExpression
 		super(context);
 		this.select = select;
 		this.value = value;
-        this.triggers = new Int2ObjectHashMap(97);
+        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(97);
     }
 
 	public int getCardinality() {
@@ -131,10 +127,12 @@ public abstract class Modification extends AbstractExpression
 	 * operation.
 	 * 
 	 * @param nodes
+	 * 
 	 * @throws LockException
+	 * @throws TriggerException 
 	 */
 	protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
-		XPathException {
+		XPathException, TriggerException {
 	    Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
 	    try {
 	        globalLock.acquire(Lock.READ_LOCK);
@@ -205,15 +203,14 @@ public abstract class Modification extends AbstractExpression
 		}
 	}
 
-    protected void finishTriggers(Txn transaction) {
+    protected void finishTriggers(Txn transaction) throws TriggerException {
         Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-		DocumentImpl doc;
-		while(iterator.hasNext())
-		{
-			doc = iterator.next();
-            context.addModifiedDoc(doc);
-			finishTrigger(transaction, doc);
+		
+        while(iterator.hasNext()) {
+            context.addModifiedDoc(iterator.next());
+			finishTrigger(transaction, iterator.next());
 		}
+        
         triggers.clear();
     }
 
@@ -275,12 +272,14 @@ public abstract class Modification extends AbstractExpression
     }
 	
 	/**
-	 *  Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
 	 *  
-	 *  @param transaction	The transaction
-	 *  @param doc	The document to trigger for
+	 * @param transaction	The transaction
+	 * @param doc	The document to trigger for
+	 * 
+	 * @throws TriggerException 
 	 */
-	private void prepareTrigger(Txn transaction, DocumentImpl doc)
+	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException
 	{
 		//if we are doing a batch update then only call prepare for the first update to that document
 		if(context.hasBatchTransaction())
@@ -297,34 +296,11 @@ public abstract class Modification extends AbstractExpression
 		}
 
 		//prepare the trigger
-		CollectionConfiguration config = doc.getCollection().getConfiguration(context.getBroker());
-        DocumentTrigger trigger = null;
-        if(config != null)
-        {
-        	//get the UPDATE_DOCUMENT_EVENT trigger
-            try {
-                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), doc.getCollection());
-            } catch (CollectionConfigurationException e) {
-                LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
-            }
+        DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(context.getBroker());
 
-            if(trigger != null)
-        	{
-	            try
-	            {
-	            	//fire trigger prepare
-	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), transaction, doc.getURI(), doc);
-	            }
-	            catch(TriggerException te)
-	            {
-	            	LOG.debug("Unable to prepare trigger for event UPDATE_DOCUMENT_EVENT: " + te.getMessage());
-	            }
-	            catch(Exception e)
-        		{
-        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-        		}
-                triggers.put(doc.getDocId(), trigger);
-            }
+         if(trigger != null) {
+        	trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
+            triggers.put(doc.getDocId(), trigger);
         }
 	}
 	
@@ -332,29 +308,19 @@ public abstract class Modification extends AbstractExpression
 	 * 
 	 * @param transaction	The transaction
 	 * @param doc	The document to trigger for
+	 * 
+	 * @throws TriggerException 
 	 */
-	private void finishTrigger(Txn transaction, DocumentImpl doc)
+	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException
 	{
 		//if this is part of a batch transaction, defer the trigger
-		if(context.hasBatchTransaction())
-		{
+		if(context.hasBatchTransaction()) {
 			context.setBatchTransactionTrigger(doc);
-		}
-		else
-		{
+		} else {
 			//finish the trigger
-            DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+            DocumentTrigger trigger = triggers.get(doc.getDocId());
             if(trigger != null)
-            {
-                try
-                {
-                    trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, context.getBroker(), transaction, doc.getURI(), doc);
-                }
-                catch(Exception e)
-                {
-                    LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-                }
-            }
+            	trigger.afterUpdateDocument(context.getBroker(), transaction, doc);
 		}
 	}
 	

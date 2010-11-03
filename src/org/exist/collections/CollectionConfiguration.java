@@ -1,21 +1,22 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.collections;
@@ -28,7 +29,10 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.exist.collections.triggers.CollectionTrigger;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.Account;
@@ -44,6 +48,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+@ConfigurationClass("collection")
 public class CollectionConfiguration {
 
     public final static String COLLECTION_CONFIG_SUFFIX = ".xconf"; 
@@ -73,7 +78,7 @@ public class CollectionConfiguration {
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
-	private TriggerConfig[] triggers = new TriggerConfig[Trigger.MAX_EVENT + 1];
+	private TriggerConfig triggers = null;
 
 	private IndexSpec indexSpec = null;
     
@@ -287,6 +292,19 @@ public class CollectionConfiguration {
         return indexSpec;
     }
 
+    public CollectionTrigger newCollectionTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
+        if (triggers != null)
+            return triggers.newCollectionInstance(broker, collection);
+        return null;
+    }
+
+    public DocumentTrigger newDocumentTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
+        if (triggers != null)
+            return triggers.newDocumentInstance(broker, collection);
+        return null;
+    }
+
+    @Deprecated
     public Trigger newTrigger(int eventType, DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
         TriggerConfig config = getTriggerConfiguration(eventType);
         if (config != null)
@@ -294,15 +312,16 @@ public class CollectionConfiguration {
         return null;
     }
 
+    @Deprecated
     public TriggerConfig getTriggerConfiguration(int eventType) {
-		return triggers[eventType];
+		return null;//triggers[eventType];
 	}
 
     public boolean triggerRegistered(Class<?> triggerClass) {
-        for (int i = 0; i < triggers.length; i++) {
-            if (triggers[i] != null && triggers[i].getTriggerClass() == triggerClass)
-                return true;
-        }
+//        for (int i = 0; i < triggers.length; i++) {
+//            if (oldtriggers[i] != null && oldtriggers[i].getTriggerClass() == triggerClass)
+//                return true;
+//        }
         return false;
     }
 
@@ -324,82 +343,50 @@ public class CollectionConfiguration {
         
         TriggerConfig trigger = instantiate(broker, node, classAttr, testConfig);
         if (!testConfig) {
-            StringTokenizer tok = new StringTokenizer(eventAttr, ", ");
-            String event;
-            while(tok.hasMoreTokens()) {
-                event = tok.nextToken();
-                LOG.debug("Registering trigger '" + classAttr + "' for event '" + event + "'");
-                int triggerEvent = -1;
-                if(event.equalsIgnoreCase("store")) {
-                	triggerEvent = Trigger.STORE_DOCUMENT_EVENT;
-                
-                } else if(event.equalsIgnoreCase("update")) {
-                	triggerEvent = Trigger.UPDATE_DOCUMENT_EVENT;
-
-                } else if(event.equalsIgnoreCase("remove")) {
-                	triggerEvent = Trigger.REMOVE_DOCUMENT_EVENT;
-
-                } else if(event.equalsIgnoreCase("create-collection")) {
-                	triggerEvent = Trigger.CREATE_COLLECTION_EVENT;
-
-                } else if(event.equalsIgnoreCase("rename-collection")) {
-                	triggerEvent = Trigger.RENAME_COLLECTION_EVENT; 
-
-                } else if(event.equalsIgnoreCase("delete-collection")) {
-                	triggerEvent = Trigger.DELETE_COLLECTION_EVENT;
-
-                } else
-                    LOG.warn("Unknown event type '" + event + "' in trigger '" + classAttr + "'");
-                
-                if (triggerEvent > -1) {
-                    if (triggers[triggerEvent] != null)
-                        LOG.warn("Trigger '" + classAttr + "' already registered");
-                    triggers[triggerEvent] = trigger;
-                }
-            }
+        	triggers = trigger;
         }
     }
 
-        private Map<String, List> getTriggerParameterChildParameters(Element param) {
+    private Map<String, List> getTriggerParameterChildParameters(Element param) {
 
-            Map<String, List> results = new HashMap<String, List>();
+        Map<String, List> results = new HashMap<String, List>();
 
-            NodeList childParameters = param.getChildNodes();
-            for(int i = 0; i < childParameters.getLength(); i++) {
-                Node nChildParameter = childParameters.item(i);
-                if(nChildParameter instanceof Element) {
-                    Element childParameter = (Element)nChildParameter;
-                    String name = childParameter.getLocalName();
+        NodeList childParameters = param.getChildNodes();
+        for(int i = 0; i < childParameters.getLength(); i++) {
+            Node nChildParameter = childParameters.item(i);
+            if(nChildParameter instanceof Element) {
+                Element childParameter = (Element)nChildParameter;
+                String name = childParameter.getLocalName();
 
-                    if(childParameter.getAttributes().getLength() > 0){
-                        List<Properties> childParameterProperties = (List<Properties>)results.get(name);
-                        if(childParameterProperties == null) {
-                            childParameterProperties = new ArrayList<Properties>();
-                        }
-
-                        NamedNodeMap attrs = childParameter.getAttributes();
-                        Properties props = new Properties();
-                        for(int a = 0; a < attrs.getLength(); a++) {
-                            Node attr = attrs.item(a);
-                            props.put(attr.getLocalName(), attr.getNodeValue());
-                        }
-                        childParameterProperties.add(props);
-
-                        results.put(name, childParameterProperties);
+                if(childParameter.getAttributes().getLength() > 0){
+                    List<Properties> childParameterProperties = (List<Properties>)results.get(name);
+                    if(childParameterProperties == null) {
+                        childParameterProperties = new ArrayList<Properties>();
                     }
-                    else {
-                        List<String> strings = (List<String>)results.get(name);
-                        if(strings == null) {
-                            strings = new ArrayList<String>();
-                        }
-                        strings.add(childParameter.getNodeValue());
-                        results.put(name, strings);
+
+                    NamedNodeMap attrs = childParameter.getAttributes();
+                    Properties props = new Properties();
+                    for(int a = 0; a < attrs.getLength(); a++) {
+                        Node attr = attrs.item(a);
+                        props.put(attr.getLocalName(), attr.getNodeValue());
                     }
+                    childParameterProperties.add(props);
+
+                    results.put(name, childParameterProperties);
+                }
+                else {
+                    List<String> strings = (List<String>)results.get(name);
+                    if(strings == null) {
+                        strings = new ArrayList<String>();
+                    }
+                    strings.add(childParameter.getNodeValue());
+                    results.put(name, strings);
                 }
             }
-
-            return results;
         }
+
+        return results;
+    }
 	
 	@SuppressWarnings("unchecked")
 	private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
@@ -464,47 +451,38 @@ public class CollectionConfiguration {
     }
 	
 	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
-
-		TriggerConfig trigger = instantiate(broker, classname, parameters);
-
-	    StringTokenizer tok = new StringTokenizer(events, ", ");
-	    String event;
-	    while(tok.hasMoreTokens()) {
-	        event = tok.nextToken();
-	        LOG.debug("Registering trigger '" + classname + "' for event '" + event + "'");
-	        int triggerEvent = -1;
-	        if(event.equalsIgnoreCase("store")) {
-	        	triggerEvent = Trigger.STORE_DOCUMENT_EVENT;
-	        
-	        } else if(event.equalsIgnoreCase("update")) {
-	        	triggerEvent = Trigger.UPDATE_DOCUMENT_EVENT;
-	
-	        } else if(event.equalsIgnoreCase("remove")) {
-	        	triggerEvent = Trigger.REMOVE_DOCUMENT_EVENT;
-	
-	        } else if(event.equalsIgnoreCase("create-collection")) {
-	        	triggerEvent = Trigger.CREATE_COLLECTION_EVENT;
-	
-	        } else if(event.equalsIgnoreCase("rename-collection")) {
-	        	triggerEvent = Trigger.RENAME_COLLECTION_EVENT; 
-	
-	        } else if(event.equalsIgnoreCase("delete-collection")) {
-	        	triggerEvent = Trigger.DELETE_COLLECTION_EVENT;
-	
-	        } else
-	        	throw new CollectionConfigurationException(
-	        			"Unknown event type '" + event + "' in trigger '" + classname + "'");
-	        
-	        if (triggerEvent > -1) {
-	            
-	        	if (triggers[triggerEvent] != null)
-		        	throw new CollectionConfigurationException(
-		        			"Trigger '" + classname + "' already registered");
-	            
-	            triggers[triggerEvent] = trigger;
-	        }
-	    }
+		triggers = instantiate(broker, classname, parameters);
 	}
+	
+//	private void convertFromOldDesign() {
+//	    StringTokenizer tok = new StringTokenizer(events, ", ");
+//	    String event;
+//	    while(tok.hasMoreTokens()) {
+//	        event = tok.nextToken();
+//	        LOG.debug("Registering trigger '" + classname + "' for event '" + event + "'");
+//	        
+//            int i=0;
+//            while (i<Trigger.EVENTS.length){
+//            	if (event.equalsIgnoreCase(Trigger.EVENTS[i])){
+//                    break;
+//            	}
+//            	if (event.equalsIgnoreCase(Trigger.OLD_EVENTS[i])){
+//                    break;
+//            	}
+//            	i++;
+//            }
+//
+//	        if (i < Trigger.EVENTS.length) {
+//	        	if (oldtriggers[i] != null)
+//		        	throw new CollectionConfigurationException(
+//		        			"Trigger '" + classname + "' already registered");
+//	            
+//	            oldtriggers[i] = trigger;
+//	        } else
+//	        	throw new CollectionConfigurationException(
+//        			"Unknown event type '" + event + "' in trigger '" + classname + "'");
+//	    }
+//	}
 
 	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
 		try {
@@ -529,42 +507,81 @@ public class CollectionConfiguration {
 		StringBuilder result = new StringBuilder();
 		if (indexSpec != null)
 			result.append(indexSpec.toString()).append('\n');		
-		for (int i = 0 ; i < triggers.length; i++) {
-			TriggerConfig trigger = triggers[i];
-			if (trigger != null) {
-				switch (i) {
-					case Trigger.STORE_DOCUMENT_EVENT : result.append("store document trigger");
-					case Trigger.UPDATE_DOCUMENT_EVENT : result.append("update document trigger");
-					case Trigger.REMOVE_DOCUMENT_EVENT : result.append("remove document trigger");
-					case Trigger.CREATE_COLLECTION_EVENT : result.append("create collection trigger");		
-					case Trigger.RENAME_COLLECTION_EVENT : result.append("rename collection trigger");
-					case Trigger.DELETE_COLLECTION_EVENT : result.append("delete collection trigger");		
-				}			
-				result.append('\t').append(trigger.toString()).append('\n');
-			}
-		}		
+//		for (int i = 0 ; i < oldtriggers.length; i++) {
+//			TriggerConfig trigger = oldtriggers[i];
+//			if (trigger != null) {
+//				result.append(Trigger.EVENTS[i]);
+//				result.append('\t').append(trigger.toString()).append('\n');
+//			}
+//		}		
 		return result.toString();
 	}
 
     public static class TriggerConfig {
 
-        private Class<Trigger> clazz;
+        private Class<DocumentTrigger> documentTriggersClazz;
+        private Class<CollectionTrigger> collectionTriggersClazz;
         private Map<String, List<?>> parameters;
 
-        public TriggerConfig(Class<Trigger> clazz) {
-            this.clazz = clazz;
+        public TriggerConfig(Class<? extends Trigger> clazz) {
+        	try {
+                this.collectionTriggersClazz = (Class<CollectionTrigger>) clazz;
+    		} catch (Exception e) {
+    			this.collectionTriggersClazz = null;
+			}
+        		
+        	try {
+                this.documentTriggersClazz = (Class<DocumentTrigger>) clazz;
+    		} catch (Exception e) {
+    			this.documentTriggersClazz = null;
+        	}
         }
 
-        public Trigger newInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
+        public TriggerConfig(Class<DocumentTrigger> docClazz, Class<CollectionTrigger> colClazz) {
+            this.documentTriggersClazz = docClazz;
+            this.collectionTriggersClazz = colClazz;
+        }
+
+        public DocumentTrigger newDocumentInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
             try {
-                Trigger trigger = clazz.newInstance();
+            	DocumentTrigger trigger = documentTriggersClazz.newInstance();
                 trigger.configure(broker, collection, parameters);
                 return trigger;
             } catch (InstantiationException e) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
             } catch (IllegalAccessException e) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
+            } catch (ClassCastException e) {
+            	return null;
             }
+        }
+
+        public CollectionTrigger newCollectionInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
+            try {
+            	CollectionTrigger trigger = collectionTriggersClazz.newInstance();
+                trigger.configure(broker, collection, parameters);
+                return trigger;
+            } catch (InstantiationException e) {
+                throw new CollectionConfigurationException(e.getMessage(), e);
+            } catch (IllegalAccessException e) {
+                throw new CollectionConfigurationException(e.getMessage(), e);
+            } catch (ClassCastException e) {
+            	return null;
+            }
+        }
+
+        @Deprecated
+        public Trigger newInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
+        	return null;
+//            try {
+//                Trigger trigger = clazz.newInstance();
+//                trigger.configure(broker, collection, parameters);
+//                return trigger;
+//            } catch (InstantiationException e) {
+//                throw new CollectionConfigurationException(e.getMessage(), e);
+//            } catch (IllegalAccessException e) {
+//                throw new CollectionConfigurationException(e.getMessage(), e);
+//            }
         }
 
         public Map<String, List<?>> getParameters() {
@@ -575,8 +592,12 @@ public class CollectionConfiguration {
             this.parameters = parameters;
         }
 
-        public Class<Trigger> getTriggerClass() {
-            return clazz;
+        public Class<DocumentTrigger> getDocumentTriggerClass() {
+            return documentTriggersClazz;
+        }
+
+        public Class<CollectionTrigger> getCollectionTriggerClass() {
+            return collectionTriggersClazz;
         }
     }
 }

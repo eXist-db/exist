@@ -21,6 +21,7 @@
 package org.exist.xupdate;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -63,7 +64,7 @@ public class Remove extends Modification {
 	 * @see org.exist.xupdate.Modification#process(org.exist.storage.txn.Txn)
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException,
-			LockException, EXistException, XPathException {
+			LockException, EXistException, XPathException, TriggerException {
 		try {
 			StoredNode[] ql = selectAndLock(transaction);
 			IndexListener listener = new IndexListener(ql);

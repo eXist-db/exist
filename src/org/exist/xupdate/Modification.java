@@ -22,12 +22,16 @@
  */
 package org.exist.xupdate;
 
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -56,13 +60,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
-
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Base class for all XUpdate modifications.
@@ -136,7 +133,7 @@ public abstract class Modification {
      * @throws XPathException 
      */
 	public abstract long process(Txn transaction) throws PermissionDeniedException, LockException, 
-		EXistException, XPathException;
+		EXistException, XPathException, TriggerException;
 
 	public abstract String getName();
 
@@ -222,11 +219,16 @@ public abstract class Modification {
 	 * database modification to call the eventual triggers.
 	 * 
 	 * @return The selected document nodes.
+	 * 
 	 * @throws LockException
+	 * @throws PermissionDeniedException
+	 * @throws EXistException
+	 * @throws XPathException 
+	 * @throws TriggerException 
 	 */
 	protected final StoredNode[] selectAndLock(Txn transaction)
 			throws LockException, PermissionDeniedException, EXistException,
-			XPathException {
+			XPathException, TriggerException {
 	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
 	    try {
 	        globalLock.acquire(Lock.READ_LOCK);
@@ -261,19 +263,17 @@ public abstract class Modification {
 	 * feature trigger_update :
 	 * at the same time we leverage on the fact that it's called after 
 	 * database modification to call the eventual triggers
+	 * @throws TriggerException 
 	 */
-	protected final void unlockDocuments(Txn transaction)
+	protected final void unlockDocuments(Txn transaction) throws TriggerException
 	{
 		if(lockedDocuments == null)
 			return;
 		
 		//finish Trigger
 		Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
-		DocumentImpl doc;
-		while (iterator.hasNext())
-		{
-			doc = iterator.next();
-			finishTrigger(transaction, doc);
+		while (iterator.hasNext()) {
+			finishTrigger(transaction, iterator.next());
 		}
         triggers.clear();
         modifiedDocuments.clear();
@@ -305,63 +305,33 @@ public abstract class Modification {
 	}
 	
 	/**
-	 *  Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
 	 *  
-	 *  @param transaction	The transaction
-	 *  @param doc	The document to trigger for
+	 * @param transaction	The transaction
+	 * @param doc	The document to trigger for
+	 * 
+	 * @throws TriggerException 
 	 */
-	private void prepareTrigger(Txn transaction, DocumentImpl doc)
-	{
-		CollectionConfiguration config = doc.getCollection().getConfiguration(broker);
-        DocumentTrigger trigger = null;
-        if(config != null)
-        {
-            //get the UPDATE_DOCUMENT_EVENT trigger
-            try {
-                trigger = (DocumentTrigger)config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, broker, doc.getCollection());
-            } catch (CollectionConfigurationException e) {
-                LOG.debug("An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e);
-            }
-
-            if(trigger != null)
-        	{
-	            try
-	            {
-	            	//fire trigger prepare
-	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
-	            }
-	            catch(TriggerException te)
-	            {
-	            	LOG.debug("Unable to prepare trigger for event UPDATE_DOCUMENT_EVENT: " + te.getMessage());
-	            }
-	            catch(Exception e)
-        		{
-        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-        		}
-                triggers.put(doc.getDocId(), trigger);
-            }
+	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
+        DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(broker);
+        if(trigger != null) {
+        	trigger.beforeUpdateDocument(broker, transaction, doc);
+            triggers.put(doc.getDocId(), trigger);
         }
 	}
 	
-	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
+	/** 
+	 * Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
 	 * 
 	 * @param transaction	The transaction
 	 * @param doc	The document to trigger for
+	 * 
+	 * @throws TriggerException 
 	 */
-	private void finishTrigger(Txn transaction, DocumentImpl doc)
-	{
-        DocumentTrigger trigger = (DocumentTrigger) triggers.get(doc.getDocId());
+	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
+        DocumentTrigger trigger = triggers.get(doc.getDocId());
         if(trigger != null)
-        {
-            try
-            {
-                trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
-            }
-            catch(Exception e)
-            {
-                LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-            }
-        }
+        	trigger.afterUpdateDocument(broker, transaction, doc);
 	}
 	
 	public String toString() {

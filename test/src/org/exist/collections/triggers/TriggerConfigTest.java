@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2010 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.collections.triggers;
 
 import org.exist.TestUtils;
@@ -40,7 +61,7 @@ public class TriggerConfigTest {
     private static final String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event='store,remove' class='org.exist.collections.triggers.TestTrigger'/>" +
+		"     <exist:trigger event='create-document,delete-document' class='org.exist.collections.triggers.TestTrigger'/>" +
         "  </exist:triggers>" +
         "</exist:collection>";
 
@@ -120,7 +141,7 @@ public class TriggerConfigTest {
             root.storeResource(resource);
 
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
-            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE'] else ()");
+            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT'] else ()");
             assertEquals("No trigger should have fired. Configuration was removed", 0, result.getSize());
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -145,7 +166,7 @@ public class TriggerConfigTest {
             root.storeResource(resource);
 
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
-            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE']/string(@collection) else ()");
+            ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT']/string(@collection) else ()");
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
         } catch (XMLDBException e) {

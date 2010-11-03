@@ -1,7 +1,6 @@
 /*
- *  STXTransformerTrigger.java - eXist Open Source Native XML Database
- *  Copyright (C) 2003 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2003-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,12 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
- *
+ *  $Id$
  */
 package org.exist.collections.triggers;
 
@@ -54,7 +52,7 @@ import org.xml.sax.SAXException;
  *
  * @author wolf
  */
-public class STXTransformerTrigger extends FilteringTrigger {
+public class STXTransformerTrigger extends FilteringTrigger implements DocumentTrigger {
 
     private SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
     private TransformerHandler handler = null;
@@ -104,7 +102,6 @@ public class STXTransformerTrigger extends FilteringTrigger {
                 if(doc instanceof BinaryDocument) {
                     throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
                 }
-
                 handler = factory.newTransformerHandler(templatesCache.getOrUpdateTemplate(broker, doc));
             } catch (TransformerConfigurationException e) {
                     throw new CollectionConfigurationException(e.getMessage(), e);
@@ -130,6 +127,15 @@ public class STXTransformerTrigger extends FilteringTrigger {
      */
     @Override
     public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
+		prepare();
+    }
+
+    @Override
+    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+            // TODO Auto-generated method stub
+    }
+    
+    private void prepare() {
         SAXResult result = new SAXResult();
         result.setHandler(getOutputHandler());
         result.setLexicalHandler(getLexicalOutputHandler());
@@ -138,8 +144,48 @@ public class STXTransformerTrigger extends FilteringTrigger {
         setLexicalOutputHandler(handler);
     }
 
-    @Override
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-            // TODO Auto-generated method stub
-    }
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		prepare();
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		prepare();
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		prepare();
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		prepare();
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		prepare();
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
 }

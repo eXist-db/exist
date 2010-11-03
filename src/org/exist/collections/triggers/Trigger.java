@@ -65,7 +65,7 @@ import org.exist.storage.DBBroker;
  * </table>
  * 
  * The document-related events are handled by the sub-interface {@link org.exist.collections.triggers.DocumentTrigger},
- * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTrigger}.
+ * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTriggerBinary}.
  * 
  * The collection configuration file looks as follows:
  * 
@@ -87,27 +87,33 @@ import org.exist.storage.DBBroker;
  */
 public interface Trigger {
 
-	public final static int MAX_EVENT = 9;
-
-	public final static int CREATE_DOCUMENT_EVENT = 0;
-	@Deprecated //use CREATE_DOCUMENT_EVENT
-	public final static int STORE_DOCUMENT_EVENT = 0;
-	public final static int UPDATE_DOCUMENT_EVENT = 1;
-	public final static int DELETE_DOCUMENT_EVENT = 2;
-	@Deprecated //use DELETE_DOCUMENT_EVENT
-	public final static int REMOVE_DOCUMENT_EVENT = 2;
+	public final static int STORE_DOCUMENT_EVENT 	= 0;
+	public final static int CREATE_COLLECTION_EVENT = 1;
 	
-	public final static int COPY_DOCUMENT_EVENT = 3;
-	public final static int MOVE_DOCUMENT_EVENT = 4;
-	
-	public final static int CREATE_COLLECTION_EVENT = 5;
-	@Deprecated //use UPDATE_COLLECTION_EVENT
-	public final static int RENAME_COLLECTION_EVENT = 6;
-	public final static int UPDATE_COLLECTION_EVENT = 6;
-	public final static int DELETE_COLLECTION_EVENT = 7;
+	public final static int UPDATE_DOCUMENT_EVENT 	= 2;
+	public final static int UPDATE_COLLECTION_EVENT = 3;
 
-	public final static int COPY_COLLECTION_EVENT = 8;
-	public final static int MOVE_COLLECTION_EVENT = 9;
+	public final static int RENAME_DOCUMENT_EVENT 	= 4;
+	public final static int RENAME_COLLECTION_EVENT = 5;
+	
+	public final static int MOVE_DOCUMENT_EVENT 	= 6;
+	public final static int MOVE_COLLECTION_EVENT 	= 7;
+
+	public final static int REMOVE_DOCUMENT_EVENT 	= 8;
+	public final static int REMOVE_COLLECTION_EVENT = 9;
+	
+	public final static String [] OLD_EVENTS = {
+		"STORE",
+		"CREATE-COLLECTION",
+		"UPDATE",
+		"UPDATE-COLLECTION",
+		"RENAME-DOCUMENT",
+		"RENAME-COLLECTION",
+		"MOVE-DOCUMENT",
+		"MOVE-COLLECTION",
+		"REMOVE",
+		"DELETE-COLLECTION"
+	};
 
 	/**
 	 * The configure method is called once whenever the collection configuration is loaded. Use it to
@@ -120,7 +126,7 @@ public interface Trigger {
 	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
 	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException;
+	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws CollectionConfigurationException;
 
 	/**
 	 * Returns a Logger object. Use this to log debugging information.

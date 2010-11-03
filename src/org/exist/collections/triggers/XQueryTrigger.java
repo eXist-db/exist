@@ -1,7 +1,27 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.collections.triggers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +29,6 @@ import java.util.Properties;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.SAXAdapter;
@@ -25,7 +44,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.xml.sax.ContentHandler;
@@ -40,23 +58,38 @@ import org.xml.sax.SAXException;
  * Any additional parameters will be declared as external variables with the type xs:string
  * 
  * These external variables for the Trigger are accessible to the user XQuery statement
- * <code>xxx:eventType</code> : the type of event for the Trigger. Either "prepare" or "finish"
- * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
- * <code>xxx:documentName</code> : the name of the document from which the event is triggered
- * <code>xxx:triggerEvent</code> : the kind of triggered event
- * <code>xxx:document</code> : the document from which the event is triggered
+ * <code>xxx:type</code> : the type of event for the Trigger. Either "prepare" or "finish"
+ * <code>xxx:collection</code> : the uri of the collection from which the event is triggered
+ * <code>xxx:uri</code> : the uri of the document or collection from which the event is triggered
+ * <code>xxx:new-uri</code> : the new uri of the document or collection from which the event is triggered
+ * <code>xxx:event</code> : the kind of triggered event
  * xxx is the namespace prefix within the XQuery, can be set by the variable "bindingPrefix"
  * 
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
 */
-public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
-{
+public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, CollectionTrigger {
+
 	private final static String EVENT_TYPE_PREPARE = "prepare";
 	private final static String EVENT_TYPE_FINISH = "finish";
 	
 	private final static String DEFAULT_BINDING_PREFIX = "local:";
 	
+	public final static String [] EVENTS = {
+		"CREATE-DOCUMENT", //0
+		"CREATE-COLLECTION", //1
+		"UPDATE-DOCUMENT", //2
+		"UPDATE-COLLECTION", //3 ???
+		"COPY-DOCUMENT", //4
+		"COPY-COLLECTION", //5
+		"MOVE-DOCUMENT", //6
+		"MOVE-COLLECTION", //7
+		"DELETE-DOCUMENT", //8
+		"DELETE-COLLECTION" //9
+	};
+	
+
 	private SAXAdapter adapter;
 	private Collection collection = null;
 	private String strQuery = null;
@@ -182,9 +215,17 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 	/**
 	 * @link org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException
-	{
+	public void prepare(int event, DBBroker broker, Txn transaction, 
+			XmldbURI documentPath, 
+			DocumentImpl existingDocument) throws TriggerException {
+		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document: '" + documentPath + "'");
+		prepare(event, broker, transaction, documentPath, (XmldbURI) null);
+		
+	}
+	
+	private void prepare(int event, DBBroker broker, Txn transaction,
+			XmldbURI src, XmldbURI dst) throws TriggerException {
 		
 		//get the query
 		Source query = getQuerySource(broker);
@@ -192,7 +233,7 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 			return;        
                         
 		// avoid infinite recursion by allowing just one trigger per thread		
-		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, documentPath))
+		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, src))
 		{
 			return;
 		}
@@ -207,10 +248,20 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
         	compiledQuery = service.compile(context, query);
 
         	//declare external variables
+        	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_PREPARE);
+        	context.declareVariable(bindingPrefix + "event", new StringValue(eventToString(event)));
+        	context.declareVariable(bindingPrefix + "collection", new AnyURIValue(collection.getURI()));
+    		context.declareVariable(bindingPrefix + "uri", new AnyURIValue(src));
+        	if (dst == null)
+        		context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);
+        	else 
+        		context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));
+        	
+        	// For backward compatibility
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_PREPARE);
-        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentPath));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
+        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
+    		context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(src));
         	
         	//declare user defined parameters as external variables
         	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
@@ -221,24 +272,6 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        	if(existingDocument == null)
-        		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
-        	else if (existingDocument instanceof BinaryDocument)
-        	{
-        		//binary document
-        		BinaryDocument bin = (BinaryDocument)existingDocument;
-                        InputStream is = broker.getBinaryResource(bin);
-                        byte [] data = new byte[(int)broker.getBinaryResourceSize(bin)];
-                        is.read(data);
-                        is.close();
-        		
-                context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
-        	}
-        	else
-        	{
-        		//XML document
-        		context.declareVariable(bindingPrefix + "document", (DocumentImpl)existingDocument);
-        	}
         }
         catch(XPathException e)
         {
@@ -268,22 +301,55 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
         }
+        
 	}
-	
+    
     /**
      * @link org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
-    {
-    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + documentPath + "'");
+    public void finish(int event, DBBroker broker, Txn transaction, 
+    		XmldbURI documentPath, 
+    		DocumentImpl document){
     	
+    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + documentPath + "'");
+    	finish(event, broker, transaction, documentPath, (XmldbURI) null);
+    	
+    }	
+    
+	public void finish(int event, DBBroker broker, Txn transaction,
+			XmldbURI srcDocumentPath, XmldbURI dstDocumentPath,
+			DocumentImpl document) {
+    	
+    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + srcDocumentPath + "'");
+    	finish(event, broker, transaction, srcDocumentPath, dstDocumentPath);
+    	
+	}
+	
+	public void finish(int event, DBBroker broker, Txn transaction,
+			XmldbURI collectionPath, Collection collection) {
+		
+    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collectionPath + "'");
+    	finish(event, broker, transaction, collectionPath, (XmldbURI) null);
+    	
+	}
+
+	public void finish(int event, DBBroker broker, Txn transaction,
+			XmldbURI collectionPath, Collection collection, String newName) {
+		
+    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collectionPath + "'");
+    	finish(event, broker, transaction, collectionPath, XmldbURI.create(newName));
+    	
+	}
+
+	private void finish(int event, DBBroker broker, Txn transaction, XmldbURI src, XmldbURI dst) {
+		
     	//get the query
     	Source query = getQuerySource(broker);
 		if (query == null)
 			return;
     	
 		// avoid infinite recursion by allowing just one trigger per thread
-		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, documentPath))
+		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, src))
 		{
 			return;
 		}
@@ -296,11 +362,21 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
         	compiledQuery = service.compile(context, query);
         	
         	//declare external variables
+        	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_FINISH);
+        	context.declareVariable(bindingPrefix + "event", new StringValue(eventToString(event)));
+        	context.declareVariable(bindingPrefix + "collection", new AnyURIValue(collection.getURI()));
+    		context.declareVariable(bindingPrefix + "uri", new AnyURIValue(src));
+        	if (dst == null)
+        		context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);
+        	else 
+        		context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));
+        	
+        	// For backward compatibility
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_FINISH);
-        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentPath));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
-
+        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
+    		context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(src));
+        	
         	//declare user defined parameters as external variables
         	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
         	{
@@ -310,27 +386,6 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        	if(event == REMOVE_DOCUMENT_EVENT)
-        	{
-        		//Document does not exist any more -> Sequence.EMPTY_SEQUENCE
-        		context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
-        	}
-        	else if (document instanceof BinaryDocument)
-        	{
-        		//Binary document
-        		BinaryDocument bin = (BinaryDocument)document;
-                        InputStream is = broker.getBinaryResource(bin);
-                        byte [] data = new byte[(int)broker.getBinaryResourceSize(bin)];
-                        is.read(data);
-                        is.close();
-                
-                context.declareVariable(bindingPrefix + "document", new Base64Binary(data));
-        	}	
-        	else
-        	{
-        		//XML document
-        		context.declareVariable(bindingPrefix + "document", (DocumentImpl)document);
-        	}
         }
         catch(XPathException e)
         {
@@ -360,8 +415,9 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
 		TriggerStatePerThread.setTransaction(null);
 		LOG.debug("Trigger fired for finish");
-    }	
-      
+		
+	}
+
 	public void startDocument() throws SAXException
 	{
 		originalOutputHandler = getOutputHandler();
@@ -436,20 +492,11 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 	 */
     public static String eventToString(int event)
     {
-    	switch (event) {
-    		case STORE_DOCUMENT_EVENT : return "STORE"; 
-    		case UPDATE_DOCUMENT_EVENT : return "UPDATE";
-    		case REMOVE_DOCUMENT_EVENT : return "REMOVE";
-    		case CREATE_COLLECTION_EVENT : return "CREATE_COLLECTION";
-    		case UPDATE_COLLECTION_EVENT : return "UPDATE_COLLECTION";
-    		case DELETE_COLLECTION_EVENT : return "DELETE_COLLECTION";
-    		default : return null;
-    	}
+    	return EVENTS[event];
     }
     
     //Collection's methods
 
-	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for collection: '" + collection.getURI() + "'");
 		
@@ -519,7 +566,6 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
         }
 	}
 
-	@Override
 	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
     	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collection.getURI() + "'");
     	
@@ -585,6 +631,114 @@ public class XQueryTrigger extends FilteringTrigger implements CollectionTrigger
 		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
 		TriggerStatePerThread.setTransaction(null);
 		LOG.debug("Trigger fired for finish");
+	}
+
+	@Override
+	public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/*public String toString() {

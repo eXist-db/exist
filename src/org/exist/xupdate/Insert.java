@@ -23,6 +23,7 @@ package org.exist.xupdate;
 import java.util.Map;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
@@ -75,7 +76,7 @@ public class Insert extends Modification {
      * @see org.exist.xupdate.Modification#process(org.exist.storage.txn.Txn)
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
-            EXistException, XPathException {
+            EXistException, XPathException, TriggerException {
         NodeList children = content;
         if (children.getLength() == 0) return 0;
         try {
