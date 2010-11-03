@@ -23,6 +23,9 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.exist.security.Permission;
+import org.exist.security.internal.aider.UnixStylePermission;
+import org.exist.util.SyntaxException;
 
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -42,15 +45,27 @@ public class ChmodTask extends UserTask {
      */
     public void execute() throws BuildException {
         super.execute();
-
+        
         try {
-            if (resource != null) {
-                Resource res = base.getResource(resource);
-                service.chmod(res, mode);
-            } else {
-                service.chmod(mode);
-            }
-
+        	// if the mode string contains an '=', we assume permissions are specified
+        	// in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
+        	// permission string
+        	if (mode.indexOf('=') < 0) {
+        		Permission perm = UnixStylePermission.fromString(mode);
+        		if (resource != null) {
+                    Resource res = base.getResource(resource);
+                    service.chmod(res, perm.getPermissions());
+                } else {
+                    service.chmod(perm.getPermissions());
+                }
+        	} else {
+	            if (resource != null) {
+	                Resource res = base.getResource(resource);
+	                service.chmod(res, mode);
+	            } else {
+	                service.chmod(mode);
+	            }
+        	}
         } catch (XMLDBException e) {
             String msg = "XMLDB exception caught: " + e.getMessage();
             if (failonerror) {
@@ -58,7 +73,14 @@ public class ChmodTask extends UserTask {
             } else {
                 log(msg, e, Project.MSG_ERR);
             }
-        }
+        } catch (SyntaxException e) {
+        	String msg = "Syntax error in permissions: " + mode;
+        	if (failonerror) {
+                throw new BuildException(msg, e);
+            } else {
+                log(msg, e, Project.MSG_ERR);
+            }
+		}
     }
 
     public void setResource(String resource) {
