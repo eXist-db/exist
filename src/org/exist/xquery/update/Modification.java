@@ -207,8 +207,9 @@ public abstract class Modification extends AbstractExpression
         Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
 		
         while(iterator.hasNext()) {
-            context.addModifiedDoc(iterator.next());
-			finishTrigger(transaction, iterator.next());
+        	DocumentImpl doc = iterator.next();
+            context.addModifiedDoc(doc);
+			finishTrigger(transaction, doc);
 		}
         
         triggers.clear();
