@@ -293,30 +293,24 @@ public class CollectionConfiguration {
     }
 
     public CollectionTrigger newCollectionTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
-        if (triggers != null)
+		if (triggers == null) {
+			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
+        	if (parent != null) return parent.getCollectionTrigger(broker);
+		} else 
             return triggers.newCollectionInstance(broker, collection);
         return null;
     }
 
     public DocumentTrigger newDocumentTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
-        if (triggers != null)
+		if (triggers == null) {
+			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
+        	if (parent != null) return parent.getDocumentTrigger(broker);
+		} else 
             return triggers.newDocumentInstance(broker, collection);
         return null;
     }
 
-    @Deprecated
-    public Trigger newTrigger(int eventType, DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
-        TriggerConfig config = getTriggerConfiguration(eventType);
-        if (config != null)
-            return config.newInstance(broker, collection);
-        return null;
-    }
-
-    @Deprecated
-    public TriggerConfig getTriggerConfiguration(int eventType) {
-		return null;//triggers[eventType];
-	}
-
+    //TODO: code
     public boolean triggerRegistered(Class<?> triggerClass) {
 //        for (int i = 0; i < triggers.length; i++) {
 //            if (oldtriggers[i] != null && oldtriggers[i].getTriggerClass() == triggerClass)
