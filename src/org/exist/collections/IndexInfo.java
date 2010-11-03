@@ -48,7 +48,7 @@ public class IndexInfo {
 	private Indexer indexer;
 	private DOMStreamer streamer;
 	private DocumentTrigger trigger;
-    private int event;
+    private boolean isCreating;
 	private CollectionConfiguration collectionConfig;
     
     IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
@@ -60,8 +60,8 @@ public class IndexInfo {
 		return indexer;
 	}
     
-	int getEvent() {
-		return event;
+	boolean isCreatingEvent() {
+		return isCreating;
 	}
 	
 	void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
@@ -97,9 +97,9 @@ public class IndexInfo {
         return collectionConfig;
     }
 
-    void setTrigger(DocumentTrigger trigger, int event) {
+    void setTrigger(DocumentTrigger trigger, boolean isCreating) {
 		this.trigger = trigger;
-		this.event = event;
+		this.isCreating = isCreating;
 	}
 	
 	DocumentTrigger getTrigger() {
@@ -111,7 +111,10 @@ public class IndexInfo {
 		trigger.setOutputHandler(indexer);
 		trigger.setLexicalOutputHandler(indexer);
 		trigger.setValidating(true);
-		trigger.prepare(event, broker, transaction, docUri, doc);
+		if (isCreating)
+			trigger.beforeCreateDocument(broker, transaction, docUri);
+		else
+			trigger.beforeUpdateDocument(broker, transaction, doc);
 	}
 	
 	void postValidateTrigger() {
@@ -119,8 +122,11 @@ public class IndexInfo {
 		trigger.setValidating(false);
 	}
 	
-	void finishTrigger(DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl doc) {
+	void finishTrigger(DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl doc) throws TriggerException {
 		if (trigger == null) return;
-		trigger.finish(event, broker, transaction, documentPath, doc);
+		if (isCreating)
+			trigger.afterCreateDocument(broker, transaction, doc);
+		else
+			trigger.afterUpdateDocument(broker, transaction, doc);
 	}
 }
