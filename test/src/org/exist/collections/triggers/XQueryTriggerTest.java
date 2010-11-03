@@ -59,11 +59,16 @@ public class XQueryTriggerTest {
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 
-    private final String COLLECTION_CONFIG =
+    /** XQuery module implementing the trigger under test */
+    private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
+
+    private final static String MODULE_COLLECTION_NAME = "XQueryCollectionTriggerLogger.xqm";
+    
+    private final static String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event='create-document'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='create-document' />" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
 						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
@@ -72,8 +77,8 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 		
-		"     <exist:trigger event='update-document'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='update-document' />" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
 						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
@@ -82,8 +87,8 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 
-		"     <exist:trigger event='delete-document'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='delete-document' />" + 
 		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
 					URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
 							"log:log('trigger3')\"/>" +
@@ -94,11 +99,11 @@ public class XQueryTriggerTest {
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
-    private final String COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS =
+    private final static String COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event='create-collection'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='create-collection' />" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
 						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
@@ -107,8 +112,8 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 		
-		"     <exist:trigger event='rename-collection'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='move-collection' />" +
 		"	     <exist:parameter name='query' " +
 		"			value=\"import module namespace log = 'log' at '" +
 						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
@@ -117,8 +122,8 @@ public class XQueryTriggerTest {
 		"        />" +
 		"     </exist:trigger>" +
 
-		"     <exist:trigger event='delete-collection'" +
-		"                    class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
+		"	     <exist:parameter name='event' value='delete-collection' />" + 
 		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
 					URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
 							"log:log('trigger6')\"/>" +
@@ -129,7 +134,7 @@ public class XQueryTriggerTest {
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
-    private final String EMPTY_COLLECTION_CONFIG =
+    private final static String EMPTY_COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
         "</exist:collection>";    
     
@@ -163,11 +168,6 @@ public class XQueryTriggerTest {
     
     /** initial content of the "log" document */
     private final static String EMPTY_LOG = "<events/>";
-    
-    /** XQuery module implementing the trigger under test */
-    private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
-
-    private final static String MODULE_COLLECTION_NAME = "XQueryCollectionTriggerLogger.xqm";
     
     /** XQuery module implementing the trigger under test; 
      * the log() XQuery function will add an <event> element inside <events> element */
