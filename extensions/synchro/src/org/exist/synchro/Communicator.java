@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -64,38 +65,105 @@ public class Communicator extends ReceiverAdapter {
 	private final static Logger LOG = Logger.getLogger(Communicator.class);
 
 	public static final String COMMUNICATOR = "cluster.communicator";
+
+	//collection's events
+	//create
+	protected static final short BEFORE_CREATE_COLLECTION	= 0;
+	protected static final short AFTER_CREATE_COLLECTION	= 1;
+	//update
+	protected static final short BEFORE_UPDATE_COLLECTION	= 2;
+	protected static final short AFTER_UPDATE_COLLECTION	= 3;
+	//copy
+	protected static final short BEFORE_COPY_COLLECTION	= 4;
+	protected static final short AFTER_COPY_COLLECTION	= 5;
+	//move
+	protected static final short BEFORE_MOVE_COLLECTION	= 6;
+	protected static final short AFTER_MOVE_COLLECTION	= 7;
+	//delete
+	protected static final short BEFORE_DELETE_COLLECTION	= 8;
+	protected static final short AFTER_DELETE_COLLECTION	= 9;
 	
-	private static final short CREATE_COLLECTION = 1;
-	private static final short UPDATE_COLLECTION = 2;
-	private static final short DELETE_COLLECTION = 3;
-	
-	private static final short CREATE_DOCUMENT = 5;
-	private static final short UPDATE_DOCUMENT = 6;
-	private static final short DELETE_DOCUMENT = 7;
+	//document's events
+	//create
+	protected static final short BEFORE_CREATE_DOCUMENT = 10;
+	protected static final short AFTER_CREATE_DOCUMENT = 11;
+	//update
+	protected static final short BEFORE_UPDATE_DOCUMENT = 12;
+	protected static final short AFTER_UPDATE_DOCUMENT = 13;
+	//copy
+	protected static final short BEFORE_COPY_DOCUMENT = 14;
+	protected static final short AFTER_COPY_DOCUMENT = 15;
+	//move
+	protected static final short BEFORE_MOVE_DOCUMENT = 16;
+	protected static final short AFTER_MOVE_DOCUMENT = 17;
+	//delete
+	protected static final short BEFORE_DELETE_DOCUMENT = 18;
+	protected static final short AFTER_DELETE_DOCUMENT = 19;
+
+	//permissions's events //TODO: code
+	//update
+	protected static final short BEFORE_UPDATE_PERMISSIONS = 10;
+	protected static final short AFTER_UPDATE_PERMISSIONS = 11;
 
 	protected static Map<Short,Method> methods;
 
 	static {
 		try {
 			methods=new HashMap<Short,Method>(6);
-			methods.put(CREATE_COLLECTION, 
-					Communicator.class.getMethod("_createCollection",
+			methods.put(BEFORE_CREATE_COLLECTION, 
+					Communicator.class.getMethod("beforeCreateCollection",
 						String.class, XmldbURI.class));
-			methods.put(UPDATE_COLLECTION, 
-					Communicator.class.getMethod("_updateCollection",
+			methods.put(AFTER_CREATE_COLLECTION, 
+					Communicator.class.getMethod("afterCreateCollection",
 						String.class, XmldbURI.class));
-			methods.put(DELETE_COLLECTION, 
-					Communicator.class.getMethod("_deleteCollection",
+			methods.put(BEFORE_UPDATE_COLLECTION, 
+					Communicator.class.getMethod("beforeUpdateCollection",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_UPDATE_COLLECTION, 
+					Communicator.class.getMethod("afterUpdateCollection",
+						String.class, XmldbURI.class));
+			methods.put(BEFORE_COPY_COLLECTION, 
+					Communicator.class.getMethod("beforeCopyCollection",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_COPY_COLLECTION, 
+					Communicator.class.getMethod("afterCopyCollection",
+						String.class, XmldbURI.class));
+			methods.put(BEFORE_DELETE_COLLECTION, 
+					Communicator.class.getMethod("beforeDeleteCollection",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_DELETE_COLLECTION, 
+					Communicator.class.getMethod("afterDeleteCollection",
 						String.class, XmldbURI.class));
 
-			methods.put(CREATE_DOCUMENT, 
-					Communicator.class.getMethod("_createDocument",
+			methods.put(BEFORE_CREATE_DOCUMENT, 
+					Communicator.class.getMethod("beforeCreateDocument",
 						String.class, XmldbURI.class));
-			methods.put(UPDATE_DOCUMENT, 
-					Communicator.class.getMethod("_updateDocument",
+			methods.put(AFTER_CREATE_DOCUMENT, 
+					Communicator.class.getMethod("afterCreateDocument",
 						String.class, XmldbURI.class));
-			methods.put(DELETE_DOCUMENT, 
-					Communicator.class.getMethod("_deleteDocument",
+			methods.put(BEFORE_UPDATE_DOCUMENT, 
+					Communicator.class.getMethod("beforeUpdateDocument",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_UPDATE_DOCUMENT, 
+					Communicator.class.getMethod("afterUpdateDocument",
+						String.class, XmldbURI.class));
+			methods.put(BEFORE_COPY_DOCUMENT, 
+					Communicator.class.getMethod("beforeCopyDocument",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_COPY_DOCUMENT, 
+					Communicator.class.getMethod("afterCopyDocument",
+						String.class, XmldbURI.class));
+			methods.put(BEFORE_MOVE_DOCUMENT, 
+					Communicator.class.getMethod("beforeMoveDocument",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_MOVE_DOCUMENT, 
+					Communicator.class.getMethod("afterMoveDocument",
+						String.class, XmldbURI.class));
+			methods.put(BEFORE_DELETE_DOCUMENT, 
+					Communicator.class.getMethod("beforeDeleteDocument",
+						String.class, XmldbURI.class));
+			methods.put(AFTER_DELETE_DOCUMENT, 
+					Communicator.class.getMethod("afterDeleteDocument",
 						String.class, XmldbURI.class));
 		} catch(NoSuchMethodException e) {
 			throw new RuntimeException(e);
@@ -170,7 +238,11 @@ public class Communicator extends ReceiverAdapter {
 		dispatcher.start();
 	}
 	
-	private void callRemoteMethods(MethodCall methodCall) {
+	protected JChannel getChannel() {
+		return channel;
+	}
+
+	protected void callRemoteMethods(MethodCall methodCall) {
 		try {
 			dispatcher.callRemoteMethods(null, methodCall, opts);
 		} catch (Throwable e) {
@@ -178,60 +250,104 @@ public class Communicator extends ReceiverAdapter {
 		}
 	}
 	
-	public void createCollection(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(CREATE_COLLECTION, channel.getName(), uri) );
-		
-	}
-
-	public void updateCollection(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(UPDATE_COLLECTION, channel.getName(), uri) );
-	}
-	
-	public void deleteCollection(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(DELETE_COLLECTION, channel.getName(), uri) );
-	}
-
-	public void createDocument(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(CREATE_DOCUMENT, channel.getName(), uri) );
-		
-	}
-
-	public void updateDocument(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(UPDATE_DOCUMENT, channel.getName(), uri) );
-	}
-	
-	public void deleteDocument(XmldbURI uri) {
-		callRemoteMethods( new MethodCall(DELETE_DOCUMENT, channel.getName(), uri) );
-	}
-
-
-	public void _createCollection(String eventOwner, XmldbURI uri) {
+	public void beforeCreateCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" create collection uri = "+uri);
+			System.out.println(""+channel.getName()+" before create collection uri = "+uri);
 	}
 
-	public void _updateCollection(String eventOwner, XmldbURI uri) {
+	public void afterCreateCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" update collection uri = "+uri);
-	}
-	
-	public void _deleteCollection(String eventOwner, XmldbURI uri) {
-		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" delete collection uri = "+uri);
+			System.out.println(""+channel.getName()+" after create collection uri = "+uri);
 	}
 
-	public void _createDocument(String eventOwner, XmldbURI uri) {
+	public void beforeUpdateCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" create document uri = "+uri);
+			System.out.println(""+channel.getName()+" before update collection uri = "+uri);
 	}
 
-	public void _updateDocument(String eventOwner, XmldbURI uri) {
+	public void afterUpdateCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" update document uri = "+uri);
+			System.out.println(""+channel.getName()+" after update collection uri = "+uri);
 	}
-	
-	public void _deleteDocument(String eventOwner, XmldbURI uri) {
+
+	public void beforeCopyCollection(String eventOwner, XmldbURI uri) {
 		if (!channel.getName().equals(eventOwner))
-			System.out.println(""+channel.getName()+" delete document uri = "+uri);
+			System.out.println(""+channel.getName()+" before copy collection uri = "+uri);
 	}
+
+	public void afterCopyCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after copy collection uri = "+uri);
+	}
+
+	public void beforeMoveCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before move collection uri = "+uri);
+	}
+
+	public void afterMoveCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after move collection uri = "+uri);
+	}
+
+	public void beforeDeleteCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before delete collection uri = "+uri);
+	}
+
+	public void afterDeleteCollection(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after delete collection uri = "+uri);
+	}
+
+	public void beforeCreateDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before create collection uri = "+uri);
+	}
+
+	public void afterCreateDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after create collection uri = "+uri);
+	}
+
+	public void beforeUpdateDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before update collection uri = "+uri);
+	}
+
+	public void afterUpdateDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after update collection uri = "+uri);
+	}
+
+	public void beforeCopyDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before copy collection uri = "+uri);
+	}
+
+	public void afterCopyDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after copy collection uri = "+uri);
+	}
+
+	public void beforeMoveDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before move collection uri = "+uri);
+	}
+
+	public void afterMoveDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after move collection uri = "+uri);
+	}
+
+	public void beforeDeleteDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" before delete collection uri = "+uri);
+	}
+
+	public void afterDeleteDocument(String eventOwner, XmldbURI uri) {
+		if (!channel.getName().equals(eventOwner))
+			System.out.println(""+channel.getName()+" after delete collection uri = "+uri);
+	}
+
 }

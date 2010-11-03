@@ -61,11 +61,12 @@ public class CommunicatorTest {
 		View view=communicator1.channel.getView();
 		System.out.println("view channels = " + view);
 		
-		communicator1.createDocument(XmldbURI.create("/db/test"));
-
-		communicator2.createDocument(XmldbURI.create("/db/test1"));
-
-		communicator1.deleteDocument(XmldbURI.create("/db/test"));
+//		communicator1.beforeCreateDocument(XmldbURI.create("/db/test"));
+//		communicator1.afterCreateDocument(XmldbURI.create("/db/test"));
+//
+//		communicator2.createDocument(XmldbURI.create("/db/test1"));
+//
+//		communicator1.deleteDocument(XmldbURI.create("/db/test"));
 	}
 
 }
