@@ -1,26 +1,27 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  *  $Id$
  */
 package org.exist.collections.triggers;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -76,7 +77,7 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler {
 
-    /**
+	/**
      * This method is called once before the database will actually parse the input data. You may take any action
      * here, using the supplied broker instance.
      * 
@@ -89,6 +90,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      *  is null.
      * @throws TriggerException throwing a TriggerException will abort the current action.
      */
+    @Deprecated
     public void prepare(
         int event,
         DBBroker broker,
@@ -107,6 +109,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * @param documentPath the path of the document, if removed the old path of the document
      * @param document the stored document or null if the document is removed
      **/
+    @Deprecated
     public void finish(
         int event,
         DBBroker broker,
@@ -114,6 +117,21 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
         XmldbURI documentPath,
         DocumentImpl document);
     
+    public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
+    public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+
+    public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+    public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+
+    public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+
+    public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+
+    public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+    public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
+
     /**
      * Returns true if the SAX parser is currently in validation phase. During validation phase, the trigger
      * may safely throw a SAXException. However, if is {@link #isValidating() isValidating} returns false, no exceptions should be

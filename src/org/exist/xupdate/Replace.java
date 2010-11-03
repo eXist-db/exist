@@ -3,6 +3,7 @@ package org.exist.xupdate;
 import java.util.Map;
 
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -45,7 +46,7 @@ public class Replace extends Modification {
 	 * @see org.exist.xupdate.Modification#process()
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
-			EXistException, XPathException {
+			EXistException, XPathException, TriggerException {
 		NodeList children = content;
         if (children.getLength() == 0) 
             return 0;

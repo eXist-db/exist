@@ -5,9 +5,9 @@ import java.util.*;
 
 import javax.xml.datatype.*;
 
-import org.exist.collections.*;
+import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.*;
-import org.exist.collections.triggers.Trigger;
 import org.exist.dom.*;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
@@ -22,6 +22,8 @@ import org.w3c.dom.*;
  */
 public class Node extends Item {
 	
+    private final static Logger LOG = Logger.getLogger(Collection.class);
+    
 	private XMLDocument document;
 	final StaleMarker staleMarker = new StaleMarker();
 	
@@ -363,26 +365,27 @@ public class Node extends Item {
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-		try {
-			CollectionConfiguration config = docimpl.getCollection().getConfiguration(tx.broker);
-			if (config == null) return null;
-			DocumentTrigger trigger = (DocumentTrigger) config.newTrigger(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, docimpl.getCollection());
+//		try {
+			DocumentTrigger trigger = docimpl.getCollection().getDocumentTrigger(tx.broker); 
 			if (trigger == null) return null;
-			trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, tx.tx, docimpl.getURI(), docimpl);
+			
+			trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);
+
 			return trigger;
-		} catch (CollectionConfigurationException e) {
-			throw new DatabaseException(e);
-		}
+//		} catch (CollectionConfigurationException e) {
+//			throw new DatabaseException(e);
+//		}
 	}
 	
-	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) {
+	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) throws TriggerException {
 		DocumentImpl doc = ((NodeProxy) item).getDocument();
 		doc.getMetadata().setLastModified(System.currentTimeMillis());
-      tx.broker.storeXMLResource(tx.tx, doc);
+		tx.broker.storeXMLResource(tx.tx, doc);
 		if (item instanceof NodeProxy) Database.queueDefrag(((NodeProxy) item).getDocument());
 		if (trigger == null) return;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-		trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, tx.broker, tx.tx, docimpl.getURI(), docimpl);
+		
+		trigger.afterUpdateDocument(tx.broker, tx.tx, docimpl);
 	}
 	
 	static NodeList toNodeList(final org.w3c.dom.Node[] nodes) {

@@ -21,92 +21,13 @@
  */
 package org.exist.xquery;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-
-import antlr.collections.AST;
-
-import org.apache.log4j.Logger;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import org.exist.EXistException;
-import org.exist.Namespaces;
-import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.Trigger;
-import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.debuggee.Debuggee;
-import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.http.servlets.SessionWrapper;
-import org.exist.memtree.InMemoryXMLStreamReader;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
-import org.exist.numbering.NodeId;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
-import org.exist.security.xacml.AccessContext;
-import org.exist.security.xacml.ExistPDP;
-import org.exist.security.xacml.NullAccessContextException;
-import org.exist.security.xacml.XACMLSource;
-import org.exist.source.DBSource;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
-import org.exist.stax.ExtendedXMLStreamReader;
-import org.exist.storage.DBBroker;
-import org.exist.storage.UpdateListener;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.txn.TransactionException;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.Collations;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.hashtable.NamePool;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.functions.session.SessionModule;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.pragmas.BatchTransactionPragma;
-import org.exist.xquery.pragmas.ForceIndexUse;
-import org.exist.xquery.pragmas.NoIndexPragma;
-import org.exist.xquery.pragmas.Optimize;
-import org.exist.xquery.pragmas.ProfilePragma;
-import org.exist.xquery.pragmas.TimerPragma;
-import org.exist.xquery.update.Modification;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.TimeUtils;
-import org.exist.xquery.value.Type;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.text.Collator;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -126,10 +47,58 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
-import java.io.File;
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.Namespaces;
+import org.exist.collections.Collection;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.collections.triggers.TriggerStatePerThread;
+import org.exist.debuggee.Debuggee;
+import org.exist.debuggee.DebuggeeJoint;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.http.servlets.SessionWrapper;
+import org.exist.memtree.InMemoryXMLStreamReader;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
+import org.exist.numbering.NodeId;
 import org.exist.repo.ExistRepository;
-import org.exist.source.FileSource;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
+import org.exist.security.xacml.*;
+import org.exist.source.*;
+import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.txn.*;
+import org.exist.util.Collations;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.util.hashtable.NamePool;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.parser.*;
+import org.exist.xquery.pragmas.*;
+import org.exist.xquery.update.Modification;
+import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -3182,8 +3151,9 @@ public class XQueryContext
      * Starts a batch Transaction.
      *
      * @throws  TransactionException  
+     * @throws TriggerException 
      */
-    public void startBatchTransaction() throws TransactionException
+    public void startBatchTransaction() throws TransactionException, TriggerException
     {
         //only allow one batch to exist at once, if there is a current batch then commit them
         if( batchTransaction != null ) {
@@ -3244,9 +3214,10 @@ public class XQueryContext
     /**
      * Completes a batch transaction, by committing the transaction and calling finish on any triggers set by setBatchTransactionTrigger().
      *
-     * @throws  TransactionException  
+     * @throws TransactionException  
+     * @throws TriggerException 
      */
-    public void finishBatchTransaction() throws TransactionException
+    public void finishBatchTransaction() throws TransactionException, TriggerException
     {
         if( batchTransaction != null ) {
 
@@ -3261,28 +3232,10 @@ public class XQueryContext
                 DocumentImpl            doc    = itDoc.next();
 
                 //finish the trigger
-                CollectionConfiguration config = doc.getCollection().getConfiguration( getBroker() );
+                DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(getBroker());
 
-                if( config != null ) {
-                    DocumentTrigger trigger = null;
-
-                    try {
-                        trigger = (DocumentTrigger)config.newTrigger( Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), doc.getCollection() );
-                    }
-                    catch( CollectionConfigurationException e ) {
-                        LOG.debug( "An error occurred while initializing a trigger for collection " + doc.getCollection().getURI() + ": " + e.getMessage(), e );
-                    }
-
-                    if( trigger != null ) {
-
-                        try {
-                            trigger.finish( Trigger.UPDATE_DOCUMENT_EVENT, getBroker(), TriggerStatePerThread.getTransaction(), doc.getURI(), doc );
-                        }
-                        catch( Exception e ) {
-                            LOG.debug( "Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage() );
-                        }
-                    }
-                }
+                if( trigger != null )
+                	trigger.afterUpdateDocument(getBroker(), TriggerStatePerThread.getTransaction(), doc);
             }
             batchTransactionTriggers.clear();
 

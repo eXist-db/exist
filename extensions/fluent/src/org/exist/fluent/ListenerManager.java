@@ -4,14 +4,19 @@ import java.lang.ref.*;
 import java.util.*;
 
 import org.apache.log4j.Logger;
-import org.exist.collections.*;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.*;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.triggers.CollectionTrigger;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
@@ -23,7 +28,7 @@ import org.xml.sax.ext.LexicalHandler;
 public class ListenerManager {
 	
 	static String getTriggerConfigXml() {
-		return "<triggers><trigger event='store update remove create-collection rename-collection delete-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
+		return "<triggers><trigger event='create-document create-collection update-document rename-document rename-collection move-document move-collection delete-document delete-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
 	}
 	
 	static class EventKey implements Comparable<EventKey> {
@@ -39,14 +44,20 @@ public class ListenerManager {
 		private static Trigger toTrigger(int code, boolean before) {
 			switch(code) {
 				case org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT:
+					return before ? Trigger.BEFORE_STORE : Trigger.AFTER_STORE;
 				case org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT:
 					return before ? Trigger.BEFORE_CREATE : Trigger.AFTER_CREATE;
 				case org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT:
-				case org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT:
 					return before ? Trigger.BEFORE_UPDATE : Trigger.AFTER_UPDATE;
+				case org.exist.collections.triggers.Trigger.RENAME_DOCUMENT_EVENT:
+				case org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT:
+					return before ? Trigger.BEFORE_RENAME : Trigger.AFTER_RENAME;
+				case org.exist.collections.triggers.Trigger.MOVE_DOCUMENT_EVENT:
+				case org.exist.collections.triggers.Trigger.MOVE_COLLECTION_EVENT:
+					return before ? Trigger.BEFORE_MOVE : Trigger.AFTER_MOVE;
 				case org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT:
-				case org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT:
-					return before ? Trigger.BEFORE_DELETE : Trigger.AFTER_DELETE;
+				case org.exist.collections.triggers.Trigger.REMOVE_COLLECTION_EVENT:
+					return before ? Trigger.BEFORE_REMOVE : Trigger.AFTER_REMOVE;
 				default:
 					throw new IllegalArgumentException("unknown exist trigger code " + code);
 			}
@@ -243,7 +254,7 @@ public class ListenerManager {
 		private ContentHandler contentHandler;
 		private LexicalHandler lexicalHandler;
 		
-		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
+		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
 			// nothing to do
 		}
 		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
@@ -252,25 +263,7 @@ public class ListenerManager {
 		}
 		public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
 			EventKey key = new EventKey(documentPath.getCollectionPath(), event, false);
-			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : document);
-		}
-		public void prepare(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) throws TriggerException {
-			EventKey key;
-                        if(event == CollectionTrigger.DELETE_COLLECTION_EVENT) {
-                            key = new EventKey(collection.getURI().lastSegment().toString(), event, true);
-                        } else {
-                            key = new EventKey(newCollection.getURI().lastSegment().toString(), event, true);
-                        }
-			INSTANCE.fire(key, collection);
-		}
-		public void finish(int event, DBBroker broker, Txn txn, org.exist.collections.Collection collection, org.exist.collections.Collection newCollection) {
-                        EventKey key;
-                        if(event == CollectionTrigger.DELETE_COLLECTION_EVENT) {
-                            key = new EventKey(collection.getURI().lastSegment().toString(), event, false);
-                        } else {
-                            key = new EventKey(newCollection.getURI().lastSegment().toString(), event, false);
-                        }
-			INSTANCE.fire(key, key.trigger == Trigger.AFTER_DELETE ? null : collection);
+			INSTANCE.fire(key, key.trigger == Trigger.AFTER_REMOVE ? null : document);
 		}
 		public boolean isValidating() {
 			return validating;
@@ -353,7 +346,103 @@ public class ListenerManager {
 		public void startEntity(String name) throws SAXException {
 			lexicalHandler.startEntity(name);
 		}
-		
+
+		@Override
+		public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
+		}
+		@Override
+		public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
+		}
+		@Override
+		public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+			EventKey key = new EventKey(uri.toString(), Trigger.BEFORE_CREATE);
+			INSTANCE.fire(key, null, null, false);
+		}
+		@Override
+		public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+			EventKey key = new EventKey(collection.getURI().toString(), Trigger.AFTER_CREATE);
+			INSTANCE.fire(key, null, collection, false);
+		}
+		@Override
+		public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(newUri.toString(), Trigger.BEFORE_CREATE);
+			INSTANCE.fire(key, null, null, false);
+		}
+		@Override
+		public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(newUri.toString(), Trigger.AFTER_CREATE);
+			INSTANCE.fire(key, null, collection, false);
+		}
+		@Override
+		public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(collection.getURI().toString(), Trigger.BEFORE_MOVE);
+			INSTANCE.fire(key, null, collection, false);
+		}
+		@Override
+		public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(collection.getURI().toString(), Trigger.AFTER_MOVE);
+			INSTANCE.fire(key, null, collection, false);
+		}
+		@Override
+		public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+			EventKey key = new EventKey(collection.getURI().toString(), Trigger.BEFORE_REMOVE);
+			INSTANCE.fire(key, null, collection, false);
+		}
+		@Override
+		public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+			EventKey key = new EventKey(uri.toString(), Trigger.AFTER_REMOVE);
+			INSTANCE.fire(key, null, null, false);
+		}
+		@Override
+		public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+			EventKey key = new EventKey(uri.toString(), Trigger.BEFORE_CREATE);
+			INSTANCE.fire(key, null, null, true);
+		}
+		@Override
+		public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_CREATE);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_UPDATE);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_UPDATE);
+			INSTANCE.fire(key, document, null, true);
+			
+		}
+		@Override
+		public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(newUri.toString(), Trigger.BEFORE_CREATE);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_CREATE);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_RENAME);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_RENAME);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_REMOVE);
+			INSTANCE.fire(key, document, null, true);
+		}
+		@Override
+		public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+			EventKey key = new EventKey(uri.toString(), Trigger.AFTER_REMOVE);
+			INSTANCE.fire(key, null, null, true);
+		}
 	}
-	
 }

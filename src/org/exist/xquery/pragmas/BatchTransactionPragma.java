@@ -24,6 +24,7 @@ package org.exist.xquery.pragmas;
 import org.exist.xquery.*;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.storage.txn.TransactionException;
 
@@ -42,25 +43,27 @@ public class BatchTransactionPragma extends Pragma {
 
     public void after(XQueryContext context, Expression expression) throws XPathException
     {
-    	try
-        {
-        	context.finishBatchTransaction();
-        }
-        catch(TransactionException te)
-        {
+    	try {
+        	
+    		context.finishBatchTransaction();
+        
+    	} catch(TransactionException te) {
         	throw new XPathException(expression, te.getMessage(), te);
-        }
+        } catch (TriggerException e) {
+        	throw new XPathException(expression, e.getMessage(), e);
+		}
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException
     {
-    	try
-        {
-        	context.startBatchTransaction();
-        }
-        catch(TransactionException te)
-        {
+    	try {
+        	
+    		context.startBatchTransaction();
+        
+    	} catch(TransactionException te) {
         	throw new XPathException(expression, te.getMessage(), te);
-        }
+        } catch (TriggerException e) {
+        	throw new XPathException(expression, e.getMessage(), e);
+		}
     }
 }
