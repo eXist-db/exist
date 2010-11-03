@@ -2,8 +2,13 @@
 
 	<property file="local.properties"/>
 
+	<property name="user.default.name" value="editor"/>
+	<property name="user.default.password" value="editor"/>
+	<property name="user.default.group" value="biblio.users"/>
+	
 	<property name="server.dir" value="../.."/>
 	<property name="mods.dir" value="mods"/>
+	<property name="samples.dir" value="${server.dir}/samples"/>
 	<property name="scripts.dir" value="../scripts"/>
 	<property name="styles.dir" value="../styles"/>
 	
@@ -21,10 +26,53 @@
 
 	<target name="load-mods" xmlns:xdb="http://exist-db.org/ant">
 		<echo message="Removing old MODS application from eXist database"/>
-		<xdb:remove user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}" collection="${mods-collection}" failonerror="false"/>
+		<!--xdb:remove user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}" collection="${mods-collection}" failonerror="false"/-->
 
+		<echo message="Creating user ${user.default}"/>
+		<xdb:adduser user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}" name="${user.default.name}" secret="${user.default.password}" primaryGroup="{user.default.group}" 
+			failonerror="false"/>
+		
 		<echo message="Loading new MODS database into eXist database"/>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/system/config/db/${data-collection}" createcollection="true"
+			createsubcollections="true" failonerror="false">
+			<fileset dir="${samples.dir}/mods">
+				<include name="*.xconf"/>
+			</fileset>
+		</xdb:store>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/samples" createcollection="true"
+			createsubcollections="true" failonerror="false">
+			<fileset dir="${samples.dir}/mods">
+				<include name="*.xml"/>
+			</fileset>
+		</xdb:store>
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/eXist" createcollection="true"
+			createsubcollections="true" failonerror="false">
+			<fileset dir="${samples.dir}/mods/eXist">
+				<include name="*.xml"/>
+			</fileset>
+		</xdb:store>
+		
+		<xdb:create user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}" collection="users" failonerror="false"/>
+		<xdb:create user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}" collection="groups" failonerror="false"/>
+		<xdb:chown user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/groups" name="${user.default.name}" 
+			group="${user.default.group}" failonerror="true"/>
+		<xdb:chown user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/users" name="${user.default.name}" 
+			group="${user.default.group}" failonerror="true"/>
+		<xdb:chmod user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/users" mode="rwurwu---" failonerror="true"/>
+		<xdb:chmod user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/${data-collection}/groups" mode="rwurwu---" failonerror="true"/>
+		
+		<echo message="Uploading application files"/>
 		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
 			uri="${server-uri}/${mods-collection}" createcollection="true"
 			createsubcollections="true" failonerror="false">
@@ -42,7 +90,7 @@
 				<include name="**/*.properties"/>
 			</fileset>
 		</xdb:store>
-
+		
 		<echo message="Storing XSLTForms"/>
 		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
 			uri="${server-uri}/xforms" createcollection="true" createsubcollections="true"
@@ -68,9 +116,6 @@
 				<include name="default-style2.css"/>
 			</fileset>
 		</xdb:store>
-		
-		<xdb:adduser user="${public.xmldb.username}" password="${public.xmldb.password}"
-			uri="${server-uri}" name="editor" secret="editor" primaryGroup="biblio.users" />
 	</target>
 
 </project>
