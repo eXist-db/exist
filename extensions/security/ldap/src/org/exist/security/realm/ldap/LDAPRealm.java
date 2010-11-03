@@ -111,7 +111,7 @@ public class LDAPRealm extends AbstractRealm {
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private LDAPAccountImpl createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
+    private Account createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
 
         DBBroker broker = null;
         try {
@@ -120,7 +120,7 @@ public class LDAPRealm extends AbstractRealm {
             //elevate to system privs
             broker.setUser(getSecurityManager().getSystemSubject());
 
-            LDAPAccountImpl account = (LDAPAccountImpl)getSecurityManager().addAccount(new UserAider(ID, username));
+            Account account = getSecurityManager().addAccount(new UserAider(ID, username));
             //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
             //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -157,7 +157,7 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    private LDAPGroupImpl createGroupInDatabase(Subject invokingUser, String groupname) throws AuthenticationException {
+    private Group createGroupInDatabase(Subject invokingUser, String groupname) throws AuthenticationException {
         DBBroker broker = null;
         try {
             broker = getDatabase().get(invokingUser);
@@ -166,7 +166,7 @@ public class LDAPRealm extends AbstractRealm {
             broker.setUser(getSecurityManager().getSystemSubject());
 
             //return sm.addGroup(instantiateGroup(this, groupname));
-            return (LDAPGroupImpl)getSecurityManager().addGroup(new GroupAider(ID, groupname));
+            return getSecurityManager().addGroup(new GroupAider(ID, groupname));
         } catch(Exception e) {
             throw new AuthenticationException(
                     AuthenticationException.UNNOWN_EXCEPTION,
