@@ -131,5 +131,9 @@
 	<classpathentry kind="lib" path="lib/user/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.1.jar"/>
+	<classpathentry kind="lib" path="extensions/webdav/lib/jdom-1.1.jar"/>
+	<classpathentry kind="lib" path="extensions/webdav/lib/milton-api-1.5.5-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/webdav/lib/milton-servlet-1.5.5-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/webdav/lib/mime-util-1.3.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
