@@ -40,6 +40,7 @@ public class DatabaseUnderLoadTest {
 		database.run(new String[]{"jetty"});
 		
 		manager = new ClientsManager(5, "http://localhost:8080/exist/admin");
+		manager.start();
 		
 		try {
 			Thread.sleep(60*60*1000);

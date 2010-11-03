@@ -40,7 +40,9 @@ public class ClientsManager implements Runnable {
 	public ClientsManager(int number, String url) {
 		this.number = number;
 		this.url = url;
-		
+	}
+
+	public void start() {
 		Thread thread = new Thread(this);
 
 		running = true;
@@ -73,6 +75,4 @@ public class ClientsManager implements Runnable {
 	public String getURL() {
 		return url;		
 	}
-
-
 }
