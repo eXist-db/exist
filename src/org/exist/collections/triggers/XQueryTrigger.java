@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -91,6 +92,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	
 
 	private SAXAdapter adapter;
+	private Set<TriggerEvents.EVENTS> events;
 	private Collection collection = null;
 	private String strQuery = null;
 	private String urlQuery = null;
@@ -120,6 +122,12 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
  		//one parameter to specify the XQuery
  		if(parameters != null)
  		{
+ 			List<String> paramEvents = (List<String>) parameters.get("event");
+ 			for (String event : paramEvents) {
+ 				events.addAll(TriggerEvents.convertFromOldDesign(event));
+ 				events.addAll(TriggerEvents.convertFromString(event));
+ 			}
+
  			List<String> urlQueries = (List<String>) parameters.get("url");
             urlQuery = urlQueries != null ? urlQueries.get(0) : null;
 
@@ -155,7 +163,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
  				//make any other parameters available as external variables for the query
  				else
  				{
-                                        //TODO could be enhanced to setup a sequence etc
+                    //TODO could be enhanced to setup a sequence etc
  					userDefinedVariables.put(paramName, parameters.get(paramName).get(0));
  				}
  			}
@@ -316,31 +324,6 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
     	
     }	
     
-	public void finish(int event, DBBroker broker, Txn transaction,
-			XmldbURI srcDocumentPath, XmldbURI dstDocumentPath,
-			DocumentImpl document) {
-    	
-    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + srcDocumentPath + "'");
-    	finish(event, broker, transaction, srcDocumentPath, dstDocumentPath);
-    	
-	}
-	
-	public void finish(int event, DBBroker broker, Txn transaction,
-			XmldbURI collectionPath, Collection collection) {
-		
-    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collectionPath + "'");
-    	finish(event, broker, transaction, collectionPath, (XmldbURI) null);
-    	
-	}
-
-	public void finish(int event, DBBroker broker, Txn transaction,
-			XmldbURI collectionPath, Collection collection, String newName) {
-		
-    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collectionPath + "'");
-    	finish(event, broker, transaction, collectionPath, XmldbURI.create(newName));
-    	
-	}
-
 	private void finish(int event, DBBroker broker, Txn transaction, XmldbURI src, XmldbURI dst) {
 		
     	//get the query
@@ -635,110 +618,128 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 
 	@Override
 	public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
+			prepare(1, broker, transaction, uri, (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
+			finish(1, broker, transaction, collection.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
+			prepare(5, broker, transaction, collection.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
+			finish(5, broker, transaction, collection.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
+			prepare(7, broker, transaction, collection.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
+			finish(7, broker, transaction, collection.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
+			prepare(9, broker, transaction, collection.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
+			finish(9, broker, transaction, collection.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
+			prepare(0, broker, transaction, uri, (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
+			finish(0, broker, transaction, document.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
+			prepare(2, broker, transaction, document.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
+			finish(2, broker, transaction, document.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
+			prepare(4, broker, transaction, document.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
+			finish(4, broker, transaction, document.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
+			prepare(6, broker, transaction, document.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
+			finish(6, broker, transaction, document.getURI(), newUri);
+		}
 	}
 
 	@Override
 	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
+			prepare(8, broker, transaction, document.getURI(), (XmldbURI) null);
+		}
 	}
 
 	@Override
 	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-		// TODO Auto-generated method stub
-		
+		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
+			finish(8, broker, transaction, uri, (XmldbURI) null);
+		}
 	}
 
 	/*public String toString() {

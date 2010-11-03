@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.triggers.CollectionTrigger;
@@ -450,36 +449,6 @@ public class CollectionConfiguration {
 		triggers = instantiate(broker, classname, parameters);
 	}
 	
-//	private void convertFromOldDesign() {
-//	    StringTokenizer tok = new StringTokenizer(events, ", ");
-//	    String event;
-//	    while(tok.hasMoreTokens()) {
-//	        event = tok.nextToken();
-//	        LOG.debug("Registering trigger '" + classname + "' for event '" + event + "'");
-//	        
-//            int i=0;
-//            while (i<Trigger.EVENTS.length){
-//            	if (event.equalsIgnoreCase(Trigger.EVENTS[i])){
-//                    break;
-//            	}
-//            	if (event.equalsIgnoreCase(Trigger.OLD_EVENTS[i])){
-//                    break;
-//            	}
-//            	i++;
-//            }
-//
-//	        if (i < Trigger.EVENTS.length) {
-//	        	if (oldtriggers[i] != null)
-//		        	throw new CollectionConfigurationException(
-//		        			"Trigger '" + classname + "' already registered");
-//	            
-//	            oldtriggers[i] = trigger;
-//	        } else
-//	        	throw new CollectionConfigurationException(
-//        			"Unknown event type '" + event + "' in trigger '" + classname + "'");
-//	    }
-//	}
-
 	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
 		try {
 			Class<?> clazz = Class.forName(classname);
