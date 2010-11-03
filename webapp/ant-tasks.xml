@@ -888,9 +888,7 @@ uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
         </section>
         <section>
             <title>Change resource permissions (chmod)</title>
-            <para>
-              This task changes the permissions of a resource.
-						   </para>
+            <para> This task changes the permissions of a resource or collection.</para>
 
             <example>
                 <title>Chmod</title>
@@ -903,13 +901,17 @@ uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
           <varlistentry>
               <term>resource</term>
               <listitem>
-                  <para>Name of resource to modify.</para>
+                  <para>Name of resource to modify. If no resource has been specified, chmod will
+                            operate on the collection as defined by the uri.</para>
               </listitem>
           </varlistentry>
           <varlistentry>
               <term>mode</term>
               <listitem>
-                  <para>Permission modification string. The string has the following syntax:</para>
+                  <para>Permission modification string. The string should either use the unix-style
+                            syntax, e.g.:</para>
+                        <synopsis>rwurwu---</synopsis>
+                        <para>or eXist's own syntax:</para>
 		  <synopsis>[user|group|other]=[+|-][read|write|update]</synopsis>
 		  <para>For example, to set read and write permissions for the group, but not for others:</para>
 		  <synopsis>group=+read,+write,other=-read,-write</synopsis>
