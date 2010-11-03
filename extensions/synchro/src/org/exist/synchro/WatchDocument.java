@@ -33,6 +33,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+import org.jgroups.blocks.MethodCall;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -57,276 +58,240 @@ public class WatchDocument implements DocumentTrigger {
 			comm = (Communicator) objs.get(0);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.Trigger#getLogger()
-	 */
 	@Override
 	public Logger getLogger() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-	 */
 	@Override
 	public void setDocumentLocator(Locator locator) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startDocument()
-	 */
 	@Override
 	public void startDocument() throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#endDocument()
-	 */
 	@Override
 	public void endDocument() throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-	 */
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-	 */
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-	 */
 	@Override
 	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void processingInstruction(String target, String data) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-	 */
 	@Override
 	public void skippedEntity(String name) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endDTD()
-	 */
 	@Override
 	public void endDTD() throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-	 */
 	@Override
 	public void startEntity(String name) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
-	 */
 	@Override
 	public void endEntity(String name) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startCDATA()
-	 */
 	@Override
 	public void startCDATA() throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endCDATA()
-	 */
 	@Override
 	public void endCDATA() throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
-	 */
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#prepare(int, org.exist.storage.DBBroker, org.exist.storage.txn.Txn, org.exist.xmldb.XmldbURI, org.exist.dom.DocumentImpl)
-	 */
 	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-		if (comm == null) return;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, org.exist.storage.txn.Txn, org.exist.xmldb.XmldbURI, org.exist.dom.DocumentImpl)
-	 */
 	@Override
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-		if (comm == null) return;
-		
-		switch (event) {
-		case STORE_DOCUMENT_EVENT:
-			comm.createDocument(documentPath);
-			break;
-
-		case UPDATE_DOCUMENT_EVENT:
-			comm.updateDocument(documentPath);
-			break;
-
-		case REMOVE_DOCUMENT_EVENT:
-			comm.deleteDocument(documentPath);
-			break;
-
-		default:
-			break;
-		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#isValidating()
-	 */
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_CREATE_DOCUMENT, comm.getChannel().getName(), uri) );
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.AFTER_CREATE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_UPDATE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.AFTER_UPDATE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_COPY_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.AFTER_COPY_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_MOVE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_MOVE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.BEFORE_DELETE_DOCUMENT, comm.getChannel().getName(), document.getURI()) );
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		if (comm == null) return;
+		comm.callRemoteMethods( 
+				new MethodCall(Communicator.AFTER_DELETE_DOCUMENT, comm.getChannel().getName(), uri) );
+	}
+
 	@Override
 	public boolean isValidating() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#setValidating(boolean)
-	 */
 	@Override
 	public void setValidating(boolean validating) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#setOutputHandler(org.xml.sax.ContentHandler)
-	 */
 	@Override
 	public void setOutputHandler(ContentHandler handler) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#setLexicalOutputHandler(org.xml.sax.ext.LexicalHandler)
-	 */
 	@Override
 	public void setLexicalOutputHandler(LexicalHandler handler) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#getOutputHandler()
-	 */
 	@Override
 	public ContentHandler getOutputHandler() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#getInputHandler()
-	 */
 	@Override
 	public ContentHandler getInputHandler() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#getLexicalOutputHandler()
-	 */
 	@Override
 	public LexicalHandler getLexicalOutputHandler() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.collections.triggers.DocumentTrigger#getLexicalInputHandler()
-	 */
 	@Override
 	public LexicalHandler getLexicalInputHandler() {
 		// TODO Auto-generated method stub
