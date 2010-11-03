@@ -400,17 +400,17 @@ public class ListenerManager {
 		}
 		@Override
 		public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_CREATE);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_CREATE);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
 		public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_UPDATE);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.BEFORE_UPDATE);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
 		public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_UPDATE);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_UPDATE);
 			INSTANCE.fire(key, document, null, true);
 			
 		}
@@ -421,22 +421,22 @@ public class ListenerManager {
 		}
 		@Override
 		public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_CREATE);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_CREATE);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
 		public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_RENAME);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.BEFORE_RENAME);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
 		public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.AFTER_RENAME);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_RENAME);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
 		public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-			EventKey key = new EventKey(document.getDocumentURI().toString(), Trigger.BEFORE_REMOVE);
+			EventKey key = new EventKey(document.getURI().toString(), Trigger.BEFORE_REMOVE);
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override

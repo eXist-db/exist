@@ -294,6 +294,7 @@ public class CollectionConfiguration {
 
     public CollectionTrigger newCollectionTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
 		if (triggers == null) {
+			if (srcCollectionURI == null) return null;
 			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
         	if (parent != null) return parent.getCollectionTrigger(broker);
 		} else 
@@ -303,6 +304,7 @@ public class CollectionConfiguration {
 
     public DocumentTrigger newDocumentTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
 		if (triggers == null) {
+			if (srcCollectionURI == null) return null;
 			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
         	if (parent != null) return parent.getDocumentTrigger(broker);
 		} else 
