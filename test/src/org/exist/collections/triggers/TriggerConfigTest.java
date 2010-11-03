@@ -61,7 +61,7 @@ public class TriggerConfigTest {
     private static final String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
-		"     <exist:trigger event='create-document,delete-document' class='org.exist.collections.triggers.TestTrigger'/>" +
+		"     <exist:trigger class='org.exist.collections.triggers.TestTrigger'/>" +
         "  </exist:triggers>" +
         "</exist:collection>";
 

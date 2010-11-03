@@ -1034,7 +1034,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         broker.deleteObservers();
         info.finishTrigger(broker, transaction, document.getURI(), document);
         broker.getBrokerPool().getNotificationService().notifyUpdate(document,
-                (info.getEvent() == Trigger.UPDATE_DOCUMENT_EVENT ? UpdateListener.UPDATE : UpdateListener.ADD));
+                (info.isCreatingEvent() ? UpdateListener.ADD : UpdateListener.UPDATE));
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
@@ -1190,7 +1190,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             // if !triggersEnabled, setupTriggers will return null anyway, so no need to check
             info.setTrigger(
                 setupTriggers(broker, docUri, oldDoc != null, config),
-                oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
+                oldDoc == null);
             info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
             if (LOG.isDebugEnabled())
                 LOG.debug("Scanning document " + getURI().append(docUri));
