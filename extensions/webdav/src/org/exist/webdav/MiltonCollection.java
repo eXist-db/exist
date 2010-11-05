@@ -123,7 +123,7 @@ public class MiltonCollection extends MiltonResource
     /* ===================
      * Collection Resource
      * =================== */
-    @Override
+    //@Override
     public Resource child(String childName) {
 
         LOG.debug("get child=" + childName);
@@ -164,7 +164,7 @@ public class MiltonCollection extends MiltonResource
         return allResources;
     }
 
-    @Override
+    //@Override
     public List<? extends Resource> getChildren() {
         List<Resource> allResources = new ArrayList<Resource>();
 
@@ -180,7 +180,7 @@ public class MiltonCollection extends MiltonResource
     /* ====================
      * PropFindableResource
      * ==================== */
-    @Override
+    //@Override
     public Date getCreateDate() {
 
         Date createDate = null;
@@ -198,7 +198,7 @@ public class MiltonCollection extends MiltonResource
     /* ====================
      * DeletableResource
      * ==================== */
-    @Override
+    //@Override
     public void delete() throws NotAuthorizedException, ConflictException, BadRequestException {
         LOG.debug("Delete collection '" + resourceXmldbUri + "'.");
         existCollection.delete();
@@ -207,7 +207,7 @@ public class MiltonCollection extends MiltonResource
     /* ==========================
      * MakeCollectionableResource
      * ========================== */
-    @Override
+    //@Override
     public CollectionResource createCollection(String name)
             throws NotAuthorizedException, ConflictException {
 
@@ -238,7 +238,7 @@ public class MiltonCollection extends MiltonResource
     /* ===============
      * PutableResource
      * =============== */
-    @Override
+    //@Override
     public Resource createNew(String newName, InputStream is, Long length, String contentType)
             throws IOException, ConflictException {
 
@@ -269,7 +269,7 @@ public class MiltonCollection extends MiltonResource
     /* =========================
      * LockingCollectionResource
      * ========================= */
-    @Override
+    //@Override
     public LockToken createAndLock(String name, LockTimeout timeout, LockInfo lockInfo) throws NotAuthorizedException {
         LOG.debug("'" + resourceXmldbUri + "' name='" + name + "'");
 
@@ -282,14 +282,14 @@ public class MiltonCollection extends MiltonResource
     /* ================
      * LockableResource
      * ================ */
-    @Override
+    //@Override
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
         LOG.debug("'" + resourceXmldbUri + "' -- "+ lockInfo.toString());
         return refreshLock(UUID.randomUUID().toString());
     }
 
-    @Override
+    //@Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         LOG.debug("'" + resourceXmldbUri + "' token='" + token + "'");
 
@@ -301,13 +301,13 @@ public class MiltonCollection extends MiltonResource
         return new LockResult(LockResult.FailureReason.PRECONDITION_FAILED, lockToken);
     }
 
-    @Override
+    //@Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
         // Just do nothing
         LOG.debug("'" + resourceXmldbUri + "' token='" + tokenId + "'");
     }
 
-    @Override
+    //@Override
     public LockToken getCurrentLock() {
         LOG.debug("'" + resourceXmldbUri + "'");
         return null; // null is allowed
@@ -317,7 +317,7 @@ public class MiltonCollection extends MiltonResource
     /* ===============
      * MovableResource
      * =============== */
-    @Override
+    //@Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
         LOG.debug("Move '"+ resourceXmldbUri + "' to '" + newName + "' in '" + rDest.getName() + "'");
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
@@ -333,7 +333,7 @@ public class MiltonCollection extends MiltonResource
      * CopyableResource
      * ================ */
 
-    @Override
+    //@Override
     public void copyTo(CollectionResource toCollection, String newName) {
         LOG.debug("Move '"+ resourceXmldbUri + "' to '" + newName + "' in '" + toCollection.getName() + "'");
         XmldbURI destCollection = ((MiltonCollection) toCollection).getXmldbUri();
@@ -350,7 +350,7 @@ public class MiltonCollection extends MiltonResource
      * GettableResource
      * ================ */
     
-    @Override
+    //@Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params,
             String contentType) throws IOException, NotAuthorizedException, BadRequestException {
 
@@ -401,17 +401,17 @@ public class MiltonCollection extends MiltonResource
         }
     }
 
-    @Override
+    //@Override
     public Long getMaxAgeSeconds(Auth auth) {
         return null;
     }
 
-    @Override
+    //@Override
     public String getContentType(String accepts) {
         return "application/xml";
     }
 
-    @Override
+    //@Override
     public Long getContentLength() {
         return null;
     }

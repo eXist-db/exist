@@ -281,17 +281,17 @@ public class MiltonResource implements Resource {
      * Resource
      * ======== */
     
-    @Override
+    //@Override
     public String getUniqueId() {
         return null; // disables the ETag field
     }
 
-    @Override
+    //@Override
     public String getName() {
         return ""+resourceXmldbUri.lastSegment();
     }
 
-    @Override
+    //@Override
     public Object authenticate(String username, String password) {
 
         LOG.debug("Authenticating user " + username + " for " + resourceXmldbUri);
@@ -332,7 +332,7 @@ public class MiltonResource implements Resource {
         return AUTHENTICATED;
     }
 
-    @Override
+    //@Override
     public boolean authorise(Request request, Method method, Auth auth) {
 
         LOG.info("" + method.toString() + "  " + method.isWrite + " for " + resourceXmldbUri);
@@ -399,12 +399,12 @@ public class MiltonResource implements Resource {
         return true;
     }
 
-    @Override
+    //@Override
     public String getRealm() {
         return REALM;
     }
 
-    @Override
+    //@Override
     public Date getModifiedDate() {
 
         Date modifiedDate = null;
@@ -419,7 +419,7 @@ public class MiltonResource implements Resource {
         return modifiedDate;
     }
 
-    @Override
+    //@Override
     public String checkRedirect(Request request) {
         return null;
     }

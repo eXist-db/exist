@@ -69,7 +69,7 @@ public class ExistResourceFactory implements ResourceFactory {
      * Construct Resource for path. A Document or Collection resource is returned, NULL if type
      * could not be detected.
      */
-    @Override
+    //@Override
     public Resource getResource(String host, String path) {
 
         // DWES: work around if no /db is available return nothing.

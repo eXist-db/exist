@@ -23,9 +23,6 @@ package org.exist.webdav;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -56,7 +53,6 @@ import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,7 +71,7 @@ public class ExistCollection extends ExistResource {
     /**
      * Initialize Collection, authenticate() is required first
      */
-    @Override
+    //@Override
     public void initMetadata() {
 
         if (user == null) {
@@ -423,17 +419,17 @@ public class ExistCollection extends ExistResource {
         } catch (EXistException e) {
             LOG.error(e);
             transact.abort(txn);
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
 
         } catch (TriggerException e) {
             LOG.error(e);
             transact.abort(txn);
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
 
         } catch (SAXException e) {
             LOG.error(e);
             transact.abort(txn);
-            throw new IOException(e);
+            throw new IOException(e.getMessage());
 
         } catch (LockException e) {
             LOG.error(e);
