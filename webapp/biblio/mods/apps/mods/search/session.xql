@@ -73,22 +73,22 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                 <td class="detail-view">
                                     <div class="actions-toolbar">
                                         <a id="save_{$id}" href="#{$currentPos}" class="save">
-                                           <img title="save to my list" 
+                                           <img title="Save to My List" 
                                                src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                                class="{if ($saved) then 'stored' else ''}"/>
                                         </a>
                                         <a target="_new" href="../../../../rest/{document-uri(root($item))}?_query=//*[@ID = '{$item/@ID}']&amp;_wrap=no">
-                                            <img title="view XML source"
+                                            <img title="View XML Source"
                                                 src="../../../resources/images/script_code.png"/>
                                         </a>
                                         {
                                             (: if the item's collection is writable, display edit/delete and move buttons :)
                                             if ($isWritable) then (
                                                 <a href="../edit/edit.xq?id={$item/@ID}&amp;collection={util:collection-name($item)}">
-                                                    <img title="edit" src="../../../resources/images/page_edit.png"/>
+                                                    <img title="Edit Record" src="../../../resources/images/page_edit.png"/>
                                                 </a>,
-                                               <a class="remove-resource" href="#{$id}"><img title="delete" src="../../../resources/images/delete.png"/></a>,
-                                               <a class="move-resource" href="#{$id}"><img title="move" src="../../../resources/images/shape_move_front.png"/></a>
+                                               <a class="remove-resource" href="#{$id}"><img title="Delete Record" src="../../../resources/images/delete.png"/></a>,
+                                               <a class="move-resource" href="#{$id}"><img title="Move Record" src="../../../resources/images/shape_move_front.png"/></a>
                                             ) else
                                                 ()
                                         }
@@ -96,7 +96,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                             (: button to add a related item :)
                                             if ($bs:USER ne "guest") then
                                                 <a class="add-related" href="#{if ($isWritable) then util:collection-name($item) else $home}#{$item/@ID}">
-                                                    <img title="add related item" src="../../../resources/images/page_add.png"/>
+                                                    <img title="Add Related Item (Article to Periodical or Contribution to Anthology)" src="../../../resources/images/page_add.png"/>
                                                 </a>
                                             else
                                                 ()

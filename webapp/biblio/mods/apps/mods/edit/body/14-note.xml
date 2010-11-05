@@ -2,6 +2,7 @@
         <!--note begins-->
         <!--DLF/Aquifer: RECOMMENDED OF APPLICABLE-->
         <!--Cluster: include--><fieldset><div class="join"><legend><span class="legend">Notes</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> General information relating to a resource. </p><p> Note should be used only for information that cannot be encoded in another, more specific, ways. </p></div></span></div>
+            
             <!--note repeat begins--><xf:repeat nodeset="instance('save-data')/mods:note" id="note-repeat"><div class="block-form">
                     <!--note input begins-->
                     <!--DLF/Aquifer: OPTIONAL-->
@@ -23,5 +24,5 @@
                     <!--note delete ends--></div></xf:repeat>
             <!--note repeat ends-->
             <!--note add begins--><xf:trigger ref=".[count(mods:note) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Note</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:note" at="index('note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/><xf:setvalue ref="instance('save-data')/mods:note[last()]" value="''"/></xf:action></xf:trigger>
-            <!--note add ends--></fieldset>
+            <!--note add ends--><xf:group id="note-add-element" ref=".[not(./mods:note)]" appearance="full"><xf:trigger ref=".[not(mods:note)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Notes</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('note-repeat')" position="after" origin="instance('insert-templates')/mods:note"/></xf:action></xf:trigger></xf:group></fieldset>
         <!--note ends--></div></div>

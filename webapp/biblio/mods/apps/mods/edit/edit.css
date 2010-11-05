@@ -7,6 +7,24 @@ body
   background-color: #ffffff !important;
 }
 
+.span-24, div.span-24 {
+    width:100% !important;
+}
+
+.container {
+padding:0.5em 1.5em 0.5em 0.5em !important;
+}
+
+.header {
+    font-size: 150%;
+    margin-left: 1em;
+}
+
+.footer {
+    font-size: 100%;
+    margin-left: 1em;
+}
+
 caption, 
 th, 
 td 
@@ -189,7 +207,7 @@ input {
 }
 
 .block-form .xforms-group-label-centered { /*button text*/
-    color: gray;
+    1color: gray;
     display: inline-block;
     text-align: center;
     padding: 0;
@@ -199,7 +217,7 @@ input {
 }
 
 xf|submit xf|label.xforms-group-label-centered-general { /*buttons outside the form*/
-    color: gray;
+    1color: gray;
     text-align: center;
     padding: 0;
     vertical-align: middle;
@@ -306,6 +324,13 @@ eeddee: tab background
     {
     border-color: #886699;
     padding-bottom: .75em;
+    }
+
+.title .level-2 {
+    border-color: #886699;
+    margin-left: 1ex;
+    margin-right: 1ex;
+    margin-top: 2em;
     }
 
 .title .node-adds-title, 
@@ -420,8 +445,8 @@ ccddee: tab background
 .origin .level-2 {
     margin-top: 3ex;
     margin-bottom: 4ex;
-    margin-left: 1.5ex;
-    margin-right: 1.5ex;
+    margin-left: 1ex;
+    margin-right: 1ex;
     }
 .origin .level-2 .join {
     margin-bottom: 3ex;
@@ -429,8 +454,8 @@ ccddee: tab background
 .origin .level-3 {
     margin-top: 4ex;
     margin-bottom: 4ex;
-    margin-left: 1.5ex;
-    margin-right: 1.5ex;
+    margin-left: 1ex;
+    margin-right: 1ex;
     }
 .origin #fieldset-dates .xforms-group-content .level-3 {
     margin-left: 0ex;
@@ -745,15 +770,15 @@ ddcccc*/
     }
 .subject fieldset
     {
-    margin-left: 1.5ex;
-    margin-right: 1.5ex;
+    margin-left: .5ex;
+    margin-right: .5ex;
     }
 .subject fieldset .level-2
     {
     margin-top: 3ex;
     margin-bottom: 4ex;
-    margin-left: 1.5ex;
-    margin-right: 1.5ex;
+    margin-left: 1ex;
+    margin-right: 1ex;
     }
 .subject button {
     width: 40ex;
