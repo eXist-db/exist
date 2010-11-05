@@ -126,7 +126,7 @@ public class MiltonDocument extends MiltonResource
      * GettableResource
      * ================ */
 
-    @Override
+    //@Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
             throws IOException, NotAuthorizedException, BadRequestException {
         try {
@@ -138,17 +138,17 @@ public class MiltonDocument extends MiltonResource
         }
     }
 
-    @Override
+    //@Override
     public Long getMaxAgeSeconds(Auth auth) {
         return null;
     }
 
-    @Override
+    //@Override
     public String getContentType(String accepts) {
         return existDocument.getMimeType();
     }
 
-    @Override
+    //@Override
     public Long getContentLength() {
         // Only for PROPFIND the estimate size for an XML document must be shown
         if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
@@ -162,7 +162,7 @@ public class MiltonDocument extends MiltonResource
      * PropFindableResource
      * ==================== */
 
-    @Override
+    //@Override
     public Date getCreateDate() {
         Date createDate = null;
 
@@ -180,7 +180,7 @@ public class MiltonDocument extends MiltonResource
      * DeletableResource
      * ================= */
 
-    @Override
+    //@Override
     public void delete() throws NotAuthorizedException, ConflictException, BadRequestException {
         existDocument.delete();
     }
@@ -190,7 +190,7 @@ public class MiltonDocument extends MiltonResource
      * LockableResource
      * ================ */
 
-    @Override
+    //@Override
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
 
@@ -222,7 +222,7 @@ public class MiltonDocument extends MiltonResource
         return lr;
     }
 
-    @Override
+    //@Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         
         LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
@@ -256,7 +256,7 @@ public class MiltonDocument extends MiltonResource
         return lr;
     }
 
-    @Override
+    //@Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
         LOG.debug("Unlock: " + resourceXmldbUri);
@@ -276,7 +276,7 @@ public class MiltonDocument extends MiltonResource
         }
     }
 
-    @Override
+    //@Override
     public LockToken getCurrentLock() {
         LOG.debug("getLock: " + resourceXmldbUri);
         org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
@@ -298,7 +298,7 @@ public class MiltonDocument extends MiltonResource
      * MoveableResource
      * ================ */
 
-    @Override
+    //@Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
@@ -314,7 +314,7 @@ public class MiltonDocument extends MiltonResource
      * CopyableResource
      * ================ */
 
-    @Override
+    //@Override
     public void copyTo(CollectionResource rDest, String newName) {
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {

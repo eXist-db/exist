@@ -634,7 +634,7 @@ public class Transform extends BasicFunction {
 			Collection collection = doc.getCollection();
 			String path;
 			
-			if (href.isEmpty()) {
+			if (href.length()==0) {
 				path = base;
 			} else
             //TODO : use dedicated function in XmldbURI

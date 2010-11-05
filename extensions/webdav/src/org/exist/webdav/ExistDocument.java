@@ -68,7 +68,7 @@ public class ExistDocument extends ExistResource {
     /**
      * Initialize Collection, authenticate() is required first
      */
-    @Override
+    //@Override
     public void initMetadata() {
 
         if (user == null) {
@@ -182,7 +182,7 @@ public class ExistDocument extends ExistResource {
 
                 } catch (SAXException e) {
                     LOG.error(e);
-                    throw new IOException("Error while serializing XML document: " + e.getMessage(), e);
+                    throw new IOException("Error while serializing XML document: " + e.getMessage());
                 }
 
             } else {

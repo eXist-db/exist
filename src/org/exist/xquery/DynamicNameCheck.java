@@ -105,7 +105,7 @@ public class DynamicNameCheck extends AbstractExpression {
                 return "{'" + nameSpace + "'}:" + node.getNodeName();
             }
 
-        } else if (prefix.isEmpty()) {
+        } else if (prefix.length()==0) {
             return "{''}:" + node.getNodeName();
 
         } else {
@@ -129,7 +129,7 @@ public class DynamicNameCheck extends AbstractExpression {
                 return "{'" + namespaceURI + "'}:" + localName;
             }
 
-        } else if (prefix.isEmpty()) {
+        } else if (prefix.length()==0) {
             return "{''}:" + localName;
 
 
