@@ -164,7 +164,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	            	if (name != null && !usersByName.containsKey(name)) {
 //                        A account = instantiateAccount(this, conf);
 	            		Account account = new AccountImpl( this, conf );
-//		            	getSecurityManager().addUser(account.getId(), account);
+		            	getSecurityManager().addUser(account.getId(), account);
 		            	usersByName.put(account.getName(), account);
 	            	}
 	            }
