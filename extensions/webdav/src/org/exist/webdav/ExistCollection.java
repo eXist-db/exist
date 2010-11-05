@@ -78,7 +78,7 @@ public class ExistCollection extends ExistResource {
     @Override
     public void initMetadata() {
 
-        if (subject == null) {
+        if (user == null) {
             LOG.error("User not initialized yet");
             return;
         }
@@ -93,7 +93,7 @@ public class ExistCollection extends ExistResource {
         Collection collection = null;
         try {
             // Get access to collection
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             if (collection == null) {
@@ -103,15 +103,15 @@ public class ExistCollection extends ExistResource {
 
             // Retrieve some meta data
             permissions = collection.getPermissions();
-            readAllowed = permissions.validate(subject, Permission.READ);
-            writeAllowed = permissions.validate(subject, Permission.WRITE);
-            updateAllowed = permissions.validate(subject, Permission.UPDATE);
+            readAllowed = permissions.validate(user, Permission.READ);
+            writeAllowed = permissions.validate(user, Permission.WRITE);
+            updateAllowed = permissions.validate(user, Permission.UPDATE);
 
             creationTime = collection.getCreationTime();
             lastModified = creationTime; // Collection does not have more information.
 
-            ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getOwnerGroup().getName();
+            ownerUser = permissions.getOwner();
+            ownerGroup = permissions.getOwnerGroup();
 
 
         } catch (EXistException e) {
@@ -143,8 +143,8 @@ public class ExistCollection extends ExistResource {
         DBBroker broker = null;
         Collection collection = null;
         try {
-            // Try to read as specified subject
-            broker = brokerPool.get(subject);
+            // Try to read as specified user
+            broker = brokerPool.get(user);
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             // Get all collections
@@ -180,8 +180,8 @@ public class ExistCollection extends ExistResource {
         DBBroker broker = null;
         Collection collection = null;
         try {
-            // Try to read as specified subject
-            broker = brokerPool.get(subject);
+            // Try to read as specified user
+            broker = brokerPool.get(user);
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             // Get all documents
@@ -220,7 +220,7 @@ public class ExistCollection extends ExistResource {
         Txn txn = transact.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
 
             // Open collection if possible, else abort
@@ -251,9 +251,9 @@ public class ExistCollection extends ExistResource {
             LOG.error(e);
             transact.abort(txn);
 
-        } catch (TriggerException e) {
-            LOG.error(e);
-            transact.abort(txn);
+//        } catch (TriggerException e) {
+//            LOG.error(e);
+//            transact.abort(txn);
 
 		} finally {
 
@@ -281,7 +281,7 @@ public class ExistCollection extends ExistResource {
         Txn txn = transact.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Check if collection exists. not likely to happen since availability is
             // checked by ResourceFactory
@@ -381,7 +381,7 @@ public class ExistCollection extends ExistResource {
         Txn txn = transact.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Check if collection exists. not likely to happen since availability is checked
             // by ResourceFactory
@@ -492,7 +492,7 @@ public class ExistCollection extends ExistResource {
         Txn txn = txnManager.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // This class contains already the URI of the resource that shall be moved/copied
             XmldbURI srcCollectionUri = xmldbUri;
@@ -546,10 +546,10 @@ public class ExistCollection extends ExistResource {
             txnManager.abort(txn);
             throw new EXistException(e.getMessage());
 
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new EXistException(e.getMessage());
+//        } catch (TriggerException e) {
+//            LOG.error(e);
+//            txnManager.abort(txn);
+//            throw new EXistException(e.getMessage());
 
 		} finally {
 

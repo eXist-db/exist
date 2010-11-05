@@ -98,6 +98,21 @@
         </init-param>
     </servlet>
 
+    <servlet>
+	    <servlet-name>milton</servlet-name>
+	    <servlet-class>com.bradmcevoy.http.MiltonServlet</servlet-class>
+        <init-param>
+            <param-name>resource.factory.class</param-name>
+            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
+        </init-param>
+        <!--
+        <init-param>
+             <param-name>filter_0</param-name>
+             <param-value>com.bradmcevoy.http.DebugFilter</param-value>
+         </init-param>
+         -->
+    </servlet>
+
     <!-- 
         XQueryServlet generates HTML from an XQuery file. 
     -->

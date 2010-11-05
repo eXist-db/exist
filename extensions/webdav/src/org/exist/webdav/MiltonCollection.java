@@ -58,7 +58,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
@@ -79,7 +79,7 @@ public class MiltonCollection extends MiltonResource
     private ExistCollection existCollection;
 
     /**
-     *  Constructor of representation of a Collection in the Milton framework, without subject information.
+     *  Constructor of representation of a Collection in the Milton framework, without user information.
      * To be called by the resource factory.
      *
      * @param host  FQ host name including port number.
@@ -91,15 +91,15 @@ public class MiltonCollection extends MiltonResource
     }
 
     /**
-     *  Constructor of representation of a Document in the Milton framework, with subject information.
+     *  Constructor of representation of a Document in the Milton framework, with user information.
      * To be called by the resource factory.
      *
      * @param host  FQ host name including port number.
      * @param uri   Path on server indicating path of resource.
-     * @param subject  An Exist operation is performed with  User. Can be NULL.
+     * @param user  An Exist operation is performed with  User. Can be NULL.
      * @param brokerPool Handle to Exist database.
      */
-    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, Subject user) {
+    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, User user) {
 
         super();
 
@@ -113,7 +113,7 @@ public class MiltonCollection extends MiltonResource
         // store simpler type
         existResource = existCollection;
 
-        // If subject is available, additional data can be retrieved.
+        // If user is available, additional data can be retrieved.
         if (user != null) {
             existCollection.setUser(user);
             existCollection.initMetadata();
@@ -148,7 +148,7 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonCollection> getCollectionResources() {
         List<MiltonCollection> allResources = new ArrayList<MiltonCollection>();
         for (XmldbURI path : existCollection.getCollectionURIs()) {
-            allResources.add(new MiltonCollection(this.host, path, brokerPool, subject));
+            allResources.add(new MiltonCollection(this.host, path, brokerPool, user));
         }
         return allResources;
     }
@@ -156,7 +156,7 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonDocument> getDocumentResources() {
         List<MiltonDocument> allResources = new ArrayList<MiltonDocument>();
         for (XmldbURI path : existCollection.getDocumentURIs()) {
-            MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
+            MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, user);
             // Show (restimated) size for PROPFIND only
             mdoc.setReturnContentLenghtAsNull(false);
             allResources.add(mdoc);
@@ -216,7 +216,7 @@ public class MiltonCollection extends MiltonResource
         CollectionResource collection = null;
         try {
             XmldbURI collectionURI = existCollection.createCollection(name);
-            collection = new MiltonCollection(host, collectionURI, brokerPool, subject);
+            collection = new MiltonCollection(host, collectionURI, brokerPool, user);
 
         } catch (PermissionDeniedException ex) {
             LOG.debug(ex.getMessage());
@@ -249,7 +249,7 @@ public class MiltonCollection extends MiltonResource
             // submit
             XmldbURI resourceURI = existCollection.createFile(newName, is, length, contentType);
 
-            resource = new MiltonDocument(host, resourceURI, brokerPool, subject);
+            resource = new MiltonDocument(host, resourceURI, brokerPool, user);
 
         } catch (PermissionDeniedException e) {
             LOG.debug(e.getMessage());

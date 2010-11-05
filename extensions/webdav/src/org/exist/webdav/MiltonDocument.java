@@ -52,7 +52,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
+import org.exist.security.User;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
@@ -82,7 +82,7 @@ public class MiltonDocument extends MiltonResource
     }
 
     /**
-     *  Constructor of representation of a Document in the Milton framework, without subject information.
+     *  Constructor of representation of a Document in the Milton framework, without user information.
      * To be called by the resource factory.
      *
      * @param host  FQ host name including port number.
@@ -94,15 +94,15 @@ public class MiltonDocument extends MiltonResource
     }
 
     /**
-     *  Constructor of representation of a Document in the Milton framework, with subject information.
+     *  Constructor of representation of a Document in the Milton framework, with user information.
      * To be called by the resource factory.
      *
      * @param host  FQ host name including port number.
      * @param uri   Path on server indicating path of resource.
-     * @param subject  An Exist operation is performed with  User. Can be NULL.
+     * @param user  An Exist operation is performed with  User. Can be NULL.
      * @param pool Handle to Exist database.
      */
-    public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, Subject user) {
+    public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, User user) {
 
         super();
 

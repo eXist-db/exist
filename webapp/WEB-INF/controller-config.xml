@@ -11,7 +11,8 @@
     <!-- REST interface -->
 	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
     <!-- WebDAV interface -->
-	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
+    <forward pattern="/webdav/" servlet="milton"/>
+	<!--forward pattern="/webdav/" servlet="WebDAVServlet"/-->
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
     <!-- Apache SOAP interface -->

@@ -7,17 +7,18 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>
-                <root id="src.src.dir" name="Modules"/>
-                <root id="src.src2.dir" name="Index NGram"/>
-                <root id="src.src3.dir" name="Index Spatial"/>
-                <root id="src.src4.dir" name="Index Lucene"/>
-                <root id="src.src5.dir" name="Versioning"/>
-                <root id="eXist-1.33.dir" name="Fluent"/>
+                <root id="src.src.dir" name="Extension Modules"/>
+                <root id="src.src2.dir" name="Extension Index NGram"/>
+                <root id="src.src3.dir" name="Extension Index Spatial"/>
+                <root id="src.src4.dir" name="Extension Index Lucene"/>
+                <root id="src.src5.dir" name="Extension Versioning"/>
+                <root id="eXist-1.33.dir" name="Extension Fluent"/>
+                <root id="src.src6.dir" name="Extension webdav"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>
-                <root id="test.eXist-1.32.dir" name="Fluent test"/>
+                <root id="test.eXist-1.32.dir" name="Extension Fluent test"/>
             </test-roots>
         </data>
     </configuration>
