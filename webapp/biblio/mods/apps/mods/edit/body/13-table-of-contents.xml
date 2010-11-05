@@ -5,12 +5,13 @@
             of Table Of Contents should be determined by the complexity of the digital object and whether or not the information is readily available. If more
             structured information is needed, consider using Related Item with the type="constituent" field instead. Table Of Contents can also be used as
             an empty field with an xlink:href field to link to an external table of contents. </p></div></span></div>
+            
         <!--tableOfContents repeat begins--><xf:repeat nodeset="instance('save-data')/mods:tableOfContents" id="tableOfContents-repeat"><div class="block-form">
             <!--tableOfContents input begins-->
             <!--DLF/Aquifer: NOT RECOMMENDED-->
             <!--Cluster: omit--><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type"><xf:label>Type:</xf:label><xf:hint><p>Hint</p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-            <!--Cluster: include--><xf:group ref=".[@xlink:href]" appearance="full"><xf:input ref="./@xlink:href" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents. </p></xf:hint></xf:input></xf:group>
+            <!--Cluster: include--><xf:group ref=".[@xlink]" appearance="full"><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> The XLink field is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents. </p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: OPTIONAL-->
             <!--Cluster: omit--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_50"><xf:label>Display Label: </xf:label><xf:hint><p>Hint</p></xf:hint></xf:input></xf:group>
             <!--DLF/Aquifer: N/A-->
@@ -31,4 +32,4 @@
             <!--tableOfContents delete ends--></div></xf:repeat>
         <!--tableOfContents repeat ends-->
         <!--tableOfContents add begins--><xf:trigger ref=".[count(mods:tableOfContents) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Table Of Contents</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:tableOfContents" at="index('tableOfContents-repeat')" position="after" origin="instance('insert-templates')/mods:tableOfContents"/><xf:setvalue ref="instance('save-data')/mods:tableOfContents[last()]" value="''"/></xf:action></xf:trigger>
-        <!--tableOfContents add ends--></fieldset></div></div>
+        <!--tableOfContents add ends--><xf:group id="tableOfContents-add-element" ref=".[not(./mods:tableOfContents)]" appearance="full"><xf:trigger ref=".[not(mods:tableOfContents)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Table Of Contents</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('tableOfContents-repeat')" position="after" origin="instance('insert-templates')/mods:tableOfContents"/></xf:action></xf:trigger></xf:group></fieldset></div></div>

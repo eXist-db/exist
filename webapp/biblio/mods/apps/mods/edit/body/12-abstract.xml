@@ -1,4 +1,5 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="abstract" tab-id="abstract"><div class="block-form"><fieldset><div class="join"><legend><span class="legend">Abstracts</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Abstract is used to record a succinct summary of some aspect of the content of the resource. </p><p> Use one Abstract in every record, except when Title Informaiton serves as an adequate summary of the content of the resource. </p><p> When creating a record for a digital surrogate, record a summary of the content of the original resource. If only a portion of the resource was digitized, summarize only that portion. </p><p> A link may be supplied in lieu of or in addition to the content. </p><p> Repeat Abstract as many times as necessary. </p></div></span></div>
+            
             <!--abstract repeat begins--><xf:repeat nodeset="instance('save-data')/mods:abstract" id="abstract-repeat"><div class="block-form">
                     <!--abstract input begins-->
                     <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
@@ -18,4 +19,4 @@
                     <!--abstract delete ends--></div></xf:repeat>
             <!--abstract repeat ends-->
             <!--abstract add begins--><xf:trigger ref=".[count(mods:abstract) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Abstract</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:abstract" at="index('abstract-repeat')" position="after" origin="instance('insert-templates')/mods:abstract"/><xf:setvalue ref="instance('save-data')/mods:abstract[last()]" value="''"/></xf:action></xf:trigger>
-            <!--abstract add ends--></fieldset></div></div>
+            <!--abstract add ends--><xf:group id="abstract-add-element" ref=".[not(./mods:abstract)]" appearance="full"><xf:trigger ref=".[not(mods:abstract)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Abstracts</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('abstract-repeat')" position="after" origin="instance('insert-templates')/mods:abstract"/></xf:action></xf:trigger></xf:group></fieldset></div></div>

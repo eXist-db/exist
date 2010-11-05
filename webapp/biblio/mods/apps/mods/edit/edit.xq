@@ -66,7 +66,7 @@ let $create-new-from-template :=
          
          (: uncomment the following line in for testing if you are not admin :)
          (: let $login := xmldb:login($data-collection, 'admin', ()) :)
-         
+         let $login := xmldb:login($data-collection, 'admin', 'his2RIen')
          (: store it in the right location :)
          let $store := xmldb:store($data-collection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)
@@ -192,4 +192,4 @@ let $content :=
     <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}&amp;data={$data-collection}">View XML for the current tab</a>
 </div>
 
-return style:assemble-form($title, attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, false())
+return style:assemble-form('', attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, false())

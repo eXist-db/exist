@@ -57,7 +57,7 @@ as element() {
                 { style:header() } 
                 { $breadcrumbs }
                 <div class="inner">
-                   <h2>{$title}</h2>
+                   <!--<h2>{$title}</h2>-->
                    { $content }
                 </div>
                 { style:footer() }
@@ -179,7 +179,7 @@ as node()+ {
             <div class="container">
                 { style:header() }
                 <div class="inner">
-                    <h2>{$title}</h2>
+                    <h3>{$title}</h3>
                     { $content }
                 </div>
                 { style:footer() }
@@ -207,12 +207,12 @@ as node()+ {
 
 declare function style:header() as node()+  {
         <div class="span-24 last">
-            Demo of MODS Editor
+            <div class="header">
+            MODS Record Editor
+            </div>
             <hr/>
         </div>
 };
-
-
 
 declare function style:footer() 
 as node()*  {
@@ -222,7 +222,7 @@ as node()*  {
         <hr/>
             <div class="inner">
                 <div class="footer">
-                    Demo of MODS Editor
+                    MODS Record Editor
                 </div>
             </div>
         </div>
