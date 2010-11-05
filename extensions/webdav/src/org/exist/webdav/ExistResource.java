@@ -1,0 +1,121 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+package org.exist.webdav;
+
+import org.apache.log4j.Logger;
+
+import org.exist.security.SecurityManager;
+import org.exist.security.AuthenticationException;
+import org.exist.security.Permission;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
+import org.exist.xmldb.XmldbURI;
+
+/**
+ * Generic class representing an eXist Resource.
+ * 
+ *  @author Dannes Wessels <dannes@exist-db.org>
+ */
+public abstract class ExistResource {
+
+    protected final static Logger LOG = Logger.getLogger(ExistResource.class);
+    protected boolean isInitialized = false;
+    protected BrokerPool brokerPool;
+    protected Subject subject;
+    protected XmldbURI xmldbUri;
+    protected Permission permissions;
+    protected Long creationTime;
+    protected Long lastModified;
+    protected boolean readAllowed = false;
+    protected boolean writeAllowed = false;
+    protected boolean updateAllowed = false;
+    protected ExistResource existResource;
+
+    protected String ownerUser;
+    protected String ownerGroup;
+
+    protected enum Mode {
+        MOVE, COPY
+    }
+
+    abstract void initMetadata();
+
+    protected boolean isReadAllowed() {
+        return readAllowed;
+    }
+
+    protected boolean isWriteAllowed() {
+        return writeAllowed;
+    }
+
+    protected boolean isUpdateAllowed() {
+        return updateAllowed;
+    }
+
+    protected Subject getUser() {
+        return subject;
+    }
+
+    protected void setUser(Subject user) {
+        this.subject = user;
+    }
+
+    protected Long getCreationTime() {
+        return creationTime;
+    }
+
+    protected Long getLastModified() {
+        return lastModified;
+    }
+
+    protected Permission getPermissions() {
+        return permissions;
+    }
+
+    public String getOwnerGroup() {
+        return ownerGroup;
+    }
+
+    public String getOwnerUser() {
+        return ownerUser;
+    }
+
+    /**
+     * Authenticate subject with password. NULL is returned when
+     * the subject could not be authenticated.
+     */
+    protected Subject authenticate(String username, String password) {
+
+        if (username == null) {
+            return null;
+        }
+
+        SecurityManager securityManager = brokerPool.getSecurityManager();
+        try {
+            subject = securityManager.authenticate(username, password);
+
+        } catch (AuthenticationException e) {
+            LOG.debug("User " + username + " could not be authenticated. " + e.getMessage());
+        }
+        return subject;
+    }
+}
