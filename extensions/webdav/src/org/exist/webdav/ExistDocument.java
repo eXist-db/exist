@@ -36,7 +36,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
-import org.exist.security.Account;
+import org.exist.security.User;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -71,7 +71,7 @@ public class ExistDocument extends ExistResource {
     @Override
     public void initMetadata() {
 
-        if (subject == null) {
+        if (user == null) {
             LOG.error("User not initialized yet");
             return;
         }
@@ -85,7 +85,7 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
         DocumentImpl document = null;
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -101,13 +101,13 @@ public class ExistDocument extends ExistResource {
 
             // Retrieve perssions
             permissions = document.getPermissions();
-            readAllowed = permissions.validate(subject, Permission.READ);
-            writeAllowed = permissions.validate(subject, Permission.WRITE);
-            updateAllowed = permissions.validate(subject, Permission.UPDATE);
+            readAllowed = permissions.validate(user, Permission.READ);
+            writeAllowed = permissions.validate(user, Permission.WRITE);
+            updateAllowed = permissions.validate(user, Permission.UPDATE);
 
 
-            ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getOwnerGroup().getName();
+            ownerUser = permissions.getOwner();
+            ownerGroup = permissions.getOwnerGroup();
 
             // Get (estimated) file size
             contentLength = document.getContentLength();
@@ -162,7 +162,7 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
         DocumentImpl document = null;
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -228,7 +228,7 @@ public class ExistDocument extends ExistResource {
         Txn txn = transact.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Need to split path into collection and document name
             XmldbURI collName = xmldbUri.removeLastSegment();
@@ -303,7 +303,7 @@ public class ExistDocument extends ExistResource {
         DocumentImpl document = null;
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // If it is not a collection, check if it is a document
             document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
@@ -313,8 +313,8 @@ public class ExistDocument extends ExistResource {
                 return null;
             }
 
-            // TODO consider. A Webdav lock can be set without subject lock.
-            Account lock = document.getUserLock();
+            // TODO consider. A Webdav lock can be set without user lock.
+            User lock = document.getUserLock();
             if (lock == null) {
                 LOG.debug("Document " + xmldbUri + " does not contain userlock");
                 return null;
@@ -367,7 +367,7 @@ public class ExistDocument extends ExistResource {
         DocumentImpl document = null;
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK); 
@@ -378,14 +378,14 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account userLock = document.getUserLock();
+            User userLock = document.getUserLock();
 
             // Check if Resource is already locked. @@ToDo
             if (userLock != null) {
                 LOG.debug("Resource was already locked locked.");
             }
 
-            if (userLock != null && !userLock.getName().equals(subject.getName())) {
+            if (userLock != null && !userLock.getName().equals(user.getName())) {
                 LOG.debug("Resource is locked.");
                 throw new PermissionDeniedException(userLock.getName());
             }
@@ -397,13 +397,13 @@ public class ExistDocument extends ExistResource {
             }
 
             // Update locktoken
-            inputToken.setOwner(subject.getName());
+            inputToken.setOwner(user.getName());
             inputToken.createOpaqueLockToken();
             inputToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
 
             // Update document
             document.getMetadata().setLockToken(inputToken);
-            document.setUserLock(subject);
+            document.setUserLock(user);
 
             // Make token persistant
             TransactionManager transact = brokerPool.getTransactionManager();
@@ -450,7 +450,7 @@ public class ExistDocument extends ExistResource {
         Txn transaction = transact.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
 
             // Try to get document (add catch?)
@@ -462,7 +462,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account lock = document.getUserLock();
+            User lock = document.getUserLock();
 
             // Check if Resource is already locked.
             if (lock == null) {
@@ -470,8 +470,8 @@ public class ExistDocument extends ExistResource {
                 throw new DocumentNotLockedException("" + xmldbUri);
             }
 
-            // Check if Resource is from subject
-            if (!lock.getName().equals(subject.getName())) {
+            // Check if Resource is from user
+            if (!lock.getName().equals(user.getName())) {
                 LOG.debug("Resource lock is from user " + lock.getName());
                 throw new PermissionDeniedException(lock.getName());
             }
@@ -532,7 +532,7 @@ public class ExistDocument extends ExistResource {
         Txn txn = txnManager.beginTransaction();
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Need to split path into collection and document name
             XmldbURI srcCollectionUri = xmldbUri.removeLastSegment();
@@ -596,10 +596,10 @@ public class ExistDocument extends ExistResource {
             txnManager.abort(txn);
             throw new EXistException(e.getMessage());
 
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new EXistException(e.getMessage());
+//        } catch (TriggerException e) {
+//            LOG.error(e);
+//            txnManager.abort(txn);
+//            throw new EXistException(e.getMessage());
 
 		} finally {
 
@@ -634,7 +634,7 @@ public class ExistDocument extends ExistResource {
         }
 
         try {
-            broker = brokerPool.get(subject);
+            broker = brokerPool.get(user);
 
             // Try to get document (add catch?)
             document = broker.getXMLResource(xmldbUri, Lock.WRITE_LOCK); 
@@ -645,7 +645,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account userLock = document.getUserLock();
+            User userLock = document.getUserLock();
 
             // Check if Resource is already locked. 
             if (userLock != null) {
@@ -653,7 +653,7 @@ public class ExistDocument extends ExistResource {
                 throw new DocumentNotLockedException("Resource was not locked.");
             }
             
-            if (!userLock.getName().equals(subject.getName())) {
+            if (!userLock.getName().equals(user.getName())) {
                 LOG.debug("Resource is locked by "+userLock.getName());
                 throw new PermissionDeniedException(userLock.getName());
             }

@@ -24,9 +24,8 @@ package org.exist.webdav;
 import org.apache.log4j.Logger;
 
 import org.exist.security.SecurityManager;
-import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
-import org.exist.security.Subject;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 
@@ -40,7 +39,7 @@ public abstract class ExistResource {
     protected final static Logger LOG = Logger.getLogger(ExistResource.class);
     protected boolean isInitialized = false;
     protected BrokerPool brokerPool;
-    protected Subject subject;
+    protected User user;
     protected XmldbURI xmldbUri;
     protected Permission permissions;
     protected Long creationTime;
@@ -71,12 +70,12 @@ public abstract class ExistResource {
         return updateAllowed;
     }
 
-    protected Subject getUser() {
-        return subject;
+    protected User getUser() {
+        return user;
     }
 
-    protected void setUser(Subject user) {
-        this.subject = user;
+    protected void setUser(User user) {
+        this.user = user;
     }
 
     protected Long getCreationTime() {
@@ -100,22 +99,30 @@ public abstract class ExistResource {
     }
 
     /**
-     * Authenticate subject with password. NULL is returned when
-     * the subject could not be authenticated.
+     * Authenticate user with password. NULL is returned when
+     * the user could not be authenticated.
      */
-    protected Subject authenticate(String username, String password) {
+    protected User authenticate(String username, String password) {
 
         if (username == null) {
             return null;
         }
 
         SecurityManager securityManager = brokerPool.getSecurityManager();
-        try {
-            subject = securityManager.authenticate(username, password);
+        user = securityManager.getUser(username);
 
-        } catch (AuthenticationException e) {
-            LOG.debug("User " + username + " could not be authenticated. " + e.getMessage());
+        if(user==null){
+            LOG.debug("Username " + username + " does not exist.");
+            return null;
         }
-        return subject;
+
+        if(user.validate(password)){
+            return user;
+
+        } else {
+            LOG.debug("User " + username + " could not be authenticated. ");
+            return null;
+        }
+
     }
 }

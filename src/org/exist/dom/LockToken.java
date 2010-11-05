@@ -57,6 +57,7 @@ public class LockToken {
     
     // Timeout
     public final static long LOCK_TIMEOUT_INFINITE = -1L;
+    public final static long NO_LOCK_TIMEOUT = -2L;
     
     // Write Locks and Null Resources
     // see http://www.webdav.org/specs/rfc2518.html#rfc.section.7.4

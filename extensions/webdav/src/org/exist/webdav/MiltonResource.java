@@ -40,9 +40,10 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.exist.security.Subject;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.security.SecurityManager;
 
 /**
  * Generic class representing a Milton Resource.
@@ -55,7 +56,7 @@ public class MiltonResource implements Resource {
     protected XmldbURI resourceXmldbUri;
     protected BrokerPool brokerPool;
     protected String host;
-    protected Subject subject;
+    protected User user;
     protected final static String AUTHENTICATED = "AUTHENTICATED";
     protected String REALM = "exist";
     protected ExistResource existResource;
@@ -81,8 +82,8 @@ public class MiltonResource implements Resource {
         return host;
     }
 
-    private Subject getUserAsSubject() {
-        return subject;
+    private User getUserAsSubject() {
+        return user;
     }
 
     /**
@@ -300,24 +301,24 @@ public class MiltonResource implements Resource {
             return null;
         }
 
-        // Check is subject was already authenticated.
-        if (subject != null) {
+        // Check is user was already authenticated.
+        if (user != null) {
             LOG.debug("User was already authenticated.");
             return AUTHENTICATED;
         }
 
-        // Authenticate subject with password
-        subject = existResource.authenticate(username, password);
+        // Authenticate user with password
+        user = existResource.authenticate(username, password);
 
-        // Quick return if no subject object was returned
-        if (subject == null) {
+        // Quick return if no user object was returned
+        if (user == null) {
             LOG.debug("User could not be authenticated.");
             return null;
         }
 
         // Guest is not allowed to access.
-        Subject guest = brokerPool.getSecurityManager().getGuestSubject();
-        if (guest.equals(subject)) {
+        User guest = brokerPool.getSecurityManager().getUser(SecurityManager.GUEST_USER); // @@@@@@
+        if (guest.equals(user)) {
             LOG.error("The user " + guest.getName() + " is prohibited from logging in through WebDAV.");
             return null;
         }
@@ -327,7 +328,7 @@ public class MiltonResource implements Resource {
         // Collect data for this resource
         existResource.initMetadata();
 
-        LOG.debug("User '" + subject.getName() + "' has been authenticated.");
+        LOG.debug("User '" + user.getName() + "' has been authenticated.");
         return AUTHENTICATED;
     }
 
