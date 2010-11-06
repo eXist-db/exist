@@ -226,7 +226,7 @@ public class MiltonResource implements Resource {
 
 
         // Set timeouts
-        if(timeout==null){
+        if (timeout == null || timeout.getSeconds() == null) {
             existToken.setTimeOut(existToken.NO_LOCK_TIMEOUT);
 
         } else {
