@@ -46,13 +46,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.TransformerException;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.util.serializer.XMLWriter;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
@@ -331,15 +331,15 @@ public class MiltonDocument extends MiltonResource
      * StAX serializer
      * ================ */
     
-    public void writeXML(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement("exist", "document", "http://exist.sourceforge.net/NS/exist");
-        writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
-        writer.writeAttribute("created", getXmlDateTime(existDocument.getCreationTime()));
-        writer.writeAttribute("last-modified", getXmlDateTime(existDocument.getLastModified()));
-        writer.writeAttribute("owner", existDocument.getOwnerUser());
-        writer.writeAttribute("group", existDocument.getOwnerGroup());
-        writer.writeAttribute("permissions", "" + existDocument.getPermissions().toString());
-        writer.writeAttribute("size", "" + existDocument.getContentLength());
-        writer.writeEndElement();
+    public void writeXML(XMLWriter xw) throws TransformerException {
+        xw.startElement("document");
+        xw.attribute("name", resourceXmldbUri.lastSegment().toString());
+        xw.attribute("created", getXmlDateTime(existDocument.getCreationTime()));
+        xw.attribute("last-modified", getXmlDateTime(existDocument.getLastModified()));
+        xw.attribute("owner", existDocument.getOwnerUser());
+        xw.attribute("group", existDocument.getOwnerGroup());
+        xw.attribute("permissions", "" + existDocument.getPermissions().toString());
+        xw.attribute("size", "" + existDocument.getContentLength());
+        xw.endElement("document");
     }
 }
