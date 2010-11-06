@@ -48,7 +48,7 @@
             <link href="xquery/acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="biblio/">Bibliographic</link>
+            <link href="library/apps/mods/search/">Bibliographic Demo</link>
         </item>
         <item>
             <link href="examples.xml">All Examples</link>
