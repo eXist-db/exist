@@ -47,14 +47,14 @@ import com.bradmcevoy.http.exceptions.PreConditionFailedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.TransformerException;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
@@ -64,6 +64,7 @@ import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.util.serializer.XMLWriter;
 
 /**
  * Class for representing an eXist-db collection as a Milton WebDAV collection.
@@ -353,49 +354,50 @@ public class MiltonCollection extends MiltonResource
     //@Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params,
             String contentType) throws IOException, NotAuthorizedException, BadRequestException {
-
+System.out.println("sendContent");
         try {
-            XMLOutputFactory xf = XMLOutputFactory.newInstance();
-            xf.setProperty("javax.xml.stream.isRepairingNamespaces", Boolean.TRUE);
+            Writer w = new OutputStreamWriter(out);
+            XMLWriter xw = new XMLWriter(w);
 
-            XMLStreamWriter writer = xf.createXMLStreamWriter(out);
-            writer.setDefaultNamespace("http://exist.sourceforge.net/NS/exist");
+            xw.setDefaultNamespace("http://exist.sourceforge.net/NS/exist");
 
             // Begin document
-            writer.writeStartDocument();
+            xw.startDocument();
 
             // Root element
-            writer.writeStartElement("exist", "result", "http://exist.sourceforge.net/NS/exist");
+            xw.startElement("result");
 
             // Root collection
-            writer.writeStartElement("exist", "collection", "http://exist.sourceforge.net/NS/exist");
-            writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
-            writer.writeAttribute("created", getXmlDateTime(existCollection.getCreationTime()));
-            writer.writeAttribute("owner", existCollection.getOwnerUser());
-            writer.writeAttribute("group", existCollection.getOwnerGroup());
-            writer.writeAttribute("permissions", "" + existCollection.getPermissions().toString());
+            xw.startElement("collection");          
+            xw.attribute("name", resourceXmldbUri.lastSegment().toString());
+            xw.attribute("created", getXmlDateTime(existCollection.getCreationTime()));
+            xw.attribute("owner", existCollection.getOwnerUser());
+            xw.attribute("group", existCollection.getOwnerGroup());
+            xw.attribute("permissions", "" + existCollection.getPermissions().toString());
 
 
             // Iterate over all collections in collection
             for (MiltonCollection collection : getCollectionResources()) {
-                collection.writeXML(writer);
+                collection.writeXML(xw);
             }
 
             // Iterate over all documents in collection
             for (MiltonDocument document : getDocumentResources()) {
-                document.writeXML(writer);
+                document.writeXML(xw);
             }
 
             // Finish top collection
-            writer.writeEndElement();
+            xw.endElement("collection");
 
             // Finish root element
-            writer.writeEndElement();
+            xw.endElement("result");
 
             // Finish document
-            writer.writeEndDocument();
+            xw.endDocument();
 
-        } catch (XMLStreamException ex) {
+            w.flush();
+
+        } catch (TransformerException ex) {
             LOG.error(ex);
             throw new IOException(ex.getMessage());
         }
@@ -420,14 +422,14 @@ public class MiltonCollection extends MiltonResource
      * StAX serializer
      * ================ */
 
-    private void writeXML(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeStartElement("exist", "collection", "http://exist.sourceforge.net/NS/exist");
-        writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
-        writer.writeAttribute("created", getXmlDateTime(existCollection.getCreationTime()));
-        writer.writeAttribute("owner", existCollection.getOwnerUser());
-        writer.writeAttribute("group", existCollection.getOwnerGroup());
-        writer.writeAttribute("permissions", existCollection.getPermissions().toString());
-        writer.writeEndElement();
+    private void writeXML(XMLWriter xw) throws TransformerException {
+        xw.startElement("collection");
+        xw.attribute("name", resourceXmldbUri.lastSegment().toString());
+        xw.attribute("created", getXmlDateTime(existCollection.getCreationTime()));
+        xw.attribute("owner", existCollection.getOwnerUser());
+        xw.attribute("group", existCollection.getOwnerGroup());
+        xw.attribute("permissions", existCollection.getPermissions().toString());
+        xw.endElement("collection");
     }
 
 }

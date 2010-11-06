@@ -177,6 +177,11 @@
         <appender-ref ref="exist.ehcache"/>
     </category>
     
+    <category name="com.bradmcevoy" additivity="false">
+        <priority value="off"/>
+        <appender-ref ref="exist.core"/>
+    </category>
+    
     <!--
         Axis produces a large amount of debugging output if
         priority is set to debug 

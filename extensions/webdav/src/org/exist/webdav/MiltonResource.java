@@ -317,9 +317,8 @@ public class MiltonResource implements Resource {
         }
 
         // Guest is not allowed to access.
-        User guest = brokerPool.getSecurityManager().getUser(SecurityManager.GUEST_USER); // @@@@@@
-        if (guest.equals(user)) {
-            LOG.error("The user " + guest.getName() + " is prohibited from logging in through WebDAV.");
+        if (username.equals(SecurityManager.GUEST_USER)) {
+            LOG.error("The user " + username + " is prohibited from logging in through WebDAV.");
             return null;
         }
 
