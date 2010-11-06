@@ -686,8 +686,6 @@ public class NativeBroker extends DBBroker {
                 return null;
             } catch (ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            } catch (TriggerException e) {
-                throw new PermissionDeniedException(e.getMessage());
 			}                
         }
     }    
@@ -1229,8 +1227,6 @@ public class NativeBroker extends DBBroker {
                 return true;
                 
             }
-        } catch (TriggerException e) {
-            throw new PermissionDeniedException(e.getMessage());
 		} finally {
             pool.getProcessMonitor().endJob();
         }
