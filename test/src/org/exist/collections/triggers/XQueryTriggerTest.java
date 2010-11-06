@@ -26,14 +26,18 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.net.URISyntaxException;
+
 import javax.xml.transform.OutputKeys;
 
 import org.exist.TestUtils;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Decoder;
+import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,75 +66,15 @@ public class XQueryTriggerTest {
     /** XQuery module implementing the trigger under test */
     private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
 
-    private final static String MODULE_COLLECTION_NAME = "XQueryCollectionTriggerLogger.xqm";
-    
     private final static String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
 		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='create-document' />" +
-		"	     <exist:parameter name='query' " +
-		"			value=\"import module namespace log = 'log' at '" +
-						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
-						"log:log('trigger1')\" />" +
-		"	     <exist:parameter name='bindingPrefix' value='log'/>" +
+		"	     <exist:parameter " +
+		"			name='url' " +
+		"			value='" +URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "' " +
 		"        />" +
 		"     </exist:trigger>" +
-		
-		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='update-document' />" +
-		"	     <exist:parameter name='query' " +
-		"			value=\"import module namespace log = 'log' at '" +
-						URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
-						"log:log('trigger2')\" />" +
-		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
-		"        />" +
-		"     </exist:trigger>" +
-
-		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='delete-document' />" + 
-		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
-					URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "';" +
-							"log:log('trigger3')\"/>" +
-		"	     <exist:parameter name='bindingPrefix' value='log' />" +
-		"        />" +
-		"     </exist:trigger>" +
-		
-		"  </exist:triggers>" +
-        "</exist:collection>";    
-
-    private final static String COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS =
-    	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
-	    "  <exist:triggers>" +
-		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='create-collection' />" +
-		"	     <exist:parameter name='query' " +
-		"			value=\"import module namespace log = 'log' at '" +
-						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
-						"log:log('trigger4')\" />" +
-		"	     <exist:parameter name='bindingPrefix' value='log'/>" +
-		"        />" +
-		"     </exist:trigger>" +
-		
-		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='move-collection' />" +
-		"	     <exist:parameter name='query' " +
-		"			value=\"import module namespace log = 'log' at '" +
-						URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
-						"log:log('trigger5')\" />" +
-		"	     <exist:parameter name=\"bindingPrefix\" value=\"log\"/>" +
-		"        />" +
-		"     </exist:trigger>" +
-
-		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter name='event' value='delete-collection' />" + 
-		"	     <exist:parameter name=\"query\" value=\"import module namespace log = 'log' at '" + 
-					URI +  "/" + TEST_COLLECTION + "/" + MODULE_COLLECTION_NAME + "';" +
-							"log:log('trigger6')\"/>" +
-		"	     <exist:parameter name='bindingPrefix' value='log' />" +
-		"        />" +
-		"     </exist:trigger>" +
-		
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
@@ -172,59 +116,129 @@ public class XQueryTriggerTest {
     /** XQuery module implementing the trigger under test; 
      * the log() XQuery function will add an <event> element inside <events> element */
     private final static String MODULE =
-    	"module namespace log='log'; " +
+    	"module namespace trigger='http://exist-db.org/xquery/trigger'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
     	"import module namespace util='http://exist-db.org/xquery/util'; " +
-    	"declare variable $log:type external;" +
-    	"declare variable $log:collection external;" +    	
-    	"declare variable $log:uri external;" +
-    	"declare variable $log:event external;" +
-    	"declare function log:log($id as xs:string?) {" +
+    	"" +
+    	"declare function trigger:logDocumentEvent($type as xs:string, $event as xs:string, $uri as xs:anyURI) {" +
     	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
     	    "'" + URI + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
               "<xu:append select='/events'>" +
                 "<xu:element name='event'>" +
-                  "<xu:attribute name='id'>{$id}</xu:attribute>" +
                   "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
-                  "<xu:attribute name='type'>{$log:type}</xu:attribute>" +
+                  "<xu:attribute name='type'>{$type}</xu:attribute>" +
+                  "<xu:attribute name='event'>{$event}</xu:attribute>" +
                   "<xu:element name='collection'>{$log:collection}</xu:element>" +
                   "<xu:element name='uri'>{$log:uri}</xu:element>" +
-                  "<xu:element name='event'>{$log:event}</xu:element>" +                 
                   "<xu:element name='document'>{if (util:is-binary-doc($log:uri)) then util:binary-doc($log:uri) else doc($log:uri)}</xu:element>" +   
                 "</xu:element>" +            
               "</xu:append>" +
             "</xu:modifications>" +
           ")" +
-        "};";
-    
-    /** XQuery module implementing the trigger under test; 
-     * the log() XQuery function will add an <event> element inside <events> element */
-    private final static String MODULE_COLLECTION =
-    	"module namespace log='log'; " +
-    	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
-    	"declare variable $log:eventType external;" +
-    	"declare variable $log:collectionName external;" +    	
-    	"declare variable $log:triggerEvent external;" +
-    	"declare function log:log($id as xs:string?) {" +
+        "};" +
+        "" +
+    	"declare function trigger:logCollectionEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
     	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
     	    "'" + URI + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
               "<xu:append select='/events'>" +
                 "<xu:element name='event'>" +
-                  "<xu:attribute name='id'>{$id}</xu:attribute>" +
                   "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
-                  "<xu:attribute name='type'>{$log:eventType}</xu:attribute>" +
-                  "<xu:element name='collectionName'>{$log:collectionName}</xu:element>" +
-                  "<xu:element name='triggerEvent'>{$log:triggerEvent}</xu:element>" +                 
+                  "<xu:attribute name='type'>{$type}</xu:attribute>" +
+                  "<xu:attribute name='event'>{$event}</xu:attribute>" +
+                  "<xu:attribute name='object-type'>{$objectType}</xu:attribute>" +
+                  "<xu:element name='collection'>{$uri}</xu:element>" +
+                  "<xu:element name='uri'>{$uri}</xu:element>" +
                 "</xu:element>" +            
               "</xu:append>" +
             "</xu:modifications>" +
           ")" +
-        "};";
-
+        "};" +
+        "" +
+        "declare function trigger:before-create-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'create', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-create-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'create', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-update-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'update', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-update-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'update', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'copy', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'copy', 'collection', $new-uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'move', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'move', 'collection', $new-uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-delete-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'delete', 'collection', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-delete-collection($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'delete', 'collection', $uri)" +
+        "};" +
+        "" + //DOCUMENT EVENTS
+        "declare function trigger:before-create-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'create', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-create-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'create', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-update-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'update', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-update-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'update', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'copy', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'copy', 'document', $new-uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'move', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'move', 'document', $new-uri)" +
+        "};" +
+        "" +
+        "declare function trigger:before-delete-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('before', 'delete', 'document', $uri)" +
+        "};" +
+        "" +
+        "declare function trigger:after-delete-document($uri as xs:anyURI) {" +
+        	"trigger:logCollectionEvent('after', 'delete', 'document', $uri)" +
+        "};" +
+        "";
+    
     private static Collection root;
     private static Collection testCollection;
 
@@ -239,7 +253,27 @@ public class XQueryTriggerTest {
     	"declare function log:log($id as xs:string?) {" +
     	"   undeclared-function-causes-trigger-error()" +
         "};";
+    
+    private final static String EVENTS = "/events/event";
 
+    private final static String BEFORE = EVENTS+"[@type = 'before']";
+    private final static String AFTER = EVENTS+"[@type = 'after']";
+
+    private final static String CREATE = "[@event = 'create']";
+    private final static String UPDATE = "[@event = 'update']";
+    private final static String COPY   = "[@event = 'copy']";
+    private final static String MOVE   = "[@event = 'move']";
+    private final static String DELETE = "[@event = 'delete']";
+
+    private final static String COLLECTION = "[@object-type = 'collection']";
+    private final static String DOCUMENT = "[@object-type = 'document']";
+    
+    private final static String testCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test']";
+    private final static String testDstCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst']";
+
+    private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
+    private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
+    
     /** just start the DB and create the test collection */
     @BeforeClass
     public static void startDB() {
@@ -285,8 +319,14 @@ public class XQueryTriggerTest {
      * and store the XQuery module implementing the trigger under test */
     @Before
     public void storePreliminaryDocuments() {
+        TestUtils.cleanupDB();
     	try {
-			XMLResource doc = (XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
+            CollectionManagementService service = (CollectionManagementService) root
+                    .getService("CollectionManagementService", "1.0");
+            testCollection = service.createCollection(TEST_COLLECTION);
+            assertNotNull(testCollection);
+
+            XMLResource doc = (XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
 			doc.setContent(EMPTY_LOG);
 			testCollection.storeResource(doc);
 	
@@ -294,20 +334,15 @@ public class XQueryTriggerTest {
 			((EXistResource)module).setMimeType("application/xquery");
 			module.setContent(MODULE.getBytes());
 			testCollection.storeResource(module);
-			
-			module = (BinaryResource) testCollection.createResource(MODULE_COLLECTION_NAME, "BinaryResource" );
-			((EXistResource)module).setMimeType("application/xquery");
-			module.setContent(MODULE_COLLECTION.getBytes());
-			testCollection.storeResource(module);
 
     	} catch (XMLDBException e) {
     		fail(e.getMessage());
         }    	
     }
 
-    /** test a trigger fired by storing a Document  */
+    /** test a trigger fired by storing a new Document  */
     @Test
-    public void storeDocument() {
+    public void documentCreate() {
     	
     	ResourceSet result;
     	
@@ -318,8 +353,7 @@ public class XQueryTriggerTest {
 			idxConf.configureCollection(COLLECTION_CONFIG);
 			
 			// this will fire the trigger
-			XMLResource doc =
-				(XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
 			doc.setContent(DOCUMENT_CONTENT);
 			testCollection.storeResource(doc);
 			
@@ -327,28 +361,20 @@ public class XQueryTriggerTest {
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
 
 	        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-	        //TODO : understand why it is necessary !
-	        service.setProperty(OutputKeys.INDENT, "no");
 	        	        
-	        result = service.query("/events/event[@id = 'trigger1']");
-	        assertEquals(2, result.getSize());
+	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
 	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
+	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(EVENTS);
 	        assertEquals(2, result.getSize());	        
 
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
-	        assertEquals(2, result.getSize());	        
-
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][event = 'CREATE-DOCUMENT']");
-	        assertEquals(2, result.getSize());	        
-	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1']/document/test");
-	        assertEquals(1, result.getSize());	        	        
-	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
+	        //TODO: document itself
+//	        result = service.query(afterCreate+objDocument+documentURI+"/document/test");
+//	        assertEquals(1, result.getSize());	        	        
+//	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
 	        
     	} catch (Exception e) {
             e.printStackTrace();
@@ -359,7 +385,7 @@ public class XQueryTriggerTest {
 
     /** test a trigger fired by a Document Update */
     @Test
-    public void updateDocument() {
+    public void documentUpdate() {
     	
     	ResourceSet result;
     	
@@ -368,6 +394,10 @@ public class XQueryTriggerTest {
 			testCollection.getService("IndexQueryService", "1.0");
 			idxConf.configureCollection(COLLECTION_CONFIG);
 	       
+			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+			doc.setContent(DOCUMENT_CONTENT);
+			testCollection.storeResource(doc);
+
 			//TODO : trigger UPDATE events !
 	        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
 	        update.updateResource(DOCUMENT_NAME, DOCUMENT_UPDATE);
@@ -379,26 +409,26 @@ public class XQueryTriggerTest {
 	        // this is necessary to compare with MODIFIED_DOCUMENT_CONTENT ; TODO better compare with XML diff tool
 	        service.setProperty(OutputKeys.INDENT, "no");
 
-	        result = service.query("/events/event[@id = 'trigger2']");
-	        assertEquals(2, result.getSize());
+	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
 	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
-	        assertEquals(2, result.getSize());	        
+	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
 
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
-	        assertEquals(2, result.getSize());	        
-
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2'][event = 'UPDATE-DOCUMENT']");
-	        assertEquals(2, result.getSize());	        
+	        result = service.query(BEFORE+UPDATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
 	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger2']/document/test");
-	        assertEquals(2, result.getSize());	        
-	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
-	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
+	        result = service.query(AFTER+UPDATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(EVENTS);
+	        assertEquals(4, result.getSize());	        
+	        
+	        //TODO: document itself	        
+//	        result = service.query("/events/event[@id = 'trigger2']/document/test");
+//	        assertEquals(2, result.getSize());	        
+//	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
+//	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
 
     	} catch (Exception e) {
     		fail(e.getMessage());    		
@@ -408,7 +438,7 @@ public class XQueryTriggerTest {
 
     /** test a trigger fired by a Document Delete */
     @Test
-    public void deleteDocument() {
+    public void documentDelete() {
     	
     	ResourceSet result;
     	
@@ -417,6 +447,10 @@ public class XQueryTriggerTest {
 			testCollection.getService("IndexQueryService", "1.0");
 			idxConf.configureCollection(COLLECTION_CONFIG);
 	
+			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+			doc.setContent(DOCUMENT_CONTENT);
+			testCollection.storeResource(doc);
+
 			testCollection.removeResource(testCollection.getResource(DOCUMENT_NAME));
 
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
@@ -426,25 +460,25 @@ public class XQueryTriggerTest {
 
 	        service.setProperty(OutputKeys.INDENT, "no");        
 
-	        result = service.query("/events/event[@id = 'trigger3']");
-	        assertEquals(2, result.getSize());
-	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "']");
-	        assertEquals(2, result.getSize());	        
-
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + DOCUMENT_NAME + "']");
-	        assertEquals(2, result.getSize());	        
-
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][event = 'DELETE-DOCUMENT']");
-	        assertEquals(2, result.getSize());	        
-	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3']/document/test");
+	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
 	        assertEquals(1, result.getSize());
-	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
+	        
+	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(BEFORE+DELETE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
+	        
+	        result = service.query(AFTER+DELETE+DOCUMENT+documentURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(EVENTS);
+	        assertEquals(4, result.getSize());	        
+
+	        //TODO: document itself	        
+//	        result = service.query("/events/event[@id = 'trigger3']/document/test");
+//	        assertEquals(1, result.getSize());
+//	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
 			
     	} catch (Exception e) {
             e.printStackTrace();
@@ -452,9 +486,9 @@ public class XQueryTriggerTest {
     	}
     }
     
-	/** test a trigger fired by storing a Binary Document  */
+	/** test a trigger fired by creating a new Binary Document  */
     @Test
-    public void storeBinaryDocument() {
+    public void documentBinaryCreate() {
     	
     	ResourceSet result;
     	
@@ -478,14 +512,19 @@ public class XQueryTriggerTest {
 	        //TODO : understand why it is necessary !
 	        service.setProperty(OutputKeys.INDENT, "no");
 
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'CREATE-DOCUMENT']");
-	        assertEquals(2, result.getSize());
-	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'CREATE-DOCUMENT']/document");
+	        result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
 	        assertEquals(1, result.getSize());
-	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
+	        
+	        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(EVENTS);
+	        assertEquals(2, result.getSize());
+
+	        //TODO: document itself	        
+//	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'CREATE-DOCUMENT']/document");
+//	        assertEquals(1, result.getSize());
+//	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
 	        
     	}
     	catch(Exception e)
@@ -497,7 +536,7 @@ public class XQueryTriggerTest {
 
     /** test a trigger fired by a Binary Document Delete */
     @Test
-    public void deleteBinaryDocument() {
+    public void documentBinaryDelete() {
     	
     	ResourceSet result;
     	
@@ -506,6 +545,13 @@ public class XQueryTriggerTest {
 			testCollection.getService("IndexQueryService", "1.0");
 			idxConf.configureCollection(COLLECTION_CONFIG);
 	
+			// this will fire the trigger
+			Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+			Base64Decoder dec = new Base64Decoder();
+			dec.translate(BINARY_DOCUMENT_CONTENT);
+			res.setContent(dec.getByteArray());
+			testCollection.storeResource(res);
+
 			testCollection.removeResource(testCollection.getResource(BINARY_DOCUMENT_NAME));
 
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
@@ -515,14 +561,25 @@ public class XQueryTriggerTest {
 
 	        service.setProperty(OutputKeys.INDENT, "no");        
 
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'DELETE-DOCUMENT']");
-	        assertEquals(2, result.getSize());	        
-	        
-	        //TODO : consistent URI !	        
-	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'DELETE-DOCUMENT']/document");
+	        result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
 	        assertEquals(1, result.getSize());
-	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());        
+	        
+	        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(BEFORE+DELETE+DOCUMENT+binaryURI);
+	        assertEquals(1, result.getSize());
+	        
+	        result = service.query(AFTER+DELETE+DOCUMENT+binaryURI);
+	        assertEquals(1, result.getSize());
+
+	        result = service.query(EVENTS);
+	        assertEquals(4, result.getSize());
+	        
+	        //TODO: document itself	        
+//	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'DELETE-DOCUMENT']/document");
+//	        assertEquals(1, result.getSize());
+//	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());        
 			
     	} catch (Exception e) {
             e.printStackTrace();
@@ -532,11 +589,11 @@ public class XQueryTriggerTest {
     
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void createCollection() {
+    public void collectionCreate() {
 		IndexQueryService idxConf;
 		try {
 			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			idxConf.configureCollection(COLLECTION_CONFIG);
 			
             CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
             Collection collection = service.createCollection("test");
@@ -546,11 +603,18 @@ public class XQueryTriggerTest {
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
             
 	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-	        	        
-	        ResourceSet result = query.query("/events/event[@id = 'trigger4']");
+	        
+	        ResourceSet result;
+	        
+	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+	        
+	        result = query.query(EVENTS);
 	        assertEquals(2, result.getSize());
 
-            
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -558,27 +622,58 @@ public class XQueryTriggerTest {
     }
 
     /** test a trigger fired by a Collection manipulations */
-    @Test @Ignore //TODO: code
-    public void renameCollection() {
+    @Test @Ignore
+    public void collectionCopy() {
 		IndexQueryService idxConf;
 		try {
 			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			idxConf.configureCollection(COLLECTION_CONFIG);
 			
-            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
-            Collection collection = service.createCollection("test");
-            assertNotNull(collection);
+			XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
+			XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
+			
+			CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+            Collection src = service.createCollection("test");
+            assertNotNull(src);
 
-    		// remove the trigger for the Collection under test
+            Collection dst = service.createCollection("test-dst");
+            assertNotNull(dst);
+
+            service.copy(srcURI, dstURI, null);
+
+            // remove the trigger for the Collection under test
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
             
 	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 	        	        
-	        ResourceSet result = query.query("/events/event[@id = 'trigger4']");
-	        assertEquals(2, result.getSize());
+	        ResourceSet result;
+	        
+	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(BEFORE+COPY+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+COPY+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(EVENTS);
+	        assertEquals(6, result.getSize());
 
             
 		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -586,11 +681,69 @@ public class XQueryTriggerTest {
     
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void removeCollection() {
+    public void collectionMove() {
+		IndexQueryService idxConf;
+		try {
+			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+			idxConf.configureCollection(COLLECTION_CONFIG);
+			
+			XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
+			XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
+			
+			CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+            Collection src = service.createCollection("test");
+            assertNotNull(src);
+
+            Collection dst = service.createCollection("test-dst");
+            assertNotNull(dst);
+
+            service.move(srcURI, dstURI, null);
+
+            // remove the trigger for the Collection under test
+			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+            
+	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+	        	        
+	        ResourceSet result;
+	        
+	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(EVENTS);
+	        assertEquals(6, result.getSize());
+
+            
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+    }
+    
+    /** test a trigger fired by a Collection manipulations */
+    @Test
+    public void collectionDelete() {
 		IndexQueryService idxConf;
 		try {
 			idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG_FOR_COLLECTIONS_EVENTS);
+			idxConf.configureCollection(COLLECTION_CONFIG);
 			
             CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
             Collection collection = service.createCollection("test");
@@ -602,10 +755,24 @@ public class XQueryTriggerTest {
 			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
             
 	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-	        	        
-	        ResourceSet result = query.query("/events/event[@id = 'trigger6']");
-	        assertEquals(2, result.getSize());
 
+	        ResourceSet result;
+	        
+	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(BEFORE+DELETE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query(AFTER+DELETE+COLLECTION+testCollectionURI);
+	        assertEquals(1, result.getSize());
+
+	        result = query.query("/events/event");
+	        assertEquals(4, result.getSize());
+	        
             
 		} catch (XMLDBException e) {
 			e.printStackTrace();

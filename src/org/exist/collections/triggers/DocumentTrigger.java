@@ -124,10 +124,10 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
 
     public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
-    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
 
     public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
-    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
 
     public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
     public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;

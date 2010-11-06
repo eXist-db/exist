@@ -177,8 +177,8 @@ public class TriggerEvents {
 				break;
 
 			default:
-	        	throw new CollectionConfigurationException(
-		    			"Unknown event type '" + event);
+//	        	throw new CollectionConfigurationException(
+//		    			"Unknown event type '" + event);
 			}
 	    }
 	    

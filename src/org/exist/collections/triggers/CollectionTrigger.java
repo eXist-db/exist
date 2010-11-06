@@ -69,10 +69,10 @@ public interface CollectionTrigger extends Trigger {
     public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException;
 
     public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
+    public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException;
 
     public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
+    public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException;
 
     public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException;
     public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
