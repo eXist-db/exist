@@ -77,7 +77,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                                src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                                class="{if ($saved) then 'stored' else ''}"/>
                                         </a>
-                                        <a target="_new" href="../../../../rest/{document-uri(root($item))}?_query=//*[@ID = '{$item/@ID}']&amp;_wrap=no">
+                                        <a target="_new" href="source.xql?id={$item/@ID}&amp;clean=yes">
                                             <img title="View XML Source"
                                                 src="../../../resources/images/script_code.png"/>
                                         </a>

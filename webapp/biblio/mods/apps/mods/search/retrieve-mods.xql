@@ -360,9 +360,11 @@ declare function mods:get-conference-detail-view($entry as element()) {
 
 declare function mods:format-name($name as element(mods:name), $pos as xs:integer) {
     if ($name[not(@type)]) then
-    concat(
-    string-join($name/mods:namePart[@transliteration][not(@type)], ' '), ' ', string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
-    )
+        concat(
+            string-join($name/mods:namePart[@transliteration][not(@type)], ' '), 
+            ' ', 
+            string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+        )
     else
     	if ($name/@type = 'conference') then
     	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
@@ -763,10 +765,10 @@ declare function mods:get-related($entry as element(mods:mods)) {
 
 declare function mods:names-full($entry as element()) {
 if (($entry/mods:name)) then
-let $names := $entry/mods:name
+    let $names := $entry/mods:name
     for $name in $names
     return
-    if ($name[@type = 'personal']) then
+    if ($name[not(@type) or @type = 'personal']) then
         <tr>
             <td class="label">
             {
