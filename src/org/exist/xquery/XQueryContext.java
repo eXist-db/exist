@@ -1679,6 +1679,31 @@ public class XQueryContext {
 
     	return variables;
     }
+
+    public Map<QName, Variable> getLocalVariables() {
+        Map<QName, Variable> variables = new HashMap<QName, Variable>();
+
+        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
+
+        for( LocalVariable var = lastVar; var != null; var = var.before ) {
+
+            if( var == end ) {
+                break;
+            }
+
+            variables.put( var.getQName(), var );
+        }
+
+        return( variables );
+    }
+
+    public Map<QName, Variable> getGlobalVariables() {
+        Map<QName, Variable> variables = new HashMap<QName, Variable>();
+
+        variables.putAll( globalVariables );
+
+        return( variables );
+    }
     
 	/**
 	 * Turn on/off XPath 1.0 backwards compatibility.
