@@ -94,14 +94,14 @@ public class ConsistencyCheckTask implements SystemTask {
     public void execute(DBBroker broker) throws EXistException {
         final Agent agentInstance = AgentFactory.getInstance();
         final BrokerPool brokerPool = broker.getBrokerPool();
-        TaskStatus endStatus = new TaskStatus(TaskStatus.STOPPED_OK);
+        TaskStatus endStatus = new TaskStatus(TaskStatus.Status.STOPPED_OK);
 
-        agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.INIT));
+        agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.INIT));
 
         if (paused) {
             if (LOG.isDebugEnabled())
                 LOG.debug("Consistency check is paused.");
-            agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.PAUSED));
+            agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.PAUSED));
             return;
         }
 
@@ -120,10 +120,10 @@ public class ConsistencyCheckTask implements SystemTask {
                 CheckCallback cb = new CheckCallback(report);
 
                 ConsistencyCheck check = new ConsistencyCheck(broker, false);
-                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.RUNNING_CHECK));
+                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_CHECK));
                 errors = check.checkAll(cb);
                 if (!errors.isEmpty()) {
-                    endStatus.setStatus(TaskStatus.STOPPED_ERROR);
+                    endStatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
                     endStatus.setReason(errors);
 
                     if (LOG.isDebugEnabled())
@@ -141,7 +141,7 @@ public class ConsistencyCheckTask implements SystemTask {
                     LOG.debug("Starting backup...");
                 SystemExport sysexport = new SystemExport(broker, null, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
-                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.RUNNING_BACKUP));
+                agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
                 if (LOG.isDebugEnabled() && lastExportedBackup != null)
                     LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
             }
