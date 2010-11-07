@@ -1536,6 +1536,11 @@ public class XQueryContext {
 		return var;
 	}
 	
+    public void undeclareGlobalVariable( QName name ) {
+        globalVariables.remove(name);
+    }
+
+	
 	/**
 	 * Declare a user-defined variable.
 	 * 
