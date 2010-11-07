@@ -469,12 +469,12 @@
         </code>
         <expected>C2</expected>
     </test>
-    <test output="text">
+    <test output="xml">
         <task>Following sibling axis 15</task>
         <code>
             (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[following-sibling::c]
         </code>
-        <expected>C2 C5</expected>
+        <expected><c>C2</c><c>C5</c></expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 1</task>
@@ -573,12 +573,12 @@
         </code>
         <expected>C2</expected>
     </test>
-    <test output="text">
+    <test output="xml">
         <task>Preceding sibling axis 15</task>
         <code>
             (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[preceding-sibling::c]
         </code>
-        <expected>C4 C6</expected>
+        <expected><c>C4</c><c>C6</c></expected><!-- is the elements order correct? -->
     </test>
     <test output="text">
         <task>Sibling axis comments and pis 1</task>
