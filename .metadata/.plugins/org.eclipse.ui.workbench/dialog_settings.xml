@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="WorkbenchPreferenceDialogSettings">
+		<item value="0" key="DIALOG_Y_ORIGIN"/>
+		<item value="0" key="DIALOG_X_ORIGIN"/>
+	</section>
+	<section name="InstallationDialogSettings">
+		<item value="804" key="DIALOG_WIDTH"/>
+		<item value="-52" key="DIALOG_Y_ORIGIN"/>
+		<item value="552" key="DIALOG_HEIGHT"/>
+		<item value="-134" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Sans|10.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+	</section>
+	<section name="NewWizardAction">
+		<item value="org.eclipse.team.svn.ui.wizard.NewRepositoryLocationWizard" key="NewWizardSelectionPage.STORE_SELECTED_ID"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.team.svn.ui.repository"/>
+		</list>
+	</section>
+	<section name="ImportExportAction">
+		<item value="org.eclipse.team.svn.ui.wizard.ImportFromSVNWizard" key="ImportExportPage.STORE_SELECTED_IMPORT_WIZARD_ID"/>
+		<list key="ImportExportPage.STORE_EXPANDED_IMPORT_CATEGORIES">
+			<item value="org.eclipse.team.svn.ui.repository"/>
+		</list>
+	</section>
+</section>
