@@ -321,61 +321,53 @@ public class XQTS_case extends TestCase {
                 //collect information if result is wrong
                 if (!ok) {
                     StringBuilder message = new StringBuilder();
-                    
-                    //do not sysout extected & getted results (temporarily)
-                	if (false) {
-	                    String exp = "";
-	                    try {
-	                        for (int i = 0; i < outputFiles.getLength(); i++) {
-	                            exp += "{'";
-	                            ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
-	                            File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
-	                            if (!expectedResult.canRead())
-	                                Assert.fail("can't read expected result");
-	                            Reader reader = new BufferedReader(new FileReader(expectedResult));
-	                            char ch;
-	                            while (reader.ready()) {
-	                                ch = (char)reader.read();
-	                                if (ch == '\r')
-	                                    ch = (char)reader.read();
-	                                exp += String.valueOf(ch); 
-	                            }
-	                            exp += "'}";
-	                        }
-	                    } catch (Exception e) {
-	                        exp += e.getMessage();
-	                    }
-	
-	                    String res = sequenceToString(result);
-	                    if (exp.isEmpty())
-	                        exp += "error "+expectedError;
-	
-	                    StringBuilder data = new StringBuilder();
-	                    for (int i = 0; i < inputFiles.getLength(); i++) {
-	                        ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
-	                        String id = inputFile.getNodeValue();
-	                        data.append(inputFile.getAttribute("variable"));
-	                        data.append(" = \n");
-	                        data.append(readFileAsString(new File(sources.get(id))));
-	                        data.append("\n");
-	                    }
-	
-	                    message.append("\n");
-	                    message.append("expected ");
-	                    message.append("[" + exp + "]");
-	                    message.append(" got ");
-	                    message.append("[" + res + "]\n");
-	                    message.append("script:\n");
-	                    message.append(readFileAsString(caseScript));
-	                    message.append("\n");
-	                    message.append("data:\n");
-	                    message.append(data);
-                	}
+                    String exp = "";
+                    try {
+                        for (int i = 0; i < outputFiles.getLength(); i++) {
+                            exp += "{'";
+                            ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
+                            File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
+                            if (!expectedResult.canRead())
+                                Assert.fail("can't read expected result");
+                            Reader reader = new BufferedReader(new FileReader(expectedResult));
+                            char ch;
+                            while (reader.ready()) {
+                                ch = (char)reader.read();
+                                if (ch == '\r')
+                                    ch = (char)reader.read();
+                                exp += String.valueOf(ch); 
+                            }
+                            exp += "'}";
+                        }
+                    } catch (Exception e) {
+                        exp += e.getMessage();
+                    }
+                    String res = sequenceToString(result);
+                    if (exp.isEmpty())
+                        exp += "error "+ expectedError;
+                    StringBuilder data = new StringBuilder();
+                    for (int i = 0; i < inputFiles.getLength(); i++) {
+                        ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
+                        String id = inputFile.getNodeValue();
+                        data.append(inputFile.getAttribute("variable"));
+                        data.append(" = \n");
+                        data.append(readFileAsString(new File(sources.get(id))));
+                        data.append("\n");
+                    }
+                    message.append("\n");
+                    message.append("expected ");
+                    message.append("[" + exp + "]");
+                    message.append(" got ");
+                    message.append("[" + res + "]\n");
+                    message.append("script:\n");
+                    message.append(readFileAsString(caseScript));
+                    message.append("\n");
+                    message.append("data:\n");
+                    message.append(data);
                     Assert.fail(message.toString());
                 }
             } catch (XPathException e) {
                 String error = e.getMessage();
-
                 if (!expectedError.isEmpty())
                     ;
                 else if (expectedError.equals("*"))
@@ -462,16 +454,13 @@ public class XQTS_case extends TestCase {
         try {
             if (group.equals("ContextImplicitTimezoneFunc")) {
                 TimeZone implicitTimeZone = TimeZone.getTimeZone("GMT-5:00");// getDefault();
-
                 //if( implicitTimeZone.inDaylightTime( new Date() ) ) {
                     //implicitTimeZone.setRawOffset( implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings() );
                 //}
-
                 context.setTimeZone(implicitTimeZone);
             } else if (group.equals("ContextCurrentDatetimeFunc") ||
                     group.equals("ContextCurrentDateFunc") ||
                     group.equals("ContextCurrentTimeFunc")) {
-
                 DateTimeValue dt = null;
                 if (test.equals("fn-current-time-4"))
                     dt = new DateTimeValue("2005-12-05T13:38:03.455-05:00");
@@ -495,7 +484,6 @@ public class XQTS_case extends TestCase {
                     dt = new DateTimeValue("2005-12-05T17:10:00.469-05:00");
                 else
                     dt = new DateTimeValue("2005-12-05T17:10:00.203-05:00");
-
                 //if (dt != null)
                     context.setCalendar(dt.calendar);
             }
