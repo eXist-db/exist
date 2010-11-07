@@ -216,6 +216,7 @@ div.xforms-help-value, div.xforms-alert-value, div.xforms-hint-value {
 	position			: absolute;
 	border				: black 1px solid; 
 	width				: 200px;
+	white-space: normal;
 	margin-top			: 16px;
 	margin-left			: -16px;
 	padding				: 5px;
@@ -258,6 +259,10 @@ span.xforms-hint-icon {
 	background-image	: url(icon_hint.gif); 
 	background-repeat : no-repeat;
 }
+
+span.focus {
+	display:none;
+}
 	
 		
 span.xforms-message {
@@ -274,9 +279,12 @@ span.xforms-message {
 div#statusPanel {
 	display				: none;
 	position			: absolute;
+	white-space		: pre;
 	width				: 300px;
 	height				: 120px;
-	padding-top			: 40px;
+	min-width				: 300px;
+	min-height				: 120px;
+	padding			: 40px;
 	text-align			: center;
 	background-color	: #eeeeee;
 	opacity				: 0.85;
