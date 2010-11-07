@@ -2103,13 +2103,23 @@ public class XQueryContext
      * Get the user which executes the current query.
      *
      * @return  user
+     * @deprecated use getSubject
      */
     public Subject getUser()
     {
         return( getBroker().getUser() );
     }
 
+    /**
+     * Get the subject which executes the current query.
+     *
+     * @return  subject
+     */
+    public Subject getSubject() {
+        return getBroker().getSubject();
+    }
 
+    
     /**
      * If there is a HTTP Session, and a User has been stored in the session then this will return the user object from the session.
      *
