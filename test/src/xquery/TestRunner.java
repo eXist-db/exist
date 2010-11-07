@@ -23,8 +23,8 @@ import static org.junit.Assert.fail;
 
 public abstract class TestRunner {
 
-    private static File[] files;
-	private static Collection testCollection;
+    private File[] files;
+	private Collection testCollection;
 
     protected abstract String getDirectory();
 
