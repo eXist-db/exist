@@ -17,11 +17,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: BreakpointImpl.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debugger.model;
 
-import org.exist.debugger.Debugger;
+import java.io.IOException;
+
+import org.exist.debugger.DebuggerImpl;
+import org.exist.debugger.DebuggingSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,7 +33,7 @@ import org.exist.debugger.Debugger;
 public class BreakpointImpl implements Breakpoint {
 
 	/**
-	 * breakpoint type, see above for valid values [required]
+	 * breakpoint type [required]
 	 */
 	private String type;
 
@@ -86,6 +89,7 @@ public class BreakpointImpl implements Breakpoint {
 	private int hitCount = 0;
 	
 	public BreakpointImpl() {
+		type = Breakpoint.TYPE_LINE; //default value
 	}
 
 	public String getException() {
@@ -128,6 +132,7 @@ public class BreakpointImpl implements Breakpoint {
 		this.exception = exception;
 	}
 
+	//protected? -shabanovd
 	public void setFilename(String filename) {
 		this.fileName = filename;
 	}
@@ -160,7 +165,7 @@ public class BreakpointImpl implements Breakpoint {
 		this.temporary = temporary;
 	}
 
-	private int id;
+	private int id = -1;
 	
 	public int getId() {
 		return id;
@@ -194,9 +199,27 @@ public class BreakpointImpl implements Breakpoint {
 		      "</breakpoint>";
 	}
 
-	private Debugger debugger;
+	private DebuggingSource debuggingSource;
 	
-	public void setDebuggingSource(Debugger debugger) {
-		this.debugger = debugger;
+	public void setDebuggingSource(DebuggingSource debuggingSource) {
+		this.debuggingSource = debuggingSource;
+	}
+	
+	private DebuggerImpl getDebugger() {
+		return (DebuggerImpl)debuggingSource.getDebugger();
+	}
+
+	public boolean sync() throws IOException {
+		if (getId() == -1) {
+			return getDebugger().setBreakpoint(this);
+		} else if (getId() > 0) {
+			return getDebugger().updateBreakpoint(this);
+		}
+		//TODO: call remove breakpoint ???
+		return false;
+	}
+
+	public boolean remove() throws IOException {
+		return getDebugger().removeBreakpoint(this);
 	}
 }

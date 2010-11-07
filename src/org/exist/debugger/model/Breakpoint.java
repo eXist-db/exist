@@ -17,9 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: Breakpoint.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debugger.model;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -133,4 +135,8 @@ public interface Breakpoint {
 	public void setId(int breakpointNo);
 	
 	public String toXMLString();
+
+	//Synchronize changes
+	public boolean sync() throws IOException;
+	public boolean remove() throws IOException;
 }

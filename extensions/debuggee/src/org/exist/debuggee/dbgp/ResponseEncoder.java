@@ -17,10 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: ResponseEncoder.java 12465 2010-08-20 09:07:49Z shabanovd $
  */
 package org.exist.debuggee.dbgp;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
@@ -33,12 +34,16 @@ import org.exist.debuggee.Packet;
  */
 public class ResponseEncoder extends ProtocolEncoderAdapter {
 
-	public void encode(IoSession session, Object message, ProtocolEncoderOutput out)
-			throws Exception {
+    private final static Logger LOG = Logger.getLogger(ResponseEncoder.class);
+
+	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		Packet packet = (Packet) message;
 		
 		byte[] response = packet.responseBytes();
 		String length = String.valueOf(response.length);
+
+		if (LOG.isDebugEnabled())
+			LOG.debug("" + length + " byte(s) : " + packet.toString());
 		
 		IoBuffer buffer = IoBuffer.allocate(response.length+length.length()+2, false);
 		buffer.put(length.getBytes());

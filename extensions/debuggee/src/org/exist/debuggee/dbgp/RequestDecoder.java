@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: RequestDecoder.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp;
 
@@ -26,7 +26,6 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.exist.debuggee.CommandContinuation;
-import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dbgp.packets.Command;
 
 /**

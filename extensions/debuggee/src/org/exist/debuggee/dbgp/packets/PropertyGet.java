@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: PropertyGet.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
@@ -114,57 +114,63 @@ public class PropertyGet extends Command {
 		if (variable == null)
 			return errorBytes("property_get");
 		
-		String responce = "" +
-			"<response " +
-					"command=\"property_get\" " +
-					"transaction_id=\""+transactionID+"\">" +
-				getPropertyString(variable, getJoint().getContext())+
-			"</response>";
+		StringBuilder responce = new StringBuilder();
+		responce.append("<response command=\"property_get\" transaction_id=\"");
+		responce.append(transactionID);
+		responce.append("\">");
+		responce.append(getPropertyString(variable, getJoint().getContext()));
+		responce.append("</response>");
 
-		return responce.getBytes();
+		return responce.toString().getBytes();
 	}
 
-	protected static String getPropertyString(Variable variable, XQueryContext context) {
+	protected static StringBuilder getPropertyString(Variable variable, XQueryContext context) {
         Sequence value = variable.getValue();
         Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
 
         try {
-            String property;
+        	StringBuilder property = new StringBuilder();
             if (value.hasOne()) {
                 String strVal = getPropertyValue(value.itemAt(0), serializer);
                 String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "node" :
                     Type.getTypeName(value.getItemType());
-                property = "<property " +
-                        "name=\"" + variable.getQName().toString() + "\" " +
-                        "fullname=\"" + variable.getQName().toString() + "\" " +
-                        "type=\"" + type + "\" " +
-                        "size=\""+ strVal.length() + "\" " +
-                        "encoding=\"none\">" +
-                    strVal +
-                "</property>";
+                property.append("<property name=\"");
+                property.append(variable.getQName().toString());
+                property.append("\" fullname=\"");
+                property.append(variable.getQName().toString());
+                property.append("\" type=\"");
+                property.append(type);
+                property.append("\" size=\"");
+                property.append(strVal.length());
+                property.append("\" encoding=\"none\">");
+                property.append(strVal);
+                property.append("</property>");
             } else {
-                property = "<property " +
-                    "name=\"" + variable.getQName().toString() + "\" " +
-                    "fullname=\"" + variable.getQName().toString() + "\" " +
-                    "type=\"array\" " +
-                    "children=\"true\" " +
-                    "numchildren=\"" + value.getItemCount() + "\">";
+            	property.append("<property name=\"");
+            	property.append(variable.getQName().toString());
+            	property.append("\" fullname=\"");
+            	property.append(variable.getQName().toString());
+            	property.append("\" type=\"array\" children=\"true\" numchildren=\"");
+            	property.append(value.getItemCount());
+            	property.append("\">");
                 int idx = 0;
                 for (SequenceIterator si = value.iterate(); si.hasNext(); idx++) {
                     Item item = si.nextItem();
                     String strVal = getPropertyValue(item, serializer);
                     String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "xs:string" :
                         Type.getTypeName(value.getItemType());
-                    property += "<property " +
-                        "name=\"" + idx + "\" " +
-                        "type=\"" + type + "\" " +
-                        "size=\""+ strVal.length() + "\" " +
-                        "encoding=\"none\">" +
-                        strVal +
-                        "</property>";
+                    property.append("<property name=\"");
+                    property.append(idx);
+                    property.append("\" type=\"");
+                    property.append(type);
+                    property.append("\" size=\"");
+                    property.append(strVal.length());
+                    property.append("\" encoding=\"none\">");
+                    property.append(strVal);
+                    property.append("</property>");
                 }
-                property += "</property>";
+                property.append("</property>");
             }
             return property;
         } catch (SAXException e) {

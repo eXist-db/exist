@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: ProtocolHandler.java 12465 2010-08-20 09:07:49Z shabanovd $
  */
 package org.exist.debuggee.dbgp;
 
@@ -53,7 +53,7 @@ public class ProtocolHandler extends IoHandlerAdapter {
 			joint.sessionClosed(false);
 
 		if (LOG.isDebugEnabled())
-			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed.");
+			LOG.debug("Total " + session.getReadBytes() + " byte(s) readed, " + session.getWrittenBytes() + " byte(s) writed.");
 	}
 
 	@Override
@@ -70,6 +70,9 @@ public class ProtocolHandler extends IoHandlerAdapter {
 		
 //		command.exec();
 		
+		if (LOG.isDebugEnabled())
+			LOG.debug("" + command.toString());
+
 		session.write(command);
 	}
 	

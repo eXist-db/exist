@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: ResponseImpl.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debugger.dbgp;
 
@@ -34,6 +34,7 @@ import org.exist.debugger.Response;
 import org.exist.memtree.SAXAdapter;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -88,8 +89,17 @@ public class ResponseImpl implements Response {
 		return getAttribute("transaction_id");
 	}
 
+	public boolean hasAttribute(String attr) {
+		return parsedResponse.getAttributes().getNamedItem(attr) != null;
+	}
+
 	public String getAttribute(String attr) {
-		return parsedResponse.getAttributes().getNamedItem(attr).getNodeValue();
+		Node item = parsedResponse.getAttributes().getNamedItem(attr);
+		
+		if (item == null)
+			return null; //raise error?
+		
+		return item.getNodeValue();
 	}
 
 	public String getText() {
@@ -98,5 +108,9 @@ public class ResponseImpl implements Response {
 			return ((Text) node).getData();
 		
 		return null;
+	}
+
+	public NodeList getElemetsByName(String name) {
+		return parsedResponse.getElementsByTagName(name);
 	}
 }

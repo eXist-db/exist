@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: Source.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 
 package org.exist.debuggee.dbgp.packets;
@@ -142,7 +142,13 @@ public class Source extends Command {
     }
 
     public byte[] responseBytes() {
-    	if (response == null) {
+    	if (exception != null) {
+    		String url = "NULL";
+    		if (fileURI != null)
+    			url = fileURI;
+			response = errorBytes("source", Errors.ERR_100, 
+					exception.getMessage() + " (URL:"+url+")");
+    	} else if (response == null) {
     		if (source != null) {
     			try {
     				String head = "<response " +

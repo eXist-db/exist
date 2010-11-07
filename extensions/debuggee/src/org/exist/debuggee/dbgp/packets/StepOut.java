@@ -17,12 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: StepOut.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.debugger.ResponseListener;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

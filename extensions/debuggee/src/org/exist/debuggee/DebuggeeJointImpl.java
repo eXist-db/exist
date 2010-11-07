@@ -17,14 +17,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: DebuggeeJointImpl.java 12466 2010-08-20 09:38:51Z shabanovd $
  */
 package org.exist.debuggee;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.log4j.Logger;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
@@ -32,12 +31,17 @@ import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -55,17 +59,22 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	private int stackDepth = 0;
 	
 	private CommandContinuation command = null;
+	private Stack<CommandContinuation> commands = new Stack<CommandContinuation>();
 	
 	private int breakpointNo = 0;
 	//<fileName, Map<line, breakpoint>>
 	private Map<String, Map<Integer, Breakpoint>> filesBreakpoints = 
 		new HashMap<String, Map<Integer, Breakpoint>>();
 	
+	private Set<Breakpoint> activeBreakpoints =  new CopyOnWriteArraySet<Breakpoint>();
+
 	//id, breakpoint
 	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 
 	private CompiledXQuery compiledXQuery;
-	
+
+    private boolean inProlog = false;
+
 	public DebuggeeJointImpl() {
 	}
 	
@@ -76,7 +85,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
 	public void stackEnter(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("stackEnter " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		stack.add(expr);
 		stackDepth++;
@@ -85,7 +94,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
 	public void stackLeave(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("stackLeave " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		stack.remove(stack.size()-1);
 		stackDepth--;
@@ -97,12 +106,16 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		}
 	}
 
-	/* (non-Javadoc)
+    public void prologEnter(Expression expr) {
+        inProlog = true;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.debuggee.DebuggeeJoint#expressionStart(org.exist.xquery.Expression)
 	 */
 	public void expressionStart(Expression expr) throws TerminatedException {
 		if (LOG.isDebugEnabled())
-			LOG.debug("expressionStart " + expr.getLine() + " expr = "+ expr.toString());
+			LOG.debug("" + expr.getLine() + " expr = "+ expr.toString());
 		
 		if (compiledXQuery == null)
 			return;
@@ -115,6 +128,16 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		String fileName = Command.getFileuri(expr.getSource());
 		Integer lineNo = expr.getLine();
 
+		//check breakpoint
+		for (Breakpoint breakpoint : activeBreakpoints) {
+			if (breakpoint.getFilename().equals(fileName)
+					&& breakpoint.getType().equals(Breakpoint.TYPE_LINE) ) {
+				if (breakpoint.getLineno() != lineNo) {
+					activeBreakpoints.remove(breakpoint);
+				}
+			}
+		}
+		
 		Map<Integer, Breakpoint> fileBreakpoints = null;
 
 		while (true) {
@@ -143,7 +166,10 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			//stop command, terminate
 			if (command.is(CommandContinuation.STOP) && !command.isStatus(STOPPED)) {
 				command.setStatus(STOPPED);
-	            throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
+				
+				sessionClosed(true);
+	            
+				throw new TerminatedException(expr.getLine(), expr.getColumn(), "Debuggee STOP command.");
 			}
 
 			//step-into is done
@@ -166,14 +192,20 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 					if (fileBreakpoints.containsKey(lineNo)) {
 						Breakpoint breakpoint = fileBreakpoints.get(lineNo);
 						
-						if (breakpoint.getState() && breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
+						if (!activeBreakpoints.contains(breakpoint) 
+								&& breakpoint.getState() 
+								&& breakpoint.getType().equals(Breakpoint.TYPE_LINE)) {
+							
+							activeBreakpoints.add(breakpoint);
 							command.setStatus(BREAK);
+							//waitCommand();
+							//break;
 						}
 					}
 				}
 			}
 			
-			//RUS command with status RUNNING can be break only on breakpoints
+			//RUN command with status RUNNING can be break only on breakpoints
 			if (command.getType() >= CommandContinuation.RUN && command.isStatus(RUNNING)) {
 				break;
 
@@ -192,19 +224,34 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	 */
 	public void expressionEnd(Expression expr) {
 		if (LOG.isDebugEnabled())
-			LOG.debug("expressionEnd expr = "+expr.toString());
+			LOG.debug("expr = "+expr.toString());
 
 		if (firstExpression == expr) {
 			firstExpression = null;
-			
-			command.setStatus(STOPPED);
-			
-			sessionClosed(true);
+
+            if (!inProlog) {
+                command.setStatus(BREAK);
+                command.setStatus(STOPPED);
+
+                sessionClosed(true);
+                
+                reset();
+            }
+            inProlog = false;
 		}
 		
 	}
 	
 	private synchronized void waitCommand() {
+		if (commands.size() != 0 && command.isStatus(BREAK)) {
+			command = commands.pop();
+			
+			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
+			
+			return;
+		}
+			
+			
 		notifyAll();
 		try {
 			wait();
@@ -241,9 +288,13 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		else
 			command.setStatus(STARTING);
 
-		((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
+		if (this.command == null || this.command.isStatus(STOPPED)) {
+			((AbstractCommandContinuation)command).setCallStackDepth(stackDepth);
 		
-		this.command = command;
+			this.command = command;
+		} else {
+			commands.add(command);
+		}
 
 		notifyAll();
 	}
@@ -284,6 +335,22 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		return expr.getContext().getVariables();
 	}
 
+	public Map<QName, Variable> getLocalVariables() {
+		if (stack.size() == 0)
+			return new HashMap<QName, Variable>();
+			
+		Expression expr = stack.get(0);
+		return expr.getContext().getLocalVariables();
+	}
+	
+	public Map<QName, Variable> getGlobalVariables() {
+		if (stack.size() == 0)
+			return new HashMap<QName, Variable>();
+			
+		Expression expr = stack.get(0);
+		return expr.getContext().getGlobalVariables();
+	}
+
 	public Variable getVariable(String name) {
 		if (stack.size() == 0)
 			return null;
@@ -315,7 +382,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			fileBreakpoints.put(breakpoint.getLineno(), breakpoint);
 		}
 
-		return 1;//TODO: do throw constant
+		return 1;//TODO: create constant
 	}
 
 	public Breakpoint getBreakpoint(int breakpointID) {
@@ -346,6 +413,8 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 			}
 			
 			breakpoints.remove(breakpointID);
+			
+			activeBreakpoints.remove(breakpoint);
 		}
 		
 		return breakpoint;
@@ -362,17 +431,54 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		
 		//disconnect debuggee & compiled source
 		XQueryContext context = compiledXQuery.getContext();
-		context.setDebugMode(false);
 		context.setDebuggeeJoint(null);
 		compiledXQuery = null;
 		
 		if (command != null && disconnect)
 			command.disconnect();
 		
+		reset();
+		
 		notifyAll();
 	}
 
 	public CommandContinuation getCurrentCommand() {
 		return command;
+	}
+
+	@Override
+	public String evalution(String script) throws Exception {
+		
+		XQueryContext context = compiledXQuery.getContext().copyContext();
+		context.setDebuggeeJoint(null);
+		context.undeclareGlobalVariable(Debuggee.SESSION);
+		
+		XQuery service = context.getBroker().getXQueryService();
+		CompiledXQuery compiled = service.compile(context, script);
+		
+		Sequence resultSequence = service.execute(compiled, null);
+
+        SAXSerializer sax = null;
+        Serializer serializer = context.getBroker().getSerializer();
+		serializer.reset();
+        try {
+            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            Properties outputProps = new Properties();
+            StringWriter writer = new StringWriter();
+            sax.setOutput(writer, outputProps);
+            serializer.setSAXHandlers(sax, sax);
+            for (SequenceIterator i = resultSequence.iterate(); i.hasNext();) {
+                Item next = i.nextItem();
+                if (Type.subTypeOf(next.getType(), Type.NODE))
+                    serializer.toSAX((NodeValue) next);
+                else
+                    writer.write(next.getStringValue());
+            }
+            return writer.toString();
+        } finally {
+            if (sax != null) {
+                SerializerPool.getInstance().returnObject(sax);
+            }
+        }
 	}
 }
