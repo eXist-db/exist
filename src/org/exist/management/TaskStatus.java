@@ -15,50 +15,19 @@ public class TaskStatus implements Serializable {
 
 	private static final long serialVersionUID = -8405783622910875893L;
 
-	public static final int NA = 0;
-    public static final int NEVER_RUN = 1;
-    public static final int INIT = 2;
-    public static final int PAUSED = 3;
-    public static final int STOPPED_OK = 4;
-    public static final int STOPPED_ERROR = 5;
-    public static final int RUNNING_CHECK = 6;
-    public static final int RUNNING_BACKUP = 7;
-    public static final int PING_OK = 8;
-    public static final int PING_ERROR = 9;
-    public static final int PING_WAIT = 10;
-
-    private static final String[] STATUS_STRINGS = {
-    //
-            "NA",
-            //
-            "NEVER_RUN",
-            //
-            "INIT",
-            //
-            "PAUSED",
-            //
-            "STOPPED_OK",
-            //
-            "STOPPED_ERROR",
-            //
-            "RUNNING_CHECK",
-            //
-            "RUNNING_BACKUP",
-            //
-            "PING_OK",
-            //
-            "PING_ERROR",
-            //
-            "PING_WAIT"
+    public enum Status {
+        NA, NEVER_RUN, INIT, PAUSED, STOPPED_OK, STOPPED_ERROR, RUNNING_CHECK, RUNNING_BACKUP,
+        PING_OK, PING_ERROR, PING_WAIT
     };
 
-    private int _status = 0;
+    private Status status = Status.NA;
+
     private Date _statusChangeTime = Calendar.getInstance().getTime();
     private Object _reason = null;
     private int _percentageDone = 0;
 
-    public TaskStatus(int status) {
-        setStatus(status);
+    public TaskStatus(Status newStatus) {
+        setStatus(newStatus);
     }
 
     public Object getReason() {
@@ -71,19 +40,17 @@ public class TaskStatus implements Serializable {
         }
     }
 
-    public int getStatus() {
-        return _status;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setStatus(int status) {
-        if (status > 0 && status < STATUS_STRINGS.length) {
-            _status = status;
-        }
+    public void setStatus(Status newStatus) {
+        status=newStatus;
     }
 
     public String getStatusString() {
         String percentageInfo = "";
-        switch (_status) {
+        switch (status) {
         case INIT:
         case NA:
         case NEVER_RUN:
@@ -120,7 +87,7 @@ public class TaskStatus implements Serializable {
     public CompositeDataSupport getCompositeData() {
         Map<String, Object> data = new HashMap<String, Object>();
         CompositeDataSupport compositeData = null;
-        data.put("status", new Integer(_status));
+        data.put("status", status);
         data.put("statusChangeTime", _statusChangeTime);
         data.put("reason", _reason);
         data.put("percentage", Integer.valueOf(_percentageDone));
@@ -137,7 +104,8 @@ public class TaskStatus implements Serializable {
     }
 
     public static TaskStatus getTaskStatus(CompositeDataSupport compositeData) {
-        TaskStatus status = new TaskStatus(((Integer) compositeData.get("status")).intValue());
+
+        TaskStatus status = new TaskStatus((Status)compositeData.get("status"));
         status._reason = compositeData.get("reason");
         status._statusChangeTime = (Date) compositeData.get("statusChangeTime");
         status._percentageDone = ((Integer) compositeData.get("percentage")).intValue();
@@ -145,6 +113,6 @@ public class TaskStatus implements Serializable {
     }
 
     public String toString() {
-        return STATUS_STRINGS[_status];
+        return status.toString();
     }
 }

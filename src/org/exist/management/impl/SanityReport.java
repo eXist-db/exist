@@ -88,7 +88,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     
     private String output = "";
 
-    private TaskStatus taskstatus = new TaskStatus(TaskStatus.NEVER_RUN);
+    private TaskStatus taskstatus = new TaskStatus(TaskStatus.Status.NEVER_RUN);
 
     private List<ErrorReport> errors = NO_ERRORS;
 
@@ -157,7 +157,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             task.configure(pool.getConfiguration(), properties);
             pool.triggerSystemTask(task);
         } catch (EXistException existException) {
-            taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
+            taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
 
             List<ErrorReport> errors = new ArrayList<ErrorReport>();
             errors.add(
@@ -178,7 +178,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     	lastPingRespTime = -1;
     	lastActionInfo = "Ping";
     	
-    	taskstatus.setStatus(TaskStatus.PING_WAIT);
+    	taskstatus.setStatus(TaskStatus.Status.PING_WAIT);
     	
     	DBBroker broker = null;
     	try {
@@ -202,7 +202,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     		}
     	} catch (Exception e) {
 			lastPingRespTime = -2;
-			taskstatus.setStatus(TaskStatus.PING_ERROR);
+			taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
 			taskstatus.setStatusChangeTime();
 			taskstatus.setReason(e.getMessage());
 			changeStatus(taskstatus);
@@ -210,7 +210,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     		pool.release(broker);
     		
     		lastPingRespTime = System.currentTimeMillis() - start;
-    		taskstatus.setStatus(TaskStatus.PING_OK);
+    		taskstatus.setStatus(TaskStatus.Status.PING_OK);
 			taskstatus.setStatusChangeTime();
 			taskstatus.setReason("ping response time: " + lastPingRespTime);
 			changeStatus(taskstatus);
@@ -238,11 +238,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     protected void updateErrors(List<ErrorReport> errorList) {
         try {
             if (errorList == null || errorList.isEmpty()) {
-                taskstatus.setStatus(TaskStatus.STOPPED_OK);
+                taskstatus.setStatus(TaskStatus.Status.STOPPED_OK);
                 this.errors = NO_ERRORS;
             } else {
                 this.errors = errorList;
-                taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
+                taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
             }
         } catch (Exception e) {
             // ignore
@@ -253,21 +253,21 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     protected void changeStatus(TaskStatus status) {
         status.setStatusChangeTime();
         switch (status.getStatus()) {
-        case TaskStatus.INIT:
-            actualCheckStart = status.getStatusChangeTime();
-            break;
-        case TaskStatus.STOPPED_ERROR:
-        case TaskStatus.STOPPED_OK:
-            lastCheckStart = actualCheckStart;
-            actualCheckStart = null;
-            lastCheckEnd = status.getStatusChangeTime();
-            if (status.getReason() != null) {
-                this.errors = (List<ErrorReport>) status.getReason();
-            }
-            lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
-            break;
-        default:
-            break;
+            case INIT:
+                actualCheckStart = status.getStatusChangeTime();
+                break;
+            case STOPPED_ERROR:
+            case STOPPED_OK:
+                lastCheckStart = actualCheckStart;
+                actualCheckStart = null;
+                lastCheckEnd = status.getStatusChangeTime();
+                if (status.getReason() != null) {
+                    this.errors = (List<ErrorReport>) status.getReason();
+                }
+                lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
+                break;
+            default:
+                break;
         }
         TaskStatus oldState = taskstatus;
         try {
