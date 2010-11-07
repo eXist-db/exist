@@ -106,12 +106,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenDocumentsBeforeCreateDocument1() {
 		final String docPath = "/top/test.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.documents().listeners().add(Trigger.BEFORE_STORE, documentListener);
+		top.documents().listeners().add(Trigger.BEFORE_CREATE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 		createDocument("/top/deeper/test.xml");
@@ -131,13 +131,13 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenDocumentsAfterCreateDocument1() {
 		final String docPath = "/top/test.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_STORE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_CREATE, docPath, doc);
 		doc.delete();
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(with(eqDelayedDoc(ev))); will(checkDocumentExists(docPath, true));
 		}});
-		top.documents().listeners().add(Trigger.AFTER_STORE, documentListener);
+		top.documents().listeners().add(Trigger.AFTER_CREATE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 		createDocument("/top/deeper/test.xml");
@@ -156,12 +156,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenFolderBeforeCreateDocument1() {
 		final String docPath = "/top/test2.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.listeners().add(Trigger.BEFORE_STORE, documentListener);
+		top.listeners().add(Trigger.BEFORE_CREATE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -180,13 +180,13 @@ public class ListenerManagerTest extends DatabaseTestCase {
 	@Test public void listenFolderAfterCreateDocument1() {
 		final String docPath = "/top/test2.xml";
 		XMLDocument doc = createDocument(docPath);
-		final Document.Event ev = new Document.Event(Trigger.AFTER_STORE, docPath, doc);
+		final Document.Event ev = new Document.Event(Trigger.AFTER_CREATE, docPath, doc);
 		doc.delete();
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(with(eqDelayedDoc(ev))); will(checkDocumentExists(docPath, true));
 		}});
-		top.listeners().add(Trigger.AFTER_STORE, documentListener);
+		top.listeners().add(Trigger.AFTER_CREATE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -258,12 +258,12 @@ public class ListenerManagerTest extends DatabaseTestCase {
 
 	@Test public void listenFolderDeepBeforeCreateDocument1() {
 		final String docPath = "/top/middle/test2.xml";
-		final Document.Event ev = new Document.Event(Trigger.BEFORE_STORE, docPath, null);
+		final Document.Event ev = new Document.Event(Trigger.BEFORE_CREATE, docPath, null);
 		Folder top = db.createFolder("/top");
 		context.checking(new Expectations() {{
 			one(documentListener).handle(ev); will(checkDocumentExists(docPath, false));
 		}});
-		top.listeners().add(Trigger.BEFORE_STORE, documentListener);
+		top.listeners().add(Trigger.BEFORE_CREATE, documentListener);
 		createDocument(docPath);
 		createDocument("/elsewhere/test.xml");
 	}
@@ -416,7 +416,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		createDocument("/top/test2.xml").delete();
 	}
 
-	@Test @Ignore("not yet implemented") public void listenBeforeCreateFolder1() {
+	@Test public void listenBeforeCreateFolder1() {
 		final String folderPath = "/top/child";
 		final Folder.Event ev = new Folder.Event(Trigger.BEFORE_CREATE, folderPath, null);
 		context.checking(new Expectations() {{
@@ -427,7 +427,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		top.children().create("child");
 	}
 
-	@Test @Ignore("not yet implemented") public void listenBeforeCreateFolder2() {
+	@Test public void listenBeforeCreateFolder2() {
 		final String folderPath = "/top/middle/child";
 		final Folder.Event ev = new Folder.Event(Trigger.BEFORE_CREATE, folderPath, null);
 		context.checking(new Expectations() {{

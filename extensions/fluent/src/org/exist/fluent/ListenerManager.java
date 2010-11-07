@@ -28,7 +28,7 @@ import org.xml.sax.ext.LexicalHandler;
 public class ListenerManager {
 	
 	static String getTriggerConfigXml() {
-		return "<triggers><trigger event='create-document create-collection update-document rename-document rename-collection move-document move-collection delete-document delete-collection' class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
+		return "<triggers><trigger class='org.exist.fluent.ListenerManager$TriggerDispatcher'/></triggers>";
 	}
 	
 	static class EventKey implements Comparable<EventKey> {
@@ -391,12 +391,12 @@ public class ListenerManager {
 		@Override
 		public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
 			EventKey key = new EventKey(uri.toString(), Trigger.AFTER_REMOVE);
-			INSTANCE.fire(key, null, null, false);
+			INSTANCE.fire(key, (DocumentImpl)null, null, false);
 		}
 		@Override
 		public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
 			EventKey key = new EventKey(uri.toString(), Trigger.BEFORE_CREATE);
-			INSTANCE.fire(key, null, null, true);
+			INSTANCE.fire(key, (DocumentImpl)null, (org.exist.collections.Collection)null, true);
 		}
 		@Override
 		public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
