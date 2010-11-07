@@ -106,7 +106,7 @@ public abstract class DBBroker extends Observable {
 
     protected BrokerPool pool;
 
-    private Subject user = null;
+    private Subject subject = null;
 
     protected XQuery xqueryService;
 
@@ -140,7 +140,7 @@ public abstract class DBBroker extends Observable {
 	 * @param user
 	 */
 	public void setUser(Subject user) {
-		this.user = user;
+		this.subject = user;
 
 		/*
 		 * synchronized (this){ System.out.println("DBBroker.setUser(" +
@@ -150,12 +150,37 @@ public abstract class DBBroker extends Observable {
 
     /**
 	 * @return The user that is currently using this DBBroker object
+	 * @deprecated user getSubject
 	 */
 	public Subject getUser() {
-		return user;
+		return subject;
 	}
 
-    public IndexController getIndexController() {
+    /**
+	 * Set the subject that is currently using this DBBroker object.
+	 *
+	 * @param user
+	 */
+	//TODO: this should be done in connection with authenticate (SecurityManager)
+	public void setSubject(Subject subject) {
+		this.subject = subject;
+
+		/*
+		 * synchronized (this){ System.out.println("DBBroker.setUser(" +
+		 * user.getName() + ")"); Thread.dumpStack(); }
+		 */// debugging user escalation permissions problem - deliriumsky.
+	}
+
+	/**
+     * The subject that is currently using this DBBroker object
+     * 
+	 * @return Subject 
+	 */
+	public Subject getSubject() {
+		return subject;
+	}
+
+	public IndexController getIndexController() {
         return indexController;
     }
 
