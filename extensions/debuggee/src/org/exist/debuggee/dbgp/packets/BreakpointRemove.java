@@ -17,12 +17,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: BreakpointRemove.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.model.Breakpoint;
+import org.exist.debugger.model.BreakpointImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -33,12 +34,16 @@ public class BreakpointRemove extends Command {
 	/**
 	 * is the unique session breakpoint id returned by breakpoint_set.
 	 */
-	private int breakpointID;
+	private Integer breakpointID;
 	
 	private Breakpoint breakpoint;
 	
 	public BreakpointRemove(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		breakpointID = null;
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -55,7 +60,8 @@ public class BreakpointRemove extends Command {
 	 */
 	@Override
 	public void exec() {
-		breakpoint = getJoint().removeBreakpoint(breakpointID);
+		if (breakpointID != null)
+			breakpoint = getJoint().removeBreakpoint(breakpointID);
 	}
 
 	public byte[] responseBytes() {
@@ -76,5 +82,9 @@ public class BreakpointRemove extends Command {
 			return command.getBytes();
 		}
 		return null;
+	}
+
+	public void setBreakpoint(BreakpointImpl breakpoint) {
+		this.breakpoint= breakpoint;
 	}
 }

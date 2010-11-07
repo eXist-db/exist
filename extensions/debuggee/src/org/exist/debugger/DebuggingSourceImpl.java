@@ -17,17 +17,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: DebuggingSourceImpl.java 12440 2010-08-17 15:56:46Z shabanovd $
  */
 package org.exist.debugger;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.util.List;
 
-import org.exist.debugger.model.Breakpoint;
-import org.exist.debugger.model.BreakpointImpl;
-import org.exist.debugger.model.Location;
-import org.exist.debugger.model.Variable;
+import org.exist.debugger.model.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -39,7 +36,7 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	
 	private String fileURI;
 	
-	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
+//	private Map<Integer, Breakpoint> breakpoints = new HashMap<Integer, Breakpoint>();
 	
 	protected DebuggingSourceImpl(Debugger debugger, String fileURI) {
 		this.debugger = debugger;
@@ -47,10 +44,14 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		this.fileURI = fileURI;
 	}
 	
-	public Breakpoint getBreakpoint() {
+	public Debugger getDebugger() {
+		return debugger;
+	}
+
+	public Breakpoint newBreakpoint() {
 		BreakpointImpl breakpoint = new BreakpointImpl();
 		breakpoint.setFilename(fileURI);
-		breakpoint.setDebuggingSource(debugger);
+		breakpoint.setDebuggingSource(this);
 		
 		return breakpoint;
 	}
@@ -66,33 +67,37 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getStackFrames()
 	 */
-	public Location[] getStackFrames() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Location> getStackFrames() throws IOException {
+		return debugger.getStackFrames();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#getVariables()
 	 */
-	public Variable[] getVariables() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Variable> getVariables() throws IOException {
+		return debugger.getVariables();
+	}
+
+	public List<Variable> getLocalVariables() throws IOException {
+		return debugger.getLocalVariables();
+	}
+
+	public List<Variable> getGlobalVariables() throws IOException {
+		return debugger.getGlobalVariables();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#isSuspended()
 	 */
 	public boolean isSuspended() {
-		// TODO Auto-generated method stub
-		return false;
+		return debugger.isSuspended();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#isTerminated()
 	 */
 	public boolean isTerminated() {
-		// TODO Auto-generated method stub
-		return false;
+		return debugger.isTerminated();
 	}
 
 	/* (non-Javadoc)
@@ -119,10 +124,24 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#run()
+	 */
+	public void run() throws IOException {
+		debugger.run();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepInto()
 	 */
 	public void stepInto(ResponseListener listener) {
 		debugger.stepInto(listener);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepInto()
+	 */
+	public void stepInto() throws IOException {
+		debugger.stepInto();
 	}
 
 	/* (non-Javadoc)
@@ -133,10 +152,24 @@ public class DebuggingSourceImpl implements DebuggingSource {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepOut()
+	 */
+	public void stepOut() throws IOException {
+		debugger.stepOut();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.exist.debugger.DebuggingSource#stepOver()
 	 */
 	public void stepOver(ResponseListener listener) {
 		debugger.stepOver(listener);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stepOver()
+	 */
+	public void stepOver() throws IOException {
+		debugger.stepOver();
 	}
 
 	/* (non-Javadoc)
@@ -146,11 +179,13 @@ public class DebuggingSourceImpl implements DebuggingSource {
 		debugger.stop(listener);
 	}
 
-	public Breakpoint newBreakpoint() {
-		// TODO Auto-generated method stub
-		return null;
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.DebuggingSource#stop()
+	 */
+	public void stop() throws IOException {
+		debugger.stop();
 	}
-	
+
 	private String code = null;
 
 	public String getText() {
@@ -159,6 +194,11 @@ public class DebuggingSourceImpl implements DebuggingSource {
 
 	public void setText(String text) {
 		code = text;
+	}
+
+	@Override
+	public String evaluate(String script) throws IOException {
+		return debugger.evaluate(script);
 	}
 
 }

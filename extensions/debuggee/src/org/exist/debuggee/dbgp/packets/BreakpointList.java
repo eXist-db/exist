@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: BreakpointList.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
@@ -52,15 +52,16 @@ public class BreakpointList extends Command {
 
 	public byte[] responseBytes() {
 		if (breakpoints != null) {
-			String responce = "<response " +
-				"command=\"breakpoint_list\" " +
-				"transaction_id=\""+transactionID+"\">";
+			StringBuilder responce = new StringBuilder(); 
+			responce.append("<response  command=\"breakpoint_list\" transaction_id=\"");
+			responce.append(transactionID);
+			responce.append("\">");
 			for (Breakpoint breakpoint : breakpoints.values()) 
-				responce += breakpoint.toXMLString();
+				responce.append(breakpoint.toXMLString());
 				
-			responce += "</response>";
+			responce.append("</response>");
 
-			return responce.getBytes();
+			return responce.toString().getBytes();
 		}
 		return errorBytes("breakpoint_list");
 	}

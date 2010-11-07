@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: DummyDebuggee.java 12464 2010-08-20 08:48:38Z shabanovd $
  */
 package org.exist.debuggee;
 
@@ -32,7 +32,8 @@ public class DummyDebuggee implements Debuggee {
 	/* (non-Javadoc)
 	 * @see org.exist.debuggee.Debuggee#joint()
 	 */
-	public void joint(CompiledXQuery compiledXQuery) {
+	public boolean joint(CompiledXQuery compiledXQuery) {
+		return false;
 	}
 
 }

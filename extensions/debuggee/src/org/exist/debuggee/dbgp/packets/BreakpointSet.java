@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: BreakpointSet.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
@@ -33,15 +33,15 @@ public class BreakpointSet extends Command implements Breakpoint {
 
 	private BreakpointImpl breakpoint;
 	
-	private int status = -1;
+	private int status;
 
 	public BreakpointSet(IoSession session, String args) {
 		super(session, args);
-		System.out.println("breakpoint = "+breakpoint);
 	}
 
 	protected void init() {
 		breakpoint = new BreakpointImpl();
+		status = -1;
 	}
 	
 	protected void setArgument(String arg, String val) {
@@ -138,7 +138,7 @@ public class BreakpointSet extends Command implements Breakpoint {
 					" -r " + getTemporaryString(); 
 
 			if (getLineno() != null)
-				command += " -s " + getLineno(); 
+				command += " -n " + getLineno(); 
 					
 			if (getFunction() != null)
 				command += " -m " + getFunction(); 
@@ -269,5 +269,17 @@ public class BreakpointSet extends Command implements Breakpoint {
 		        "hit_count=\""+String.valueOf(getHitCount())+"\" >"+
 		      "<expression>"+getExpression()+"</expression>"+
 		      "</breakpoint>";
+	}
+
+	public boolean sync() {
+		return false;
+	}
+
+	public boolean remove() {
+		return false;
+	}
+
+	public void setBreakpoint(BreakpointImpl breakpoint) {
+		this.breakpoint = breakpoint;
 	}
 }

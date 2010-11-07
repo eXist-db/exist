@@ -17,10 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: ContextGet.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee.dbgp.packets;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
@@ -37,17 +38,22 @@ public class ContextGet extends Command {
 	/**
 	 * stack depth (optional)
 	 */
-	private Integer stackDepth = null;
+	private Integer stackDepth;
 	
 	/**
 	 * context id (optional, retrieved by context-names)
 	 */
-	private String contextID = "";
+	private String contextID;
 	
 	private Map<QName, Variable> variables;
 
 	public ContextGet(IoSession session, String args) {
 		super(session, args);
+	}
+
+	protected void init() {
+		stackDepth = null;
+		contextID = null;
 	}
 
 	protected void setArgument(String arg, String val) {
@@ -66,7 +72,17 @@ public class ContextGet extends Command {
 	@Override
 	public void exec() {
 		//TODO: different stack depth & context id
-		variables = getJoint().getVariables();
+		if (contextID == null || contextID.equals("")) 
+			variables = getJoint().getVariables();
+		
+		else if (contextID.equals(ContextNames.LOCAL)) 
+			variables = getJoint().getLocalVariables();
+		
+		else if (contextID.equals(ContextNames.GLOBAL)) 
+			variables = getJoint().getGlobalVariables();
+		
+		else //Class & unknow 
+			variables = new HashMap<QName, Variable>();
 	}
 
 	public byte[] responseBytes() {
@@ -81,15 +97,16 @@ public class ContextGet extends Command {
 	}
 	
 	private String getPropertiesString() {
-		String properties = "";
 		if (variables == null)
-			return properties; //XXX: error?
+			return ""; //XXX: error?
 
-        XQueryContext ctx = getJoint().getContext();
+		StringBuilder properties = new StringBuilder();
+
+		XQueryContext ctx = getJoint().getContext();
 		for (Variable variable : variables.values()) {
-			properties += PropertyGet.getPropertyString(variable, ctx);
+			properties.append(PropertyGet.getPropertyString(variable, ctx));
 		}
-		return properties;
+		return properties.toString();
 	}
 
 	public byte[] commandBytes() {
@@ -98,9 +115,13 @@ public class ContextGet extends Command {
 		if (stackDepth != null)
 			command += " -d "+String.valueOf(stackDepth);
 
-		if (contextID != null && contextID.equals(""))
-			command += " -c "+String.valueOf(contextID);
+		if (contextID != null && !contextID.equals(""))
+			command += " -c "+contextID;
 		
 		return command.getBytes();
+	}
+
+	public void setContextID(String contextID) {
+		this.contextID = contextID;
 	}
 }

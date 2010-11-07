@@ -17,9 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: Response.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debugger;
+
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -29,7 +31,10 @@ public interface Response {
 
 	public String getTransactionID();
 
+	public boolean hasAttribute(String attr);
 	public String getAttribute(String attr);
 
 	public String getText();
+
+	public NodeList getElemetsByName(String name);
 }

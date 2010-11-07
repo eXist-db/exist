@@ -31,6 +31,10 @@ import org.apache.mina.core.session.IoSession;
  */
 public class ContextNames extends Command {
 
+	public final static String LOCAL = "0";
+	public final static String GLOBAL = "1";
+	public final static String CLASS = "2";
+	
 	private Integer stackDepth = null;
 
 	public ContextNames(IoSession session, String args) {

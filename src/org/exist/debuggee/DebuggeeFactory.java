@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: DebuggeeFactory.java 11737 2010-05-02 21:25:21Z ixitar $
  */
 package org.exist.debuggee;
 
@@ -37,7 +37,7 @@ public class DebuggeeFactory {
         if (instance == null) {
             String className = System.getProperty("exist.debuggee", "org.exist.debuggee.DebuggeeImpl");
             try {
-                Class clazz = Class.forName(className);
+                Class<?> clazz = Class.forName(className);
                 if (!Debuggee.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Debuggee. Using fallback.");
                 } else {

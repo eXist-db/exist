@@ -17,10 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: Debuggee.java 12464 2010-08-20 08:48:38Z shabanovd $
  */
 package org.exist.debuggee;
 
+import org.exist.dom.QName;
 import org.exist.xquery.CompiledXQuery;
 
 /**
@@ -31,6 +32,8 @@ public interface Debuggee {
 
 	public static final String NAMESPACE_URI = "http://www.xdebug.org/";
 	public static final String PREFIX = "dbgp";
+
+	public static final QName SESSION = new QName("session", NAMESPACE_URI, PREFIX);
 	
-	public void joint(CompiledXQuery compiledXQuery);
+	public boolean joint(CompiledXQuery compiledXQuery);
 }

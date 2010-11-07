@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id: DebuggeeJoint.java 11987 2010-07-17 13:57:07Z wolfgang_m $
  */
 package org.exist.debuggee;
 
@@ -46,6 +46,8 @@ public interface DebuggeeJoint {
 	public void stackEnter(Expression expr) throws TerminatedException;
 	public void stackLeave(Expression expr);
 
+    public void prologEnter(Expression expr);
+    
 	public void reset();
 
 	public boolean featureSet(String name, String value);
@@ -65,6 +67,8 @@ public interface DebuggeeJoint {
 	public List<Expression> stackGet();
 	
 	public Map<QName, Variable> getVariables();
+	public Map<QName, Variable> getLocalVariables();
+	public Map<QName, Variable> getGlobalVariables();
 	public Variable getVariable(String name);
 	
 	//breakpoints methods
@@ -76,4 +80,6 @@ public interface DebuggeeJoint {
 	public Breakpoint removeBreakpoint(int breakpointID);
 	
 	public void sessionClosed(boolean disconnect);
+
+	public String evalution(String script) throws Exception;
 }
