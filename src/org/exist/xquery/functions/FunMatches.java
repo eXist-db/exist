@@ -314,7 +314,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         if (contextStep == null || preselectResult == null) {
             Sequence input = getArgument(0).eval(contextSequence, contextItem);
 
-            if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
+            if (input.isPersistentSet() && inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
                 if (context.isProfilingEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");
                 if (input.isEmpty())
