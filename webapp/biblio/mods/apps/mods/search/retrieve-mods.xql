@@ -17,7 +17,7 @@ declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string
              concat('$1',$replacement))
  } ;
  
- declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string? {
+declare function functx:camel-case-to-words( $arg as xs:string?, $delim as xs:string ) as xs:string? {
    concat(substring($arg,1,1), replace(substring($arg,2),'(\p{Lu})', concat($delim, '$1')))
 };
 
@@ -32,7 +32,7 @@ declare function functx:trim
    replace(replace($arg,'\s+$',''),'^\s+','')
  } ;
  
- declare function mods:space-before($node as node()?) as xs:string? {
+declare function mods:space-before($node as node()?) as xs:string? {
     if (exists($node)) then
         concat(' ', $node)
     else
@@ -126,7 +126,7 @@ declare function mods:get-extent($extent as element(mods:extent)?) {
 (: ### <originInfo> begins ### :)
 
 (: The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use of at least one <originInfo> element with at least one date subelement in every record, one of which must be marked as a key date. <place>, <publisher>, and <edition> are recommended if applicable. These guidelines make no recommendation on the use of the elements <issuance> and <frequency>. This element is repeatable. :)
- (: Application: <titleInfo> is repeated for each type attribute value. If multiple titles are recorded, repeat <titleInfo><title> for each. The language of the title may be indicated if desired using the xml:lang (RFC3066) or lang (3-character ISO 639-2 code) attributes. :)
+ (: Application: :)
     (: Problem:  :)
 (: Attributes: lang, xml:lang, script, transliteration. :)
     (: Unaccounted for:  :)
@@ -265,7 +265,7 @@ declare function mods:get-related-item-part($entry as element()) {
 (: ### <name> begins ### :)
 
 (: The DLF/Aquifer Implementation Guidelines for Shareable MODS Records requires the use of at least one <name> element to describe the creator of the intellectual content of the resource, if available. The guidelines recommend the use of the type attribute with all <name> elements whenever possible for greater control and interoperability. In addition, they require the use of <namePart> as a subelement of <name>. This element is repeatable. :)
- (: Application: <titleInfo> is repeated for each type attribute value. If multiple titles are recorded, repeat <titleInfo><title> for each. The language of the title may be indicated if desired using the xml:lang (RFC3066) or lang (3-character ISO 639-2 code) attributes. :)
+ (: Application:  :)
     (: Problem:  :)
 (: Attributes: type [RECOMMENDED], authority [RECOMMENDED], xlink, ID, lang, xml:lang, script, transliteration. :)
     (: Unaccounted for: authority, xlink, ID, (lang), xml:lang, script. :)
@@ -556,16 +556,18 @@ declare function mods:get-genre() {
 
 (: The DLF/Aquifer Implementation Guidelines for Shareable MODS Records require the use in all records of at least one <titleInfo> element with one <title> subelement. Other subelements of <titleInfo> are recommended when they apply. This element is repeatable. :)
 (: Application: <titleInfo> is repeated for each type attribute value. If multiple titles are recorded, repeat <titleInfo><title> for each. The language of the title may be indicated if desired using the xml:lang (RFC3066) or lang (3-character ISO 639-2 code) attributes. :)
-    (: Problem: the wrong (2-character) language codes seem to be used in samples. :)
-(: Attributes: type [RECOMMENDED IF APPLICABLE], authority [RECOMMENDED IF APPLICABLE], displayLabel [OPTIONAL], xlink, ID, lang, xml:lang, script, transliteration. :)
-    (: All attributes are applied to the <titleInfo> element; none are used on any subelements. :)
+    (: Problem: the wrong (2-character) language codes seem to be used in Academy samples. :)
+(: 3.3 Attributes: type [RECOMMENDED IF APPLICABLE], authority [RECOMMENDED IF APPLICABLE], displayLabel [OPTIONAL], xlink:simpleLink, ID, lang, xml:lang, script, transliteration. :)
+    (: All 3.3 attributes are applied to the <titleInfo> element; none are used on any subelements. 
+    In 3.4 all subelements have lang, xml:lang, script, transliteration. :)
     (: Unaccounted for: authority, displayLabel, xlink, ID, xml:lang, script. :)
     (: @type :)
-        (: For the primary title of the resource, do not use the type attribute. For all additional titles, the guidelines recommend using this attribute to indicate the type of the title being recorded. :)
+        (: For the primary title of the resource, do not use the type attribute (NB: this does not mean that the attribute should be empty, but absent). For all additional titles, the guidelines recommend using this attribute to indicate the type of the title being recorded. :)
         (: Values: abbreviated, translated, alternative, uniform. :)
-            (: Unaccounted for: none. :)
+        (: NB: added value: transliterated. :)
+            (: Unaccounted for: transliterated. :)
 (: Subelements: <title> [REQUIRED], <subTitle> [RECOMMENDED IF APPLICABLE], <partNumber> [RECOMMENDED IF APPLICABLE], <partName> [RECOMMENDED IF APPLICABLE], <nonSort> [RECOMMENDED IF APPLICABLE]. :)
-    (: Unaccounted for: <partNumber>, <partName>, <nonSort>. :)
+    (: Unaccounted for: <nonSort>. :)
     (: <nonSort> :)
         (: The guidelines strongly recommend the use of this element when non-sorting characters are present, rather than including them in the text of the <title> element. :)
     (: <partName> :)
@@ -651,31 +653,59 @@ declare function mods:get-title-translated($entry as element(mods:mods), $titleI
 :)
 
 declare function mods:get-short-title($id as xs:string?, $entry as element()) {
+    let $nonSortTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:nonSort/string()
     let $titleTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:title/string()
     let $subTitleTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:subTitle/string()
+    let $partNumberTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:partNumber/string()
+    let $partNameTransliteration := string-join(($entry/mods:titleInfo[@transliteration][1]/mods:partName/string()), ', ')
+    let $nonSort := $entry/mods:titleInfo[not(@transliteration)][1]/mods:nonSort/string()
     let $title := $entry/mods:titleInfo[not(@transliteration)][1]/mods:title/string()
     let $subTitle := $entry/mods:titleInfo[not(@transliteration)][1]/mods:subTitle/string()
+    let $partNumber := $entry/mods:titleInfo[not(@transliteration)][1]/mods:partNumber/string()
+    let $partName := string-join(($entry/mods:titleInfo[not(@transliteration)][1]/mods:partName[1]/string()), ':, ' )
     
     return
     (: If there is a Chinese/Japanese title with transliteration, only the transliteration should be in italics. :)
     if ($titleTransliteration) then
         <span class="pagination-toggle"><em>
         { 
-        $titleTransliteration, 
+        concat($nonSortTransliteration, ' ' , $titleTransliteration), 
         if ($subTitleTransliteration) then
             concat(': ', $subTitleTransliteration)
         else
-            ()
+        ()
+        ,
+        if ($partNumberTransliteration) then
+            concat(': ', $partNumberTransliteration )
+        else
+        ()
+        ,
+        if ($partNameTransliteration) then
+            concat(': ', $partNameTransliteration)
+        else
+        ()
+                 
         }
         </em>, 
         {
-        ' ', $title, 
+        ' ', concat($nonSort, ' ' , $title), 
         if ($subTitle) then
             concat(': ', $subTitle)
         else
-            () 
+        ()
+        ,
+        if ($partNumber) then
+            concat(': ', $partNumber)
+        else
+        ()
+        ,
+        if ($partName) then
+            concat(': ', $partName)
+        else
+        ()            
         }
-        . </span>
+        .
+        </span>
         (: NB: This period should not appear after periodical titles. :)
         
         else
@@ -694,31 +724,73 @@ declare function mods:get-short-title($id as xs:string?, $entry as element()) {
 
 (: Constructs the full title for the detail view. :)
 declare function mods:title-full($titleInfo as element(mods:titleInfo)) {
+if ($titleInfo)
+    then
     <tr>
-        <td class="label">Title
+        <td class="label">
         {
             if ($titleInfo/@type = 'translated') then
-                concat("(translated", mods:space-before($titleInfo/@lang), ")")
-                (: can also have @transliteration without @lang :)
+                "Translated Title"
             else if ($titleInfo/@type = 'abbreviated') then
-                concat("(abbreviated", mods:space-before($titleInfo/@lang), ")")
+                "Abbreviated Title"
             else if ($titleInfo/@type = 'alternative') then
-                concat("(alternative", mods:space-before($titleInfo/@lang), ")")
+                "Alternative Title"
             else if ($titleInfo/@type = 'uniform') then
-                concat("(uniform", mods:space-before($titleInfo/@lang), ")")
-            else if ($titleInfo/@transliteration) then
-                concat("(transliteration", mods:space-before($titleInfo/@transliteration), ")")
-            (: was
-            concat("(transliteration", mods:space-before($titleInfo/@lang), ")")
-            :)
-            else if ($titleInfo/@lang) then
-                concat("(", $titleInfo/@lang, ")")
+                "Uniform Title"
+            else if ($titleInfo/@type = 'transliterated') then
+                "Transliterated Title"
+            else if (string-length($titleInfo/@type) eq 0) then
+                "Title"
             else
-                ()
+                "Title"
+        }
+        <span class="deemph">
+        {
+        if ($titleInfo/@lang)
+        then
+        (<br/>, concat("(Language: ", ($titleInfo/@lang), ")"))
+        else
+        ()
+        }
+        {
+        if ($titleInfo/@xml:lang)
+        then
+        (<br/>, concat("(Language: ", ($titleInfo/@xml:lang), ")"))
+        else
+        ()
+        }
+        {
+        if ($titleInfo/@transliteration)
+        then
+        (<br/>, concat("(Transliteration: ", ($titleInfo/@transliteration), ")"))
+        else
+        ()
+        }
+        {
+        if ($titleInfo/@script)
+        then
+        (<br/>, concat("(Script: ", ($titleInfo/@script), ")"))
+        else
+        ()
+        }
+        </span>
+        </td>
+        <td class="record">
+        {
+        if ($titleInfo/mods:partNumber, $titleInfo/mods:partName)
+        then
+        concat(
+        string-join((concat($titleInfo/mods:nonSort, ' ', $titleInfo/mods:title), $titleInfo/mods:subTitle), ': ')
+        , ". ")
+        else
+        string-join((concat($titleInfo/mods:nonSort, $titleInfo/mods:title, ' '), $titleInfo/mods:subTitle), ': ')
+        ,
+        string-join(($titleInfo/mods:partNumber, $titleInfo/mods:partName), ': ')        
         }
         </td>
-        <td class="record">{ string-join(($titleInfo/mods:title, $titleInfo/mods:subTitle), ': ') }</td>
     </tr>
+    else
+    ()
 };
 
 (: ### <titleInfo> ends ### :)
