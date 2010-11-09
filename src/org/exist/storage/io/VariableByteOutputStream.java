@@ -15,7 +15,7 @@ import org.exist.util.FastByteBuffer;
  */
 public class VariableByteOutputStream extends OutputStream {
 
-    private final int MAX_BUFFER_SIZE = 65536;
+    private static final int MAX_BUFFER_SIZE = 65536;
     protected FastByteBuffer buf;	
     private final byte[] temp = new byte[5];
     
