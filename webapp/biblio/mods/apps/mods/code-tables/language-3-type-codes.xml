@@ -2548,7 +2548,7 @@
             <value>pra</value>
             <valueTerm/>
             <label>Prakrit languages</label>
-            <labelFrench>pr√¢krit, langues</labelFrench>
+            <labelFrench>prâkrit, langues</labelFrench>
             <classifier>transliteration</classifier>
             <classifier type="added">not Latin</classifier>
         </item>

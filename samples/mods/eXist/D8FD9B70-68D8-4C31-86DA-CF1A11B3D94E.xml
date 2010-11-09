@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="D8FD9B70-68D8-4C31-86DA-CF1A11B3D94E">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="D8FD9B70-68D8-4C31-86DA-CF1A11B3D94E">
     <titleInfo>
         <title>From Social to Serious</title>
         <subTitle>Combining Twitter and RESTful Web Services</subTitle>
@@ -21,6 +19,14 @@
     <location>
         <url>http://www.devx.com/webdev/Article/41337</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>DevX.com</title>
+        </titleInfo>
+        <location>
+            <url>http://www.devx.com/webdev/</url>
+        </location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>

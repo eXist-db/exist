@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="F3FCEC9E-638F-4C68-94D9-5AE6323EC665">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="F3FCEC9E-638F-4C68-94D9-5AE6323EC665">
     <titleInfo>
         <title>XML databases with eXist and ColdFusion</title>
     </titleInfo>
@@ -15,6 +13,14 @@
     <location>
         <url>http://www.throwingbeans.org/xml_databases_with_exist_and_coldfusion.html</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>Throwing Beans</title>
+        </titleInfo>
+        <location>
+            <url>http://www.throwingbeans.org/</url>
+        </location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>

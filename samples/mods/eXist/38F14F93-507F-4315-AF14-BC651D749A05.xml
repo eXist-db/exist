@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="38F14F93-507F-4315-AF14-BC651D749A05">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="38F14F93-507F-4315-AF14-BC651D749A05">
     <titleInfo>
-        <title>IT-based collaborative learning in Grammar</title>
+        <title>IT-based Collaborative Learning in Grammar</title>
     </titleInfo>
     <typeOfResource>text</typeOfResource>
     <genre authority="local">conferencePaper</genre>

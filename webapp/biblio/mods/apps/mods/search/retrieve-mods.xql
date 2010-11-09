@@ -7,6 +7,8 @@ declare namespace functx = "http://www.functx.com";
 
 declare option exist:serialize "media-type=text/xml";
 
+
+
 (: TODO: A lot of restrictions to the first item in a sequence ([1]) have been made; these must all be changed to for-structures. :)
 
 (: ### general functions begin ###:)
@@ -748,28 +750,51 @@ if ($titleInfo)
         {
         if ($titleInfo/@lang)
         then
-        (<br/>, concat("(Language: ", ($titleInfo/@lang), ")"))
+        
+        (<br/>, 
+        concat("(Language: ", 
+        doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $titleInfo/@lang]/label
+        , 
+        ")"
+        )
+        
+        )
         else
         ()
         }
         {
         if ($titleInfo/@xml:lang)
         then
-        (<br/>, concat("(Language: ", ($titleInfo/@xml:lang), ")"))
+        (<br/>, concat("(Language: ", 
+        doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[valueTwo = $titleInfo/@xml:lang]/label
+        , 
+        ")")
+        )
         else
         ()
         }
         {
-        if ($titleInfo/@transliteration)
+        if ($titleInfo/@xml:transliteration)
         then
-        (<br/>, concat("(Transliteration: ", ($titleInfo/@transliteration), ")"))
+            if (doc("/db/org/library/apps/mods/code-tables/transliteration-codes.xml")/code-table/items/item[value = $titleInfo/@transliteration]/label)
+            then
+            (<br/>, concat("(Transliteration: ", 
+            doc("/db/org/library/apps/mods/code-tables/transliteration-codes.xml")/code-table/items/item[value = $titleInfo/@transliteration]/label
+            , ")"))
+            else
+            (<br/>, concat("(Transliteration: ",($titleInfo/@transliteration)
+        , ")"))
         else
         ()
         }
         {
         if ($titleInfo/@script)
         then
-        (<br/>, concat("(Script: ", ($titleInfo/@script), ")"))
+        (<br/>, concat("(Script: ", 
+        doc("/db/org/library/apps/mods/code-tables/script-codes.xml")/code-table/items/item[value = $titleInfo/@script]/label
+        , 
+        ")")
+        )
         else
         ()
         }
@@ -824,7 +849,7 @@ declare function mods:get-related($entry as element(mods:mods)) {
                 if ($related/mods:originInfo or $related/mods:part) then
                     mods:get-part-and-origin($related)
                 else if ($related/mods:location/mods:url) then
-                    concat(", ", $related/mods:location/mods:url)
+                    concat(" <", $related/mods:location/mods:url, ">")
                 else 
                     ()
             }
@@ -836,7 +861,7 @@ declare function mods:get-related($entry as element(mods:mods)) {
 (: ### <relatedItem> ends ### :)
 
 declare function mods:names-full($entry as element()) {
-if (($entry/mods:name)) then
+if ($entry/mods:name) then
     let $names := $entry/mods:name
     for $name in $names
     return
@@ -844,9 +869,19 @@ if (($entry/mods:name)) then
         <tr>
             <td class="label">
             {
-            if ($name/mods:role/mods:roleTerm[@type = 'text']) then
-                functx:capitalize-first($name/mods:role/mods:roleTerm[@type = 'text'])
-            else 'Author'
+            if ($name/mods:role/mods:roleTerm)
+            then
+                if ($name/mods:role/mods:roleTerm/@type)
+                    then
+                        if ($name/mods:role/mods:roleTerm[@type = 'code']) then
+                            doc("/db/org/library/apps/mods/code-tables/role-codes.xml")/code-table/items/item[value = $name/mods:role/mods:roleTerm/@type]/label
+                        else 
+                            functx:capitalize-first($name/mods:role/mods:roleTerm[@type = 'text'])                        
+                        else
+                        'Author'
+            else
+            'Author'
+            (: interpreting this as the default value for roleTerm. :)
             }
             </td>
             <td class="record">
@@ -943,15 +978,35 @@ declare function mods:entry-full($entry as element())
     (: NB! [1] should not be necessary. :)
     mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
     if ($entry/mods:extent) then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") else (),
+    
     mods:simple-row($entry/mods:typeOfResource[1]/string(), "Type of Resource"),
     
+    (: language :)
+    (: expand to render several languages :)
+    if ($entry/mods:language[1]/mods:languageTerm/@authority="iso639-2b")
+    then
+    mods:simple-row(
+    doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $entry/mods:language[1]/mods:languageTerm]/label, "Language")
+    else
+    mods:simple-row(
+        $entry/mods:language[1]/mods:languageTerm/string(), "Language")
+    ,
+    
+    (: genre :)
     for $genre in ($entry/mods:genre)
     let $authority := $genre/@authority/string()
-    return
+    return    
     mods:simple-row($genre/string(), 
     concat('Genre', 
-        if ($authority) then
-        concat('(', $authority, ')') else ()
+        if ($authority = 'marcgt')
+        then
+        concat(' (', doc("/db/org/library/apps/mods/code-tables/genre-authority-codes.xml")/code-table/items/item[value = $authority]/label, ')')
+        else            
+            if ($authority)
+            then
+            concat(' (', $authority, ')')
+            else
+            ()            
         )
     ),
     

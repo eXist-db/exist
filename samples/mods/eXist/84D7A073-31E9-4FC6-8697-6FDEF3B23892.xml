@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="84D7A073-31E9-4FC6-8697-6FDEF3B23892">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="84D7A073-31E9-4FC6-8697-6FDEF3B23892">
     <titleInfo>
         <title>XQuery/Keyword Search</title>
     </titleInfo>
@@ -10,11 +8,16 @@
     </name>
     <originInfo>
         <dateCreated>2009-01-10</dateCreated>
-        <publisher>XQuery Wikibook</publisher>
     </originInfo>
     <location>
         <url>http://en.wikibooks.org/wiki/XQuery/Keyword_Search</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>XQuery Wikibook</title>
+        </titleInfo>
+        <location><url>http://en.wikibooks.org/</url></location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>
