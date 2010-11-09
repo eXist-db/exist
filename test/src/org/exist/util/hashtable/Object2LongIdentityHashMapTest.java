@@ -57,7 +57,7 @@ public class Object2LongIdentityHashMapTest extends AbstractHashtableTest<Object
 	}
 	
 	protected Integer keyEquiv_newObject(int k) {
-		return Integer.valueOf(k);
+		return new Integer(k);
 	}
 
 	/**
