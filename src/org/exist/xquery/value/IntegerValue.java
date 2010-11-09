@@ -474,16 +474,16 @@ public class IntegerValue extends NumericValue {
 			return this;
 		else if(target == Long.class || target == long.class)
 			// ?? jmv: return new Long(value);
-			return new Long(value.longValue());
+			return Long.valueOf(value.longValue());
 		else if(target == Integer.class || target == int.class) {
 			IntegerValue v = (IntegerValue)convertTo(Type.INT);
-			return new Integer((int)v.value.intValue());
+			return Integer.valueOf((int)v.value.intValue());
 		} else if(target == Short.class || target == short.class) {
 			IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
-			return new Short((short)v.value.shortValue());
+			return Short.valueOf((short)v.value.shortValue());
 		} else if(target == Byte.class || target == byte.class) {
 			IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
-			return new Byte((byte)v.value.byteValue());
+			return Byte.valueOf((byte)v.value.byteValue());
 		} else if(target == Double.class || target == double.class) {
 			DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
 			return new Double(v.getValue());

@@ -286,22 +286,22 @@ public class UntypedAtomicValue extends AtomicValue {
             return new Float(v.value);
         } else if (target == long.class || target == Long.class) {
             IntegerValue v = (IntegerValue) convertTo(Type.LONG);
-            return new Long(v.getInt());
+            return Long.valueOf(v.getInt());
         } else if (target == int.class || target == Integer.class) {
             IntegerValue v = (IntegerValue) convertTo(Type.INT);
-            return new Integer(v.getInt());
+            return Integer.valueOf(v.getInt());
         } else if (target == short.class || target == Short.class) {
             IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
-            return new Short((short) v.getInt());
+            return Short.valueOf((short) v.getInt());
         } else if (target == byte.class || target == Byte.class) {
             IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
-            return new Byte((byte) v.getInt());
+            return Byte.valueOf((byte) v.getInt());
         } else if (target == boolean.class || target == Boolean.class) {
             return Boolean.valueOf(effectiveBooleanValue());
         } else if (target == char.class || target == Character.class) {
             if (value.length() > 1 || value.length() == 0)
                 throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
-            return new Character(value.charAt(0));
+            return Character.valueOf(value.charAt(0));
         }
 
         throw new XPathException(

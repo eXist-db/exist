@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
 import javax.servlet.*;
@@ -230,8 +231,8 @@ public class AuthenticatorOpenId extends HttpServlet {
 				out.println("    <form name=\"openid-form-redirection\" action=\""+OPEndpoint+"\" method=\"post\" accept-charset=\"utf-8\">");
 
 				Map<String, String> parameterMap = authReq.getParameterMap();
-				for (String key : parameterMap.keySet()) {
-					out.println("	<input type=\"hidden\" name=\""+key+"\" value=\""+parameterMap.get(key)+"\"/>");
+				for (Entry<String, String> entry : parameterMap.entrySet()) {
+					out.println("	<input type=\"hidden\" name=\""+entry.getKey()+"\" value=\""+entry.getValue()+"\"/>");
 				}
 				
 				out.println("        <button type=\"submit\">Continue...</button>");

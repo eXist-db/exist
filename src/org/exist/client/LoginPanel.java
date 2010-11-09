@@ -799,6 +799,7 @@ public class LoginPanel extends JPanel {
          * @see java.lang.Object#equals(Object)
          */
         public boolean equals(Object o) {
+        	if (o == null) return false;
             return name.equals(o.toString());
         }
         

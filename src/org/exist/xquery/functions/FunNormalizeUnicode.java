@@ -57,7 +57,7 @@ public class FunNormalizeUnicode extends Function {
 	private Class<?> clazz = null;	
 	private Field  modeField = null;
 	private Object modeObject = null;
-	private static Integer DUMMY_INTEGER = new Integer(0);
+	private static final Integer DUMMY_INTEGER = Integer.valueOf(0);
 	private Constructor<?> constructor = null;
 	private Method method = null;
 	

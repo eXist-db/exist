@@ -93,7 +93,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		int m = canonicalDuration.getMinutes();
 		Number s = canonicalDuration.getField(DatatypeConstants.SECONDS);
         if (s == null)
-        	s = new Integer(0);
+        	s = Integer.valueOf(0);
 	
 		//Copied from Saxon 8.6.1		
         FastStringBuffer sb = new FastStringBuffer(32);

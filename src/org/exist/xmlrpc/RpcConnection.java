@@ -599,7 +599,7 @@ public class RpcConnection implements RpcAPI {
             desc.put("created", Long.toString(collection.getCreationTime()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getOwnerGroup().getName());
-            desc.put("permissions", new Integer(perms.getPermissions()));
+            desc.put("permissions", Integer.valueOf(perms.getPermissions()));
             return desc;
         } finally {
             if(collection != null)
@@ -659,7 +659,7 @@ public class RpcConnection implements RpcAPI {
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
                     : "XMLResource");
-            hash.put("content-length", new Integer(doc.getContentLength()));
+            hash.put("content-length", Integer.valueOf(doc.getContentLength()));
             hash.put("mime-type", doc.getMetadata().getMimeType());
             hash.put("created", new Date(doc.getMetadata().getCreated()));
             hash.put("modified", new Date(doc.getMetadata().getLastModified()));
@@ -716,7 +716,7 @@ public class RpcConnection implements RpcAPI {
             desc.put("created", Long.toString(collection.getCreationTime()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getOwnerGroup().getName());
-            desc.put("permissions", new Integer(perms.getPermissions()));
+            desc.put("permissions", Integer.valueOf(perms.getPermissions()));
             return desc;
         } finally {
             if(collection != null)
@@ -909,7 +909,7 @@ public class RpcConnection implements RpcAPI {
     		} else {
     			vtempFile.delete();
     		}
-    		result.put("offset", new Integer(offset));
+    		result.put("offset", Integer.valueOf(offset));
 
     		return result;
 
@@ -962,7 +962,7 @@ public class RpcConnection implements RpcAPI {
     			factory.resultSets.remove(resultId);
     			result.put("offset", new Integer(0));
     		} else
-    			result.put("offset", new Integer((int)nextChunk));
+    			result.put("offset", Integer.valueOf((int)nextChunk));
     		return result;
     	} catch (Throwable e) {
     		handleException(e);
@@ -1459,7 +1459,7 @@ public class RpcConnection implements RpcAPI {
             	List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
                 tmp.add(perm.getOwnerGroup().getName());
-                tmp.add(new Integer(perm.getPermissions()));
+                tmp.add(Integer.valueOf(perm.getPermissions()));
                 result.put(doc.getFileURI().toString(), tmp);
             }
             return result;
@@ -1513,7 +1513,7 @@ public class RpcConnection implements RpcAPI {
                 List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
                 tmp.add(perm.getOwnerGroup().getName());
-                tmp.add(new Integer(perm.getPermissions()));
+                tmp.add(Integer.valueOf(perm.getPermissions()));
                 result.put(child, tmp);
             }
             return result;
@@ -1590,7 +1590,7 @@ public class RpcConnection implements RpcAPI {
             HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("owner", perm.getOwner().getName());
             result.put("group", perm.getOwnerGroup().getName());
-            result.put("permissions", new Integer(perm.getPermissions()));
+            result.put("permissions", Integer.valueOf(perm.getPermissions()));
             return result;
         } finally {
         	if (collection != null)
@@ -2391,8 +2391,8 @@ public class RpcConnection implements RpcAPI {
         } catch (XPathException e) {
             ret.put(RpcAPI.ERROR, e.getMessage());
             if(e.getLine() != 0) {
-                ret.put(RpcAPI.LINE, new Integer(e.getLine()));
-                ret.put(RpcAPI.COLUMN, new Integer(e.getColumn()));
+                ret.put(RpcAPI.LINE, Integer.valueOf(e.getLine()));
+                ret.put(RpcAPI.COLUMN, Integer.valueOf(e.getColumn()));
             }
 
         } catch (Throwable e) {
@@ -2559,8 +2559,8 @@ public class RpcConnection implements RpcAPI {
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         int id = factory.resultSets.add(queryResult);
-        ret.put("id", new Integer(id));
-        ret.put("hash", new Integer(queryResult.hashCode()));
+        ret.put("id", Integer.valueOf(id));
+        ret.put("hash", Integer.valueOf(queryResult.hashCode()));
         ret.put("results", result);
         return ret;
     }
@@ -2659,7 +2659,7 @@ public class RpcConnection implements RpcAPI {
         queryResult.result = resultSeq;
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         int id = factory.resultSets.add(queryResult);
-        ret.put("id", new Integer(id));
+        ret.put("id", Integer.valueOf(id));
         ret.put("results", result);
         return ret;
     }
@@ -2965,7 +2965,7 @@ public class RpcConnection implements RpcAPI {
     		} else {
     			vtempFile.delete();
     		}
-    		result.put("offset", new Integer(offset));
+    		result.put("offset", Integer.valueOf(offset));
     		return result;
 
     	} catch (Throwable e) {
@@ -3146,7 +3146,7 @@ public class RpcConnection implements RpcAPI {
     		} else {
     			vtempFile.delete();
     		}
-    		result.put("offset", new Integer(offset));
+    		result.put("offset", Integer.valueOf(offset));
     		return result;
 
     	} catch (Throwable e) {
@@ -3350,7 +3350,7 @@ public class RpcConnection implements RpcAPI {
     		} else {
     			vtempFile.delete();
     		}
-    		result.put("offset", new Integer(offset));
+    		result.put("offset", Integer.valueOf(offset));
     		return result;
 
     	} catch (Throwable e) {
@@ -4012,7 +4012,7 @@ public class RpcConnection implements RpcAPI {
             for (DoctypeCount docTemp : doctypes.values()) {
                 hitsByType = new Vector<Object>();
                 hitsByType.addElement(docTemp.doctype.getName());
-                hitsByType.addElement(new Integer(docTemp.count));
+                hitsByType.addElement(Integer.valueOf(docTemp.count));
                 dtypes.addElement(hitsByType);
             }
             result.put("doctypes", dtypes);
@@ -4099,7 +4099,7 @@ public class RpcConnection implements RpcAPI {
             for (DoctypeCount docTemp : doctypes.values()) {
                 hitsByType = new Vector<Object>();
                 hitsByType.addElement(docTemp.doctype.getName());
-                hitsByType.addElement(new Integer(docTemp.count));
+                hitsByType.addElement(Integer.valueOf(docTemp.count));
                 dtypes.addElement(hitsByType);
             }
             result.put("doctypes", dtypes);
@@ -4152,7 +4152,7 @@ public class RpcConnection implements RpcAPI {
                 temp.addElement(qname.getLocalName());
                 temp.addElement(qname.getNamespaceURI());
                 temp.addElement(qname.getPrefix() == null ? "" : qname.getPrefix());
-                temp.addElement(new Integer(occurrences[i].getOccurrences()));
+                temp.addElement(Integer.valueOf(occurrences[i].getOccurrences()));
                 result.addElement(temp);
             }
             return result;
@@ -4259,7 +4259,7 @@ public class RpcConnection implements RpcAPI {
         for (int i = 0; i < occurrences.length; i++) {
             temp = new Vector<Object>(2);
             temp.addElement(occurrences[i].getTerm().toString());
-            temp.addElement(new Integer(occurrences[i].getOccurrences()));
+            temp.addElement(Integer.valueOf(occurrences[i].getOccurrences()));
             result.addElement(temp);
         }
         return result;

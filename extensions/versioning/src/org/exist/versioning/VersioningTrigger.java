@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,9 +30,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -485,11 +484,10 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
         receiver.startElement(PROPERTIES_ELEMENT, null);
-        for (Iterator<Object> i = properties.keySet().iterator(); i.hasNext();) {
-            String key = (String) i.next();
-            QName qn = new QName(key, StandardDiff.NAMESPACE, StandardDiff.PREFIX);
+        for (Entry<Object, Object> entry : properties.entrySet()) {
+            QName qn = new QName((String)entry.getKey(), StandardDiff.NAMESPACE, StandardDiff.PREFIX);
             receiver.startElement(qn, null);
-            receiver.characters(properties.get(key).toString());
+            receiver.characters(entry.getValue().toString());
             receiver.endElement(qn);
         }
         receiver.endElement(PROPERTIES_ELEMENT);
