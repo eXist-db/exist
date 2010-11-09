@@ -21,4 +21,16 @@ local:plus(1000)
         <expected>500500</expected>
     </test>
      -->
+    <test output="text">
+        <task>tail-recursion test</task>
+        <code>
+declare function local:plus($x, $total) {
+   if ($x > 0)
+       then local:plus($x - 1, $total+$x)
+       else $total
+};
+local:plus(1000, 0)
+</code>
+        <expected>500500</expected>
+    </test>
 </TestSet>
