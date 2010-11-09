@@ -63,9 +63,9 @@ import org.apache.log4j.Logger;
 
 public class Value implements Comparable<Object> {
 
-    public final static Value EMPTY_VALUE = new Value(new byte[0]);
+	private static Logger LOG = Logger.getLogger(Value.class.getName());
 
-    private static Logger LOG = Logger.getLogger(Value.class.getName());
+    public final static Value EMPTY_VALUE = new Value(new byte[0]);
 
     protected long address = -1;
     protected byte[] data = null;
