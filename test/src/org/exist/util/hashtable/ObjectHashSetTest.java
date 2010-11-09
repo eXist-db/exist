@@ -23,7 +23,7 @@ public class ObjectHashSetTest extends AbstractHashSetTest<ObjectHashSet, Object
 	}
 
 	protected Integer keyEquiv_newObject(int k) {
-		return new Integer(k);
+		return Integer.valueOf(k);
 	}
 
 	protected void simpleAdd(Object k) {

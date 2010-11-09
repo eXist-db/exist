@@ -189,7 +189,7 @@ public class XmlRpcTest {
             while(offset > 0) {
                 params.clear();
                 params.add(table.get("handle"));
-                params.add(new Integer(offset));
+                params.add(Integer.valueOf(offset));
                 table = (HashMap<?,?>) xmlrpc.execute("getNextChunk", params);
                 offset = ((Integer)table.get("offset")).intValue();
                 data = (byte[])table.get("data");
@@ -222,7 +222,7 @@ public class XmlRpcTest {
 			params.clear();
 			params.addElement(XML_DATA);
 			params.addElement(TARGET_RESOURCE.toString());
-			params.addElement(new Integer(1));
+			params.addElement(Integer.valueOf(1));
 			
 			result = (Boolean)xmlrpc.execute("parse", params);
 			Assert.assertTrue(result.booleanValue());
@@ -353,8 +353,8 @@ public class XmlRpcTest {
 			String query = 
 				"(::pragma exist:serialize indent=no::) //para";
 			params.addElement(query.getBytes("UTF-8"));
-			params.addElement(new Integer(10));
-			params.addElement(new Integer(1));
+			params.addElement(Integer.valueOf(10));
+			params.addElement(Integer.valueOf(1));
 			params.addElement(new Hashtable());
 			XmlRpcClient xmlrpc = getClient();
 	        byte[] result = (byte[]) xmlrpc.execute( "query", params );
@@ -385,7 +385,7 @@ public class XmlRpcTest {
 	        
 	        params.clear();
 	        params.addElement(handle);
-	        params.addElement(new Integer(0));
+	        params.addElement(Integer.valueOf(0));
 	        params.addElement(options);
 	        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        Assert.assertNotNull(item);
@@ -469,7 +469,7 @@ public class XmlRpcTest {
 	        
 	        params.clear();
 	        params.addElement(handle);
-	        params.addElement(new Integer(1));
+	        params.addElement(Integer.valueOf(1));
 	        params.addElement(new Hashtable<Object, Object>());
 	        item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        System.out.println(new String(item, "UTF-8"));
@@ -530,7 +530,7 @@ public class XmlRpcTest {
 			params.clear();
 			params.addElement(XML_DATA);
 			params.addElement(SPECIAL_RESOURCE.toString());
-			params.addElement(new Integer(1));
+			params.addElement(Integer.valueOf(1));
 			
 			Boolean result = (Boolean)xmlrpc.execute("parse", params);
 			Assert.assertTrue(result.booleanValue());

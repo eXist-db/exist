@@ -60,7 +60,7 @@ public class Int2ObjectHashMapTest extends
 	}
 
 	protected Integer keyEquiv_newObject(int k) {
-		return new Integer(k);
+		return Integer.valueOf(k);
 	}
 
 	protected int keyEquiv(Integer k) {

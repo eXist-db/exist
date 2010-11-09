@@ -42,7 +42,7 @@ public class Object2ObjectHashMapTest extends AbstractHashtableTest<Object2Objec
 	}
 
 	protected Integer keyEquiv_newObject(int k) {
-		return new Integer(k);
+		return Integer.valueOf(k);
 	}
 
 	protected int keyEquiv(Object k) {

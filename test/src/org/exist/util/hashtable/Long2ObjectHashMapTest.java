@@ -62,7 +62,7 @@ public class Long2ObjectHashMapTest extends
 	}
 
 	protected Long keyEquiv_newObject(int k) {
-		return new Long(k);
+		return Long.valueOf(k);
 	}
 
 	protected int keyEquiv(Long k) {
