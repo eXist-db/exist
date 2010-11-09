@@ -476,7 +476,7 @@ public class LocationStep extends Step {
 		case Constants.PARENT_AXIS:
 			// case Constants.SELF_AXIS:
 			if (nodeTestType == null)
-				nodeTestType = new Integer(test.getType());
+				nodeTestType = Integer.valueOf(test.getType());
 			if (nodeTestType.intValue() != Type.NODE
 					&& nodeTestType.intValue() != Type.ELEMENT
 					&& nodeTestType.intValue() != Type.PROCESSING_INSTRUCTION) {
@@ -515,7 +515,7 @@ public class LocationStep extends Step {
 
 		if (test.isWildcardTest()) {
 			if (nodeTestType == null) {
-				nodeTestType = new Integer(test.getType());
+				nodeTestType = Integer.valueOf(test.getType());
 			}
 			if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
 				if (Expression.NO_CONTEXT_ID != contextId) {
@@ -1763,7 +1763,7 @@ public class LocationStep extends Step {
 
 		if (test.isWildcardTest()) {
 			if (nodeTestType == null) {
-				nodeTestType = new Integer(test.getType());
+				nodeTestType = Integer.valueOf(test.getType());
 			}
 			if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
 				if (Expression.NO_CONTEXT_ID != contextId) {

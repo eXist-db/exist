@@ -176,7 +176,7 @@ public class ReentrantReadWriteLock implements Lock {
 						} else if (owner_ == null) {
 							owner_ = caller;
 							holds_ = 1;
-							modeStack.push(new Integer(mode));
+							modeStack.push(Integer.valueOf(mode));
 							if (mode == Lock.WRITE_LOCK)
 								writeLocks++;
 							if (DEBUG) {
@@ -258,7 +258,7 @@ public class ReentrantReadWriteLock implements Lock {
 			} else if (owner_ == null) {
 				owner_ = caller;
 				holds_ = 1;
-				modeStack.push(new Integer(mode));
+				modeStack.push(Integer.valueOf(mode));
 				if (mode == Lock.WRITE_LOCK)
 					writeLocks++;
 				if (DEBUG) {

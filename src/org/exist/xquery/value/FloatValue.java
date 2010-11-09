@@ -395,16 +395,16 @@ public class FloatValue extends NumericValue {
 		else if (target == Float.class || target == float.class)
 			return new Float(value);
 		else if (target == Long.class || target == long.class) {
-			return new Long( ((IntegerValue) convertTo(Type.LONG)).getValue() );
+			return Long.valueOf( ((IntegerValue) convertTo(Type.LONG)).getValue() );
 		} else if (target == Integer.class || target == int.class) {
 			IntegerValue v = (IntegerValue) convertTo(Type.INT);
-			return new Integer((int) v.getValue());
+			return Integer.valueOf((int) v.getValue());
 		} else if (target == Short.class || target == short.class) {
 			IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
-			return new Short((short) v.getValue());
+			return Short.valueOf((short) v.getValue());
 		} else if (target == Byte.class || target == byte.class) {
 			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
-			return new Byte((byte) v.getValue());
+			return Byte.valueOf((byte) v.getValue());
 		} else if (target == String.class)
 			return getStringValue();
 		else if (target == Boolean.class)

@@ -156,7 +156,7 @@ public class IndexTerms extends BasicFunction {
                 data.add(new IntegerValue(occur[j].getOccurrences(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(occur[j].getDocuments(), Type.UNSIGNED_INT));
                 data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
-                data.add(new IntegerValue((map.get(new Integer(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
+                data.add(new IntegerValue((map.get(Integer.valueOf(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
 
                 params[1] = data;
 

@@ -229,7 +229,7 @@ public abstract class Function extends PathExpr {
 				&& (type.getCardinality() & Cardinality.ZERO) == 0)
 				    throw new XPathException(this,
 				            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
-				                    new Integer(argPosition), ExpressionDumper.dump(expr)));
+				                    Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
 			}
 		}
 		expr =

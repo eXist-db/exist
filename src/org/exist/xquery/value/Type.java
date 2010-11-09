@@ -415,7 +415,7 @@ public class Type {
 		}
 		//Starting from type2's super type : the shortcut should have done its job
 		for(t = getSuperType(type2); t != ITEM ; t = getSuperType(t)) {
-			if (t1.contains(new Integer(t)))
+			if (t1.contains(Integer.valueOf(t)))
 				return t;
 		}
 		return ITEM;
