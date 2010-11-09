@@ -579,7 +579,11 @@ public class Main {
                     File cp = new File(exist, "classpath.txt");
                     if ( cp.exists() ) {
                         BufferedReader reader = new BufferedReader(new FileReader(cp));
-                        _classpath.addComponent(reader.readLine());;
+                    	try {
+	                        _classpath.addComponent(reader.readLine());;
+                    	} finally {
+                    		reader.close();
+                    	}
                     }
                 }
             }

@@ -165,8 +165,9 @@ public abstract class TestCase {
 		
 		String compare = outputFile.getAttribute("compare");
 		
+		Reader reader = null;
 		try {
-			Reader reader = new BufferedReader(new FileReader(expectedResult));
+			reader = new BufferedReader(new FileReader(expectedResult));
 
 			int pos = 0;
 			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
@@ -267,6 +268,12 @@ public abstract class TestCase {
 			}
 		} catch (Exception e) {
 			return false;
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+				}
 		}
 
 		return true;
