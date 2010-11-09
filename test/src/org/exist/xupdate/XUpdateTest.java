@@ -133,7 +133,7 @@ public class XUpdateTest {
 		File file = new File(updateFile);
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		char[] characters = new char[new Long(file.length()).intValue()];
-		br.read(characters, 0, new Long(file.length()).intValue());
+		br.read(characters, 0, Long.valueOf(file.length()).intValue());
 		br.close();
 		String xUpdateModifications = new String(characters);
 		System.out.println("modifications: " + xUpdateModifications);

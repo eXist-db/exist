@@ -63,7 +63,7 @@ public class XQueryUpdateTest extends TestCase {
             XQueryContext context = xquery.newContext(AccessContext.TEST);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
-                context.declareVariable("i", new Integer(i));
+                context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(compiled, null);
             }
             
@@ -103,7 +103,7 @@ public class XQueryUpdateTest extends TestCase {
             XQueryContext context = xquery.newContext(AccessContext.TEST);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
-                context.declareVariable("i", new Integer(i));
+                context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(compiled, null);
             }
 
@@ -168,7 +168,7 @@ public class XQueryUpdateTest extends TestCase {
             XQueryContext context = xquery.newContext(AccessContext.TEST);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
-                context.declareVariable("i", new Integer(i));
+                context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(compiled, null);
             }
 
@@ -222,7 +222,7 @@ public class XQueryUpdateTest extends TestCase {
             XQueryContext context = xquery.newContext(AccessContext.TEST);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
-                context.declareVariable("i", new Integer(i));
+                context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(compiled, null);
             }
 
