@@ -145,7 +145,7 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
     @Override
     public String toString() {
         if(cdata == null)
-            return null;
+            return "";
         return cdata.toString();
     }
 
