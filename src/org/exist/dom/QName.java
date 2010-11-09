@@ -179,6 +179,8 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public boolean equals(Object obj) {
+    	if (obj == null) return false;
+    	
         QName other = (QName) obj;
         int cmp = compareTo(other);
         if(cmp != 0)

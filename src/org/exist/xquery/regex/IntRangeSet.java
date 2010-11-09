@@ -251,6 +251,7 @@ public class IntRangeSet implements Serializable {
      */
 
     public boolean equals(Object other) {
+    	if (other == null) return false;
         if (other instanceof IntRangeSet) {
             return used == ((IntRangeSet)other).used &&
                    Arrays.equals(startPoints, ((IntRangeSet)other).startPoints) &&
