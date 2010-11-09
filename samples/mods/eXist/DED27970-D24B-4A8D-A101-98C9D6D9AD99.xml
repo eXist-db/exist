@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="DED27970-D24B-4A8D-A101-98C9D6D9AD99">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="DED27970-D24B-4A8D-A101-98C9D6D9AD99">
     <titleInfo>
         <title>XRX</title>
         <subTitle>Performing Updates</subTitle>
@@ -10,12 +8,20 @@
         <namePart type="given">Jeni</namePart>
     </name>
     <originInfo>
-        <publisher>O'Reilly News</publisher>
         <dateCreated>2008-07-18</dateCreated>
     </originInfo>
     <location>
         <url>http://news.oreilly.com/2008/07/xrx-performing-updates.html</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>O'Reilly</title>
+            <subTitle>Spreading the Knowledge of Technology Innovators</subTitle>
+        </titleInfo>
+        <location>
+            <url>http://news.oreilly.com/</url>
+        </location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>

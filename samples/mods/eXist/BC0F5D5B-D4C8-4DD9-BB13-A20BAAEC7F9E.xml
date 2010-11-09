@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="BC0F5D5B-D4C8-4DD9-BB13-A20BAAEC7F9E">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="BC0F5D5B-D4C8-4DD9-BB13-A20BAAEC7F9E">
     <titleInfo>
         <title>The eXist OpenSource Native XML Database</title>
     </titleInfo>
@@ -15,13 +13,16 @@
         <dateCreated>2007-02-15</dateCreated>
     </originInfo>
     <location>
-        <relatedItem type="host">
-            <titleInfo>
-                <title>Dr. Data Dictionary</title>
-            </titleInfo>
-        </relatedItem>
         <url>http://datadictionary.blogspot.com/2007/02/exist-opensource-native-xml-database.html</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>Dr. Data Dictionary</title>
+        </titleInfo>
+        <location>
+            <url>http://datadictionary.blogspot.com/</url>
+        </location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>

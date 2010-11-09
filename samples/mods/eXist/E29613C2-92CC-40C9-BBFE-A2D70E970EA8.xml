@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="E29613C2-92CC-40C9-BBFE-A2D70E970EA8">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="E29613C2-92CC-40C9-BBFE-A2D70E970EA8">
     <titleInfo>
         <title>XQuery, the Server Language</title>
     </titleInfo>
@@ -15,6 +13,15 @@
     <location>
         <url>http://www.xml.com/pub/a/2007/06/01/xquery-the-server-language.html</url>
     </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>O'Reilly XML.com</title>
+            <subTitle>xml from the inside out</subTitle>
+        </titleInfo>
+        <location>
+            <url>http://www.xml.com/</url>
+        </location>
+    </relatedItem>
     <language>
         <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
     </language>
