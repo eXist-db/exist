@@ -29,7 +29,7 @@ import java.util.Iterator;
  */
 public abstract class AbstractHashSet<K> {
 
-	private final int defaultSize = 1031; // must be a prime number
+	private static final int defaultSize = 1031; // must be a prime number
 
 	// marker for removed objects
 	protected final static Object REMOVED = new Object();

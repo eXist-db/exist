@@ -51,9 +51,9 @@ import java.util.Iterator;
  */
 public class LocationStep extends Step {
 
-	private final int ATTR_DIRECT_SELECT_THRESHOLD = 10;
+	private static final int ATTR_DIRECT_SELECT_THRESHOLD = 10;
 
-    private final int INDEX_SCAN_THRESHOLD = 10000;
+    private static final int INDEX_SCAN_THRESHOLD = 10000;
 
 	protected NodeSet currentSet = null;
 
