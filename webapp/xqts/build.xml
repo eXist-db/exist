@@ -83,8 +83,8 @@
         <!--xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="orders"/>
-            </fileset-->
-        </xmldb:store>
+            </fileset>
+        </xmldb:store-->
 
     </target>
     
