@@ -72,14 +72,18 @@
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
-                <exclude name="orders"/> 
+                <exclude name="badxml.xml"/> 
+                <exclude name="BCisInvalid.xml"/> 
+                <exclude name="InvalidUmlaut.xml"/> 
+                <exclude name="InvalidXMLId.xml"/> 
+                
             </fileset>
         </xmldb:store>
              
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
+        <!--xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="orders"/>
-            </fileset>
+            </fileset-->
         </xmldb:store>
 
     </target>
