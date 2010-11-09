@@ -75,9 +75,12 @@ public class PerformanceStats {
         }
 
         public boolean equals(Object obj) {
-            IndexStats other = (IndexStats) obj;
-            return other.indexType.equals(indexType) && other.source.equals(source) &&
-                other.line == line && other.column == column && other.mode == mode;
+        	if (obj != null && obj instanceof IndexStats) {
+                IndexStats other = (IndexStats) obj;
+                return other.indexType.equals(indexType) && other.source.equals(source) &&
+                    other.line == line && other.column == column && other.mode == mode;
+			}
+        	return false;
         }
     }
 
@@ -103,7 +106,10 @@ public class PerformanceStats {
         }
 
         public boolean equals(Object obj) {
-            return ((QueryStats)obj).source.equals(source);
+        	if (obj != null && obj instanceof QueryStats) {
+                return ((QueryStats)obj).source.equals(source);
+			}
+        	return false;
         }
     }
 
@@ -121,9 +127,12 @@ public class PerformanceStats {
         }
 
         public boolean equals(Object obj) {
-            FunctionStats ostats = (FunctionStats) obj;
-            return qname.equalsSimple(ostats.qname) &&
-                    source.equals(ostats.source);
+        	if (obj != null && obj instanceof FunctionStats) {
+                FunctionStats ostats = (FunctionStats) obj;
+                return qname.equalsSimple(ostats.qname) &&
+                        source.equals(ostats.source);
+			}
+        	return false;
         }
     }
 

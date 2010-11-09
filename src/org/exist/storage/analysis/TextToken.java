@@ -156,6 +156,7 @@ public class TextToken implements Comparable<Object> {
     }
     
     public boolean equals(Object obj) {
+    	if (obj == null) return false;
         String other = obj.toString();
         int len = end - start;
         if (len == other.length()) {
