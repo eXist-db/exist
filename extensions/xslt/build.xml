@@ -65,6 +65,12 @@
         <pathelement path="../../test/classes"/>
     </path>
 
+     <path id="classpath.test-libs">
+         <fileset dir="${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
     <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
         <echo message="Compiling XLST module tests"/>
@@ -81,6 +87,7 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.junit"/>
+                <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
     </target>
