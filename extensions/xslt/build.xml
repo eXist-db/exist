@@ -81,7 +81,6 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.junit"/>
-                <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
     </target>
