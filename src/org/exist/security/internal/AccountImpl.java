@@ -239,6 +239,7 @@ public class AccountImpl extends AbstractAccount {
 		if(this.configuration != null) {
 			this.configuration = Configurator.configure(this, this.configuration);
                 }
+		this.hasDbaRole = this.hasGroup(SecurityManager.DBA_GROUP);
 	}
 
         public AccountImpl(AbstractRealm realm, Configuration configuration, boolean removed) throws ConfigurationException {
