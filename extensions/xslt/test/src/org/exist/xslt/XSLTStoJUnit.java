@@ -73,7 +73,7 @@ public class XSLTStoJUnit implements ContentHandler {
 	
 	public static void main(String[] args) throws Exception {
 
-		folder = new File("extensions/xslt/test/src/org/exist/xslt/xslts");
+		folder = new File("extensions/xslt/test/src/org/exist/xslt/xslts_1_1_0");
 		
 		File xslts = new File("test/external/XSLTS_1_1_0/catalog.xml");
 		FileInputStream is = new FileInputStream(xslts);
@@ -158,7 +158,7 @@ public class XSLTStoJUnit implements ContentHandler {
    	   		FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
    	   		outAll = new BufferedWriter(fstream);
 
-   	   	    outAll.write("package org.exist.xslt.xslts;\n\n" +
+   	   	    outAll.write("package org.exist.xslt.xslts_1_1_0;\n\n" +
 					"import org.junit.runner.RunWith;\n" +
 					"import org.junit.runners.Suite;\n\n" +
 					"@RunWith(Suite.class)\n" +
@@ -205,7 +205,7 @@ public class XSLTStoJUnit implements ContentHandler {
    		FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
    	    out = new BufferedWriter(fstream);
    	    
-   	    out.write("package org.exist.xslt.xslts;\n\n"+
+   	    out.write("package org.exist.xslt.xslts_1_1_0;\n\n"+
 //   	    		"import org.exist.xquery.xqts.XQTS_case;\n" +
 //   	    		"import static org.junit.Assert.*;\n" +
    	    		"import org.exist.xslt.XSLTS_case;\n" +

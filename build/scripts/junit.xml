@@ -372,7 +372,7 @@
         <unzip src="${junit.reports}/external/XSLTS_1_1_0.zip" dest="${junit.reports}/external/XSLTS_1_1_0"/>
     </target>
     
-    <available file="${junit.reports}/src/org/exist/xsl/xslts/" property="xslts_junit.present"/>
+    <available file="extensions/xslt/test/src/org/exist/xsl/xslts_1_1_0/" property="xslts_junit.present"/>
     
     <target name="prepare-xslts" depends="download-xslts" unless="xslts_junit.present">
         <!--
@@ -385,15 +385,28 @@
         <echo message="Generating junit tests from XSLTS ......"/>
         <echo message="---------------------------------------"/>
         <delete failonerror="false">
-            <fileset dir="${junit.reports}/src/org/exist/xsl/xslts/"/>
+            <fileset dir="extensions/xslt/test/src/org/exist/xslt/xslts_1_1_0/"/>
         </delete>
-        <java classname="org.exist.xsl.XSLTStoJUnit">
+        <mkdir dir="extensions/xslt/test/src/org/exist/xslt/xslts_1_1_0"/>
+        <java classname="org.exist.xslt.XSLTStoJUnit">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
         </java>
+        <echo>tests generated, compiling ...</echo>
+        <mkdir dir="extensions/xslt/test/classes"/>
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+            destdir="extensions/xslt/test/classes" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="extensions/xslt/test/src"
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+	            <path refid="classpath.test-libs"/>
+            </classpath>
+        </javac>
         <echo>JUnit tests generated.</echo>
     </target>
     
@@ -423,7 +436,11 @@
         </junit>
     </target>
 
-    <!-- Test XSLTS : XML XSL Test Suite -->
+    <path id="classpath.xslts">
+        <pathelement path="extensions/xslt/test/classes"/>
+    </path>
+
+    <!-- Test XSLTS : XSL Test Suite -->
     <target name="test-xslts" depends="prepare-xslts, test-prepare">
         <echo message="--------------"/>
         <echo message="XSLTS tests    "/>
@@ -435,6 +452,7 @@
             <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
+            <classpath refid="classpath.xslts"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xslt.xslts.AllTests" todir="${junit.reports.dat}"/>
