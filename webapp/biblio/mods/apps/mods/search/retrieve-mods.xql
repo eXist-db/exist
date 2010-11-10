@@ -28,12 +28,11 @@ declare function functx:capitalize-first( $arg as xs:string? ) as xs:string? {
              substring($arg,2))
 };
  
-declare function functx:trim 
-  ( $arg as xs:string? )  as xs:string {
-       
+declare function functx:trim( $arg as xs:string? )  as xs:string {       
    replace(replace($arg,'\s+$',''),'^\s+','')
  } ;
  
+(: not used :)
 declare function mods:space-before($node as node()?) as xs:string? {
     if (exists($node)) then
         concat(' ', $node)
@@ -41,20 +40,19 @@ declare function mods:space-before($node as node()?) as xs:string? {
         ()
 };
 
+(: ### general functions end ###:)
+
 declare function mods:get-collection($entry as element(mods:mods)) {
     let $collection := util:collection-name($entry)
     let $collection-short := functx:replace-first($collection, "/db/", "")
     return
                 <tr>
-                <td class="host">In Collection:</td>
+                <td class="label">In Collection:</td>
                 <td>
                 {$collection-short}
                 </td>
                 </tr>            
 };
-
-
-(: ### general functions end ###:)
 
 declare function mods:add-part($part, $sep as xs:string) {
     if (empty($part) or string-length($part[1]) eq 0) then
@@ -87,7 +85,7 @@ declare function mods:get-publisher($publishers as element(mods:publisher)?) as 
 (: ### <originInfo> begins ### :)
 
 
-(: <extent> belongs to <physicalDescription>, <part> as a top level element and <part> under <relatedItem>. 
+(: <extent> belongs to <physicalDescription>, to <part> as a top level element and to <part> under <relatedItem>. 
 Under <physicalDescription>, <extent> has no subelements.:)
 
 declare function mods:get-extent($extent as element(mods:extent)?) {
@@ -296,25 +294,28 @@ declare function mods:get-related-item-part($entry as element()) {
 
 (: Both the name as given in the publication and the autority name should be rendered. :)
 
-declare function mods:eastern-name-transliteration($name as element()) as xs:string? {
+declare function mods:format-transliterated-eastern-name($name as element()) as xs:string? {
     if ($name/mods:namePart[@transliteration = ('pinyin', 'romaji')]) then
-    let $family := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family'][1]
-    (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular and we will only treat the first one. :)
-    let $given := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'given'][1]
+    let $family := string-join(($name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family']), ' ')
+    (: What if several transliterations (both Japanese and Chinese) are used?  :)
+    let $given := string-join(($name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'given']), ' ')
     let $address := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'termsOfAddress'][1]
-    (: Should be moved to format-name. :)
+    let $date := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'date'][1]
     return
-        string-join((
-            $family, $given,
-            if ($address) then concat(' ,', $address) else (),
-            $name/mods:namePart[@transliteration][not(@type)]
-            (: NB: What does the last line do??? :)
-            ), ' ')
+        string-join(
+        (
+        $family, 
+        $given,
+            if ($address) then $address else (),
+            if ($date) then concat(' (', $date, ')') else (),
+        $name/mods:namePart[@transliteration][not(@type)]
+        )
+         , ' ')
     else ()
 };
 
 (: NB! Dummy function!!!! :)
-declare function mods:non-eastern-name-transliteration($name as element()) as xs:string? {
+declare function mods:format-transliterated-non-eastern-name($name as element()) as xs:string? {
     if ($name/mods:namePart[@transliteration = ('pinyin', 'romaji')]) then
     let $family := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family'][1]
     (: The [1] takes care of cases where several transliterations (both Japanese and Chinese) are used. Such transliterations are irregular and we will only treat the first one. :)
@@ -362,69 +363,80 @@ declare function mods:get-conference-detail-view($entry as element()) {
 
 declare function mods:format-name($name as element(mods:name), $pos as xs:integer) {
     if ($name[not(@type)]) then
-        concat(
-            string-join($name/mods:namePart[@transliteration][not(@type)], ' '), 
-            ' ', 
-            string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
-        )
+        concat(string-join($name/mods:namePart[@transliteration][not(@type)], ' '), 
+            ' ', string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' '))
     else
     	if ($name/@type = 'conference') then
     	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
     	()
-    	else if ($name/@type = 'corporate') then
-            concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
-            (: Does not need manipulation, since it is never decomposed. :)
-    	else
-    	(: @type = 'personal'. :)
-    		let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
-    		let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
-    		let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
-    		let $date := string-join($name/mods:namePart[@type = 'date'], ' ') 
-    		(: Any type of date is represented here. :)
-    		return
-    		  concat(string-join(
-    			if ($family and $given) then
-    				if ($family/@transliteration = ('pinyin', 'romaji')) then
+    else
+        if ($name/@type = 'corporate') then
+        concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
+        (: Does not need manipulation, since it is never decomposed. :)
+    else
+        if ($name/@type = 'personal') then
+        	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
+        	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
+        	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
+        	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration)], ' ') 
+        	return
+        	concat(
+        	(:concat appends dates to name proper:)
+        	string-join(
+        	if ($family or $given) then
+        	(: If one of the nameParts is properly typed :)
+        	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) then
+    				(: If the name is transliterated and Eastern :)
     				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
     				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
     				(: We assume that the name in native script occurs first, that the existence of a transliterated name implies the existence of a native-script name. :)
-    				    (mods:eastern-name-transliteration($name), ' ',
-        					(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')), 
-        					functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
-        					, ' '))))
-        					(: NB: Something is wrong here. The [1] should not ne necessary. :)
-        					(: The string-joins are meant to capture multiple family and given names. :)
-    				else if ($family[@transliteration]) then
-    				(: Some other kind of transcription. :)
-    				(: NB: Must be filled out for each value. :) 
-    				    (mods:non-eastern-name-transliteration($name), ' ',
-        					(functx:trim(string-join($family/string(), ' ')), 
-        					functx:trim(string-join($given/string(), ' '))))
-        					(: NB: Something is wrong here. The [1] should not ne necessary. :)
-        					(: The string-joins are meant to capture multiple family and given names. :)
-    				else if ($pos eq 1) then
-    				(: If we have a non-Chinese, non-Japanese name occurring first. :)
-    				    (functx:trim(string-join($family/string(), ' ')), 
-    				    ', ', 
-    				    functx:trim(string-join($given, ' ')),
-    				    if ($address) then functx:trim(string-join($address, ', ')) else ()
-    				    )
-    				else
-    				(: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
-    					(functx:trim(string-join($given, ' ')), 
-    					' ', 
-    					functx:trim(string-join($family/string(), ' ')),
-    				    if ($address) then functx:trim(string-join($address, ', ')) else ()
-    				    )
+    				(mods:format-transliterated-eastern-name($name), ' ',
+        			(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')),
+        			functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
+        			, ' '))))
+        			(: The string-joins are meant to capture multiple family and given names. Needed?:)
                 else
-                    (: One could check for ($family or $given). :)
-                    (functx:trim(mods:eastern-name-transliteration($name)))
+                if (($family[@transliteration]) or ($given[@transliteration])) then
+        		 (: If the name is transliterated but not Eastern :)
+        		 (mods:format-transliterated-non-eastern-name($name), ' ',
+        		 (functx:trim(string-join($family, ' ')),
+        		 functx:trim(string-join($given, ' '))))
+        		 (: The string-joins are meant to capture multiple family and given names. :)
+        		 else
+        		 (: If the name is not transliterated :)        		 
+        		 if ($pos eq 1) then
+            				(: If we have a non-Chinese, non-Japanese name occurring first. :)
+            				    (functx:trim(string-join($family/string(), ' ')), 
+            				    ', ', 
+            				    functx:trim(string-join($given, ' ')),
+            				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+            				    )
+            				else
+            				(: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
+            					(functx:trim(string-join($given, ' ')), 
+            					' ', 
+            					functx:trim(string-join($family/string(), ' ')),
+            				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+            				    )
+                else
+            if ($pos eq 1) then
+            (: If we have an untyped name occurring first. :)
+                (functx:trim(string-join($name/mods:namePart, ', ')),
+                    if ($address) then functx:trim(string-join($address, ', ')) else ()
+                    )
+            else
+            (: If we have an untyped name occurring later. :)
+                (functx:trim(string-join($name/mods:namePart, ' ')),
+                    if ($address) then functx:trim(string-join($address, ', ')) else ()
+                    )                    (: One could check for ($family or $given). :)
+(:                    (functx:trim(mods:format-transliterated-eastern-name($name))):)
                     (: If there is a transliteration, but no name in original script. :)
-              , ''), 
+              , ' '), 
               (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
               (if ($date) then concat(' (', functx:trim($date), ')') else ()))
               (: NB: Why is this part only shown in list-view? :)
-};
+        else()
+        };
 
 declare function mods:get-authority($name as element(mads:name)?, $lang as xs:string?, $pos as xs:integer) {
     if ($name/@type = 'corporate') then
@@ -437,7 +449,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      			if ($family and $given) then
      				if ($family/@lang = ('ja', 'zh')) then 
      				    (
-         				    mods:eastern-name-transliteration($name), ' ',
+         				    mods:format-transliterated-eastern-name($name), ' ',
          					($family/string(), $given/string())
          				)
      				else if ($pos eq 1) then
@@ -445,7 +457,7 @@ declare function mods:get-authority($name as element(mads:name)?, $lang as xs:st
      				else
      					($given/string(), ' ', $family/string())
                  else string-join((
-                     mods:eastern-name-transliteration($name), ' ',
+                     mods:format-transliterated-eastern-name($name), ' ',
                      ($name/mads:namePart, $name)[1]
                  ), ' ')
             , '')
@@ -465,15 +477,15 @@ declare function mods:get-name-from-mads($mads as element(mads:mads), $pos as xs
 };
 
 declare function mods:retrieve-name($name as element(mods:name), $pos as xs:int) {
-    let $madRef := replace($name/@xlink:href, "^#?(.*)$", "$1")
-    let $mad :=
-        if ($madRef) then
-            collection("/db/biblio/authority")/mads:mads[@ID = $madRef]
+    let $madsRef := replace($name/@xlink:href, "^#?(.*)$", "$1")
+    let $mads :=
+        if ($madsRef) then
+            collection("/db/biblio/authority")/mads:mads[@ID = $madsRef]
         else
             ()
     return
-        if ($mad) then
-            mods:get-name-from-mads($mad, $pos)[1]
+        if ($mads) then
+            mods:get-name-from-mads($mads, $pos)[1]
         else
             mods:format-name($name, $pos)[1]
 };
@@ -484,23 +496,28 @@ declare function mods:retrieve-names($entry as element()) {
         mods:retrieve-name($name, $pos)
 };
 
-declare function mods:get-names($entry as element()) {
+declare function mods:format-multiple-names($entry as element()) {
     let $names := mods:retrieve-names($entry)
     let $nameCount := count($names)
     let $formatted :=
         if ($nameCount eq 0) then
             ()
         else if ($nameCount eq 1) then
-            if (ends-with($names[1], ".")) then (: Places period after single author name, if it does not end in period. :)
-            concat($names[1], ' ')
+            if (ends-with($names, ".")) then
+            (: Places period after single author name, if it does not end in period. :)
+            (: NB: this should not be necessary:)
+            concat($names, ' ')
             else
-            concat($names[1], '. ')
+            concat($names, '. ')
         else
             concat(
-                string-join(subsequence($names, 1, $nameCount - 1), ", "),(: Places comma after single author name. :)
-                ", and ",(: Is comma needed? :)
+                string-join(subsequence($names, 1, $nameCount - 1), "; "),
+                (: Places semicolons after all names that do not come last. :)
+                "; and ",
+                (: Places semicolon and "and" after name that comes second-to-last. :)
                 $names[$nameCount],
-                ". "(: Places period after last author name. :)
+                ". "
+                (: Places period after last name. :)
             )
     return
         $formatted
@@ -829,22 +846,19 @@ if ($titleInfo)
 (: Subelements: any MODS element. :)
 (: NB! This function is constructed differently from mods:entry-full; the two should be harmonised. :)
 
-declare function mods:get-related($entry as element(mods:mods)) {
-    let $related0 := $entry/mods:relatedItem[@type = 'host']
+declare function mods:get-related-item($entry as element(mods:mods)) {
+    let $related0 := $entry/mods:relatedItem
     let $collection := util:collection-name($entry)
+    let $type := functx:capitalize-first(functx:camel-case-to-words($related0[1]/@type, ' '))
     let $related :=
         if (($related0/@xlink:href) and (collection($collection)//mods:mods[@ID = $related0/@xlink:href])) then
-        (: was:
-        if ($related0/@xlink:href) then
-        :)
             collection($collection)//mods:mods[@ID = $related0/@xlink:href][1]
         else
             $related0[1]
     return
         if ($related) then
-            <span class="related"> In Publication:
-            { 
-                mods:get-names($related), 
+            <span class="related">            { 
+                mods:format-multiple-names($related), 
                 mods:get-short-title((), $related),
                 if ($related/mods:originInfo or $related/mods:part) then
                     mods:get-part-and-origin($related)
@@ -890,10 +904,11 @@ if ($entry/mods:name) then
         let $given := $name/mods:namePart[@type = 'given']
         let $address := $name/mods:namePart[@type = 'termsOfAddress']
         let $date := $name/mods:namePart[@type = 'date']
+        let $untyped := $name/mods:namePart[not(@type)]
         return
             if ($family and $given) then (: If the namePart is split up into family and given. We assume that both will be present. :)
                 if ($family/@lang = ('ja', 'zh')) then
-                    (mods:eastern-name-transliteration($name), 
+                    (mods:format-transliterated-eastern-name($name), 
                     ' ', 
                     concat(
                     $family[not(@transliteration)][1]/string(),
@@ -906,11 +921,14 @@ if ($entry/mods:name) then
                     (: Sometimes we have names in Chinese characters, in transliteration _and_ a Western name. :)
                 else
                     string-join(($family, string-join($given, ' '), $address),', ')
-            else (: If the namePart is not split up in family and given. :)
-                if ($name/mods:namePart/@transliteration) then (: If there is transliteration. :)
-                    ($name/mods:namePart[@transliteration], ' ' , $name/mods:namePart[not(@transliteration)]) 
                 else
-                    string-join(($family, string-join($given, ' '), $address),', ')
+                (: If the namePart is not split up in family and given. :)
+                    if ($name/mods:namePart/@transliteration) then
+                    (: If there is transliteration. :)
+                        ($name/mods:namePart[@transliteration], ' ' , $name/mods:namePart[not(@transliteration)]) 
+                    else
+                    (: If there is not a transliteration. :)
+                        string-join(($untyped),', ')
         }</td>
     </tr>
     else if ($name[@type = 'corporate']) then
@@ -972,17 +990,55 @@ declare function mods:entry-full($entry as element())
     mods:simple-row(mods:get-place($entry/mods:originInfo/mods:place), "Place"),
     mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher[1]), "Publisher"),
     if ($entry/mods:relatedItem/mods:originInfo/mods:dateCreated) then () else
-    mods:simple-row($entry/mods:originInfo/mods:dateCreated[1], "Date created"),
+    mods:simple-row($entry/mods:originInfo/mods:dateCreated[1], "Date Created"),
     if ($entry/mods:relatedItem/mods:originInfo/mods:dateIssued) then () else
-    mods:simple-row($entry/mods:originInfo[1]/mods:dateIssued[1], "Date issued"),
+    mods:simple-row($entry/mods:originInfo[1]/mods:dateIssued[1], "Date Issued"),
+    if ($entry/mods:relatedItem/mods:originInfo/mods:dateModified) then () else
+    mods:simple-row($entry/mods:originInfo[1]/mods:dateModified[1], "Date Modified"),
     (: NB! [1] should not be necessary. :)
     mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
-    if ($entry/mods:extent) then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") else (),
+    if ($entry/mods:extent) then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") else ()
+    ,
     
+    (: URL :)
+    mods:url($entry),
+    
+    (: relatedItem :)
+    (: If there is a related "host" item, get its contents from the related record through its href if it has one; otherwise process the information as given in the record itself. :)
+        if ($entry/mods:relatedItem) then
+            <tr>
+                <td class="host">(:{functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' '))}::)</td><td class="related"><hr/></td>
+            </tr>
+        else (),
+    mods:simple-row(mods:get-related-item($entry),
+    if ($entry/mods:relatedItem[@type = 'host']) then
+    'In:'
+    else
+    concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':')
+    ),
+        if ($entry/mods:relatedItem) then
+     
+            <tr>
+                <td class="host"></td><td class="related"><hr/></td>
+            </tr>
+        else ()
+        ,
+    
+    (: typeOfResource :)
     mods:simple-row($entry/mods:typeOfResource[1]/string(), "Type of Resource"),
     
+    (: internetMediaType :)
+    mods:simple-row(
+    (let $label := doc("/db/org/library/apps/mods/code-tables/internet-media-type-codes.xml")/code-table/items/item[value = $entry/mods:physicalDescription[1]/mods:internetMediaType]/label
+    return
+    if ($label) then
+    $label
+    else
+    $entry/mods:physicalDescription[1]/mods:internetMediaType)
+    , "Internet Media Type"),
+    
     (: language :)
-    (: expand to render several languages :)
+    (: expand to render more than one language :)
     if ($entry/mods:language[1]/mods:languageTerm/@authority="iso639-2b")
     then
     mods:simple-row(
@@ -1010,14 +1066,17 @@ declare function mods:entry-full($entry as element())
         )
     ),
     
+    (: abstract :)
     for $abstract in ($entry/mods:abstract)
     return
     mods:simple-row($abstract, "Abstract"),
     
+    (: note :)
     for $note in ($entry/mods:note)
     return
     mods:simple-row($note, "Note"),
     
+    (: subject :)
     for $subject in ($entry/mods:subject)
     let $authority := if ($subject/@authority/string()) then concat('(', ($subject/@authority/string()), ')') else ()
     return
@@ -1032,7 +1091,7 @@ declare function mods:entry-full($entry as element())
     return
         <tr>
         <td class="sublabel">
-            {functx:capitalize-first(functx:camel-case-to-words($item/name(), ' ')),
+            {functx:capitalize-first(functx:capitalize-first(functx:camel-case-to-words($item/name(), ' '))),
             $authority, $encoding}
         </td>
         <td class="subrecord">
@@ -1071,26 +1130,19 @@ declare function mods:entry-full($entry as element())
     </tr>
     , 
     
+    (: ISBN :)
     mods:simple-row($entry/mods:identifier[@type="isbn"][1], "ISBN"),
-    mods:url($entry),
-    (: If there is a related "host" item, get its contents from the related record through its href if it has one; otherwise process the information as given in the record itself. :)
-        (: Problem: what if relatedItem is not "host"? :)
-        (: There should be a function that formats @type. :)
-    let $relatedItem := $entry/mods:relatedItem[@type = 'host']
-    let $collection := util:collection-name($entry)
+    
+    (: classification :)
+    for $item in $entry/mods:classification
+    let $authority := if ($item/@authority/string()) then concat('(', ($item/@authority/string()), ')') else ()
     return
-        if ($relatedItem) then (
-            <tr>
-                <td class="host">In Publication:</td><td class="related"><hr/></td>
-            </tr>,
-            if (($relatedItem/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href])) then            
-                for $ref in collection($collection)//mods:mods[@ID = $relatedItem/@xlink:href]
-                return
-                    (mods:entry-full($ref), mods:get-related-item-part($entry))
-            else
-                    (mods:entry-full($relatedItem[@type = "host"][1]), mods:get-related-item-part($entry))
-        ) else
-            ()
+    <tr>
+    <td class="label subject">Classification {$authority}</td>
+        <td>
+            {$item}
+        </td>
+    </tr>        
 };
 
 (: Creates view for detail view. :)
@@ -1108,13 +1160,15 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
 (: Creates view for hitlist. :)
 declare function mods:format-short($id as xs:string, $entry as element(mods:mods)) {
 (: Was originally wrapped in <p>. :)
-        mods:get-names($entry),
+        mods:format-multiple-names($entry),
         mods:get-short-title($id, $entry),
         if ($entry/mods:name[@type = 'conference']) then
             mods:get-conference-hitlist($entry)
         else (
             mods:get-part-and-origin($entry),
-            mods:get-related($entry)
+            if ($entry/mods:relatedItem/@type = 'host') then
+            ('In: ', mods:get-related-item($entry))
+            else ()
         )
         (:
         , if ($entry/mods:location/mods:url[@displayLabel]) then
