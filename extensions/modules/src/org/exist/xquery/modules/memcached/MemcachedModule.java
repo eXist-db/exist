@@ -96,14 +96,14 @@ public class MemcachedModule extends AbstractInternalModule
 	
 	final static MemcachedClient retrieveClient( long clientHandle ) 
 	{
-		return ( clients.get( new Long( clientHandle ) ) );
+		return ( clients.get( Long.valueOf( clientHandle ) ) );
 	}
 
 
 	final static synchronized long storeClient(MemcachedClient client ) 
 	{
 		long clientHandle = getHandle();
-		clients.put( new Long( clientHandle ), client );
+		clients.put( Long.valueOf( clientHandle ), client );
 		return( clientHandle );
 	}
 
@@ -111,7 +111,7 @@ public class MemcachedModule extends AbstractInternalModule
 	{
 		MemcachedClient client = clients.get( clientHandle );
 		client.shutdown();
-		clients.remove( new Long( clientHandle ) ) ;
+		clients.remove( Long.valueOf( clientHandle ) ) ;
 	}
 	
 	protected static synchronized long getHandle() 
