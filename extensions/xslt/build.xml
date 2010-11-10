@@ -63,7 +63,7 @@
     
     <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
-        <echo message="Compiling XLST module"/>
+        <echo message="Compiling XLST module tests"/>
         <echo message="---------------------------"/>
         
         <echo
@@ -76,6 +76,8 @@
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+                <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
     </target>
