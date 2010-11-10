@@ -61,6 +61,10 @@
         </javac>
     </target>
     
+    <path id="classpath.junit">
+        <pathelement path="../../test/classes"/>
+    </path>
+
     <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
         <echo message="Compiling XLST module tests"/>
