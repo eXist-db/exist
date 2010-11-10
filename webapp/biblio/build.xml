@@ -29,7 +29,7 @@
 		<!--xdb:remove user="${public.xmldb.username}" password="${public.xmldb.password}"
 			uri="${server-uri}" collection="${mods-collection}" failonerror="false"/-->
 
-		<echo message="Creating user ${user.default}"/>
+		<echo message="Creating user '${user.default.name}'"/>
 		<xdb:adduser user="${public.xmldb.username}" password="${public.xmldb.password}"
 			uri="${server-uri}" name="${user.default.name}" secret="${user.default.password}" primaryGroup="{user.default.group}" 
 			failonerror="false"/>
