@@ -61,6 +61,8 @@ public class XSLTStoJUnit implements ContentHandler {
     
     private BufferedWriter out;
     private BufferedWriter outAll;
+    
+    private boolean first = true;
 
 	private Vector<String> currentPath = new Vector<String>();
 	
@@ -71,7 +73,7 @@ public class XSLTStoJUnit implements ContentHandler {
 	
 	public static void main(String[] args) throws Exception {
 
-		folder = new File("extensions/xslt/test/org/exist/xslt/xslts");
+		folder = new File("extensions/xslt/test/src/org/exist/xslt/xslts");
 		
 		File xslts = new File("test/external/XSLTS_1_1_0/catalog.xml");
 		FileInputStream is = new FileInputStream(xslts);
@@ -161,6 +163,8 @@ public class XSLTStoJUnit implements ContentHandler {
 					"import org.junit.runners.Suite;\n\n" +
 					"@RunWith(Suite.class)\n" +
 					"@Suite.SuiteClasses({\n");
+   	   	    
+   	   	    first = true;
 		} catch (IOException e) {
 			throw new SAXException(e);
 		}
@@ -208,7 +212,12 @@ public class XSLTStoJUnit implements ContentHandler {
    	    		"import org.junit.Test;\n\n" +
    	    		"public class "+name+" extends XSLTS_case {\n");
 
-		outAll.write("	"+name+".class,\n");
+   	    if (first) {
+   	    	outAll.write("	"+name+".class");
+   	    	first = false;
+   	    } else {
+   	    	outAll.write(",\n	"+name+".class");
+   	    }
 	}
 
 	private void endTestFile() throws IOException {
