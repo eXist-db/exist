@@ -66,7 +66,7 @@
     </path>
 
      <path id="classpath.test-libs">
-         <fileset dir="${lib.test}">
+         <fileset dir="${top.dir}/${lib.test}">
             <include name="*.jar"/>
         </fileset>
     </path>
