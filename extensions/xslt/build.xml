@@ -4,6 +4,8 @@
     
     <property name="src" value="./src"/>
     <property name="classes" value="./classes"/>
+    <property name="test.src" value="./test/src"/>
+    <property name="test.classes" value="./test/classes"/>
     <property name="top.dir" value="../.."/>
     
     <property file="${top.dir}/build.properties"/>
@@ -40,11 +42,7 @@
         <pathelement path="${java.class.path}"/>
     </path>
     
-    <target name="prepare">
-        <mkdir dir="${classes}"/>
-    </target>
-    
-    <target name="compile" depends="prepare" if="include.feature.xslt.config">
+    <target name="compile" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
         <echo message="Compiling XLST module"/>
         <echo message="---------------------------"/>
@@ -52,6 +50,7 @@
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         
+        <mkdir dir="${classes}"/>
         <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
             destdir="${classes}" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${src}" 
@@ -62,6 +61,25 @@
         </javac>
     </target>
     
+    <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
+        <echo message="---------------------------"/>
+        <echo message="Compiling XLST module"/>
+        <echo message="---------------------------"/>
+        
+        <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        
+        <mkdir dir="${test.classes}"/>
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
+            destdir="${test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${test.src}" 
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+    </target>
+
     <target name="jar" depends="compile" if="include.feature.xslt.config">
         <echo message="Creating exist-xslt.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-xslt.jar">  
