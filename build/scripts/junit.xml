@@ -54,6 +54,7 @@
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
         <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/>
+        <ant antfile="build.xml" dir="extensions/xslt" target="compile-tests"/>
     </target>
 
     <!-- Seperate target for creating folders -->
@@ -374,7 +375,7 @@
     
     <available file="extensions/xslt/test/src/org/exist/xsl/xslts_1_1_0/" property="xslts_junit.present"/>
     
-    <target name="prepare-xslts" depends="download-xslts" unless="xslts_junit.present">
+    <target name="prepare-xslts" depends="download-xslts"> <!-- unless="xslts_junit.present" -->
         <!--
             <delete>
             <fileset dir="${junit.reports}/src/org/exist/xsl/xslts/"/>
@@ -382,7 +383,7 @@
         -->
         
         <echo message="---------------------------------------"/>
-        <echo message="Generating junit tests from XSLTS ......"/>
+        <echo message="Generating junit tests from XSLTS"/>
         <echo message="---------------------------------------"/>
         <delete failonerror="false">
             <fileset dir="extensions/xslt/test/src/org/exist/xslt/xslts_1_1_0/"/>
@@ -437,11 +438,11 @@
     </target>
 
     <path id="classpath.xslts">
-        <pathelement path="extensions/xslt/test/classes"/>
+        <pathelement path="./extensions/xslt/test/classes"/>
     </path>
 
     <!-- Test XSLTS : XSL Test Suite -->
-    <target name="test-xslts" depends="prepare-xslts, test-prepare">
+    <target name="test-xslts" depends="prepare-xslts, test-prepare, test-compile">
         <echo message="--------------"/>
         <echo message="XSLTS tests    "/>
         <echo message="--------------"/>
@@ -455,7 +456,7 @@
             <classpath refid="classpath.xslts"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test name="org.exist.xslt.xslts.AllTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xslt.xslts_1_1_0.AllTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 </project>
