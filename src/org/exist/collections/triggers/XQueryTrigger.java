@@ -22,6 +22,7 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,12 +37,23 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.xacml.AccessContext;
-import org.exist.source.*;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
+import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Expression;
+import org.exist.xquery.FunctionCall;
+import org.exist.xquery.LiteralValue;
+import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -489,18 +501,19 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	
     		UserDefinedFunction function = context.resolveFunction(functionName, urls.length);
     		if (function != null) {
-    			Sequence[] args = new Sequence[urls.length];
+    			List<Expression> args = new ArrayList<Expression>(urls.length);
     			for (int i = 0; i < urls.length; i++)
-    				args[i] = new AnyURIValue(urls[i]);
+    				args.add(new LiteralValue(context, new AnyURIValue(urls[i])));
     			
-	    		function.setArguments(args, null);
-	        	
 	    		pm = broker.getBrokerPool().getProcessMonitor();
 	    		
 	            context.getProfiler().traceQueryStart();
 	            pm.queryStarted(context.getWatchDog());
-
-	    		function.eval(NodeSet.EMPTY_SET);
+	            
+	            FunctionCall call = new FunctionCall(context, function);
+	            call.setArguments(args);
+	            call.analyze(new AnalyzeContextInfo());
+	    		call.eval(NodeSet.EMPTY_SET);
     		}
         } catch(XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
