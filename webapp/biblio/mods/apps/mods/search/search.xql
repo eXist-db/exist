@@ -469,6 +469,13 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                 else
                     <div id="login">Logged in as <span class="username">{$user}</span>. <a href="?logout=1">Logout</a></div>
             )
+        case element(biblio:optimize-trigger) return
+            let $user := request:get-attribute("xquery.user")
+            return
+                if (xmldb:is-admin-user($user)) then
+                    <a id="optimize-trigger" href="#">Create custom indexes for sorting</a>
+                else
+                    ()
         case element(biblio:collection-tree) return
             let $show := request:get-parameter("collection-tree", "hidden")
             return
@@ -519,7 +526,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                     <form id="new-resource-form" action="../edit/edit.xq" method="GET">
                         <ul>
                             <li>
-                                <input type="radio" name="type" value="default" selected="selected"/><span> default</span>
+                                <input type="radio" name="type" value="default" selected="true"/><span> Default</span>
                             </li>
                         {
                             for $item in $code-table//item
@@ -527,7 +534,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                             order by $label
                             return
                                 <li>
-                                  <input type="radio" name="type" value="{$item/value/text()}"/><span> {$item/value/text()}</span>
+                                  <input type="radio" name="type" value="{$item/value/text()}"/><span> {$item/label/text()}</span>
                                 </li>
                         }
                         </ul>
