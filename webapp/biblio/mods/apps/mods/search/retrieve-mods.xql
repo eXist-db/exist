@@ -1147,8 +1147,6 @@ declare function mods:entry-full($entry as element())
 
 (: Creates view for detail view. :)
 declare function mods:format-full($id as xs:string, $entry as element(mods:mods), $original as element(mods:mods)) {
-    let $log := util:log("DEBUG", $entry)
-    return
     <table class="biblio-full">
     {
     mods:get-collection($original),
