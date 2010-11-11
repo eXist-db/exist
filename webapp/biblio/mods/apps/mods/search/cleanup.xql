@@ -81,3 +81,16 @@ declare function clean:cleanup($node as node()) {
         default return
             $node
 };
+
+declare function clean:clean-namespaces($node as node()) {
+    typeswitch ($node)
+        case element() return
+            if (namespace-uri($node) eq "http://www.loc.gov/mods/v3") then
+                element { QName("http://www.loc.gov/mods/v3", local-name($node)) } {
+                    for $child in $entry/node() return clean:clean-namespaces($child)
+                }
+            else
+                $node
+        default return
+            $node
+};

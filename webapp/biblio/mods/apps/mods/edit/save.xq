@@ -3,7 +3,8 @@ xquery version "1.0";
 (: XQuery script to save a new MODS record from an incoming HTTP POST :)
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
-  
+import module namespace clean = "http:/exist-db.org/xquery/mods/cleanup" at "../search/cleanup.xql";
+
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
@@ -28,7 +29,7 @@ let $data-collection :=
 let $log := util:log("DEBUG", ("Saving to collection: ", $data-collection))
 
 (: this is where the form "POSTS" documents to this XQuery using the POST method of a submission :)
-let $item := request:get-data()
+let $item := clean:clean-namespaces(request:get-data())
 
 (: check to see if we have an indentifier in the incoming post :)
 let $incoming-id := $item/@ID
