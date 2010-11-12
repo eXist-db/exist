@@ -636,9 +636,10 @@ public class Configurator {
     }
 
     public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
-        Configuration conf;
+        Configuration conf = null;
+        XmldbURI key = collection.getURI().append(fileURL).append(".pool-"+broker.getBrokerPool().getId());
         synchronized (hotConfigs) {
-            conf = hotConfigs.get(collection.getURI().append(fileURL));
+            conf = hotConfigs.get(key);
         }
         if (conf != null)
             return conf;
@@ -683,7 +684,7 @@ public class Configurator {
             //throw new ConfigurationException("The configuration file is empty, url = "+collection.getURI().append(fileURL));
         conf = new ConfigurationImpl(confElement);
         synchronized (hotConfigs) {
-            hotConfigs.put(document.getURI(), conf);
+            hotConfigs.put(key, conf);
         }
         return conf;
     }
