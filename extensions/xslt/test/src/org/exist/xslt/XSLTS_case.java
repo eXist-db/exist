@@ -110,11 +110,6 @@ public class XSLTS_case extends TestCase {
 				pool.release(broker);
 			}
 
-			//workaround
-	        Document doc = new DocumentImpl(context, false);
-	        Element outputFile = doc.createElement("outputFile");
-	        outputFile.setTextContent(outputURL);
-
 			//declare variable
 	        if (inputURL !=  null && inputURL != "")
 	        	context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL));
@@ -131,20 +126,32 @@ public class XSLTS_case extends TestCase {
 			
 			//compare result with one provided by test case
 			boolean ok = false;
-			if (compareResult("", XSLTS_folder+"/ExpectedTestResults/", outputFile, result)) {
-				ok = true;
+			if (outputURL == null || outputURL.equals("")) {
+				Assert.fail("expected error: " + expectedError);
+			} else {
+				//workaround
+		        Document doc = new DocumentImpl(context, false);
+		        Element outputFile = doc.createElement("outputFile");
+		        outputFile.setTextContent(outputURL);
+	
+				if (compareResult("", XSLTS_folder+"/ExpectedTestResults/", outputFile, result)) {
+					ok = true;
+				}
 			}
 			
 			if (!ok)
 				Assert.fail("expected \n" +
-						"["+readFileAsString(new File(testLocation+XSLTS_folder+"/ExpectedTestResults/", outputFile.getNodeValue()))+"]\n" +
+						"["+readFileAsString(new File(testLocation+XSLTS_folder+"/ExpectedTestResults/", outputURL))+"]\n" +
 						", get \n["+sequenceToString(result)+"]");
 		} catch (XPathException e) {
 			String error = e.getMessage();
 
 			if (!expectedError.isEmpty())
 				;
-			else Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+			else {
+				e.printStackTrace();
+				Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
+			}
 		}
 
 //        StringBuilder content = new StringBuilder();
