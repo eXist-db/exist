@@ -408,9 +408,9 @@ public class XSLStylesheet extends Declaration
 		
 		if (params.containsKey(param.getName()))
 			compileError(XSLExceptions.ERR_XTSE0580);
-		
-		 Variable variable = context.declareVariable(param.getName(), param);//UNDERSTAND: global
-		 params.put(param.getName(), variable);
+
+		Variable variable = context.declareVariable(param.getName(), param);//UNDERSTAND: global
+		params.put(param.getName(), variable);
 	}
 
 	public void setTransformer(Transformer transformer) {
