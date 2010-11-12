@@ -66,6 +66,7 @@ public class Attribute extends SimpleConstructor {
 		super(context);
 		
 		constructor = new DynamicAttributeConstructor(getContext());
+		constructor.setReplaceAttributeFlag(true);
 	}
 
 	public void setToDefaults() {

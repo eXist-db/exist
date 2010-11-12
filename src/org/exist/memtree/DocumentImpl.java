@@ -137,6 +137,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     protected int              nextRef          = 0;
     protected long             docId;
     boolean                    explicitCreation = false;
+    
+    boolean replaceAttribute = false;
 
     public DocumentImpl( XQueryContext context, boolean explicitCreation ) {
         super( null, 0 );
@@ -317,7 +319,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         while( ( nodeNr > 0 ) && ( prevAttr > -1 ) && ( attrParent[prevAttr] == nodeNr ) ) {
             QName prevQn = attrName[prevAttr--];
             if( prevQn.equalsSimple( qname ) ) {
-                throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQDY0025: element has more than one attribute '" + qname + "'" ) );
+            	if (replaceAttribute)
+            		;
+            	else
+            		throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQDY0025: element has more than one attribute '" + qname + "'" ) );
             }
         }
         if( nextAttr == attrName.length ) {

@@ -47,6 +47,8 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     private Expression qnameExpr;
     private Expression valueExpr;
     
+    private boolean replaceAttribute = false;
+    
     /**
      * @param context
      */
@@ -99,6 +101,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         NodeImpl node;
         try {
             MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.setReplaceAttributeFlag(replaceAttribute);
             context.proceed(this, builder);
 
             Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
@@ -192,4 +195,8 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitAttribConstructor(this);
     }
+
+	public void setReplaceAttributeFlag(boolean flag) {
+		replaceAttribute = flag;
+	}
 }
