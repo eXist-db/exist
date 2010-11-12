@@ -106,6 +106,7 @@
     
     <target name="clean">
         <delete dir="${classes}"/>
+        <delete dir="${test.classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-xslt.jar" failonerror="false"/>
     </target>
 </project>
