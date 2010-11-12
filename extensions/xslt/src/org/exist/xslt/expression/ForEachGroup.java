@@ -68,14 +68,14 @@ public class ForEachGroup extends SimpleConstructor {
 	private String attr_group_adjacent = null;
 	private String attr_group_starting_with = null;
 	private String attr_group_ending_with = null;
-	private String collationURI = null;
+	private String attr_collation = null;
 
 	private PathExpr select = null;
 	private PathExpr group_by = null;
 	private PathExpr group_adjacent = null;
 	private PathExpr group_starting_with = null;
 	private PathExpr group_ending_with = null;
-	private Collator collator = null;
+	private PathExpr collator = null;
 	
 	public ForEachGroup(XSLContext context) {
 		super(context);
@@ -87,13 +87,14 @@ public class ForEachGroup extends SimpleConstructor {
 		attr_group_adjacent = null;
 		attr_group_starting_with = null;
 		attr_group_ending_with = null;
+		attr_collation = null;
 		
 		select = null;
 		group_by = null;
 		group_adjacent = null;
 		group_starting_with = null;
 		group_ending_with = null;
-		collationURI = null;
+		collator = null;
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
@@ -114,25 +115,23 @@ public class ForEachGroup extends SimpleConstructor {
 			attr_group_ending_with = attr.getValue();
 			
 		} else if (attr_name.equals(COLLATION)) {
-			collationURI = attr.getValue();
+			attr_collation = attr.getValue();
 		}
 	}
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	boolean atRootCall = false;
     	
-    	if (collationURI != null) {
+    	if (attr_collation != null) {
     		if (attr_group_by == null && attr_group_adjacent == null)
     			throw new XPathException(this, ErrorCodes.XTSE1090, "");
-
-    		collator = context.getCollator(collationURI);
-    		//CODEPOINT return null
-//    		if (collator == null) {
-//    			throw new XPathException(this, ErrorCodes.XTDE1110, "");
-//    		}
     		
-    	} else {
-			collator = context.getDefaultCollator();
+    		if (attr_collation.startsWith("{") && attr_collation.endsWith("}")) {
+    			collator = new PathExpr(getContext());
+    			Pattern.parse(contextInfo.getContext(), 
+    					attr_collation.substring(1, attr_collation.length() - 1), 
+    					collator);
+    		}
     	}
     	
     	if (attr_select != null) {
@@ -216,7 +215,12 @@ public class ForEachGroup extends SimpleConstructor {
 	}
 
 	protected Collator getCollator(Sequence contextSequence, Item contextItem, int arg) throws XPathException {
-		if(collationURI != null) {
+		if(attr_collation != null) {
+			String collationURI = attr_collation;
+
+			if (collator != null)
+				collationURI = collator.eval(contextSequence, contextItem).getStringValue();
+
 			return context.getCollator(collationURI);
 		} else
 			return context.getDefaultCollator();
@@ -248,8 +252,8 @@ public class ForEachGroup extends SimpleConstructor {
         	dumper.display(" group_ending_with = ");
         	group_ending_with.dump(dumper);
         }
-        if (collationURI != null)
-        	dumper.display(" collation = "+collationURI);
+        if (attr_collation != null)
+        	dumper.display(" collation = "+attr_collation);
 
         dumper.display("> ");
 
@@ -272,8 +276,8 @@ public class ForEachGroup extends SimpleConstructor {
         	result.append(" group_starting_with = "+group_starting_with.toString());    
     	if (group_ending_with != null)
         	result.append(" group_ending_with = "+group_ending_with.toString());    
-    	if (collationURI != null)
-        	result.append(" collation = "+collationURI.toString());    
+    	if (attr_collation != null)
+        	result.append(" collation = "+attr_collation.toString());    
 
         result.append("> ");    
 
