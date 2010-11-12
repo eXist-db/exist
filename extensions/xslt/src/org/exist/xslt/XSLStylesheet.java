@@ -205,8 +205,17 @@ public class XSLStylesheet extends Declaration
 			if (expr instanceof Template) {
 				Template template = (Template) expr;
 				if (template.isRootMatch()) {
-					if (rootTemplate != null)
+					if (rootTemplate != null) {
+						if (template.isPrioritySet() || rootTemplate.isPrioritySet()) {
+							if (template.getPriority() == rootTemplate.getPriority()) {
+								compileError("double root match");//XXX: put error code
+							} else if (template.getPriority() > rootTemplate.getPriority()) {
+								rootTemplate = template;
+							}
+							continue;
+						}
 						compileError("double root match");//XXX: put error code
+					}
 					rootTemplate = template;
 
 					if (template.getName() != null)

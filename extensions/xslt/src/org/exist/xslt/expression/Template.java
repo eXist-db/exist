@@ -292,6 +292,14 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 	public boolean isRootMatch() {
 		return ("/".equals(attr_match)); 
 	}
+	
+	public boolean isPrioritySet() {
+		return attr_priority != null;
+	}
+
+	public double getPriority() {
+		return priority;
+	}
 
     public Map<QName, org.exist.xquery.Variable> getXSLParams() {
     	if (params == null)
