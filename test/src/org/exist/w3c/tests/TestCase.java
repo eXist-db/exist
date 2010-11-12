@@ -435,6 +435,9 @@ public abstract class TestCase {
 				Resource resource = getResource(i.nextItem());
 				res.append(resource.getContent().toString());
 				if (i.hasNext()) res.append(" ");
+				
+				//avoid to big output
+				if (res.length() >= (1024 * 10)) return "{TOO BIG}";
 			}
 		} catch (Exception e) {
 			res.append(e.getMessage());

@@ -321,30 +321,38 @@ public class XQTS_case extends TestCase {
                 //collect information if result is wrong
                 if (!ok) {
                     StringBuilder message = new StringBuilder();
-                    String exp = "";
+                    StringBuffer exp = new StringBuffer();
                     try {
                         for (int i = 0; i < outputFiles.getLength(); i++) {
-                            exp += "{'";
                             ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
                             File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
                             if (!expectedResult.canRead())
                                 Assert.fail("can't read expected result");
-                            Reader reader = new BufferedReader(new FileReader(expectedResult));
-                            char ch;
-                            while (reader.ready()) {
-                                ch = (char)reader.read();
-                                if (ch == '\r')
-                                    ch = (char)reader.read();
-                                exp += String.valueOf(ch); 
+                            
+                            //avoid to big output
+                            if (expectedResult.length() >= (1024 * 10)) {
+                            	exp = new StringBuffer();
+                            	exp.append("{TOO BIG}");
+                            	break;
+                            } else {
+	                            exp.append("{'");
+	                            Reader reader = new BufferedReader(new FileReader(expectedResult));
+	                            char ch;
+	                            while (reader.ready()) {
+	                                ch = (char)reader.read();
+	                                if (ch == '\r')
+	                                    ch = (char)reader.read();
+	                                exp.append(String.valueOf(ch)); 
+	                            }
+	                            exp.append("'}");
                             }
-                            exp += "'}";
                         }
                     } catch (Exception e) {
-                        exp += e.getMessage();
+                        exp.append(e.getMessage());
                     }
                     String res = sequenceToString(result);
-                    if (exp.isEmpty())
-                        exp += "error "+ expectedError;
+                    if (exp.length() == 0)
+                        exp.append("error "+ expectedError);
                     StringBuilder data = new StringBuilder();
                     for (int i = 0; i < inputFiles.getLength(); i++) {
                         ElementImpl inputFile = (ElementImpl)inputFiles.item(i);
