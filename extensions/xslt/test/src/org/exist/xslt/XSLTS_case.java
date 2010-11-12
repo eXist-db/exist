@@ -37,7 +37,6 @@ import org.exist.memtree.DocumentImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.XMLFilenameFilter;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -47,8 +46,6 @@ import org.exist.xquery.value.Sequence;
 import org.junit.Before;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -58,7 +55,7 @@ public class XSLTS_case extends TestCase {
 
 	private final static String XSLT_COLLECTION = "XSLTS";
 
-	private static final String XSLTS_folder = "XSLTS_1_1_0";
+	private final static String XSLTS_folder = XSLT_COLLECTION+"_1_1_0";
 	
 	@Override
 	public void loadTS() throws Exception {
@@ -119,7 +116,11 @@ public class XSLTS_case extends TestCase {
 	        outputFile.setTextContent(outputURL);
 
 			//declare variable
-			context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL));
+	        if (inputURL !=  null && inputURL != "")
+	        	context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL));
+	        else
+	        	context.declareVariable("xml", loadVarFromString(context, "<empty/>"));
+	        	
 			context.declareVariable("xslt", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL));
 			
 			//compile

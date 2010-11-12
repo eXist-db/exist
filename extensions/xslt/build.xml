@@ -65,10 +65,10 @@
         <pathelement path="../../test/classes"/>
     </path>
 
-     <path id="classpath.test-libs">
-         <fileset dir="${top.dir}/${lib.test}">
-            <include name="*.jar"/>
-        </fileset>
+	<path id="classpath.test-libs">
+		<fileset dir="${top.dir}/${lib.test}">
+			<include name="*.jar"/>
+		</fileset>
     </path>
 
     <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
