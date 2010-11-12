@@ -152,6 +152,10 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         return pool;
     }
 
+    public BrokerPool getDatabase() {
+        return pool;
+    }
+
     /**
      * The method <code>getLocalName</code>
      *

@@ -23,6 +23,7 @@ package org.exist.config;
 
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeAtExist;
+import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.*;
 
@@ -34,6 +35,10 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 	
 	private E document;
 	
+    public BrokerPool getDatabase() {
+        return getProxyObject().getDatabase();
+    }
+
 	/* (non-Javadoc)
 	 * @see org.exist.i.dom.DocumentAtExist#getFirstChildFor(int)
 	 */
