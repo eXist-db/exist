@@ -47,7 +47,7 @@ public class MemTreeBuilder
     protected short         level           = 1;
     protected int[]         prevNodeInLevel;
     protected XQueryContext context         = null;
-
+    
     public MemTreeBuilder()
     {
         this( null );
@@ -479,4 +479,9 @@ public class MemTreeBuilder
         doc.next[nodeNr]       = prevNodeInLevel[level - 1];
         prevNodeInLevel[level] = nodeNr;
     }
+
+
+	public void setReplaceAttributeFlag(boolean replaceAttribute) {
+		doc.replaceAttribute = replaceAttribute;
+	}
 }
