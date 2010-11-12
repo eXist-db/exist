@@ -389,12 +389,43 @@ public abstract class TestCase {
         }
     }
 
+    public NodeImpl loadVarFromString(XQueryContext context, String source) throws IOException {
+        SAXAdapter adapter = new SAXAdapter(context);
+
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        
+        XMLReader xr;
+		try {
+			SAXParser parser = factory.newSAXParser();
+
+			xr = parser.getXMLReader();
+			xr.setContentHandler(adapter);
+			xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+        
+        try {
+            InputSource src = new InputSource(new StringReader(source));
+            xr.parse(src);
+            
+            return (NodeImpl) adapter.getDocument();
+		} catch (SAXException e) {
+			throw new IOException(e);
+        }
+    }
 	
 	public static String readFileAsString(File file) throws IOException {
 	    byte[] buffer = new byte[(int) file.length()];
 	    FileInputStream f = new FileInputStream(file);
-	    f.read(buffer);
-	    return new String(buffer);
+	    try {
+	    	f.read(buffer);
+	    	return new String(buffer);
+	    } finally {
+	    	f.close();
+	    }
 	}
 	
 	public String sequenceToString(Sequence seq) {
