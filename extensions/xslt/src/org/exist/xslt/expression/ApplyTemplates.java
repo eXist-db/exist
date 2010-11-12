@@ -94,48 +94,55 @@ public class ApplyTemplates extends SimpleConstructor {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	Sequence result = new ValueSequence();
-    	
-    	Sequence selected;
-    	if (select == null) {
-    		selected = anyChild.eval(contextSequence, contextItem);
-    	} else {
-    		selected = select.eval(contextSequence, contextItem);
-    	}
-    	
-    	for (Expression expr : steps) {
-    		if (expr instanceof Sort) {
-				Sort sort = (Sort) expr;
-				selected = sort.eval(selected, null);
-			} else {
-				throw new XPathException("not suported for now "+expr);//TODO: error?
-			}
-    	}
-    		
-    	XSLStylesheet xslt = getXSLContext().getXSLStylesheet();
 
-		int pos = 0;
-//    	for (Item item : selected) {
-        for (SequenceIterator iterInner = selected.iterate(); iterInner.hasNext();) {
-            Item item = iterInner.nextItem();   
-    		
-        	context.setContextSequencePosition(pos, selected);
-    		Sequence res = xslt.templates(selected, item);
-    		if (res == null) {
-            	if (item instanceof Text) {
-                    MemTreeBuilder builder = context.getDocumentBuilder();
-            		builder.characters(item.getStringValue());
-            		result.add(item);
-            	} else if (item instanceof Node) {
-            		res = eval(selected, item); //item.toSequence();//
-            	} else
-            		throw new XPathException("not supported item type");
-    		}
-    		result.addAll(res);
-    		pos++;
-    	}
+		Sequence result = new ValueSequence();
     	
-    	return result;
+        context.pushDocumentContext();
+
+        try {
+			Sequence selected;
+	    	if (select == null) {
+	    		selected = anyChild.eval(contextSequence, contextItem);
+	    	} else {
+	    		selected = select.eval(contextSequence, contextItem);
+	    	}
+	    	
+	    	for (Expression expr : steps) {
+	    		if (expr instanceof Sort) {
+					Sort sort = (Sort) expr;
+					selected = sort.eval(selected, null);
+				} else {
+					throw new XPathException("not suported for now "+expr);//TODO: error?
+				}
+	    	}
+	    		
+	    	XSLStylesheet xslt = getXSLContext().getXSLStylesheet();
+	
+			int pos = 0;
+	//    	for (Item item : selected) {
+	        for (SequenceIterator iterInner = selected.iterate(); iterInner.hasNext();) {
+	            Item item = iterInner.nextItem();   
+	    		
+	        	context.setContextSequencePosition(pos, selected);
+	    		Sequence res = xslt.templates(selected, item);
+	    		if (res == null) {
+	            	if (item instanceof Text) {
+	                    MemTreeBuilder builder = context.getDocumentBuilder();
+	            		builder.characters(item.getStringValue());
+	            		result.add(item);
+	            	} else if (item instanceof Node) {
+	            		res = eval(selected, item); //item.toSequence();//
+	            	} else
+	            		throw new XPathException("not supported item type");
+	    		}
+	    		result.addAll(res);
+	    		pos++;
+	    	}
+	    	
+	    	return result;
+        } finally {
+        	context.popDocumentContext();
+        }
 	}
 	
 //	public Sequence builtInTemplateRule(Item contextItem) throws XPathException {

@@ -105,13 +105,18 @@ public class Attribute extends SimpleConstructor {
 				valueOf.validate();
 				valueOf.sequenceItSelf = true;
 				constructor.setContentExpr(valueOf);
+			} else if (expr instanceof ApplyTemplates) {
+				ApplyTemplates applyTemplates = (ApplyTemplates) expr;
+				applyTemplates.validate();
+//				applyTemplates.sequenceItSelf = true;
+				constructor.setContentExpr(applyTemplates);
 			} else if (expr instanceof Text) {
 				Text text = (Text) expr;
 				text.validate();
 				text.sequenceItSelf = true;
 				constructor.setContentExpr(text);
 			} else {
-				compileError("unsupported subelement");
+				compileError("unsupported subelement "+expr);
 			}
 		}
 	}
