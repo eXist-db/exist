@@ -66,6 +66,8 @@ public class ForEach extends SimpleConstructor {
 	}
 	
 	public void setToDefaults() {
+		attr_select = null;
+
 		select = null;
 		childNodes = null;
 		
