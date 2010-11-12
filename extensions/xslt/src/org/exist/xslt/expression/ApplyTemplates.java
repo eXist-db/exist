@@ -27,8 +27,10 @@ import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
+import org.exist.xquery.LocalVariable;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -99,6 +101,7 @@ public class ApplyTemplates extends SimpleConstructor {
     	
         context.pushDocumentContext();
 
+        LocalVariable mark = context.markLocalVariables(false);
         try {
 			Sequence selected;
 	    	if (select == null) {
@@ -111,8 +114,13 @@ public class ApplyTemplates extends SimpleConstructor {
 	    		if (expr instanceof Sort) {
 					Sort sort = (Sort) expr;
 					selected = sort.eval(selected, null);
+	    		} else if (expr instanceof TextConstructor) {
+	    			//ignore text elements
+	    		} else if (expr instanceof WithParam) {
+	    			WithParam param = (WithParam)expr;
+	    			context.declareVariable(param.getName(), param);
 				} else {
-					throw new XPathException("not suported for now "+expr);//TODO: error?
+					throw new XPathException("not suported "+expr);//TODO: error?
 				}
 	    	}
 	    		
@@ -141,6 +149,7 @@ public class ApplyTemplates extends SimpleConstructor {
 	    	
 	    	return result;
         } finally {
+            context.popLocalVariables(mark);
         	context.popDocumentContext();
         }
 	}
