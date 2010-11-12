@@ -437,7 +437,7 @@ public abstract class TestCase {
 				if (i.hasNext()) res.append(" ");
 				
 				//avoid to big output
-				if (res.length() >= (1024 * 10)) return "{TOO BIG}";
+				if (res.length() >= 1024) return "{TOO BIG}";
 			}
 		} catch (Exception e) {
 			res.append(e.getMessage());
