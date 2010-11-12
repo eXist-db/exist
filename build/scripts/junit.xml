@@ -375,6 +375,10 @@
     
     <available file="extensions/xslt/test/src/org/exist/xsl/xslts_1_1_0/" property="xslts_junit.present"/>
     
+    <path id="classpath.xslts">
+        <pathelement path="extensions/xslt/test/classes"/>
+    </path>
+
     <target name="prepare-xslts" depends="download-xslts"> <!-- unless="xslts_junit.present" -->
         <!--
             <delete>
@@ -406,6 +410,7 @@
                 <path refid="classpath.core"/>
                 <path refid="classpath.junit"/>
 	            <path refid="classpath.test-libs"/>
+	            <path refid="classpath.xslts"/>
             </classpath>
         </javac>
         <echo>JUnit tests generated.</echo>
