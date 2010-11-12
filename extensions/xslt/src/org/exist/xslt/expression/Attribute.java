@@ -110,6 +110,9 @@ public class Attribute extends SimpleConstructor {
 				applyTemplates.validate();
 //				applyTemplates.sequenceItSelf = true;
 				constructor.setContentExpr(applyTemplates);
+			} else if (expr instanceof If) {
+				If _if_ = (If)expr;
+				constructor.setContentExpr(_if_);
 			} else if (expr instanceof Text) {
 				Text text = (Text) expr;
 				text.validate();

@@ -397,9 +397,7 @@ public class Transform extends BasicFunction {
 			{
 				setParameters(options, handler.getTransformer());
 			}
-		}
-		catch (TransformerConfigurationException e)
-		{
+		} catch (TransformerConfigurationException e) {
 			throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
 		}
         return handler;
