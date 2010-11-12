@@ -21,13 +21,27 @@
  */
 package org.exist.xslt.expression;
 
+import java.text.Collator;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.exist.interpreter.ContextAtExist;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.FunDistinctValues.ValueComparator;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
@@ -49,55 +63,163 @@ import org.w3c.dom.Attr;
  */
 public class ForEachGroup extends SimpleConstructor {
 
+	private String attr_select = null;
+	private String attr_group_by = null;
+	private String attr_group_adjacent = null;
+	private String attr_group_starting_with = null;
+	private String attr_group_ending_with = null;
+	private String collationURI = null;
+
 	private PathExpr select = null;
 	private PathExpr group_by = null;
 	private PathExpr group_adjacent = null;
 	private PathExpr group_starting_with = null;
 	private PathExpr group_ending_with = null;
-	private String collation = null;
+	private Collator collator = null;
 	
 	public ForEachGroup(XSLContext context) {
 		super(context);
 	}
 	
 	public void setToDefaults() {
+		attr_select = null;
+		attr_group_by = null;
+		attr_group_adjacent = null;
+		attr_group_starting_with = null;
+		attr_group_ending_with = null;
+		
 		select = null;
 		group_by = null;
 		group_adjacent = null;
 		group_starting_with = null;
 		group_ending_with = null;
-		collation = null;
+		collationURI = null;
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
-			select = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), select);
+			attr_select = attr.getValue();
 			
 		} else if (attr_name.equals(GROUP_BY)) {
-			group_by = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), group_by);
+			attr_group_by = attr.getValue();
 			
 		} else if (attr_name.equals(GROUP_ADJACENT)) {
-			group_adjacent = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), group_adjacent);
+			attr_group_adjacent = attr.getValue();
 			
 		} else if (attr_name.equals(GROUP_STARTING_WITH)) {
-			group_starting_with = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), group_starting_with);
+			attr_group_starting_with = attr.getValue();
 			
 		} else if (attr_name.equals(GROUP_ENDING_WITH)) {
-			group_ending_with = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), group_ending_with);
+			attr_group_ending_with = attr.getValue();
 			
 		} else if (attr_name.equals(COLLATION)) {
-			collation = attr.getValue();
+			collationURI = attr.getValue();
 		}
 	}
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	boolean atRootCall = false;
+    	
+    	if (collationURI != null) {
+    		if (attr_group_by == null && attr_group_adjacent == null)
+    			throw new XPathException(this, ErrorCodes.XTSE1090, "");
+
+    		collator = context.getCollator(collationURI);
+    		//CODEPOINT return null
+//    		if (collator == null) {
+//    			throw new XPathException(this, ErrorCodes.XTDE1110, "");
+//    		}
+    		
+    	} else {
+			collator = context.getDefaultCollator();
+    	}
+    	
+    	if (attr_select != null) {
+			select = new PathExpr(getContext());
+			Pattern.parse(contextInfo.getContext(), attr_select, select);
+			
+			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
+				atRootCall = true;
+				_check_(select);
+				contextInfo.removeFlag(DOT_TEST);
+			}
+    	}
+
+    	if (attr_group_by != null) {
+    		group_by = new PathExpr(getContext());
+			Pattern.parse(contextInfo.getContext(), attr_group_by, group_by);
+			
+			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
+				atRootCall = true;
+				_check_(group_by);
+				contextInfo.removeFlag(DOT_TEST);
+			}
+    	}
+    	
+    	super.analyze(contextInfo);
+    	
+    	if (atRootCall)
+    		contextInfo.addFlag(DOT_TEST);
+    }
 	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+		Sequence result = new ValueSequence();
+    	
+    	Sequence selected = select.eval(contextSequence, contextItem);
+    	
+		Collator collator = getCollator(contextSequence, contextItem, 2);		
+		TreeMap<AtomicValue, Sequence> map = new TreeMap<AtomicValue, Sequence>(new ValueComparator(collator));
+
+		Item item;
+		AtomicValue value;
+		NumericValue firstNaN = null;
+		for (SequenceIterator i = selected.iterate(); i.hasNext();) {
+			item = i.nextItem();
+			value = group_by.eval(selected, item).itemAt(0).atomize(); //UNDERSTAND: is it correct?
+			if (!map.containsKey(value)) {
+				if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+					if (((NumericValue)value).isNaN()) {
+						//although NaN does not equal itself, if $arg contains multiple NaN values a single NaN is returned.
+						if (firstNaN == null) {
+							Sequence seq = new ValueSequence();
+							seq.add(item);
+							map.put(value, seq);
+							firstNaN = (NumericValue)value;
+						} else {
+							Sequence seq = map.get(firstNaN);
+							seq.add(item);
+						}
+						continue;
+					}
+				}
+				Sequence seq = new ValueSequence();
+				seq.add(item);
+				map.put(value, seq);
+			} else {
+				Sequence seq = map.get(value);
+				seq.add(item);
+			}
+		}
+
+		for (Entry<AtomicValue, Sequence> entry : map.entrySet()) {
+			for (SequenceIterator iterInner = entry.getValue().iterate(); iterInner.hasNext();) {
+	            Item each = iterInner.nextItem();   
+
+	            //Sequence seq = childNodes.eval(contextSequence, each);
+	    		Sequence answer = super.eval(contextSequence, each);
+	    		result.addAll(answer);
+	    	}
+		}
+    	
+    	return result;
+	}
+
+	protected Collator getCollator(Sequence contextSequence, Item contextItem, int arg) throws XPathException {
+		if(collationURI != null) {
+			return context.getCollator(collationURI);
+		} else
+			return context.getDefaultCollator();
 	}
 
 	/* (non-Javadoc)
@@ -126,8 +248,8 @@ public class ForEachGroup extends SimpleConstructor {
         	dumper.display(" group_ending_with = ");
         	group_ending_with.dump(dumper);
         }
-        if (collation != null)
-        	dumper.display(" collation = "+collation);
+        if (collationURI != null)
+        	dumper.display(" collation = "+collationURI);
 
         dumper.display("> ");
 
@@ -150,8 +272,8 @@ public class ForEachGroup extends SimpleConstructor {
         	result.append(" group_starting_with = "+group_starting_with.toString());    
     	if (group_ending_with != null)
         	result.append(" group_ending_with = "+group_ending_with.toString());    
-    	if (collation != null)
-        	result.append(" collation = "+collation.toString());    
+    	if (collationURI != null)
+        	result.append(" collation = "+collationURI.toString());    
 
         result.append("> ");    
 
