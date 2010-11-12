@@ -428,6 +428,19 @@ public abstract class TestCase {
 	    }
 	}
 	
+	public static String readFileAsString(File file, long limit) throws IOException {
+		if (file.length() >= limit) return "DATA TOO BIG";
+		
+	    byte[] buffer = new byte[(int) file.length()];
+	    FileInputStream f = new FileInputStream(file);
+	    try {
+	    	f.read(buffer);
+	    	return new String(buffer);
+	    } finally {
+	    	f.close();
+	    }
+	}
+
 	public String sequenceToString(Sequence seq) {
 		StringBuilder res = new StringBuilder();
 		try {

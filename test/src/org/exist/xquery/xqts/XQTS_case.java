@@ -359,7 +359,7 @@ public class XQTS_case extends TestCase {
                         String id = inputFile.getNodeValue();
                         data.append(inputFile.getAttribute("variable"));
                         data.append(" = \n");
-                        data.append(readFileAsString(new File(sources.get(id))));
+                        data.append(readFileAsString(new File(sources.get(id)), 1024));
                         data.append("\n");
                     }
                     message.append("\n");
