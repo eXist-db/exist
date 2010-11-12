@@ -90,10 +90,13 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (XPathException e) {
-                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
+            //XDM: The dm:string-value accessor returns the string value of a node. It is defined on all seven node kinds.
+            } else if (requiredType == Type.STRING && Type.subTypeOf(type, Type.NODE)) {
+            	item = item.convertTo(Type.STRING);
             //Then, if numeric, try to refine the type
             //xs:decimal(3) treat as xs:integer
             } else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
@@ -101,7 +104,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (XPathException e) {
-                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -114,7 +117,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (XPathException e) {
-                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -126,7 +129,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (XPathException e) {
-                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -139,12 +142,12 @@ public class DynamicTypeCheck extends AbstractExpression {
                     type = Type.STRING;
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
-                    throw new XPathException(expression, "FORG0001: " +
+                    throw new XPathException(expression, ErrorCodes.FORG0001, "" +
                             Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
                             ") is not a sub-type of " + Type.getTypeName(requiredType));
 
                 } else
-                    throw new XPathException(expression, "FOCH0002: Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                         Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                         item.getStringValue() + ")'");
             }
