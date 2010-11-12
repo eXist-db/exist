@@ -1729,7 +1729,7 @@ public class BrokerPool extends Observable implements Database {
             securityManager = null;
             notificationService = null;
     		
-    		Configurator.clear();
+    		Configurator.clear(this);
         }
 	}
 

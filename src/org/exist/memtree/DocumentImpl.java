@@ -151,6 +151,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             namePool = context.getSharedNamePool();
         }
     }
+    
+    public BrokerPool getDatabase() {
+        return context.getBroker().getBrokerPool();
+    }
 
     private static long createDocId() {
         return( nextDocId++ );
@@ -314,14 +318,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if( ( nodeNr > 0 ) && ( nodeKind[nodeNr] != Node.ELEMENT_NODE ) ) {
             throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node." ) );
         }
-        int prevAttr = nextAttr - 1;
+        int prevAttr = nextAttr - 1; int attrN;
         // check if an attribute with the same qname exists in the parent element
         while( ( nodeNr > 0 ) && ( prevAttr > -1 ) && ( attrParent[prevAttr] == nodeNr ) ) {
-            QName prevQn = attrName[prevAttr--];
+        	attrN = prevAttr--;
+            QName prevQn = attrName[attrN];
             if( prevQn.equalsSimple( qname ) ) {
-            	if (replaceAttribute)
-            		;
-            	else
+            	if (replaceAttribute) {
+            		attrValue[attrN] = value;
+            		attrType[attrN] = type;
+            		return attrN;
+            	} else
             		throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQDY0025: element has more than one attribute '" + qname + "'" ) );
             }
         }

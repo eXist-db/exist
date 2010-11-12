@@ -38,6 +38,8 @@ public interface Database {
 
 	//TODO: javadocs
 	
+	public String getId(); 
+	
 	/**
 	 * 
 	 * @return

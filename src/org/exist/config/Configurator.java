@@ -48,6 +48,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -71,6 +72,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -86,7 +88,7 @@ public class Configurator {
 
     protected final static Logger LOG = Logger.getLogger(Configurator.class);
 
-    protected static ConcurrentMap<XmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<XmldbURI, Configuration>();
+    protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 
     /*private static Map<Class<Configurable>, Map<String, Field>> map =
         new HashMap<Class<Configurable>, Map<String, Field>>();
@@ -634,13 +636,27 @@ public class Configurator {
             throw new ConfigurationException(saxe.getMessage(), saxe);
         }
     }
+    
+    public static FullXmldbURI getFullURI(BrokerPool db, XmldbURI uri) {
+    	if (uri instanceof FullXmldbURI) {
+			return (FullXmldbURI) uri;
+		}
+    	
+        StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
+        accessor.append(db.getId());
+        accessor.append("://");
+        accessor.append("");
+        
+        return (FullXmldbURI)XmldbURI.create(accessor.toString(), uri.toString());
+    }
 
     public static Configuration parse(Configurable instance, DBBroker broker, Collection collection, XmldbURI fileURL) throws ConfigurationException {
         Configuration conf = null;
-        XmldbURI key = collection.getURI().append(fileURL).append(".pool-"+broker.getBrokerPool().getId());
-        synchronized (hotConfigs) {
-            conf = hotConfigs.get(key);
-        }
+        
+        FullXmldbURI key = getFullURI(broker.getBrokerPool(), collection.getURI().append(fileURL));
+
+        conf = hotConfigs.get( key );
+
         if (conf != null)
             return conf;
         //XXX: locking required
@@ -683,9 +699,9 @@ public class Configurator {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
             //throw new ConfigurationException("The configuration file is empty, url = "+collection.getURI().append(fileURL));
         conf = new ConfigurationImpl(confElement);
-        synchronized (hotConfigs) {
-            hotConfigs.put(key, conf);
-        }
+
+        hotConfigs.put(key, conf);
+
         return conf;
     }
 
@@ -694,9 +710,9 @@ public class Configurator {
             return null;
         Configuration conf;
         
-        synchronized (hotConfigs) {
-            conf = hotConfigs.get(document.getURI());
-        }
+        FullXmldbURI key = getFullURI(document.getDatabase(), document.getURI());
+
+        conf = hotConfigs.get(key);
         
         if (conf != null)
             return conf;
@@ -708,9 +724,7 @@ public class Configurator {
         
         conf = new ConfigurationImpl(confElement);
         
-        synchronized (hotConfigs) {
-            hotConfigs.put(document.getURI(), conf);
-        }
+        hotConfigs.put(key, conf);
         
         return conf;
     }
@@ -782,28 +796,29 @@ public class Configurator {
         return collection.getDocument(broker, uri.lastSegment());
     }
 
-    public static synchronized void clear() {
-        synchronized (hotConfigs) {
-            for (Configuration conf : hotConfigs.values()) {
-                if (conf instanceof ConfigurationImpl) {
-                    ((ConfigurationImpl) conf).configuredObjectReference = null;
-                }
+    public static synchronized void clear(Database db) {
+        for (Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
+        	FullXmldbURI uri = entry.getKey();
+        	if (uri.getInstanceName().equals(db.getId())) {
+        		Configuration conf = entry.getValue();
+        		if (conf instanceof ConfigurationImpl)
+            		((ConfigurationImpl) conf).configuredObjectReference = null;
             }
-            hotConfigs.clear();
+        	entry.setValue(null);
         }
+        //hotConfigs.clear();
         //map.clear();
     }
 
     public static void unregister(Configuration configuration) {
         if (configuration == null)
             return;
-        synchronized (hotConfigs) {
-            if (hotConfigs.containsValue(configuration)) { 
-                for (Entry<XmldbURI, Configuration> entry : hotConfigs.entrySet()) {
-                    if (entry.getValue() == configuration) {
-                        hotConfigs.remove(entry.getKey());
-                        return;
-                    }
+
+        if (hotConfigs.containsValue(configuration)) { 
+            for (Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
+                if (entry.getValue() == configuration) {
+                    hotConfigs.remove(entry.getKey());
+                    return;
                 }
             }
         }
@@ -811,8 +826,8 @@ public class Configurator {
 
     private static Object instantiateObject(String className, Configuration configuration) throws ConfigurationException {
         try {
-            Class clazz = Class.forName(className);
-            Constructor cstr = clazz.getConstructor(Configuration.class);
+            Class<?> clazz = Class.forName(className);
+            Constructor<?> cstr = clazz.getConstructor(Configuration.class);
             return cstr.newInstance(configuration);
         } catch(Exception e) {
             throw new ConfigurationException(e.getMessage(), e);
@@ -912,4 +927,8 @@ public class Configurator {
             return field;
         }
     }
+
+	public static Configuration getConfigurtion(BrokerPool db, XmldbURI uri) {
+		return hotConfigs.get(Configurator.getFullURI(db, uri));
+	}
 }
