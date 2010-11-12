@@ -150,7 +150,7 @@ public class FunDistinctValues extends CollatingFunction {
         return result;
 	}
 
-	private final static class ValueComparator implements Comparator<AtomicValue> {
+	public final static class ValueComparator implements Comparator<AtomicValue> {
 		
 		Collator collator;
 		
