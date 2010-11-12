@@ -330,7 +330,7 @@ public class XQTS_case extends TestCase {
                                 Assert.fail("can't read expected result");
                             
                             //avoid to big output
-                            if (expectedResult.length() >= (1024 * 10)) {
+                            if (expectedResult.length() >= 1024) {
                             	exp = new StringBuffer();
                             	exp.append("{TOO BIG}");
                             	break;
