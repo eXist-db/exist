@@ -70,7 +70,8 @@ public class Message extends SimpleConstructor {
 	}
 	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+    	//ignore it for now. may be, send it to log or console
+    	return Sequence.EMPTY_SEQUENCE;
 	}
 
 	/* (non-Javadoc)
