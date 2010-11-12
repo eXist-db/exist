@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.exist.interpreter.ContextAtExist;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.AttributeConstructor;
+//import org.exist.xquery.AttributeConstructor;
 //import org.exist.xquery.CDATAConstructor;
 //import org.exist.xquery.CommentConstructor;
 import org.exist.xquery.ElementConstructor;
@@ -45,6 +45,7 @@ import org.exist.dom.ElementAtExist;
 import org.exist.dom.NodeAtExist;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
+import org.exist.xslt.constructors.AttributeConstructor;
 import org.exist.xslt.expression.XSLExpression;
 import org.exist.xslt.expression.XSLPathExpr;
 import org.w3c.dom.Attr;
@@ -155,16 +156,16 @@ public class XSLElement implements ElementAtExist, Names {
         	
 				//XXX: rethinks
 				String value = attr.getNodeValue();
-				if (value.contains("{")) {
-					value = value.replace("{", "");
-					value = value.replace("}", "");
-        		
-					PathExpr expr = new PathExpr((XQueryContext) context);
-					org.exist.xslt.pattern.Pattern.parse((XQueryContext) context, value, expr);
-					attributeConstructer.addEnclosedExpr(expr);
-				} else {
+//				if (value.contains("{")) {
+//					value = value.replace("{", "");
+//					value = value.replace("}", "");
+//        		
+//					PathExpr expr = new PathExpr((XQueryContext) context);
+//					org.exist.xslt.pattern.Pattern.parse((XQueryContext) context, value, expr);
+//					attributeConstructer.addEnclosedExpr(expr);
+//				} else {
 					attributeConstructer.addValue(value);
-				}
+//				}
         	
 				elementConstructer.addAttribute(attributeConstructer); 
 			}
