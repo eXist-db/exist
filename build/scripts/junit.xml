@@ -399,6 +399,7 @@
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.xslts"/>
         </java>
         <echo>tests generated, compiling ...</echo>
         <mkdir dir="extensions/xslt/test/classes"/>
