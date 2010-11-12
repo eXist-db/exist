@@ -804,7 +804,7 @@ public class Configurator {
         		if (conf instanceof ConfigurationImpl)
             		((ConfigurationImpl) conf).configuredObjectReference = null;
             }
-        	entry.setValue(null);
+        	hotConfigs.remove(uri);
         }
         //hotConfigs.clear();
         //map.clear();
