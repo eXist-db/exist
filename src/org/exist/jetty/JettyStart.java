@@ -55,6 +55,7 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.servlet.Servlet;
 import org.apache.log4j.Logger;
 
 import org.exist.xquery.functions.system.GetVersion;
@@ -234,7 +235,7 @@ public class JettyStart implements LifeCycle.Listener {
             	if (openid != null)
             		if (handler instanceof ServletContextHandler) {
             			ServletContextHandler contextHandler = (ServletContextHandler) handler;
-            			contextHandler.addServlet(new ServletHolder(openid), "/openid");
+            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)openid), "/openid");
 
             			String suffix;
             			if (contextHandler.getContextPath().endsWith("/"))
