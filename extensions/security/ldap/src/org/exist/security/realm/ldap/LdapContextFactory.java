@@ -58,6 +58,9 @@ public class LdapContextFactory implements Configurable {
 	@ConfigurationFieldAsElement("url")
 	protected String url = null;
 
+        @ConfigurationFieldAsElement("domain")
+	protected String domain = null;
+
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
 
 	protected String systemUsername = null;
@@ -134,6 +137,10 @@ public class LdapContextFactory implements Configurable {
 
         public LDAPTransformationContext getTransformationContext() {
             return realmTransformation;
+        }
+
+        public String getDomain() {
+            return domain;
         }
 
 	// configurable methods

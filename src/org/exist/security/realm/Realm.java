@@ -22,6 +22,8 @@
 package org.exist.security.realm;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.exist.Database;
 import org.exist.EXistException;
@@ -51,4 +53,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 	public Database getDatabase();
 
     public Group getExternalGroup(Subject invokingUser, String name);
+
+    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
+    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
 }

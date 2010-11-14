@@ -21,7 +21,9 @@
  */
 package org.exist.security.openid;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
@@ -208,6 +210,16 @@ public class ReamlImpl implements Realm {
     @Override
     public Group getExternalGroup(Subject invokingUser, String name) {
         return null;
+    }
+
+    @Override
+    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+        return new ArrayList<String>(); //TODO
+    }
+
+    @Override
+    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+        return new ArrayList<String>(); //TODO
     }
 
 }

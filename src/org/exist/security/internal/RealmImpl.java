@@ -21,6 +21,10 @@
  */
 package org.exist.security.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractPrincipal;
@@ -217,13 +221,35 @@ public class RealmImpl extends AbstractRealm {
 			
 		Subject newUser = new SubjectImpl((AccountImpl) user, credentials);
 			
-		if (newUser.isAuthenticated())
+		if (newUser.isAuthenticated()) {
 			return newUser;
+                }
 
 		throw new AuthenticationException(
 				AuthenticationException.WRONG_PASSWORD,
 				"Wrong password for user [" + accountName + "] ");
 	}
+
+    @Override
+    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+        return new ArrayList<String>();    //at present exist users cannot have personal name details
+    }
+
+    @Override
+    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+
+        List<String> userNames = new ArrayList<String>();
+
+        for(String userName : usersByName.keySet()) {
+            if(userName.startsWith(startsWith)) {
+                userNames.add(userName);
+            }
+        }
+
+        return userNames;
+    }
+
+
 
 //    @Override
 //    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
