@@ -593,7 +593,7 @@ declare function biblio:form-select-collection($select-name as xs:string) as ele
 
 declare function biblio:form-add-member-to-sharing-group() {
     <jquery:dialog id="add-member-to-group-sharing-dialog" modal="true" title="Add User to Group" width="200">
-        <jquery:input id="members-list">
+        <jquery:input name="members-list">
             <jquery:autocomplete url="autocomplete-username.xql" width="300" multiple="false" matchContains="false" paramsCallback="autocompleteCallback"/>
         </jquery:input>
         <input id="add-member-to-group-button" type="button" value="Add"/>
