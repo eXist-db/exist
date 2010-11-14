@@ -12,6 +12,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
  */
 @ConfigurationClass("search")
 public class LDAPSearchContext implements Configurable {
+
     @ConfigurationFieldAsElement("base")
     protected String base = null;
 
@@ -21,11 +22,21 @@ public class LDAPSearchContext implements Configurable {
     @ConfigurationFieldAsElement("default-password")
     protected String defaultPassword = null;
 
-    @ConfigurationFieldAsElement("account-search-filter")
-    protected String accountSearchFilter = null;
+    @ConfigurationFieldAsElement("account-search-filter-prefix")
+    protected String accountSearchFilterPrefix = null;
 
-    @ConfigurationFieldAsElement("group-search-filter")
-    protected String groupSearchFilter = null;
+    @ConfigurationFieldAsElement("group-search-filter-prefix")
+    protected String groupSearchFilterPrefix = null;
+
+    @ConfigurationFieldAsElement("account-username-attribute")
+    protected String accountUsernameAttribute = null;
+
+    @ConfigurationFieldAsElement("account-personal-name-attribute")
+    protected String accountPersonalNameAttribute = null;
+
+    @ConfigurationFieldAsElement("group-name-attribute")
+    protected String groupNameAttribute = null;
+
 
     private final Configuration configuration;
 
@@ -45,12 +56,24 @@ public class LDAPSearchContext implements Configurable {
         return defaultPassword;
     }
 
-    public String getAccountSearchFilter() {
-        return accountSearchFilter;
+    public String getAccountSearchFilterPrefix() {
+        return accountSearchFilterPrefix;
     }
 
-    public String getGroupSearchFilter() {
-        return groupSearchFilter;
+    public String getGroupSearchFilterPrefix() {
+        return groupSearchFilterPrefix;
+    }
+
+    public String getAccountUsernameAttribute() {
+        return accountUsernameAttribute;
+    }
+
+    public String getAccountPersonalNameAttribute() {
+        return accountPersonalNameAttribute;
+    }
+
+    public String getGroupNameAttribute() {
+        return groupNameAttribute;
     }
 
     @Override

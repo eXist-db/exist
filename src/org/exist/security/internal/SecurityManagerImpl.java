@@ -21,6 +21,7 @@
  */
 package org.exist.security.internal;
 
+import java.util.regex.Pattern;
 import org.exist.security.AbstractRealm;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -615,5 +616,23 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public boolean hasUser(int id) {
         return usersById.containsKey(id);
+    }
+
+    @Override
+    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+        List<String> userNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            userNames.addAll(realm.findUsernamesWhereNameStarts(invokingUser, startsWith));
+        }
+        return userNames;
+    }
+
+    @Override
+    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+        List<String> userNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            userNames.addAll(realm.findUsernamesWhereUsernameStarts(invokingUser, startsWith));
+        }
+        return userNames;
     }
 }

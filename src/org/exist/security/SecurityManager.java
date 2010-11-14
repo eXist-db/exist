@@ -21,6 +21,8 @@
  */
 package org.exist.security;
 
+import java.util.List;
+import java.util.regex.Pattern;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
@@ -124,4 +126,14 @@ public interface SecurityManager extends Configurable {
    public int getNextGroupId();
 
    public int getNextAccountId();
+
+   /**
+    * Find users by their personal name
+    */
+   public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
+
+   /**
+    * Find users by their username
+    */
+   public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
 }
