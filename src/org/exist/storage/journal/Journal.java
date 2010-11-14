@@ -177,7 +177,7 @@ public class Journal {
         if (logDir != null) {
             File f = new File(logDir);
             if (!f.isAbsolute()) {
-               if (pool.getConfiguration().getExistHome()==null) {
+               if (pool.getConfiguration().getExistHome()!=null) {
                   f = new File(pool.getConfiguration().getExistHome(), logDir);
                } else if (pool.getConfiguration().getConfigFilePath()!=null) {
                   File confFile = new File(pool.getConfiguration().getConfigFilePath());
