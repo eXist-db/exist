@@ -115,6 +115,7 @@ public class LDAPRealm extends AbstractRealm {
     private Account createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
 
         DBBroker broker = null;
+
         try {
             broker = getDatabase().get(invokingUser);
 
@@ -153,6 +154,7 @@ public class LDAPRealm extends AbstractRealm {
                     e.getMessage(), e);
         } finally {
             if(broker != null) {
+                broker.setUser(invokingUser);
                 getDatabase().release(broker);
             }
         }
