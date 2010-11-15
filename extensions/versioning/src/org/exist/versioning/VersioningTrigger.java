@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -98,10 +99,11 @@ public class VersioningTrigger extends FilteringTrigger {
     private String documentRev = null;
     private boolean checkForConflicts = false;
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters != null) {
-            String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
+            String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE).get(0);
             if (allowOverwrite != null)
                 checkForConflicts = allowOverwrite.equals("false") || allowOverwrite.equals("no");
         }
