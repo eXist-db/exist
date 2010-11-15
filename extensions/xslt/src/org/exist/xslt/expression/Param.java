@@ -112,11 +112,10 @@ public class Param extends Declaration implements Variable {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-//		if (name != null) {
-//			Variable var = getXSLContext().resolveVariable(name);
-//			return var.getValue();
-//		} else 
-		if (select != null) {
+		if (name != null && select == null) {
+			Variable var = getXSLContext().resolveVariable(name);
+			return var.getValue();
+		} else if (select != null) {
 			Sequence result = select.eval(contextSequence, contextItem);
 			context.declareVariable(getName(), result);
 			return result;
