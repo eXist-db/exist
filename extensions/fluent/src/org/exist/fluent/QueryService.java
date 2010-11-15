@@ -573,7 +573,7 @@ public class QueryService implements Cloneable {
 			Variable var = super.resolveVariable(qname);
 			if (var == null) {
 				requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
-				var = new Variable(qname);
+				var = new VariableImpl(qname);
 			}
 			return var;
 		}

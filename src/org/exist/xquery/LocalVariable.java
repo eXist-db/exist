@@ -30,7 +30,7 @@ import org.exist.dom.QName;
  * 
  * @author wolf
  */
-public class LocalVariable extends Variable {
+public class LocalVariable extends VariableImpl {
 
 	protected LocalVariable before = null;
 	protected LocalVariable after = null;
