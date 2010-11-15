@@ -109,9 +109,15 @@ public abstract class Function extends PathExpr {
 		XQueryContext context,
 		XQueryAST ast,
 		FunctionDef def) throws XPathException {
-		Class<? extends Function> fclass = def.getImplementingClass();
-		if (def == null || fclass == null)
+
+		if (def == null)
 			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+
+		Class<? extends Function> fclass = def.getImplementingClass();
+		
+		if (fclass == null)
+			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+
 		try {
 			Object initArgs[] = { context };
 			Class<?> constructorArgs[] = { XQueryContext.class }; 
