@@ -21,15 +21,18 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;
@@ -49,7 +52,7 @@ import org.w3c.dom.Attr;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Param extends Declaration {
+public class Param extends Declaration implements Variable {
 
     private String attr_select = null;
 
@@ -109,11 +112,14 @@ public class Param extends Declaration {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		if (name != null) {
-			Variable var = getXSLContext().resolveVariable(name);
-			return var.getValue();
-		} else if (select != null) {
-			return select.eval(contextSequence, contextItem);
+//		if (name != null) {
+//			Variable var = getXSLContext().resolveVariable(name);
+//			return var.getValue();
+//		} else 
+		if (select != null) {
+			Sequence result = select.eval(contextSequence, contextItem);
+			context.declareVariable(getName(), result);
+			return result;
 		}
 		throw new XPathException("param can't calculated");//TODO: error?
 	}
@@ -178,5 +184,101 @@ public class Param extends Declaration {
 	 */
 	public QName getName() {
 		return name;
+	}
+
+	@Override
+	public void setValue(Sequence val) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Sequence getValue() {
+		// TODO Auto-generated method stub
+		if (select != null) {
+			try {
+				return select.eval(null, null);
+			} catch (XPathException e) {
+			}
+		}
+		return null;
+		//throw new XPathException("param can't calculated");//TODO: error?
+	}
+
+	@Override
+	public QName getQName() {
+		return getName();
+	}
+
+	@Override
+	public int getType() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setSequenceType(SequenceType type) throws XPathException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public SequenceType getSequenceType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setStaticType(int type) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getStaticType() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isInitialized() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setIsInitialized(boolean initialized) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getDependencies(XQueryContext context) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setStackPosition(int position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public DocumentSet getContextDocs() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setContextDocs(DocumentSet docs) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void checkType() throws XPathException {
+		// TODO Auto-generated method stub
+		
 	}    
 }
