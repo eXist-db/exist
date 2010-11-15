@@ -368,10 +368,29 @@ declare function security:set-group-can-write-collection($collection, $group as 
             true()
 };
 
-declare function security:create-group($group-name as xs:string, $group-member as xs:string*) as xs:boolean
-{
-    let $group-member-username := if($config:force-lower-case-usernames)then(fn:lower-case($group-member))else($group-member) return
-        xmldb:create-group($group-name, $group-member-username)
+(:~
+: Creates a security group
+:
+: Note - The currently logged in user will be the group owner
+:
+:)
+declare function security:create-group($group-name as xs:string, $group-members as xs:string*) as xs:boolean
+{       
+    (: create the group, currently logged in user will be the groups manager :)
+    if(xmldb:create-group($group-name, security:get-user-credential-from-session()[1]))then
+    (
+        (: add members to group :)
+        let $add-results :=
+            for $group-member in $group-members            
+            let $group-member-username := if($config:force-lower-case-usernames)then(fn:lower-case($group-member))else($group-member) return
+                xmldb:add-user-to-group($group-member-username, $group-name)
+        return
+            fn:not(fn:contains($add-results, false()))
+    )
+    else
+    (
+        false()
+    )
 };
 
 declare function security:set-group-can-read-resource($group-name as xs:string, $resource as xs:string, $read as xs:boolean) as xs:boolean
