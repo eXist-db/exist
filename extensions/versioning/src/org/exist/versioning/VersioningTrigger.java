@@ -640,6 +640,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
 	@Override
 	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		after(broker, transaction, document, false);
 	}
 
 	@Override
