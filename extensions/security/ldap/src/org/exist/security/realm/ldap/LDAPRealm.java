@@ -281,7 +281,7 @@ public class LDAPRealm extends AbstractRealm {
         String userName = removeDomainPostfix(accountName);
 
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getAccountSearchFilterPrefix(), search.getAccountPersonalNameAttribute(), userName);
+        String searchFilter = buildSearchFilter(search.getAccountSearchFilterPrefix(), search.getAccountUsernameAttribute(), userName);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);

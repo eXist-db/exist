@@ -292,7 +292,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
 
         if(!((user != null && user.hasDbaRole()) || group.isMembersManager(user))){
-                throw new PermissionDeniedException("not allowed to change group memberships");
+            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
         }
 
         if(!groups.contains(group)) {
