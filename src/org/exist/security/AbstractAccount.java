@@ -291,7 +291,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         Account user = getDatabase().getSubject();
 
 
-        if(!((user != null && user.hasDbaRole()) || group.isMembersManager(user))){
+        //TODO change once membersManbager is implemented correctly
+        //if(!((user != null && user.hasDbaRole()) || group.isMembersManager(user))){
+        if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
             throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
         }
 

@@ -97,7 +97,12 @@ public class XMLDBAddUserToGroup extends BasicFunction {
 
         logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
 
+        Subject currentSubject = context.getSubject();
         try {
+
+            //elevate privs
+            context.getBroker().setSubject(context.getBroker().getBrokerPool().getSecurityManager().getSystemSubject());
+
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
             Group group = sm.getGroup(context.getBroker().getUser(), groupName);
@@ -113,6 +118,8 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", pde);
         } catch(EXistException exe) {
             logger.error("Failed to add user '" + userName + "' group '" + groupName + "'", exe);
+        } finally {
+            context.getBroker().setSubject(currentSubject);
         }
 
         return BooleanValue.FALSE;
