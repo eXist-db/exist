@@ -177,7 +177,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 		Sequence val = XPathUtil.javaObjectToXPath(value, null);
 		Variable var = mGlobalVariables.get(qname);
 		if(var == null) {
-			var = new Variable(qname);
+			var = new VariableImpl(qname);
 			mGlobalVariables.put(qname, var);
 		}
 		var.setValue(val);

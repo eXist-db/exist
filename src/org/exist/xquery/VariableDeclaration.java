@@ -66,7 +66,7 @@ public class VariableDeclaration extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         QName qn = QName.parse(context, qname, null);
-        Variable var = new Variable(qn);
+        Variable var = new VariableImpl(qn);
         var.setIsInitialized(false);
         if (!analyzeDone) {
             Module myModule = context.getModule(qn.getNamespaceURI());
@@ -116,7 +116,7 @@ public class VariableDeclaration extends AbstractExpression {
             var.setSequenceType(sequenceType);
             var.checkType();
         } else {
-			var = new Variable(qn);
+			var = new VariableImpl(qn);
 			var.setValue(seq);
             var.setSequenceType(sequenceType);
             var.checkType();

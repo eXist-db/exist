@@ -1874,7 +1874,7 @@ public class XQueryContext
         var = globalVariables.get( qn );
 
         if( var == null ) {
-            var = new Variable( qn );
+            var = new VariableImpl( qn );
             globalVariables.put( qn, var );
         }
 
