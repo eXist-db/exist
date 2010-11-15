@@ -62,7 +62,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
-            "Use xmldb:create-group($group, $group-manager) instead."
+            "Use xmldb:create-group($group, $group-manager-username) instead."
         ),
 
         new FunctionSignature(
