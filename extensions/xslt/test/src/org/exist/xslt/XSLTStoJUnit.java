@@ -56,6 +56,9 @@ public class XSLTStoJUnit implements ContentHandler {
 	private static final String OUTPUT = "output";
 	private static final String RESULT_DOCUMENT = "result-document";
 	
+	private static final String ERROR = "error";
+	private static final String ERROR_ID = "error-id";
+
 	private static File folder;
     private String sep = File.separator;
     
@@ -70,6 +73,7 @@ public class XSLTStoJUnit implements ContentHandler {
 	private String stylesheet;
 	private String sourceDocument;
 	private String resultDocument;
+	private String errors;
 	
 	public static void main(String[] args) throws Exception {
 
@@ -132,7 +136,7 @@ public class XSLTStoJUnit implements ContentHandler {
 		out.write("	/* "+name+" */\n" +
 		"	@Test\n" +
 		"	public void test_"+adoptString(name)+"() throws Exception {\n" +
-		"		testCase(\""+sourceDocument+"\", \""+stylesheet+"\", \""+resultDocument+"\");\n"+
+		"		testCase(\""+sourceDocument+"\", \""+stylesheet+"\", \""+resultDocument+"\", \""+errors+"\");\n"+
 		"	}\n\n");
 	}
 
@@ -185,6 +189,7 @@ public class XSLTStoJUnit implements ContentHandler {
 			stylesheet = "";
 			sourceDocument = "";
 			resultDocument = "";
+			errors = "";
 			
 		} else if (localName.equals(STYLESHEET)) {
 			stylesheet = atts.getValue("file");
@@ -194,6 +199,9 @@ public class XSLTStoJUnit implements ContentHandler {
 			
 		} else if (localName.equals(RESULT_DOCUMENT)) {
 			resultDocument = atts.getValue("file");
+			
+		} else if (localName.equals(ERROR)) {
+			errors += atts.getValue(ERROR_ID)+" ";
 			
 		}
 		
