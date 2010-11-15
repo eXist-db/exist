@@ -78,11 +78,9 @@ public class XSLTS_case extends TestCase {
 		}
 	}
 	
-	protected void testCase(String inputURL, String xslURL, String outputURL) throws Exception {
+	protected void testCase(String inputURL, String xslURL, String outputURL, String expectedError) throws Exception {
 //		String input = loadFile(XSLTS_folder+"TestInputs/"+inputURL, false);
 //		String stylesheet = loadFile(XSLTS_folder+"TestInputs/"+xslURL, true);
-
-		String expectedError = "";
 
         String query = "xquery version \"1.0\";\n" +
                 "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
