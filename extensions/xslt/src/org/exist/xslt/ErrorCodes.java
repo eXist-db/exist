@@ -21,11 +21,13 @@
  */
 package org.exist.xslt;
 
+import org.exist.xquery.ErrorCodes.ErrorCode;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ErrorCodes extends org.exist.xquery.ErrorCodes {
+public class ErrorCodes {
 
     /* XSL 2.0 http://www.w3.org/TR/xslt20/#error-summary */
 	/**

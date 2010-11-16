@@ -22,6 +22,8 @@
 package org.exist.xslt.compiler;
 
 /**
+ * The resolved names container.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */

@@ -36,6 +36,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
@@ -128,7 +129,24 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 	}
 
 	public void validate() throws XPathException {
-		super.validate();
+		boolean canBeParam = true;
+		for (int pos = 0; pos < this.getLength(); pos++) {
+			Expression expr = this.getExpression(pos);
+
+			//validate instruction order
+			if (expr instanceof Param) {
+				if (!canBeParam) {
+					compileError(ErrorCodes.XTSE0010, "<xsl:param> must be before any other tag");
+				}
+			} else 
+				canBeParam = false;
+			
+			//validate sub-instructions
+			if (expr instanceof XSLPathExpr) {
+				XSLPathExpr xsl = (XSLPathExpr) expr;
+				xsl.validate();
+			}
+		}
 	}
 	
 	private double computedPriority() {
