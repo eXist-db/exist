@@ -49,6 +49,7 @@ public class XMLDBModule extends AbstractInternalModule {
 
     public final static FunctionDef[] functions = {
         new FunctionDef(XMLDBAddUserToGroup.signature, XMLDBAddUserToGroup.class),
+        new FunctionDef(XMLDBRemoveUserFromGroup.signature, XMLDBRemoveUserFromGroup.class),
         new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
         new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
         new FunctionDef(XMLDBStore.signatures[0], XMLDBStore.class),
@@ -127,6 +128,7 @@ public class XMLDBModule extends AbstractInternalModule {
         /* (non-Javadoc)
          * @see org.exist.xquery.Module#getDescription()
          */
+    @Override
     public String getDescription() {
         return "A module for database manipulation functions.";
     }
@@ -134,6 +136,7 @@ public class XMLDBModule extends AbstractInternalModule {
         /* (non-Javadoc)
          * @see org.exist.xquery.Module#getNamespaceURI()
          */
+    @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
@@ -141,10 +144,12 @@ public class XMLDBModule extends AbstractInternalModule {
         /* (non-Javadoc)
          * @see org.exist.xquery.Module#getDefaultPrefix()
          */
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
