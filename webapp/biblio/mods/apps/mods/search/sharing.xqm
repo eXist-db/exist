@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace sharing = "http://exist-db.org/mods/sharing";
 
 import module namespace config = "http://exist-db.org/mods/config" at "config.xqm";
+import module namespace mail = "http://exist-db.org/xquery/mail";
 import module namespace security = "http://exist-db.org/mods/security" at "security.xqm";
 declare namespace group = "http://exist-db.org/mods/sharing/group";
 
@@ -125,7 +126,7 @@ declare function sharing:is-group-owner($group-id as xs:string, $user as xs:stri
 declare function sharing:create-group($group-name as xs:string, $owner as xs:string, $group-member as xs:string*) as xs:string?
 {
     let $new-group-id := util:uuid(),
-    $system-group-name :=  fn:concat($owner, ".", fn:lower-case(fn:replace($group-name, "[^a-zA-Z0-9]", ""))) return
+    $system-group-name := fn:concat($owner, ".", fn:lower-case(fn:replace($group-name, "[^a-zA-Z0-9]", ""))) return
     
         if(security:create-group($system-group-name, $group-member))then
         (
@@ -146,7 +147,93 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
                  $new-group-id
         )
         else() 
-};   
+};
+
+declare function sharing:update-group($group-name as xs:string, $group-members as xs:string) as xs:string
+{
+    let $group := fn:collection($sharing:groups-collection)/group:group[group:name eq $group-name],
+    $group-id := $group/@id,
+    $system-group := $group/group:system/group:group,
+    $existing-group-members := security:get-group-members($system-group),
+    $group-modifications := (
+        for $existing-group-member in $existing-group-members return
+            if(fn:contains($group-members, $existing-group-member))then
+            (
+                (: user is in both lists, do nothing :)
+            )
+            else
+            (
+                (: user is not in the new list, remove the user from the group :)
+                security:remove-user-from-group($existing-group-member, $system-group),
+                if($config:send-notification-emails)then
+                (
+                    sharing:send-group-removal-mail($group-name, $existing-group-member)
+                )else()
+            )
+        ,
+        for $group-member in $group-members return
+            if(fn:contains($existing-group-members, $group-member))then
+            (
+                (: user is in both lists, do nothing :)
+            )
+            else
+            (
+                (: user is not in the new list, add the user to the group :)
+                security:add-user-to-group($group-member, $system-group),
+                if($config:send-notification-emails)then
+                (
+                    sharing:send-group-invitation-mail($group-name, $group-member)
+                )else()
+            )
+    ) return
+        $group-id
+};
+
+declare function sharing:send-group-invitation-mail($group-name as xs:string, $username as xs:string) as empty()
+{
+    let $mail-template := fn:doc(fn:concat($config:app-root, "/group-invitation-email-template.xml")) return
+        mail:send-email(sharing:process-email-template($mail-template, $group-name, $username), $config:smtp-server, ())
+};
+
+declare function sharing:send-group-removal-mail($group-name as xs:string, $username as xs:string) as empty()
+{
+    let $mail-template := fn:doc(fn:concat($config:app-root, "/group-removal-email-template.xml")) return
+        mail:send-email(sharing:process-email-template($mail-template, $group-name, $username), $config:smtp-server, ())
+};
+
+declare function sharing:process-email-template($element as element(), $group-name as xs:string, $username as xs:string) as element() {
+    element {node-name($element) } {
+        $element/@*,
+        for $child in $element/node() return
+            if ($child instance of element()) then
+            (
+                if(fn:node-name($child) eq xs:QName("config:smtp-from-address"))then
+                (
+                    text { $config:smtp-from-address }
+                )
+                else if(fn:node-name($child) eq xs:QName("sharing:user-smtp-address"))then
+                (
+                    text { security:get-email-address-for-user($username) }
+                )
+                else if(fn:node-name($child) eq xs:QName("sharing:group-name"))then
+                (
+                    text { $group-name }
+                )
+                else if(fn:node-name($child) eq xs:QName("sharing:user-name"))then
+                (
+                    text { $username }
+                )
+                else
+                (
+                    sharing:process-email-template($child, $group-name, $username)
+                )
+            )
+            else
+            (
+                $child
+            )
+    }
+};
 
 declare function sharing:get-users-groups($user as xs:string) as element(group:group)*
 {

@@ -71,10 +71,7 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
             if(sharing:is-group-owner($group-list, security:get-user-credential-from-session()[1]))then
             (
                 (: yes, so update the group members :)
-                
-                (: TODO update the group members :)
-                
-                $group-list
+                sharing:update-group($group-list, $group-member)
             )
             else
             (
