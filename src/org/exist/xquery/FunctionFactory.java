@@ -60,7 +60,7 @@ public class FunctionFactory {
 		String local = qname.getLocalName();
 		String uri = qname.getNamespaceURI();
 		Expression step = null;
-		if(uri.equals(Function.BUILTIN_FUNCTION_NS)) {
+		if(Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri)) {
 			//TODO : move to text:near()
 			// near(node-set, string)
 			if (local.equals("near")) {
@@ -245,6 +245,18 @@ public class FunctionFactory {
 				if(module.isInternalModule()) {
 					// for internal modules: create a new function instance from the class
 					FunctionDef def = ((InternalModule)module).getFunctionDef(qname, params.size());
+					
+					//TODO: rethink: xsl namespace function should search xpath one too
+					if (def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
+						//search xpath namespace
+						Module _module_ = context.getModule(Namespaces.XPATH_FUNCTIONS_NS);
+						if (_module_ != null) {
+							module = _module_;
+							qname.setNamespaceURI(Namespaces.XPATH_FUNCTIONS_NS);
+							def = ((InternalModule)module).getFunctionDef(qname, params.size());
+						}
+					}
+					
 					if (def == null) {
 						List<FunctionSignature> funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
