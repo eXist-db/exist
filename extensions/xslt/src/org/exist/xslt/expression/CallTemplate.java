@@ -29,6 +29,7 @@ import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocalVariable;
+import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -80,8 +81,10 @@ public class CallTemplate extends SimpleConstructor {
 					compileError(XSLExceptions.ERR_XTSE0670);
 
 				params.put(param.getName(), param);
+			} else if (expr instanceof TextConstructor) {
+				;//ignore text elements
 			} else {
-				throw new XPathException("not permited element."); //TODO: error?
+				throw new XPathException("not permited element '"+expr+"'."); //TODO: error?
 			} 
 		}
 	}
