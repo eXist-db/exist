@@ -23,6 +23,7 @@ package org.exist.xslt.expression;
 
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.PathExpr;
@@ -60,8 +61,15 @@ public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xslt.instruct.Expression#compileError(java.lang.String)
 	 */
-	public void compileError(String error) throws XPathException {
-		throw new XPathException(error);
+	public void compileError(String code) throws XPathException {
+		throw new XPathException(code);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xslt.instruct.Expression#compileError(java.lang.String, java.lang.String)
+	 */
+	public void compileError(ErrorCode code, String description) throws XPathException {
+		throw new XPathException(this, code, description);
 	}
 
 	public Boolean getBoolean(String value) throws XPathException {

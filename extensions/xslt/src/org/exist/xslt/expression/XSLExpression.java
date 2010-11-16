@@ -22,23 +22,57 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.XPathException;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.compiler.Names;
 import org.w3c.dom.Attr;
 
 /**
+ * The XSL expression interface.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface XSLExpression extends Names {
 	
+	/**
+	 * Clean-up setting.
+	 */
 	public void setToDefaults();
 
+	/**
+	 * Collect expressions attributes' information.
+	 * 
+	 * @param context
+	 * @param attr
+	 * @throws XPathException
+	 */
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException;
+	
+	/**
+	 * Validate structure and settings.
+	 * 
+	 * @throws XPathException
+	 */
 	public void validate() throws XPathException;
 	
-	public void compileError(String error) throws XPathException;
+	/**
+	 * Report error message.
+	 * 
+	 * @param code
+	 * @throws XPathException
+	 */
+	public void compileError(String code) throws XPathException;
+	
+	/**
+	 * Report error message.
+	 * 
+	 * @param code
+	 * @param error
+	 * @throws XPathException
+	 */
+	public void compileError(ErrorCode code, String description) throws XPathException;
 
 	public Boolean getBoolean(String value) throws XPathException;
-	
 }
