@@ -46,7 +46,7 @@ public class BinaryDocument extends DocumentImpl {
 
     private long pageNr = Page.NO_PAGE;
     
-    private int realSize = 0;
+    private long realSize = 0L;
     
     public BinaryDocument(BrokerPool pool) {
         super(pool, null, null);
@@ -81,11 +81,11 @@ public class BinaryDocument extends DocumentImpl {
     }
 
     @Override
-    public int getContentLength() {
+    public long getContentLength() {
         return realSize;
     }
 
-    public void setContentLength(int length) {
+    public void setContentLength(long length) {
         this.realSize = length;
     }
 
@@ -99,7 +99,7 @@ public class BinaryDocument extends DocumentImpl {
         ostream.writeInt(permissions.getOwnerGroup().getId());
 
         ostream.writeByte((byte) permissions.getPermissions());
-        ostream.writeInt(realSize);
+        ostream.writeLong(realSize);
         getMetadata().write(getBrokerPool(), ostream);
     }
 
@@ -122,7 +122,7 @@ public class BinaryDocument extends DocumentImpl {
                 permissions.setGroup(group.getName());
         }
         permissions.setPermissions(perm);
-        realSize = istream.readInt();
+        realSize = istream.readLong();
         DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(getBrokerPool(), istream);
         setMetadata(metadata);

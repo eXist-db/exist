@@ -4,8 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 
 /**
@@ -26,10 +28,18 @@ public class VirtualTempFileInputSource
 	public VirtualTempFileInputSource(VirtualTempFile vtempFile)
 		throws IOException
 	{
+		this(vtempFile,null);
+	}
+	
+	public VirtualTempFileInputSource(VirtualTempFile vtempFile,String encoding)
+		throws IOException
+	{
 		this.file = null;
 		this.vtempFile = vtempFile;
 		// Temp file must be immutable from this point
 		vtempFile.close();
+		if(encoding!=null)
+			super.setEncoding(encoding);
 		
 		if(vtempFile.tempFile!=null) {
 			absolutePath = vtempFile.tempFile.getAbsolutePath();
@@ -40,8 +50,15 @@ public class VirtualTempFileInputSource
 	}
 	
 	public VirtualTempFileInputSource(File file) {
+		this(file,null);
+	}
+	
+	public VirtualTempFileInputSource(File file,String encoding) {
 		this.file = file;
 		this.vtempFile = null;
+		
+		if(encoding!=null)
+			super.setEncoding(encoding);
 		
 		if(file!=null) {
 			absolutePath = file.getAbsolutePath();
@@ -63,6 +80,23 @@ public class VirtualTempFileInputSource
 		}
 		
 		return bs;
+	}
+	
+	public Reader getCharacterStream() {
+		String encoding = getEncoding();
+		Reader retval = null;
+		if(encoding!=null) {
+			InputStream is = getByteStream();
+			if(is!=null) {
+				try {
+					retval = new InputStreamReader(is,encoding);
+				} catch(UnsupportedEncodingException uee) {
+					// DoNothing(R)
+				}
+			}
+		}
+		
+		return retval;
 	}
 	
 	public long getByteStreamLength() {

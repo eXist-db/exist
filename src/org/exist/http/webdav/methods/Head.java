@@ -77,7 +77,9 @@ public class Head extends AbstractWebDAVMethod {
 			}
 			DocumentMetadata metadata = resource.getMetadata();
 			response.setContentType(metadata.getMimeType());
-			response.setContentLength(resource.getContentLength());
+			// Limitations of 32 bit sizes
+			//response.setContentLength(resource.getContentLength());
+			response.addHeader("Content-Length",Long.toString(resource.getContentLength()));
 			response.addDateHeader("Last-Modified", metadata.getLastModified());
 			response.addDateHeader("Created", metadata.getCreated());
 		} catch (EXistException e) {

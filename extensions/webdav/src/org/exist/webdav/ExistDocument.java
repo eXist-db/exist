@@ -138,9 +138,9 @@ public class ExistDocument extends ExistResource {
         return mimeType;
     }
 
-    private int contentLength = 0;
+    private long contentLength = 0;
 
-    public int getContentLength() {
+    public long getContentLength() {
         return contentLength;
     }
 

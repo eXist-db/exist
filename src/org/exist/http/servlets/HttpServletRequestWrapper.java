@@ -21,15 +21,16 @@
 
 package org.exist.http.servlets;
 
-import org.exist.util.MimeType;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +45,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Vector;
+
+import org.exist.util.MimeType;
+import org.exist.util.VirtualTempFile;
 
 /** A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
@@ -198,7 +202,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 * it must be stored because once the Servlet input stream has been 
 	 * consumed, the content Body is no more readable. */
 	private String contentBodyAsString;
-	byte[] contentBody;
+	VirtualTempFile contentBody;
 
 	
 	/**
@@ -235,7 +239,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		if(request.getMethod().toUpperCase().equals("POST"))
 		{
 			//If there is some Content
-			if(request.getContentLength() > 0)
+			int contentLength=request.getContentLength();
+			if(contentLength > 0 || contentLength==-1)
 			{
 				// If a form POST , and not a document POST
 				String contentType = request.getContentType().toLowerCase();
@@ -251,7 +256,13 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 					
 				} else if (contentType.equals(MimeType.XML_TYPE.getName())) {
 					// if an XML-RPC
-					contentBodyAsString = getContentBody();
+					try {
+						contentBodyAsString = getContentBody();
+					} catch(IOException ioe) {
+						//TODO: handle this properly
+						System.err.println( "Error Reading the Content Body into the buffer: " + ioe );
+						ioe.printStackTrace();
+					}
 				}
 			}
 		}
@@ -270,41 +281,25 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	/** Stores parameters from the Content Body of the Request */
 	private void parseContentBodyParameters()
 	{
-		String content = getContentBody();
-		
-		//Parse any parameters from the Content Body
-		parseParameters( content, RequestParamater.PARAM_TYPE_CONTENT);
-	}
-
-	private String getContentBody() {
-		
-		//Create a buffer big enough to hold the Content Body		
-		contentBody = new byte[ request.getContentLength() ];
-		String result = "";
-		
-		try	{
-	        String encoding = request.getCharacterEncoding();
-	        if(encoding == null)
-	            encoding = "UTF-8";
-
-			//Read the Content Body into the buffer
-			InputStream is = request.getInputStream();
-			
-			int bytes = 0;
-			int offset = 0;
-			int max = 4096;
-		    while (( bytes = is.read( contentBody, offset, max )) != -1) {
-				offset += bytes;
-		    }
-			result = new String(contentBody, encoding);
-
-		}
-		catch(IOException ioe) {
+		try {
+			String content = getContentBody();
+	
+			//Parse any parameters from the Content Body
+			parseParameters( content, RequestParamater.PARAM_TYPE_CONTENT);
+		} catch(IOException ioe) {
 			//TODO: handle this properly
 			System.err.println( "Error Reading the Content Body into the buffer: " + ioe );
 			ioe.printStackTrace();
 		}
-		return result;
+	}
+
+	private String getContentBody() throws IOException {
+		recordContentBody();
+		
+		StringBuilder result=new StringBuilder();
+		appendContentBody(result);
+		
+		return result.toString();
 	}
 	
 	/** Parses Parameters into param objects and stores them in a vector in params */
@@ -617,7 +612,39 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 	/** making the content Body of the POST request available many times, for processing by , e.g. Rpc processor . */
 	public InputStream getContentBodyInputStream() throws IOException {
-		return new ByteArrayInputStream( contentBody );
+		recordContentBody();
+		
+		return contentBody.getByteStream();
+	}
+	
+	private void recordContentBody() throws IOException {
+		
+		if(contentBody==null) {
+			//Read the Content Body into the buffer
+			InputStream is = request.getInputStream();
+			
+			long clen = request.getContentLength();
+			String lenstr = request.getHeader("Content-Length");
+			if(lenstr!=null)
+				clen = Long.parseLong(lenstr);
+			contentBody = new VirtualTempFile();
+			contentBody.setTempPrefix("existWRP");
+			contentBody.setTempPostfix(".tmp");
+			contentBody.write(is,clen);
+			contentBody.close();
+		}
+	}
+	
+	private void appendContentBody(Appendable buf)
+		throws IOException
+	{
+		recordContentBody();
+		
+		BufferedReader br = getReader();
+		String line;
+		while((line=br.readLine())!=null) {
+			buf.append(line);
+		}
 	}
 	
 	/**
@@ -757,10 +784,12 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 	public BufferedReader getReader() throws IOException
 	{
-        if (contentBodyRecorded())
-            return new BufferedReader(new InputStreamReader(getContentBodyInputStream(),
-                    request.getCharacterEncoding()));
-        else
+		if (contentBodyRecorded()) {
+			String encoding = request.getCharacterEncoding();
+			if(encoding==null)
+				encoding = "UTF-8";
+			return new BufferedReader(new InputStreamReader(getContentBodyInputStream(),encoding));
+		} else
 		    return request.getReader();
 	}
 
@@ -878,7 +907,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		// If POST request AND there is some content AND its not a file upload
 		// 	AND content Body has not been recorded
 		if (	    request.getMethod().toUpperCase().equals("POST")
-				&&  request.getContentLength() > 0
+				&&  (request.getContentLength() > 0 || request.getContentLength()==-1)
 				&& !request.getContentType().toUpperCase().startsWith(
 						"MULTIPART/")
 				&& ! contentBodyRecorded() ) {
@@ -912,8 +941,14 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		} else if ( contentBodyRecorded() ) {
 			
 			// XML-RPC request or plain XML REST POST
-			StringBuffer buf = new StringBuffer( request.toString() );
-			buf.append(contentBodyAsString);
+			StringBuilder buf = new StringBuilder( request.toString() );
+			try {
+				appendContentBody(buf);
+			} catch(IOException ioe) {
+				//TODO: handle this properly
+				System.err.println( "Error Reading the Content Body into the buffer: " + ioe );
+				ioe.printStackTrace();
+			}
 			
 			buf.append(	System.getProperty("line.separator") +
 						System.getProperty("line.separator") );
@@ -927,18 +962,20 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 
 	private boolean contentBodyRecorded() {
 		return contentBody != null 
-			&& contentBody.length > 0;
+			&& contentBody.length() > 0;
 	}
 
     private class CachingServletInputStream extends ServletInputStream {
 
-        private ByteArrayInputStream istream;
+        private InputStream istream;
 
-        public CachingServletInputStream() {
+        public CachingServletInputStream()
+            throws IOException
+        {
             if (contentBody == null)
                 istream = new ByteArrayInputStream(new byte[0]);
             else
-                istream = new ByteArrayInputStream(contentBody);
+                istream = contentBody.getByteStream();
         }
         
         public int read() throws IOException {

@@ -474,7 +474,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(!doc.getPermissions().validate(session.getUser(), Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             InputStream is = broker.getBinaryResource((BinaryDocument) doc);
-            byte [] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument) doc)];
+	    long resourceSize = broker.getBinaryResourceSize((BinaryDocument) doc);
+	    if(resourceSize > (long)Integer.MAX_VALUE)
+	    	throw new RemoteException("Resource too big to be read using this port.");
+            byte [] data = new byte[(int)resourceSize];
             is.read(data);
             is.close();
             return data;

@@ -389,7 +389,7 @@ public class Resource extends File {
 				is = new StringBufferInputStream("");
 
 				collection.addBinaryResource(transaction, broker, fileName, is,
-						mimeType.getName(), (int) 0, new Date(), new Date());
+						mimeType.getName(), 0L , new Date(), new Date());
 
 //			}
 			tm.commit(transaction);

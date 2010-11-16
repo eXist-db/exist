@@ -93,6 +93,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.VirtualTempFile;
+import org.exist.util.VirtualTempFileInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -515,7 +517,12 @@ public class RESTServer {
 				}
 				DocumentMetadata metadata = resource.getMetadata();
 				response.setContentType(metadata.getMimeType());
-				response.setContentLength(resource.getContentLength());
+				// As HttpServletResponse.setContentLength is limited to integers,
+				// (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336)
+				// next sentence:
+				//	response.setContentLength(resource.getContentLength());
+				// must be set so
+				response.addHeader("Content-Length", Long.toString(resource.getContentLength()));
 				response.addDateHeader("Last-Modified", metadata.getLastModified());
 				response.addDateHeader("Created", metadata.getCreated());
 			}
@@ -964,7 +971,33 @@ public class RESTServer {
 	public void doPut(DBBroker broker, File tempFile, XmldbURI path,
 			HttpServletRequest request, HttpServletResponse response)
 			throws BadRequestException, PermissionDeniedException, IOException {
-		if (tempFile == null)
+		doPut(broker,(tempFile!=null)?new VirtualTempFile(tempFile):null,path,request,response);
+	}
+	
+	/**
+	 * Handles PUT requests. The request content is stored as a new resource at
+	 * the specified location. If the resource already exists, it is overwritten
+	 * if the user has write permissions.
+	 *
+	 * The resource type depends on the content type specified in the HTTP
+	 * header. The content type will be looked up in the global mime table. If
+	 * the corresponding mime type is not a know XML mime type, the resource
+	 * will be stored as a binary resource.
+	 *
+	 * @param broker
+	 * @param vtempFile
+	 *            The virtual temp file from which the PUT will get its content
+	 * @param path
+	 *            The path to which the file should be stored
+	 * @param request
+	 * @param response
+	 * @throws BadRequestException
+	 * @throws PermissionDeniedException
+	 */
+	public void doPut(DBBroker broker, VirtualTempFile vtempFile, XmldbURI path,
+			HttpServletRequest request, HttpServletResponse response)
+			throws BadRequestException, PermissionDeniedException, IOException {
+		if (vtempFile == null)
 			throw new BadRequestException("No request content found for PUT");
 
 		TransactionManager transact = broker.getBrokerPool()
@@ -1011,19 +1044,21 @@ public class RESTServer {
 				mime = MimeType.BINARY_TYPE;
 
 			if (mime.isXMLType()) {
-				URI url = tempFile.toURI();
+				InputSource vtfis = new VirtualTempFileInputSource(vtempFile,charset);
 				IndexInfo info = collection.validateXMLResource(transaction,
-						broker, docUri, createInputSource(charset, url));
+						broker, docUri, vtfis);
 				info.getDocument().getMetadata().setMimeType(contentType);
-				collection.store(transaction, broker, info, createInputSource(
-						charset, url), false);
+				collection.store(transaction, broker, info, vtfis, false);
 				response.setStatus(HttpServletResponse.SC_CREATED);
 			} else {
 
-				FileInputStream is = new FileInputStream(tempFile);
-				collection.addBinaryResource(transaction, broker, docUri, is,
-						contentType, (int) tempFile.length());
-				is.close();
+				InputStream is = vtempFile.getByteStream();
+				try {
+					collection.addBinaryResource(transaction, broker, docUri, is,
+							contentType, vtempFile.length());
+				} finally {
+					is.close();
+				}
 				response.setStatus(HttpServletResponse.SC_CREATED);
 			}
 
@@ -1451,6 +1486,12 @@ public class RESTServer {
 				response.setContentType(asMimeType);
 			}
 
+			// As HttpServletResponse.setContentLength is limited to integers,
+			// (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336)
+			// next sentence:
+			//	response.setContentLength(resource.getContentLength());
+			// must be set so
+			response.addHeader("Content-Length", Long.toString(resource.getContentLength()));
 			OutputStream os = response.getOutputStream();
 			broker.readBinaryResource((BinaryDocument) resource, os);
 			os.flush();

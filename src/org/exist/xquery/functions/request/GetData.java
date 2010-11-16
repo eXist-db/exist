@@ -113,7 +113,8 @@ public class GetData extends BasicFunction {
 			try
 			{
 				InputStream is = request.getInputStream();
-				ByteArrayOutputStream bos = new ByteArrayOutputStream(request.getContentLength());
+				long contentLength=request.getContentLength();
+				ByteArrayOutputStream bos = new ByteArrayOutputStream((contentLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)contentLength);
 				byte[] buf = new byte[256];
 				int l = 0;
 				while ((l = is.read(buf)) > -1)

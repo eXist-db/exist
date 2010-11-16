@@ -34,6 +34,10 @@ public class UnixStylePermissionTest {
         securityTestPairs.add(new SecurityTestPair("---rwurwu", 63));
         securityTestPairs.add(new SecurityTestPair("r--r--r--", 292));
         securityTestPairs.add(new SecurityTestPair("rwur--r--", 484));
+        securityTestPairs.add(new SecurityTestPair("rwur--r--", 484));
+        securityTestPairs.add(new SecurityTestPair("a-----------", 2048));
+        securityTestPairs.add(new SecurityTestPair("-g----------", 1024));
+        securityTestPairs.add(new SecurityTestPair("--s---------", 512));
 
 
         for(SecurityTestPair sec : securityTestPairs) {

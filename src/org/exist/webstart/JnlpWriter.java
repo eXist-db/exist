@@ -227,9 +227,11 @@ public class JnlpWriter {
             response.setHeader(CONTENT_ENCODING, PACK200_GZIP_ENCODING);
             response.setContentType(PACK_MIME_TYPE);
         }
-
-
-        response.setContentLength(Integer.parseInt(Long.toString(localFile.length())));
+	
+	// It is very improbable that a 64 bit jar is needed, but
+	// it is better to be ready
+        // response.setContentLength(Integer.parseInt(Long.toString(localFile.length())));
+	response.setHeader("Content-Length",Long.toString(localFile.length()));
         response.setDateHeader("Last-Modified", localFile.lastModified());
 
         FileInputStream fis = new FileInputStream(localFile);
@@ -276,7 +278,10 @@ public class JnlpWriter {
             return;
         }
 
-        response.setContentLength(Integer.parseInt(Long.toString(imageFile.length())));
+	// It is very improbable that a 64 bit jar is needed, but
+	// it is better to be ready
+        // response.setContentLength(Integer.parseInt(Long.toString(imageFile.length())));
+	response.setHeader("Content-Length",Long.toString(imageFile.length()));
         response.setDateHeader("Last-Modified", imageFile.lastModified());
 
         FileInputStream fis = new FileInputStream(imageFile);

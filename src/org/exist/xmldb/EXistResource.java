@@ -44,7 +44,7 @@ public interface EXistResource {
 	
 	Permission getPermissions() throws XMLDBException;
 	
-	int getContentLength() throws XMLDBException;
+	long getContentLength() throws XMLDBException;
 	
 	void setLexicalHandler(LexicalHandler handler);
     

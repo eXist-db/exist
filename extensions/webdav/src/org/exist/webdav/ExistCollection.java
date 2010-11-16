@@ -410,7 +410,7 @@ public class ExistCollection extends ExistResource {
                 InputStream fis = vtf.getByteStream();
                 bis = new BufferedInputStream(fis);
                 DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, bis,
-                        mime.getName(), length.intValue());
+                        mime.getName(), length.longValue());
                 bis.close();
             }
 

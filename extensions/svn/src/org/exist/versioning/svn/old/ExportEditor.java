@@ -354,7 +354,7 @@ public class ExportEditor implements ISVNEditor {
 
 					BinaryDocument doc = currentDirectory.addBinaryResource(
 							transaction, broker, fileName, is,
-							mimeType.getName(), (int) currentFile.length(), new Date(), new Date());
+							mimeType.getName(), currentFile.length(), new Date(), new Date());
 
 				}
 			} catch (FileNotFoundException e) {

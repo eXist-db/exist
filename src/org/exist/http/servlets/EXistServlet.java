@@ -39,6 +39,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.VirtualTempFile;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -53,6 +54,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -204,7 +206,7 @@ public class EXistServlet extends HttpServlet {
 		}
 
 		DBBroker broker = null;
-		File tempFile = null;
+		VirtualTempFile vtempFile = null;
 		try {
 			XmldbURI dbpath = XmldbURI.create(path);
 			broker = pool.get(user);
@@ -215,25 +217,20 @@ public class EXistServlet extends HttpServlet {
 			}
 			// fourth, process the request
 			ServletInputStream is = request.getInputStream();
-			int len = request.getContentLength();
+			long len = request.getContentLength();
+			String lenstr = request.getHeader("Content-Length");
+			if(lenstr!=null)
+				len = Long.parseLong(lenstr);
 			// put may send a lot of data, so save it
 			// to a temporary file first.
-			tempFile = File.createTempFile("existSRV", ".tmp");
-			FileOutputStream fos = new FileOutputStream(tempFile);
-			BufferedOutputStream os = new BufferedOutputStream(fos);
-			byte[] buffer = new byte[4096];
-			int count, l = 0;
-			if (len > 0) {
-				do {
-					count = is.read(buffer);
-					if (count > 0)
-						os.write(buffer, 0, count);
-					l += count;
-				} while (l < len);
-			}
-			os.close();
+			
+			vtempFile = new VirtualTempFile();
+			vtempFile.setTempPrefix("existSRV");
+			vtempFile.setTempPostfix(".tmp");
+			vtempFile.write(is,len);
+			vtempFile.close();
 
-			srvREST.doPut(broker, tempFile, dbpath, request, response);
+			srvREST.doPut(broker, vtempFile, dbpath, request, response);
 
 		} catch (BadRequestException e) {
 			if (response.isCommitted())
@@ -263,8 +260,8 @@ public class EXistServlet extends HttpServlet {
 			if (broker != null) {
 				pool.release(broker);
 			}
-			if (tempFile != null) {
-				tempFile.delete();
+			if (vtempFile != null) {
+				vtempFile.delete();
 			}
 		}
 	}
@@ -354,6 +351,10 @@ public class EXistServlet extends HttpServlet {
 			if (response.isCommitted())
 				throw new ServletException(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+
+		} catch (EOFException ee) {
+			LOG.error("GET Connection has been interrupted", ee);
+			throw new ServletException("GET Connection has been interrupted", ee);
 
 		} catch (Throwable e) {
 			LOG.error(e.getMessage(), e);

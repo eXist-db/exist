@@ -106,8 +106,8 @@ public class CocoonRequestWrapper implements RequestWrapper {
 
 	/**@see org.apache.cocoon.environment.Request#getContentLength()
 	 */
-	public int getContentLength() {
-		return cocoonRequest.getContentLength();
+	public long getContentLength() {
+		return (long)cocoonRequest.getContentLength();
 	}
 
 	/**@see org.apache.cocoon.environment.Request#getContentType()

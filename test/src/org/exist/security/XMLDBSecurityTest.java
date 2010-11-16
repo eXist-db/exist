@@ -123,9 +123,6 @@ public class XMLDBSecurityTest {
     public void groupCreateResource() {
         try {
             Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-            @SuppressWarnings("unused")
-			CollectionManagementService cms = (CollectionManagementService)
-                test.getService("CollectionManagementService", "1.0");
             Resource resource = test.createResource("createdByTest2.xml", "XMLResource");
             resource.setContent("<testMe/>");
             test.storeResource(resource);
@@ -159,7 +156,10 @@ public class XMLDBSecurityTest {
             UserManagementService ums = (UserManagementService)
                 test.getService("UserManagementService", "1.0");
             // grant myself all rights ;-)
-            ums.chmod(0777);
+            ums.chmod(07777);
+            
+            assertEquals("agsrwurwurwu", ums.getPermissions(test).toString());
+            
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

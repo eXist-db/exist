@@ -357,7 +357,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                is.close();
             } else {
                FileInputStream is = new FileInputStream(tempFile);
-               collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
+               collection.addBinaryResource(transaction, broker, docUri, is, contentType, tempFile.length());
                is.close();
             }
             try {
@@ -641,7 +641,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                is.close();
             } else {
                FileInputStream is = new FileInputStream(tempFile);
-               collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
+               collection.addBinaryResource(transaction, broker, docUri, is, contentType, tempFile.length());
                is.close();
             }
             transact.commit(transaction);

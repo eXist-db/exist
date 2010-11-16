@@ -730,7 +730,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 permissions.setGroup(broker.getUser(), group.getName());
         }
         ///TODO : why this mask ? -pb
-        permissions.setPermissions(perm & 0777);
+        permissions.setPermissions(perm);// & 0777);
         broker.getCollectionResources(this);
     }
 
@@ -1390,14 +1390,14 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-            XmldbURI docUri, InputStream is, String mimeType, int size)
+            XmldbURI docUri, InputStream is, String mimeType, long size)
             throws PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
 
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-            XmldbURI docUri, InputStream is, String mimeType, int size, Date created, Date modified)
+            XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified)
             throws PermissionDeniedException, LockException, TriggerException,IOException {
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");

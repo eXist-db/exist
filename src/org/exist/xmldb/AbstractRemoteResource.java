@@ -125,10 +125,10 @@ public abstract class AbstractRemoteResource
 		return (byte[])res;
 	}
 	
-	public int getContentLength()
+	public long getContentLength()
 		throws XMLDBException
 	{
-		return (int)contentLen;
+		return contentLen;
 	}
 	
 	/* (non-Javadoc)
@@ -222,6 +222,10 @@ public abstract class AbstractRemoteResource
 	}
 	
 	public void setContentLength(int len) {
+		this.contentLen = len;
+	}
+	
+	public void setContentLength(long len) {
 		this.contentLen = len;
 	}
 	
@@ -516,7 +520,11 @@ public abstract class AbstractRemoteResource
 			params.add(properties);
 			try {
 				Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
-				retval=((Integer)table.get("content-length")).intValue();
+				if(table.containsKey("content-length")) {
+					retval=((Integer)table.get("content-length")).intValue();
+				} else {
+					retval=((Long)table.get("content-length-64bit")).longValue();
+				}
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 			}

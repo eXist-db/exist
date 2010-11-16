@@ -1744,7 +1744,7 @@ public class NativeBroker extends DBBroker {
        if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
            BinaryDocument bin = (BinaryDocument)doc;
            try {
-              bin.setContentLength((int)getBinaryResourceSize(bin));
+              bin.setContentLength(getBinaryResourceSize(bin));
            } catch (IOException ex) {
               LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
            }
@@ -1781,7 +1781,7 @@ public class NativeBroker extends DBBroker {
              if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                  BinaryDocument bin = (BinaryDocument)doc;
                  try {
-                    bin.setContentLength((int)getBinaryResourceSize(bin));
+                    bin.setContentLength(getBinaryResourceSize(bin));
                  } catch (IOException ex) {
                     LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
                  }
@@ -1803,7 +1803,7 @@ public class NativeBroker extends DBBroker {
        InputStream is = null;
        try {
            is = getBinaryResource(blob);
-           byte [] buffer = new byte[65536];
+           byte [] buffer = new byte[655360];
            int len;
            while ((len=is.read(buffer))>=0) {
               os.write(buffer,0,len);

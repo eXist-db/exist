@@ -196,7 +196,7 @@ public class EmbeddedUpload {
                 LOG.debug("storing Binary resource");
                 InputStream is = new FileInputStream(tmp);
                 @SuppressWarnings("unused")
-				DocumentImpl doc = collection.addBinaryResource(txn, broker, documentUri, is, contentType, (int) tmp.length());
+				DocumentImpl doc = collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
                 is.close();
                 LOG.debug("done");
             }

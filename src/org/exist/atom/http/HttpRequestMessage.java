@@ -49,8 +49,12 @@ public class HttpRequestMessage implements IncomingMessage {
 		return request.getHeader(key);
 	}
 
-	public int getContentLength() {
-		return request.getContentLength();
+	public long getContentLength() {
+		long len = request.getContentLength();
+		String lenstr = request.getHeader("Content-Length");
+		if(lenstr!=null)
+			len = Long.parseLong(lenstr);
+		return len;
 	}
 
 	public InputStream getInputStream() throws IOException {
