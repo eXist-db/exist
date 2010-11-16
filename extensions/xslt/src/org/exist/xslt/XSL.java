@@ -44,6 +44,7 @@ import org.exist.xquery.Optimizer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xslt.compiler.Factory;
 import org.exist.xslt.compiler.XSLElement;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -97,7 +98,9 @@ public class XSL {
     	
     	XSLElement stylesheet = new XSLElement(source);
     	
-    	ContextAtExist context = new XSLContext(broker);
+    	XSLContext context = new XSLContext(broker);
+    	
+    	context.setDefaultFunctionNamespace(Factory.namespaceURI);
     	
     	XSLStylesheet expr = (XSLStylesheet) stylesheet.compile(context);
     	AnalyzeContextInfo info = new AnalyzeContextInfo((XQueryContext)context);
