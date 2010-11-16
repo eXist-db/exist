@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.xmldb;
@@ -28,6 +28,7 @@ import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
+import org.exist.security.SecurityManager;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,18 +40,17 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.security.SecurityManager;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class XMLDBAddUserToGroup extends BasicFunction {
+public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(XMLDBAddUserToGroup.class);
+    protected static final Logger logger = Logger.getLogger(XMLDBRemoveUserFromGroup.class);
 
     public final static FunctionSignature signature = new FunctionSignature(
-            new QName("add-user-to-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Add a user to a group. $user is the username. $group is the group name" + XMLDBModule.NEED_PRIV_USER,
+            new QName("remove-user-from-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Remove a user from a group. $user is the username. $group is the group name" + XMLDBModule.NEED_PRIV_USER,
             new SequenceType[]{
                 new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "The user name"),
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
@@ -60,7 +60,7 @@ public class XMLDBAddUserToGroup extends BasicFunction {
     /**
      * @param context
      */
-    public XMLDBAddUserToGroup(XQueryContext context) {
+    public XMLDBRemoveUserFromGroup(XQueryContext context) {
         super(context, signature);
     }
 
@@ -84,18 +84,18 @@ public class XMLDBAddUserToGroup extends BasicFunction {
 
 
         if(groupName.equals("dba") && !context.getUser().hasDbaRole()) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to add users to the DBA group.");
+            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to remove users from the DBA group.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
 
         if(!context.getUser().hasGroup(groupName)) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a memeber of '" + groupName + "' to add users to the '" + groupName + "' group.");
+            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a memeber of '" + groupName + "' to remove users from the '" + groupName + "' group.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
 
-        logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
+        logger.info("Attempting to remove user '" + userName + "' from group '" + groupName + "'");
 
         Subject currentSubject = context.getSubject();
         try {
@@ -109,15 +109,15 @@ public class XMLDBAddUserToGroup extends BasicFunction {
 
             Account account = sm.getAccount(context.getBroker().getUser(), userName);
 
-            account.addGroup(group);
+            account.remGroup(groupName);
             sm.updateAccount(context.getBroker().getUser(), account);
 
             return BooleanValue.TRUE;
 
         } catch(PermissionDeniedException pde) {
-            logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", pde);
+            logger.error("Failed to remove user '" + userName + "' from group '" + groupName + "'", pde);
         } catch(EXistException exe) {
-            logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", exe);
+            logger.error("Failed to remove user '" + userName + "' from group '" + groupName + "'", exe);
         } finally {
             context.getBroker().setSubject(currentSubject);
         }
