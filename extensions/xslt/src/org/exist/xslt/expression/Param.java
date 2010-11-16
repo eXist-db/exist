@@ -33,6 +33,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;
@@ -114,9 +115,20 @@ public class Param extends Declaration implements Variable {
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		if (name != null && select == null) {
 			Variable var = getXSLContext().resolveVariable(name);
-			return var.getValue();
+			
+			Sequence result = var.getValue();
+			
+			if (as != null)
+				return result.convertTo(Type.getType(as));
+			
+			return result;
+			
 		} else if (select != null) {
 			Sequence result = select.eval(contextSequence, contextItem);
+			
+			if (as != null)
+				result = result.convertTo(Type.getType(as));
+			
 			context.declareVariable(getName(), result);
 			return result;
 		}
