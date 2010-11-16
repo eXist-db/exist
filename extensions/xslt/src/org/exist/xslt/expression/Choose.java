@@ -27,6 +27,7 @@ import java.util.List;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
+import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -64,7 +65,9 @@ public class Choose extends SimpleConstructor {
     	super.analyze(contextInfo);
 
 		for (Expression expr : steps) {
-			if (expr instanceof When) {
+			if (expr instanceof TextConstructor) {
+				;//ignore text elements
+			} else if (expr instanceof When) {
 				whens.add((When) expr);
 			} else if (expr instanceof Otherwise) {
 				otherwise = (Otherwise) expr;//TODO: check for double
