@@ -42,7 +42,7 @@ public interface RequestWrapper {
     
     public String getCharacterEncoding();
 	
-	public int getContentLength();
+	public long getContentLength();
 	
 	public InputStream getInputStream() throws IOException;
 	

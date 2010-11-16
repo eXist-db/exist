@@ -180,7 +180,7 @@ public class RecoverBinaryTest2 extends TestCase {
                     InputStream is = new FileInputStream(f);
                     BinaryDocument doc = 
                         test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(), 
-                                (int) f.length(), new Date(), new Date());
+                                f.length(), new Date(), new Date());
                     assertNotNull(doc);
                     is.close();
                 }

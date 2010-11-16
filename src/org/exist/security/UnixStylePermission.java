@@ -42,7 +42,7 @@ public class UnixStylePermission implements Permission {
 
     //permissions
     private int permissions = DEFAULT_PERM;
-
+    
     private SecurityManager sm;
 
     public UnixStylePermission(SecurityManager sm) {
@@ -302,7 +302,24 @@ public class UnixStylePermission implements Permission {
      */
     @Override
     public String toString() {
-        final char ch[] = {
+    	final char[] ch;
+    	if (permissions <= 511) {
+    		ch = new char[] {
+                    ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
+                    ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
+                    ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
+                    ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r',
+                    ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w',
+                    ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u',
+                    ( permissions & READ ) == 0 ? '-' : 'r',
+                    ( permissions & WRITE ) == 0 ? '-' : 'w',
+                    ( permissions & UPDATE ) == 0 ? '-' : 'u'
+        		};
+    	} else {
+    		ch = new char[] {
+                ( permissions & ( READ << 9 ) ) == 0 ? '-' : 'a',
+                ( permissions & ( WRITE << 9 ) ) == 0 ? '-' : 'g',
+                ( permissions & ( UPDATE << 9 ) ) == 0 ? '-' : 's',
                 ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
                 ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
                 ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
@@ -312,7 +329,8 @@ public class UnixStylePermission implements Permission {
                 ( permissions & READ ) == 0 ? '-' : 'r',
                 ( permissions & WRITE ) == 0 ? '-' : 'w',
                 ( permissions & UPDATE ) == 0 ? '-' : 'u'
-        };
+    		};
+    	}
         return new String(ch);
     }
 

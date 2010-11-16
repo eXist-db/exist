@@ -24,7 +24,7 @@ public interface IncomingMessage {
    String getParameter(String name);
    InputStream getInputStream()
       throws IOException;
-   int getContentLength();
+   long getContentLength();
    Reader getReader()
       throws IOException;
    String getModuleBase();

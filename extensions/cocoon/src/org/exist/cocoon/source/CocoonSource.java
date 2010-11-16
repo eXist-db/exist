@@ -123,13 +123,13 @@ public class CocoonSource extends AbstractSource {
 
     public String getContent() throws IOException {
         checkEncoding();
-        int len = (int) inputSource.getContentLength();
+        long len = inputSource.getContentLength();
 
         ByteArrayOutputStream os;
         if (len == -1)
             os = new ByteArrayOutputStream();
         else
-            os = new ByteArrayOutputStream(len);
+            os = new ByteArrayOutputStream((len > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)len);
 
         byte[] t = new byte[512];
         InputStream is = inputSource.getInputStream();

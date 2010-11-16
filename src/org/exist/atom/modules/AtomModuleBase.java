@@ -91,13 +91,14 @@ public class AtomModuleBase implements AtomModule {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
    
-   protected File storeInTemporaryFile(InputStream is,int len)
+   protected File storeInTemporaryFile(InputStream is,long len)
       throws IOException
    {
       File tempFile = File.createTempFile("atom", ".tmp");
       OutputStream os = new FileOutputStream(tempFile);
       byte[] buffer = new byte[4096];
-      int count, l = 0;
+      int count = 0;
+      long l = 0;
       do {
          count = is.read(buffer);
          if (count > 0) {

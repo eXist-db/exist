@@ -227,8 +227,13 @@ public class HttpRequestWrapper implements RequestWrapper {
     
     /**@see javax.servlet.http.HttpServletRequest#getContentLength()
      */
-    public int getContentLength() {
-        return servletRequest.getContentLength();
+    public long getContentLength() {
+    	long retval = servletRequest.getContentLength();
+	String lenstr = servletRequest.getHeader("Content-Length");
+	if(lenstr!=null)
+		retval = Long.parseLong(lenstr);
+	
+        return retval;
     }
     
     /**@see javax.servlet.http.HttpServletRequest#getContentType()

@@ -201,8 +201,8 @@ public class Query extends AtomModuleBase implements Atom {
             Reader r = new InputStreamReader(request.getInputStream(),charset);
             char [] buffer = new char[4096];
             int len;
-            int count = 0;
-            int contentLength = request.getContentLength();
+            long count = 0;
+            long contentLength = request.getContentLength();
             while ((len=r.read(buffer))>=0 && count<contentLength) {
                count += len;
                builder.append(buffer,0,len);

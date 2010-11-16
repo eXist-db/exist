@@ -1715,6 +1715,7 @@ public class BrokerPool extends Observable implements Database {
         } finally {
             // clear instance variables, just to be sure they will be garbage collected
             // the test suite restarts the db a few hundred times
+    		Configurator.clear(this);
             transactionManager = null;
             collectionCache = null;
             collectionCacheMgr = null;
@@ -1729,7 +1730,6 @@ public class BrokerPool extends Observable implements Database {
             securityManager = null;
             notificationService = null;
     		
-    		Configurator.clear(this);
         }
 	}
 

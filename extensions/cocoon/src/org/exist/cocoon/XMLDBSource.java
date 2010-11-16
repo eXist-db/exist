@@ -515,7 +515,7 @@ public class XMLDBSource extends AbstractLogEnabled
     	long result=-1;
     	try {
     		setup();
-    		result = new Integer(((EXistResource)this.resource).getContentLength()).longValue();
+    		result = ((EXistResource)this.resource).getContentLength();
           } catch (Exception e){
          	if (getLogger().isDebugEnabled()) {
                 getLogger().debug("getContentLength() for " + resName + " from collection " + url + " failed: " + e.getMessage());

@@ -368,6 +368,41 @@ public class VirtualTempFile
 	}
 	
 	/**
+	 * A commodity method to write the whole content of an InputStream
+	 */
+	public void write(InputStream is)
+		throws IOException
+	{
+		write(is,-1L);
+	}
+	
+	/**
+	 * A commodity method to write the whole content of an InputStream,
+	 * giving an optional max length (honored when it is bigger than 0)
+	 */
+	public void write(InputStream is,long lengthHint)
+		throws IOException
+	{
+		if(os==null) {
+			throw new IOException("No stream to write to");
+		}
+		
+		byte[] buffer = new byte[maxChunkSize];
+		long off=0;
+		int count=0;
+		do {
+			count = is.read(buffer);
+			if(count>0) {
+				os.write(buffer,0,count);
+				off += count;
+			}
+			if(baBuffer!=null && baBuffer.size()>maxMemorySize) {
+				writeSwitch();
+			}
+		} while(count!=-1 && (lengthHint<=0 || off < lengthHint));
+	}
+	
+	/**
 	 * An easy way to obtain an InputStream
 	 * @return
 	 * @throws IOException

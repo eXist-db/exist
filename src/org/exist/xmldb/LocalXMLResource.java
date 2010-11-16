@@ -349,7 +349,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getContentLength()
 	 */
-	public int getContentLength() throws XMLDBException {
+	public long getContentLength() throws XMLDBException {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);

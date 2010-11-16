@@ -151,7 +151,7 @@ public class Put extends AbstractWebDAVMethod {
             } else {
                 LOG.debug("Storing binary resource"); 
                 FileInputStream is = new FileInputStream(tempFile);
-                doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType, (int) tempFile.length());
+                doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType, tempFile.length());
                 is.close();
                 LOG.debug("done");
             }
@@ -210,7 +210,10 @@ public class Put extends AbstractWebDAVMethod {
     
     private File saveRequestContent(HttpServletRequest request) throws IOException {
         ServletInputStream is = request.getInputStream();
-        int len = request.getContentLength();
+	long len = request.getContentLength();
+	String lenstr = request.getHeader("Content-Length");
+	if(lenstr!=null)
+		len = Long.parseLong(lenstr);
         // put may send a lot of data, so save it
         // to a temporary file first.
         File tempFile = File.createTempFile("existSRC", ".tmp");
@@ -219,7 +222,8 @@ public class Put extends AbstractWebDAVMethod {
         
         if(len!=0){
             byte[] buffer = new byte[4096];
-            int count, l = 0;
+            int count = 0;
+	    long l = 0;
             do {
                 count = is.read(buffer);
                 if (count > 0)

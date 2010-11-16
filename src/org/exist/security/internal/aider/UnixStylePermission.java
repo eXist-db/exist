@@ -286,7 +286,24 @@ public class UnixStylePermission implements Permission {
      */
     @Override
     public String toString() {
-        final char ch[] = {
+    	final char[] ch;
+    	if (permissions <= 511) {
+    		ch = new char[] {
+                    ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
+                    ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
+                    ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
+                    ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r',
+                    ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w',
+                    ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u',
+                    ( permissions & READ ) == 0 ? '-' : 'r',
+                    ( permissions & WRITE ) == 0 ? '-' : 'w',
+                    ( permissions & UPDATE ) == 0 ? '-' : 'u'
+        		};
+    	} else {
+    		ch = new char[] {
+                ( permissions & ( READ << 9 ) ) == 0 ? '-' : 'a',
+                ( permissions & ( WRITE << 9 ) ) == 0 ? '-' : 'g',
+                ( permissions & ( UPDATE << 9 ) ) == 0 ? '-' : 's',
                 ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
                 ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
                 ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
@@ -296,19 +313,24 @@ public class UnixStylePermission implements Permission {
                 ( permissions & READ ) == 0 ? '-' : 'r',
                 ( permissions & WRITE ) == 0 ? '-' : 'w',
                 ( permissions & UPDATE ) == 0 ? '-' : 'u'
-        };
+    		};
+    	}
         return new String(ch);
     }
 
     public static UnixStylePermission fromString(String permissionString) throws SyntaxException {
-        if(permissionString == null || permissionString.length() != 9){
+        if(permissionString == null || !(permissionString.length() == 9 || permissionString.length() == 12)){
             throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
         }
 
+        //XXX: check position 
         int permission = 0;
         int factor = 64;
+        if (permissionString.length() == 12) {
+        	factor = 512;
+        }
         int val = 0;
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < permissionString.length(); i++) {
             char c = permissionString.charAt(i);
             switch(c){
                 case 'r':
@@ -318,8 +340,26 @@ public class UnixStylePermission implements Permission {
                     val += 2;
                     break;
                 case 'u':
-                    val += 1;
+            		val += 1;
                     break;
+                case 'a':
+                	if (i == 0 && permissionString.length() == 12) {
+                		val += 4;
+                	} else
+                		throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
+                	break;
+                case 'g':
+                	if (i == 1 && permissionString.length() == 12) {
+                		val += 2;
+                	} else
+                		throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
+                	break;
+                case 's':
+                	if (i == 2 && permissionString.length() == 12) {
+                		val += 1;
+                	} else
+                		throw new SyntaxException("Invalid Permission String '" + permissionString + "'");
+                	break;
                 case '-':
                     break;
                 default:

@@ -686,7 +686,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             long conLength=res.getStreamLength();
             if(conLength!=-1) {
 	            collection.addBinaryResource(txn, broker, resURI, res.getStreamContent(),
-	                    res.getMimeType(), (int)conLength, res.datecreated, res.datemodified);
+	                    res.getMimeType(), conLength, res.datecreated, res.datemodified);
             } else {
 	            collection.addBinaryResource(txn, broker, resURI, (byte[])res.getContent(),
 	                    res.getMimeType(), res.datecreated, res.datemodified);

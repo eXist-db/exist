@@ -659,7 +659,9 @@ public class RpcConnection implements RpcAPI {
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
                     : "XMLResource");
-            hash.put("content-length", Integer.valueOf(doc.getContentLength()));
+            long resourceLength = doc.getContentLength();
+            hash.put("content-length", new Integer((resourceLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)resourceLength));
+            hash.put("content-length-64bit", new Long(resourceLength));
             hash.put("mime-type", doc.getMetadata().getMimeType());
             hash.put("created", new Date(doc.getMetadata().getCreated()));
             hash.put("modified", new Date(doc.getMetadata().getLastModified()));
@@ -1055,7 +1057,11 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             try {
                 InputStream is = broker.getBinaryResource((BinaryDocument)doc);
-                byte[] data = new byte[(int)broker.getBinaryResourceSize((BinaryDocument)doc)];
+		long resourceSize = broker.getBinaryResourceSize((BinaryDocument)doc);
+		if(resourceSize > (long)Integer.MAX_VALUE) {
+			throw new EXistException("Resource too big to be read using this method.");
+		}
+                byte[] data = new byte[(int)resourceSize];
                 is.read(data);
                 is.close();
                 return data;
@@ -2126,7 +2132,7 @@ public class RpcConnection implements RpcAPI {
     			} else {
     				InputStream is = source.getByteStream();
     				doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, 
-    						mime.getName(), (int) source.getByteStreamLength());
+    						mime.getName(), source.getByteStreamLength());
     				is.close();
     				if (created != null)
     					doc.getMetadata().setCreated(created.getTime());

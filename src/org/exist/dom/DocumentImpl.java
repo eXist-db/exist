@@ -406,8 +406,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * is multiplied with the current page size.
      * 
      */
-    public int getContentLength() {
-        int length = getMetadata().getPageCount() * pool.getPageSize();
+    public long getContentLength() {
+        long length = getMetadata().getPageCount() * pool.getPageSize();
         return (length < 0) ? 0 : length;
     }
 
@@ -533,7 +533,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             permissions.setOwner(istream.readInt());
             permissions.setGroup(istream.readInt());
             //TODO : Why such a mask ? -pb
-            permissions.setPermissions((istream.readInt() & 0777));
+            permissions.setPermissions(istream.readInt());// & 0777));
             //Should be > 0 ;-)
             children = istream.readInt();
             childAddress = new long[children];

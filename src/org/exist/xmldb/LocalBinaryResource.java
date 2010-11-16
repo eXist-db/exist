@@ -392,7 +392,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getContentLength()
 	 */
-	public int getContentLength() throws XMLDBException {
+	public long getContentLength() throws XMLDBException {
         if (isNewResource)
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "The resource has not yet been stored");
 		DBBroker broker = null;

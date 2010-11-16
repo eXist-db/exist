@@ -126,7 +126,11 @@ public class DBSource extends AbstractSource {
      */
     public String getContent() throws IOException {
         InputStream raw = broker.getBinaryResource(doc);
-        byte [] data = new byte[(int)broker.getBinaryResourceSize(doc)];
+        long binaryLength = broker.getBinaryResourceSize(doc);
+	if(binaryLength > (long)Integer.MAX_VALUE) {
+		throw new IOException("Resource too big to be read using this method.");
+	}
+        byte [] data = new byte[(int)binaryLength];
         raw.read(data);
         raw.close();
         ByteArrayInputStream is = new ByteArrayInputStream(data);
