@@ -29,6 +29,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.TextConstructor;
 import org.exist.xquery.TypeTest;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
@@ -132,6 +133,10 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 		boolean canBeParam = true;
 		for (int pos = 0; pos < this.getLength(); pos++) {
 			Expression expr = this.getExpression(pos);
+			
+			if (expr instanceof TextConstructor) {
+				continue;//ignore text elements
+			}
 
 			//validate instruction order
 			if (expr instanceof Param) {
