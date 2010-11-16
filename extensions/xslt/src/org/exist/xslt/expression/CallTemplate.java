@@ -69,6 +69,8 @@ public class CallTemplate extends SimpleConstructor {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(NAME)) {
 			name = new QName(attr.getValue());
+		} else if (attr_name.equals(XML_SPACE)) {
+			;//TODO: code
 		} else {
 			//XXX: is it correct error code?
 			compileError(ErrorCodes.XTSE0090, "attribute '"+attr_name+"' not allowed");
