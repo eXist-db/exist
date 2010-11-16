@@ -140,6 +140,8 @@ public interface Names {
 	public static final String STABLE = "stable";
 	public static final String CASE_ORDER = "case-order";
 	public static final String DATA_TYPE = "data-type";
+	
+	public static final String XML_SPACE = "xml:space";
 
 //	public static final String AA = "aa";
 }
