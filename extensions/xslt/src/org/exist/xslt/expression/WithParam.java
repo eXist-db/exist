@@ -48,6 +48,7 @@ import org.w3c.dom.Attr;
  */
 public class WithParam extends Declaration {
 
+	private String attr_name = null;
 	private String attr_select = null;
     
 	private QName name = null;
@@ -69,15 +70,15 @@ public class WithParam extends Declaration {
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
-		String attr_name = attr.getLocalName();
+		String _attr_name = attr.getLocalName();
 			
-		if (attr_name.equals(NAME)) {
-			name = new QName(attr.getValue());
-		} else if (attr_name.equals(SELECT)) {
+		if (_attr_name.equals(NAME)) {
+			attr_name = attr.getValue();
+		} else if (_attr_name.equals(SELECT)) {
 			attr_select = attr.getValue();
-		} else if (attr_name.equals(AS)) {
+		} else if (_attr_name.equals(AS)) {
 			as = attr.getValue();
-		} else if (attr_name.equals(TUNNEL)) {
+		} else if (_attr_name.equals(TUNNEL)) {
 			tunnel = getBoolean(attr.getValue());
 		}
 	}
@@ -85,6 +86,10 @@ public class WithParam extends Declaration {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	super.analyze(contextInfo);
 
+    	if (attr_name != null) {
+    		name = QName.parse(contextInfo.getContext(), attr_name);
+    	}
+    	
     	if (attr_select != null) {
     		select = new PathExpr(getContext());
 		    Pattern.parse(contextInfo.getContext(), attr_select, select);

@@ -23,6 +23,7 @@ package org.exist.xslt.expression;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
@@ -34,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLExceptions;
 import org.exist.xslt.XSLStylesheet;
@@ -53,7 +55,7 @@ public class CallTemplate extends SimpleConstructor {
 
 	private QName name = null;
 	
-	private Map<QName, Expression> params = new HashMap<QName, Expression>();  
+	private Map<String, WithParam> params = new HashMap<String, WithParam>();  
 	
 	public CallTemplate(XSLContext context) {
 		super(context);
@@ -67,6 +69,9 @@ public class CallTemplate extends SimpleConstructor {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(NAME)) {
 			name = new QName(attr.getValue());
+		} else {
+			//XXX: is it correct error code?
+			compileError(ErrorCodes.XTSE0090, "attribute '"+attr_name+"' not allowed");
 		}
 	}
 	
@@ -77,10 +82,13 @@ public class CallTemplate extends SimpleConstructor {
 			if (expr instanceof WithParam) {
 				WithParam param = (WithParam) expr;
 				
-				if (params.containsKey(param.getName()))
+				QName name = param.getName();
+				String key = name.getNamespaceURI() + name.getLocalName();
+				
+				if (params.containsKey(key))
 					compileError(XSLExceptions.ERR_XTSE0670);
 
-				params.put(param.getName(), param);
+				params.put(key, param);
 			} else if (expr instanceof TextConstructor) {
 				;//ignore text elements
 			} else {
@@ -96,11 +104,11 @@ public class CallTemplate extends SimpleConstructor {
         LocalVariable mark = context.markLocalVariables(false);
 
 		Sequence value = null;
-		for (QName varName : params.keySet()) {
-			value = params.get(varName).eval(contextSequence, contextItem);
+		for (Entry<String, WithParam> entry : params.entrySet()) {
+			value = entry.getValue().eval(contextSequence, contextItem);
 
             // Declare the iteration variable
-            LocalVariable var = new LocalVariable(varName);
+            LocalVariable var = new LocalVariable(entry.getValue().getName());
 //            var.setSequenceType(sequenceType);
             context.declareVariableBinding(var);
             var.setValue(value);
