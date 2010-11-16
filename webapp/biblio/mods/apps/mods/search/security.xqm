@@ -73,6 +73,18 @@ declare function security:get-user-credential-from-session() as xs:string+
 };
 
 (:~
+: Gets a users email address
+:
+: @param the username of the user
+: @return the email address for the user
+:)
+declare function security:get-email-address-for-user($username as xs:string) as xs:string?
+{
+    (: TODO :)
+    "exist@ad.uni-heidelberg.de"
+};
+
+(:~
 : Checks whether a users mods home collection exists
 :
 : @param user The username
@@ -372,7 +384,6 @@ declare function security:set-group-can-write-collection($collection, $group as 
 : Creates a security group
 :
 : Note - The currently logged in user will be the group owner
-:
 :)
 declare function security:create-group($group-name as xs:string, $group-members as xs:string*) as xs:boolean
 {       
@@ -391,6 +402,16 @@ declare function security:create-group($group-name as xs:string, $group-members 
     (
         false()
     )
+};
+
+declare function security:add-user-to-group($username as xs:string, $group-name as xs:string) as xs:boolean
+{
+    xmldb:add-user-to-group($username, $group-name)
+};
+
+declare function security:remove-user-from-group($username as xs:string, $group-name as xs:string) as xs:boolean
+{
+    xmldb:remove-user-from-group($username, $group-name)
 };
 
 declare function security:set-group-can-read-resource($group-name as xs:string, $resource as xs:string, $read as xs:boolean) as xs:boolean
@@ -432,6 +453,11 @@ declare function security:set-resource-permissions($resource as xs:string, $owne
 
 declare function security:get-groups($user as xs:string) as xs:string*
 {
+    (: TODO if you remove this line, then for some reason you get an error -
+    XPTY0004: The actual cardinality for parameter 1 does not match the cardinality declared in the function's signature: xmldb:get-user-groups($user-id as xs:string) xs:string+. Expected cardinality: exactly one, got 2.
+    :)
+    let $null := util:log("debug", fn:concat("USER=========", $user)) return
+    
     let $username := if($config:force-lower-case-usernames)then(fn:lower-case($user))else($user) return
         xmldb:get-user-groups($username)
 };

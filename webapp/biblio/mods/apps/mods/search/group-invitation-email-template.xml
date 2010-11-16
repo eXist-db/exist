@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mail xmlns:sharing="http://exist-db.org/mods/sharing" xmlns:config="http://exist-db.org/mods/config">
+    <from><config:smtp-from-address/></from>
+    <to><sharing:user-smtp-address/></to>
+    <subject>You have been added to the group <sharing:group-name/></subject>
+    <message>
+        <text>You have been added to the group <sharing:group-name/></text>
+        <xhtml>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+                <head>
+                    <title>Group Invitation</title>
+                </head>
+                <body>
+                    <h1>Group Invitation</h1>
+                    <p>Dear <sharing:user-name/> you have been invited to the group <sharing:group-name/></p>
+                </body>
+            </html>
+        </xhtml>
+    </message>
+</mail>
