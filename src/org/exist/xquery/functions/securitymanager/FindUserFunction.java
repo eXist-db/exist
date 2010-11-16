@@ -77,9 +77,13 @@ public class FindUserFunction extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        final String startsWith = args[0].getStringValue();
         DBBroker broker = getContext().getBroker();
         Subject currentUser = broker.getSubject();
+        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+            throw new XPathException("You must be an authenticated user");
+        }
+
+        final String startsWith = args[0].getStringValue();
         SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         List<String> usernames;
