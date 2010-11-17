@@ -22,12 +22,18 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
@@ -44,26 +50,89 @@ import org.w3c.dom.Attr;
  */
 public class Comment extends SimpleConstructor {
 	
+	private String attr_select = null;
+
 	private PathExpr select = null;
 	
-	public Comment(XSLContext context) {
+    public Comment(XSLContext context) {
 		super(context);
 	}
 	
 	public void setToDefaults() {
+		attr_select = null;
+		
 		select = null;
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
-			select = new PathExpr(getContext());
-			Pattern.parse((XQueryContext) context, attr.getValue(), select);
+			attr_select = attr.getValue();
 		}
 	}
 	
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		if (attr_select != null) {
+			select = new PathExpr(getContext());
+			Pattern.parse(contextInfo.getContext(), attr_select, select);
+		}
+			
+		super.analyze(contextInfo);
+	}
+
+	
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+
+//        if (newDocumentContext)
+//            context.pushDocumentContext();
+        
+        Sequence result;
+        try {
+        	Sequence contentSeq;
+        	if (select != null)
+            	contentSeq = select.eval(contextSequence, contextItem);
+        	else
+        		contentSeq = super.eval(contextSequence, contextItem);
+
+            if(contentSeq.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+            else {
+                MemTreeBuilder builder = context.getDocumentBuilder();
+                context.proceed(this, builder);
+
+                StringBuilder buf = new StringBuilder();
+                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                    context.proceed(this, builder);
+                    Item next = i.nextItem();
+                    if(buf.length() > 0)
+                        buf.append(' ');
+                    buf.append(next.toString());
+                }
+
+                if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {
+                    throw new XPathException(this, ErrorCodes.XQDY0072, "'" + buf.toString() + "' is not a valid comment");
+                }
+
+                int nodeNr = builder.comment(buf.toString());
+                result = builder.getDocument().getNode(nodeNr);
+            }
+        } finally {
+//            if (newDocumentContext)
+//                context.popDocumentContext();
+        }
+
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", result);  
+        
+        return result;
 	}
 
 	/* (non-Javadoc)

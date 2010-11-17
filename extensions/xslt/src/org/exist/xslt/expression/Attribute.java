@@ -78,7 +78,7 @@ public class Attribute extends SimpleConstructor {
 		constructor = new DynamicAttributeConstructor(getContext());
 		constructor.setReplaceAttributeFlag(true);
 
-		constructor.setContentExpr(new LiteralValue((XQueryContext) context, new StringValue("") ));
+		constructor.setContentExpr(new LiteralValue((XQueryContext) context, StringValue.EMPTY_STRING));
 	    constructor.setNameExpr(null);
 	}
 

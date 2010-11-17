@@ -22,6 +22,7 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -64,8 +65,22 @@ public class Document extends Declaration {
 		}
 	}
 	
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
+	}
+	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	throw new RuntimeException("eval(Sequence contextSequence, Item contextItem) at "+this.getClass());
+
+		Sequence contentSeq;
+		
+        context.pushDocumentContext();
+        try {
+            contentSeq = super.eval(contextSequence, contextItem);
+            
+            return contentSeq;
+        } finally {
+        	context.popDocumentContext();
+        }
 	}
 
 	/* (non-Javadoc)
