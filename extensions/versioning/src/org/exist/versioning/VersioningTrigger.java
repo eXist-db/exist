@@ -579,8 +579,8 @@ public class VersioningTrigger extends FilteringTrigger {
     }
 
 	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) 
-	throws TriggerException {
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		this.documentPath = uri;
 	}
 
 	@Override
