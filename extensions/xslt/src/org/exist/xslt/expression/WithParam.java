@@ -99,7 +99,13 @@ public class WithParam extends Declaration {
     }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence result = select.eval(contextSequence, contextItem);
+		Sequence result;
+		if (select != null) {
+			result = select.eval(contextSequence, contextItem);
+		} else {
+			result = super.eval(contextSequence, contextItem);
+		}
+		
 		if (result.getItemCount() != 1)
 			throw new XPathException("only one value for param posible.");//TODO: error?
 		
