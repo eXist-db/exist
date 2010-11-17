@@ -21,7 +21,9 @@
  */
 package org.exist.xslt.expression;
 
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.XPathException;
+import org.exist.xslt.XSLContext;
 
 /**
  * The xsl:attribute, xsl:comment, xsl:processing-instruction, xsl:namespace, 
@@ -38,8 +40,13 @@ import org.exist.xquery.XQueryContext;
  */
 public abstract class SimpleConstructor extends XSLPathExpr {
 
-	public SimpleConstructor(XQueryContext context) {
+	protected boolean newDocumentContext = false;
+
+	public SimpleConstructor(XSLContext context) {
 		super(context);
 	}
-
+	
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        newDocumentContext = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) == 0;
+    }
 }

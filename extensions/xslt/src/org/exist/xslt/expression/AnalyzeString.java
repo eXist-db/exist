@@ -28,6 +28,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.XQueryContext;
+import org.exist.xslt.XSLContext;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
 
@@ -49,7 +50,7 @@ public class AnalyzeString extends SimpleConstructor {
 	private String regex = null;
 	private String flags = null;
 	
-	public AnalyzeString(XQueryContext context) {
+	public AnalyzeString(XSLContext context) {
 		super(context);
 	}
 	

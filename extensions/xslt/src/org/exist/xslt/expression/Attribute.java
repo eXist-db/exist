@@ -21,18 +21,26 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.xquery.DynamicAttributeConstructor;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
+import org.exist.util.XMLChar;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
-import org.exist.xquery.LiteralValue;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 
 /**
  * <!-- Category: instruction -->
@@ -58,28 +66,40 @@ public class Attribute extends SimpleConstructor {
     private String type = null;
     private String validation = null;
     
-    private Expression value = null;
+    private String value = null;
 
-    private DynamicAttributeConstructor constructor;
+    private Expression qnameExpr = null;
+    private Expression valueExpr = null;
 
     public Attribute(XSLContext context) {
 		super(context);
 		
 	}
 
-	public void setToDefaults() {
+    public Attribute(XSLContext context, String name) {
+		super(context);
+		
+		this.name = name;
+	}
+    
+    public Attribute(XSLContext context, String name, String value) {
+		super(context);
+		
+		this.name = name;
+		this.value = value;
+	}
+
+    public void setValue(String value) {
+		this.value = value;
+    }
+
+    public void setToDefaults() {
 	    name = null;
 	    namespace = null;
 	    select = null;
 	    separator = null;
 	    type = null;
 	    validation = null;
-	    
-		constructor = new DynamicAttributeConstructor(getContext());
-		constructor.setReplaceAttributeFlag(true);
-
-		constructor.setContentExpr(new LiteralValue((XQueryContext) context, StringValue.EMPTY_STRING));
-	    constructor.setNameExpr(null);
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
@@ -87,7 +107,6 @@ public class Attribute extends SimpleConstructor {
 			
 		if (attr_name.equals(NAME)) {
 			name = attr.getValue();
-			constructor.setNameExpr(new LiteralValue((XQueryContext) context, new StringValue(name)));
 		} else if (attr_name.equals(NAMESPACE)) {
 			namespace = attr.getValue();
 		} else if (attr_name.equals(SELECT)) {
@@ -108,33 +127,119 @@ public class Attribute extends SimpleConstructor {
 				ValueOf valueOf = (ValueOf) expr;
 				valueOf.validate();
 				valueOf.sequenceItSelf = true;
-				constructor.setContentExpr(valueOf);
+
+				setContentExpr(valueOf);
+			
 			} else if (expr instanceof ApplyTemplates) {
 				ApplyTemplates applyTemplates = (ApplyTemplates) expr;
 				applyTemplates.validate();
-//				applyTemplates.sequenceItSelf = true;
-				constructor.setContentExpr(applyTemplates);
+
+				setContentExpr(applyTemplates);
+			
 			} else if (expr instanceof If) {
-				If _if_ = (If)expr;
-				constructor.setContentExpr(_if_);
+				((If) expr).validate();
+				setContentExpr(expr);
+
 			} else if (expr instanceof Text) {
 				Text text = (Text) expr;
 				text.validate();
 				text.sequenceItSelf = true;
-				constructor.setContentExpr(text);
+
+				setContentExpr(text);
 			} else {
 				compileError("unsupported subelement "+expr);
 			}
 		}
 	}
 
-	public void addText(String text) {
-    	value = new LiteralValue(context, new StringValue(text));
-		constructor.setContentExpr(value);
+	public void setContentExpr(Expression expr) {
+        this.valueExpr = new Atomize(context, expr);
     }
+
+//	public void addText(String text) {
+//    	value = new LiteralValue(context, new StringValue(text));
+//		constructor.setContentExpr(value);
+//    }
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		return constructor.eval(contextSequence, contextItem);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        
+        NodeImpl node;
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.setReplaceAttributeFlag(true);
+            context.proceed(this, builder);
+
+            QName qn = null;
+            String name = null;
+            if (qnameExpr != null) {
+            	Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
+            	if(!nameSeq.hasOne())
+            		throw new XPathException(this, "The name expression should evaluate to a single value");
+
+            	Item qnItem = nameSeq.itemAt(0);
+            	
+                if (qnItem.getType() == Type.QNAME)
+                    qn = ((QNameValue) qnItem).getQName();
+                else
+                	name = nameSeq.getStringValue();
+            } else {
+            	name = this.name;
+            }
+            
+            if (qn == null)
+            	try {
+            		qn = QName.parse(context, name, null);
+		    	} catch (IllegalArgumentException e) {
+					throw new XPathException(this, ErrorCodes.XPTY0004, "'"+name+ "' is not a valid attribute name");
+				}
+
+            //Not in the specs but... makes sense
+            if(!XMLChar.isValidName(qn.getLocalName()))
+            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalName() + "' is not a valid attribute name");
+
+            String value = this.value;
+            if (valueExpr != null) {
+	            Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
+	            if(valueSeq.isEmpty())
+	            	value = "";
+	            else {
+	                StringBuilder buf = new StringBuilder();
+	                for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
+	                    Item next = i.nextItem();
+	                    buf.append(next.getStringValue());
+	                    if(i.hasNext())
+	                        buf.append(' ');
+	                }
+	                value = buf.toString();
+	            }
+            }
+            node = null;
+            try {
+                int nodeNr = builder.addAttribute(qn, value);
+                node = builder.getDocument().getAttribute(nodeNr);
+            } catch (DOMException e) {
+                throw new XPathException(this, ErrorCodes.XQDY0025, e.getMessage());
+            } 
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
+
+        if (context.getProfiler().isEnabled())           
+            context.getProfiler().end(this, "", node);          
+        
+        return node;
 	}
 
 	/* (non-Javadoc)

@@ -31,9 +31,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.StringTokenizer;
 
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.sax.TransformerHandler;
+
 import junit.framework.Assert;
 
 import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.NodeImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -82,45 +87,65 @@ public class XSLTS_case extends TestCase {
 //		String input = loadFile(XSLTS_folder+"TestInputs/"+inputURL, false);
 //		String stylesheet = loadFile(XSLTS_folder+"TestInputs/"+xslURL, true);
 
-        String query = "xquery version \"1.0\";\n" +
-                "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
-                "declare variable $xml external;\n" +
-                "declare variable $xslt external;\n" +
-                "transform:transform($xml, $xslt, ())\n";
+//        String query = "xquery version \"1.0\";\n" +
+//                "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
+//                "declare variable $xml external;\n" +
+//                "declare variable $xslt external;\n" +
+//                "transform:transform($xml, $xslt, ())\n";
         
+		DBBroker broker = null;
 		try {
 			XQueryContext context;
-			XQuery xquery;
+//			XQuery xquery;
+//			
+			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+//				xquery = broker.getXQueryService();
+//
+//				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+//				
+//				context = xquery.newContext(AccessContext.TEST);
+				context = new XSLContext(broker);
+//		        
+//			} catch (Exception e) {
+//				Assert.fail(e.getMessage());
+//				return;
+//			}
+//
+//			//declare variable
+//	        if (inputURL !=  null && inputURL != "")
+//	        	context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL));
+//	        else
+//	        	context.declareVariable("xml", loadVarFromString(context, "<empty/>"));
+//	        	
+//			context.declareVariable("xslt", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL));
+//			
+//			//compile
+//			CompiledXQuery compiled = xquery.compile(context, query);
+//			
+//			//execute
+//			Sequence result = xquery.execute(compiled, null);
 			
-			DBBroker broker = null;
-			try {	
-				broker = pool.get(pool.getSecurityManager().getSystemSubject());
-				xquery = broker.getXQueryService();
+			TransformerFactoryImpl factory = new TransformerFactoryImpl();
+			factory.setBrokerPool(pool);
+			
+			Templates templates = factory.newTemplates(
+					new SourceImpl(
+							loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL).getDocument()
+						)
+					);
+			TransformerHandler handler = factory.newTransformerHandler(templates);
 
-				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
-				
-				context = xquery.newContext(AccessContext.TEST);
-		        
-			} catch (Exception e) {
-				Assert.fail(e.getMessage());
-				return;
-			} finally {
-				pool.release(broker);
-			}
-
-			//declare variable
-	        if (inputURL !=  null && inputURL != "")
-	        	context.declareVariable("xml", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL));
+//	        TransformErrorListener errorListener = new TransformErrorListener();
+//	        handler.getTransformer().setErrorListener(errorListener);
+			
+	        NodeImpl input;
+			if (inputURL !=  null && inputURL != "")
+	        	input = loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+inputURL);
 	        else
-	        	context.declareVariable("xml", loadVarFromString(context, "<empty/>"));
-	        	
-			context.declareVariable("xslt", loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL));
-			
-			//compile
-			CompiledXQuery compiled = xquery.compile(context, query);
-			
-			//execute
-			Sequence result = xquery.execute(compiled, null);
+	        	input = loadVarFromString(context, "<empty/>");
+
+        	Transformer transformer = handler.getTransformer();
+    		Sequence result = ((org.exist.xslt.Transformer)transformer).transform(input);
 			
 			//compare result with one provided by test case
 			boolean ok = false;
@@ -151,6 +176,8 @@ public class XSLTS_case extends TestCase {
 				e.printStackTrace();
 				Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
 			}
+		} finally {
+			pool.release(broker);
 		}
 
 //        StringBuilder content = new StringBuilder();

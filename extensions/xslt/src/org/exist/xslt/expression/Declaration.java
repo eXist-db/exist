@@ -21,7 +21,7 @@
  */
 package org.exist.xslt.expression;
 
-import org.exist.xquery.XQueryContext;
+import org.exist.xslt.XSLContext;
 
 /**
  * Top-level elements fall into two categories: declarations, and user-defined data elements. 
@@ -33,10 +33,14 @@ import org.exist.xquery.XQueryContext;
  */
 public abstract class Declaration extends XSLPathExpr {
 
-	public Declaration(XQueryContext context) {
+	public Declaration(XSLContext context) {
 		super(context);
 	}
 
-
-
+    public void add(SimpleConstructor s) {
+    	if (s instanceof Text) {
+			return; //ignore text nodes
+		}
+        steps.add(s);
+    }
 }

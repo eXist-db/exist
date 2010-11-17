@@ -24,6 +24,7 @@ package org.exist.xslt;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -272,6 +273,24 @@ public class XSLStylesheet extends Declaration
     		//context.declareFunction(function);
     	}
 	}
+
+    public Set<AttributeSet> getAttributeSet(String name) throws XPathException {
+    	String[] names = name.split(" ");
+    	
+    	Set<AttributeSet> sets = new HashSet<AttributeSet>(names.length);
+    	
+    	String n;
+    	for (int i = 0; i < names.length; i++) {
+    		n = names[i];
+			if (attributeSets.containsKey(name)) {
+				sets.add(attributeSets.get(name));
+			} else {
+				//UNDERSTAND: error???
+			}
+    	}
+    	
+    	return sets;
+    }
 
     public Sequence attributeSet(String name, Sequence contextSequence, Item contextItem) throws XPathException {
     	Sequence result = new ValueSequence();
