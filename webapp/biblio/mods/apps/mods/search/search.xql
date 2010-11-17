@@ -520,7 +520,9 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             let $app-collection := $style:db-path-to-app
             let $code-tables := concat($app-collection, '/apps/mods/code-tables')
             let $document-path := concat($code-tables, '/document-type-codes.xml')
-            let $code-table := doc($document-path)/code-table
+            let $language-path := concat($code-tables, '/language-2-type-codes.xml')
+            let $code-table-type := doc($document-path)/code-table
+            let $code-table-lang := doc($language-path)/code-table
             return 
                 <div class="content">
                     <form id="new-resource-form" action="../edit/edit.xq" method="GET">
@@ -529,7 +531,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 <input type="radio" name="type" value="default" selected="true"/><span> Default</span>
                             </li>
                         {
-                            for $item in $code-table//item
+                            for $item in $code-table-type//item
                             let $label := $item/label/text()
                             order by $label
                             return
@@ -538,6 +540,18 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 </li>
                         }
                         </ul>
+                        <div>
+                            <label for="lang">Language: </label>
+                            <select name="lang">
+                            {
+                                for $item in $code-table-lang//item
+                                let $label := $item/label/text()
+                                order by $label
+                                return
+                                    <option value="{$item/value/text()}">{$item/label/text()}</option>
+                            }
+                            </select>
+                        </div>
                         <input type="hidden" name="collection"/>
                         <input type="hidden" name="host"/>
                     </form>

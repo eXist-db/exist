@@ -74,6 +74,13 @@ let $create-new-from-template :=
          (: note that we can not use "update replace" if we want to keep the default namespace :)
          return (
             update value doc($new-file-path)/mods:mods/@ID with $id,
+            (: save used template name and language into a mods:extension element :)
+            update insert
+                <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
+                    <e:template>{util:document-name($template)}</e:template>
+                    <e:language>{request:get-parameter("lang", "")}</e:language>
+                </extension>
+            into doc($new-file-path)/mods:mods,
             if ($host) then (
                 update value doc($new-file-path)/mods:mods/mods:relatedItem/@xlink:href with $host,
                 update value doc($new-file-path)/mods:mods/mods:relatedItem/@type with "host"
