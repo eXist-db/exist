@@ -166,8 +166,17 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#setAttribute(java.lang.String, java.lang.String)
      */
-    public void setAttribute( String arg0, String arg1 ) throws DOMException {
-        // TODO Auto-generated method stub
+    public void setAttribute( String name, String value ) throws DOMException {
+        int lastNode = document.getLastNode();
+
+        QName qname;
+		try {
+			qname = QName.parse(document.context, name);
+		} catch (XPathException e) {
+			throw new DOMException(DOMException.SYNTAX_ERR, e.getMessage());
+		}
+        
+        document.addAttribute( lastNode, qname, value, AttributeImpl.ATTR_CDATA_TYPE );
     }
 
     /* (non-Javadoc)
