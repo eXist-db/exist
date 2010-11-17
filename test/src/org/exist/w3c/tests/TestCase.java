@@ -164,11 +164,16 @@ public abstract class TestCase {
 		if (!expectedResult.canRead()) Assert.fail("can't read expected result");
 		
 		String compare = outputFile.getAttribute("compare");
+		if (compare == null) compare = "Fragment";
+		compare = compare.toUpperCase();
 		
 		Reader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(expectedResult));
 
+			if (result.isEmpty() && expectedResult.length() > 0)
+				return false;
+			
 			int pos = 0;
 			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
 				Resource xmldbResource = getResource(i.nextItem());
@@ -226,7 +231,7 @@ public abstract class TestCase {
 
 				if (!ok) {
 					if (!expResult.equals(res))
-						if (compare.equals("Fragment") || compare.equals("Inspect")) {
+						if (compare.equals("FRAGMENT") || compare.equals("INSPECT")) {
 							
 							try {
 								ok = diffXML(expResult, res);
@@ -257,7 +262,7 @@ public abstract class TestCase {
 							}
 						}
 						
-					if ((compare.equals("Text") || compare.equals("Fragment")) && (i.hasNext())) {
+					if ((compare.equals("TEXT") || compare.equals("FRAGMENT")) && (i.hasNext())) {
 						reader.mark(1);
 						if (' ' != (char)reader.read())
 							reader.reset();
