@@ -282,8 +282,8 @@ public class XSLStylesheet extends Declaration
     	String n;
     	for (int i = 0; i < names.length; i++) {
     		n = names[i];
-			if (attributeSets.containsKey(name)) {
-				sets.add(attributeSets.get(name));
+			if (attributeSets.containsKey(n)) {
+				sets.add(attributeSets.get(n));
 			} else {
 				//UNDERSTAND: error???
 			}

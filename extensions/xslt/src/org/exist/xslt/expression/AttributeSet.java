@@ -99,6 +99,7 @@ public class AttributeSet extends Declaration {
         	dumper.display(" use-attribute-sets = ");
         	dumper.display(use_attribute_sets);
         }
+        dumper.display(">");
 
         super.dump(dumper);
 
