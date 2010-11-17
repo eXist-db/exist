@@ -104,11 +104,19 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 		    as = attr.getValue();
 		}
 	}
+	
+    public void add(Expression s) {
+    	if (s instanceof TextConstructor) {
+			return; //ignore text nodes
+		}
+        steps.add(s);
+    }
+
 
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		if (isRootMatch())
 			contextInfo.addFlag(DOT_TEST);
-
+		
 		super.analyze(contextInfo);
 
     	if (attr_match != null) {
@@ -206,12 +214,17 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 //	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		Sequence result = new ValueSequence();
-		
-		Sequence answer = super.eval(contextSequence, contextItem);
-		result.addAll(answer);
-		
-		return result;
+    	context.pushDocumentContext();
+    	try {
+			Sequence result = new ValueSequence();
+			
+			Sequence answer = super.eval(contextSequence, contextItem);
+			result.addAll(answer);
+			
+			return result;
+    	} finally {
+    		context.popDocumentContext();
+    	}
 	}
 //	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 //		Sequence result = new ValueSequence();
