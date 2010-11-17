@@ -26,6 +26,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
@@ -69,6 +70,14 @@ public class Comment extends SimpleConstructor {
 		if (attr_name.equals(SELECT)) {
 			attr_select = attr.getValue();
 		}
+	}
+	
+	
+	public void validate() throws XPathException {
+		if (attr_select != null && this.getLength() > 0)
+			compileError(ErrorCodes.XTSE0940, "");
+		
+		super.validate();
 	}
 	
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {

@@ -23,10 +23,10 @@ package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
 
 /**
@@ -40,7 +40,7 @@ import org.w3c.dom.Attr;
  */
 public class ApplyImports extends SimpleConstructor {
 
-	public ApplyImports(XQueryContext context) {
+	public ApplyImports(XSLContext context) {
 		super(context);
 	}
 	
