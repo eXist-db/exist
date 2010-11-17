@@ -47,6 +47,13 @@ public class Generate_id extends BasicFunction {
 				"The function returns a string that uniquely identifies a given node.",
 				FunctionSignature.NO_ARGS,
 				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+		),
+		new FunctionSignature(
+				new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
+				"The function returns a string that uniquely identifies a given node.",
+				new SequenceType[] {
+						new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
+				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 		)
 	};
 	
@@ -59,7 +66,11 @@ public class Generate_id extends BasicFunction {
 
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		return new StringValue("generate-id");
+		//XXX: code
+		if (!contextSequence.isEmpty())
+			return new StringValue(String.valueOf(contextSequence.itemAt(0).hashCode()));
+		
+		return new StringValue("generate-id"); //XXX: error?
 	}
 
 }

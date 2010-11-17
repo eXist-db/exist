@@ -57,6 +57,8 @@ public class XSLModule extends AbstractInternalModule {
 		new FunctionDef(Unparsed_text_available.signatures[1], Unparsed_text_available.class),
 		new FunctionDef(Unparsed_text.signatures[0], Unparsed_text.class),
 		new FunctionDef(Unparsed_text.signatures[1], Unparsed_text.class),
+		new FunctionDef(Generate_id.signatures[0], Generate_id.class),
+		new FunctionDef(Generate_id.signatures[1], Generate_id.class),
 		};
 
 	/**
