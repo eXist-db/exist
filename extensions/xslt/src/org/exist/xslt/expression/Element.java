@@ -21,17 +21,30 @@
  */
 package org.exist.xslt.expression;
 
+import java.util.Set;
+
+import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
+import org.exist.util.XMLChar;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.AttributeConstructor;
+import org.exist.xquery.Constants;
 import org.exist.xquery.ElementConstructor;
 import org.exist.xquery.LiteralValue;
+import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
+import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * <!-- Category: instruction -->
@@ -57,13 +70,25 @@ public class Element extends SimpleConstructor {
     private String type = null;
     private String validation = null;
     
-    private ElementConstructor constructor;
+	private PathExpr content = null;
 
     public Element(XSLContext context) {
 		super(context);
+	}
+
+    public Element(XSLContext context, String name) {
+		super(context);
 		
-		constructor = new ElementConstructor(getContext());
-		constructor.setContent(this);
+		this.name = name;
+	}
+    
+	public void setContent(PathExpr content) {
+		this.content = content;
+	}
+	
+	public void addAttribute(Attr attr) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public void setToDefaults() {
@@ -80,7 +105,6 @@ public class Element extends SimpleConstructor {
 			
 		if (attr_name.equals(NAME)) {
 			name = attr.getValue();
-			constructor.setNameExpr(new LiteralValue((XQueryContext) context, new StringValue(name)));
 		} else if (attr_name.equals(NAMESPACE)) {
 			namespace = attr.getValue();
 		} else if (attr_name.equals(INHERIT_NAMESPACES)) {
@@ -91,17 +115,177 @@ public class Element extends SimpleConstructor {
 			type = attr.getValue();
 		} else if (attr_name.equals(VALIDATION)) {
 			validation = attr.getValue();
+		} else {
+			addAttribute(attr);
 		}
 	}
 	
-	private boolean internalCall = false;
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        context.pushInScopeNamespaces();
+        // declare namespaces
+//        if(namespaceDecls != null) {
+//            for(int i = 0; i < namespaceDecls.length; i++) {
+//                if ("".equals(namespaceDecls[i].getNamespaceURI())) {
+//                    // TODO: the specs are unclear here: should we throw XQST0085 or not?
+//                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
+////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+////		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+//                } else
+//                    context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+//            }
+//        }
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
+//        qnameExpr.analyze(newContextInfo);
+//        if(attributes != null) {
+//            for(int i = 0; i < attributes.length; i++) {
+//                attributes[i].analyze(newContextInfo);
+//            }
+//        }
+
+        //analyze content
+        if (content != null)
+        	content.analyze(contextInfo);
+        super.analyze(contextInfo);
+
+        context.popInScopeNamespaces();
+	}
+	
+//	private boolean internalCall = false;
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		if (!internalCall) {
-			internalCall = true;
-			return constructor.eval(contextSequence, contextItem);
-		}
-		internalCall = false;
-		return super.eval(contextSequence, contextItem); 
+//		if (!internalCall) {
+//			internalCall = true;
+//			return constructor.eval(contextSequence, contextItem);
+//		}
+//		internalCall = false;
+//		return super.eval(contextSequence, contextItem); 
+
+        context.expressionStart(this);
+		context.pushInScopeNamespaces();
+        if (newDocumentContext)
+            context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            
+            // declare namespaces
+//            if(namespaceDecls != null) {
+//                for(int i = 0; i < namespaceDecls.length; i++) {
+//                    //if ("".equals(namespaceDecls[i].getNamespaceURI())) {
+//                        // TODO: the specs are unclear here: should we throw XQST0085 or not?
+//                    //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
+////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+////		        		throw new XPathException(getAS      TNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+//                    //} else
+//                        context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+//                }
+//            }
+//            AttributesImpl attrs = new AttributesImpl();
+//            if(attributes != null) {
+//                AttributeConstructor constructor;
+//                Sequence attrValues;
+//                QName attrQName;
+//                // first, search for xmlns attributes and declare in-scope namespaces
+//                for (int i = 0; i < attributes.length; i++) {
+//                    constructor = attributes[i];
+//                    if(constructor.isNamespaceDeclaration()) {
+//                        int p = constructor.getQName().indexOf(':');
+//                        if(p == Constants.STRING_NOT_FOUND)
+//                            context.declareInScopeNamespace("", constructor.getLiteralValue());
+//                        else {
+//                            String prefix = constructor.getQName().substring(p + 1);
+//                            context.declareInScopeNamespace(prefix, constructor.getLiteralValue());
+//                        }
+//                    }
+//                }
+//                // process the remaining attributes
+//                for (int i = 0; i < attributes.length; i++) {
+//                    context.proceed(this, builder);
+//                    constructor = attributes[i];
+//                    attrValues = constructor.eval(contextSequence, contextItem);
+//                    attrQName = QName.parse(context, constructor.getQName(), "");
+//                    if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
+//                        throw new XPathException(this, "XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
+//                    attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
+//                            attrQName.getStringValue(), "CDATA", attrValues.getStringValue());
+//                }
+//            }
+            context.proceed(this, builder);
+
+            // create the element
+//            Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+//            if(!qnameSeq.hasOne())
+//		    throw new XPathException(this, "Type error: the node name should evaluate to a single item");
+//            Item qnitem = qnameSeq.itemAt(0);
+            QName qn;
+//            if (qnitem instanceof QNameValue) {
+//                qn = ((QNameValue)qnitem).getQName();
+//            } else {
+//                //Do we have the same result than Atomize there ? -pb
+			try {
+				qn = QName.parse(context, name);
+			} catch (IllegalArgumentException e) {
+				throw new XPathException(this, ErrorCodes.XPTY0004, "'"+name+"' is not a valid element name");
+			}
+//            	
+//                //Use the default namespace if specified
+//                /*
+//                 if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
+//                     qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
+//                 }
+//                 */
+//                if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
+//                     qn.setNamespaceURI(context.getInScopeNamespace(""));
+//                }
+//             }
+//
+            //Not in the specs but... makes sense
+            if(!XMLChar.isValidName(name))
+            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + name + "' is not a valid element name");
+
+            int nodeNr = builder.startElement(qn, null);
+
+            // process attributes
+            if (use_attribute_sets != null) {
+            	Set<AttributeSet> sets = ((XSLContext)context).getXSLStylesheet().getAttributeSet(use_attribute_sets);
+            	for (AttributeSet set  : sets) {
+            		set.eval(contextSequence, contextItem);
+            	}
+            }
+
+            // add namespace declaration nodes
+//            if(namespaceDecls != null) {
+//                for(int i = 0; i < namespaceDecls.length; i++) {
+//                    builder.namespaceNode(namespaceDecls[i]);
+//                }
+//            }
+//            // do we need to add a namespace declaration for the current node?
+//            if (qn.needsNamespaceDecl()) {
+//                if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
+//                    String prefix = qn.getPrefix();
+//                    if (prefix == null || prefix.length() == 0)
+//                        prefix = "";
+//                    context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
+//                    builder.namespaceNode(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
+//                }
+//            } else if ((qn.getPrefix() == null || qn.getPrefix().length() == 0) &&
+//                context.getInheritedNamespace("") != null) {
+//                context.declareInScopeNamespace("", "");
+//                builder.namespaceNode(new QName("", "", "xmlns"));
+//            }
+            // process element contents
+            if(content != null) {
+                content.eval(contextSequence, contextItem);
+            }
+            builder.endElement();
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            return node;
+        } finally {
+            context.popInScopeNamespaces();
+            if (newDocumentContext)
+                context.popDocumentContext();
+            context.expressionEnd(this);
+        }
 	}
 
 	/* (non-Javadoc)
@@ -134,6 +318,7 @@ public class Element extends SimpleConstructor {
         	dumper.display(" validation = ");
         	dumper.display(validation);
         }
+        dumper.display(">");
 
         super.dump(dumper);
 
@@ -163,5 +348,6 @@ public class Element extends SimpleConstructor {
 
         result.append("</xsl:element> ");
         return result.toString();
-    }    
+    }
+
 }

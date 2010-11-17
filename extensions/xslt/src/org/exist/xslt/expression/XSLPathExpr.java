@@ -21,25 +21,25 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLExceptions;
+import org.w3c.dom.Attr;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
+public class XSLPathExpr extends PathExpr implements XSLExpression {
 	
-	public XSLPathExpr(XQueryContext context) {
+	public XSLPathExpr(XSLContext context) {
 		super(context);
 		setToDefaults();
 	}
@@ -125,7 +125,23 @@ public abstract class XSLPathExpr extends PathExpr implements XSLExpression {
 
 	public void addText(String text) throws XPathException {
 //UNDERSTAND: what is whitespace?		text = StringValue.trimWhitespace(text);
-		TextConstructor constructer = new TextConstructor(getContext(), text);
+		Text constructer = new Text((XSLContext) getContext(), text);
 		add(constructer);
+	}
+	
+    public void add(SimpleConstructor constructor) {
+        steps.add(constructor);
+    }
+
+	@Override
+	public void setToDefaults() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
+		// TODO Auto-generated method stub
+		
 	}
 }

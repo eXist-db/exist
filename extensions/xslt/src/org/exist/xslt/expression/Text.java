@@ -22,8 +22,9 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.Expression;
-import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -42,17 +43,32 @@ import org.w3c.dom.Attr;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Text extends Declaration {
+public class Text extends SimpleConstructor {
 
-    private Boolean disable_output_escaping = null;
+	private String text = null;
 
-    protected boolean sequenceItSelf = false;
+	private Boolean disable_output_escaping = null;
+
+    private boolean isWhitespaceOnly = false;
+	protected boolean sequenceItSelf = false;
 
     public Text(XSLContext context) {
 		super(context);
 	}
 
-	public void setToDefaults() {
+    public Text(XSLContext context, String text) throws XPathException {
+		super(context);
+		
+		isWhitespaceOnly = true;
+		this.text = StringValue.expand(text);
+		for(int i = 0; i < text.length(); i++)
+			if(!isWhiteSpace(text.charAt(i))) {
+				isWhitespaceOnly = false;
+				break;
+			}
+	}
+
+    public void setToDefaults() {
 		disable_output_escaping = null;
 		
 		sequenceItSelf = false;
@@ -69,23 +85,40 @@ public class Text extends Declaration {
 	//TODO: The text node does not have an ancestor element that has an xml:space attribute with a value of preserve, unless there is a closer ancestor element having an xml:space attribute with a value of default.
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		getContext().setStripWhitespace(false);
 		
+		if(isWhitespaceOnly && context.stripWhitespace())
+			return Sequence.EMPTY_SEQUENCE;
+        
 		if (sequenceItSelf) {
+			if (text != null)
+				return new StringValue(text);
+				
+			getContext().setStripWhitespace(false);
 			for (Expression expr : steps) {
-				if (expr instanceof TextConstructor) {
-					TextConstructor constructor = (TextConstructor) expr;
-					
-					String value = constructor.getText();
-					return new StringValue(value);
+				if (expr instanceof Text) {
+					return new StringValue(((Text) expr).text);
 				}
 				throw new XPathException("unsupported subelement");
 			}
+			getContext().setStripWhitespace(true);
 		}
-			
-		getContext().setStripWhitespace(true);
 
-		return super.eval(contextSequence, contextItem);
+
+		if (newDocumentContext)
+            context.pushDocumentContext();
+        
+		try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            context.proceed(this, builder);
+            int nodeNr = builder.characters(text);
+            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            return node;
+        } finally {
+            if (newDocumentContext)
+                context.popDocumentContext();
+        }
+
+//		return super.eval(contextSequence, contextItem);
 	}
 
 	/* (non-Javadoc)
@@ -98,7 +131,8 @@ public class Text extends Declaration {
         	dumper.display(" disable_output_escaping = ");
         	dumper.display(disable_output_escaping);
         }
-
+        dumper.display(">");
+        
         super.dump(dumper);
 
         dumper.display("</xsl:text>");
@@ -122,5 +156,9 @@ public class Text extends Declaration {
 	@Override
 	public boolean allowMixNodesInReturn() {
 		return true;
+	}
+
+	protected final static boolean isWhiteSpace(char ch) {
+		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
 	}
 }

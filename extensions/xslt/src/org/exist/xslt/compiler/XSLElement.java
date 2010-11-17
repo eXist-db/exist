@@ -46,6 +46,10 @@ import org.exist.dom.NodeAtExist;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
 import org.exist.xslt.constructors.AttributeConstructor;
+import org.exist.xslt.expression.Attribute;
+import org.exist.xslt.expression.Element;
+import org.exist.xslt.expression.SimpleConstructor;
+import org.exist.xslt.expression.Text;
 import org.exist.xslt.expression.XSLExpression;
 import org.exist.xslt.expression.XSLPathExpr;
 import org.w3c.dom.Attr;
@@ -110,7 +114,7 @@ public class XSLElement implements ElementAtExist, Names {
 		if ((!isXSLElement(this)) && (isParentNode())) { //UNDERSTAND: put to XSLStylesheet?
 			expr = new XSLStylesheet((XSLContext) context, true);
 			
-			NodeConstructor constructer = getNodeConstructor(context, this, expr);
+			SimpleConstructor constructer = getNodeConstructor(context, this, expr);
 			if (constructer != null) {
 				expr.add(constructer);
 
@@ -123,7 +127,7 @@ public class XSLElement implements ElementAtExist, Names {
 
 			exec = getExpressionInstance(context);
 
-			compileNode(context, (PathExpr) exec, this);
+			compileNode(context, exec, this);
 		}
 		
 		exec.validate();//UNDERSTAND: at compile time??? analyze ???
@@ -131,13 +135,13 @@ public class XSLElement implements ElementAtExist, Names {
 		return exec;
 	}
 	
-	private NodeConstructor getNodeConstructor(ContextAtExist context, NodeAtExist node, PathExpr content) throws XPathException {
-		NodeConstructor constructer = null;
+	private SimpleConstructor getNodeConstructor(ContextAtExist context, NodeAtExist node, XSLPathExpr content) throws XPathException {
+		SimpleConstructor constructer = null;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			ElementConstructor elementConstructer = new ElementConstructor((XQueryContext) context, node.getNodeName());
-			content.add(elementConstructer);
-			PathExpr content_sub = new PathExpr((XQueryContext) context); 
-			elementConstructer.setContent(content_sub);
+			Element element = new Element((XSLContext) context, node.getNodeName());
+			content.add(element);
+			XSLPathExpr content_sub = new XSLPathExpr((XSLContext) context); 
+			element.setContent(content_sub);
 		
 			NamedNodeMap attrs = node.getAttributes();
 			for (int index = 0; index < attrs.getLength(); index++) {
@@ -152,22 +156,7 @@ public class XSLElement implements ElementAtExist, Names {
 		        		continue;
 	        		}
 	        	}
-				AttributeConstructor attributeConstructer = new AttributeConstructor((XQueryContext) context, attr.getNodeName());
-        	
-				//XXX: rethinks
-				String value = attr.getNodeValue();
-//				if (value.contains("{")) {
-//					value = value.replace("{", "");
-//					value = value.replace("}", "");
-//        		
-//					PathExpr expr = new PathExpr((XQueryContext) context);
-//					org.exist.xslt.pattern.Pattern.parse((XQueryContext) context, value, expr);
-//					attributeConstructer.addEnclosedExpr(expr);
-//				} else {
-					attributeConstructer.addValue(value);
-//				}
-        	
-				elementConstructer.addAttribute(attributeConstructer); 
+				element.prepareAttribute(context, (Attr) attr); 
 			}
 		
 			compileNode(context, content_sub, node);
@@ -178,7 +167,7 @@ public class XSLElement implements ElementAtExist, Names {
 				XSLPathExpr xslExpr = (XSLPathExpr) content;
 				xslExpr.addText(node.getNodeValue());
 			} else
-				constructer = new TextConstructor((XQueryContext) context, node.getNodeValue());
+				constructer = new Text((XSLContext) context, node.getNodeValue());
 		} else if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
 //UNDERSTAND:			constructer = new CDATAConstructor((XQueryContext) context, node.getNodeName());
 		} else if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
@@ -196,7 +185,7 @@ public class XSLElement implements ElementAtExist, Names {
 		return constructer;
 	}
 	
-	public void compileNode(ContextAtExist context, PathExpr content, Node node) throws XPathException {
+	public void compileNode(ContextAtExist context, XSLPathExpr content, Node node) throws XPathException {
 		//namespaces
 		if (node instanceof ElementAtExist) {
 			ElementAtExist elementAtExist = (ElementAtExist) node;
@@ -211,7 +200,7 @@ public class XSLElement implements ElementAtExist, Names {
 		if (!node.hasChildNodes())
 			return;
 		
-		NodeConstructor constructer = null;
+		SimpleConstructor constructer = null;
 		
 		NodeList children = node.getChildNodes();
 		for (int i=0; i<children.getLength(); i++) {

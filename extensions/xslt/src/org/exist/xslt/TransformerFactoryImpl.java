@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -128,7 +129,14 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 	@Override
 	public Templates newTemplates(Source source) throws TransformerConfigurationException {
 		//XXX: handle buffered input stream
-		if (source instanceof ElementAtExist) {
+		if (source instanceof SourceImpl) {
+			try {
+				return XSL.compile((ElementAtExist) ((DocumentAtExist)((SourceImpl)source).source).getDocumentElement());
+			} catch (XPathException e) {
+				LOG.debug(e);
+		    	throw new TransformerConfigurationException("Compilation error.",e);
+			}
+		} else if (source instanceof ElementAtExist) {
 			try {
 				return XSL.compile((ElementAtExist)source);
 			} catch (XPathException e) {

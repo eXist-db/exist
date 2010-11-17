@@ -105,13 +105,13 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 		}
 	}
 	
-    public void add(Expression s) {
-    	if (s instanceof TextConstructor) {
-			return; //ignore text nodes
-		}
-        steps.add(s);
-    }
-
+//    public void add(SimpleConstructor s) {
+//    	if (s instanceof Text) {
+//			return; //ignore text nodes
+//		}
+//        steps.add(s);
+//    }
+//
 
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		if (isRootMatch())
