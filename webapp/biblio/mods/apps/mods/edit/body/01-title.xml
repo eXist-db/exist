@@ -1,46 +1,22 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xf="http://www.w3.org/2002/xforms" class="title" tab-id="title">
-    <div class="block-form">
-        <xf:group appearance="full">
-            <fieldset class="level-1">
-                <div class="join">
-                    <legend> Title Information </legend>
-                    <span class="xforms-hint">
-                        <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                        <div class="xforms-hint-value">
-                            <p> At least one Title inside a Title Information is required. Title Information can be repeated for alternative, translated, transliterated or uniform titles. These values are chosen in Type. For the basic Title Information entry, use the default value "Basic Title Information". If, in addition to the basic title, there is also an alternative, translated, transliterated or uniform title, add a Title Information and choose the relevant Type. Repeat Title Information as many times as necessary. </p>
-                            <p> A Title Information consists of a main Title, plus a number of supplementary fields that relate to it. A Title may have a Subtitle, usually an expansion of the Title proper. If the Title begins with a word according to which it should not be sorted (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title. If a publication consists of several parts, parts that are either numbered or named, use Part Number and/or Part Name. "A History of Philosophy" may have several numbered parts, such as "Part One. Ancient Greek Philosophy." Enter "Part One" in Part Number and "Ancient Greek Philosophy" in Part Name. </p>
-                            <p> When no title appears on the item being described, a title should be supplied. Use the Display Label to indicate that the title is supplied, by giving it the value "Supplied Title". A supplied title should be created in accordance with an established standard, and describe, as concisely as possible, the content of the resource in question. If no standards apply, consider carefully the expectations users have for the naming of similar resources. </p>
-                            <p> If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information. </p>
-                            <p> If a uniform or an abbreviated title is recorded, choose the appropriate value in Type and note in which authority file the uniform or abbreviated title in Authority has been found. Authority files are only used in connection with uniform and abbreviated titles. </p>
-                            <p> Record the language of the Title Information by choosing the * used in the resource, if this is different from the language noted in Language of Resource, a field describing the language of the resource as a whole. </p>
-                        </div>
-                    </span>
-                </div>
-                
-        <!--titleInfo repeat begins-->
-                <xf:repeat nodeset="instance('save-data')/mods:titleInfo" id="titleInfo-repeat">
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xf="http://www.w3.org/2002/xforms" class="title" tab-id="title"><div class="block-form"><xf:group appearance="full"><fieldset class="level-1"><div class="join"><legend> Title Information </legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> At least one Title inside a Title Information is required. Title Information can be repeated for alternative, translated,
+                                transliterated or uniform titles. These values are chosen in Type. For the basic Title Information entry, use the default value
+                                "Basic Title Information". If, in addition to the basic title, there is also an alternative, translated, transliterated or
+                                uniform title, add a Title Information and choose the relevant Type. Repeat Title Information as many times as necessary. </p><p> A Title Information consists of a main Title, plus a number of supplementary fields that relate to it. A Title may have a
+                                Subtitle, usually an expansion of the Title proper. If the Title begins with a word according to which it should not be sorted
+                                (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title. If a publication consists of several
+                                parts, parts that are either numbered or named, use Part Number and/or Part Name. "A History of Philosophy" may have several
+                                numbered parts, such as "Part One. Ancient Greek Philosophy." Enter "Part One" in Part Number and "Ancient Greek Philosophy" in
+                                Part Name. </p><p> When no title appears on the item being described, a title should be supplied. Use the Display Label to indicate that the title
+                                is supplied, by giving it the value "Supplied Title". A supplied title should be created in accordance with an established
+                                standard, and describe, as concisely as possible, the content of the resource in question. If no standards apply, consider
+                                carefully the expectations users have for the naming of similar resources. </p><p> If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title Information. </p><p> If a uniform or an abbreviated title is recorded, choose the appropriate value in Type and note in which authority file the
+                                uniform or abbreviated title in Authority has been found. Authority files are only used in connection with uniform and
+                                abbreviated titles. </p><p> Record the language of the Title Information by choosing the * used in the resource, if this is different from the language
+                                noted in Language of Resource, a field describing the language of the resource as a whole. </p></div></span></div>
+
+                <!--titleInfo repeat begins--><xf:repeat nodeset="instance('save-data')/mods:titleInfo" id="titleInfo-repeat">
                     <!--titleInfo node-add begins-->
-                    <!--NB: attributes do not work-->
-                    <xf:group appearance="full" ref=".[not(mods:nonSort)] | .[not(mods:title)] | .[not(mods:subTitle)] | .[not(mods:partNumber)] | .[not(mods:partName)]">
-                        <xf:switch>
-                            <xf:case id="titleInfo-add-node-hide">
-                                <div class="node-adds-title">
-                                    <xf:trigger class="add-button">
-                                        <xf:label class="xforms-group-label-centered">Show Additional Fields</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-unhide" ev:event="DOMActivate"/>
-                                    </xf:trigger>
-                                </div>
-                            </xf:case>
-                            <xf:case id="titleInfo-add-node-unhide">
-                                <div class="node-adds-title">
-                                    <xf:trigger>
-                                        <xf:label class="xforms-group-label-centered">Hide Additional Fields</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    </xf:trigger>
-                                </div>
-                                <div class="node-adds">
-                                    <xf:group id="titleInfo-add-node-recommended" ref=".[not(mods:nonSort)] | .[not(mods:title)] | .[not(mods:subTitle)] | .[not(mods:partNumber)] | .[not(mods:partName)]" appearance="full">
-                                        <xf:label class="xforms-group-label-centered">Recommended Fields</xf:label>
+                    <!--NB: attributes do not work--><xf:group appearance="full" ref=".[not(mods:nonSort)] | .[not(mods:title)] | .[not(mods:subTitle)] | .[not(mods:partNumber)] | .[not(mods:partName)]"><xf:switch><xf:case id="titleInfo-add-node-hide"><div class="node-adds-title"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Show Additional Fields</xf:label><xf:toggle case="titleInfo-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="titleInfo-add-node-unhide"><div class="node-adds-title"><xf:trigger><xf:label class="xforms-group-label-centered">Hide Additional Fields</xf:label><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="titleInfo-add-node-recommended" ref=".[not(mods:nonSort)] | .[not(mods:title)] | .[not(mods:subTitle)] | .[not(mods:partNumber)] | .[not(mods:partName)]" appearance="full"><xf:label class="xforms-group-label-centered">Recommended Fields</xf:label>
                                         <!--
                                             <xf:trigger ref=".[not(@type)]" class="add-button">
                                             <xf:label class="xforms-group-label-centered">Add Type</xf:label>
@@ -76,54 +52,7 @@
                                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                                             <xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@script"/>
                                             </xf:action>
-                                            </xf:trigger> -->
-                                        <xf:trigger ref=".[not(mods:nonSort)]" class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Non Sort</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert nodeset="mods:nonSort" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:nonSort"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                        <xf:trigger ref=".[not(mods:title)]" class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Title</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert nodeset="mods:title" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:title"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                        <xf:trigger ref=".[not(mods:subTitle)]" class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Subtitle</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert nodeset="mods:subTitle" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:subTitle"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                        <xf:trigger ref=".[not(mods:partNumber)]" class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Part Number</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert nodeset="mods:partNumber" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partNumber"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                        <xf:trigger ref=".[not(mods:partName)]" class="add-button">
-                                            <xf:label class="xforms-group-label-centered">Add Part Name</xf:label>
-                                            <xf:action ev:event="DOMActivate">
-                                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                                <xf:insert nodeset="mods:partName" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partName"/>
-                                            </xf:action>
-                                        </xf:trigger>
-                                    </xf:group>
-                                    <!-- 
-                                        <xf:group id="titleInfo-add-node-optional">
-                                        <xf:label class="xforms-group-label-centered">Optional Fields</xf:label>
-                                        <xf:trigger ref=".[not(@displayLabel)]" class="add-button">
-                                        <xf:label class="xforms-group-label-centered">Add Display Label</xf:label>
-                                        <xf:action ev:event="DOMActivate">
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@displayLabel"/>
-                                        </xf:action>
-                                        </xf:trigger>
-                                        </xf:group> -->
+                                            </xf:trigger> --><xf:trigger ref=".[not(mods:nonSort)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Non Sort</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:nonSort" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:nonSort"/></xf:action></xf:trigger><xf:trigger ref=".[not(mods:title)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Title</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:title" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:title"/></xf:action></xf:trigger><xf:trigger ref=".[not(mods:subTitle)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Subtitle</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:subTitle" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:subTitle"/></xf:action></xf:trigger><xf:trigger ref=".[not(mods:partNumber)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Part Number</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:partNumber" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partNumber"/></xf:action></xf:trigger><xf:trigger ref=".[not(mods:partName)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Part Name</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:partName" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partName"/></xf:action></xf:trigger></xf:group><xf:group id="titleInfo-add-node-optional"><xf:label class="xforms-group-label-centered">Optional Fields</xf:label><xf:trigger ref=".[not(@displayLabel)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Display Label</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@displayLabel"/></xf:action></xf:trigger></xf:group> 
                                     <!--
                                         <xf:group id="titleInfo-add-node-not-recommended">
                                         <xf:label class="xforms-group-label-centered">Deprecated Fields</xf:label>
@@ -149,63 +78,32 @@
                                         </xf:action>
                                         </xf:trigger>
                                         </xf:group> </xf:group> 
-                                    -->
-                                </div>
-                            </xf:case>
-                        </xf:switch>
-                    </xf:group>
+                                    --></div></xf:case></xf:switch></xf:group>
                     <!--titleInfo node-add ends-->
                     <!--titleInfo input begins-->
-                <!--DLF/Aquifer: OPTIONAL-->
-                <!--Cluster: omit-->
-                    <xf:group ref=".[@ID]" appearance="full" schema_3.3="yes">
-                        <xf:input ref="./@ID" class="text_50">
-                            <xf:label>ID: </xf:label>
-                            <xf:hint>
-                                <p> ID is used to link among records inside the database and to reference a field inside the database from the outside. </p>
-                            </xf:hint>
-                        </xf:input>
+                    <!--DLF/Aquifer: OPTIONAL-->
+                    <!--Cluster: omit--><xf:group ref=".[@ID]" appearance="full"><xf:input ref="./@ID" class="text_50"><xf:label>ID: </xf:label><xf:hint><p> ID is used to link among records inside the database and to reference a field inside the database from the outside. </p></xf:hint></xf:input>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@ID" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: omit-->
-                    <!--@xlink is here treated as an attribute under the namespace mods, since XSLTForms cannot handle this namespace.
-                    The xlink attributes is contained in xlink:simplelink. I some way I don't understand, this attribute has other attributes. 
-                    The full list of these is: @type, xlink:ref, xlink:role, xlink:arcrole, xlink:title, xlink:show, xlink:actuate. 
-                    "@xlink" should be converted into "@xlink:href". 
-                    -->
-                    <xf:group ref=".[@xlink]" appearance="full" schema_3.3="yes">
-                        <xf:input ref="./@xlink" class="text_50">
-                            <xf:label>XLink: </xf:label>
-                            <xf:hint>
-                                <p> XLink is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
-                                </p>
-                            </xf:hint>
-                        </xf:input>
+                        --></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                    <!--Cluster: omit--><xf:group ref=".[@xlink]" appearance="full"><xf:input ref="./@xlink" class="text_50"><xf:label>XLink: </xf:label><xf:hint><p> XLink is used to reference an external resource, such as a second metadata record, a Related Item or a Table Of Contents.
+                                </p></xf:hint></xf:input>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@xlink" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[@type]" appearance="full" schema_3.3="yes" schema_3.4="yes">
-                        <xf:select1 ref="./@type">
-                            <xf:label>Type:</xf:label>
-                            <xf:hint>
-                                <p> Type identifies what type of Title Information is recorded. The default is Basic Title Information. The following values may
+                        --></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                    <!--Cluster: include--><xf:group ref=".[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p> Type identifies what type of Title Information is recorded. The default is Basic Title Information. The following values may
                                     be used in addition to this: Abbreviated, Translated, Transliterated <!--NB: addition to MODS!!!-->, Alternative, and
-                                    Uniform. </p>
-                                <p> When an abbreviated title is present, an Authority must be chosen. An alternative title may be a parallel title found in the
+                                    Uniform. </p><p> When an abbreviated title is present, an Authority must be chosen. An alternative title may be a parallel title found in the
                                     authoritative title information (in written works, typically the title page) or a title that does not occur in the
                                     authoritative title information, e.g. a title found on a cover. If the alternative title does not occur in the authoritative
                                     title information, indicate in Display Label where the information comes from (e.g., "Cover Title"). If the alternative
@@ -214,967 +112,155 @@
                                     catalogued, choose "Alternative" for Type and note the language, transliteration and script of the title information, as
                                     appropriate, if this is different from the language noted in Language of Resource. If this is not the case and you have e.g.
                                     supplied the translation or transliteration yourself, choose "Translated" or "Transliterated" for Type and note the
-                                    language, transliteration and script of the title information, as appropriate. </p>
-                                <p> A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare or
-                                    the Bible. When a uniform title is present, an Authority for its selection must be chosen. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
-                    <xf:group ref=".[@supplied]" appearance="full" schema_3.3="no" schema_3.4="yes">
-                        <xf:select1 ref="./@supplied">
-                            <xf:label>Supplied:</xf:label>
-                            <xf:hint>
-                                Hint
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='yes-empty-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                    </xf:group>
-                    <xf:group ref=".[@altRepGroup]" appearance="full" schema_3.3="no" schema_3.4="yes">
-                        <xf:input ref="./@altRepGroup">
-                            <xf:label>altRepGroup:</xf:label>
-                            <xf:hint>
-                                Hint
-                            </xf:hint>
-                        </xf:input>
-                    </xf:group>
-                    <xf:group ref=".[@nameTitleGroup]" appearance="full" schema_3.3="no" schema_3.4="yes">
-                        <xf:input ref="./@nameTitleGroup">
-                            <xf:label>Name-Title Group:</xf:label>
-                            <xf:hint>
-                                Hint
-                            </xf:hint>
-                        </xf:input>
-                    </xf:group>
-                    <xf:group ref=".[@usage]" appearance="full" schema_3.3="no" schema_3.4="yes">
-                        <xf:input ref="./@usage">
-                            <xf:label>Usage:</xf:label>
-                            <xf:hint>
-                                Hint
-                            </xf:hint>
-                        </xf:input>
-                    </xf:group>
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[@type='abbreviated']" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@authority">
-                            <xf:label>Authority:</xf:label>
-                            <xf:hint>
-                                <p> The name of the authoritative list for an abbreviated title is recorded here. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='abbreviated-title-authority-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
+                                    language, transliteration and script of the title information, as appropriate. </p><p> A uniform title is a title that refers uniformly to a work that is known by several titles, e.g. the works of Shakespeare or
+                                    the Bible. When a uniform title is present, an Authority for its selection must be chosen. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='title-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                    <!--Cluster: include--><xf:group ref=".[@type='abbreviated']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for an abbreviated title is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='abbreviated-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@authority" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[@type='uniform']" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@authority" selection="open">
-                            <xf:label>Authority:</xf:label>
-                            <xf:hint>
-                                <p> The name of the authoritative list for a uniform title is recorded here. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
+                        --></xf:group>
+                    <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
+                    <!--Cluster: include--><xf:group ref=".[@type='uniform']" appearance="full"><xf:select1 ref="./@authority" selection="open"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a uniform title is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-title-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@authority" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[@lang]" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@lang">
-                            <xf:label>Language:</xf:label>
-                            <xf:hint>
-                                <p>
-                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. 
-                        The most common languages have been moved to the top of the list.
-                    </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
+                        --></xf:group>
+                    <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
+                    <!--Cluster: include--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in
+                                    Language of Resource. The most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@lang" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                <!--Cluster: omit-->
-                    <xf:group ref=".[@xml:lang]" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@xml:lang">
-                            <xf:label>xml:lang:</xf:label>
-                            <xf:hint>
-                                <p>
-                        The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
-                        xml:lang is used to specify the language used within a field, using specifications in RFC 3066. 
-                        RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                            </p>
-                                <p>
-                            The recommendation is not to use xml:lang, but to use the Language.
-                        </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <!-- 
+                        --></xf:group>
+                    <!--DLF/Aquifer: NOT RECOMMENDED]-->
+                    <!--Cluster: omit--><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in Language
+                                of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC 3066. RFC 3066 uses the
+                                two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the Language. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                    <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@xml:lang" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
                         -->
-                    </xf:group>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[@type='transliterated']" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@transliteration" selection="open">
-                            <xf:label>Transliteration:</xf:label>
-                            <xf:hint>
-                                <p>
-                        Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
-                        When specificing the transliteration used, also specify the language employed. 
-                        There is at present no standard list of transliteration schemes available.
-                        If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
-                        In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
-                        If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
-                        The following transliteration schemes are authorised by <!--NB-->:
-                        Chinese: pinyin
-                        Japanese: (modified) Hepburn
-                        Korean: <!--NB-->
-                        Russian: <!--NB-->
-                        Sanskrit: <!--NB-->
-                        If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
-                    </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
+
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: include--><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. When
+                                    specificing the transliteration used, also specify the language employed. There is at present no standard list of
+                                    transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In
+                                    general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration
+                                    scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
+                                    The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean:
+                                    <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may
+                                    have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@transliteration" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: include-->
-                    <xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full" schema_3.3="yes">
-                        <xf:select1 ref="./@script">
-                            <xf:label>Script:</xf:label>
-                            <xf:hint>
-                                <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
+                        --></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
                                     (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji,
-                                    Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
+                                    Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@script" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
-                <!--DLF/Aquifer: OPTIONAL]]-->
-                <!--Cluster: hide-->
-                    <xf:group ref=".[@displayLabel]" appearance="full" schema_3.3="yes">
-                        <xf:input ref="./@displayLabel" class="text_100">
-                            <xf:label>Display Label: </xf:label>
-                            <xf:hint>
-                                <p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Appropriate cases include titles other than the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p>
-                            </xf:hint>
-                        </xf:input>
+                        --></xf:group>
+                    <!--DLF/Aquifer: OPTIONAL]]-->
+                    <!--Cluster: hide--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_100"><xf:label>Display Label: </xf:label><xf:hint><p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may
+                                    be used whenever appropriate to indicate the preferred labeling when displayed. Appropriate cases include titles other than
+                                    the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons.
+                                </p></xf:hint></xf:input>
                         <!-- 
                             <xf:trigger class="delete-button">
                             <xf:label class="xforms-label-small">-</xf:label>
                             <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
                             <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/@displayLabel" at="index('titleInfo-repeat')"/>
                         </xf:trigger>
-                        -->
-                    </xf:group>
+                        --></xf:group>
                     <!--DLF/Aquifer: N/A]]-->
-                    <!--Cluster: hide-->
-                    <xf:group ref=".[@nameTitleGroup]" appearance="full">
-                        <xf:select1 ref="./@nameTitleGroup" selection="open">
-                            <xf:label>Name-Title Group: </xf:label>
-                            <xf:hint> Name-Title Group that can be used with Name and Title Information to enable an explicit link between a name and a title when that is desirable. The same value is assigned to this attribute for the two elements. This attribute is used to link names to uniform titles when the name-uniform title combination is an authority controlled heading. </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <!-- <xf:trigger class="delete-button"> <xf:label class="xforms-label-small">-</xf:label> <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/@altRepGroup" at="index('name-repeat')"/> </xf:trigger> -->
-                    </xf:group>
+                    <!--Cluster: hide--><xf:group ref=".[@nameTitleGroup]" appearance="full"><xf:select1 ref="./@nameTitleGroup" selection="open"><xf:label>Name-Title Group: </xf:label><xf:hint> Name-Title Group that can be used with Name and Title Information to enable an explicit link between a name and a title
+                                when that is desirable. The same value is assigned to this attribute for the two elements. This attribute is used to link names
+                                to uniform titles when the name-uniform title combination is an authority controlled heading. </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- <xf:trigger class="delete-button"> <xf:label class="xforms-label-small">-</xf:label> <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/@altRepGroup" at="index('name-repeat')"/> </xf:trigger> --></xf:group>
                     <!--DLF/Aquifer: N/A]]-->
-                    <!--Cluster: hide-->
-                    <xf:group ref=".[@usage]" appearance="full">
-                        <xf:select1 ref="./@usage">
-                            <xf:label>Usage: </xf:label>
-                            <xf:hint>
-                                <p>Usage with the value "primary" can be used with repeated fields to indicate special prominence of one that is useful for various special purposes such as indexing.</p>
-                            </xf:hint>
-                            <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item">
-                                <xf:label ref="label"/>
-                                <xf:value ref="value"/>
-                            </xf:itemset>
-                        </xf:select1>
-                        <!-- <xf:trigger class="delete-button"> <xf:label class="xforms-label-small">-</xf:label> <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/@usage" at="index('name-repeat')"/> </xf:trigger> -->
-                    </xf:group>                    
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
-                <!--Cluster: hide-->
-                    <xf:group ref="./mods:nonSort">
-                        <fieldset class="level-2">
-                            <div class="join">
-                                <legend>Non Sort</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value">
-                                    Hint
-                                </div>
-                                </span>
-                            </div>
-                            <xf:group ref=".[@lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@lang">
-                                    <xf:label>Language:</xf:label>
-                                    <xf:hint>
-                                        <p>
-                                            The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. 
-                                            The most common languages have been moved to the top of the list.
-                                        </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                            <!--Cluster: omit-->
-                            <xf:group ref=".[@xml:lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@xml:lang">
-                                    <xf:label>xml:lang:</xf:label>
-                                    <xf:hint>
-                                        <p>
-                                            The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
-                                            xml:lang is used to specify the language used within a field, using specifications in RFC 3066. 
-                                            RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                                        </p>
-                                        <p>
-                                            The recommendation is not to use xml:lang, but to use the Language.
-                                        </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@xml:lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@transliteration]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@transliteration" selection="open">
-                                    <xf:label>Transliteration:</xf:label>
-                                    <xf:hint>
-                                        <p>
-                                            Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
-                                            When specificing the transliteration used, also specify the language employed. 
-                                            There is at present no standard list of transliteration schemes available.
-                                            If you wish to employ a transliteration on the scheme, please contact <!--contact -->.
-                                            In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used.
-                                            If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
-                                            The following transliteration schemes are authorised by <!--NB-->:
-                                            Chinese: pinyin
-                                            Japanese: (modified) Hepburn
-                                            Korean: <!--NB-->
-                                            Russian: <!--NB-->
-                                            Sanskrit: <!--NB-->
-                                            If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
-                                        </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@transliteration" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@script]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@script">
-                                    <xf:label>Script:</xf:label>
-                                    <xf:hint>
-                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
-                                            (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji,
-                                            Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@script" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <xf:group class="group" ref="." appearance="full" schema_3.3="yes" schema_3.4="yes">
-                                <xf:input ref="." class="text_10">
-                                    <xf:label>Non Sort: </xf:label>
-                                    <xf:hint>
-                                        <p> Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that appear at the beginning of a title that should be ignored when indexing and sorting. </p>
-                                    </xf:hint>
-                                </xf:input>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:nonSort" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                        </fieldset>
-                    </xf:group>
-                <!--DLF/Aquifer: [REQUIRED]-->
-                <!--Cluster: require-->
-                    <xf:group ref="./mods:title">
-                        <fieldset class="level-2">
-                            <div class="join">
-                                <legend>Title</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value"> Hint </div>
-                                </span>
-                            </div>
-                            <xf:group ref=".[@lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@lang">
-                                    <xf:label>Language:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. The most common languages have been moved to the top of the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                <xf:trigger class="delete-button">
-                                <xf:label class="xforms-label-small">-</xf:label>
-                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@lang" at="index('titleInfo-repeat')"/>
-                                </xf:trigger>
-                            -->
-                            </xf:group>
-                            <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                            <!--Cluster: omit-->
-                            <xf:group ref=".[@xml:lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@xml:lang">
-                                    <xf:label>xml:lang:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC
-                                            3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages
-                                            not given in 639-1. </p>
-                                        <p> The recommendation is not to use xml:lang, but to use the Language. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                <xf:trigger class="delete-button">
-                                <xf:label class="xforms-label-small">-</xf:label>
-                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@xml:lang" at="index('titleInfo-repeat')"/>
-                                </xf:trigger>
-                            -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@transliteration]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@transliteration" selection="open">
-                                    <xf:label>Transliteration:</xf:label>
-                                    <xf:hint>
-                                        <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information.
-                                            When specificing the transliteration used, also specify the language employed. There is at present no standard list
-                                            of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact
-                                            <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you
-                                            follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from
-                                            which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese:
-                                            pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a
-                                            different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                <xf:trigger class="delete-button">
-                                <xf:label class="xforms-label-small">-</xf:label>
-                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@transliteration" at="index('titleInfo-repeat')"/>
-                                </xf:trigger>
-                            -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@script]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@script">
-                                    <xf:label>Script:</xf:label>
-                                    <xf:hint>
-                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
-                                            (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi,
-                                            Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                <xf:trigger class="delete-button">
-                                <xf:label class="xforms-label-small">-</xf:label>
-                                <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@script" at="index('titleInfo-repeat')"/>
-                                </xf:trigger>
-                            -->
-                            </xf:group>
-                            <xf:group schema_3.3="yes" schema_3.4="yes">
-                                <xf:textarea ref="." class="textarea" mediatype="dojo">
-                                    <xf:label>Title: </xf:label>
-                                    <xf:hint>
-                                        <p> Title contains the core title of the resource catalogued. </p>
-                                        <p> At least one Title is required. When no title appears on the item being described, a title should be supplied. </p>
-                                        <p> Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name. </p>
-                                        <p> Dates may be recorded under Title or Subtitle only if they are part of the title. Publication dates are included
-                                            under Origin Information. </p>
-                                        <p> For parallel titles, i.e., equivalent titles in different languages that have not been translated by the cataloguer,
-                                            add a Title Information and enter the Title there with the Type "Alternative" for each parallel title. Note the
-                                            language, script and transliteration of each title. </p>
-                                        <p> For a title translated or transcribed by the cataloguer, add a Title Information and enter the Title there with the
-                                            Type "Translated" or "Transliterated" for each title. Note the language, script and transliteration of each title
-                                            added in this way. </p>
-                                        <p> For abbreviated titles, add a Title Information block and enter the Title there with the Type "Abbreviated" for each
-                                            parallel title. </p>
-                                        <p> For uniform titles, i.e., titles with various renderings that are unified by an authority file, add a Title
-                                            Information and enter the Title there with the Type "Uniform". Under each uniform title, state the Authority
-                                            according to which the uniform title has been selected. </p>
-                                    </xf:hint>
-                                </xf:textarea>
-                            </xf:group>
-                        </fieldset>
-                    </xf:group>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: include-->
-                    <xf:group ref="./mods:subTitle">
-                        <fieldset class="level-2">
-                            <div class="join">
-                                <legend>Subtitle</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value"> Hint </div>
-                                </span>
-                            </div>
-                            <xf:group ref=".[@lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@lang">
-                                    <xf:label>Language:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. The most common languages have been moved to the top of the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                            <!--Cluster: omit-->
-                            <xf:group ref=".[@xml:lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@xml:lang">
-                                    <xf:label>xml:lang:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC
-                                            3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages
-                                            not given in 639-1. </p>
-                                        <p> The recommendation is not to use xml:lang, but to use the Language. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@xml:lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@transliteration]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@transliteration" selection="open">
-                                    <xf:label>Transliteration:</xf:label>
-                                    <xf:hint>
-                                        <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information.
-                                            When specificing the transliteration used, also specify the language employed. There is at present no standard list
-                                            of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact
-                                            <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you
-                                            follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from
-                                            which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese:
-                                            pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a
-                                            different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@transliteration" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@script]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@script">
-                                    <xf:label>Script:</xf:label>
-                                    <xf:hint>
-                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
-                                            (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi,
-                                            Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@script" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <xf:group ref="." appearance="full" schema_3.3="yes" schema_3.4="yes">
-                                <xf:textarea ref="./" class="textarea" mediatype="dojo">
-                                    <xf:label>Subtitle: </xf:label>
-                                    <xf:hint>
-                                        <p> Subtitle is used to record a part of a title deemed secondary to the core title. </p>
-                                        <p> Use Subtitle whenever a subtitle is present, rather than including the subtitle in Title. </p>
-                                        <p> When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title. </p>
-                                        <p> If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in
-                                            Subtitle, with appropriate punctuation. <!--NB: What are the rules here? Should subTitle repeat?-->
-                                        </p>
-                                        <p> Every part of the title that do not belong in Title, Part Number or Part Name, belongs in Subtitle. </p>
-                                    </xf:hint>
-                                </xf:textarea>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:subTitle" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                        </fieldset>
-                    </xf:group>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: hide-->
-                    <xf:group ref="./mods:partNumber">
-                        <fieldset class="level-2">
-                            <div class="join">
-                                <legend>Part Number</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value"> Hint </div>
-                                </span>
-                            </div>
-                            <xf:group ref=".[@lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@lang">
-                                    <xf:label>Language:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. The most common languages have been moved to the top of the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                            <!--Cluster: omit-->
-                            <xf:group ref=".[@xml:lang]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@xml:lang">
-                                    <xf:label>xml:lang:</xf:label>
-                                    <xf:hint>
-                                        <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                            in Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC
-                                            3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages
-                                            not given in 639-1. </p>
-                                        <p> The recommendation is not to use xml:lang, but to use the Language. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@xml:lang" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@transliteration]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@transliteration" selection="open">
-                                    <xf:label>Transliteration:</xf:label>
-                                    <xf:hint>
-                                        <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information.
-                                            When specificing the transliteration used, also specify the language employed. There is at present no standard list
-                                            of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact
-                                            <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you
-                                            follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from
-                                            which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese:
-                                            pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a
-                                            different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@transliteration" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                            <!--Cluster: include-->
-                            <xf:group ref=".[@script]" appearance="full" schema_3.4="yes">
-                                <xf:select1 ref="./@script">
-                                    <xf:label>Script:</xf:label>
-                                    <xf:hint>
-                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
-                                            (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi,
-                                            Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                    </xf:hint>
-                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                        <xf:label ref="label"/>
-                                        <xf:value ref="value"/>
-                                    </xf:itemset>
-                                </xf:select1>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@script" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                            <xf:group ref="." appearance="full" schema_3.3="yes" schema_3.4="yes">
-                                <xf:input ref="." class="text_50">
-                                    <xf:label>Part Number: </xf:label>
-                                    <xf:hint>
-                                        <p> Part Number is used for a part or section number in a title. </p>
-                                        <p> Use Part Number when a part number is present, rather than including the part number in the text of the Title. </p>
-                                        <p> A Part Number does not have to be a digit, i.e. "First Part" may be the contents of the Part Number field if this is how it
-                                            occurs on the title page. </p>
-                                        <p> Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip). </p>
-                                        <p> When using Part Number, do not include punctuation at the end of the preceding field intended to separate the part number
-                                            from previous parts of the title. </p>
-                                    </xf:hint>
-                                </xf:input>
-                                <!-- 
-                                    <xf:trigger class="delete-button">
-                                    <xf:label class="xforms-label-small">-</xf:label>
-                                    <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                    <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partNumber" at="index('titleInfo-repeat')"/>
-                                    </xf:trigger>
-                                -->
-                            </xf:group>
-                        </fieldset>
-                    </xf:group>
-                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                <!--Cluster: hide-->
-                    <xf:group id="fieldset-partName" ref=".[(mods:partName)]" appearance="full">
-                        <fieldset class="level-2">
-                            <div class="join">
-                                <legend>Part Name</legend>
-                                <span class="xforms-hint">
-                                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
-                                    <div class="xforms-hint-value"> Hint </div>
-                                </span>
-                            </div>
-                            <!--partName repeat begins-->
-                            <xf:repeat nodeset="./mods:partName" id="partName-repeat">
-                                <!--partName input begins-->            
-                                <xf:group ref=".[@lang]" appearance="full" schema_3.4="yes">
-                                    <xf:select1 ref="./@lang">
-                                        <xf:label>Language:</xf:label>
-                                        <xf:hint>
-                                            <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                                in Language of Resource. The most common languages have been moved to the top of the list. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <!-- 
-                                        <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-label-small">-</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@lang" at="index('titleInfo-repeat')"/>
-                                        </xf:trigger>
-                                    -->
-                                </xf:group>
-                                <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                                <!--Cluster: omit-->
-                                <xf:group ref=".[@xml:lang]" appearance="full" schema_3.4="yes">
-                                    <xf:select1 ref="./@xml:lang">
-                                        <xf:label>xml:lang:</xf:label>
-                                        <xf:hint>
-                                            <p> The language used within Title Information is specified here, if this language is different from the language noted
-                                                in Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC
-                                                3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages
-                                                not given in 639-1. </p>
-                                            <p> The recommendation is not to use xml:lang, but to use the Language. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <!-- 
-                                        <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-label-small">-</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@xml:lang" at="index('titleInfo-repeat')"/>
-                                        </xf:trigger>
-                                    -->
-                                </xf:group>
-                                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include-->
-                                <xf:group ref=".[@transliteration]" appearance="full" schema_3.4="yes">
-                                    <xf:select1 ref="./@transliteration" selection="open">
-                                        <xf:label>Transliteration:</xf:label>
-                                        <xf:hint>
-                                            <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information.
-                                                When specificing the transliteration used, also specify the language employed. There is at present no standard list
-                                                of transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact
-                                                <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you
-                                                follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from
-                                                which the transliteration is made. The following transliteration schemes are authorised by <!--NB-->: Chinese:
-                                                pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a
-                                                different, but recognised, transliteration scheme, you may have it added to the list. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <!-- 
-                                        <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-label-small">-</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@transliteration" at="index('titleInfo-repeat')"/>
-                                        </xf:trigger>
-                                    -->
-                                </xf:group>
-                                <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include-->
-                                <xf:group ref=".[@script]" appearance="full" schema_3.4="yes">
-                                    <xf:select1 ref="./@script">
-                                        <xf:label>Script:</xf:label>
-                                        <xf:hint>
-                                            <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
-                                                (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi,
-                                                Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
-                                        </xf:hint>
-                                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
-                                            <xf:label ref="label"/>
-                                            <xf:value ref="value"/>
-                                        </xf:itemset>
-                                    </xf:select1>
-                                    <!-- 
-                                        <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-label-small">-</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:title/@script" at="index('titleInfo-repeat')"/>
-                                        </xf:trigger>
-                                    -->
-                                </xf:group>
-                                <xf:group ref="." appearance="full" schema_3.3="yes" schema_3.4="yes">
-                                    <xf:textarea ref="." class="textarea">
-                                        <xf:label>Part Name: </xf:label>
-                                        <xf:hint>
-                                            <p> Part Name is used for a part or section name of a title. Use Part Name when a part name is present, rather than including
-                                                the part name in the text of Title. Use Part Name to describe the section or division titles of a digital object (for
-                                                example, a chapter title, episode name, or an audio or video clip). </p>
-                                            <p> If a resource has multiple parts, each with its own Part Name, the work should be catalogued in as many records as there are
-                                                Part Names.
-                                                <!--NB: not implemented: Multiple Part Name fields may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks. -->
-                                            </p>
-                                            <p> When representing the Part Name, do not include punctuation at the end of the preceding field intended to separate the
-                                                part name from previous parts of the title.
-                                                <!--Multiple parts of an item should appear in separate records or as Related Items.-->
-                                            </p>
-                                        </xf:hint>
-                                    </xf:textarea>
-                                    <!-- 
-                                        <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-label-small">-</xf:label>
-                                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partName" at="index('titleInfo-repeat')"/>
-                                        </xf:trigger>
-                                    -->
-                                </xf:group>
-                                <!--partName input ends-->
-                                <!--partName node-add begins-->
-                                <!--partName node-add ends-->
-                                <!--partName delete begins-->
-                                <xf:group appearance="full">
-                                    <xf:trigger class="delete-button">
-                                        <xf:label class="xforms-group-label-centered">Delete This Part Name</xf:label>
-                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partName" at="index('partName-repeat')"/>
-                                        <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/>
-                                    </xf:trigger>
-                                </xf:group>
-                                <!--partName delete ends-->
-                            </xf:repeat>
-                            <!--partName repeat ends-->
-                            <!--partName add begins-->
-                            <xf:group appearance="full">
-                                <xf:trigger ref=".[mods:partName]" class="add-button">
-                                    <xf:label class="xforms-group-label-centered">Add Another Part Name</xf:label>
-                                    <xf:action ev:event="DOMActivate">
-                                        <xf:insert nodeset="mods:partName" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo/mods:partName"/>
-                                    </xf:action>
-                                </xf:trigger>
-                            </xf:group>
-                            <!--partName add ends-->
-                        </fieldset>
-                    </xf:group>
-                <!--titleInfo input ends-->
-            
-            <!--titleInfo delete begins-->
-                    <xf:trigger ref=".[count(../mods:titleInfo) &gt; 1]" class="delete-button">
-                        <xf:label class="xforms-group-label-centered">Delete This Title Information</xf:label>
-                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo" at="index('titleInfo-repeat')"/>
-                    </xf:trigger>
-            <!--titleInfo delete ends-->
-                </xf:repeat>
-        <!--title repeat ends-->
-        <!--titleInfo add begins-->
-                <xf:trigger ref=".[mods:titleInfo]" class="add-button">
-                    <xf:label class="xforms-group-label-centered">Add Another Title Information</xf:label>
-                    <xf:action ev:event="DOMActivate">
-                        <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
-                        <xf:insert nodeset="mods:titleInfo" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo"/>
-                    </xf:action>
-                </xf:trigger>
-                <xf:group id="titleInfo-add-element" ref=".[not(./mods:titleInfo)]" appearance="full">
-                    <xf:trigger ref=".[not(mods:titleInfo)]" class="add-button">
-                        <xf:label class="xforms-group-label-centered">Add Missing Title Information</xf:label>
-                        <xf:action ev:event="DOMActivate">
-                            <xf:insert nodeset="mods:form" at="index('titleInfo-repeat')" position="after" origin="instance('insert-templates')/mods:titleInfo"/>
-                        </xf:action>
-                    </xf:trigger>
-                </xf:group>
-            </fieldset>
-        </xf:group>
-    </div>
-</div>
+                    <!--Cluster: hide--><xf:group ref=".[@usage]" appearance="full"><xf:select1 ref="./@usage"><xf:label>Usage: </xf:label><xf:hint><p>Usage with the value "primary" can be used with repeated fields to indicate special prominence of one that is useful for
+                                    various special purposes such as indexing.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1>
+                        <!-- <xf:trigger class="delete-button"> <xf:label class="xforms-label-small">-</xf:label> <xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/><xf:toggle case="name-add-node-hide" ev:event="DOMActivate"/> <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:name/@usage" at="index('name-repeat')"/> </xf:trigger> --></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]]-->
+                    <!--Cluster: hide--><xf:group class="group" ref=".[mods:nonSort]" appearance="full"><xf:input ref="./mods:nonSort" class="text_10"><xf:label>Non Sort: </xf:label><xf:hint><p> Non Sort contains characters, including initial articles (typically "A" and "The" in English), punctuation, and spaces that
+                                    appear at the beginning of a title that should be ignored when indexing and sorting. </p></xf:hint></xf:input>
+                        <!-- 
+                        <xf:trigger class="delete-button">
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:nonSort" at="index('titleInfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                    <!--DLF/Aquifer: [REQUIRED]-->
+                    <!--Cluster: require--><xf:group><xf:textarea ref="./mods:title" class="textarea" mediatype="dojo"><xf:label>Title: </xf:label><xf:hint><p> Title contains the core title of the resource catalogued. </p><p> At least one Title is required. When no title appears on the item being described, a title should be supplied. </p><p> Title includes all parts of a title that are not covered by Non Sort, Subtitle, Part Number and Part Name. </p><p> Dates may be recorded under Title or Subtitle only if they are part of the title. Publication dates are included under
+                                    Origin Information. </p><p> For parallel titles, i.e., equivalent titles in different languages that have not been translated by the cataloguer, add a
+                                    Title Information and enter the Title there with the Type "Alternative" for each parallel title. Note the language, script
+                                    and transliteration of each title. </p><p> For a title translated or transcribed by the cataloguer, add a Title Information and enter the Title there with the Type
+                                    "Translated" or "Transliterated" for each title. Note the language, script and transliteration of each title added in this
+                                    way. </p><p> For abbreviated titles, add a Title Information block and enter the Title there with the Type "Abbreviated" for each
+                                    parallel title. </p><p> For uniform titles, i.e., titles with various renderings that are unified by an authority file, add a Title Information and
+                                    enter the Title there with the Type "Uniform". Under each uniform title, state the Authority according to which the uniform
+                                    title has been selected. </p></xf:hint></xf:textarea></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: include--><xf:group ref=".[mods:subTitle]" appearance="full"><xf:textarea ref="./mods:subTitle" class="textarea" mediatype="dojo"><xf:label>Subtitle: </xf:label><xf:hint><p> Subtitle is used to record a part of a title deemed secondary to the core title. </p><p> Use Subtitle whenever a subtitle is present, rather than including the subtitle in Title. </p><p> When using Subtitle, do not include punctuation intended to separate the title from the subtitle at the end of Title. </p><p> If more than two levels are in evidence in the whole title, i.e. if there is a sub-subtitle, include the sub-subtitle in
+                                    Subtitle, with appropriate punctuation. <!--NB: What are the rules here? Should subTitle repeat?--></p><p> Every part of the title that do not belong in Title, Part Number or Part Name, belongs in Subtitle. </p></xf:hint></xf:textarea>
+                        <!-- 
+                            <xf:trigger class="delete-button">
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:subTitle" at="index('titleInfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: hide--><xf:group ref=".[mods:partNumber]" appearance="full"><xf:input ref="./mods:partNumber" class="text_50"><xf:label>Part Number: </xf:label><xf:hint><p> Part Number is used for a part or section number in a title. </p><p> Use Part Number when a part number is present, rather than including the part number in the text of the Title. </p><p> A Part Number does not have to be a digit, i.e. "First Part" may be the contents of the Part Number field if this is how it
+                                    occurs on the title page. </p><p> Part Number may describe the section of an digital object (for example, an episode number or an audio or video clip). </p><p> When using Part Number, do not include punctuation at the end of the preceding field intended to separate the part number
+                                    from previous parts of the title. </p></xf:hint></xf:input>
+                        <!-- 
+                        <xf:trigger class="delete-button">
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partNumber" at="index('titleInfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                    <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
+                    <!--Cluster: hide--><xf:group ref=".[mods:partName]" appearance="full"><xf:textarea ref="./mods:partName" class="textarea"><xf:label>Part Name: </xf:label><xf:hint><p> Part Name is used for a part or section name of a title. Use Part Name when a part name is present, rather than including
+                                    the part name in the text of Title. Use Part Name to describe the section or division titles of a digital object (for
+                                    example, a chapter title, episode name, or an audio or video clip). </p><p> If a resource has multiple parts, each with its own Part Name, the work should be catalogued in as many records as there are
+                                    Part Names.
+                                    <!--NB: not implemented: Multiple Part Name fields may be nested in a single Title Information to describe a single part with multiple hierarchical levels; multiple parts, however, should be separated into multiple Title Information blocks. --></p><p> When representing the Part Name, do not include punctuation at the end of the preceding field intended to separate the part
+                                    name from previous parts of the title.
+                                    <!--Multiple parts of an item should appear in separate records or as Related Items.--></p></xf:hint></xf:textarea>
+                        <!-- 
+                        <xf:trigger class="delete-button">
+                            <xf:label class="xforms-label-small">-</xf:label>
+                            <xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/>
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo/mods:partName" at="index('titleInfo-repeat')"/>
+                        </xf:trigger>
+                        --></xf:group>
+                    <!--titleInfo input ends-->
+
+                    <!--titleInfo delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Title Information</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:titleInfo" at="index('titleInfo-repeat')"/></xf:trigger>
+                    <!--titleInfo delete ends--></xf:repeat>
+                <!--title repeat ends-->
+                <!--titleInfo add begins--><xf:trigger ref=".[mods:titleInfo]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Title Information</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="titleInfo-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:titleInfo" at="index('titleInfo-repeat')" position="after" origin="instance('new-instance')/mods:titleInfo"/></xf:action></xf:trigger><xf:trigger ref=".[not(mods:titleInfo)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Title Information</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('titleInfo-repeat')" position="after" origin="instance('new-instance')/mods:titleInfo"/></xf:action></xf:trigger></fieldset></xf:group></div></div>
