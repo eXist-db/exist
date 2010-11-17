@@ -65,8 +65,6 @@ public class Attribute extends SimpleConstructor {
     public Attribute(XSLContext context) {
 		super(context);
 		
-		constructor = new DynamicAttributeConstructor(getContext());
-		constructor.setReplaceAttributeFlag(true);
 	}
 
 	public void setToDefaults() {
@@ -76,6 +74,12 @@ public class Attribute extends SimpleConstructor {
 	    separator = null;
 	    type = null;
 	    validation = null;
+	    
+		constructor = new DynamicAttributeConstructor(getContext());
+		constructor.setReplaceAttributeFlag(true);
+
+		constructor.setContentExpr(new LiteralValue((XQueryContext) context, new StringValue("") ));
+	    constructor.setNameExpr(null);
 	}
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {

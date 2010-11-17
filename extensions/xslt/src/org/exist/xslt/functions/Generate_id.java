@@ -22,24 +22,20 @@
 package org.exist.xslt.functions;
 
 import org.exist.dom.NodeAtExist;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 /**
- * generate-id() as xs:string generate-id($node as node()?) as xs:string
+ * generate-id() as xs:string 
+ * generate-id($node as node()?) as xs:string
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
