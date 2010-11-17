@@ -21,42 +21,39 @@
  */
 package org.exist.xslt.functions;
 
+import org.exist.dom.NodeAtExist;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
- * generate-id() as xs:string 
- * generate-id($node as node()?) as xs:string
+ * generate-id() as xs:string generate-id($node as node()?) as xs:string
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 public class Generate_id extends BasicFunction {
 
 	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-				new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The function returns a string that uniquely identifies a given node.",
-				FunctionSignature.NO_ARGS,
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-		),
-		new FunctionSignature(
-				new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
-				"The function returns a string that uniquely identifies a given node.",
-				new SequenceType[] {
-						new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
-				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-		)
-	};
-	
+			new FunctionSignature(new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
+					"The function returns a string that uniquely identifies a given node.", FunctionSignature.NO_ARGS, new SequenceType(Type.ITEM,
+							Cardinality.EXACTLY_ONE)),
+			new FunctionSignature(new QName("generate-id", XSLModule.NAMESPACE_URI, XSLModule.PREFIX),
+					"The function returns a string that uniquely identifies a given node.", new SequenceType[] { new SequenceType(Type.NODE,
+							Cardinality.ZERO_OR_ONE) }, new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)) };
+
 	/**
 	 * @param context
 	 */
@@ -66,11 +63,13 @@ public class Generate_id extends BasicFunction {
 
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		//XXX: code
-		if (!contextSequence.isEmpty())
-			return new StringValue(String.valueOf(contextSequence.itemAt(0).hashCode()));
-		
-		return new StringValue("generate-id"); //XXX: error?
+
+		if (!contextSequence.isEmpty() && contextSequence.hasOne()) {
+			NodeAtExist docNode = (NodeAtExist) args[0].itemAt(0);
+			return new StringValue(docNode.getNodeId().toString());
+		}
+
+		return new StringValue("generate-id"); // XXX: error?
 	}
 
 }
