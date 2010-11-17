@@ -272,6 +272,7 @@ public class Attribute extends SimpleConstructor {
         	dumper.display(" validation = ");
         	dumper.display(validation);
         }
+        dumper.display(">");
 
         super.dump(dumper);
 
