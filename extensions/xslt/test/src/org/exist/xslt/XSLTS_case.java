@@ -130,6 +130,7 @@ public class XSLTS_case extends TestCase {
 				//workaround
 		        Document doc = new DocumentImpl(context, false);
 		        Element outputFile = doc.createElement("outputFile");
+		        outputFile.setAttribute("compare", "Fragment");
 		        outputFile.setTextContent(outputURL);
 	
 				if (compareResult("", XSLTS_folder+"/ExpectedTestResults/", outputFile, result)) {
