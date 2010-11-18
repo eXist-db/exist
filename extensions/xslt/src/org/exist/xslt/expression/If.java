@@ -23,7 +23,6 @@ package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -46,7 +45,7 @@ public class If extends SimpleConstructor {
 	
 	private String attr_test = null;
 	
-	private PathExpr test = null;
+	private XSLPathExpr test = null;
 
 	public If(XSLContext context) {
 		super(context);
@@ -71,7 +70,7 @@ public class If extends SimpleConstructor {
 		if (attr_test == null)
 			throw new XPathException("error, no test at xsl:if");//TODO: error???
 		
-	    test = new PathExpr(getContext());
+	    test = new XSLPathExpr(getXSLContext());
 	    Pattern.parse(contextInfo.getContext(), attr_test, test);
 	}
 	

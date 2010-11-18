@@ -22,7 +22,6 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -46,7 +45,7 @@ import org.w3c.dom.Attr;
  */
 public class AnalyzeString extends SimpleConstructor {
 
-	private PathExpr select = null;
+	private XSLPathExpr select = null;
 	private String regex = null;
 	private String flags = null;
 	
@@ -63,7 +62,7 @@ public class AnalyzeString extends SimpleConstructor {
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getNodeName();
 		if (attr_name.equals(SELECT)) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			Pattern.parse((XQueryContext) context, attr.getValue(), select);
 		} else if (attr_name.equals(REGEX)) {
 			regex = attr.getValue();

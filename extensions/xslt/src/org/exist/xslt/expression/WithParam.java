@@ -24,7 +24,6 @@ package org.exist.xslt.expression;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -52,7 +51,7 @@ public class WithParam extends Declaration {
 	private String attr_select = null;
     
 	private QName name = null;
-    private PathExpr select = null;
+    private XSLPathExpr select = null;
     private String as = null;
     private Boolean tunnel = null;
 
@@ -91,7 +90,7 @@ public class WithParam extends Declaration {
     	}
     	
     	if (attr_select != null) {
-    		select = new PathExpr(getContext());
+    		select = new XSLPathExpr(getXSLContext());
 		    Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			_check_(select, true);

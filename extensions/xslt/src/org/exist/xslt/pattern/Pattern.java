@@ -26,7 +26,6 @@ import java.io.Reader;
 import java.text.NumberFormat;
 
 import org.apache.log4j.Logger;
-import org.exist.interpreter.ContextAtExist;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -41,6 +40,8 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xslt.XSLContext;
+import org.exist.xslt.expression.XSLPathExpr;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -75,7 +76,19 @@ public class Pattern {
     static final String ATTRIBUTE = "attribute()"; 
     static final String ATTRIBUTE_A = "attribute(*)"; 
 
-	public static void parse(XQueryContext context, String pattern, PathExpr content) throws XPathException {
+    //enclose expression
+	public static XSLPathExpr parse(XQueryContext context, String str) throws XPathException {
+		if (!(str != null && str.startsWith("{") && str.endsWith("}"))) {
+			return null;
+		}
+		
+		XSLPathExpr expr = new XSLPathExpr((XSLContext) context);
+		parse(context, str.substring(1, str.length() - 1), expr);
+		
+		return expr;
+	}
+
+	public static void parse(XQueryContext context, String pattern, XSLPathExpr content) throws XPathException {
 		boolean xpointer = false;
 		
 		//TODO: rewrite RootNode?

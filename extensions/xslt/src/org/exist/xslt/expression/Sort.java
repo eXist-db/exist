@@ -26,7 +26,6 @@ import org.exist.util.FastQSort;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
 import org.exist.xquery.LocationStep;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
@@ -82,7 +81,7 @@ public class Sort extends Declaration {
 	
     private String attr_order = null;
 
-    private PathExpr select = null;
+    private XSLPathExpr select = null;
     private String lang = null;
     private int order = 1;//ascending
     private String collation = null;
@@ -110,7 +109,7 @@ public class Sort extends Declaration {
 		String attr_name = attr.getLocalName();
 			
 		if (attr_name.equals(SELECT)) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			Pattern.parse((XQueryContext) context, attr.getValue(), select);
 			
 			_check_(select);
@@ -138,7 +137,7 @@ public class Sort extends Declaration {
 	
 	public void validate() throws XPathException {
 		if (select == null) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			select.add(new LocationStep(getContext(), Constants.SELF_AXIS, new AnyNodeTest()));
 		}
 		

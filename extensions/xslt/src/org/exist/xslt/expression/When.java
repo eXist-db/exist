@@ -23,7 +23,6 @@ package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -48,7 +47,7 @@ public class When extends SimpleConstructor {
 	
 	private String attr_test = null;
 	
-	private PathExpr test = null;
+	private XSLPathExpr test = null;
 
 	public When(XSLContext context) {
 		super(context);
@@ -69,7 +68,7 @@ public class When extends SimpleConstructor {
     	super.analyze(contextInfo);
 
     	if (attr_test != null) {
-    		test = new PathExpr(getContext());
+    		test = new XSLPathExpr(getXSLContext());
 		    Pattern.parse(contextInfo.getContext(), attr_test, test);
 
 			_check_(test);

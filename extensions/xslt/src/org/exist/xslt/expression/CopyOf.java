@@ -25,7 +25,6 @@ import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -51,7 +50,7 @@ import org.xml.sax.SAXException;
 public class CopyOf extends Declaration {
 
     private String attr_select = null;
-	private PathExpr select = null;
+	private XSLPathExpr select = null;
 
 	private Boolean copy_namespaces = null;
     private String type = null;
@@ -90,7 +89,7 @@ public class CopyOf extends Declaration {
     	boolean atRootCall = false;//XXX: rewrite
 
     	if (attr_select != null) {
-    		select = new PathExpr(getContext());
+    		select = new XSLPathExpr(getXSLContext());
     		Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			//UNDERSTAND: <node>text<node>  step = "." -> SELF:node(), but need CHILD:node()

@@ -24,6 +24,7 @@ package org.exist.xslt.expression;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -59,13 +60,7 @@ public class Text extends SimpleConstructor {
     public Text(XSLContext context, String text) throws XPathException {
 		super(context);
 		
-		isWhitespaceOnly = true;
-		this.text = StringValue.expand(text);
-		for(int i = 0; i < text.length(); i++)
-			if(!isWhiteSpace(text.charAt(i))) {
-				isWhitespaceOnly = false;
-				break;
-			}
+		this.text = text;
 	}
 
     public void setToDefaults() {
@@ -80,6 +75,16 @@ public class Text extends SimpleConstructor {
 		if (attr_name.equals(DISABLE_OUTPUT_ESCAPING)) {
 			disable_output_escaping = getBoolean(attr.getValue());
 		}
+	}
+
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		isWhitespaceOnly = true;
+		this.text = StringValue.expand(text);
+		for(int i = 0; i < text.length(); i++)
+			if(!isWhiteSpace(text.charAt(i))) {
+				isWhitespaceOnly = false;
+				break;
+			}
 	}
 	
 	//TODO: The text node does not have an ancestor element that has an xml:space attribute with a value of preserve, unless there is a closer ancestor element having an xml:space attribute with a value of default.
