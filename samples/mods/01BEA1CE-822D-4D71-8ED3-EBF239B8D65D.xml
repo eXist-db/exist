@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="01BEA1CE-822D-4D71-8ED3-EBF239B8D65D">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-01BEA1CE-822D-4D71-8ED3-EBF239B8D65D">
     <titleInfo>
         <title>The Project on Comparative European Electoral History: 1830-1995</title>
         <subTitle>A computerised data handbook</subTitle>

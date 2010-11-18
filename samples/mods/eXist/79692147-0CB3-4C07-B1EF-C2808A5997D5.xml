@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="79692147-0CB3-4C07-B1EF-C2808A5997D5">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-79692147-0CB3-4C07-B1EF-C2808A5997D5">
     <titleInfo>
         <title>Implement Web cut-and-paste using Atom XML and Firefox XUL</title>
         <subTitle>Create AtomClip: A Web clipboard</subTitle>

@@ -1,5 +1,5 @@
 <mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4"
-    xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="4802D531-1978-411C-A6A6-BBB2479195E3">
+    xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-4802D531-1978-411C-A6A6-BBB2479195E3">
     <titleInfo>
         <title>XForms/eXist</title>
     </titleInfo>

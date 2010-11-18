@@ -1,4 +1,4 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="FB2DC57D-496D-4C71-8D88-EAA8209BBD94">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-FB2DC57D-496D-4C71-8D88-EAA8209BBD94">
     <titleInfo>
         <title>XQuery takes center stage in eXist database</title>
     </titleInfo>
