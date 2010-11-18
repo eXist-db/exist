@@ -52,7 +52,7 @@ public class ForEach extends SimpleConstructor {
 
 	private String attr_select = null;
 
-	private PathExpr select = null;
+	private XSLPathExpr select = null;
 	private PathExpr childNodes = null;
 	
 	private Sort sort = null;
@@ -85,7 +85,7 @@ public class ForEach extends SimpleConstructor {
     	boolean atRootCall = false;
     	
     	if (attr_select != null) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			Pattern.parse(contextInfo.getContext(), attr_select, select);
 			
 			if ((contextInfo.getFlags() & DOT_TEST) != 0) {

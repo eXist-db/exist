@@ -25,7 +25,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -58,7 +57,7 @@ public class Param extends Declaration implements Variable {
     private String attr_select = null;
 
 	private QName name = null;
-    private PathExpr select = null;
+    private XSLPathExpr select = null;
     private String as = null;
     private Boolean required = null;
     private Boolean tunnel = null;
@@ -104,7 +103,7 @@ public class Param extends Declaration implements Variable {
     	super.analyze(contextInfo);
 
     	if (attr_select != null) {
-    		select = new PathExpr(getContext());
+    		select = new XSLPathExpr(getXSLContext());
 		    Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			_check_(select);

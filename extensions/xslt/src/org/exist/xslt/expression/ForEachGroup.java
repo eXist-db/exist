@@ -70,12 +70,12 @@ public class ForEachGroup extends SimpleConstructor {
 	private String attr_group_ending_with = null;
 	private String attr_collation = null;
 
-	private PathExpr select = null;
-	private PathExpr group_by = null;
+	private XSLPathExpr select = null;
+	private XSLPathExpr group_by = null;
 	private PathExpr group_adjacent = null;
 	private PathExpr group_starting_with = null;
 	private PathExpr group_ending_with = null;
-	private PathExpr collator = null;
+	private XSLPathExpr collator = null;
 	
 	public ForEachGroup(XSLContext context) {
 		super(context);
@@ -127,7 +127,7 @@ public class ForEachGroup extends SimpleConstructor {
     			throw new XPathException(this, ErrorCodes.XTSE1090, "");
     		
     		if (attr_collation.startsWith("{") && attr_collation.endsWith("}")) {
-    			collator = new PathExpr(getContext());
+    			collator = new XSLPathExpr(getXSLContext());
     			Pattern.parse(contextInfo.getContext(), 
     					attr_collation.substring(1, attr_collation.length() - 1), 
     					collator);
@@ -135,7 +135,7 @@ public class ForEachGroup extends SimpleConstructor {
     	}
     	
     	if (attr_select != null) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			Pattern.parse(contextInfo.getContext(), attr_select, select);
 			
 			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
@@ -146,7 +146,7 @@ public class ForEachGroup extends SimpleConstructor {
     	}
 
     	if (attr_group_by != null) {
-    		group_by = new PathExpr(getContext());
+    		group_by = new XSLPathExpr(getXSLContext());
 			Pattern.parse(contextInfo.getContext(), attr_group_by, group_by);
 			
 			if ((contextInfo.getFlags() & DOT_TEST) != 0) {

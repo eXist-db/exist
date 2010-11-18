@@ -26,8 +26,6 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -53,7 +51,7 @@ public class Comment extends SimpleConstructor {
 	
 	private String attr_select = null;
 
-	private PathExpr select = null;
+	private XSLPathExpr select = null;
 	
     public Comment(XSLContext context) {
 		super(context);
@@ -82,7 +80,7 @@ public class Comment extends SimpleConstructor {
 	
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		if (attr_select != null) {
-			select = new PathExpr(getContext());
+			select = new XSLPathExpr(getXSLContext());
 			Pattern.parse(contextInfo.getContext(), attr_select, select);
 		}
 			

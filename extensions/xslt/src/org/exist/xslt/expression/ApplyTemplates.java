@@ -29,7 +29,6 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocalVariable;
 import org.exist.xquery.LocationStep;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -59,10 +58,10 @@ public class ApplyTemplates extends SimpleConstructor {
 
 	private String attr_select = null; 
 	
-	private PathExpr select = null;
+	private XSLPathExpr select = null;
 	private String mode = null;
 
-	private static LocationStep anyChild;
+	private LocationStep anyChild;
 
 	public ApplyTemplates(XSLContext context) {
 		super(context);
@@ -88,7 +87,7 @@ public class ApplyTemplates extends SimpleConstructor {
     	super.analyze(contextInfo);
 
     	if (attr_select != null) {
-    		select = new PathExpr(getContext());
+    		select = new XSLPathExpr(getXSLContext());
     		Pattern.parse(contextInfo.getContext(), attr_select, select);
     		
     		_check_(select);

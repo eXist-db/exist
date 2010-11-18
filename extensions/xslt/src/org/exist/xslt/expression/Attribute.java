@@ -26,6 +26,7 @@ import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
@@ -39,6 +40,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
+import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 
@@ -68,7 +70,7 @@ public class Attribute extends SimpleConstructor {
     
     private String value = null;
 
-    private Expression qnameExpr = null;
+    private XSLPathExpr qnameExpr = null;
     private Expression valueExpr = null;
 
     public Attribute(XSLContext context) {
@@ -128,24 +130,24 @@ public class Attribute extends SimpleConstructor {
 				valueOf.validate();
 				valueOf.sequenceItSelf = true;
 
-				setContentExpr(valueOf);
+//				setContentExpr(valueOf);
 			
 			} else if (expr instanceof ApplyTemplates) {
 				ApplyTemplates applyTemplates = (ApplyTemplates) expr;
 				applyTemplates.validate();
 
-				setContentExpr(applyTemplates);
+//				setContentExpr(applyTemplates);
 			
 			} else if (expr instanceof If) {
 				((If) expr).validate();
-				setContentExpr(expr);
+//				setContentExpr(expr);
 
 			} else if (expr instanceof Text) {
 				Text text = (Text) expr;
 				text.validate();
 				text.sequenceItSelf = true;
 
-				setContentExpr(text);
+//				setContentExpr(text);
 			} else {
 				compileError("unsupported subelement "+expr);
 			}
@@ -155,6 +157,18 @@ public class Attribute extends SimpleConstructor {
 	public void setContentExpr(Expression expr) {
         this.valueExpr = new Atomize(context, expr);
     }
+	
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		qnameExpr = Pattern.parse(contextInfo.getContext(), name);
+		if (qnameExpr != null)
+			qnameExpr.analyze(contextInfo);
+
+		valueExpr = Pattern.parse(contextInfo.getContext(), value);
+		if (valueExpr != null)
+			valueExpr.analyze(contextInfo);
+
+	}
+
 
 //	public void addText(String text) {
 //    	value = new LiteralValue(context, new StringValue(text));
@@ -197,33 +211,39 @@ public class Attribute extends SimpleConstructor {
             	name = this.name;
             }
             
-            if (qn == null)
+            if (qn == null) {
+                //Not in the specs but... makes sense
+                if(!XMLChar.isValidName(name))
+                	throw new XPathException(this, ErrorCodes.XPTY0004, "'" +name+"' is not a valid attribute name");
+
             	try {
             		qn = QName.parse(context, name, null);
 		    	} catch (IllegalArgumentException e) {
-					throw new XPathException(this, ErrorCodes.XPTY0004, "'"+name+ "' is not a valid attribute name");
+					throw new XPathException(this, ErrorCodes.XPTY0004, "'"+name+"' is not a valid attribute name");
 				}
-
-            //Not in the specs but... makes sense
-            if(!XMLChar.isValidName(qn.getLocalName()))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalName() + "' is not a valid attribute name");
+            }
 
             String value = this.value;
+            Sequence valueSeq = null;
             if (valueExpr != null) {
-	            Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
-	            if(valueSeq.isEmpty())
-	            	value = "";
-	            else {
-	                StringBuilder buf = new StringBuilder();
-	                for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
-	                    Item next = i.nextItem();
-	                    buf.append(next.getStringValue());
-	                    if(i.hasNext())
-	                        buf.append(' ');
-	                }
-	                value = buf.toString();
-	            }
+	            valueSeq = valueExpr.eval(contextSequence, contextItem);
+            } else {
+            	valueSeq = super.eval(contextSequence, contextItem);
             }
+            if(!valueSeq.isEmpty()) {
+                StringBuilder buf = new StringBuilder();
+                for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
+                    Item next = i.nextItem();
+                    buf.append(next.getStringValue());
+                    if(i.hasNext())
+                        buf.append(' ');
+                }
+                value = buf.toString();
+            }
+            
+        	if (value == null)
+        		value = "";
+
             node = null;
             try {
                 int nodeNr = builder.addAttribute(qn, value);
@@ -240,6 +260,10 @@ public class Attribute extends SimpleConstructor {
             context.getProfiler().end(this, "", node);          
         
         return node;
+	}
+	
+	public boolean allowMixNodesInReturn() {
+		return true;
 	}
 
 	/* (non-Javadoc)

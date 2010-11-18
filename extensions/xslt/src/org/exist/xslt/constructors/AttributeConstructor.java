@@ -29,6 +29,8 @@ import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xslt.XSLContext;
+import org.exist.xslt.expression.XSLPathExpr;
 import org.exist.xslt.pattern.Pattern;
 
 /**
@@ -51,7 +53,7 @@ public class AttributeConstructor extends org.exist.xquery.AttributeConstructor 
         	if (obj instanceof String) {
 				String value = (String) obj;
 				if (value.startsWith("{") && value.startsWith("}")) {
-					PathExpr expr = new PathExpr(getContext());
+					XSLPathExpr expr = new XSLPathExpr((XSLContext) getContext());
 	    			Pattern.parse(contextInfo.getContext(), 
 	    					value.substring(1, value.length() - 1), 
 	    					expr);

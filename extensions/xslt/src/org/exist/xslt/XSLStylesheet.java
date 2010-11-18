@@ -45,10 +45,13 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.dom.ElementAtExist;
+import org.exist.dom.NodeAtExist;
 import org.exist.dom.QName;
 import org.exist.dom.NamespaceNodeAtExist;
 import org.exist.dom.Validation;
 import org.exist.interpreter.ContextAtExist;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.xslt.expression.AttributeSet;
 import org.exist.xslt.expression.Declaration;
 import org.exist.xslt.expression.Param;
@@ -56,6 +59,8 @@ import org.exist.xslt.expression.Template;
 import org.exist.xslt.expression.XSLExpression;
 import org.exist.xslt.expression.i.Parameted;
 import org.w3c.dom.Attr;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * <(xsl:stylesheet|xsl:transform)
@@ -94,7 +99,8 @@ public class XSLStylesheet extends Declaration
 	private Set<Template> templates = new TreeSet<Template>();
 	private Map<QName, Template> namedTemplates = new HashMap<QName, Template>();
 	
-	private Map<String, AttributeSet> attributeSets = new HashMap<String, AttributeSet>();
+	private Map<String, List<AttributeSet>> attributeSets = 
+		new HashMap<String, List<AttributeSet>>();
     
     private Map<QName, org.exist.xquery.Variable> params = null; 
 
@@ -229,7 +235,14 @@ public class XSLStylesheet extends Declaration
 				}
 			} else if (expr instanceof AttributeSet) {
 				AttributeSet attributeSet = (AttributeSet) expr;
-				attributeSets.put(attributeSet.getName(), attributeSet);
+				if (attributeSets.containsKey(attributeSet.getName())) 
+					attributeSets.get(attributeSet.getName()).add(attributeSet);
+				else {
+					List<AttributeSet> list = new ArrayList<AttributeSet>();
+					list.add(attributeSet);
+					attributeSets.put(attributeSet.getName(), list);
+				}
+					 
 			} else if (expr instanceof org.exist.xslt.expression.Variable) {
 				org.exist.xslt.expression.Variable variable = (org.exist.xslt.expression.Variable) expr;
 				variables.add(variable);
@@ -274,23 +287,23 @@ public class XSLStylesheet extends Declaration
     	}
 	}
 
-    public Set<AttributeSet> getAttributeSet(String name) throws XPathException {
-    	String[] names = name.split(" ");
-    	
-    	Set<AttributeSet> sets = new HashSet<AttributeSet>(names.length);
-    	
-    	String n;
-    	for (int i = 0; i < names.length; i++) {
-    		n = names[i];
-			if (attributeSets.containsKey(n)) {
-				sets.add(attributeSets.get(n));
-			} else {
-				//UNDERSTAND: error???
-			}
-    	}
-    	
-    	return sets;
-    }
+//    public Set<AttributeSet> getAttributeSet(String name) throws XPathException {
+//    	String[] names = name.split(" ");
+//    	
+//    	Set<AttributeSet> sets = new HashSet<AttributeSet>(names.length);
+//    	
+//    	String n;
+//    	for (int i = 0; i < names.length; i++) {
+//    		n = names[i];
+//			if (attributeSets.containsKey(n)) {
+//				sets.add(attributeSets.get(n));
+//			} else {
+//				//UNDERSTAND: error???
+//			}
+//    	}
+//    	
+//    	return sets;
+//    }
 
     public Sequence attributeSet(String name, Sequence contextSequence, Item contextItem) throws XPathException {
     	Sequence result = new ValueSequence();
@@ -301,7 +314,10 @@ public class XSLStylesheet extends Declaration
     	for (int i = 0; i < names.length; i++) {
     		n = names[i];
     		if (attributeSets.containsKey(n)) {
-    			result.addAll(attributeSets.get(n).eval(null, null));
+    			List<AttributeSet> list = attributeSets.get(n);
+    			for (AttributeSet set : list) {
+    				result.addAll(set.eval(null, null));
+    			}
     		} else {
     			//UNDERSTAND: error???
     		}
@@ -353,28 +369,28 @@ public class XSLStylesheet extends Declaration
 			}
 			
 			//XXX: performance !?! how to get subelements sequence?? fast...
-//			if (!matched) {
-//				if (item instanceof ElementAtExist) {
-//					ElementAtExist element = (ElementAtExist) item;
-//					
-//					NodeList children = element.getChildNodes();
-//					for (int i=0; i<children.getLength(); i++) {
-//						NodeAtExist child = (NodeAtExist)children.item(i);
-//						
+			if (!matched) {
+				if (item instanceof ElementAtExist) {
+					ElementAtExist element = (ElementAtExist) item;
+					
+					NodeList children = element.getChildNodes();
+					for (int i=0; i<children.getLength(); i++) {
+						NodeAtExist child = (NodeAtExist)children.item(i);
+						
 //						if (child instanceof Text) {
 //		                    MemTreeBuilder builder = context.getDocumentBuilder();
 //		            		builder.characters(item.getStringValue());
 //		            		result.add(item);
 //						} else {
-//							Sequence res = templates((Sequence)element, (Item)child);
-//							if (res != null) {
-//								result.addAll(res);
-//								matched = true;
-//							}
+							Sequence res = templates((Sequence)element, (Item)child);
+							if (res != null) {
+								result.addAll(res);
+								matched = true;
+							}
 //						}
-//					}
-//				}
-//			}
+					}
+				}
+			}
 			
 			pos++;
 		}

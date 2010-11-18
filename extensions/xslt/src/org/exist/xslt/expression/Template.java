@@ -28,7 +28,6 @@ import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.TextConstructor;
 import org.exist.xquery.TypeTest;
 import org.exist.xquery.Variable;
@@ -66,7 +65,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
     private String attr_match = null;
     private String attr_priority = null;
 
-    private PathExpr match = null;
+    private XSLPathExpr match = null;
     private QName name = null;
     private QName[] mode = null;
     private Double priority = null;
@@ -120,7 +119,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 		super.analyze(contextInfo);
 
     	if (attr_match != null) {
-		    match = new PathExpr(getContext());
+		    match = new XSLPathExpr(getXSLContext());
 		    Pattern.parse(contextInfo.getContext(), attr_match, match);
 
 			_check_(match);

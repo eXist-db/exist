@@ -25,9 +25,15 @@ import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLExceptions;
@@ -144,4 +150,45 @@ public class XSLPathExpr extends PathExpr implements XSLExpression {
 		// TODO Auto-generated method stub
 		
 	}
+	
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
+        
+        Sequence result = null;
+        if (steps.size() == 0) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            result = new ValueSequence();
+
+            Sequence currentContext = contextSequence;
+            
+            for (Expression expr : steps) {
+                
+                //Restore a position which may have been modified by inner expressions 
+                int p = context.getContextPosition();
+                Sequence seq = context.getContextSequence();
+                
+                for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
+                    context.setContextSequencePosition(p, seq);
+
+                	result.addAll(expr.eval(currentContext, iterInner.nextItem()));
+                }
+            }
+        }
+        
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
+    }
 }

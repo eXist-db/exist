@@ -21,30 +21,27 @@
  */
 package org.exist.xslt.expression;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.AttributeConstructor;
-import org.exist.xquery.Constants;
-import org.exist.xquery.ElementConstructor;
-import org.exist.xquery.LiteralValue;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
 import org.exist.xslt.ErrorCodes;
+import org.exist.xslt.XSL;
 import org.exist.xslt.XSLContext;
+import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * <!-- Category: instruction -->
@@ -70,7 +67,10 @@ public class Element extends SimpleConstructor {
     private String type = null;
     private String validation = null;
     
+    private XSLPathExpr qnameExpr = null;
 	private PathExpr content = null;
+	
+	private List<Attribute> attributes = new ArrayList<Attribute>();
 
     public Element(XSLContext context) {
 		super(context);
@@ -87,8 +87,7 @@ public class Element extends SimpleConstructor {
 	}
 	
 	public void addAttribute(Attr attr) {
-		// TODO Auto-generated method stub
-		
+		attributes.add(new Attribute(getXSLContext(), attr.getName(), attr.getValue()));
 	}
 
 	public void setToDefaults() {
@@ -102,22 +101,24 @@ public class Element extends SimpleConstructor {
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
-			
-		if (attr_name.equals(NAME)) {
-			name = attr.getValue();
-		} else if (attr_name.equals(NAMESPACE)) {
-			namespace = attr.getValue();
-		} else if (attr_name.equals(INHERIT_NAMESPACES)) {
-			inherit_namespaces = getBoolean(attr.getValue());
-		} else if (attr_name.equals(USE_ATTRIBUTE_SETS)) {
-			use_attribute_sets = attr.getValue();
-		} else if (attr_name.equals(TYPE)) {
-			type = attr.getValue();
-		} else if (attr_name.equals(VALIDATION)) {
-			validation = attr.getValue();
-		} else {
+		
+		if (Namespaces.XSL_NS.equals(attr.getNamespaceURI())) {
+			if (attr_name.equals(NAME)) {
+				name = attr.getValue();
+			} else if (attr_name.equals(NAMESPACE)) {
+				namespace = attr.getValue();
+			} else if (attr_name.equals(INHERIT_NAMESPACES)) {
+				inherit_namespaces = getBoolean(attr.getValue());
+			} else if (attr_name.equals(USE_ATTRIBUTE_SETS)) {
+				use_attribute_sets = attr.getValue();
+			} else if (attr_name.equals(TYPE)) {
+				type = attr.getValue();
+			} else if (attr_name.equals(VALIDATION)) {
+				validation = attr.getValue();
+			} else
+				addAttribute(attr);
+		} else
 			addAttribute(attr);
-		}
 	}
 	
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -143,6 +144,14 @@ public class Element extends SimpleConstructor {
 //                attributes[i].analyze(newContextInfo);
 //            }
 //        }
+        
+        for (Attribute attr : attributes) {
+        	attr.analyze(newContextInfo);
+        }
+        
+       	qnameExpr = Pattern.parse(contextInfo.getContext(), name);
+       	if (qnameExpr != null)
+       		qnameExpr.analyze(newContextInfo);
 
         //analyze content
         if (content != null)
@@ -212,21 +221,31 @@ public class Element extends SimpleConstructor {
 //            }
             context.proceed(this, builder);
 
-            // create the element
-//            Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
-//            if(!qnameSeq.hasOne())
-//		    throw new XPathException(this, "Type error: the node name should evaluate to a single item");
-//            Item qnitem = qnameSeq.itemAt(0);
-            QName qn;
-//            if (qnitem instanceof QNameValue) {
-//                qn = ((QNameValue)qnitem).getQName();
-//            } else {
-//                //Do we have the same result than Atomize there ? -pb
-			try {
-				qn = QName.parse(context, name);
-			} catch (IllegalArgumentException e) {
-				throw new XPathException(this, ErrorCodes.XPTY0004, "'"+name+"' is not a valid element name");
-			}
+            // evaluate element tag name
+        	QName qn = null;
+        	String tagName = name;
+            if (qnameExpr != null) {
+            	Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+            	if(!qnameSeq.hasOne())
+            		throw new XPathException(this, "Type error: the node name should evaluate to a single item");
+            	Item qnitem = qnameSeq.itemAt(0);
+            	if (qnitem instanceof QNameValue) {
+            		qn = ((QNameValue)qnitem).getQName();
+            	} else {
+            		tagName = qnitem.getStringValue();
+            	}
+            }
+            if (qn == null) {
+                //Not in the specs but... makes sense
+                if(!XMLChar.isValidName(tagName))
+                	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + tagName + "' is not a valid element name");
+
+            	try {
+            		qn = QName.parse(context, tagName);
+            	} catch (IllegalArgumentException e) {
+            		throw new XPathException(this, ErrorCodes.XPTY0004, "'"+tagName+"' is not a valid element name");
+            	}
+            }
 //            	
 //                //Use the default namespace if specified
 //                /*
@@ -239,18 +258,16 @@ public class Element extends SimpleConstructor {
 //                }
 //             }
 //
-            //Not in the specs but... makes sense
-            if(!XMLChar.isValidName(name))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + name + "' is not a valid element name");
-
             int nodeNr = builder.startElement(qn, null);
 
             // process attributes
             if (use_attribute_sets != null) {
-            	Set<AttributeSet> sets = ((XSLContext)context).getXSLStylesheet().getAttributeSet(use_attribute_sets);
-            	for (AttributeSet set  : sets) {
-            		set.eval(contextSequence, contextItem);
-            	}
+            	((XSLContext)context).getXSLStylesheet()
+            		.attributeSet(use_attribute_sets, contextSequence, contextItem);
+            }
+            
+            for (Attribute attr : attributes) {
+            	attr.eval(contextSequence, contextItem);
             }
 
             // add namespace declaration nodes
@@ -276,7 +293,9 @@ public class Element extends SimpleConstructor {
             // process element contents
             if(content != null) {
                 content.eval(contextSequence, contextItem);
-            }
+            } else 
+            	super.eval(contextSequence, contextItem);
+            
             builder.endElement();
             NodeImpl node = builder.getDocument().getNode(nodeNr);
             return node;

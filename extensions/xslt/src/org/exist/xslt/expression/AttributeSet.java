@@ -21,11 +21,14 @@
  */
 package org.exist.xslt.expression;
 
+import java.util.Set;
+
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
 
@@ -77,13 +80,20 @@ public class AttributeSet extends Declaration {
 	}    
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		Sequence result = new ValueSequence();
+		
 		if (use_attribute_sets != null) {
-			return getXSLContext().getXSLStylesheet().attributeSet(use_attribute_sets, contextSequence, contextItem);
+			result.addAll(
+					((XSLContext)context).getXSLStylesheet()
+						.attributeSet(use_attribute_sets, contextSequence, contextItem)
+        	);
 		} else if (delay_use_attribute_sets != null) {
 			return getXSLContext().getXSLStylesheet().attributeSet(delay_use_attribute_sets, contextSequence, contextItem);
 		}
 			
-		return super.eval(contextSequence, contextItem);
+		result.addAll( super.eval(contextSequence, contextItem) );
+		
+		return result;
 	}
 
 	/* (non-Javadoc)
