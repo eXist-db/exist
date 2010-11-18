@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="8CC30E75-F588-48E5-93AE-07A8048F7DBD">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-8CC30E75-F588-48E5-93AE-07A8048F7DBD">
     <titleInfo>
         <title>The Pure Declarative Approach</title>
         <subTitle>XForms in Real Estate Forms Case Study</subTitle>

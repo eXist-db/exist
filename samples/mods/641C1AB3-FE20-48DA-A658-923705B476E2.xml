@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="641C1AB3-FE20-48DA-A658-923705B476E2">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-641C1AB3-FE20-48DA-A658-923705B476E2">
     <titleInfo>
         <title>The European population 1850-1945</title>
         <subTitle>A Historical Data Handbook</subTitle>

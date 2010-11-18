@@ -1,4 +1,4 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="E2FAD731-EB40-4180-8860-7585A17BD4F8">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-E2FAD731-EB40-4180-8860-7585A17BD4F8">
     <titleInfo>
         <title>eXist</title>
         <subTitle>An Introduction To Open Source Native XML Database</subTitle>

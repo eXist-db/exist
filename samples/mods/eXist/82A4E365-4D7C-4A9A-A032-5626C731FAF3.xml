@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="82A4E365-4D7C-4A9A-A032-5626C731FAF3">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-82A4E365-4D7C-4A9A-A032-5626C731FAF3">
     <titleInfo>
         <title>Understanding XForms</title>
     </titleInfo>

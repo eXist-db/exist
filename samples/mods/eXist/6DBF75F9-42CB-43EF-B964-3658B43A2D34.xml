@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="6DBF75F9-42CB-43EF-B964-3658B43A2D34">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-6DBF75F9-42CB-43EF-B964-3658B43A2D34">
     <titleInfo>
         <title>Advancing with XQuery</title>
         <subTitle>Develop application idioms</subTitle>

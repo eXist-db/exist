@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="1B9F7ACD-D30B-4C40-8757-33034152B86E">
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-1B9F7ACD-D30B-4C40-8757-33034152B86E">
     <titleInfo>
         <title>XRX</title>
         <subTitle>Mapping URLs with Orbeon Forms</subTitle>
