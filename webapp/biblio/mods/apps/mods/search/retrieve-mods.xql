@@ -60,24 +60,42 @@ declare function mods:add-part($part, $sep as xs:string) {
 declare function mods:get-publisher($publishers as element(mods:publisher)?) as xs:string? {
     string-join(
         for $publisher in $publishers
+        let $order := $publisher[@transliteration]
+        order by $order
         return
             if ($publisher/mods:name) 
             then
             (: the encoding of <publisher> with <name> and <namePart> is not standard.:)
-                let $name := $publisher/mods:name[1]
-                return
-                    string-join((
-                        $name/mods:namePart[@transliteration],
-                        $name/mods:namePart[not(@transliteration)]),
-                        " ")
+                
+                
+                        $publisher/mods:name[1]/mods:namePart
             else
-                    string-join((
-                        $publisher[@transliteration],
-                        $publisher[not(@transliteration)]),
-                        " "),
+                
+                    $publisher,
         ', '
     )
 };
+(:
+declare function mods:get-publisher($publishers as element(mods:publisher)?) as xs:string? {
+    string-join(
+        for $publisher in $publishers
+        let $order := $publisher[@transliteration]
+        order by $order
+        return
+            if ($publisher/mods:name) 
+            then
+            (: the encoding of <publisher> with <name> and <namePart> is not standard.:)
+                
+                
+                        $publisher/mods:name[1]/mods:namePart
+            else
+                
+                    $publisher,
+        ', '
+    )
+};
+:)
+
 
 (: ### <subject> begins ### :)
 
@@ -204,21 +222,25 @@ return
 declare function mods:get-place($places as element(mods:place)*) as xs:string? {
     string-join(
         for $place in $places
-        let $placeTerm := $place/mods:placeTerm 
+        let $placeTerm := $place/mods:placeTerm
+        let $order := $place/mods:placeTerm[@transliteration]
+        order by $order
         return
             if ($placeTerm[@type = 'text']) 
             then string-join((
                 $placeTerm[@transliteration],
                 $placeTerm[not(@transliteration)]),
                 ', ')
-            else if ($placeTerm[@authority = 'marccountry']) 
-            then
-                doc("/db/org/library/apps/mods/code-tables/marc-country-codes.xml")/code-table/items/item[value = $placeTerm]/label
-            else if ($placeTerm[@authority = 'iso3166']) 
-            then
-                doc("/db/org/library/apps/mods/code-tables/iso3166-country-codes.xml")/code-table/items/item[value = $placeTerm]/label
             else
-                $place/mods:placeTerm[not(@type)]/string(),
+                if ($placeTerm[@authority = 'marccountry']) 
+                then
+                    doc("/db/org/library/apps/mods/code-tables/marc-country-codes.xml")/code-table/items/item[value = $placeTerm]/label
+                else 
+                    if ($placeTerm[@authority = 'iso3166']) 
+                    then
+                        doc("/db/org/library/apps/mods/code-tables/iso3166-country-codes.xml")/code-table/items/item[value = $placeTerm]/label
+                    else
+                        $place/mods:placeTerm[not(@type)]/string(),
         ' '
     )
 };
@@ -261,7 +283,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             )
             else
             (
-                normalize-space(mods:add-part($origin/mods:place/mods:placeTerm, ": ")),
+                normalize-space(mods:add-part(concat($origin/mods:place/mods:placeTerm[@transliteration][1], ' ', $origin/mods:place/mods:placeTerm[not(@transliteration)][1]), ": ")),
                 normalize-space(mods:add-part(mods:get-publisher($origin/mods:publisher[1]), ", ")
             )
             ,
@@ -921,20 +943,21 @@ if ($titleInfo)
     <tr>
         <td class="label">
         {
-            if ($titleInfo/@type = 'translated') then
-                "Translated Title"
-            else if ($titleInfo/@type = 'abbreviated') then
-                "Abbreviated Title"
-            else if ($titleInfo/@type = 'alternative') then
-                "Alternative Title"
-            else if ($titleInfo/@type = 'uniform') then
-                "Uniform Title"
-            else if ($titleInfo/@type = 'transliterated') then
-                "Transliterated Title"
-            else if (string-length($titleInfo/@type) eq 0) then
-                "Title"
-            else
-                "Title"
+            if ($titleInfo/@type = 'translated') 
+            then "Translated Title"
+            else 
+                if ($titleInfo/@type = 'abbreviated') 
+                then "Abbreviated Title"
+                else 
+                    if ($titleInfo/@type = 'alternative') 
+                    then "Alternative Title"
+                    else 
+                        if ($titleInfo/@type = 'uniform') 
+                        then "Uniform Title"
+                        else 
+                            if ($titleInfo[@transliteration]) 
+                            then "Transliterated Title"
+                            else "Title"
         }
         <span class="deemph">
         {
@@ -946,14 +969,12 @@ if ($titleInfo)
         let $lang3 := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $titleInfo/@lang]/label
         let $lang2 := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[valueTwo = $titleInfo/@lang]/label
         return
-        if ($lang3) then
-        concat("(Language: ", 
-        $lang3)
-        else if ($lang2) then
-        concat("(Language: ", 
-        $lang2) 
+        if ($lang3) 
+        then concat("(Language: ", $lang3)
         else 
-        $lang
+            if ($lang2) 
+            then concat("(Language: ", $lang2) 
+            else $lang
         )
         else
         ()
@@ -970,7 +991,7 @@ if ($titleInfo)
         ()
         }
         {
-        if ($titleInfo/@xml:transliteration)
+        if ($titleInfo/@transliteration)
         then
             if (doc("/db/org/library/apps/mods/code-tables/transliteration-codes.xml")/code-table/items/item[value = $titleInfo/@transliteration]/label)
             then
@@ -1215,13 +1236,15 @@ declare function mods:entry-full($entry as element())
     mods:url($entry)
     ,
     
-    (: relatedItem :)
-    (: If there is a related item, get its contents from the related record through its href if it has one; otherwise process the information as given in the record itself. :)
+    (: relatedItem type="host":)
     if ($entry/mods:relatedItem[@type = 'host']) 
     then
+    
         <tr><td class="host"/><td class="related"><hr/></td></tr>
     else ()
     ,
+    for $host in ($entry/mods:relatedItem[@type = 'host'])
+    return
     mods:simple-row(mods:get-related-item-title($entry)
     ,
     if ($entry/mods:relatedItem[@type = 'host']) 
@@ -1234,9 +1257,218 @@ declare function mods:entry-full($entry as element())
     then
         <tr><td class="host"></td><td class="related"><hr/></td></tr>
     else ()
-
     ,
-    (: typeOfResource :)
+    
+    (: relatedItem type="constituent":)
+    if ($entry/mods:relatedItem[@type = 'constituent']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'constituent'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'constituent']) 
+    then 'Constituent'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'constituent']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="preceding":)
+    if ($entry/mods:relatedItem[@type = 'preceding']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'preceding'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'preceding']) 
+    then 'Preceding Resource'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'preceding']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="succeeding":)
+    if ($entry/mods:relatedItem[@type = 'succeeding']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'succeeding'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'succeeding']) 
+    then 'Succeeding Resource'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'succeeding']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="original":)
+    if ($entry/mods:relatedItem[@type = 'original']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'original'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'original']) 
+    then 'Original Resource'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'original']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="series":)
+    if ($entry/mods:relatedItem[@type = 'series']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'series'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'series']) 
+    then 'Series'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'series']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="otherVersion":)
+    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'otherVersion'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
+    then 'Other Version'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="otherFormat":)
+    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'otherFormat'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
+    then 'Other Format'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+    (: relatedItem type="isReferencedBy":)
+    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'isReferencedBy'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
+    then 'Is Referenced By'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+
+    (: relatedItem type="references":)
+    if ($entry/mods:relatedItem[@type = 'references']) 
+    then
+    
+        <tr><td class="host"/><td class="related"><hr/></td></tr>
+    else ()
+    ,
+    for $host in ($entry/mods:relatedItem[@type = 'references'])
+    return
+    mods:simple-row(mods:get-related-item-title($entry)
+    ,
+    if ($entry/mods:relatedItem[@type = 'references']) 
+    then 'References'
+    else
+        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
+    ,
+    mods:get-related-item-part($entry),
+    if ($entry/mods:relatedItem[@type = 'references']) 
+    then
+        <tr><td class="host"></td><td class="related"><hr/></td></tr>
+    else ()
+    ,
+
+
+(: typeOfResource :)
     mods:simple-row($entry/mods:typeOfResource[1]/string(), "Type of Resource"),
     
     (: internetMediaType :)

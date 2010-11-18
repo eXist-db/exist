@@ -100,21 +100,24 @@ let $form-body := collection($body-collection)/div[@tab-id = $tab-id]
 
 let $style :=
 <style type="text/css"><![CDATA[
-@namespace xf url(http://www.w3.org/2002/xforms);
-
-.textarea textarea {
-    height: 5em;
-    width: 900px;
-    }
-]]>
+@namespace xf url(http://www.w3.org/2002/xforms);]]>
 </style>
 
 let $model :=
     <xf:model>
        
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="{$instance-src}" id="save-data"/>
+       
+       (: The full embodiment of the MODS schema, 3.3-3.4.:)
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates'/>
+       
+       (: A selection of elements and attributes from the MODS schema used for default records.:)
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance'/>       
+       
+       (: A selection of elements from the MODS schema with all possible attributes used for inserting a repetition.:)
+       (: NB: When it becomes possible to insert attributes this instance is not needed. For now, we have to present all attributes, not just the recommended ones. Once it is possible to insert attributes, new-instance can be used instead of element-selection-with-attributes. :)
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="element-selection-with-attributes.xml" id='new-instance-'/>       
+       
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}"/>
        
        <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>       
