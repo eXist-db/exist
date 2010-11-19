@@ -808,7 +808,12 @@ let $id := request:get-parameter("id", ())
 
 (: Process request parameters and generate an XML representation of the query :)
 let $queryAsXML :=
-    if (empty($collection)) then
+    if ($id) then
+        <query>
+            <collection>{$config:mods-root}</collection>
+            <field m="1" name="Id">{$id}</field>
+        </query>
+    else if (empty($collection)) then
         () (: no parameters sent :)
     else if ($reload) then
         session:get-attribute('query')
@@ -818,11 +823,6 @@ let $queryAsXML :=
         biblio:clear()
     else if ($filter) then 
         biblio:apply-filter()
-    else if ($id) then
-        <query>
-            <collection>{$config:mods-root}</collection>
-            <field m="1" name="Id">{$id}</field>
-        </query>
     else if ($mylist eq 'display') then
         ()
     else 
