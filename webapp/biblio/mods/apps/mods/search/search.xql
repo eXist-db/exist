@@ -517,6 +517,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
         case element(biblio:form-add-sharing-group) return
             biblio:form-add-sharing-group()
         case element(biblio:resource-types) return
+            let $classifier := $node/@classifier/string()
             let $app-collection := $style:db-path-to-app
             let $code-tables := concat($app-collection, '/apps/mods/code-tables')
             let $document-path := concat($code-tables, '/document-type-codes.xml')
@@ -525,13 +526,13 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             let $code-table-lang := doc($language-path)/code-table
             return 
                 <div class="content">
-                    <form id="new-resource-form" action="../edit/edit.xq" method="GET">
+                    <form id="{if ($classifier eq 'stand-alone') then 'new-resource-form' else 'add-related-form'}" action="../edit/edit.xq" method="GET">
                         <ul>
                             <li>
                                 <input type="radio" name="type" value="default" selected="true"/><span> Default</span>
                             </li>
                         {
-                            for $item in $code-table-type//item
+                            for $item in $code-table-type//item[classifier = $classifier]
                             let $label := $item/label/text()
                             order by $label
                             return

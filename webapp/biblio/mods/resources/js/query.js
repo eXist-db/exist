@@ -336,6 +336,12 @@ function newResource() {
     $("#new-resource-form").submit();
 }
 
+function newRelatedResource() {
+    var collection = getCurrentCollection();
+    $("#add-related-form input[name = collection]").val(collection);
+    $("#add-related-form").submit();
+}
+
 /**
  * Called from the create indexes dialog if the user clicks on "Start".
  */
@@ -440,9 +446,9 @@ function resultsLoaded(options) {
     $('.actions-toolbar .add-related', this).click(function(ev) {
         ev.preventDefault();
         var params = this.hash.substring(1).split('#');
-        $('#new-resource-form input[name = collection]').val(params[0]);
-        $('#new-resource-form input[name = host]').val(params[1]);
-        $('#new-resource-dialog').dialog('open');
+        $('#add-related-form input[name = collection]').val(params[0]);
+        $('#add-related-form input[name = host]').val(params[1]);
+        $('#add-related-dialog').dialog('open');
     });
 }
 
