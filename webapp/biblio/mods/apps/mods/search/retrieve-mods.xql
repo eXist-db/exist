@@ -140,7 +140,7 @@ declare function mods:format-subjects($entry as element()) {
             if ($item/mods:*) 
             then
                 if ($item/name() = 'name')
-                then mods:format-name($item, 1) 
+                then mods:format-untransliterated-name($item, 1) 
                 else
                     if ($item/name() = 'titleInfo')
                     then mods:get-short-title('', $item/..)
@@ -187,23 +187,31 @@ let $total := functx:trim($extent/mods:total)
 let $list := functx:trim($extent/mods:list)
 return
     if (($start) or ($end)) 
-    then concat(
+    then 
+        (: Chicago does not note units :)
+        (:
+        concat(
         if ($unit) 
         then concat($unit, ' ')
         else ()
         ,
-        concat($start, '-', $end))
-    else if ($total) 
-    then concat(
-        if ($unit) 
-        then concat(($unit), ' ')
-        else ()
-        ,
-        ($total))
-    else
+        :)
+        concat($start, '-', $end)
+    else 
+        if ($total) 
+        then 
+            (:
+            concat(
+            if ($unit) 
+            then concat(($unit), ' ')
+            else ()
+            ,
+            :)
+            ($total)
+        else
     (: <part><extent><list> and <physicalDescription><extent> give the of <extent> as string. It does not require unit. :)
     (: What if it has a @unit? :)
-    $extent/string()    
+        $extent/string()    
 };
 
 
@@ -263,45 +271,52 @@ declare function mods:get-part-and-origin($entry as element()) {
     let $origin := $entry/mods:originInfo
     return
         if (exists($part/mods:detail) and exists($part/mods:date)) 
-        then 
-            normalize-space(
-            concat(
-            $part/mods:detail[@type='volume']/mods:number,
-                if ($part/mods:detail[@type='issue']) 
-                then
-                    concat('/', $part/mods:detail[@type='issue']/mods:number)
+        then concat(
+            if (exists($part/mods:detail[@type='issue']) and exists($part/mods:detail[@type='volume']))
+            then
+                concat($part/mods:detail[@type='volume']/mods:number, ', no. ', $part/mods:detail[@type='issue']/mods:number)
                     (: concat((if ($part/mods:detail/mods:caption) then $part/mods:detail/mods:caption/string() else '/'), $part/mods:detail[@type='issue']/mods:number) :)
-                else ()
-                ,
-                ' (', $part/mods:date, ')'
-                ,
+            else 
+                if (not($part/mods:detail[@type='volume']) and exists($part/mods:detail[@type='issue']))
+                then $part/mods:detail[@type='issue']
+                else
+                    if (exists($part/mods:detail[@type='volume']) and not($part/mods:detail[@type='issue']))
+                    then $part/mods:detail[@type='volume']
+            else ()
+            ,
+            ' (', $part/mods:date, ')'
+            ,
+            if ($part/mods:extent) 
+            then
+                concat(", ", mods:get-extent($part/mods:extent[1]),'.')
+            else ()
+            )
+        else 
+            if (exists($part/mods:date)) 
+            then
+                normalize-space(concat(' (', $part/mods:date, ')',
                 if ($part/mods:extent) 
                 then
                     concat(": ", mods:get-extent($part/mods:extent[1]),'.')
                 else ()
             )
             )
-        else 
-            if (exists($part/mods:date)) 
-            then
-                normalize-space(
-                concat(' (', $part/mods:date, ')',
-            if ($part/mods:extent) 
-            then
-                concat(": ", mods:get-extent($part/mods:extent[1]),'.')
-            else ()
-            )
-            )
             else
             (
-                normalize-space(mods:add-part(concat($origin/mods:place/mods:placeTerm[@transliteration][1], ' ', $origin/mods:place/mods:placeTerm[not(@transliteration)][1]), ": ")),
+                if ($origin/mods:place/mods:placeTerm[@transliteration][1])
+                then
+                    normalize-space(mods:add-part(concat($origin/mods:place/mods:placeTerm[@transliteration][1], ' ', $origin/mods:place/mods:placeTerm[not(@transliteration)][1]), ": "))
+                else ()
+            ,
                 normalize-space(mods:add-part(mods:get-publisher($origin/mods:publisher[1]), ", ")
             )
+            (:
             ,
             if ($entry/mods:relatedItem/mods:originInfo/mods:dateCreated) 
             then () 
             else
                 normalize-space(mods:add-part($origin/mods:dateCreated/string(),'.'))
+            :)
             , 
             if ($entry/mods:relatedItem/mods:originInfo/mods:dateIssued) 
             then () 
@@ -481,31 +496,40 @@ declare function mods:get-conference-detail-view($entry as element()) {
     ()
 };
 
-declare function mods:format-name($name as element(mods:name), $pos as xs:integer) {
-    if ($name[not(@type)]) then
-        concat(string-join($name/mods:namePart[@transliteration][not(@type)], ' '), 
-            ' ', string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' '))
+declare function mods:format-untransliterated-name($name as element(mods:name), $pos as xs:integer) {
+    if ($name[not(@type)])
+    (: if the name is (erroneously) not typed :)    
+    then
+        concat(
+        mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type)]), 
+        ' ', 
+        string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+        )
     else
-    	if ($name/@type = 'conference') then
+    	if ($name/@type = 'conference') 
+    	then ()
     	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
-    	()
-    else
-        if ($name/@type = 'corporate') then
-        concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
-        (: Does not need manipulation, since it is never decomposed. :)
-    else
-        if ($name/@type = 'personal') then
-        	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
-        	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
-        	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
-        	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration)], ' ') 
-        	return
+        else
+            if ($name/@type = 'corporate') 
+            then
+            concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
+            (: Does not need manipulation, since it is never decomposed. :)
+            else
+            if ($name/@type = 'personal')
+            then
+            	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
+            	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
+            	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
+            	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration)], ' ') 
+            return
         	concat(
         	(:concat appends dates to name proper:)
         	string-join(
-        	if ($family or $given) then
+        	if ($family or $given) 
+        	then
         	(: If one of the nameParts is properly typed :)
-        	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) then
+        	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) 
+        	   then
     				(: If the name is transliterated and Eastern :)
     				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
     				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
@@ -516,38 +540,53 @@ declare function mods:format-name($name as element(mods:name), $pos as xs:intege
         			, ' '))))
         			(: The string-joins are meant to capture multiple family and given names. Needed?:)
                 else
-                if (($family[@transliteration]) or ($given[@transliteration])) then
-        		 (: If the name is transliterated but not Eastern :)
-        		 (mods:format-transliterated-non-eastern-name($name), ' ',
-        		 (functx:trim(string-join($family, ' ')),
-        		 functx:trim(string-join($given, ' '))))
-        		 (: The string-joins are meant to capture multiple family and given names. :)
-        		 else
-        		 (: If the name is not transliterated :)        		 
-        		 if ($pos eq 1) then
-            				(: If we have a non-Chinese, non-Japanese name occurring first. :)
-            				    (functx:trim(string-join($family/string(), ' ')), 
-            				    ', ', 
-            				    functx:trim(string-join($given, ' ')),
-            				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+                    if (($family[@transliteration]) or ($given[@transliteration])) 
+                    then
+            		(: If the name is transliterated but not Eastern :)
+            		(mods:format-transliterated-non-eastern-name($name), ' ',
+            		(functx:trim(string-join($family, ' ')),
+            		functx:trim(string-join($given, ' '))))
+            		(: The string-joins are meant to capture multiple family and given names. :)
+            		else
+            		(: If the name is not transliterated :)        		 
+                		if ($pos eq 1)
+                		(: If it is the first name :)
+                		then
+                		(: If we have a non-Chinese, non-Japanese name occurring first. :)
+                		(functx:trim(string-join($family/string(), ' ')), 
+                		', ', 
+                		functx:trim(string-join($given, ' ')),
+                		    if ($address)
+                		    then functx:trim(concat(', ',$address)) 
+                		    else ()
             				    )
-            				else
-            				(: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
-            					(functx:trim(string-join($given, ' ')), 
-            					' ', 
-            					functx:trim(string-join($family/string(), ' ')),
-            				    if ($address) then functx:trim(string-join($address, ', ')) else ()
+            		    else
+            		    (: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
+            		    (functx:trim(string-join($given, ' '))
+            		    ,
+            		    ' '
+            		    , 
+            		    functx:trim(string-join($family/string(), ' '))
+            		    ,
+            		      if ($address) 
+            		      then functx:trim(string-join($address, ', ')) 
+            		      else ()
             				    )
                 else
-            if ($pos eq 1) then
-            (: If we have an untyped name occurring first. :)
-                (functx:trim(string-join($name/mods:namePart, ', ')),
-                    if ($address) then functx:trim(string-join($address, ', ')) else ()
+                    if ($pos eq 1) 
+                    then
+                    (: If we have an untyped name occurring first. :)
+                        (functx:trim(string-join($name/mods:namePart, ', ')),
+                            if ($address) 
+                            then functx:trim(string-join($address, ', ')) 
+                            else ()
                     )
-            else
-            (: If we have an untyped name occurring later. :)
-                (functx:trim(string-join($name/mods:namePart, ' ')),
-                    if ($address) then functx:trim(string-join($address, ', ')) else ()
+                    else
+                    (: If we have an untyped name occurring later. :)
+                    (functx:trim(string-join($name/mods:namePart, ' ')),
+                        if ($address) 
+                        then functx:trim(string-join($address, ', ')) 
+                        else ()
                     )                    (: One could check for ($family or $given). :)
 (:                    (functx:trim(mods:format-transliterated-eastern-name($name))):)
                     (: If there is a transliteration, but no name in original script. :)
@@ -605,7 +644,7 @@ declare function mods:retrieve-name($name as element(mods:name), $pos as xs:int)
     return
         if ($mads) 
         then mods:get-name-from-mads($mads, $pos)[1]
-        else mods:format-name($name, $pos)[1]
+        else mods:format-untransliterated-name($name, $pos)[1]
 };
 
 (: retrieves author names that occur in the beginning in entries in hitlist and related items :)
