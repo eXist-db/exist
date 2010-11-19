@@ -13,7 +13,18 @@ declare option exist:serialize "media-type=text/xml";
 
 (: ### general functions begin ###:)
 
- 
+declare function local:remove-empty-attributes
+(: derived from functx:remove-empty-attributes :)
+($element as element()) as element() {
+element { node-name($element)}
+{ $element/@*[string-length(.) eq 0],
+for $child in $element/node( )
+return 
+    if ($child instance of element())
+    then local:remove-empty-attributes($child)
+    else $child }
+};
+
 declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string, $replacement as xs:string )  as xs:string {       
    replace($arg, concat('(^.*?)', $pattern),
              concat('$1',$replacement))
@@ -1047,7 +1058,8 @@ if ($titleInfo)
 (: NB! This function is constructed differently from mods:entry-full; the two should be harmonised. :)
 
 declare function mods:get-related-item($entry as element(mods:mods)) {
-    let $related0 := $entry/mods:relatedItem
+    for $item at $pos in $entry/mods:relatedItem
+    let $related0 := $entry/mods:relatedItem[$pos]
     let $collection := util:collection-name($entry)
     let $type := functx:capitalize-first(functx:camel-case-to-words($related0[1]/@type, ' '))
     let $related :=
@@ -1072,7 +1084,8 @@ declare function mods:get-related-item($entry as element(mods:mods)) {
 };
 
 declare function mods:get-related-item-title($entry as element(mods:mods)) {
-    let $related0 := $entry/mods:relatedItem
+    for $item at $pos in $entry/mods:relatedItem
+    let $related0 := $entry/mods:relatedItem[$pos]
     let $collection := util:collection-name($entry)
     let $type := functx:capitalize-first(functx:camel-case-to-words($related0[1]/@type, ' '))
     let $related :=
@@ -1082,17 +1095,63 @@ declare function mods:get-related-item-title($entry as element(mods:mods)) {
     return
         if ($related) 
         then
-            <span class="related">            { 
+            <tr><td class="label">
+                {
+                if ($related/@type ='host')
+                then 'In:'
+                else
+                    if ($related/@type ='series')
+                    then 'In Series:'
+                    else
+                        if ($related/@type ='preceding')
+                        then 'Preceding:'
+                        else
+                            if ($related/@type ='succeeding')
+                            then 'Succeeding:'
+                            else
+                                if ($related/@type ='original')
+                                then 'Original:'
+                                else
+                                    if ($related/@type ='constituent')
+                                    then 'Constituent:'
+                                    else
+                                        if ($related/@type ='otherVersion')
+                                        then 'Other Version:'
+                                        else
+                                            if ($related/@type ='otherFormat')
+                                            then 'Other Format:'
+                                            else
+                                                if ($related/@type ='isReferencedBy')
+                                                then 'Is Referenced By:'
+                                                else
+                                                    if ($related/@type ='references')
+                                                    then 'References:'
+                                                    else ()
+            }
+            </td>
+            <td class="record"><span class="related">
+            { 
                 mods:format-multiple-primary-names($related)
                 , 
                 mods:get-short-title((), $related)
                 ,
-                mods:format-multiple-secondary-names($related)
+                mods:format-multiple-secondary-names($related),
+                if ($related/mods:originInfo or $related/mods:part) 
+                then mods:get-part-and-origin($related)
+                else 
+                    if ($related/mods:location/mods:url) 
+                    then concat(" <", $related/mods:location/mods:url, ">")
+                    else ()    
             }
-            </span>
+            </span></td>
+        </tr>
         else ()
 };
-
+(:        <tr>
+            <td class="label">{$label}</td>
+            <td class="record">{string($data)}</td>
+        </tr>
+:)
 (: ### <relatedItem> ends ### :)
 
 declare function mods:names-full($entry as element()) {
@@ -1195,7 +1254,8 @@ declare function mods:url($entry as element()) as element(tr)* {
 (: Prepares for the recursive mods:format-full. :)
 declare function mods:entry-full($entry as element()) 
     {
-    
+    let $entry := local:remove-empty-attributes($entry)
+    return
     mods:names-full($entry),
     for $titleInfo in (
         $entry/mods:titleInfo[not(@type)],
@@ -1236,239 +1296,13 @@ declare function mods:entry-full($entry as element())
     mods:url($entry)
     ,
     
-    (: relatedItem type="host":)
-    if ($entry/mods:relatedItem[@type = 'host']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'host'])
+    (: relatedItem :)
+    for $item in ($entry)
     return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'host']) 
-    then 'In'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'host']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
+    mods:get-related-item-title($item)
     ,
     
-    (: relatedItem type="constituent":)
-    if ($entry/mods:relatedItem[@type = 'constituent']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'constituent'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'constituent']) 
-    then 'Constituent'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'constituent']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="preceding":)
-    if ($entry/mods:relatedItem[@type = 'preceding']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'preceding'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'preceding']) 
-    then 'Preceding Resource'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'preceding']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="succeeding":)
-    if ($entry/mods:relatedItem[@type = 'succeeding']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'succeeding'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'succeeding']) 
-    then 'Succeeding Resource'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'succeeding']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="original":)
-    if ($entry/mods:relatedItem[@type = 'original']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'original'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'original']) 
-    then 'Original Resource'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'original']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="series":)
-    if ($entry/mods:relatedItem[@type = 'series']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'series'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'series']) 
-    then 'Series'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'series']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="otherVersion":)
-    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'otherVersion'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
-    then 'Other Version'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'otherVersion']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="otherFormat":)
-    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'otherFormat'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
-    then 'Other Format'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'otherFormat']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-    (: relatedItem type="isReferencedBy":)
-    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'isReferencedBy'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
-    then 'Is Referenced By'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'isReferencedBy']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-
-    (: relatedItem type="references":)
-    if ($entry/mods:relatedItem[@type = 'references']) 
-    then
-    
-        <tr><td class="host"/><td class="related"><hr/></td></tr>
-    else ()
-    ,
-    for $host in ($entry/mods:relatedItem[@type = 'references'])
-    return
-    mods:simple-row(mods:get-related-item-title($entry)
-    ,
-    if ($entry/mods:relatedItem[@type = 'references']) 
-    then 'References'
-    else
-        concat(functx:capitalize-first(functx:camel-case-to-words($entry/mods:relatedItem/@type, ' ')),':'))
-    ,
-    mods:get-related-item-part($entry),
-    if ($entry/mods:relatedItem[@type = 'references']) 
-    then
-        <tr><td class="host"></td><td class="related"><hr/></td></tr>
-    else ()
-    ,
-
-
-(: typeOfResource :)
+    (: typeOfResource :)
     mods:simple-row($entry/mods:typeOfResource[1]/string(), "Type of Resource"),
     
     (: internetMediaType :)
