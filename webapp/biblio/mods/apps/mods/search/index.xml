@@ -320,7 +320,12 @@
             <jquery:dialog id="new-resource-dialog" modal="true" title="New Resource" trigger="#collection-create-resource" width="450">
                 <jquery:button id="create" label="Create" function="newResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
-                <biblio:resource-types/>
+                <biblio:resource-types classifier="stand-alone"/>
+            </jquery:dialog>
+            <jquery:dialog id="add-related-dialog" modal="true" title="Add Related Resource" width="450">
+                <jquery:button id="create" label="Create" function="newRelatedResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <biblio:resource-types classifier="related-item"/>
             </jquery:dialog>
             <jquery:javascript/>
         </div>
