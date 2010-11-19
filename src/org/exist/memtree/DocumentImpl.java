@@ -1364,6 +1364,12 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     public boolean hasChildNodes() {
         return( getChildCount() > 0 );
     }
+    
+    public NodeList getChildNodes() {
+		NodeListImpl nl = new NodeListImpl(1);
+		nl.add( getDocumentElement() );
+		return nl ;
+    }
 
     @Override
     public String getLocalName() {
