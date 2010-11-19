@@ -9,6 +9,238 @@ declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
 declare namespace mods="http://www.loc.gov/mods/v3";
+declare namespace e="http://www.asia-europe.uni-heidelberg.de/";
+
+declare function xf:do-updates($item, $doc) {
+    (: This checks to see if we have a titleInfo in the saved document.  
+    If we do then it first deletes the titleInfo in the saved document.
+    Next it goes through each titleInfo in the incoming record and inserts it in the saved document. 
+    If name (the "next" element in the canonical order) occurs in the saved document, the titleInfo is inserted before name, maintaining order in the document.
+    If name does not occur, titleInfo is inserted at the end of the saved document.:)
+    if ($item/mods:titleInfo)
+     then
+        (
+        update delete $doc/mods:titleInfo,
+            if ($doc/mods:name)
+            then
+                update insert $item/mods:titleInfo preceding $doc/mods:name
+            else
+                update insert $item/mods:titleInfo into $doc
+         )
+    else (),
+    
+    if ($item/mods:name)
+      then
+        (
+        update delete $doc/mods:name,
+              if ($doc/mods:originInfo)
+              then
+                 update insert $item/mods:name preceding $doc/mods:originInfo
+              else
+                 update insert $item/mods:name into $doc
+         )
+      else (),
+      
+    if ($item/mods:originInfo)
+      then
+        (
+        update delete $doc/mods:originInfo,
+              if ($doc/mods:part)
+              then
+                 update insert $item/mods:originInfo preceding $doc/mods:part
+              else
+                 update insert $item/mods:originInfo into $doc
+         )
+      else (),
+    
+    if ($item/mods:part)
+      then
+        (
+        update delete $doc/mods:part,
+              if ($doc/mods:physicalDescription)
+              then
+                 update insert $item/mods:part preceding $doc/mods:physicalDescription
+              else
+                 update insert $item/mods:part into $doc
+         )
+      else (),
+    
+    if ($item/mods:physicalDescription)
+      then
+        (
+        update delete $doc/mods:physicalDescription,
+              if ($doc/mods:targetAudience)
+              then
+                 update insert $item/mods:physicalDescription preceding $doc/mods:targetAudience
+              else
+                 update insert $item/mods:physicalDescription into $doc
+         )
+      else (),
+    
+    if ($item/mods:targetAudience)
+      then
+        (
+        update delete $doc/mods:targetAudience,
+              if ($doc/mods:language)
+              then
+                 update insert $item/mods:targetAudience preceding $doc/mods:language
+              else
+                 update insert $item/mods:targetAudience into $doc
+         )
+      else (),
+      
+    if ($item/mods:language)
+      then
+        (
+        update delete $doc/mods:language,
+              if ($doc/mods:typeOfResource)
+              then
+                 update insert $item/mods:language preceding $doc/mods:typeOfResource
+              else
+                 update insert $item/mods:language into $doc
+         )
+      else (),
+    
+    if ($item/mods:typeOfResource)
+      then
+        (
+        update delete $doc/mods:typeOfResource,
+              if ($doc/mods:genre)
+              then
+                 update insert $item/mods:typeOfResource preceding $doc/mods:genre
+              else
+                 update insert $item/mods:typeOfResource into $doc
+         )
+      else (),
+    
+    if ($item/mods:genre)
+      then
+        (
+        update delete $doc/mods:genre,
+              if ($doc/mods:subject)
+              then
+                 update insert $item/mods:genre preceding $doc/mods:subject
+              else
+                 update insert $item/mods:genre into $doc
+         )
+      else (),
+    
+    if ($item/mods:subject)
+      then
+        (
+        update delete $doc/mods:subject,
+              if ($doc/mods:classification)
+              then
+                 update insert $item/mods:subject preceding $doc/mods:classification
+              else
+                 update insert $item/mods:subject into $doc
+         )
+      else (),      
+    
+    if ($item/mods:classification)
+      then
+        (
+        update delete $doc/mods:classification,
+              if ($doc/mods:abstract)
+              then
+                 update insert $item/mods:classification preceding $doc/mods:abstract
+              else
+                 update insert $item/mods:classification into $doc
+         )
+      else (),     
+    
+    if ($item/mods:abstract)
+      then
+        (
+        update delete $doc/mods:abstract,
+              if ($doc/mods:tableOfContents)
+              then
+                 update insert $item/mods:abstract preceding $doc/mods:tableOfContents
+              else
+                 update insert $item/mods:abstract into $doc
+         )
+      else (),
+    
+    if ($item/mods:tableOfContents)
+      then
+        (
+        update delete $doc/mods:tableOfContents,
+              if ($doc/mods:note)
+              then
+                 update insert $item/mods:tableOfContents preceding $doc/mods:note
+              else
+                 update insert $item/mods:tableOfContents into $doc
+         )
+      else (),
+      
+    if ($item/mods:note)
+      then
+        (
+        update delete $doc/mods:note,
+              if ($doc/mods:relatedItem)
+              then
+                 update insert $item/mods:note preceding $doc/mods:relatedItem
+              else
+                 update insert $item/mods:note into $doc
+         )
+      else (),
+      
+    if ($item/mods:relatedItem)
+      then
+        (
+        update delete $doc/mods:relatedItem,
+              if ($doc/mods:identifier)
+              then
+                 update insert $item/mods:relatedItem preceding $doc/mods:identifier
+              else
+                 update insert $item/mods:relatedItem into $doc
+         )
+      else (),
+    
+    if ($item/mods:identifier)
+      then
+        (
+        update delete $doc/mods:identifier,
+              if ($doc/mods:recordInfo)
+              then
+                 update insert $item/mods:identifier preceding $doc/mods:recordInfo
+              else
+                 update insert $item/mods:identifier into $doc
+         )
+      else (),
+    
+    if ($item/mods:recordInfo)
+      then
+        (
+        update delete $doc/mods:recordInfo,
+              if ($doc/mods:accessCondition)
+              then
+                 update insert $item/mods:recordInfo preceding $doc/mods:location
+              else
+                 update insert $item/mods:recordInfo into $doc
+         )
+      else (),
+    
+    if ($item/mods:location)
+      then
+        (
+        update delete $doc/mods:location,
+              if ($doc/mods:location)
+              then
+                 update insert $item/mods:location preceding $doc/mods:accessCondition 
+              else
+                 update insert $item/mods:location into $doc
+         )
+      else (),
+    
+    if ($item/mods:accessCondition)
+      then
+        (
+        update delete $doc/mods:accessCondition,
+                 update insert $item/mods:accessCondition into $doc
+         )
+      else ()
+};
 
 let $title := 'MODS Record Save'
 
@@ -18,6 +250,8 @@ let $title := 'MODS Record Save'
 
 (: The data collection passed in the URL :)
 let $collection := request:get-parameter('collection', ())
+
+let $action := request:get-parameter('action', 'save')
 
 let $app-collection := $style:db-path-to-app
 
@@ -62,260 +296,19 @@ when doing an update.  :)
 
 (: TODO figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
 
-(: This checks to see if we have a titleInfo in the saved document.  
-If we do then it first deletes the titleInfo in the saved document.
-Next it goes through each titleInfo in the incoming record and inserts it in the saved document. 
-If name (the "next" element in the canonical order) occurs in the saved document, the titleInfo is inserted before name, maintaining order in the document.
-If name does not occur, titleInfo is inserted at the end of the saved document.:)
-
-let $titleInfo :=
-   if ($item/mods:titleInfo)
-     then
-        (
-        update delete $doc/mods:titleInfo,
-            if ($doc/mods:name)
-            then
-                update insert $item/mods:titleInfo preceding $doc/mods:name
-            else
-                update insert $item/mods:titleInfo into $doc
-         )
-   else ()
-
-let $name :=
-   if ($item/mods:name)
-      then
-        (
-        update delete $doc/mods:name,
-              if ($doc/mods:originInfo)
-              then
-                 update insert $item/mods:name preceding $doc/mods:originInfo
-              else
-                 update insert $item/mods:name into $doc
-         )
-      else ()
-      
-let $originInfo :=
-   if ($item/mods:originInfo)
-      then
-        (
-        update delete $doc/mods:originInfo,
-              if ($doc/mods:part)
-              then
-                 update insert $item/mods:originInfo preceding $doc/mods:part
-              else
-                 update insert $item/mods:originInfo into $doc
-         )
-      else ()
-
-let $part :=
-   if ($item/mods:part)
-      then
-        (
-        update delete $doc/mods:part,
-              if ($doc/mods:physicalDescription)
-              then
-                 update insert $item/mods:part preceding $doc/mods:physicalDescription
-              else
-                 update insert $item/mods:part into $doc
-         )
-      else ()
-
-let $physicalDescription :=
-   if ($item/mods:physicalDescription)
-      then
-        (
-        update delete $doc/mods:physicalDescription,
-              if ($doc/mods:targetAudience)
-              then
-                 update insert $item/mods:physicalDescription preceding $doc/mods:targetAudience
-              else
-                 update insert $item/mods:physicalDescription into $doc
-         )
-      else ()
-
-
-let $targetAudience :=
-   if ($item/mods:targetAudience)
-      then
-        (
-        update delete $doc/mods:targetAudience,
-              if ($doc/mods:language)
-              then
-                 update insert $item/mods:targetAudience preceding $doc/mods:language
-              else
-                 update insert $item/mods:targetAudience into $doc
-         )
-      else ()
-      
-let $language :=
-   if ($item/mods:language)
-      then
-        (
-        update delete $doc/mods:language,
-              if ($doc/mods:typeOfResource)
-              then
-                 update insert $item/mods:language preceding $doc/mods:typeOfResource
-              else
-                 update insert $item/mods:language into $doc
-         )
-      else ()
-
-let $typeOfResource :=
-   if ($item/mods:typeOfResource)
-      then
-        (
-        update delete $doc/mods:typeOfResource,
-              if ($doc/mods:genre)
-              then
-                 update insert $item/mods:typeOfResource preceding $doc/mods:genre
-              else
-                 update insert $item/mods:typeOfResource into $doc
-         )
-      else ()
-
-let $genre :=
-   if ($item/mods:genre)
-      then
-        (
-        update delete $doc/mods:genre,
-              if ($doc/mods:subject)
-              then
-                 update insert $item/mods:genre preceding $doc/mods:subject
-              else
-                 update insert $item/mods:genre into $doc
-         )
-      else ()
-
-let $subject :=
-   if ($item/mods:subject)
-      then
-        (
-        update delete $doc/mods:subject,
-              if ($doc/mods:classification)
-              then
-                 update insert $item/mods:subject preceding $doc/mods:classification
-              else
-                 update insert $item/mods:subject into $doc
-         )
-      else ()      
-
-
-let $classification :=
-   if ($item/mods:classification)
-      then
-        (
-        update delete $doc/mods:classification,
-              if ($doc/mods:abstract)
-              then
-                 update insert $item/mods:classification preceding $doc/mods:abstract
-              else
-                 update insert $item/mods:classification into $doc
-         )
-      else ()      
-
-
-let $abstract :=
-   if ($item/mods:abstract)
-      then
-        (
-        update delete $doc/mods:abstract,
-              if ($doc/mods:tableOfContents)
-              then
-                 update insert $item/mods:abstract preceding $doc/mods:tableOfContents
-              else
-                 update insert $item/mods:abstract into $doc
-         )
-      else ()      
-
-let $tableOfContents :=
-   if ($item/mods:tableOfContents)
-      then
-        (
-        update delete $doc/mods:tableOfContents,
-              if ($doc/mods:note)
-              then
-                 update insert $item/mods:tableOfContents preceding $doc/mods:note
-              else
-                 update insert $item/mods:tableOfContents into $doc
-         )
-      else ()      
-
-
-let $note :=
-   if ($item/mods:note)
-      then
-        (
-        update delete $doc/mods:note,
-              if ($doc/mods:relatedItem)
-              then
-                 update insert $item/mods:note preceding $doc/mods:relatedItem
-              else
-                 update insert $item/mods:note into $doc
-         )
-      else ()
-
-let $relatedItem :=
-   if ($item/mods:relatedItem)
-      then
-        (
-        update delete $doc/mods:relatedItem,
-              if ($doc/mods:identifier)
-              then
-                 update insert $item/mods:relatedItem preceding $doc/mods:identifier
-              else
-                 update insert $item/mods:relatedItem into $doc
-         )
-      else ()
-
-
-let $identifier :=
-   if ($item/mods:identifier)
-      then
-        (
-        update delete $doc/mods:identifier,
-              if ($doc/mods:recordInfo)
-              then
-                 update insert $item/mods:identifier preceding $doc/mods:recordInfo
-              else
-                 update insert $item/mods:identifier into $doc
-         )
-      else ()
-
-let $recordInfo :=
-   if ($item/mods:recordInfo)
-      then
-        (
-        update delete $doc/mods:recordInfo,
-              if ($doc/mods:accessCondition)
-              then
-                 update insert $item/mods:recordInfo preceding $doc/mods:location
-              else
-                 update insert $item/mods:recordInfo into $doc
-         )
-      else ()
-
-let $location :=
-   if ($item/mods:location)
-      then
-        (
-        update delete $doc/mods:location,
-              if ($doc/mods:location)
-              then
-                 update insert $item/mods:location preceding $doc/mods:accessCondition 
-              else
-                 update insert $item/mods:location into $doc
-         )
-      else ()
-
-let $accessCondition :=
-   if ($item/mods:accessCondition)
-      then
-        (
-        update delete $doc/mods:accessCondition,
-                 update insert $item/mods:accessCondition into $doc
-         )
-      else ()
-
+let $updates := 
+    if ($action eq 'cancel') then
+        xmldb:remove($data-collection, $file-to-update)
+    else
+        xf:do-updates($item, $doc)
+    
+let $copy :=
+    if ($action eq 'close') then
+        let $targetCollection := $doc/mods:extension/e:collection
+        return
+            xmldb:move($data-collection, $targetCollection, $file-to-update)
+    else
+        ()
 return
 <results>
   <message>Update Status = OK titles = {count($item/mods:titleInfo)}</message>

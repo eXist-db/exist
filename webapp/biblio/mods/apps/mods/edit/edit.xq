@@ -7,6 +7,20 @@ declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 
+declare function xf:get-temp-collection() {
+    let $collection := collection("/db/temp")
+    let $create :=
+        if ($collection) then
+            ()
+        else
+            system:as-user("admin", (), (
+                xmldb:create-collection("/db", "temp"), 
+                xmldb:set-collection-permissions("/db/temp", "editor", "biblio.users", xmldb:string-to-permissions("rwurwu---"))
+            ))
+    return
+        "/db/temp"
+};
+
 let $title := 'MODS Record Editor'
 
 (: get REST URL parameters :)
@@ -31,6 +45,8 @@ let $type := request:get-parameter('type', 'default')
 let $user := request:get-parameter('user', '')
 
 let $collection := request:get-parameter('collection', '')
+
+let $tempCollection := xf:get-temp-collection()
 
 let $data-collection :=
    if ($collection)
@@ -68,28 +84,31 @@ let $create-new-from-template :=
          (: let $login := xmldb:login($data-collection, 'admin', ()) :)
          let $login := xmldb:login($data-collection, 'admin', 'his2RIen')
          (: store it in the right location :)
-         let $store := xmldb:store($data-collection, $new-file-name, $template)
+         let $stored := xmldb:store($tempCollection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
          return (
-            update value doc($new-file-path)/mods:mods/@ID with $id,
+            update value doc($stored)/mods:mods/@ID with $id,
             (: save used template name and language into a mods:extension element :)
             update insert
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
+                    <e:collection>{$data-collection}</e:collection>
                     <e:template>{util:document-name($template)}</e:template>
                     <e:language>{request:get-parameter("lang", "")}</e:language>
                 </extension>
-            into doc($new-file-path)/mods:mods,
+            into doc($stored)/mods:mods,
             if ($host) then (
-                update value doc($new-file-path)/mods:mods/mods:relatedItem/@xlink:href with $host,
-                update value doc($new-file-path)/mods:mods/mods:relatedItem/@type with "host"
+                update value doc($stored)/mods:mods/mods:relatedItem/@xlink:href with $host,
+                update value doc($stored)/mods:mods/mods:relatedItem/@type with "host"
             ) else ()
          )
-      ) else ()
+      ) else if (not(doc-available(concat($tempCollection, '/', $id, '.xml')))) then
+        xmldb:copy($data-collection, $tempCollection, concat($id, '.xml'))
+      else ()
 
 (: this is the string we pass to instance id='save-data' src attribute :)
-let $instance-src :=  concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $data-collection)
+let $instance-src :=  concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $tempCollection)
 
 let $user := xmldb:get-current-user()
 
@@ -116,7 +135,7 @@ let $model :=
        
        (: A selection of elements from the MODS schema with all possible attributes used for inserting a repetition.:)
        (: NB: When it becomes possible to insert attributes this instance is not needed. For now, we have to present all attributes, not just the recommended ones. Once it is possible to insert attributes, new-instance can be used instead of element-selection-with-attributes. :)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="element-selection-with-attributes.xml" id='new-instance-'/>       
+       <!--<xf:instance xmlns="http://www.loc.gov/mods/v3" src="element-selection-with-attributes.xml" id='new-instance-'/>-->       
        
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}"/>
        
@@ -133,7 +152,19 @@ let $model :=
                   
        <xf:submission id="save-submission" method="post"
           ref="instance('save-data')"
-          action="save.xq?collection={$data-collection}" replace="instance"
+          action="save.xq?collection={$tempCollection}&amp;action=save" replace="instance"
+          instance="save-results">
+       </xf:submission>
+       
+       <xf:submission id="save-and-close-submission" method="post"
+          ref="instance('save-data')"
+          action="save.xq?collection={$tempCollection}&amp;action=close" replace="instance"
+          instance="save-results">
+       </xf:submission>
+       
+       <xf:submission id="cancel-submission" method="post"
+          ref="instance('save-data')"
+          action="save.xq?collection={$tempCollection}&amp;action=cancel" replace="instance"
           instance="save-results">
        </xf:submission>
        
@@ -150,7 +181,7 @@ let $content :=
     <span class="float-right">editing record <strong>{$id}</strong> on the <strong>{$tab-label}</strong> tab</span>
     
     
-    {mods:tabs($tab-id, $id, $show-all, $data-collection)}
+    {mods:tabs($tab-id, $id, $show-all, $tempCollection)}
     
     <xf:submit submission="save-submission">
         <xf:label class="xforms-group-label-centered-general">Save</xf:label>
@@ -158,7 +189,14 @@ let $content :=
     <xf:trigger>
         <xf:label class="xforms-group-label-centered-general">Save and Close</xf:label>
         <xf:action ev:event="DOMActivate">
-            <xf:send submission="save-submission"/>
+            <xf:send submission="save-and-close-submission"/>
+            <xf:load resource="../search/index.xml?reload=true" show="replace"/>
+        </xf:action>
+    </xf:trigger>
+    <xf:trigger>
+        <xf:label class="xforms-group-label-centered-general">Cancel</xf:label>
+        <xf:action ev:event="DOMActivate">
+            <xf:send submission="cancel-submission"/>
             <xf:load resource="../search/index.xml?reload=true" show="replace"/>
         </xf:action>
      </xf:trigger>
