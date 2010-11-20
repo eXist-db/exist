@@ -334,11 +334,11 @@ declare function biblio:process-form() as element(query)? {
     Helper function used to sort by name within the "order by"
     clause of the query.
 :)
-declare function biblio:orderByName($m as element()) as xs:string?
+declare function biblio:orderByAuthor($m as element()) as xs:string?
 {
     for $name in $m/mods:name[1]
     return
-        mods:retrieve-name($name, 1)
+        mods:retrieve-primary-name($name, 1)
 };
     
 (: Map order parameter to xpath for order by clause :)
@@ -357,7 +357,7 @@ declare function biblio:orderExpr($field as xs:string?) as xs:string
         if ($field eq "Score") then
             "ft:score($hit) descending"
         else if ($field = "Author") then
-            "biblio:orderByName($hit)"
+            "biblio:orderByAuthor($hit)"
         else if ($field = "Title") then
             "$hit/mods:titleInfo[1]/mods:title[1]"
         else

@@ -140,7 +140,7 @@ declare function mods:format-subjects($entry as element()) {
             if ($item/mods:*) 
             then
                 if ($item/name() = 'name')
-                then mods:format-untransliterated-name($item, 1) 
+                then mods:format-untransliterated-primary-name($item, 1) 
                 else
                     if ($item/name() = 'titleInfo')
                     then mods:get-short-title('', $item/..)
@@ -288,7 +288,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             ,
             if ($part/mods:extent) 
             then
-                concat(", ", mods:get-extent($part/mods:extent[1]),'.')
+                concat(', ', mods:get-extent($part/mods:extent[1]),'.')
             else ()
             )
         else 
@@ -496,7 +496,7 @@ declare function mods:get-conference-detail-view($entry as element()) {
     ()
 };
 
-declare function mods:format-untransliterated-name($name as element(mods:name), $pos as xs:integer) {
+declare function mods:format-untransliterated-primary-name($name as element(mods:name), $pos as xs:integer) {
     if ($name[not(@type)])
     (: if the name is (erroneously) not typed :)    
     then
@@ -597,6 +597,109 @@ declare function mods:format-untransliterated-name($name as element(mods:name), 
         else()
         };
 
+declare function mods:format-untransliterated-secondary-name($name as element(mods:name), $pos as xs:integer) {
+    if ($name[not(@type)])
+    (: if the name is (erroneously) not typed :)    
+    then
+        concat(
+        mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type)]), 
+        ' ', 
+        string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+        )
+    else
+    	if ($name/@type = 'conference') 
+    	then ()
+    	(: get-conference-detail-view and get-conference-hitlist take care of conference. :)
+        else
+            if ($name/@type = 'corporate') 
+            then
+            concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
+            (: Does not need manipulation, since it is never decomposed. :)
+            else
+            if ($name/@type = 'personal')
+            then
+            	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
+            	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
+            	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
+            	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration)], ' ') 
+            return
+        	concat(
+        	(:concat appends dates to name proper:)
+        	string-join(
+        	if ($family or $given) 
+        	then
+        	(: If one of the nameParts is properly typed :)
+        	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) 
+        	   then
+    				(: If the name is transliterated and Eastern :)
+    				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
+    				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
+    				(: We assume that the name in native script occurs first, that the existence of a transliterated name implies the existence of a native-script name. :)
+    				(mods:format-transliterated-eastern-name($name), ' ',
+        			(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')),
+        			functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
+        			, ' '))))
+        			(: The string-joins are meant to capture multiple family and given names. Needed?:)
+                else
+                    if (($family[@transliteration]) or ($given[@transliteration])) 
+                    then
+            		(: If the name is transliterated but not Eastern :)
+            		(mods:format-transliterated-non-eastern-name($name), ' ',
+            		(functx:trim(string-join($family, ' ')),
+            		functx:trim(string-join($given, ' '))))
+            		(: The string-joins are meant to capture multiple family and given names. :)
+            		else
+            		(: If the name is not transliterated :)        		 
+                		if ($pos eq 1)
+                		(: If it is the first name :)
+                		then
+                		(: If we have a non-Chinese, non-Japanese name occurring first. :)
+                		(
+                		functx:trim(string-join($given, ' ')), 
+                		' ', 
+                		functx:trim(string-join($family/string(), ' ')),
+(:NB! The only difference between primary and secondary is the order of family and given names. :)
+                		    if ($address)
+                		    then functx:trim(concat(', ',$address)) 
+                		    else ()
+            				    )
+            		    else
+            		    (: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
+            		    (functx:trim(string-join($given, ' '))
+            		    ,
+            		    ' '
+            		    , 
+            		    functx:trim(string-join($family/string(), ' '))
+            		    ,
+            		      if ($address) 
+            		      then functx:trim(string-join($address, ', ')) 
+            		      else ()
+            				    )
+                else
+                    if ($pos eq 1) 
+                    then
+                    (: If we have an untyped name occurring first. :)
+                        (functx:trim(string-join($name/mods:namePart, ', ')),
+                            if ($address) 
+                            then functx:trim(string-join($address, ', ')) 
+                            else ()
+                    )
+                    else
+                    (: If we have an untyped name occurring later. :)
+                    (functx:trim(string-join($name/mods:namePart, ' ')),
+                        if ($address) 
+                        then functx:trim(string-join($address, ', ')) 
+                        else ()
+                    )                    (: One could check for ($family or $given). :)
+(:                    (functx:trim(mods:format-transliterated-eastern-name($name))):)
+                    (: If there is a transliteration, but no name in original script. :)
+              , ' '), 
+              (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
+              (if ($date) then concat(' (', functx:trim($date), ')') else ()))
+              (: NB: Why is this part only shown in list-view? :)
+        else()
+        };
+
 declare function mods:get-authority($name as element(mads:name)?, $lang as xs:string?, $pos as xs:integer) {
     if ($name/@type = 'corporate') then
         $name/mads:namePart/text()
@@ -635,7 +738,8 @@ declare function mods:get-name-from-mads($mads as element(mads:mads), $pos as xs
     ), " ")
 };
 
-declare function mods:retrieve-name($name as element(mods:name), $pos as xs:int) {
+(: NB: used in search.xql :)
+declare function mods:retrieve-primary-name($name as element(mods:name), $pos as xs:int) {
     let $madsRef := replace($name/@xlink:href, "^#?(.*)$", "$1")
     let $mads :=
         if ($madsRef) 
@@ -643,8 +747,20 @@ declare function mods:retrieve-name($name as element(mods:name), $pos as xs:int)
         else ()
     return
         if ($mads) 
-        then mods:get-name-from-mads($mads, $pos)[1]
-        else mods:format-untransliterated-name($name, $pos)[1]
+        then mods:get-name-from-mads($mads, $pos)
+        else mods:format-untransliterated-primary-name($name, $pos)
+};
+
+declare function mods:retrieve-secondary-name($name as element(mods:name), $pos as xs:int) {
+    let $madsRef := replace($name/@xlink:href, "^#?(.*)$", "$1")
+    let $mads :=
+        if ($madsRef) 
+        then collection("/db/biblio/authority")/mads:mads[@ID = $madsRef]
+        else ()
+    return
+        if ($mads) 
+        then mods:get-name-from-mads($mads, $pos)
+        else mods:format-untransliterated-secondary-name($name, $pos)
 };
 
 (: retrieves author names that occur in the beginning in entries in hitlist and related items :)
@@ -652,15 +768,15 @@ declare function mods:retrieve-primary-names($entry as element()) {
     for $name at $pos in $entry/mods:name
     where $name/mods:role/mods:roleTerm = ('aut', 'author', 'Author')
     return
-        mods:retrieve-name($name, $pos)
+        mods:retrieve-primary-name($name, $pos)
 };
 
 (: retrieves names other than author names that occur after the title in entries in hitlist and related items :)
 declare function mods:retrieve-secondary-names($entry as element()) {
     for $name at $pos in $entry/mods:name
-    where $name/mods:role/mods:roleTerm = ('edt', 'editor', 'Editor')
+    where $name/mods:role/mods:roleTerm != ('aut', 'author', 'Author')
     return
-        mods:retrieve-name($name, $pos)
+        mods:retrieve-secondary-name($name, $pos)
 };
 
 (: formats author names for hitlist and related items :)
@@ -693,22 +809,31 @@ declare function mods:format-multiple-primary-names($entry as element()) {
         )
 };
 
-declare function mods:format-multiple-secondary-names($entry as element()) 
-    {
-    let $names := mods:retrieve-secondary-names($entry)
+(:
+declare function mods:format-multiple-secondary-roles($entry as element()) {
+    let $names := mods:format-multiple-secondary-names($entry)
+    for $role in $names/mods:role/mods:roleTerm/string() != ('aut', 'author', 'Author')
+    let $term := 
+    if ($role = ('edt', 'editor', 'Editor')) 
+    then 'Edited by '
+    else
+    if ($role = ('trl', 'translator', 'Translator')) 
+    then 'Translated by '
+    else ()
+    return
     let $nameCount := count($names)
-(:    for $role in $names/mods:role/mods:roleTerm/string()
-    return    
-    if (1) then
-    () else
-    ()
-:)    let $formatted :=
+    let $formatted :=
         if ($nameCount eq 0) then
             ()
         else if ($nameCount eq 1) then
-            concat($role, $names)
+            if (ends-with($names, ".")) then
+            (: Places period after single author name, if it does not end in period. :)
+            (: NB: this should not be necessary:)
+            concat($term, $names)
+            else
+            concat($term, $names, '. ')
         else
-            concat($role ,
+            concat($term, 
                 string-join(subsequence($names, 1, $nameCount - 1), ", "),
                 (: Places commas after all names that do not come last. :)
                 ", and ",
@@ -719,13 +844,15 @@ declare function mods:format-multiple-secondary-names($entry as element())
             )
     return
     normalize-space(
-        ($formatted)
+        $formatted
         )
 };
+:)
+
 
 (: formats author names for hitlist and related items :)
 declare function mods:format-multiple-secondary-names($entry as element()) {
-    let $names := mods:retrieve-primary-names($entry)
+    let $names := mods:retrieve-secondary-names($entry)
     let $nameCount := count($names)
     let $formatted :=
         if ($nameCount eq 0) then
@@ -827,55 +954,6 @@ declare function mods:get-genre() {
     (: Problem: What if other languages than Chinese and Japanese occur in a MODS record? :)
     (: Problem: What if several languages with transcription occur in one MODS record? :)
 
-(: NB: is not used!!!! :)
-declare function mods:get-title-transliteration($entry as element(), $titleInfo as element(mods:titleInfo)?) {
-    let $titleInfo :=
-        if ($titleInfo/@transliteration = 'romaji') 
-        then
-            string-join(($entry/mods:titleInfo[@transliteration = 'romaji']/mods:title, $entry/mods:titleInfo[@transliteration = 'romaji']/mods:subTitle), ': ')
-        else 
-            if ($titleInfo/@transliteration = 'pinyin') 
-            then
-                string-join(($entry/mods:titleInfo[@transliteration = 'pinyin']/mods:title, $entry/mods:titleInfo[@transliteration = 'pinyin']/mods:subTitle), ': ')
-            else ()
-    return
-        if ($titleInfo) 
-        then
-        (: If there is a transliterated title. :) 
-            <span class="title-transliteration">{string-join(($titleInfo/mods:title/string(), $titleInfo/mods:subTitle/string()),': ')}</span> 
-        else ()
-};
-(: Why does this choke on:
-    <titleInfo transliteration="romaji">
-        <title>Chūgoku ni okeru hokkekyō no sekkoku</title>
-    </titleInfo>
-    <titleInfo lang="ja">
-        <title>中国 における法華経の石刻</title>
-    </titleInfo>
-but not on:
-    <titleInfo lang="ja">
-        <title>中国 における法華経の石刻</title>
-    </titleInfo>
-    <titleInfo transliteration="romaji">
-        <title>Chūgoku ni okeru hokkekyō no sekkoku</title>
-    </titleInfo>
-??? :)
-(: Wolfgang's function:
-declare function mods:get-transliteration($entry as element(), $title as element(mods:titleInfo)?) {
-    let $title :=
-        if ($title/@lang = 'ja') then
-            $entry/mods:titleInfo[@transliteration = 'romaji']
-        else if ($title/@lang = 'zh') then
-            $entry/mods:titleInfo[@transliteration = 'pinyin']
-        else
-            ()
-    return
-        if ($title) then
-            <span class="title-transliteration">{ $title/mods:title/string(), ' ' }</span> 
-        else ()
-};
-:)
-
 
 (: If there is a Japanese or Chinese title, any English title will be a translated title. :) 
     (: Problem: a variant or parallel title in English? :)
@@ -892,57 +970,35 @@ declare function mods:get-title-translated($entry as element(mods:mods), $titleI
         else ()
 };
 
-(: This constructs a short title for the hitlist. It uses the first titleInfo title/subtitle with transliteration followed by the first titleInfo title/subtitle without transliteration. :)
-    (: One could change it to prefer a title in a non-European language, if there is one. :)
-
-(: was:
-    declare function mods:get-short-title($id as xs:string?, $entry as element()) {
-    let $title := ($entry/mods:titleInfo[@lang = 'ja'], $entry/mods:titleInfo[@lang = 'zh'], 
-        $entry/mods:titleInfo)[1]
-    return
-        <span><a class="pagination-toggle">{ mods:get-title-transliteration($entry, $title), $title/mods:title/string() }</a>. </span>
-};
-"mods:get-title-transliteration()" did nothing.
-:)
-(: Constructs the full title for the hitlist view. :)
+(: Constructs the title for the hitlist view. :)
 declare function mods:get-short-title($id as xs:string?, $entry as element()) {
-    let $nonSortTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:nonSort/string()
-    let $titleTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:title/string()
-    let $subTitleTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:subTitle/string()
-    let $partNumberTransliteration := $entry/mods:titleInfo[@transliteration][1]/mods:partNumber/string()
-    let $partNameTransliteration := string-join(($entry/mods:titleInfo[@transliteration][1]/mods:partName/string()), ', ')
-    let $nonSort := $entry/mods:titleInfo[not(@transliteration)][1]/mods:nonSort/string()
-    let $title := $entry/mods:titleInfo[not(@transliteration)][1]/mods:title
-    let $subTitle := $entry/mods:titleInfo[not(@transliteration)][1]/mods:subTitle/string()
-    let $partNumber := $entry/mods:titleInfo[not(@transliteration)][1]/mods:partNumber/string()
-    let $partName := string-join(($entry/mods:titleInfo[not(@transliteration)][1]/mods:partName[1]/string()), ':, ' )
+    let $titleInfo := $entry/mods:titleInfo[not(@type='abbreviated')][not(@type='uniform')][not(@type='alternative')]
+    let $titleInfoTransliteration := $titleInfo[@transliteration]
+    let $titleInfoTranslation := $titleInfo[@type='translated']
     
-    return
-    normalize-space(
-    (: If there is a Chinese/Japanese title with transliteration, only the transliteration should be in italics. :)
-    if ($titleTransliteration) 
-    then
-        <span class="pagination-toggle"><em>
-        { 
-        concat($nonSortTransliteration, ' ' , $titleTransliteration)
-        , 
-        if ($subTitleTransliteration) 
-        then concat(': ', $subTitleTransliteration)
-        else ()
-        ,
-        if ($partNumberTransliteration) 
-        then concat(': ', $partNumberTransliteration )
-        else ()
-        ,
-        if ($partNameTransliteration) 
-        then concat(': ', $partNameTransliteration)
-        else ()         
-        }
-        </em>, 
-        {
-        ' '
-        , 
-        concat($nonSort, ' ' , $title)
+    let $nonSortTransliteration := string-join($titleInfoTransliteration/mods:nonSort, ' ')
+    let $titleTransliteration := string-join($titleInfo[@transliteration]/mods:title, ' ')
+    let $subTitleTransliteration := string-join($titleInfoTransliteration/mods:subTitle, ' ')
+    let $partNumberTransliteration := string-join($titleInfoTransliteration/mods:partNumber, ' ')
+    let $partNameTransliteration := string-join($titleInfoTransliteration/mods:partName, ' ')
+    
+    let $nonSortTranslation := string-join($titleInfoTranslation/mods:nonSort, ' ')
+    let $titleTranslation := string-join($titleInfoTranslation/mods:title, ' ')
+    let $subTitleTranslation := string-join($titleInfoTranslation/mods:subTitle, ' ')
+    let $partNumberTranslation := string-join($titleInfoTranslation/mods:partNumber, ' ')
+    let $partNameTranslation := string-join($titleInfoTranslation/mods:partName, ' ')
+    
+    let $nonSort := string-join($titleInfo[not(@transliteration)][not(@type)]/mods:nonSort, ' ')
+    let $title := string-join($titleInfo[not(@transliteration)][not(@type)]/mods:title, ' ')
+    let $subTitle := string-join($titleInfo[not(@transliteration)][not(@type)]/mods:subTitle, ' ')
+    let $partNumber := string-join($titleInfo[not(@transliteration)][not(@type)]/mods:partNumber, ' ')
+    let $partName := string-join($titleInfo[not(@transliteration)][not(@type)]/mods:partName, ' ')    
+    
+    let $titleFormat := 
+        (
+        if ($nonSort) 
+        then concat($nonSort, ' ' , $title)
+        else $title
         , 
         if ($subTitle) 
         then concat(': ', $subTitle)
@@ -955,34 +1011,72 @@ declare function mods:get-short-title($id as xs:string?, $entry as element()) {
         if ($partName) 
         then concat(': ', $partName)
         else ()
+        )
+    let $titleTransliterationFormat := 
+        (
+        if ($nonSortTransliteration) 
+        then concat($nonSortTransliteration, ' ' , $titleTransliteration)
+        else $titleTransliteration
+        , 
+        if ($subTitleTransliteration) 
+        then concat(': ', $subTitleTransliteration)
+        else ()
         ,
-        if ($title/../../mods:originInfo/mods:issuance[. = 'continuing']) 
+        if ($partNumberTransliteration) 
+        then concat(': ', $partNumberTransliteration)
+        else ()
+        ,
+        if ($partNameTransliteration) 
+        then concat(': ', $partNameTransliteration)
+        else ()
+        )
+    let $titleTranslationFormat := 
+        (
+        if ($nonSortTranslation) 
+        then concat($nonSortTranslation, ' ' , $titleTranslation)
+        else $titleTranslation
+        , 
+        if ($subTitleTranslation) 
+        then concat(': ', $subTitleTranslation)
+        else ()
+        ,
+        if ($partNumberTranslation) 
+        then concat(': ', $partNumberTranslation)
+        else ()
+        ,
+        if ($partNameTranslation) 
+        then concat(': ', $partNameTranslation)
+        else ()
+        )
+        
+    return
+        (
+        if ($titleInfo/../mods:relatedItem[@type = 'host']) 
+        then '"'
+        else ()
+        ,
+        (
+        if ($titleTransliteration) 
+        then
+        ($titleTransliterationFormat         
+        ,
+        ' ')
+        else ()
+        , 
+        $titleFormat
+        ,
+        if ($titleInfo/../mods:relatedItem[@type = 'host']) 
+        then '"'
+        else ()
+        ,
+        if ($titleTranslation)
+        then ('(', $titleTranslationFormat,')')
+        else ()
+        ,
+        if ($titleInfo/../mods:originInfo/mods:issuance[. = 'continuing']) 
         then ()
         else '.'        
-        }
-        </span>
-    else
-        <span class="pagination-toggle"><em>
-        {  
-        if ($title/../../mods:relatedItem[@type = 'host']) 
-        then '"'
-        else ()
-        ,
-        $title
-        ,
-        if ($subTitle) 
-        then concat(': ', $subTitle)
-        else ()
-        ,
-        if ($title/../../mods:relatedItem[@type = 'host']) 
-        then '"'
-        else ()
-        ,
-        if ($title/../../mods:originInfo/mods:issuance[. = 'continuing']) 
-        then ()
-        else '.'
-        }
-        </em></span>
+        )
         )
 };
 
@@ -1108,16 +1202,24 @@ declare function mods:get-related-item($entry as element(mods:mods)) {
     return
         if ($related) 
         then
-            <span class="related">            { 
+            <span class="related"><span class="title">
+                {
                 mods:format-multiple-primary-names($related), 
-                mods:get-short-title((), $related),
+                mods:get-short-title((), $related)
+                }
+                </span>
+                ,
+                {
                 if ($related/mods:originInfo or $related/mods:part) 
-                then mods:get-part-and-origin($related)
+                then
+                (' ',                
+                mods:get-part-and-origin($related)
+                )
                 else 
                     if ($related/mods:location/mods:url) 
                     then concat(" <", $related/mods:location/mods:url, ">")
                     else ()
-            }
+                }
             </span>
         else ()
 };
@@ -1426,11 +1528,10 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
 
 (: Creates view for hitlist. :)
 declare function mods:format-short($id as xs:string, $entry as element(mods:mods)) {
-(: Was originally wrapped in <p>. :)
         mods:format-multiple-primary-names($entry),
         mods:get-short-title($id, $entry),
-        (:NB: does not work as it should. :)
-        (:mods:format-multiple-secondary-names($entry),:)
+        'Edited by ',
+        mods:format-multiple-secondary-names($entry),
         if ($entry/mods:name[@type = 'conference']) 
         then
             mods:get-conference-hitlist($entry)

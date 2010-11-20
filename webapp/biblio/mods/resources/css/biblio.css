@@ -2,6 +2,10 @@ p, td {
     line-height:1.7em;
 }
 
+.title {
+    font-style: italic;
+}
+
 a:link, a:visited { color: #5DB0E6; }
 
 #login { text-align: right; font-size: 120%; margin-bottom: 4px; }
