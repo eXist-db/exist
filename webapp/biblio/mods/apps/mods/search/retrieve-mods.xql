@@ -62,6 +62,40 @@ declare function mods:get-collection($entry as element(mods:mods)) {
         </td></tr>            
 };
 
+declare function mods:language-of-resource($entry as element(mods:language)*) {
+        let $language := $entry/mods:languageTerm[1]
+        (: It is assumed that if two <languageTerm>s exist under one <language>, these are equivalent. :)
+        let $languageTerm :=
+            let $languageTerm := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $language[@type = 'code']]/label
+            return
+            if ($languageTerm)
+            then $languageTerm
+            else
+                let $languageTerm := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[valueTwo = $language[@type = 'code']]/label
+                return
+                if ($languageTerm)
+                then $languageTerm
+                else
+                    let $languageTerm := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[valueTerm = $language[@type = 'code']]/label
+                    return
+                    if ($languageTerm)
+                    then $languageTerm
+                    else
+                        let $languageTerm := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[upper-case(label) = $language[@type = 'text']/upper-case(label)]/label
+                        return
+                        if ($languageTerm)
+                        then $languageTerm
+                        else
+                            let $languageTerm := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[upper-case(label) = upper-case($language[1])]/label
+                            return
+                            if ($languageTerm)
+                            then $languageTerm
+                            else ()
+            return
+            $languageTerm
+};
+
+
 declare function mods:add-part($part, $sep as xs:string) {
     if (empty($part) or string-length($part[1]) eq 0) 
     then ()
@@ -1310,34 +1344,61 @@ if ($entry/mods:name) then
                 then
                     if ($name/mods:role/mods:roleTerm[@type = 'code']) 
                     then
-                        doc("/db/org/library/apps/mods/code-tables/role-codes.xml")/code-table/items/item[value = $name/mods:role/mods:roleTerm/@type]/label
-                    else 
+                        functx:capitalize-first(doc("/db/org/library/apps/mods/code-tables/role-codes.xml")/code-table/items/item[value = $name/mods:role/mods:roleTerm/@type]/label)
+                    else
+                    (: if a code value is used that is not in the code table. :)                    
                         functx:capitalize-first($name/mods:role/mods:roleTerm[@type = 'text'])                        
                 else
-                    'Author'
+                (: try if the @type="text" value is a label. :)
+                    functx:capitalize-first(doc("/db/org/library/apps/mods/code-tables/role-codes.xml")/code-table/items/item[upper-case(label) = upper-case($name/mods:role/mods:roleTerm)]/label)
             else
-            'Author'
+                'Author'
             (: interpreting this as the default value for roleTerm. :)
             }
             </td><td class="record">
             {       
-        let $family := $name/mods:namePart[@type = 'family']
-        let $given := $name/mods:namePart[@type = 'given']
-        let $address := $name/mods:namePart[@type = 'termsOfAddress']
-        let $date := $name/mods:namePart[@type = 'date']
-        let $untyped := $name/mods:namePart[not(@type)]
+        let $namePart := $name/mods:namePart
+        let $family := $namePart[@type = 'family']
+        let $given := $namePart[@type = 'given']
+        let $address := $namePart[@type = 'termsOfAddress']
+        let $date := $namePart[@type = 'date']
+        let $untyped := $namePart[not(@type)]
+        let $type := $name/@type
+        let $language := 
+            if ($name/@lang)
+            then doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $name/@lang]/value
+            else mods:language-of-resource($entry/mods:language)
+        let $nameOrder := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $language]/nameOrder
+        order by $type
         return
             if ($family and $given) then (: If the namePart is split up into family and given. We assume that both will be present. :)
-                if ($family/@lang = ('ja', 'zh')) then
-                    (mods:format-transliterated-eastern-name($name), 
-                    ' ', 
-                    concat(
-                    $family[not(@transliteration)][1]/string(),
-                    (: NB: check! :)                    
-                    $given[not(@transliteration)][1]/string()),
-                    (: NB: check! :)                    
-                    if ($address) then functx:trim(concat(', ', $address)) else (),
-                    if ($date) then functx:trim(concat(' (', $date, ')')) else ()
+                if ($nameOrder = 'family-given') then
+                    (
+                        mods:format-transliterated-eastern-name($name)
+                        , 
+                        ' '
+                        ,
+                        if ($language = 'hun')
+                        then                        
+                        concat(
+                            string-join($family[not(@transliteration)], ' '),                    
+                            string-join($given[not(@transliteration)], ' ')
+                            (: space between Hungarian names. :)
+                        )
+                        else
+                        concat(
+                            string-join($family[not(@transliteration)], ''),                    
+                            string-join($given[not(@transliteration)], '')
+                            (: no space between Chinese and Japanese names. :)
+                        )
+                        ,
+                        if ($address) 
+                        then functx:trim(concat(', ', $address)) 
+                        else ()
+                        ,
+                        if ($date) 
+                        then functx:trim(concat(' (', $date, ')')) 
+                        else ()
                     )
                     (: Sometimes we have names in Chinese characters, in transliteration _and_ a Western name. :)
                 else
@@ -1397,7 +1458,12 @@ declare function mods:entry-full($entry as element())
     {
     let $entry := local:remove-empty-attributes($entry)
     return
-    mods:names-full($entry),
+    
+    (: names :)
+    mods:names-full($entry)
+    ,
+    
+    (: titles :)
     for $titleInfo in (
         $entry/mods:titleInfo[not(@type)],
         $entry/mods:titleInfo[@type = 'abbreviated'],
@@ -1408,12 +1474,20 @@ declare function mods:entry-full($entry as element())
     return 
     mods:title-full($titleInfo)
     ,
+    
+    (: conferences :)
     mods:simple-row(mods:get-conference-detail-view($entry), "Conference")
     ,
+    
+    (: place :)
     mods:simple-row(mods:get-place($entry/mods:originInfo/mods:place), "Place")
     ,
+    
+    (: publisher :)
     mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher[1]), "Publisher")
     ,
+    
+    (: dates :)
     if ($entry/mods:relatedItem/mods:originInfo/mods:dateCreated) 
     then () 
     else mods:simple-row($entry/mods:originInfo/mods:dateCreated[1], "Date Created")
@@ -1427,7 +1501,10 @@ declare function mods:entry-full($entry as element())
     else mods:simple-row($entry/mods:originInfo[1]/mods:dateModified[1], "Date Modified")
     ,
     (: NB! [1] should not be necessary. :)
-    mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date"),
+    mods:simple-row($entry/mods:originInfo/mods:dateOther, "Other date")
+    ,
+    
+    (: extent :)
     if ($entry/mods:extent) 
     then mods:simple-row(mods:get-extent($entry/mods:extent), "Extent") 
     else ()
@@ -1457,14 +1534,15 @@ declare function mods:entry-full($entry as element())
     ,
     
     (: language :)
-    (: expand to render more than one language :)
-    if ($entry/mods:language[1]/mods:languageTerm/@authority="iso639-2b")
-    then
-    mods:simple-row(
-    doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $entry/mods:language[1]/mods:languageTerm]/label, "Language")
-    else
-    mods:simple-row(
-        $entry/mods:language[1]/mods:languageTerm/string(), "Language")
+    for $language in ($entry/mods:language)
+    let $languageTerm := mods:language-of-resource($language)
+    return
+    <tr>
+    <td class="label subject">Language of Resource</td>
+        <td>
+            {$languageTerm}
+        </td>
+    </tr>
     ,
     
     (: genre :)

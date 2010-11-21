@@ -3,17 +3,38 @@
         <fulltext default="none" attributes="no"/>
         <lucene>
             <text qname="mods:mods"/>
+            
+            <!--top level elements-->
             <text qname="mods:titleInfo"/>
-            <text qname="mods:name"/>
-            <text qname="mods:abstract"/>
+            <!--<text qname="mods:language"/>-->
             <text qname="mods:note"/>
+            <!--<text qname="mods:location"/>-->
+            <text qname="mods:name"/>
+            <!--<text qname="mods:physicalDescription"/>-->
             <text qname="mods:subject"/>
+            <!--<text qname="mods:accessCondition"/>-->
+            <!--<text qname="mods:typeOfResource"/>-->
+            <text qname="mods:abstract"/>
+            <!--<text qname="mods:classification"/>-->
+            <!--<text qname="mods:part"/>-->
+            <!--<text qname="mods:genre"/>-->
+            <!--<text qname="mods:tableOfContents"/>-->
+            <text qname="mods:relatedItem"/>
+            <!--<text qname="mods:extension"/>-->
+            <!--<text qname="mods:originInfo"/>-->
+            <!--<text qname="mods:targetAudience"/>-->
+            <!--<text qname="mods:identifier"/>-->
+            <!--<text qname="mods:recordInfo"/>-->
+            
+            <!--deeper elements accessed by search module-->
             <text qname="mods:dateCreated"/>
             <text qname="mods:dateIssued"/>
+            <text qname="mods:dateCaptured"/>
+            <text qname="mods:copyrightDate"/>
         </lucene>
-        <create qname="mods:namePart" type="xs:string"/>
         <create qname="@ID" type="xs:string"/>
-        <!--create qname="@type" type="xs:string"/>
-            <create qname="@lang" type="xs:string"/-->
+        <create qname="@type" type="xs:string"/>
+        <create qname="@authority" type="xs:string"/>
+        <create qname="@lang" type="xs:string"/>
     </index>
 </collection>
