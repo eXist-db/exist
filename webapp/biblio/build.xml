@@ -43,6 +43,14 @@
 			</fileset>
 		</xdb:store>
 		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
+			uri="${server-uri}/system/config/db/org/library/apps/mods/code-tables" createcollection="true"
+			createsubcollections="true" failonerror="false">
+			<fileset dir="${mods.dir}/apps/mods/code-tables">
+				<include name="*.xconf"/>
+			</fileset>
+		</xdb:store>
+		
+		<xdb:store user="${public.xmldb.username}" password="${public.xmldb.password}"
 			uri="${server-uri}/${data-collection}/samples" createcollection="true"
 			createsubcollections="true" failonerror="false">
 			<fileset dir="${samples.dir}/mods">

@@ -8,3 +8,6 @@ declare variable $config:force-lower-case-usernames as xs:boolean := true();
 declare variable $config:send-notification-emails := false();
 declare variable $config:smtp-server := "smtp.yourdomain.com";
 declare variable $config:smtp-from-address := "exist@yourdomain.com";
+
+(:~ Credentials for the dba admin user :)
+declare variable $config:dba-credentials := ("admin", ());
