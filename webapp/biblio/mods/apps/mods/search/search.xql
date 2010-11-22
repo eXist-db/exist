@@ -521,7 +521,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             let $app-collection := $style:db-path-to-app
             let $code-tables := concat($app-collection, '/apps/mods/code-tables')
             let $document-path := concat($code-tables, '/document-type-codes.xml')
-            let $language-path := concat($code-tables, '/language-2-type-codes.xml')
+            let $language-path := concat($code-tables, '/language-3-type-codes.xml')
             let $code-table-type := doc($document-path)/code-table
             let $code-table-lang := doc($language-path)/code-table
             return 
@@ -547,9 +547,11 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                             {
                                 for $item in $code-table-lang//item
                                 let $label := $item/label/text()
-                                order by $label
+                                let $labelValue := $item/value/text()
+                                let $common := if ($item/frequencyClassifier[. = 'common']) then '' else 'A'
+                                order by $common, $label
                                 return
-                                    <option value="{$item/value/text()}">{$item/label/text()}</option>
+                                    <option value="{$labelValue}">{$item/label/text()}</option>
                             }
                             </select>
                         </div>

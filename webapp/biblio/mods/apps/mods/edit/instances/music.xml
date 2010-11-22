@@ -1,1 +1,58 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-0.xsd"><titleInfo><title>3 Viennese arias :</title><subTitle>for soprano, obbligato clarinet in B flat, and piano /</subTitle></titleInfo><name type="personal"><namePart>Lawson, Colin (Colin James)</namePart></name><typeOfResource>notated music</typeOfResource><originInfo><place><placeTerm authority="marccountry" type="code">enk</placeTerm></place><place><placeTerm type="text">London</placeTerm></place><publisher>Nova Music</publisher><dateIssued encoding="w3cdtf">1984</dateIssued><issuance>monographic</issuance></originInfo><language><languageTerm authority="iso639-2b" type="code"/><languageTerm type="text"/></language><physicalDescription><form authority="marcform">print</form><extent>1 score (12 p.) + 2 parts ; 31 cm.</extent></physicalDescription><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><note>Opera excerpts.</note><note>Acc. arr. for piano; obbligato for the 2nd-3rd excerpts originally for chalumeau.</note><note>Italian words.</note><note>Cover title.</note><note>The 1st excerpt composed for inclusion in M.A. Ziani's Chilonida.</note><note>Texts with English translations on cover p. [2].</note><subject authority="lcsh"><topic>Operas</topic><topic>Excerpts, Arranged</topic><topic>Scores and parts</topic></subject><subject authority="lcsh"><topic>Songs (High voice) with instrumental ensemble</topic><topic>Scores and parts</topic></subject><relatedItem type="series"><titleInfo><title>Music for voice and instrument</title></titleInfo></relatedItem><relatedItem type="constituent"><titleInfo><title>Tutto in pianto il cor struggete; arr. 1984.</title></titleInfo><name type="personal"><namePart>Joseph I, Holy Roman Emperor,</namePart><namePart type="date">1678-1711</namePart></name></relatedItem><relatedItem type="constituent"><titleInfo><title>Endimione. arr. 1984.</title><partName>E sempre inquieto quel core infelice; arr. 1984.</partName></titleInfo><name type="personal"><namePart>Bononcini, Giovanni,</namePart><namePart type="date">1670-1747</namePart></name></relatedItem><relatedItem type="constituent"><titleInfo><title>Mutio Scevola. arr. 1984.</title><partName>Adorata genitrice; arr. 1984.</partName></titleInfo><name type="personal"><namePart>Bononcini, Giovanni,</namePart><namePart type="date">1670-1747</namePart></name></relatedItem><relatedItem type="constituent"><titleInfo><title>Three Viennese arias.</title></titleInfo></relatedItem><relatedItem type="constituent"><titleInfo><title>Viennese arias.</title></titleInfo></relatedItem><recordInfo><recordContentSource>DLC</recordContentSource><recordCreationDate encoding="marc">850813</recordCreationDate><recordChangeDate encoding="iso8601">19950601141653.9</recordChangeDate><recordIdentifier>5594130</recordIdentifier></recordInfo><targetAudience authority="marctarget">adult</targetAudience><part type=""><detail type="" level="" order=""><number/><caption/><title/></detail><extent unit=""><start/><end/><total/><list/></extent><date encoding="w3cdtf" point="" qualifier=""/><text/></part><classification authority="lcc" displayLabel="" lang=""/></mods>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo>
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="personal">
+        <namePart type="family"/>
+        <namePart type="given"/>
+        <role>
+            <roleTerm authority="marcrelator" type="text">composer</roleTerm>
+        </role>
+    </name>
+    <typeOfResource>notated music</typeOfResource>
+    <originInfo>
+        <place>
+            <placeTerm authority="marccountry" type="code"/>
+            <placeTerm type="text"/>
+        </place>
+        <publisher/>
+        <dateIssued encoding="w3cdtf"/>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <language>
+        <languageTerm authority="iso639-2b" type="code"/>
+        <languageTerm type="text"/>
+    </language>
+    <physicalDescription>
+        <form authority="marcform">print</form>
+        <extent/>
+    </physicalDescription>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <note type=""/>
+    <subject authority="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" type="" script="" transliteration="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+        </titleInfo>
+        <name type="" authority="" lang="" script="" transliteration="">
+            <namePart type=""/>
+        </name>
+    </subject>
+    <genre authority=""/>
+    <recordInfo lang="eng" script="Latn" transliteration="" type="" authority="">
+        <recordCreationDate encoding="w3cdtf"/>
+        <languageOfCataloging>
+            <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+            <languageTerm type="text">English</languageTerm>
+        </languageOfCataloging>
+    </recordInfo>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <classification authority="lcc" displayLabel="" lang=""/>
+</mods>
