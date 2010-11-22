@@ -87,7 +87,7 @@ function getActiveGroup()
 }
 
 function getCurrentCollection() {
-    return $('#simple-search-form input[name = collection]').val();
+    return "/db" + $('#simple-search-form input[name = collection]').val();
 }
 
 /*
@@ -160,6 +160,8 @@ function toggleCollectionTree(show) {
 }
 
 function updateCollectionPaths(title, key) {
+    key = key.replace(/^\/db/, "");
+    
     //search forms
     var form = $('#simple-search-form');
     $('input[name = collection]', form).val(key);
