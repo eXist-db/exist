@@ -10,10 +10,16 @@
         Languages (in Cyrillic Script). On the basis of http://www.omniglot.com/writing/languages.htm, it has been noted which languages use Latin script. If
         central pages of www.omniglot.com have not been used for a notation, type="added" has been attributed. With languages where both a script based on Latin
         and a script not based on Latin (mostly Cyrillic) is used, the notation gives "non Latin". The modern form of the languages is intended, unless the
-        language name indicated otherwise. The order or family name and given name is noted in <nameOrder/></notes>
+        language name indicated otherwise. The order or family name and given name is noted in <nameOrder/>
+    </notes>
     <items>
         <item>
             <label>(no language selected)</label>
+            <value/>
+            <frequencyClassifier>common</frequencyClassifier>
+        </item>
+        <item>
+            <label>--more common languages above--</label>
             <value/>
         </item>
         <item>
@@ -22,7 +28,7 @@
             <valueTwo>aa</valueTwo>
             <label>Afar</label>
             <labelFrench>afar</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>abk</value>
@@ -30,14 +36,14 @@
             <valueTwo>ab</valueTwo>
             <label>Abkhazian</label>
             <labelFrench>abkhaze</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ace</value>
             <valueTerm/>
             <label>Achinese</label>
             <labelFrench>aceh</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>ara</value>
@@ -45,9 +51,9 @@
             <valueTwo>ar</valueTwo>
             <label>Arabic</label>
             <labelFrench>arabe</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ach</value>
@@ -66,7 +72,7 @@
             <valueTerm/>
             <label>Adyghe<!--; Adygei--></label>
             <labelFrench>adyghé</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>afa</value>
@@ -86,14 +92,14 @@
             <valueTwo>af</valueTwo>
             <label>Afrikaans</label>
             <labelFrench>afrikaans</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ain</value>
             <valueTerm/>
             <label>Ainu</label>
             <labelFrench>aïnou</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>aka</value>
@@ -101,14 +107,14 @@
             <valueTwo>ak</valueTwo>
             <label>Akan</label>
             <labelFrench>akan</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>akk</value>
             <valueTerm/>
             <label>Akkadian</label>
             <labelFrench>akkadien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>alb</value>
@@ -116,14 +122,14 @@
             <valueTwo>sq</valueTwo>
             <label>Albanian</label>
             <labelFrench>albanais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ale</value>
             <valueTerm/>
             <label>Aleut</label>
             <labelFrench>aléoute</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>alg</value>
@@ -136,7 +142,7 @@
             <valueTerm/>
             <label>Southern Altai</label>
             <labelFrench>altai du Sud</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>amh</value>
@@ -144,15 +150,15 @@
             <valueTwo>am</valueTwo>
             <label>Amharic</label>
             <labelFrench>amharique</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ang</value>
             <valueTerm/>
             <label>English, Old<!-- (ca.450-1100)--></label>
             <labelFrench>anglo-saxon (ca.450-1100)</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>anp</value>
@@ -165,14 +171,14 @@
             <valueTerm/>
             <label>Apache languages</label>
             <labelFrench>apaches, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>arc</value>
             <valueTerm/>
             <label>Official Aramaic<!-- (700-300 BCE)--><!--; Imperial Aramaic (700-300 BCE)--></label>
             <labelFrench>araméen d'empire (700-300 BCE)</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>arg</value>
@@ -180,7 +186,7 @@
             <valueTwo>an</valueTwo>
             <label>Aragonese</label>
             <labelFrench>aragonais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>arm</value>
@@ -188,8 +194,8 @@
             <valueTwo>hy</valueTwo>
             <label>Armenian</label>
             <labelFrench>arménien</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>arn</value>
@@ -202,7 +208,7 @@
             <valueTerm/>
             <label>Arapaho</label>
             <labelFrench>arapaho</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>art</value>
@@ -215,7 +221,7 @@
             <valueTerm/>
             <label>Arawak</label>
             <labelFrench>arawak</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>asm</value>
@@ -223,15 +229,15 @@
             <valueTwo>as</valueTwo>
             <label>Assamese</label>
             <labelFrench>assamais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ast</value>
             <valueTerm/>
             <label>Asturian<!--; Bable; Leonese; Asturleonese--></label>
             <labelFrench>asturien; bable; léonais; asturoléonais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ath</value>
@@ -244,7 +250,7 @@
             <valueTerm/>
             <label>Australian languages</label>
             <labelFrench>australiennes, langues</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>ava</value>
@@ -252,7 +258,7 @@
             <valueTwo>av</valueTwo>
             <label>Avaric</label>
             <labelFrench>avar</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ave</value>
@@ -260,7 +266,7 @@
             <valueTwo>ae</valueTwo>
             <label>Avestan</label>
             <labelFrench>avestique</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>awa</value>
@@ -274,7 +280,7 @@
             <valueTwo>ay</valueTwo>
             <label>Aymara</label>
             <labelFrench>aymara</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>aze</value>
@@ -282,8 +288,8 @@
             <valueTwo>az</valueTwo>
             <label>Azerbaijani</label>
             <labelFrench>azéri</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bad</value>
@@ -303,14 +309,14 @@
             <valueTwo>ba</valueTwo>
             <label>Bashkir</label>
             <labelFrench>bachkir</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bal</value>
             <valueTerm/>
             <label>Baluchi</label>
             <labelFrench>baloutchi</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bam</value>
@@ -318,15 +324,15 @@
             <valueTwo>bm</valueTwo>
             <label>Bambara</label>
             <labelFrench>bambara</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ban</value>
             <valueTerm/>
             <label>Balinese</label>
             <labelFrench>balinais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>baq</value>
@@ -334,14 +340,14 @@
             <valueTwo>eu</valueTwo>
             <label>Basque</label>
             <labelFrench>basque</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>bas</value>
             <valueTerm/>
             <label>Basa</label>
             <labelFrench>basa</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bat</value>
@@ -361,15 +367,15 @@
             <valueTwo>be</valueTwo>
             <label>Belarusian</label>
             <labelFrench>biélorusse</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bem</value>
             <valueTerm/>
             <label>Bemba</label>
             <labelFrench>bemba</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ben</value>
@@ -377,8 +383,8 @@
             <valueTwo>bn</valueTwo>
             <label>Bengali</label>
             <labelFrench>bengali</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ber</value>
@@ -391,7 +397,7 @@
             <valueTerm/>
             <label>Bhojpuri</label>
             <labelFrench>bhojpuri</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bih</value>
@@ -405,7 +411,7 @@
             <valueTerm/>
             <label>Bikol</label>
             <labelFrench>bikol</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>bin</value>
@@ -419,14 +425,14 @@
             <valueTwo>bi</valueTwo>
             <label>Bislama</label>
             <labelFrench>bichlamar</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>bla</value>
             <valueTerm/>
             <label>Siksika</label>
             <labelFrench>blackfoot</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bnt</value>
@@ -440,7 +446,7 @@
             <valueTwo>bs</valueTwo>
             <label>Bosnian</label>
             <labelFrench>bosniaque</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bra</value>
@@ -454,7 +460,7 @@
             <valueTwo>br</valueTwo>
             <label>Breton</label>
             <labelFrench>breton</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>btk</value>
@@ -467,14 +473,14 @@
             <valueTerm/>
             <label>Buriat</label>
             <labelFrench>bouriate</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bug</value>
             <valueTerm/>
             <label>Buginese</label>
             <labelFrench>bugi</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bul</value>
@@ -482,8 +488,8 @@
             <valueTwo>bg</valueTwo>
             <label>Bulgarian</label>
             <labelFrench>bulgare</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>bur</value>
@@ -491,15 +497,15 @@
             <valueTwo>my</valueTwo>
             <label>Burmese</label>
             <labelFrench>birman</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>byn</value>
             <valueTerm/>
             <label>Blin<!--; Bilin--></label>
             <labelFrench>blin; bilen</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>cad</value>
@@ -525,7 +531,7 @@
             <valueTwo>ca</valueTwo>
             <label>Catalan<!--; Valencian--></label>
             <labelFrench>catalan; valencien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cau</value>
@@ -538,7 +544,7 @@
             <valueTerm/>
             <label>Cebuano</label>
             <labelFrench>cebuano</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cel</value>
@@ -552,7 +558,7 @@
             <valueTwo>ch</valueTwo>
             <label>Chamorro</label>
             <labelFrench>chamorro</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>chb</value>
@@ -566,14 +572,14 @@
             <valueTwo>ce</valueTwo>
             <label>Chechen</label>
             <labelFrench>tchétchène</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chg</value>
             <valueTerm/>
             <label>Chagatai</label>
             <labelFrench>djaghataï</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chi</value>
@@ -581,9 +587,9 @@
             <valueTwo>zh</valueTwo>
             <label>Chinese</label>
             <labelFrench>chinois</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
             <nameOrder>family-given</nameOrder>
         </item>
         <item>
@@ -591,14 +597,14 @@
             <valueTerm/>
             <label>Chuukese</label>
             <labelFrench>chuuk</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chm</value>
             <valueTerm/>
             <label>Mari</label>
             <labelFrench>mari</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chn</value>
@@ -611,21 +617,21 @@
             <valueTerm/>
             <label>Choctaw</label>
             <labelFrench>choctaw</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>chp</value>
             <valueTerm/>
             <label>Chipewyan<!--; Dene Suline--></label>
             <labelFrench>chipewyan</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chr</value>
             <valueTerm/>
             <label>Cherokee</label>
             <labelFrench>cherokee</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chu</value>
@@ -633,8 +639,8 @@
             <valueTwo>cu</valueTwo>
             <label>Church Slavic<!--; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic--></label>
             <labelFrench>slavon d'église; vieux slave; slavon liturgique; vieux bulgare</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chv</value>
@@ -642,28 +648,28 @@
             <valueTwo>cv</valueTwo>
             <label>Chuvash</label>
             <labelFrench>tchouvache</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>chy</value>
             <valueTerm/>
             <label>Cheyenne</label>
             <labelFrench>cheyenne</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cmc</value>
             <valueTerm/>
             <label>Chamic languages</label>
             <labelFrench>chames, langues</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>cop</value>
             <valueTerm/>
             <label>Coptic</label>
             <labelFrench>copte</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>cor</value>
@@ -671,7 +677,7 @@
             <valueTwo>kw</valueTwo>
             <label>Cornish</label>
             <labelFrench>cornique</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cos</value>
@@ -679,28 +685,28 @@
             <valueTwo>co</valueTwo>
             <label>Corsican</label>
             <labelFrench>corse</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cpe</value>
             <valueTerm/>
             <label>Creoles and pidgins, English based</label>
             <labelFrench>créoles et pidgins basés sur l'anglais</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>cpf</value>
             <valueTerm/>
             <label>Creoles and pidgins, French-based </label>
             <labelFrench>créoles et pidgins basés sur le français</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>cpp</value>
             <valueTerm/>
             <label>Creoles and pidgins, Portuguese-based </label>
             <labelFrench>créoles et pidgins basés sur le portugais</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>cre</value>
@@ -708,28 +714,28 @@
             <valueTwo>cr</valueTwo>
             <label>Cree</label>
             <labelFrench>cree</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>crh</value>
             <valueTerm/>
             <label>Crimean Tatar<!--; Crimean Turkish--></label>
             <labelFrench>tatar de Crimé</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>crp</value>
             <valueTerm/>
             <label>Creoles and pidgins </label>
             <labelFrench>créoles et pidgins</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>csb</value>
             <valueTerm/>
             <label>Kashubian</label>
             <labelFrench>kachoube</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>cus</value>
@@ -743,14 +749,14 @@
             <valueTwo>cs</valueTwo>
             <label>Czech</label>
             <labelFrench>tchèque</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dak</value>
             <valueTerm/>
             <label>Dakota</label>
             <labelFrench>dakota</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dan</value>
@@ -758,14 +764,14 @@
             <valueTwo>da</valueTwo>
             <label>Danish</label>
             <labelFrench>danois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dar</value>
             <valueTerm/>
             <label>Dargwa</label>
             <labelFrench>dargwa</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>day</value>
@@ -778,7 +784,7 @@
             <valueTerm/>
             <label>Delaware</label>
             <labelFrench>delaware</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>den</value>
@@ -797,7 +803,7 @@
             <valueTerm/>
             <label>Dinka</label>
             <labelFrench>dinka</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>div</value>
@@ -805,8 +811,8 @@
             <valueTwo>dv</valueTwo>
             <label>Divehi<!--; Dhivehi; Maldivian--></label>
             <labelFrench>maldivien</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>doi</value>
@@ -825,21 +831,21 @@
             <valueTerm/>
             <label>Lower Sorbian</label>
             <labelFrench>bas-sorabe</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dua</value>
             <valueTerm/>
             <label>Duala</label>
             <labelFrench>douala</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dum</value>
             <valueTerm/>
             <label>Dutch, Middle<!-- (ca.1050-1350)--></label>
             <labelFrench>néerlandais moyen (ca. 1050-1350)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>dut</value>
@@ -847,14 +853,14 @@
             <valueTwo>nl</valueTwo>
             <label>Dutch<!--; Flemish--></label>
             <labelFrench>néerlandais; flamand</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>dyu</value>
             <valueTerm/>
             <label>Dyula</label>
             <labelFrench>dioula</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>dzo</value>
@@ -862,7 +868,7 @@
             <valueTwo>dz</valueTwo>
             <label>Dzongkha</label>
             <labelFrench>dzongkha</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>efi</value>
@@ -875,7 +881,7 @@
             <valueTerm/>
             <label>Egyptian (Ancient)</label>
             <labelFrench>égyptien</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>eka</value>
@@ -888,7 +894,7 @@
             <valueTerm/>
             <label>Elamite</label>
             <labelFrench>élamite</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>eng</value>
@@ -896,15 +902,15 @@
             <valueTwo>en</valueTwo>
             <label>English</label>
             <labelFrench>anglais</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>enm</value>
             <valueTerm/>
             <label>English, Middle<!-- (1100-1500)--></label>
             <labelFrench>anglais moyen (1100-1500)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>epo</value>
@@ -912,7 +918,7 @@
             <valueTwo>eo</valueTwo>
             <label>Esperanto</label>
             <labelFrench>espéranto</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>est</value>
@@ -920,7 +926,7 @@
             <valueTwo>et</valueTwo>
             <label>Estonian</label>
             <labelFrench>estonien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ewe</value>
@@ -928,14 +934,14 @@
             <valueTwo>ee</valueTwo>
             <label>Ewe</label>
             <labelFrench>éwé</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ewo</value>
             <valueTerm/>
             <label>Ewondo</label>
             <labelFrench>éwondo</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fan</value>
@@ -949,7 +955,7 @@
             <valueTwo>fo</valueTwo>
             <label>Faroese</label>
             <labelFrench>féroïen</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fat</value>
@@ -963,14 +969,14 @@
             <valueTwo>fj</valueTwo>
             <label>Fijian</label>
             <labelFrench>fidjien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fil</value>
             <valueTerm/>
             <label>Filipino<!--; Pilipino--></label>
             <labelFrench>filipino; pilipino</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fin</value>
@@ -978,7 +984,7 @@
             <valueTwo>fi</valueTwo>
             <label>Finnish</label>
             <labelFrench>finnois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fiu</value>
@@ -998,43 +1004,43 @@
             <valueTwo>fr</valueTwo>
             <label>French</label>
             <labelFrench>français</labelFrench>
-            <classifier>Latin</classifier>
-            <classifier>common</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
+            <frequencyClassifier>common</frequencyClassifier>
         </item>
         <item>
             <value>frm</value>
             <valueTerm/>
             <label>French, Middle<!-- (ca.1400-1600)--></label>
             <labelFrench>français moyen (1400-1600)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>fro</value>
             <valueTerm/>
             <label>French, Old<!-- (842-ca.1400)--></label>
             <labelFrench>français ancien (842-ca.1400)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>frr</value>
             <valueTerm/>
             <label>Northern Frisian</label>
             <labelFrench>frison septentrional</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>frs</value>
             <valueTerm/>
             <label>Eastern Frisian</label>
             <labelFrench>frison oriental</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>fry</value>
             <valueTerm/>
             <valueTwo>fy</valueTwo>
             <label>Western Frisian</label>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
             <labelFrench>frison occidental</labelFrench>
         </item>
         <item>
@@ -1049,14 +1055,14 @@
             <valueTerm/>
             <label>Friulian</label>
             <labelFrench>frioulan</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gaa</value>
             <valueTerm/>
             <label>Ga</label>
             <labelFrench>ga</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gay</value>
@@ -1082,8 +1088,8 @@
             <valueTwo>ka</valueTwo>
             <label>Georgian</label>
             <labelFrench>géorgien</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ger</value>
@@ -1091,22 +1097,22 @@
             <valueTwo>de</valueTwo>
             <label>German</label>
             <labelFrench>allemand</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gez</value>
             <valueTerm/>
             <label>Geez</label>
             <labelFrench>guèze</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>gil</value>
             <valueTerm/>
             <label>Gilbertese</label>
             <labelFrench>kiribati</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gla</value>
@@ -1114,7 +1120,7 @@
             <valueTwo>gd</valueTwo>
             <label>Gaelic<!--; Scottish Gaelic--></label>
             <labelFrench>gaélique; gaélique écossais</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>gle</value>
@@ -1122,7 +1128,7 @@
             <valueTwo>ga</valueTwo>
             <label>Irish</label>
             <labelFrench>irlandais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>glg</value>
@@ -1130,7 +1136,7 @@
             <valueTwo>gl</valueTwo>
             <label>Galician</label>
             <labelFrench>galicien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>glv</value>
@@ -1138,28 +1144,28 @@
             <valueTwo>gv</valueTwo>
             <label>Manx</label>
             <labelFrench>manx; mannois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gmh</value>
             <valueTerm/>
             <label>German, Middle High<!-- (ca.1050-1500)--></label>
             <labelFrench>allemand, moyen haut (ca. 1050-1500)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>goh</value>
             <valueTerm/>
             <label>German, Old High<!-- (ca.750-1050)--></label>
             <labelFrench>allemand, vieux haut (ca. 750-1050)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>gon</value>
             <valueTerm/>
             <label>Gondi</label>
             <labelFrench>gond</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>gor</value>
@@ -1172,7 +1178,7 @@
             <valueTerm/>
             <label>Gothic</label>
             <labelFrench>gothique</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>grb</value>
@@ -1185,8 +1191,8 @@
             <valueTerm/>
             <label>Greek, Ancient<!-- (to 1453)--></label>
             <labelFrench>grec ancien (jusqu'√† 1453)</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>gre</value>
@@ -1194,8 +1200,8 @@
             <valueTwo>el</valueTwo>
             <label>Greek, Modern<!-- (1453-)--></label>
             <labelFrench>grec moderne (après 1453)</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>grn</value>
@@ -1203,14 +1209,14 @@
             <valueTwo>gn</valueTwo>
             <label>Guarani</label>
             <labelFrench>guarani</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>gsw</value>
             <valueTerm/>
             <label>Swiss German<!--; Alemannic; Alsatian--></label>
             <labelFrench>suisse alémanique; alémanique; alsacien</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>guj</value>
@@ -1218,22 +1224,22 @@
             <valueTwo>gu</valueTwo>
             <label>Gujarati</label>
             <labelFrench>goudjrati</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>gwi</value>
             <valueTerm/>
             <label>Gwich'in</label>
             <labelFrench>gwich'in</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hai</value>
             <valueTerm/>
             <label>Haida</label>
             <labelFrench>haida</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hat</value>
@@ -1241,7 +1247,7 @@
             <valueTwo>ht</valueTwo>
             <label>Haitian<!--; Haitian Creole--></label>
             <labelFrench>haïtien; créole haïtien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hau</value>
@@ -1249,14 +1255,14 @@
             <valueTwo>ha</valueTwo>
             <label>Hausa</label>
             <labelFrench>haoussa</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>haw</value>
             <valueTerm/>
             <label>Hawaiian</label>
             <labelFrench>hawaïen</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>heb</value>
@@ -1264,8 +1270,8 @@
             <valueTwo>he</valueTwo>
             <label>Hebrew</label>
             <labelFrench>hébreu</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>her</value>
@@ -1273,14 +1279,14 @@
             <valueTwo>hz</valueTwo>
             <label>Herero</label>
             <labelFrench>herero</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hil</value>
             <valueTerm/>
             <label>Hiligaynon</label>
             <labelFrench>hiligaynon</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>him</value>
@@ -1294,23 +1300,23 @@
             <valueTwo>hi</valueTwo>
             <label>Hindi</label>
             <labelFrench>hindi</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>hit</value>
             <valueTerm/>
             <label>Hittite</label>
             <labelFrench>hittite</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>hmn</value>
             <valueTerm/>
             <label>Hmong<!--; Mong--></label>
             <labelFrench>hmong</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>hmo</value>
@@ -1325,14 +1331,14 @@
             <valueTwo>hr</valueTwo>
             <label>Croatian</label>
             <labelFrench>croate</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hsb</value>
             <valueTerm/>
             <label>Upper Sorbian</label>
             <labelFrench>haut-sorabe</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>hun</value>
@@ -1340,7 +1346,7 @@
             <valueTwo>hu</valueTwo>
             <label>Hungarian</label>
             <labelFrench>hongrois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
             <nameOrder>family-given</nameOrder>
         </item>
         <item>
@@ -1361,7 +1367,7 @@
             <valueTwo>ig</valueTwo>
             <label>Igbo</label>
             <labelFrench>igbo</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ice</value>
@@ -1369,7 +1375,7 @@
             <valueTwo>is</valueTwo>
             <label>Icelandic</label>
             <labelFrench>islandais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ido</value>
@@ -1377,7 +1383,7 @@
             <valueTwo>io</valueTwo>
             <label>Ido</label>
             <labelFrench>ido</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>iii</value>
@@ -1385,7 +1391,7 @@
             <valueTwo>ii</valueTwo>
             <label>Sichuan Yi<!--; Nuosu--></label>
             <labelFrench>yi de Sichuan</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ijo</value>
@@ -1399,8 +1405,8 @@
             <valueTwo>iu</valueTwo>
             <label>Inuktitut</label>
             <labelFrench>inuktitut</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ile</value>
@@ -1408,14 +1414,14 @@
             <valueTwo>ie</valueTwo>
             <label>Interlingue<!--; Occidental--></label>
             <labelFrench>interlingue</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ilo</value>
             <valueTerm/>
             <label>Iloko</label>
             <labelFrench>ilocano</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ina</value>
@@ -1423,7 +1429,7 @@
             <valueTwo>ia</valueTwo>
             <label>Interlingua<!-- (International Auxiliary Language Association)--></label>
             <labelFrench>interlingua (langue auxiliaire internationale)</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>inc</value>
@@ -1437,7 +1443,7 @@
             <valueTwo>id</valueTwo>
             <label>Indonesian</label>
             <labelFrench>indonésien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ine</value>
@@ -1450,7 +1456,7 @@
             <valueTerm/>
             <label>Ingush</label>
             <labelFrench>ingouche</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ipk</value>
@@ -1458,7 +1464,7 @@
             <valueTwo>ik</valueTwo>
             <label>Inupiaq</label>
             <labelFrench>inupiaq</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ira</value>
@@ -1478,8 +1484,8 @@
             <valueTwo>it</valueTwo>
             <label>Italian</label>
             <labelFrench>italien</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>jav</value>
@@ -1487,22 +1493,22 @@
             <valueTwo>jv</valueTwo>
             <label>Javanese</label>
             <labelFrench>javanais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>jbo</value>
             <valueTerm/>
             <label>Lojban</label>
             <labelFrench>lojban</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>jpr</value>
             <valueTerm/>
             <label>Judeo-Persian</label>
             <labelFrench>judéo-persan</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>jpn</value>
@@ -1510,9 +1516,9 @@
             <valueTwo>ja</valueTwo>
             <label>Japanese</label>
             <labelFrench>japonais</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
             <nameOrder>family-given</nameOrder>
         </item>
         <item>
@@ -1520,21 +1526,21 @@
             <valueTerm/>
             <label>Judeo-Arabic</label>
             <labelFrench>judéo-arabe</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kaa</value>
             <valueTerm/>
             <label>Kara-Kalpak</label>
             <labelFrench>karakalpak</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kab</value>
             <valueTerm/>
             <label>Kabyle</label>
             <labelFrench>kabyle</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kac</value>
@@ -1548,7 +1554,7 @@
             <valueTwo>kl</valueTwo>
             <label>Kalaallisut<!--; Greenlandic--></label>
             <labelFrench>groenlandais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>kam</value>
@@ -1562,8 +1568,8 @@
             <valueTwo>kn</valueTwo>
             <label>Kannada</label>
             <labelFrench>kannada</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kar</value>
@@ -1577,8 +1583,8 @@
             <valueTwo>ks</valueTwo>
             <label>Kashmiri</label>
             <labelFrench>kashmiri</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kau</value>
@@ -1586,14 +1592,14 @@
             <valueTwo>kr</valueTwo>
             <label>Kanuri</label>
             <labelFrench>kanouri</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>kaw</value>
             <valueTerm/>
             <label>Kawi</label>
             <labelFrench>kawi</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kaz</value>
@@ -1601,14 +1607,14 @@
             <valueTwo>kk</valueTwo>
             <label>Kazakh</label>
             <labelFrench>kazakh</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kbd</value>
             <valueTerm/>
             <label>Kabardian</label>
             <labelFrench>kabardien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kha</value>
@@ -1628,8 +1634,8 @@
             <valueTwo>km</valueTwo>
             <label>Central Khmer</label>
             <labelFrench>khmer central</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kho</value>
@@ -1643,7 +1649,7 @@
             <valueTwo>ki</valueTwo>
             <label>Kikuyu<!--; Gikuyu--></label>
             <labelFrench>kikuyu</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>kin</value>
@@ -1651,7 +1657,7 @@
             <valueTwo>rw</valueTwo>
             <label>Kinyarwanda</label>
             <labelFrench>rwanda</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>kir</value>
@@ -1659,7 +1665,7 @@
             <valueTwo>ky</valueTwo>
             <label>Kirghiz<!--; Kyrgyz--></label>
             <labelFrench>kirghiz</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kmb</value>
@@ -1672,7 +1678,7 @@
             <valueTerm/>
             <label>Konkani</label>
             <labelFrench>konkani</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kom</value>
@@ -1680,7 +1686,7 @@
             <valueTwo>kv</valueTwo>
             <label>Komi</label>
             <labelFrench>kom</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kon</value>
@@ -1695,9 +1701,9 @@
             <valueTwo>ko</valueTwo>
             <label>Korean</label>
             <labelFrench>coréen</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
             <nameOrder>family-given</nameOrder>
         </item>
         <item>
@@ -1711,21 +1717,21 @@
             <valueTerm/>
             <label>Kpelle</label>
             <labelFrench>kpellé</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>krc</value>
             <valueTerm/>
             <label>Karachay-Balkar</label>
             <labelFrench>karatchai balkar</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>krl</value>
             <valueTerm/>
             <label>Karelian</label>
             <labelFrench>carélien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>kro</value>
@@ -1751,7 +1757,7 @@
             <valueTerm/>
             <label>Kumyk</label>
             <labelFrench>koumyk</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>kur</value>
@@ -1759,8 +1765,8 @@
             <valueTwo>ku</valueTwo>
             <label>Kurdish</label>
             <labelFrench>kurde</labelFrench>
-            <classifier>not Latin</classifier>
-            <classifier>transliteration</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
         </item>
         <item>
             <value>kut</value>
@@ -1773,15 +1779,15 @@
             <valueTerm/>
             <label>Ladino</label>
             <labelFrench>judéo-espagnol</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>lah</value>
             <valueTerm/>
             <label>Lahnda</label>
             <labelFrench>lahnda</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>lam</value>
@@ -1795,8 +1801,8 @@
             <valueTwo>lo</valueTwo>
             <label>Lao</label>
             <labelFrench>lao</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>lat</value>
@@ -1804,8 +1810,8 @@
             <valueTwo>la</valueTwo>
             <label>Latin</label>
             <labelFrench>latin</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lav</value>
@@ -1813,14 +1819,14 @@
             <valueTwo>lv</valueTwo>
             <label>Latvian</label>
             <labelFrench>letton</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lez</value>
             <valueTerm/>
             <label>Lezghian</label>
             <labelFrench>lezghien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>lim</value>
@@ -1828,7 +1834,7 @@
             <valueTwo>li</valueTwo>
             <label>Limburgan<!--; Limburger; Limburgish--></label>
             <labelFrench>limbourgeois</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>lin</value>
@@ -1836,7 +1842,7 @@
             <valueTwo>ln</valueTwo>
             <label>Lingala</label>
             <labelFrench>lingala</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lit</value>
@@ -1844,7 +1850,7 @@
             <valueTwo>lt</valueTwo>
             <label>Lithuanian</label>
             <labelFrench>lituanien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lol</value>
@@ -1864,14 +1870,14 @@
             <valueTwo>lb</valueTwo>
             <label>Luxembourgish<!--; Letzeburgesch--></label>
             <labelFrench>luxembourgeois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lua</value>
             <valueTerm/>
             <label>Luba-Lulua</label>
             <labelFrench>luba-lulua</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lub</value>
@@ -1886,7 +1892,7 @@
             <valueTwo>lg</valueTwo>
             <label>Ganda</label>
             <labelFrench>ganda</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>lui</value>
@@ -1905,7 +1911,7 @@
             <valueTerm/>
             <label>Luo<!-- (Kenya and Tanzania)--></label>
             <labelFrench>luo (Kenya et Tanzanie)</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>lus</value>
@@ -1919,15 +1925,15 @@
             <valueTwo>mk</valueTwo>
             <label>Macedonian</label>
             <labelFrench>macédonien</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mad</value>
             <valueTerm/>
             <label>Madurese</label>
             <labelFrench>madourais</labelFrench>
-            <classifier>transliteration</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
         </item>
         <item>
             <value>mag</value>
@@ -1941,21 +1947,21 @@
             <valueTwo>mh</valueTwo>
             <label>Marshallese</label>
             <labelFrench>marshall</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mai</value>
             <valueTerm/>
             <label>Maithili</label>
             <labelFrench>maithili</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>mak</value>
             <valueTerm/>
             <label>Makasar</label>
             <labelFrench>makassar</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mal</value>
@@ -1963,15 +1969,15 @@
             <valueTwo>ml</valueTwo>
             <label>Malayalam</label>
             <labelFrench>malayalam</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>man</value>
             <valueTerm/>
             <label>Mandingo</label>
             <labelFrench>mandingue</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mao</value>
@@ -1979,7 +1985,7 @@
             <valueTwo>mi</valueTwo>
             <label>Maori</label>
             <labelFrench>maori</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>map</value>
@@ -1993,15 +1999,15 @@
             <valueTwo>mr</valueTwo>
             <label>Marathi</label>
             <labelFrench>marathe</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mas</value>
             <valueTerm/>
             <label>Masai</label>
             <labelFrench>massaï</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>may</value>
@@ -2009,43 +2015,43 @@
             <valueTwo>ms</valueTwo>
             <label>Malay</label>
             <labelFrench>malais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mdf</value>
             <valueTerm/>
             <label>Moksha</label>
             <labelFrench>moksa</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mdr</value>
             <valueTerm/>
             <label>Mandar</label>
             <labelFrench>mandar</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>men</value>
             <valueTerm/>
             <label>Mende</label>
             <labelFrench>mendé</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mga</value>
             <valueTerm/>
             <label>Irish, Middle<!-- (900-1200)--></label>
             <labelFrench>irlandais moyen (900-1200)</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mic</value>
             <valueTerm/>
             <label>Mi'kmaq<!--; Micmac--></label>
             <labelFrench>mi'kmaq; micmac</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>min</value>
@@ -2064,8 +2070,8 @@
             <valueTerm/>
             <label>Mon-Khmer languages</label>
             <labelFrench>m√¥n-khmer, langues</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mlg</value>
@@ -2073,7 +2079,7 @@
             <valueTwo>mg</valueTwo>
             <label>Malagasy</label>
             <labelFrench>malgache</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mlt</value>
@@ -2081,21 +2087,21 @@
             <valueTwo>mt</valueTwo>
             <label>Maltese</label>
             <labelFrench>maltais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mnc</value>
             <valueTerm/>
             <label>Manchu</label>
             <labelFrench>mandchou</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mni</value>
             <valueTerm/>
             <label>Manipuri</label>
             <labelFrench>manipuri</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mno</value>
@@ -2108,7 +2114,7 @@
             <valueTerm/>
             <label>Mohawk</label>
             <labelFrench>mohawk</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mon</value>
@@ -2116,8 +2122,8 @@
             <valueTwo>mn</valueTwo>
             <label>Mongolian</label>
             <labelFrench>mongol</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>mos</value>
@@ -2130,7 +2136,7 @@
             <valueTerm/>
             <label>Multiple languages</label>
             <labelFrench>multilingue</labelFrench>
-            <classifier>common</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
         </item>
         <item>
             <value>mun</value>
@@ -2143,14 +2149,14 @@
             <valueTerm/>
             <label>Creek</label>
             <labelFrench>muskogee</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mwl</value>
             <valueTerm/>
             <label>Mirandese</label>
             <labelFrench>mirandais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>mwr</value>
@@ -2163,21 +2169,21 @@
             <valueTerm/>
             <label>Mayan languages</label>
             <labelFrench>maya, langues</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>myv</value>
             <valueTerm/>
             <label>Erzya</label>
             <labelFrench>erza</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>nah</value>
             <valueTerm/>
             <label>Nahuatl languages</label>
             <labelFrench>nahuatl, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nai</value>
@@ -2190,7 +2196,7 @@
             <valueTerm/>
             <label>Neapolitan</label>
             <labelFrench>napolitain</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nau</value>
@@ -2198,7 +2204,7 @@
             <valueTwo>na</valueTwo>
             <label>Nauru</label>
             <labelFrench>nauruan</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nav</value>
@@ -2206,7 +2212,7 @@
             <valueTwo>nv</valueTwo>
             <label>Navajo<!--; Navaho--></label>
             <labelFrench>navaho</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nbl</value>
@@ -2214,7 +2220,7 @@
             <valueTwo>nr</valueTwo>
             <label>Ndebele, South<!--; South Ndebele--></label>
             <labelFrench>ndébélé du Sud</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nde</value>
@@ -2222,7 +2228,7 @@
             <valueTwo>nd</valueTwo>
             <label>Ndebele, North<!--; North Ndebele--></label>
             <labelFrench>ndébélé du Nord</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ndo</value>
@@ -2230,14 +2236,14 @@
             <valueTwo>ng</valueTwo>
             <label>Ndonga</label>
             <labelFrench>ndonga</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nds</value>
             <valueTerm/>
             <label>Low German<!--; Low Saxon; German, Low; Saxon, Low--></label>
             <labelFrench>bas allemand; bas saxon; allemand, bas; saxon, bas</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>nep</value>
@@ -2245,14 +2251,14 @@
             <valueTwo>ne</valueTwo>
             <label>Nepali</label>
             <labelFrench>népalais</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>new</value>
             <valueTerm/>
             <label>Nepal Bhasa<!--; Newari--></label>
             <labelFrench>nepal bhasa; newari</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>nia</value>
@@ -2271,7 +2277,7 @@
             <valueTerm/>
             <label>Niuean</label>
             <labelFrench>niué</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nno</value>
@@ -2279,7 +2285,7 @@
             <valueTwo>nn</valueTwo>
             <label>Norwegian Nynorsk<!--; Nynorsk, Norwegian--></label>
             <labelFrench>norvégien nynorsk; nynorsk, norvégien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nob</value>
@@ -2287,21 +2293,21 @@
             <valueTwo>nb</valueTwo>
             <label>Bokmål, Norwegian<!--; Norwegian Bokmål--></label>
             <labelFrench>norvégien bokm√•l</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nog</value>
             <valueTerm/>
             <label>Nogai</label>
             <labelFrench>nogaï; nogay</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>non</value>
             <valueTerm/>
             <label>Norse, Old</label>
             <labelFrench>norrois, vieux</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>nor</value>
@@ -2309,14 +2315,14 @@
             <valueTwo>no</valueTwo>
             <label>Norwegian</label>
             <labelFrench>norvégien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nqo</value>
             <valueTerm/>
             <label>N'Ko</label>
             <labelFrench>n'ko</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>nso</value>
@@ -2335,7 +2341,7 @@
             <valueTerm/>
             <label>Classical Newari<!--; Old Newari; Classical Nepal Bhasa--></label>
             <labelFrench>newari classique</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>nya</value>
@@ -2343,7 +2349,7 @@
             <valueTwo>ny</valueTwo>
             <label>Chichewa<!--; Chewa; Nyanja--></label>
             <labelFrench>chichewa; chewa; nyanja</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>nym</value>
@@ -2375,7 +2381,7 @@
             <valueTwo>oc</valueTwo>
             <label>Occitan<!-- (post 1500)--><!--; Provençal--></label>
             <labelFrench>occitan (après 1500); provençal</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>oji</value>
@@ -2383,7 +2389,7 @@
             <valueTwo>oj</valueTwo>
             <label>Ojibwa</label>
             <labelFrench>ojibwa</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ori</value>
@@ -2391,8 +2397,8 @@
             <valueTwo>or</valueTwo>
             <label>Oriya</label>
             <labelFrench>oriya</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>orm</value>
@@ -2400,14 +2406,14 @@
             <valueTwo>om</valueTwo>
             <label>Oromo</label>
             <labelFrench>galla</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>osa</value>
             <valueTerm/>
             <label>Osage</label>
             <labelFrench>osage</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>oss</value>
@@ -2415,15 +2421,15 @@
             <valueTwo>os</valueTwo>
             <label>Ossetian<!--; Ossetic--></label>
             <labelFrench>ossète</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ota</value>
             <valueTerm/>
             <label>Turkish, Ottoman<!-- (1500-1928)--></label>
             <labelFrench>turc ottoman (1500-1928)</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>oto</value>
@@ -2448,7 +2454,7 @@
             <valueTerm/>
             <label>Pahlavi</label>
             <labelFrench>pahlavi</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>pam</value>
@@ -2462,30 +2468,30 @@
             <valueTwo>pa</valueTwo>
             <label>Panjabi<!--; Punjabi--></label>
             <labelFrench>pendjabi</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>pap</value>
             <valueTerm/>
             <label>Papiamento</label>
             <labelFrench>papiamento</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>pau</value>
             <valueTerm/>
             <label>Palauan</label>
             <labelFrench>palau</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>peo</value>
             <valueTerm/>
             <label>Persian, Old<!-- (ca.600-400 B.C.)--></label>
             <labelFrench>perse, vieux (ca. 600-400 av. J.-C.)</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>per</value>
@@ -2493,9 +2499,9 @@
             <valueTwo>fa</valueTwo>
             <label>Persian</label>
             <labelFrench>persan</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>phi</value>
@@ -2508,7 +2514,7 @@
             <valueTerm/>
             <label>Phoenician</label>
             <labelFrench>phénicien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>pli</value>
@@ -2516,9 +2522,9 @@
             <valueTwo>pi</valueTwo>
             <label>Pali</label>
             <labelFrench>pali</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>pol</value>
@@ -2526,8 +2532,8 @@
             <valueTwo>pl</valueTwo>
             <label>Polish</label>
             <labelFrench>polonais</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>pon</value>
@@ -2541,23 +2547,23 @@
             <valueTwo>pt</valueTwo>
             <label>Portuguese</label>
             <labelFrench>portugais</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>pra</value>
             <valueTerm/>
             <label>Prakrit languages</label>
             <labelFrench>prâkrit, langues</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier type="added">not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>pro</value>
             <valueTerm/>
             <label>Provençal, Old<!-- (to 1500)--></label>
             <labelFrench>provençal ancien (jusqu'√† 1500)</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>pus</value>
@@ -2565,8 +2571,8 @@
             <valueTwo>ps</valueTwo>
             <label>Pushto<!--; Pashto--></label>
             <labelFrench>pachto</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>qaa-qtz</value>
@@ -2580,35 +2586,35 @@
             <valueTwo>qu</valueTwo>
             <label>Quechua</label>
             <labelFrench>quechua</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>raj</value>
             <valueTerm/>
             <label>Rajasthani</label>
             <labelFrench>rajasthani</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>rap</value>
             <valueTerm/>
             <label>Rapanui</label>
             <labelFrench>rapanui</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>rar</value>
             <valueTerm/>
             <label>Rarotongan<!--; Cook Islands Maori--></label>
             <labelFrench>rarotonga; maori des √Æles Cook</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>roa</value>
             <valueTerm/>
             <label>Romance languages</label>
             <labelFrench>romanes, langues</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>roh</value>
@@ -2616,14 +2622,14 @@
             <valueTwo>rm</valueTwo>
             <label>Romansh</label>
             <labelFrench>romanche</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>rom</value>
             <valueTerm/>
             <label>Romany</label>
             <labelFrench>tsigane</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>rum</value>
@@ -2631,7 +2637,7 @@
             <valueTwo>ro</valueTwo>
             <label>Romanian<!--; Moldavian; Moldovan--></label>
             <labelFrench>roumain; moldave</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>run</value>
@@ -2639,14 +2645,14 @@
             <valueTwo>rn</valueTwo>
             <label>Rundi</label>
             <labelFrench>rundi</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>rup</value>
             <valueTerm/>
             <label>Aromanian<!--; Arumanian; Macedo-Romanian--></label>
             <labelFrench>aroumain; macédo-roumain</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>rus</value>
@@ -2654,9 +2660,9 @@
             <valueTwo>ru</valueTwo>
             <label>Russian</label>
             <labelFrench>russe</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sad</value>
@@ -2670,14 +2676,14 @@
             <valueTwo>sg</valueTwo>
             <label>Sango</label>
             <labelFrench>sango</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sah</value>
             <valueTerm/>
             <label>Yakut</label>
             <labelFrench>iakoute</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sai</value>
@@ -2696,7 +2702,7 @@
             <valueTerm/>
             <label>Samaritan Aramaic</label>
             <labelFrench>samaritain</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>san</value>
@@ -2704,9 +2710,9 @@
             <valueTwo>sa</valueTwo>
             <label>Sanskrit</label>
             <labelFrench>sanskrit</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sas</value>
@@ -2719,43 +2725,43 @@
             <valueTerm/>
             <label>Santali</label>
             <labelFrench>santal</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>scn</value>
             <valueTerm/>
             <label>Sicilian</label>
             <labelFrench>sicilien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sco</value>
             <valueTerm/>
             <label>Scots</label>
             <labelFrench>écossais</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sel</value>
             <valueTerm/>
             <label>Selkup</label>
             <labelFrench>selkoupe</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>sem</value>
             <valueTerm/>
             <label>Semitic languages</label>
             <labelFrench>sémitiques, langues</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>sga</value>
             <valueTerm/>
             <label>Irish, Old<!-- (to 900)--></label>
             <labelFrench>irlandais ancien (jusqu'√† 900)</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sgn</value>
@@ -2768,14 +2774,14 @@
             <valueTerm/>
             <label>Shan</label>
             <labelFrench>chan</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sid</value>
             <valueTerm/>
             <label>Sidamo</label>
             <labelFrench>sidamo</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>sin</value>
@@ -2783,22 +2789,22 @@
             <valueTwo>si</valueTwo>
             <label>Sinhalese<!--; Sinhala--></label>
             <labelFrench>singhalais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sio</value>
             <valueTerm/>
             <label>Siouan languages</label>
             <labelFrench>sioux, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sit</value>
             <valueTerm/>
             <label>Sino-Tibetan languages</label>
             <labelFrench>sino-tibétaines, langues</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>sla</value>
@@ -2812,7 +2818,7 @@
             <valueTwo>sk</valueTwo>
             <label>Slovak</label>
             <labelFrench>slovaque</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>slv</value>
@@ -2820,14 +2826,14 @@
             <valueTwo>sl</valueTwo>
             <label>Slovenian</label>
             <labelFrench>slovène</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sma</value>
             <valueTerm/>
             <label>Southern Sami</label>
             <labelFrench>sami du Sud</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sme</value>
@@ -2835,28 +2841,28 @@
             <valueTwo>se</valueTwo>
             <label>Northern Sami</label>
             <labelFrench>sami du Nord</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>smi</value>
             <valueTerm/>
             <label>Sami languages</label>
             <labelFrench>sames, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>smj</value>
             <valueTerm/>
             <label>Lule Sami</label>
             <labelFrench>sami de Lule</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>smn</value>
             <valueTerm/>
             <label>Inari Sami</label>
             <labelFrench>sami d'Inari</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>smo</value>
@@ -2864,14 +2870,14 @@
             <valueTwo>sm</valueTwo>
             <label>Samoan</label>
             <labelFrench>samoan</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sms</value>
             <valueTerm/>
             <label>Skolt Sami</label>
             <labelFrench>sami skolt</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>sna</value>
@@ -2879,7 +2885,7 @@
             <valueTwo>sn</valueTwo>
             <label>Shona</label>
             <labelFrench>shona</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>snd</value>
@@ -2887,22 +2893,22 @@
             <valueTwo>sd</valueTwo>
             <label>Sindhi</label>
             <labelFrench>sindhi</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>snk</value>
             <valueTerm/>
             <label>Soninke</label>
             <labelFrench>soninké</labelFrench>
-            <classifier type="added">Latin</classifier>
+            <scriptClassifier type="added">Latin</scriptClassifier>
         </item>
         <item>
             <value>sog</value>
             <valueTerm/>
             <label>Sogdian</label>
             <labelFrench>sogdien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>som</value>
@@ -2910,7 +2916,7 @@
             <valueTwo>so</valueTwo>
             <label>Somali</label>
             <labelFrench>somali</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>son</value>
@@ -2924,7 +2930,7 @@
             <valueTwo>st</valueTwo>
             <label>Sotho, Southern</label>
             <labelFrench>sotho du Sud</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>spa</value>
@@ -2932,8 +2938,8 @@
             <valueTwo>es</valueTwo>
             <label>Spanish<!--; Castilian--></label>
             <labelFrench>espagnol; castillan</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>srd</value>
@@ -2941,14 +2947,14 @@
             <valueTwo>sc</valueTwo>
             <label>Sardinian</label>
             <labelFrench>sarde</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>srn</value>
             <valueTerm/>
             <label>Sranan Tongo</label>
             <labelFrench>sranan tongo</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>srp</value>
@@ -2956,15 +2962,15 @@
             <valueTwo>sr</valueTwo>
             <label>Serbian</label>
             <labelFrench>serbe</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>srr</value>
             <valueTerm/>
             <label>Serer</label>
             <labelFrench>sérère</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ssa</value>
@@ -2978,7 +2984,7 @@
             <valueTwo>ss</valueTwo>
             <label>Swati</label>
             <labelFrench>swati</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>suk</value>
@@ -2992,8 +2998,8 @@
             <valueTwo>su</valueTwo>
             <label>Sundanese</label>
             <labelFrench>soundanais</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>sus</value>
@@ -3006,7 +3012,7 @@
             <valueTerm/>
             <label>Sumerian</label>
             <labelFrench>sumérien</labelFrench>
-            <classifier type="added">not Latin</classifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
         </item>
         <item>
             <value>swa</value>
@@ -3014,7 +3020,7 @@
             <valueTwo>sw</valueTwo>
             <label>Swahili</label>
             <labelFrench>swahili</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>swe</value>
@@ -3022,21 +3028,21 @@
             <valueTwo>sv</valueTwo>
             <label>Swedish</label>
             <labelFrench>suédois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>syc</value>
             <valueTerm/>
             <label>Classical Syriac</label>
             <labelFrench>syriaque classique</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>syr</value>
             <valueTerm/>
             <label>Syriac</label>
             <labelFrench>syriaque</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tah</value>
@@ -3044,7 +3050,7 @@
             <valueTwo>ty</valueTwo>
             <label>Tahitian</label>
             <labelFrench>tahitien</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tai</value>
@@ -3058,8 +3064,8 @@
             <valueTwo>ta</valueTwo>
             <label>Tamil</label>
             <labelFrench>tamoul</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tat</value>
@@ -3067,7 +3073,7 @@
             <valueTwo>tt</valueTwo>
             <label>Tatar</label>
             <labelFrench>tatar</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tel</value>
@@ -3075,8 +3081,8 @@
             <valueTwo>te</valueTwo>
             <label>Telugu</label>
             <labelFrench>télougou</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tem</value>
@@ -3095,7 +3101,7 @@
             <valueTerm/>
             <label>Tetum</label>
             <labelFrench>tetum</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tgk</value>
@@ -3103,7 +3109,7 @@
             <valueTwo>tg</valueTwo>
             <label>Tajik</label>
             <labelFrench>tadjik</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tgl</value>
@@ -3111,8 +3117,8 @@
             <valueTwo>tl</valueTwo>
             <label>Tagalog</label>
             <labelFrench>tagalog</labelFrench>
-            <classifier>common</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tha</value>
@@ -3120,9 +3126,9 @@
             <valueTwo>th</valueTwo>
             <label>Thai</label>
             <labelFrench>thaï</labelFrench>
-            <classifier>common</classifier>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tib</value>
@@ -3130,8 +3136,8 @@
             <valueTwo>bo</valueTwo>
             <label>Tibetan</label>
             <labelFrench>tibétain</labelFrench>
-            <classifier>common</classifier>
-            <classifier>not Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tig</value>
@@ -3145,7 +3151,7 @@
             <valueTwo>ti</valueTwo>
             <label>Tigrinya</label>
             <labelFrench>tigrigna</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tiv</value>
@@ -3158,7 +3164,7 @@
             <valueTerm/>
             <label>Tokelau</label>
             <labelFrench>tokelau</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tlh</value>
@@ -3171,14 +3177,14 @@
             <valueTerm/>
             <label>Tlingit</label>
             <labelFrench>tlingit</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tmh</value>
             <valueTerm/>
             <label>Tamashek</label>
             <labelFrench>tamacheq</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tog</value>
@@ -3192,14 +3198,14 @@
             <valueTwo>to</valueTwo>
             <label>Tonga (Tonga Islands)</label>
             <labelFrench>tongan (√éles Tonga)</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tpi</value>
             <valueTerm/>
             <label>Tok Pisin</label>
             <labelFrench>tok pisin</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tsi</value>
@@ -3213,7 +3219,7 @@
             <valueTwo>tn</valueTwo>
             <label>Tswana</label>
             <labelFrench>tswana</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tso</value>
@@ -3221,7 +3227,7 @@
             <valueTwo>ts</valueTwo>
             <label>Tsonga</label>
             <labelFrench>tsonga</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tuk</value>
@@ -3229,14 +3235,14 @@
             <valueTwo>tk</valueTwo>
             <label>Turkmen</label>
             <labelFrench>turkmène</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>tum</value>
             <valueTerm/>
             <label>Tumbuka</label>
             <labelFrench>tumbuka</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tup</value>
@@ -3250,8 +3256,8 @@
             <valueTwo>tr</valueTwo>
             <label>Turkish</label>
             <labelFrench>turc</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tut</value>
@@ -3264,7 +3270,7 @@
             <valueTerm/>
             <label>Tuvalu</label>
             <labelFrench>tuvalu</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>twi</value>
@@ -3272,7 +3278,7 @@
             <valueTwo>tw</valueTwo>
             <label>Twi</label>
             <labelFrench>twi</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>tyv</value>
@@ -3285,14 +3291,14 @@
             <valueTerm/>
             <label>Udmurt</label>
             <labelFrench>oudmourte</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>uga</value>
             <valueTerm/>
             <label>Ugaritic</label>
             <labelFrench>ougaritique</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>uig</value>
@@ -3300,7 +3306,7 @@
             <valueTwo>ug</valueTwo>
             <label>Uighur<!--; Uyghur--></label>
             <labelFrench>ouïgour</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ukr</value>
@@ -3308,7 +3314,7 @@
             <valueTwo>uk</valueTwo>
             <label>Ukrainian</label>
             <labelFrench>ukrainien</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>umb</value>
@@ -3328,7 +3334,7 @@
             <valueTwo>ur</valueTwo>
             <label>Urdu</label>
             <labelFrench>ourdou</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>uzb</value>
@@ -3336,14 +3342,14 @@
             <valueTwo>uz</valueTwo>
             <label>Uzbek</label>
             <labelFrench>ouszbek</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>vai</value>
             <valueTerm/>
             <label>Vai</label>
             <labelFrench>vaï</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>ven</value>
@@ -3351,7 +3357,7 @@
             <valueTwo>ve</valueTwo>
             <label>Venda</label>
             <labelFrench>venda</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>vie</value>
@@ -3359,8 +3365,8 @@
             <valueTwo>vi</valueTwo>
             <label>Vietnamese</label>
             <labelFrench>vietnamien</labelFrench>
-            <classifier>common</classifier>
-            <classifier>Latin</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>vol</value>
@@ -3368,14 +3374,14 @@
             <valueTwo>vo</valueTwo>
             <label>Volapük</label>
             <labelFrench>volapük</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>vot</value>
             <valueTerm/>
             <label>Votic</label>
             <labelFrench>vote</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>wak</value>
@@ -3394,7 +3400,7 @@
             <valueTerm/>
             <label>Waray</label>
             <labelFrench>waray</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>was</value>
@@ -3408,14 +3414,14 @@
             <valueTwo>cy</valueTwo>
             <label>Welsh</label>
             <labelFrench>gallois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>wen</value>
             <valueTerm/>
             <label>Sorbian languages</label>
             <labelFrench>sorabes, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>wln</value>
@@ -3423,7 +3429,7 @@
             <valueTwo>wa</valueTwo>
             <label>Walloon</label>
             <labelFrench>wallon</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>wol</value>
@@ -3431,14 +3437,14 @@
             <valueTwo>wo</valueTwo>
             <label>Wolof</label>
             <labelFrench>wolof</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>xal</value>
             <valueTerm/>
             <label>Kalmyk<!--; Oirat--></label>
             <labelFrench>kalmouk; oïrat</labelFrench>
-            <classifier>not Latin</classifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>xho</value>
@@ -3446,7 +3452,7 @@
             <valueTwo>xh</valueTwo>
             <label>Xhosa</label>
             <labelFrench>xhosa</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>yao</value>
@@ -3459,7 +3465,7 @@
             <valueTerm/>
             <label>Yapese</label>
             <labelFrench>yapois</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>yid</value>
@@ -3467,8 +3473,8 @@
             <valueTwo>yi</valueTwo>
             <label>Yiddish</label>
             <labelFrench>yiddish</labelFrench>
-            <classifier>transliteration</classifier>
-            <classifier>not Latin</classifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
         </item>
         <item>
             <value>yor</value>
@@ -3476,21 +3482,21 @@
             <valueTwo>yo</valueTwo>
             <label>Yoruba</label>
             <labelFrench>yoruba</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>ypk</value>
             <valueTerm/>
             <label>Yupik languages</label>
             <labelFrench>yupik, langues</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>zap</value>
             <valueTerm/>
             <label>Zapotec</label>
             <labelFrench>zapotèque</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>zbl</value>
@@ -3510,7 +3516,7 @@
             <valueTwo>za</valueTwo>
             <label>Zhuang<!--; Chuang--></label>
             <labelFrench>zhuang; chuang</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>znd</value>
@@ -3524,21 +3530,21 @@
             <valueTwo>zu</valueTwo>
             <label>Zulu</label>
             <labelFrench>zoulou</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>zun</value>
             <valueTerm/>
             <label>Zuni</label>
             <labelFrench>zuni</labelFrench>
-            <classifier>Latin</classifier>
+            <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>
             <value>zxx</value>
             <valueTerm/>
             <label>No linguistic content<!--; Not applicable--></label>
             <labelFrench>pas de contenu linguistique; non applicable</labelFrench>
-            <classifier>common</classifier>
+            <frequencyClassifier>common</frequencyClassifier>
         </item>
         <item>
             <value>zza</value>

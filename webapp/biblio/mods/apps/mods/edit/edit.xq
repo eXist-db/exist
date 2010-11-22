@@ -13,7 +13,7 @@ declare function xf:get-temp-collection() {
         if ($collection) then
             ()
         else
-            system:as-user("admin", (), (
+            system:as-user("admin", "his2RIen", (
                 xmldb:create-collection("/db", "temp"), 
                 xmldb:set-collection-permissions("/db/temp", "editor", "biblio.users", xmldb:string-to-permissions("rwurwu---"))
             ))
@@ -86,6 +86,8 @@ let $create-new-from-template :=
          (: store it in the right location :)
          let $stored := xmldb:store($tempCollection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)
+         let $lang := request:get-parameter("lang", "")
+         let $script := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $lang]/data(scriptClassifier)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
          return (
@@ -95,7 +97,9 @@ let $create-new-from-template :=
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
                     <e:collection>{$data-collection}</e:collection>
                     <e:template>{util:document-name($template)}</e:template>
-                    <e:language>{request:get-parameter("lang", "")}</e:language>
+                    <e:language>{$lang}</e:language>
+                    <e:script>{$script}</e:script>
+                    
                 </extension>
             into doc($stored)/mods:mods,
             if ($host) then (

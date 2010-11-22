@@ -2,7 +2,7 @@
     <code-table-name>document-type-code</code-table-name>
     <items>
         <item>
-            <label>Anthology in Latin Script</label>
+            <label>Anthology in Single Script</label>
             <value>anthology-latin</value>
             <classifier>stand-alone</classifier>
         </item>
@@ -32,7 +32,7 @@
             <classifier>stand-alone</classifier>
         </item>
         <item>
-            <label>Contribution to Anthology in Latin script</label>
+            <label>Contribution to Anthology in Single script</label>
             <value>contribution-to-anthology-latin</value>
             <classifier>related-item</classifier>
         </item>
@@ -57,7 +57,7 @@
             <classifier>stand-alone</classifier>
         </item>
         <item>
-            <label>Monograph in Latin Script</label>
+            <label>Monograph in Single Script</label>
             <value>monograph-latin</value>
             <classifier>stand-alone</classifier>
         </item>
@@ -72,7 +72,7 @@
             <classifier>stand-alone</classifier>
         </item>
         <item>
-            <label>Music</label>
+            <label>Sheet Music</label>
             <value>music</value>
             <classifier>stand-alone</classifier>
         </item>
@@ -85,7 +85,7 @@
             <label>Serial/Periodical/Magazine</label>
             <value>serial</value>
             <classifier>stand-alone</classifier>
-        </item> 
+        </item>
         <item>
             <label>Serial Special Issue</label>
             <value>serial-special-issue</value>
