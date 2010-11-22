@@ -314,6 +314,7 @@ public class JettyStart implements LifeCycle.Listener {
             } catch (InterruptedException e) {
             }
         }
+        System.exit(0);
     }
 
     /**
