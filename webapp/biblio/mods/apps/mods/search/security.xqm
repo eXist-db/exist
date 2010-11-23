@@ -4,6 +4,7 @@ module namespace security="http://exist-db.org/mods/security";
 
 import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
 declare namespace session="http://exist-db.org/xquery/session";
+declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare variable $security:GUEST_CREDENTIALS := ("guest", "guest");
@@ -80,8 +81,7 @@ declare function security:get-user-credential-from-session() as xs:string+
 :)
 declare function security:get-email-address-for-user($username as xs:string) as xs:string?
 {
-    (: TODO :)
-    "exist@ad.uni-heidelberg.de"
+    sm:get-account-metadata($username, "http://axschema.org/contact/email")
 };
 
 (:~
