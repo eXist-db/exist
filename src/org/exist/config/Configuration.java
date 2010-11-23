@@ -22,6 +22,7 @@
 package org.exist.config;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
@@ -46,6 +47,8 @@ public interface Configuration {
 	public boolean hasProperty(String name);
 
 	public String getProperty(String property);
+        public Map getPropertyMap(String property);
+        
 	public Integer getPropertyInteger(String property);
 	public Long getPropertyLong(String property);
     public Boolean getPropertyBoolean(String property);

@@ -117,6 +117,37 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     @Override
+    public Map getPropertyMap(String name) {
+        if(hasAttribute(name)) {
+            return null;
+        }
+        Map<String, String> map = new HashMap<String, String>();
+        NodeList nodes = getElementsByTagNameNS(NS, name);
+        for(int i = 0; i < nodes.getLength(); i++) {
+            Node item = nodes.item(i);
+
+            if(!item.hasAttributes()){
+                return null;
+            }
+
+            NamedNodeMap attrs = item.getAttributes();
+            if(attrs.getLength() != 1){
+                return null;
+            }
+
+            String key = attrs.getNamedItem("key").getNodeValue();
+            String value = item.getNodeValue();
+            if(value == null || value.isEmpty()){
+                return null;
+            }
+
+            map.put(key, value);
+        }
+
+        return map;
+    }
+
+    @Override
     public boolean hasProperty(String name) {
         if (hasAttribute(name))
             return true;
@@ -233,7 +264,17 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
                 properties.add(attrs.item(i).getNodeName());
         }
-        Map<String, Boolean> map = new HashMap<String, Boolean>();
+        
+        NodeList children = getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                properties.add(child.getNodeName());
+            }
+        }
+        return properties;
+
+        /*Map<String, Boolean> map = new HashMap<String, Boolean>();
         //XXX: detect single element as field value
         NodeList children = getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -248,7 +289,9 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             if (!entry.getValue())
                 properties.add(entry.getKey());
         }
+
         return properties;
+        */
     }
 
     @Override

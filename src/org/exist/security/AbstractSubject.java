@@ -22,7 +22,6 @@
 package org.exist.security;
 
 import java.util.Set;
-
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.security.realm.Realm;
@@ -161,30 +160,6 @@ public abstract class AbstractSubject implements Subject {
 		account.setGroups(groups);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setAttribute(java.lang.String, java.lang.Object)
-	 */
-	@Override
-	public void setAttribute(String name, Object value) {
-		account.setAttribute(name, value);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getAttribute(java.lang.String)
-	 */
-	@Override
-	public Object getAttribute(String name) {
-		return account.getAttribute(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getAttributeNames()
-	 */
-	@Override
-	public Set<String> getAttributeNames() {
-		return account.getAttributeNames();
-	}
-
 	@Override
 	public String getRealmId() {
 		return account.getRealmId();
@@ -272,5 +247,20 @@ public abstract class AbstractSubject implements Subject {
         @Override
         public void save() throws PermissionDeniedException {
             //do nothing
+        }
+
+        @Override
+        public String getMetadataValue(AXSchemaType axSchemaType) {
+            return account.getMetadataValue(axSchemaType);
+        }
+
+        @Override
+        public void setMetadataValue(AXSchemaType axSchemaType, String value) {
+            account.setMetadataValue(axSchemaType, value);
+        }
+
+        @Override
+        public Set<AXSchemaType> getMetadataKeys() {
+            return account.getMetadataKeys();
         }
 }

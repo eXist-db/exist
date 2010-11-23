@@ -22,21 +22,11 @@ public class LDAPSearchContext implements Configurable {
     @ConfigurationFieldAsElement("default-password")
     protected String defaultPassword = null;
 
-    @ConfigurationFieldAsElement("account-search-filter-prefix")
-    protected String accountSearchFilterPrefix = null;
+    @ConfigurationFieldAsElement("account")
+    protected LDAPSearchAccount searchAccount = null;
 
-    @ConfigurationFieldAsElement("group-search-filter-prefix")
-    protected String groupSearchFilterPrefix = null;
-
-    @ConfigurationFieldAsElement("account-username-attribute")
-    protected String accountUsernameAttribute = null;
-
-    @ConfigurationFieldAsElement("account-personal-name-attribute")
-    protected String accountPersonalNameAttribute = null;
-
-    @ConfigurationFieldAsElement("group-name-attribute")
-    protected String groupNameAttribute = null;
-
+    @ConfigurationFieldAsElement("group")
+    protected LDAPSearchGroup searchGroup = null;
 
     private final Configuration configuration;
 
@@ -56,24 +46,12 @@ public class LDAPSearchContext implements Configurable {
         return defaultPassword;
     }
 
-    public String getAccountSearchFilterPrefix() {
-        return accountSearchFilterPrefix;
+    public LDAPSearchAccount getSearchAccount() {
+        return searchAccount;
     }
 
-    public String getGroupSearchFilterPrefix() {
-        return groupSearchFilterPrefix;
-    }
-
-    public String getAccountUsernameAttribute() {
-        return accountUsernameAttribute;
-    }
-
-    public String getAccountPersonalNameAttribute() {
-        return accountPersonalNameAttribute;
-    }
-
-    public String getGroupNameAttribute() {
-        return groupNameAttribute;
+    public LDAPSearchGroup getSearchGroup() {
+        return searchGroup;
     }
 
     @Override

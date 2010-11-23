@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
+import org.exist.security.AXSchemaType;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -51,7 +52,8 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
 			new SequenceType[] {
 				    new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user attribute")
 				},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the attribute value of the current user")
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the attribute value of the current user"),
+                        "Use securitymanager:get-account-metadata() instead!"
 		);
 	
 	public XMLDBGetCurrentUserAttribute(XQueryContext context, FunctionSignature signature)
@@ -66,7 +68,7 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
         }
         
         String attributeName = args[0].getStringValue();
-        Object value = context.getUser().getAttribute(attributeName);
+        Object value = context.getUser().getMetadataValue(AXSchemaType.valueOfNamespace(attributeName));
         if (value != null) {
             StringValue stringValue = new StringValue((String) value);
             return stringValue;

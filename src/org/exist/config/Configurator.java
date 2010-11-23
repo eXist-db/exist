@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -234,6 +235,8 @@ public class Configurator {
                     value = configuration.getPropertyLong(property);
                 } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
                     value = configuration.getPropertyBoolean(property);
+                } else if(typeName.equals("java.util.Map")) {
+                    value = configuration.getPropertyMap(property);
                 } else if (typeName.equals("java.util.List")) {
                     //skip, it will be processed as structure
                     //TODO what about simple generic types?
@@ -245,6 +248,12 @@ public class Configurator {
                     value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchContext", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchAccount")){
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchAccount", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchGroup")){
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchGroup", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchPrincipalMetadata")){
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchPrincipalMetadata", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPTransformationContext")) {
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPTransformationContext", configuration);
                 } else {
@@ -601,6 +610,8 @@ public class Configurator {
                         simple = false;
                         Configurable subInstance = (Configurable) field.get(instance);
                         serialize(subInstance, serializer);
+                    } else if(typeName.equals("java.util.Map")) {
+                        serializeMap(element.getAnnotation().value(), (Map<String, String>)field.get(instance), serializer);
                     } else {
 
                         value = extractFieldValue(field, instance);
@@ -634,6 +645,21 @@ public class Configurator {
             serializer.endElement(qnConfig);
         } catch(SAXException saxe) {
             throw new ConfigurationException(saxe.getMessage(), saxe);
+        }
+    }
+
+    private static void serializeMap(String mapName, Map<String, String> map, SAXSerializer serializer) throws SAXException {
+        if(map != null){
+            final QName mapQName = new QName(mapName, Configuration.NS);
+            final QName attrQName = new QName("key");
+            for(Map.Entry<String, String> entry : map.entrySet()) {
+                serializer.startElement(mapQName, null);
+
+                serializer.attribute(attrQName, entry.getKey());
+                serializer.characters(entry.getValue());
+
+                serializer.endElement(mapQName);
+            }
         }
     }
     

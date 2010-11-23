@@ -27,6 +27,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.Set;
+import org.exist.security.AXSchemaType;
 
 /**
  * Created by IntelliJ IDEA.
@@ -43,7 +44,8 @@ public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
             new QName("get-current-user-attribute-names", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Returns the names of the attributes of the current user from the xquery context.",
             null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute names of the current user")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute names of the current user"),
+            "Use securitymanager:get-account-metadata-keys() instead!"
         );
 
     public XMLDBGetCurrentUserAttributeNames(XQueryContext context, FunctionSignature signature)
@@ -53,11 +55,11 @@ public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
 
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
     {
-        Set<String> values = context.getUser().getAttributeNames();
+        Set<AXSchemaType> values = context.getUser().getMetadataKeys();
         Sequence retval = new ValueSequence();
-        for (String value : values)
+        for (AXSchemaType value : values)
         {
-            retval.add(new StringValue(value));
+            retval.add(new StringValue(value.getNamespace()));
         }
         return retval;
     }

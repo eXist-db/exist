@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -34,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.annotation.*;
+import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
@@ -45,6 +48,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.security.realm.ldap.AbstractLDAPSearchPrincipal.LDAPSearchAttributeKey;
 import org.exist.storage.DBBroker;
 
 /**
@@ -105,14 +109,14 @@ public class LDAPRealm extends AbstractRealm {
         }
 
         AbstractAccount account = (AbstractAccount) getAccount(null, username);
-        if(account == null) {
+        /*if(account == null) {
             account = (AbstractAccount) createAccountInDatabase(null, username);
-        }
+        }*/
 
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private Account createAccountInDatabase(Subject invokingUser, String username) throws AuthenticationException {
+    private Account createAccountInDatabase(Subject invokingUser, String username, SearchResult ldapUser) throws AuthenticationException {
 
         DBBroker broker = null;
 
@@ -122,7 +126,25 @@ public class LDAPRealm extends AbstractRealm {
             //elevate to system privs
             broker.setUser(getSecurityManager().getSystemSubject());
 
-            Account account = getSecurityManager().addAccount(new UserAider(ID, username));
+            
+            UserAider userAider = new UserAider(ID, username);
+
+            //store any requested metadata
+            LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
+            for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
+                String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
+                Attributes userAttributes = ldapUser.getAttributes();
+                if(userAttributes != null) {
+                    Attribute userAttribute = userAttributes.get(searchAttribute);
+                    if(userAttribute != null) {
+                        String attributeValue = userAttribute.get().toString();
+                        userAider.setMetadataValue(axSchemaType, attributeValue);
+                    }
+                }
+            }
+
+            Account account = getSecurityManager().addAccount(userAider);
+
             //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
             //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -216,7 +238,7 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a user from ldap so cache them and return
                     try {
-                        return createAccountInDatabase(invokingUser, name);
+                        return createAccountInDatabase(invokingUser, name, ldapUser);
                         //registerAccount(acct); //TODO do we need this
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -283,7 +305,7 @@ public class LDAPRealm extends AbstractRealm {
         String userName = removeDomainPostfix(accountName);
 
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getAccountSearchFilterPrefix(), search.getAccountUsernameAttribute(), userName);
+        String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), userName);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -307,7 +329,7 @@ public class LDAPRealm extends AbstractRealm {
 
 
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getGroupSearchFilterPrefix(), search.getGroupNameAttribute(), groupName);
+        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), groupName);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -376,18 +398,18 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getAccountSearchFilterPrefix(), search.getAccountPersonalNameAttribute(), startsWith + "*");
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FULLNAME), startsWith + "*");
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            searchControls.setReturningAttributes(new String[] { search.getAccountUsernameAttribute() });
+            searchControls.setReturningAttributes(new String[] { search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
 
             NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
 
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                usernames.add((String)searchResult.getAttributes().get(search.getAccountUsernameAttribute()).get() + "@" + ensureContextFactory().getDomain());
+                usernames.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
@@ -410,11 +432,11 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getAccountSearchFilterPrefix(), search.getAccountUsernameAttribute(), startsWith + "*");
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            searchControls.setReturningAttributes(new String[] { search.getAccountUsernameAttribute() });
+            searchControls.setReturningAttributes(new String[] { search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
 
 
             NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
@@ -422,7 +444,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                usernames.add((String)searchResult.getAttributes().get(search.getAccountUsernameAttribute()).get() + "@" + ensureContextFactory().getDomain());
+                usernames.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));

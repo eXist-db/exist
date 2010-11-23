@@ -122,32 +122,6 @@ public interface Account extends Principal, User {
 	@Deprecated
     @Override
 	public void setGroups(String[] groups);
-	
-    /**
-     * Add a named attribute.
-     *
-     * @param name
-     * @param value
-     */
-    @Override
-	public void setAttribute(String name, Object value);
-
-    /**
-     * Get the named attribute value.
-     *
-     * @param name The String that is the name of the attribute.
-     * @return The value associated with the name or null if no value is associated with the name.
-     */
-    @Override
-	public Object getAttribute(String name);
-
-    /**
-     * Returns the set of attributes names.
-     *
-     * @return the Set of attribute names.
-     */
-    @Override
-    public Set<String> getAttributeNames();
     
     /**
      * Returns the person full name or account name.
@@ -188,4 +162,11 @@ public interface Account extends Principal, User {
      */
     @Override
     boolean isEnabled();
+
+    
+    public void setMetadataValue(AXSchemaType axSchemaType, String value);
+
+    public String getMetadataValue(AXSchemaType axSchemaType);
+
+    public Set<AXSchemaType> getMetadataKeys();
 }

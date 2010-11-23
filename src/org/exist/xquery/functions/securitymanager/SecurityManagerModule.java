@@ -1,5 +1,5 @@
 /*
- *  eXist Image Module Extension
+ *  eXist SecurityManager Module Extension
  *  Copyright (C) 2010 Adam Retter <adam@existsolutions.com>
  *  www.adamretter.co.uk
  *
@@ -42,7 +42,9 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
     private final static FunctionDef[] functions = {
         new FunctionDef(FindUserFunction.signatures[0], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class)
+        new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
+        new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
+        new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class)
     };
 
     public SecurityManagerModule() {

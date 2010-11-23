@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
+import org.exist.security.AXSchemaType;
 
 /**
  * Represents a user within the database.
@@ -184,6 +185,12 @@ public class AccountImpl extends AbstractAccount {
 
         home = from_user.getHome();
 
+        //copy metadata
+        for(AXSchemaType metadataKey : from_user.getMetadataKeys()) {
+            String metadataValue = from_user.getMetadataValue(metadataKey);
+            setMetadataValue(metadataKey, metadataValue);
+        }
+
         if(from_user instanceof AccountImpl) {
             AccountImpl user = (AccountImpl) from_user;
 
@@ -215,6 +222,12 @@ public class AccountImpl extends AbstractAccount {
         super(realm, from_user.id, from_user.name);
 
         home = from_user.home;
+
+        //copy metadata
+        for(AXSchemaType metadataKey : from_user.getMetadataKeys()) {
+            String metadataValue = from_user.getMetadataValue(metadataKey);
+            setMetadataValue(metadataKey, metadataValue);
+        }
 
         groups = from_user.groups;
 

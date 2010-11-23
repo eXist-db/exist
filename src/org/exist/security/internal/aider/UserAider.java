@@ -21,11 +21,13 @@
  */
 package org.exist.security.internal.aider;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.exist.config.Configuration;
+import org.exist.security.AXSchemaType;
 import org.exist.security.Group;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
@@ -198,32 +200,22 @@ public class UserAider implements Account {
 		return null;
 	}
 
-	private Map<String, Object> attributes = new HashMap<String, Object>();
+	private Map<AXSchemaType, String> metadata = new EnumMap<AXSchemaType, String>(AXSchemaType.class);
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setAttribute(java.lang.String, java.lang.Object)
-	 */
 	@Override
-	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
+        public String getMetadataValue(AXSchemaType axSchemaType) {
+            return metadata.get(axSchemaType);
+        }
 
-	}
+        @Override
+        public void setMetadataValue(AXSchemaType axSchemaType, String value) {
+            metadata.put(axSchemaType, value);
+        }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getAttribute(java.lang.String)
-	 */
-	@Override
-	public Object getAttribute(String name) {
-		return attributes.get(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getAttributeNames()
-	 */
-	@Override
-	public Set<String> getAttributeNames() {
-		return attributes.keySet();
-	}
+        @Override
+        public Set<AXSchemaType> getMetadataKeys() {
+            return metadata.keySet();
+        }
 
 	@Override
 	public Group getDefaultGroup() {
