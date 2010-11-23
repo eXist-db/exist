@@ -312,6 +312,10 @@ public class BrokerPool extends Observable implements Database {
 		return instances.values().iterator();
 	}
 
+	public final static boolean isInstancesEmpty() {
+		return instances.values().isEmpty();
+	}
+
 	/** Stops the default database instance. After calling this method, it is
 	 *  no longer configured.
 	 * @throws EXistException If the default database instance is not available (not created, stopped or not configured) 
