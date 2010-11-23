@@ -1,5 +1,5 @@
 /*
- *  eXist Image Module Extension
+ *  eXist SecurityManager Extension
  *  Copyright (C) 2010 Adam Retter <adam@existsolutions.com>
  *  www.adamretter.co.uk
  *  
@@ -43,7 +43,7 @@ import org.exist.xquery.value.ValueSequence;
 
 /**
  *
- * @author aretter
+ * @author Adam Retter <adam@existsolutions.com>
  */
 public class FindUserFunction extends BasicFunction {
 
@@ -92,7 +92,7 @@ public class FindUserFunction extends BasicFunction {
         } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
             usernames = securityManager.findUsernamesWhereNameStarts(currentUser, startsWith);
         } else {
-            throw new XPathException("Unknown functions");
+            throw new XPathException("Unknown function");
         }
 
         //order a-z

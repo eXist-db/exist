@@ -23,6 +23,7 @@ package org.exist.security;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +58,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	
     @ConfigurationFieldAsElement("enabled")
     private boolean enabled = true;
+
+
+    @ConfigurationFieldAsElement("metadata")
+    private Map<String, String> metadata = new HashMap<String, String>();
     
 	protected Credential _cred = null;
 
@@ -211,38 +216,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return realm;
 	}
 
-	/**
-	 * Add a named attribute.
-	 *
-	 * @param name
-	 * @param value
-	 */
-	@Override
-	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
-	}
-
-	/**
-	 * Get the named attribute value.
-	 *
-	 * @param name The String that is the name of the attribute.
-	 * @return The value associated with the name or null if no value is associated with the name.
-	 */
-	@Override
-	public Object getAttribute(String name) {
-		return attributes.get(name);
-	}
-
-	/**
-	 * Returns the set of attributes names.
-	 *
-	 * @return the Set of attribute names.
-	 */
-	@Override
-	public Set<String> getAttributeNames() {
-	    return attributes.keySet();
-	}
-
 	@Override
 	public Group getDefaultGroup() {
 		if (groups != null && groups.size() > 0)
@@ -306,5 +279,24 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         }
 
         return group;
+    }
+
+    @Override
+    public String getMetadataValue(AXSchemaType axSchemaType) {
+        return metadata.get(axSchemaType.getNamespace());
+    }
+
+    @Override
+    public void setMetadataValue(AXSchemaType axSchemaType, String value) {
+        metadata.put(axSchemaType.getNamespace(), value);
+    }
+
+    @Override
+    public Set<AXSchemaType> getMetadataKeys() {
+        Set<AXSchemaType> metadataKeys = new HashSet<AXSchemaType>();
+        for(String key : metadata.keySet()) {
+            metadataKeys.add(AXSchemaType.valueOfNamespace(key));
+        }
+        return metadataKeys;
     }
 }
