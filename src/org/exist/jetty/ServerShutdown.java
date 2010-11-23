@@ -69,7 +69,7 @@ public class ServerShutdown {
         }
         Properties properties = loadProperties();
         String user = "admin";
-        String passwd = null;
+        String passwd = "";
         String uri = properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc");
         List<CLOption> opts = optParser.getArguments();
         for (CLOption option : opts) {

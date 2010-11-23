@@ -5108,22 +5108,17 @@ public class RpcConnection implements RpcAPI {
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    try {
-                        BrokerPool.stop();
-                    } catch (EXistException e) {
-                        LOG.warn("shutdown failed", e);
-                    }
+                    BrokerPool.stopAll(true);
+                    if (BrokerPool.isInstancesEmpty())
+                    	System.exit(0);
                 }
             };
             Timer timer = new Timer();
             timer.schedule(task, delay);
         } else {
-            try {
-                BrokerPool.stop();
-            } catch (EXistException e) {
-                LOG.warn("shutdown failed", e);
-                return false;
-            }
+            BrokerPool.stopAll(true);
+            if (BrokerPool.isInstancesEmpty())
+            	System.exit(0);
         }
         return true;
     }
