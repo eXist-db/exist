@@ -124,6 +124,13 @@
 				<include name="default-style2.css"/>
 			</fileset>
 		</xdb:store>
+		
+		
+		<echo message="Creating temp collection ${server-uri}/${app-collection}/${temp-collection-name}"/>
+		<xdb:create user="${public.xmldb.username}" password="${public.xmldb.password}" uri="${server-uri}/${app-collection}" collection="${temp-collection-name}" failonerror="false"/>
+		<xdb:chown user="${public.xmldb.username}" password="${public.xmldb.password}" uri="${server-uri}/${app-collection}/${temp-collection-name}" name="${user.default.name}" group="${user.default.group}" failonerror="true"/>
+		<xdb:chmod user="${public.xmldb.username}" password="${public.xmldb.password}" uri="${server-uri}/${app-collection}/${temp-collection-name}" mode="rwurwu---" failonerror="true"/>
+		
 	</target>
 
 </project>
