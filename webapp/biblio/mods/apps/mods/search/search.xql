@@ -25,7 +25,7 @@ declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace functx = "http://www.functx.com";
 
-import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
+import module namespace config="http://exist-db.org/mods/config" at "../config.xqm";
 import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:org/exist/xquery/lib/jquery.xql";
 
 import module namespace mods="http://www.loc.gov/mods/v3" at "retrieve-mods.xql";
