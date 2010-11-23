@@ -2,7 +2,8 @@ xquery version "1.0";
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
 import module namespace mods = "http://www.loc.gov/mods/v3" at "../modules/mods.xqm";
-import module namespace config="http://exist-db.org/mods/config" at "../config.xqm";
+import module namespace config = "http://exist-db.org/mods/config" at "../config.xqm";
+import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
 
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
@@ -10,17 +11,18 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 
 declare function xf:get-temp-collection() {
-    let $collection := collection("/db/temp")
+    let $collection := collection($config:mods-temp-collection)
     let $create :=
         if ($collection) then
             ()
         else
+            (: TODO this can probably be removed, its now done by the build.xml install script :)
             system:as-user($config:dba-credentials[1], $config:dba-credentials[2], (
-                xmldb:create-collection("/db", "temp"), 
-                xmldb:set-collection-permissions("/db/temp", "editor", "biblio.users", xmldb:string-to-permissions("rwurwu---"))
+                xmldb:create-collection(fn:replace($config:mods-temp-collection, "(.*)/.*", "$1"), fn:replace($config:mods-temp-collection, ".*/", "")), 
+                xmldb:set-collection-permissions($config:mods-temp-collection, "editor", "biblio.users", xmldb:string-to-permissions("rwurwu---"))
             ))
     return
-        "/db/temp"
+        $config:mods-temp-collection
 };
 
 let $title := 'MODS Record Editor'
