@@ -108,12 +108,14 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             Group group = sm.getGroup(context.getBroker().getUser(), groupName);
 
             Account account = sm.getAccount(context.getBroker().getUser(), userName);
+            if(account != null) {
+                account.addGroup(group);
+                sm.updateAccount(context.getBroker().getUser(), account);
 
-            account.addGroup(group);
-            sm.updateAccount(context.getBroker().getUser(), account);
-
-            return BooleanValue.TRUE;
-
+                return BooleanValue.TRUE;
+            } else {
+                logger.warn("Could not find account for username '" + userName + "' in call to xmldb:add-user-to-group");
+            }
         } catch(PermissionDeniedException pde) {
             logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", pde);
         } catch(EXistException exe) {
