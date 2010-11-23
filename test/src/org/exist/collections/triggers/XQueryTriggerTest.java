@@ -22,7 +22,6 @@
 package org.exist.collections.triggers;
 
 import static junit.framework.Assert.assertEquals;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -130,9 +129,14 @@ public class XQueryTriggerTest {
                   "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
                   "<xu:attribute name='type'>{$type}</xu:attribute>" +
                   "<xu:attribute name='event'>{$event}</xu:attribute>" +
-                  "<xu:element name='collection'>{$log:collection}</xu:element>" +
-                  "<xu:element name='uri'>{$log:uri}</xu:element>" +
-                  "<xu:element name='document'>{if (util:is-binary-doc($log:uri)) then util:binary-doc($log:uri) else doc($log:uri)}</xu:element>" +   
+                  //"<xu:element name='collection'>{$log:collection}</xu:element>" +
+                  "<xu:element name='uri'>{$uri}</xu:element>" +
+                  "{" +
+                  	"if ($new-uri) then" + 
+                  		"<xu:element name='new-uri'>{$new-uri}</xu:element>" +
+                  	"else ()" +
+                  "}" +
+                  "<xu:element name='document'>{if (util:is-binary-doc($uri)) then util:binary-doc($uri) else doc($uri)}</xu:element>" +   
                 "</xu:element>" +            
               "</xu:append>" +
             "</xu:modifications>" +
