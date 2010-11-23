@@ -1608,7 +1608,9 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
 declare function mods:format-short($id as xs:string, $entry as element(mods:mods)) {
         mods:format-multiple-primary-names($entry),
         mods:get-short-title($id, $entry),
-        'Edited by ',
+        let $secondary-names := mods:format-multiple-secondary-names($entry)
+        return
+        if($secondary-names) then 'Edited by ' else (),
         mods:format-multiple-secondary-names($entry),
         if ($entry/mods:name[@type = 'conference']) 
         then
