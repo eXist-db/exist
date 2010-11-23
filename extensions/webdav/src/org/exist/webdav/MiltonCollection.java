@@ -261,7 +261,7 @@ public class MiltonCollection extends MiltonResource
 
         } catch (IOException e){
             LOG.debug(e.getMessage());
-            throw e;
+            throw new ConflictException(this);
         }
         return resource;
     }
