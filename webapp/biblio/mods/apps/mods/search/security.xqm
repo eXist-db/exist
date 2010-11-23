@@ -2,7 +2,7 @@ xquery version "1.0";
 
 module namespace security="http://exist-db.org/mods/security";
 
-import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
+import module namespace config="http://exist-db.org/mods/config" at "../config.xqm";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";

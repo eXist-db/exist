@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-import module namespace config="http://exist-db.org/mods/config" at "config.xqm";
+import module namespace config="http://exist-db.org/mods/config" at "../config.xqm";
 import module namespace json="http://www.json.org";
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
 import module namespace session = "http://exist-db.org/xquery/session";

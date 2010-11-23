@@ -2,7 +2,7 @@ xquery version "1.0";
 
 module namespace sharing = "http://exist-db.org/mods/sharing";
 
-import module namespace config = "http://exist-db.org/mods/config" at "config.xqm";
+import module namespace config = "http://exist-db.org/mods/config" at "../config.xqm";
 import module namespace mail = "http://exist-db.org/xquery/mail";
 import module namespace security = "http://exist-db.org/mods/security" at "security.xqm";
 declare namespace group = "http://exist-db.org/mods/sharing/group";
@@ -191,13 +191,13 @@ declare function sharing:update-group($group-name as xs:string, $group-members a
 
 declare function sharing:send-group-invitation-mail($group-name as xs:string, $username as xs:string) as empty()
 {
-    let $mail-template := fn:doc(fn:concat($config:app-root, "/group-invitation-email-template.xml")) return
+    let $mail-template := fn:doc(fn:concat($config:search-app-root, "/group-invitation-email-template.xml")) return
         mail:send-email(sharing:process-email-template($mail-template, $group-name, $username), $config:smtp-server, ())
 };
 
 declare function sharing:send-group-removal-mail($group-name as xs:string, $username as xs:string) as empty()
 {
-    let $mail-template := fn:doc(fn:concat($config:app-root, "/group-removal-email-template.xml")) return
+    let $mail-template := fn:doc(fn:concat($config:search-app-root, "/group-removal-email-template.xml")) return
         mail:send-email(sharing:process-email-template($mail-template, $group-name, $username), $config:smtp-server, ())
 };
 

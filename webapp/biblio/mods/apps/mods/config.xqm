@@ -3,7 +3,8 @@ xquery version "1.0";
 module namespace config="http://exist-db.org/mods/config";
 
 declare variable $config:mods-root := "/db/mods";
-declare variable $config:app-root := "/db/org/library/apps/mods/search";
+declare variable $config:search-app-root := "/db/org/library/apps/mods/search";
+declare variable $config:edit-app-root := "/db/org/library/apps/mods/edit";
 declare variable $config:force-lower-case-usernames as xs:boolean := true();
 
 (: email invitation settings :)
