@@ -50,8 +50,9 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractRealm implements Realm, Configurable {
 
-	protected final Map<String, Account> usersByName = new HashMap<String, Account>(65);
-	protected final Map<String, Group> groupsByName = new HashMap<String, Group>(65);
+	//XXX: this class must be under org.exist.security.inyternal to be protected
+	public final Map<String, Account> usersByName = new HashMap<String, Account>(65);
+	public final Map<String, Group> groupsByName = new HashMap<String, Group>(65);
 
 	private SecurityManager sm;
 	
@@ -196,10 +197,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
 				if (account.getId() > 0)
 					((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
 			}
-
-
-
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

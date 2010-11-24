@@ -22,11 +22,11 @@
 package org.exist.security;
 
 import java.util.List;
-import java.util.regex.Pattern;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
@@ -51,6 +51,10 @@ public interface SecurityManager extends Configurable {
    
    public final static XmldbURI SECURITY_COLLETION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("security");
    public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
+   
+   public final static XmldbURI ACCOUNTS_COLLECTION_URI = XmldbURI.create("accounts");
+   public final static XmldbURI GROUPS_COLLECTION_URI = XmldbURI.create("groups");
+   public final static XmldbURI REMOVED_COLLECTION_URI = XmldbURI.create("removed");
 
    public final static String SYSTEM = "SYSTEM";
    public final static String DBA_GROUP = "dba";
@@ -100,12 +104,10 @@ public interface SecurityManager extends Configurable {
    public Subject getGuestSubject();
    public Group getDBAGroup();
 
-   //TODO needs javadoc saying what to replace with?
-   @Deprecated
+   @Deprecated //use realm's method
    <A extends Account> java.util.Collection<A> getUsers();
 
-   //TODO needs javadoc saying what to replace with?
-   @Deprecated
+   @Deprecated //use realm's method
    <G extends Group> java.util.Collection<G> getGroups();
 
    Realm getRealm(String iD);
@@ -136,4 +138,12 @@ public interface SecurityManager extends Configurable {
     * Find users by their username
     */
    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
+
+   /**
+    * Process document, possible new sub-instance.
+    *  
+    * @param document
+    * @throws ConfigurationException 
+    */
+   void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException;
 }

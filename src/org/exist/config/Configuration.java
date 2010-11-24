@@ -47,11 +47,12 @@ public interface Configuration {
 	public boolean hasProperty(String name);
 
 	public String getProperty(String property);
-        public Map getPropertyMap(String property);
-        
+
+	public Map getPropertyMap(String property);
+
 	public Integer getPropertyInteger(String property);
 	public Long getPropertyLong(String property);
-    public Boolean getPropertyBoolean(String property);
+	public Boolean getPropertyBoolean(String property);
 	public Class<?> getPropertyClass(String propertySecurityClass);
 
 	public void setProperty(String property, String value);
@@ -68,5 +69,5 @@ public interface Configuration {
 
 	public void save() throws PermissionDeniedException;
 
-    public boolean equals(Object obj, String uniqField);
+	public boolean equals(Object obj, String uniqField);
 }

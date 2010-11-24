@@ -23,7 +23,6 @@ package org.exist.security.realm;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.exist.Database;
 import org.exist.EXistException;
@@ -45,7 +44,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 	public Collection<Account> getAccounts();
 	
 	public Collection<Group> getGroups();
-	@Deprecated //use getGroups
+	@Deprecated //use getGroups (remove after 1.6)
 	public Collection<Group> getRoles();
 
 	public void startUp(DBBroker broker) throws EXistException;
