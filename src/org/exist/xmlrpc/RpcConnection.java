@@ -5109,16 +5109,12 @@ public class RpcConnection implements RpcAPI {
                 @Override
                 public void run() {
                     BrokerPool.stopAll(true);
-                    if (BrokerPool.isInstancesEmpty())
-                    	System.exit(0);
                 }
             };
             Timer timer = new Timer();
             timer.schedule(task, delay);
         } else {
             BrokerPool.stopAll(true);
-            if (BrokerPool.isInstancesEmpty())
-            	System.exit(0);
         }
         return true;
     }
