@@ -160,7 +160,7 @@ function toggleCollectionTree(show) {
 }
 
 function updateCollectionPaths(title, key) {
-    key = key.replace(/^\/db\//, "");
+    key = key.replace(/^\/db/, "");
     
     //search forms
     var form = $('#simple-search-form');
