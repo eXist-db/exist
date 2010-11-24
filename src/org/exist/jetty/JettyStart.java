@@ -333,7 +333,7 @@ public class JettyStart implements LifeCycle.Listener {
             logger.info("Database shutdown: stopping server in 1sec ...");
             if (remainingInstances == 0) {
                 // give the webserver a 1s chance to complete open requests
-                Timer timer = new Timer();
+                Timer timer = new Timer("jetty shutdown schedule", true);
                 timer.schedule(new TimerTask() {
 
                     public void run() {
