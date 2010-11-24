@@ -99,6 +99,10 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
 	@Override
 	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		//check saving list
+		if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
+			return;
+		
 		checkForUpdates(broker, document.getURI(), document);
 		
 		XmldbURI uri = document.getCollection().getURI();
