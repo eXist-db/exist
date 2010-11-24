@@ -50,7 +50,8 @@ public abstract class AbstractPrincipal implements Principal {
 	@ConfigurationFieldAsAttribute("id")
 	protected final int id;
 	
-	protected boolean removed = false;
+	//XXX: this must be under org.exist.security.internal to make it protected
+	public boolean removed = false;
 
 	protected Configuration configuration = null;
 	

@@ -21,7 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.util.regex.Pattern;
 import org.exist.security.AbstractRealm;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
@@ -504,7 +504,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		try {
 			broker = getDatabase().get(null);
 
-			Subject currentUser = broker.getUser();
+			Subject currentUser = broker.getSubject();
 			
 			try {
 		
@@ -635,4 +635,81 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         return userNames;
     }
+
+	@Override
+	public void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException {
+
+		XmldbURI uri = document.getCollection().getURI();
+		
+		boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
+		if (isRemoved)
+			uri = uri.removeLastSegment();
+		
+		boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
+		boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
+		
+		if (isAccount || isGroup) {
+			uri = uri.removeLastSegment();
+			
+			String realmId = uri.lastSegment().toString();
+			SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+			
+			AbstractRealm realm = (AbstractRealm) sm.getRealm(realmId);
+			if (realm == null) {
+				//XXX: deleted realm's objects
+//				Configuration conf = Configurator.parse(document);
+//				if (isAccount) {
+//	            	Integer id = conf.getPropertyInteger("id");
+//	            	if (id != null && !getSecurityManager().hasUser(id)) {
+//						AccountImpl account = new AccountImpl( null, conf );
+//	            		account.removed = true;
+//		            	addUser(account.getId(), account);
+//	            	}
+//				} else if (isGroup) {
+//	            	Integer id = conf.getPropertyInteger("id");
+//	            	if (id != null && !getSecurityManager().hasGroup(id)) {
+//	                    GroupImpl group = new GroupImpl(null, conf);
+//	                    group.removed = true;
+//	            		addGroup(group.getId(), group);
+//	            	}
+//				}
+			} else {
+				Configuration conf = Configurator.parse(document);
+
+				Integer id = -1;
+				if (isRemoved) id = conf.getPropertyInteger("id");
+				
+            	String name = conf.getProperty("name");
+
+            	if (isAccount) {
+            		if (isRemoved && id > 2 && !hasUser(id)) {
+            			AccountImpl account = new AccountImpl( realm, conf );
+            			account.removed = true;
+		            	addUser(account.getId(), account);
+            		} else if (name != null && !realm.usersByName.containsKey(name)) {
+	            		Account account = new AccountImpl( realm, conf );
+		            	addUser(account.getId(), account);
+		            	realm.usersByName.put(account.getName(), account);
+	            	} else {
+	            		//this can't be! log any way
+	            		LOG.error("Account '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+	            	}
+				} else if (isGroup) {
+            		if (isRemoved && id > 2 && !hasGroup(id)) {
+	            		GroupImpl group = new GroupImpl( realm, conf );
+	            		group.removed = true;
+	            		addGroup(group.getId(), group);
+            		} else if (name != null && !realm.groupsByName.containsKey(name)) {
+	            		GroupImpl group = new GroupImpl( realm, conf );
+	            		addGroup(group.getId(), group);
+	            		realm.groupsByName.put(group.getName(), group);
+	            	} else {
+	            		//this can't be! log any way
+	            		LOG.error("Group '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+	            	}
+				}
+			}
+			
+		}
+	}
 }

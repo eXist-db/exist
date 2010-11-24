@@ -369,7 +369,7 @@ public class Configurator {
                             }
                             String id = conf.getProperty(Configuration.ID);
                             if (id == null) {
-                                LOG.warn("Subconfiguration must have id ["+conf+"], skip instance creation.");
+                                LOG.warn("Subconfiguration must have id ["+conf.getName()+"], skip instance creation.");
                                 continue;
                             }
 

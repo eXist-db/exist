@@ -27,6 +27,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.utils.ConverterFrom1_0;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -64,7 +65,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 			
 			if (documentPath.equals("/db/system/users.xml")) {
 				try {
-					ConverterFrom1_0.convert(broker.getUser(),
+					ConverterFrom1_0.convert(broker.getSubject(),
 							broker.getBrokerPool().getSecurityManager(),
 							document);
 				} catch (PermissionDeniedException e) {
@@ -99,6 +100,14 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 	@Override
 	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
 		checkForUpdates(broker, document.getURI(), document);
+		
+		XmldbURI uri = document.getCollection().getURI();
+		if (uri.startsWith(SecurityManager.SECURITY_COLLETION_URI))
+			try {
+				broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+			} catch (ConfigurationException e) {
+				LOG.error("Configuration can't be proccessed ["+document.getURI()+"]", e);
+			}
 	}
 
 	@Override
