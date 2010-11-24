@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -587,6 +587,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             return( getNode( 1 ) );
         return( null );
     }
+    
+    public Node getLastChild() {
+    	return getFirstChild();
+    }
+
 
     public int getAttributesCountFor( int nodeNumber )
     {
@@ -1367,7 +1372,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     
     public NodeList getChildNodes() {
 		NodeListImpl nl = new NodeListImpl(1);
-		nl.add( getDocumentElement() );
+		Element el = getDocumentElement();
+		if (el != null)
+			nl.add( el );
 		return nl ;
     }
 
