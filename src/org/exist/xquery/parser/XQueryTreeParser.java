@@ -2,6 +2,8 @@
 
 	package org.exist.xquery.parser;
 
+import org.exist.xquery.functions.fn.ExtFulltext;
+import org.exist.xquery.functions.fn.FunId;
 	import antlr.debug.misc.*;
 	import java.io.StringReader;
 	import java.io.BufferedReader;

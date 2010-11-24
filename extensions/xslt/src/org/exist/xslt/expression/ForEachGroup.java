@@ -32,7 +32,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.FunDistinctValues.ValueComparator;
+import org.exist.xquery.functions.fn.FunDistinctValues.ValueComparator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;

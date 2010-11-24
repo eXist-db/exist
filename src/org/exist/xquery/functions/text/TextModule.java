@@ -23,7 +23,7 @@ package org.exist.xquery.functions.text;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
-import org.exist.xquery.functions.FunMatches;
+import org.exist.xquery.functions.fn.FunMatches;
 
 
 /**

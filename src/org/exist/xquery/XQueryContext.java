@@ -3420,7 +3420,7 @@ public class XQueryContext
                         Map<String, String> modulesSourceMap ) throws DatabaseConfigurationException
     {
         // add the standard function module
-        modulesClassMap.put( Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.ModuleImpl.class );
+        modulesClassMap.put( Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class );
 
         // add other modules specified in configuration
         NodeList builtins = xquery.getElementsByTagName( CONFIGURATION_MODULES_ELEMENT_NAME );

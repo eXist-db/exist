@@ -30,7 +30,7 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
