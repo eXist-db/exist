@@ -1,6 +1,6 @@
 package org.exist.xquery;
 
-import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.functions.fn.ExtFulltext;
 
 import java.util.ArrayList;
 import java.util.List;

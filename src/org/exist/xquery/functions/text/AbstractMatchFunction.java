@@ -30,7 +30,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.DeprecatedExtRegexp;
+import org.exist.xquery.functions.fn.DeprecatedExtRegexp;
 import org.exist.xquery.value.Sequence;
 
 

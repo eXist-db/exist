@@ -1,6 +1,6 @@
 package org.exist.xquery;
 
-import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.functions.fn.ExtFulltext;
 
 /**
  * Defines a visitor to be used for traversing and analyzing the

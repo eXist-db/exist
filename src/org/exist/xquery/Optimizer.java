@@ -24,7 +24,7 @@ package org.exist.xquery;
 import org.exist.storage.NodePath;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.log4j.Logger;
-import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
 
 import java.util.ArrayList;

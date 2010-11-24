@@ -12,7 +12,7 @@ import org.exist.source.*;
 import org.exist.storage.*;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.*;
+import org.exist.xquery.functions.fn.*;
 import org.exist.xquery.value.*;
 
 /**

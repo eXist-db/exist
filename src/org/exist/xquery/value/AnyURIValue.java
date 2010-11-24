@@ -31,7 +31,7 @@ import java.util.BitSet;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.functions.FunEscapeURI;
+import org.exist.xquery.functions.fn.FunEscapeURI;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
