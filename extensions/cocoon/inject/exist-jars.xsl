@@ -90,7 +90,7 @@
                     <title>Commons File Upload</title>
                     <description>Apache commons library for file uploads</description>
                     <used-by>exist</used-by>
-                    <lib>optional/commons-fileupload-1.2.1.jar</lib>
+                    <lib>optional/commons-fileupload-1.2.2.jar</lib>
                     <homepage>http://jakarta.apache.org/commons/fileupload/</homepage>
                 </file>
                 <file>
