@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -775,6 +776,8 @@ public class Configurator {
             database.release(broker);
         }
     }
+    
+    protected static Set<FullXmldbURI> saving = new HashSet<FullXmldbURI>();
 
     public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {
 
@@ -798,7 +801,7 @@ public class Configurator {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
         LOG.info("STORING CONFIGURATION collection = "+collection.getURI()+" document = "+uri);
-        Subject currentUser = broker.getUser();
+        Subject currentUser = broker.getSubject();
         try {
             broker.setUser(pool.getSecurityManager().getSystemSubject());
             //String data = buf.toString();
@@ -807,9 +810,12 @@ public class Configurator {
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             doc.setPermissions(0770);
+            FullXmldbURI fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
+            saving.add(fullURI);
             collection.store(txn, broker, info, data, false);
             broker.saveCollection(txn, doc.getCollection());
             transact.commit(txn);
+            saving.remove(fullURI);
         } catch (Exception e) {
             transact.abort(txn);
             e.printStackTrace();

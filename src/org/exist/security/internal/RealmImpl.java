@@ -124,7 +124,7 @@ public class RealmImpl extends AbstractRealm {
 		DBBroker broker = null;
 		try {
 			broker = getDatabase().get(null);
-			Account user = broker.getUser();
+			Account user = broker.getSubject();
 			
 			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
 					throw new PermissionDeniedException(
