@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.request;
 
 import org.apache.log4j.Logger;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.exist.dom.QName;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -53,97 +53,90 @@ import org.exist.xquery.value.Type;
  */
 public class GetUploadedFile extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(GetUploadedFile.class);
+    protected static final Logger logger = Logger.getLogger(GetUploadedFile.class);
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+        new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+        "Retrieve the base64 encoded data where the file part of a multi-part request has been stored. "
+        + "Returns the empty sequence if the request is not a multi-part request or the parameter name "
+        + "does not point to a file part.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
+        },
+        new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the base64 encoded data from the uploaded file"))
+    };
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-				new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-				"Retrieve the base64 encoded data where the file part of a multi-part request has been stored. " +
-				"Returns the empty sequence if the request is not a multi-part request or the parameter name " +
-				"does not point to a file part.",
-				new SequenceType[] {
-					new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
-				},
-				new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the base64 encoded data from the uploaded file")
-		)
-		
-	};
-	
-	public GetUploadedFile(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		
-		RequestModule myModule =
-			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+    public GetUploadedFile(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "No request object found in the current XQuery context.");
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $request is not bound to an Java object.");
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+            throws XPathException {
 
-		// get parameters
-		String uploadParamName = args[0].getStringValue();
+        RequestModule myModule =
+                (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-			RequestWrapper request = (RequestWrapper)value.getObject();
-			File file = request.getFileUploadParam(uploadParamName);
-			if(file == null) {
-				logger.debug("File param not found: " + uploadParamName);
-				return Sequence.EMPTY_SEQUENCE;
-			} else
-				logger.debug("Uploaded file: " + file.getAbsolutePath());
-			
-			
+        // request object is read from global variable $request
+        Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+        if (var == null || var.getValue() == null) {
+            throw new XPathException(this, "No request object found in the current XQuery context.");
+        }
+
+        if (var.getValue().getItemType() != Type.JAVA_OBJECT) {
+            throw new XPathException(this, "Variable $request is not bound to an Java object.");
+        }
+
+        // get parameters
+        String uploadParamName = args[0].getStringValue();
+
+        JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+
+        if (value.getObject() instanceof RequestWrapper) {
+
+            RequestWrapper request = (RequestWrapper) value.getObject();
+
+            File file = request.getFileUploadParam(uploadParamName);
+            if (file == null) {
+                logger.debug("File param not found: " + uploadParamName);
+                return Sequence.EMPTY_SEQUENCE;
+            } else {
+                logger.debug("Uploaded file: " + file.getAbsolutePath());
+            }
+
+
             InputStream is = null;
-            try
-            {
+            try {
                 is = new BufferedInputStream(new FileInputStream(file));
                 byte buf[] = new byte[1024];
                 int read = -1;
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                while((read = is.read(buf)) != -1)
-                {
+                while ((read = is.read(buf)) != -1) {
                     baos.write(buf, 0, read);
                 }
 
                 return new Base64Binary(baos.toByteArray());
 
-            }
-            catch(FileNotFoundException fnfe)
-            {
+            } catch (FileNotFoundException fnfe) {
                 throw new XPathException(this, fnfe.getMessage(), fnfe);
-            }
-            catch (IOException ioe)
-            {
+
+            } catch (IOException ioe) {
                 throw new XPathException(this, ioe.getMessage(), ioe);
-            }
-            finally
-            {
-                if(is != null)
-                {
-                    try
-                    {
+
+            } finally {
+                if (is != null) {
+                    try {
                         is.close();
-                    }
-                    catch (IOException ioe)
-                    {
+                    } catch (IOException ioe) {
                         logger.warn(ioe.getMessage(), ioe);
                     }
                 }
             }
-		}
-		else
-		{
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
-		}
-	}
+
+        } else {
+            throw new XPathException(this, "Variable $request is not bound to a Request object.");
+        }
+    }
 }
