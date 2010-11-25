@@ -44,7 +44,7 @@
     
     <target name="compile" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
-        <echo message="Compiling XLST module"/>
+        <echo message="Compiling XSLT module"/>
         <echo message="---------------------------"/>
         
         <echo
@@ -74,7 +74,7 @@
 
     <target name="compile-tests" depends="jar" if="include.feature.xslt.config">
         <echo message="---------------------------"/>
-        <echo message="Compiling XLST module tests"/>
+        <echo message="Compiling XSLT module tests"/>
         <echo message="---------------------------"/>
         
         <echo
