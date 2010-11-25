@@ -21,14 +21,13 @@
  */
 package org.exist.security.openid;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
+import org.exist.security.AXSchemaType;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.UserAttributes;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
@@ -73,57 +72,30 @@ public class AccountImpl extends AbstractAccount {
 
 	//TODO: find a place to construct 'full' name
 	public String getName_() {
-		String name = "";
-		if (attributes.containsKey(UserAttributes.FIRTSNAME)) 
-			name += attributes.get(UserAttributes.FIRTSNAME); 
-		
-		if (attributes.containsKey(UserAttributes.LASTNAME)) {
-			if (name != "") name += " ";
-			name += attributes.get(UserAttributes.LASTNAME);
-		}
-		
-		if (name.equals("")) 
-			name += attributes.get(UserAttributes.FULLNAME);
-		
-		if (name.equals("")) 
-			return _identifier.getIdentifier();
+            String name = "";
 
-		return name;
-	}
+            Set<AXSchemaType> metadataKeys = getMetadataKeys();
 
-	private Map<String, Object> attributes = new HashMap<String, Object>();
-	
-    /**
-     * Add a named attribute.
-     *
-     * @param name
-     * @param value
-     */
-	@Override
-	public void setAttribute(String name, Object value) {
-		String id = UserAttributes.alias.get(name);
-		if (id == null)
-			attributes.put(name, value);
-		else
-			attributes.put(id, value);
-	}
+            if(metadataKeys.contains(AXSchemaType.FIRSTNAME)) {
+                name += getMetadataValue(AXSchemaType.FIRSTNAME);
+            }
 
-    /**
-     * Get the named attribute value.
-     *
-     * @param name The String that is the name of the attribute.
-     * @return The value associated with the name or null if no value is associated with the name.
-     */
-	@Override
-	public Object getAttribute(String name) {
-		String id = UserAttributes.alias.get(name);
-		if (id != null)
-			return attributes.get(id);
+            if(metadataKeys.contains(AXSchemaType.LASTNAME)) {
+                if(name.length() > 0 ) {
+                    name += " ";
+                }
+                name += getMetadataValue(AXSchemaType.LASTNAME);
+            }
 
-		if (name.equalsIgnoreCase("id"))
-			return _identifier.getIdentifier();
-		
-		return attributes.get(name);
+            if(name.length() == 0) {
+                name += getMetadataValue(AXSchemaType.FULLNAME);
+            }
+
+            if(name.length() == 0) {
+                name = _identifier.getIdentifier();
+            }
+
+            return name;
 	}
 
     @Override
