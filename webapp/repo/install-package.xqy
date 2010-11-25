@@ -11,6 +11,6 @@ return
 <html>
     <body>
          {$name} installed: {$install} .<br/>
-        <i>note: you will need to restart eXist for changes to take affect</i>
+        <i>note: you will need to restart eXist for changes to take effect</i>
     </body>
 </html>
