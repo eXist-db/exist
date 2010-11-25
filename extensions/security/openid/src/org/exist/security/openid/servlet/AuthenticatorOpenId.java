@@ -38,7 +38,7 @@ import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import org.exist.config.ConfigurationException;
-import org.exist.security.UserAttributes;
+import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.AbstractRealm;
 import org.exist.security.internal.SubjectAccreditedImpl;
@@ -183,24 +183,24 @@ public class AuthenticatorOpenId extends HttpServlet {
 			if (authReq.getOPEndpoint().indexOf("myopenid.com")>0) {
 				SRegRequest sregReq = SRegRequest.createFetchRequest();
 
-				sregReq.addAttribute(UserAttributes._FULLNAME.toLowerCase(), true);
-				sregReq.addAttribute(UserAttributes._EMAIL.toLowerCase(), true);
-				sregReq.addAttribute(UserAttributes._COUNTRY.toLowerCase(), true);
-				sregReq.addAttribute(UserAttributes._LANGUAGE.toLowerCase(), true);
+				sregReq.addAttribute(AXSchemaType.FULLNAME.name().toLowerCase(), true);
+				sregReq.addAttribute(AXSchemaType.EMAIL.name().toLowerCase(), true);
+				sregReq.addAttribute(AXSchemaType.COUNTRY.name().toLowerCase(), true);
+				sregReq.addAttribute(AXSchemaType.LANGUAGE.name().toLowerCase(), true);
 
 				authReq.addExtension(sregReq);
 			} else {
 
 				FetchRequest fetch = FetchRequest.createFetchRequest();
 
-				fetch.addAttribute(UserAttributes._FIRTSNAME, UserAttributes.FIRTSNAME, true);
-				fetch.addAttribute(UserAttributes._LASTNAME, UserAttributes.LASTNAME, true);
-				fetch.addAttribute(UserAttributes._EMAIL, UserAttributes.EMAIL, true);
-				fetch.addAttribute(UserAttributes._COUNTRY, UserAttributes.COUNTRY, true);
-				fetch.addAttribute(UserAttributes._LANGUAGE, UserAttributes.LANGUAGE, true);
+				fetch.addAttribute(AXSchemaType.FIRSTNAME.getAlias(), AXSchemaType.FIRSTNAME.getNamespace(), true);
+				fetch.addAttribute(AXSchemaType.LASTNAME.getAlias(), AXSchemaType.LASTNAME.getNamespace(), true);
+				fetch.addAttribute(AXSchemaType.EMAIL.getAlias(), AXSchemaType.EMAIL.getNamespace(), true);
+				fetch.addAttribute(AXSchemaType.COUNTRY.getAlias(), AXSchemaType.COUNTRY.getNamespace(), true);
+				fetch.addAttribute(AXSchemaType.LANGUAGE.getAlias(), AXSchemaType.LANGUAGE.getNamespace(), true);
 
 				// wants up to three email addresses
-				fetch.setCount(UserAttributes._EMAIL, 3);
+				fetch.setCount(AXSchemaType.EMAIL.getAlias(), 3);
 
 				authReq.addExtension(fetch);
 			}
@@ -316,7 +316,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 							String name = (String) iter.next();
 							if (LOG.isDebugEnabled())
 								LOG.debug(name + " : " + sregResp.getParameterValue(name));
-							principal.setAttribute(name, sregResp.getParameterValue(name));
+							principal.setMetadataValue(AXSchemaType.valueOfNamespace(name), sregResp.getParameterValue(name));
 						}
 					}
 				}
@@ -330,7 +330,7 @@ public class AuthenticatorOpenId extends HttpServlet {
 						if (values.size() > 0) {
 							if (LOG.isDebugEnabled())
 								LOG.debug(alias + " : " + values.get(0));
-							principal.setAttribute(alias, values.get(0));
+							principal.setMetadataValue(AXSchemaType.valueOfAlias(alias), (String)values.get(0));
 						}
 					}
 				}
