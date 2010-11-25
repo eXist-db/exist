@@ -6,18 +6,21 @@ package org.exist.security;
  */
 public enum AXSchemaType {
 
-    FIRTSNAME("http://axschema.org/namePerson/first"),
-    LASTNAME("http://axschema.org/namePerson/last"),
-    FULLNAME("http://axschema.org/namePerson"),
-    EMAIL("http://axschema.org/contact/email"),
-    COUNTRY("http://axschema.org/contact/country/home"),
-    LANGUAGE("http://axschema.org/pref/language"),
-    TIMEZONE("http://axschema.org/pref/timezone");
+    ALIAS_USERNAME("http://axschema.org/namePerson/friendly", "Alias"),
+    FIRSTNAME("http://axschema.org/namePerson/first", "FirstName"),
+    LASTNAME("http://axschema.org/namePerson/last", "LastName"),
+    FULLNAME("http://axschema.org/namePerson", "FullName"),
+    EMAIL("http://axschema.org/contact/email", "Email"),
+    COUNTRY("http://axschema.org/contact/country/home", "Country"),
+    LANGUAGE("http://axschema.org/pref/language", "Language"),
+    TIMEZONE("http://axschema.org/pref/timezone", "Timezone");
 
     private final String namespace;
+    private final String alias;
 
-    AXSchemaType(String namespace) {
+    AXSchemaType(String namespace, String alias) {
         this.namespace = namespace;
+        this.alias = alias;
     }
 
     public static AXSchemaType valueOfNamespace(String namespace) {
@@ -29,7 +32,20 @@ public enum AXSchemaType {
         return null;
     }
 
+    public static AXSchemaType valueOfAlias(String alias) {
+        for(AXSchemaType axSchemaType : AXSchemaType.values()) {
+            if(axSchemaType.getAlias().equals(alias)) {
+                return axSchemaType;
+            }
+        }
+        return null;
+    }
+
     public String getNamespace() {
         return namespace;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }
