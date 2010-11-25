@@ -38,6 +38,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
 import java.util.Properties;
+import org.exist.security.AXSchemaType;
 
 /**
  *
@@ -67,9 +68,9 @@ public class OpenIDUtility {
             return false;
         }
 
-        String userInfo = "registerUser: [" + principal.getAttribute("id") + ", ";
-        for (String name : principal.getAttributeNames()) {
-            userInfo += name +"(" + principal.getAttribute(name) + "), ";
+        String userInfo = "registerUser: [" + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME) + ", ";
+        for(AXSchemaType metadataKey : principal.getMetadataKeys()) {
+            userInfo += metadataKey.getNamespace() +"(" + principal.getMetadataValue(metadataKey) + "), ";
         }
         userInfo += "]";
         LOG.info(userInfo);
@@ -94,7 +95,7 @@ public class OpenIDUtility {
 
             broker = pool.get(principal);
             if (broker == null) {
-                LOG.error("Unable to retrieve DBBroker for " + principal.getAttribute("id"));
+                LOG.error("Unable to retrieve DBBroker for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME));
                 return false;
             }
 
@@ -130,7 +131,7 @@ public class OpenIDUtility {
             LOG.info("XQuery execution results: " + result.toString());
 
         } catch (Exception e) {
-            LOG.error("Exception while executing OpenID registration script for " + principal.getAttribute("id"), e);
+            LOG.error("Exception while executing OpenID registration script for " + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME), e);
             return false;
         }
         finally {
