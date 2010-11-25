@@ -191,13 +191,19 @@ public class HttpRequestWrapper implements RequestWrapper {
         Map map = servletRequest.getParameterMap();
         for (Object one : map.keySet()) {
 
-            // Key gey and corresponding values
+            // Get key and corresponding values
             String key = (String) one;
-            String[] values = (String[]) map.get(one);
 
-            // Write keys and values
-            for (String value : values) {
-                addParameter(params, key, value);
+            // DWES this prevents adding a second value for the same key
+            // This is wrong. If a parameters 2 times on the URL, or is entered
+            // via a form and a URL, basically all values bust be accessible.
+            if(!params.containsKey(key)){
+                String[] values = (String[]) map.get(one);
+
+                // Write keys and values
+                for (String value : values) {
+                    addParameter(params, key, value);
+                }
             }
         }
     }
