@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -57,19 +58,24 @@ import org.exist.xquery.Constants;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author Dannes Wessels <dannes@exist-db.org>
  */
 public class HttpRequestWrapper implements RequestWrapper {
     
     private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
 
     private HttpServletRequest servletRequest;
+
     private String formEncoding = null;
     private String containerEncoding = null;
-    private Map<String, Object> params = null;
+
     private String pathInfo = null;
     private String servletPath = null;
 
-    
+    private Map<String, Object> params = null;
+
+    private boolean isFormDataParsed = false;
+
 
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding) {
@@ -89,10 +95,25 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.containerEncoding = containerEncoding;
         this.pathInfo = servletRequest.getPathInfo();
         this.servletPath = servletRequest.getServletPath();
+       
 
+        // DW originally the parameters from the URL were only parsed
+        // upon multipart formdata?
+        
         if (parseMultipart && ServletFileUpload.isMultipartContent(servletRequest)) {
+
+            // Formdata is actually parsed
+            isFormDataParsed=true;
+            
+            params = new HashMap<String, Object>();
+
+            // Get multi-part formdata
             parseMultipartContent();
+
+            // Get parameters url-encoded
+            parseParameters();
         }
+
     }
 
     public Object getAttribute(String name) {
@@ -150,7 +171,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         ServletFileUpload upload = new ServletFileUpload(factory);
 
         try {
-            params = new HashMap<String, Object>();
+            
             List items = upload.parseRequest(servletRequest);
 
             // Iterate over all mult-part formdata items and
@@ -160,31 +181,27 @@ public class HttpRequestWrapper implements RequestWrapper {
                 addParameter(params, item.getFieldName(), item);
             }
 
-            // Dizzzz: Why not use servletRequest.getParameterMap()
-
-            // Get data from parameter
-            String queryString = servletRequest.getQueryString();
-            if (queryString != null && queryString.length() > 0) {
-                String nvPairs[] = queryString.split("&");
-                if (nvPairs != null && nvPairs.length > 0) {
-                    HashMap<String, Object> queryStringParameters = new HashMap<String, Object>();
-                    for (int i = 0; i < nvPairs.length; i++) {
-                        String nvp[] = nvPairs[i].split("=");
-                        if (nvp != null && nvp.length == 2 && !params.containsKey(nvp[0])) {
-                            addParameter(queryStringParameters, nvp[0], nvp[1]);
-                        }
-                    }
-                    params.putAll(queryStringParameters);
-                }
-
-            }
-
         } catch (FileUploadException e) {
-            // TODO: handle this
             LOG.error(e);
-            e.printStackTrace();
+        }
+
+    }
+
+    private void parseParameters(){
+        Map map = servletRequest.getParameterMap();
+        for (Object one : map.keySet()) {
+
+            // Key gey and corresponding values
+            String key = (String) one;
+            String[] values = (String[]) map.get(one);
+
+            // Write keys and values
+            for (String value : values) {
+                addParameter(params, key, value);
+            }
         }
     }
+
 
     /**
      * Get file item
@@ -299,6 +316,9 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     public String getParameter(String name) {
         if (params == null) {
+            // DW: Params is null when request is not multipart-formdata
+            // isFormDataParsed=false
+
             String value = servletRequest.getParameter(name);
             if (formEncoding == null || value == null) {
                 return value;
@@ -306,17 +326,21 @@ public class HttpRequestWrapper implements RequestWrapper {
             return decode(value);
 
         } else {
+            // Parameters
             Object o = params.get(name);
             if (o == null) {
                 return null;
             }
 
+            // If Parameter is a List, get first entry. The data is used later on
             if (o instanceof List) {
                 List lst = ((List) o);
                 o = lst.get(0);
             }
 
+            // If parameter is file item, convert to string
             if (o instanceof FileItem) {
+
                 FileItem fi = (FileItem) o;
                 if (formEncoding == null) {
                     return fi.getString();
@@ -324,12 +348,14 @@ public class HttpRequestWrapper implements RequestWrapper {
                 } else {
                     try {
                         return fi.getString(formEncoding);
+                        
                     } catch (UnsupportedEncodingException e) {
                         LOG.warn(e);
                         return null;
                     }
                 }
 
+            // Return just a simple value
             } else if (o instanceof String) {
                 return (String) o;
             }
@@ -412,7 +438,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 return values;
             }
 
-            // encode values
+            // decode values
             for (int i = 0; i < values.length; i++) {
                 values[i] = decode(values[i]);
             }
