@@ -46,6 +46,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 
 import org.apache.log4j.Logger;
 
@@ -154,8 +155,8 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             // Iterate over all mult-part formdata items and
             // add all data (field and files) to parmeters
-            for (Iterator i = items.iterator(); i.hasNext();) {
-                FileItem item = (FileItem) i.next();
+            for (Object i :  items) {
+                FileItem item = (FileItem) i;
                 addParameter(params, item.getFieldName(), item);
             }
 
@@ -216,6 +217,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         try {
             byte[] bytes = value.getBytes(containerEncoding);
             return new String(bytes, formEncoding);
+            
         } catch (UnsupportedEncodingException e) {
             LOG.warn(e);
             return value;
@@ -381,23 +383,8 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        // Several browsers, e.g. MSIE send a full path of the LOCALLY stored
-        // file instead of the filename alone.
-        // Jakarta's Commons FileUpload package does not repair this
-        // so we should remove all supplied path information.
-
-        // If there are (back) slashes in the Filename, we have
-        // a full path. Find the last (back) slash, take remaining text
-
-        // DWES: use IOtutils as documented
-        int lastFileSepPos = Math.max(itemName.lastIndexOf("/"), itemName.lastIndexOf("\\"));
-
-        String documentName = itemName;
-        if (lastFileSepPos != Constants.STRING_NOT_FOUND) {
-            documentName = itemName.substring(lastFileSepPos + 1);
-        }
-
-        return documentName;
+        // return Filename only
+        return FilenameUtils.getName(itemName);
     }
 
     /**
@@ -417,7 +404,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     public String[] getParameterValues(String key) {
 
         if (params == null) {
-            // na params available jyet, retrieve from request
+            // na params available yet, retrieve from request
             String[] values = servletRequest.getParameterValues(key);
 
             // If no encoding is required, just return
@@ -446,27 +433,27 @@ public class HttpRequestWrapper implements RequestWrapper {
             // If object is a List, retrieve data from list
             if (obj instanceof List) {
 
+                // Cast to List
                 List list = (List) obj;
 
                 // Reserve the right aboumt of elements
                 values = new String[list.size()];
 
                 // position in array
-                int j = 0;
+                int position = 0;
 
                 // Iterate over list
-                for (Iterator i = list.iterator(); i.hasNext(); j++) {
-                    Object o = i.next();
-
+                for (Object object : list) {
+                    
                     // Item is a FileItem
-                    if (o instanceof FileItem) {
+                    if (object instanceof FileItem) {
 
                         // Cast
-                        FileItem item = (FileItem) o;
+                        FileItem item = (FileItem) object;
 
                         // Get string representation of FileItem
                         try {
-                            values[j] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+                            values[position] = formEncoding == null ? item.getString() : item.getString(formEncoding);
                         } catch (UnsupportedEncodingException e) {
                             LOG.warn(e);
                             e.printStackTrace();
@@ -474,14 +461,15 @@ public class HttpRequestWrapper implements RequestWrapper {
 
                     } else {
                         // Normal formfield
-                        values[j] = (String) o;
+                        values[position] = (String) object;
                     }
+                    position++;
                 }
 
             } else {
                 // No list retrieve one element only
 
-                // Acclocate space
+                // Allocate space
                 values = new String[1];
 
                 // Item is a FileItem
