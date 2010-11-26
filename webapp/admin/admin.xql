@@ -48,7 +48,7 @@ declare function admin:info-header() as element()
 :)
 declare function admin:panel() as element()
 {
-    let $panel := request:get-parameter("panel", "status") return
+    let $panel := request:get-parameter("panel", "status")[1] return
         if($panel eq "browse") then
         (
             browse:main()
@@ -109,7 +109,7 @@ declare function admin:panel() as element()
 };
 
 declare function admin:panel-header() {
-    let $panel := request:get-parameter("panel", "status")
+    let $panel := request:get-parameter("panel", "status")[1]
     return
         if ($panel eq "install") then
             install:header()
