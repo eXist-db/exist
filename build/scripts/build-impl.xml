@@ -643,7 +643,8 @@
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
             <fileset dir="${junit.reports}/external" includes="*"/>
         </delete>
-
+        
+		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
 
     <!-- ============================================================================ -->

@@ -400,12 +400,12 @@
              basedir="${top.dir}/webapp/repo/packages/app-example"/>
     </target>
 
-    <target name="clean" depends="clean-xmlcalabash">
+    <target name="clean">
         <delete dir="${classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-modules.jar" failonerror="false"/>
     </target>
 
-    <target name="clean-xmlcalabash">
+    <target name="clean-all">
         <delete file="${top.dir}/${lib.user}/calabash.jar" failonerror="false"/>
     </target>
 
