@@ -93,6 +93,10 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.servletPath = servletRequest.getServletPath();
 
 
+        // Get url-encoded parameters  (GET and POST)
+        parseParameters();
+
+
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so
         if (parseMultipart && ServletFileUpload.isMultipartContent(servletRequest)) {
@@ -103,9 +107,6 @@ public class HttpRequestWrapper implements RequestWrapper {
             // Get multi-part formdata
             parseMultipartContent();
         }
-
-        // Get url-encoded parameters  (GET and POST)
-        parseParameters();
 
     }
 
