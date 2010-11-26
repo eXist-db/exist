@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.request;
 
+import java.io.ByteArrayInputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -14,6 +15,11 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.junit.AfterClass;
@@ -36,6 +42,9 @@ public class GetParameterTest extends RESTTest {
 
     private final static String XQUERY = "for $param-name in request:get-parameter-names() return for $param-value in request:get-parameter($param-name, ()) return fn:concat($param-name, '=', $param-value)";
     private final static String XQUERY_FILENAME = "test-get-parameter.xql";
+
+    private final static String TEST_FILE_CONTENT = "hello world";
+    private final static String TEST_FILE_NAME = "helloworld.txt";
 
     private static Collection root;
 
@@ -112,6 +121,18 @@ public class GetParameterTest extends RESTTest {
     @Test
     public void testPostMultiValueParameter() {
         testPost(new NameValues[]{
+            new NameValues("param1", new String[] {
+                "value1",
+                "value2",
+                "value3",
+                "value4"
+            })
+        });
+    }
+
+    @Test
+    public void testMultipartPostMultiValueParameter() {
+        testMultipartPost(new NameValues[]{
             new NameValues("param1", new String[] {
                 "value1",
                 "value2",
@@ -207,6 +228,42 @@ public class GetParameterTest extends RESTTest {
         if(fParams.length > 0) {
             post.setRequestBody(fParams);
         }
+
+        testRequest(post, expectedResponse);
+    }
+
+    private void testMultipartPost(NameValues formParams[]) {
+       
+        List<Part> parts = new ArrayList<Part>();
+
+        StringBuilder expectedResponse = new StringBuilder();
+        for(NameValuePair nameValuePair : convertNameValuesToNameValuePairs(formParams, expectedResponse)) {
+            parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+        }
+
+        //we will just send the XQuery as the file upload
+        parts.add(new FilePart("fileupload", new PartSource() {
+
+            private byte data[] = TEST_FILE_CONTENT.getBytes();
+
+            @Override
+            public long getLength() {
+                return data.length;
+            }
+
+            @Override
+            public String getFileName() {
+                return TEST_FILE_NAME;
+            }
+
+            @Override
+            public InputStream createInputStream() throws IOException {
+                return new ByteArrayInputStream(data);
+            }
+        }));
+
+        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
 
         testRequest(post, expectedResponse);
     }
