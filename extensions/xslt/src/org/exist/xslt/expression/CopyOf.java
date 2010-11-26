@@ -93,13 +93,13 @@ public class CopyOf extends Declaration {
     		Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			//UNDERSTAND: <node>text<node>  step = "." -> SELF:node(), but need CHILD:node()
-			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
-				atRootCall = true;
-				_check_(select);
-				contextInfo.removeFlag(DOT_TEST);
-			}
+//			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
+//				atRootCall = true;
+//				_check_(select);
+//				contextInfo.removeFlag(DOT_TEST);
+//			}
 
-			_check_childNodes_(select);
+//			_check_childNodes_(select);
     	}
 
     	super.analyze(contextInfo);

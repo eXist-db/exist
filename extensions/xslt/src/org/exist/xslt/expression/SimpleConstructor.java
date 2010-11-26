@@ -21,7 +21,10 @@
  */
 package org.exist.xslt.expression;
 
+import java.util.Iterator;
+
 import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xslt.XSLContext;
 
@@ -41,6 +44,7 @@ import org.exist.xslt.XSLContext;
 public abstract class SimpleConstructor extends XSLPathExpr {
 
 	protected boolean newDocumentContext = false;
+	protected boolean sequenceItSelf = false;
 
 	public SimpleConstructor(XSLContext context) {
 		super(context);
@@ -48,5 +52,17 @@ public abstract class SimpleConstructor extends XSLPathExpr {
 	
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         newDocumentContext = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) == 0;
+        
+        sequenceItSelf = (contextInfo.getFlags() & NON_STREAMABLE) == 0;
+
+//        if (!newDocumentContext) {
+//        	for (Iterator<Expression> i = steps.iterator(); i.hasNext();) {
+//        		if (i.next() instanceof Text) {
+//					i.remove();
+//				}
+//        	}
+//        }
+        
+        super.analyze(contextInfo);
     }
 }

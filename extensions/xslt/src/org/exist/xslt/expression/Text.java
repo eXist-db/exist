@@ -51,7 +51,6 @@ public class Text extends SimpleConstructor {
 	private Boolean disable_output_escaping = null;
 
     private boolean isWhitespaceOnly = false;
-	protected boolean sequenceItSelf = false;
 
     public Text(XSLContext context) {
 		super(context);
@@ -78,20 +77,25 @@ public class Text extends SimpleConstructor {
 	}
 
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		isWhitespaceOnly = true;
-		this.text = StringValue.expand(text);
-		for(int i = 0; i < text.length(); i++)
-			if(!isWhiteSpace(text.charAt(i))) {
-				isWhitespaceOnly = false;
-				break;
-			}
+		if (text == null) {
+			isWhitespaceOnly = false;
+			super.analyze(contextInfo);
+		} else {
+			isWhitespaceOnly = true;
+			this.text = StringValue.expand(text);
+			for(int i = 0; i < text.length(); i++)
+				if(!isWhiteSpace(text.charAt(i))) {
+					isWhitespaceOnly = false;
+					break;
+				}
+		}
 	}
 	
 	//TODO: The text node does not have an ancestor element that has an xml:space attribute with a value of preserve, unless there is a closer ancestor element having an xml:space attribute with a value of default.
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		
-		if(isWhitespaceOnly && context.stripWhitespace())
+		if(isWhitespaceOnly) // && context.stripWhitespace())
 			return Sequence.EMPTY_SEQUENCE;
         
 		if (sequenceItSelf) {

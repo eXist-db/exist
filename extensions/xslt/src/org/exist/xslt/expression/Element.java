@@ -24,21 +24,22 @@ package org.exist.xslt.expression;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.Namespaces;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.PathExpr;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xslt.ErrorCodes;
-import org.exist.xslt.XSL;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.pattern.Pattern;
 import org.w3c.dom.Attr;
@@ -68,7 +69,7 @@ public class Element extends SimpleConstructor {
     private String validation = null;
     
     private XSLPathExpr qnameExpr = null;
-	private PathExpr content = null;
+//	private PathExpr content = null;
 	
 	private List<Attribute> attributes = new ArrayList<Attribute>();
 
@@ -82,8 +83,9 @@ public class Element extends SimpleConstructor {
 		this.name = name;
 	}
     
-	public void setContent(PathExpr content) {
-		this.content = content;
+	public void setContent(XSLPathExpr content) {
+		//TODO: check, it should be empty
+		steps.add(content);
 	}
 	
 	public void addAttribute(Attr attr) {
@@ -102,7 +104,7 @@ public class Element extends SimpleConstructor {
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
 		
-		if (Namespaces.XSL_NS.equals(attr.getNamespaceURI())) {
+//		if (Namespaces.XSL_NS.equals(attr.getNamespaceURI())) {
 			if (attr_name.equals(NAME)) {
 				name = attr.getValue();
 			} else if (attr_name.equals(NAMESPACE)) {
@@ -117,8 +119,8 @@ public class Element extends SimpleConstructor {
 				validation = attr.getValue();
 			} else
 				addAttribute(attr);
-		} else
-			addAttribute(attr);
+//		} else
+//			addAttribute(attr);
 	}
 	
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -154,8 +156,8 @@ public class Element extends SimpleConstructor {
        		qnameExpr.analyze(newContextInfo);
 
         //analyze content
-        if (content != null)
-        	content.analyze(contextInfo);
+//        if (content != null)
+//        	content.analyze(contextInfo);
         super.analyze(contextInfo);
 
         context.popInScopeNamespaces();
@@ -224,8 +226,13 @@ public class Element extends SimpleConstructor {
             // evaluate element tag name
         	QName qn = null;
         	String tagName = name;
-            if (qnameExpr != null) {
-            	Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+        	Sequence qnameSeq = null;
+            if (qnameExpr != null)
+            	qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+//            else
+//            	qnameSeq = super.eval(contextSequence, contextItem);
+            
+            if (qnameSeq != null) {
             	if(!qnameSeq.hasOne())
             		throw new XPathException(this, "Type error: the node name should evaluate to a single item");
             	Item qnitem = qnameSeq.itemAt(0);
@@ -236,7 +243,10 @@ public class Element extends SimpleConstructor {
             	}
             }
             if (qn == null) {
-                //Not in the specs but... makes sense
+            	if (tagName == null)
+                	throw new XPathException(this, ErrorCodes.XPTY0004, "element name wasn't provided");
+
+            	//Not in the specs but... makes sense
                 if(!XMLChar.isValidName(tagName))
                 	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + tagName + "' is not a valid element name");
 
@@ -291,9 +301,9 @@ public class Element extends SimpleConstructor {
 //                builder.namespaceNode(new QName("", "", "xmlns"));
 //            }
             // process element contents
-            if(content != null) {
-                content.eval(contextSequence, contextItem);
-            } else 
+//            if(content != null) {
+//                content.eval(contextSequence, contextItem);
+//            } else 
             	super.eval(contextSequence, contextItem);
             
             builder.endElement();
@@ -368,5 +378,25 @@ public class Element extends SimpleConstructor {
         result.append("</xsl:element> ");
         return result.toString();
     }
+    
+    /**
+	 * @deprecated Use {@link #process(XSLContext,SequenceIterator)} instead
+	 */
+	public void process(SequenceIterator sequenceIterator, XSLContext context) {
+		process(context, sequenceIterator);
+	}
 
+	public void process(XSLContext context, SequenceIterator sequenceIterator) {
+    	try {
+    		XMLStreamWriter writer = context.getResultWriter();
+    		writer.writeStartElement(name);
+			
+			super.process(context, sequenceIterator);
+			
+			writer.writeEndElement();
+		} catch (XMLStreamException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }

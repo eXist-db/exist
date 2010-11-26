@@ -21,6 +21,8 @@
  */
 package org.exist.xslt.expression;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
@@ -92,13 +94,13 @@ public class ValueOf extends SimpleConstructor {
     		Pattern.parse(contextInfo.getContext(), attr_select, select);
 
 			//UNDERSTAND: <node>text<node>  step = "." -> SELF:node(), but need CHILD:node()
-			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
-				atRootCall = true;
-				_check_(select);
-				contextInfo.removeFlag(DOT_TEST);
-			}
-
-			_check_childNodes_(select);
+//			if ((contextInfo.getFlags() & DOT_TEST) != 0) {
+//				atRootCall = true;
+//				_check_(select);
+//				contextInfo.removeFlag(DOT_TEST);
+//			}
+//
+//			_check_childNodes_(select);
     	}
 
     	super.analyze(contextInfo);
@@ -253,5 +255,27 @@ public class ValueOf extends SimpleConstructor {
 
         result.append("</xsl:value-of>");
         return result.toString();
-    }    
+    }
+    
+    /**
+	 * @deprecated Use {@link #process(XSLContext,SequenceIterator)} instead
+	 */
+	public void process(SequenceIterator sequenceIterator, XSLContext context) {
+		process(context, sequenceIterator);
+	}
+
+	public void process(XSLContext context, SequenceIterator sequenceIterator) {
+        try {
+			Sequence result = select.eval(null, null);
+			
+			context.getResultWriter().writeCharacters(result.getStringValue());
+			
+		} catch (XPathException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }

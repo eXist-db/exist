@@ -33,7 +33,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.functions.XSLModule;
 
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.stax.StAXResult;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -114,5 +116,15 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
 
 	public Transformer getTransformer() {
 		return xslStylesheet.getTransformer();
+	}
+	
+	StAXResult result = null;
+
+	public void setOutput(StAXResult result) {
+		this.result = result;
+	}
+
+	public XMLStreamWriter getResultWriter() {
+		return result.getXMLStreamWriter();
 	}
 }

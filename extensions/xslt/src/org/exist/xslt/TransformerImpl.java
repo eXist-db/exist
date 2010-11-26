@@ -25,17 +25,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.stax.StAXResult;
+import javax.xml.transform.stax.StAXSource;
 
+import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.expression.ApplyTemplates;
 import org.w3c.dom.Node;
 
 /**
@@ -158,8 +165,70 @@ public class TransformerImpl extends Transformer {
 	 */
 	@Override
 	public void transform(Source xmlSource, Result outputTarget) throws TransformerException {
-		// TODO Auto-generated method stub
-    	throw new RuntimeException("Not implemented: Transformer.transform");
+		if (compiled == null)
+			throw new TransformerException("Stylesheet has not been prepared.");
+
+		if (xmlSource instanceof StAXSource && outputTarget instanceof StAXResult) {
+			StAXSource in = (StAXSource) xmlSource;
+			StAXResult out = (StAXResult) outputTarget;
+			
+			transformStream(in, out);
+			
+		} else {
+			throw new TransformerException("The source type "+xmlSource.getClass()+" do not supported.");
+		}
+	}
+
+	private void transformStream(StAXSource source, StAXResult out) throws TransformerException {
+		BrokerPool db = null;
+		DBBroker broker = null;
+		try {
+			db = BrokerPool.getInstance();
+			broker = db.get(null);
+			
+			StAXSequenceIterator sequenceIterator = new StAXSequenceIterator(source);
+			
+			XSLContext context = new XSLContext(broker);
+			context.setOutput(out);
+
+			context.getResultWriter().writeStartDocument("UTF-8", "1.0");
+			
+			if (compiled.rootTemplate != null)
+				compiled.rootTemplate.process(context, sequenceIterator);
+			else
+				ApplyTemplates.searchAndProcess(sequenceIterator, context);
+			
+			context.getResultWriter().writeEndDocument();
+			
+		} catch (EXistException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} finally {
+			if (db != null)
+				db.release(broker);
+		}
+
+//		try {
+//			for (int event = staxXmlReader.next(); event != XMLStreamConstants.END_DOCUMENT; event = staxXmlReader.next()) {
+//				switch (event) {
+//				  case XMLStreamConstants.START_DOCUMENT:
+//				    System.out.println("Start document " + staxXmlReader.getLocalName());
+//				    break;
+//				  case XMLStreamConstants.START_ELEMENT:
+//				    System.out.println("Start element " + staxXmlReader.getLocalName());
+////				 	System.out.println("Element text " + staxXmlReader.getElementText());
+//				    break;
+//				  case XMLStreamConstants.END_ELEMENT:
+//				    System.out.println("End element " + staxXmlReader.getLocalName());
+//				    break;
+//				  default:
+//				    break;
+//				  }
+//				}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public Sequence transform(Item xmlSource) throws XPathException {
