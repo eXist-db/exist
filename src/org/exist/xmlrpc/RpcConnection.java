@@ -1712,6 +1712,12 @@ public class RpcConnection implements RpcAPI {
 		for (int i = 0; i < gl.length; i++)
 			groups.addElement(gl[i]);
         tab.put("groups", groups);
+        
+        Group dg = u.getDefaultGroup();
+        tab.put("default-group-id", dg.getId());
+        tab.put("default-group-realmId", dg.getRealmId());
+        tab.put("default-group-name", dg.getName());
+
         if (u.getHome() != null)
             tab.put("home", u.getHome().toString());
         return tab;

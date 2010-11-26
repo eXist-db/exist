@@ -384,7 +384,19 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(name);
 			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getAccount", params);
-			UserAider u = new UserAider((String) tab.get("realmId"), (String) tab.get("name"));
+
+			GroupAider defaultGroup = new GroupAider(
+					(Integer) tab.get("default-group-id"),
+					(String) tab.get("default-group-realmId"),
+					(String) tab.get("default-group-name")
+				);
+
+			UserAider u = new UserAider(
+					(String) tab.get("realmId"), 
+					(String) tab.get("name"),
+					defaultGroup
+				);
+			
 			Object[] groups = (Object[]) tab.get("groups");
             for (int i = 0; i < groups.length; i++) {
 				u.addGroup((String) groups[i]);
