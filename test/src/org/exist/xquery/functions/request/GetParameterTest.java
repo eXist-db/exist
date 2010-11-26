@@ -25,10 +25,8 @@ import org.exist.xmldb.EXistResource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
@@ -131,15 +129,33 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostMultiValueParameter() {
-        testMultipartPost(new NameValues[]{
-            new NameValues("param1", new String[] {
-                "value1",
-                "value2",
-                "value3",
-                "value4"
-            })
-        });
+    public void testMultipartPostMultiValueParameterAndFile() {
+        testMultipartPost(
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                })
+            },
+            new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT)
+        );
+    }
+
+    @Test
+    public void testMultipartPostFileAndMultiValueParameter() {
+        testMultipartPost(
+            new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                })
+            }
+        );
     }
 
     @Test
@@ -164,7 +180,7 @@ public class GetParameterTest extends RESTTest {
         );
     }
 
-    @Test
+   @Test
     public void testPostMultiValueParameterWithQueryStringMultiValueParameterMerge() {
         testPost(
             new NameValues[]{
@@ -232,7 +248,7 @@ public class GetParameterTest extends RESTTest {
         testRequest(post, expectedResponse);
     }
 
-    private void testMultipartPost(NameValues formParams[]) {
+    private void testMultipartPost(NameValues formParams[], final TextFileUpload txtFileUpload) {
        
         List<Part> parts = new ArrayList<Part>();
 
@@ -241,26 +257,24 @@ public class GetParameterTest extends RESTTest {
             parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
         }
 
-        //we will just send the XQuery as the file upload
-        parts.add(new FilePart("fileupload", new PartSource() {
+        parts.add(convertFileUploadToFilePart(txtFileUpload, expectedResponse));
 
-            private byte data[] = TEST_FILE_CONTENT.getBytes();
+        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
 
-            @Override
-            public long getLength() {
-                return data.length;
-            }
+        testRequest(post, expectedResponse);
+    }
 
-            @Override
-            public String getFileName() {
-                return TEST_FILE_NAME;
-            }
+    private void testMultipartPost(final TextFileUpload txtFileUpload, NameValues formParams[]) {
 
-            @Override
-            public InputStream createInputStream() throws IOException {
-                return new ByteArrayInputStream(data);
-            }
-        }));
+        List<Part> parts = new ArrayList<Part>();
+
+        StringBuilder expectedResponse = new StringBuilder();
+        parts.add(convertFileUploadToFilePart(txtFileUpload, expectedResponse));
+
+        for(NameValuePair nameValuePair : convertNameValuesToNameValuePairs(formParams, expectedResponse)) {
+            parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+        }
 
         PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
         post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
@@ -313,6 +327,36 @@ public class GetParameterTest extends RESTTest {
         return nameValuePairs.toArray(new NameValuePair[nameValuePairs.size()]);
     }
 
+    private FilePart convertFileUploadToFilePart(final TextFileUpload txtFileUpload, StringBuilder expectedResponse) {
+
+        final String filePartName = "fileUpload";
+
+        FilePart filePart = new FilePart(filePartName, new PartSource() {
+            private byte data[] = txtFileUpload.getContent().getBytes();
+
+            @Override
+            public long getLength() {
+                return data.length;
+            }
+
+            @Override
+            public String getFileName() {
+                return txtFileUpload.getName();
+            }
+
+            @Override
+            public InputStream createInputStream() throws IOException {
+                return new ByteArrayInputStream(data);
+            }
+        });
+
+        expectedResponse.append(filePartName);
+        expectedResponse.append("=");
+        expectedResponse.append(txtFileUpload.getContent());
+
+        return filePart;
+    }
+
     public class NameValues {
 
         final String name;
@@ -330,6 +374,23 @@ public class GetParameterTest extends RESTTest {
         public String[] getValues() {
             return values;
         }
+    }
 
+    public class TextFileUpload {
+        final String name;
+        final String content;
+
+        public TextFileUpload(String name, String content) {
+            this.name = name;
+            this.content = content;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }
