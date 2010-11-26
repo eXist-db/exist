@@ -33,6 +33,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SubjectImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
@@ -65,8 +66,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     
 	protected Credential _cred = null;
 
-	private Map<String, Object> attributes = new HashMap<String, Object>();
-
 	/**
 	 * Indicates if the user belongs to the dba group, i.e. is a superuser.
 	 */
@@ -87,7 +86,13 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
         @Override
 	public Group addGroup(String name) throws PermissionDeniedException {
-            Group group = realm.getGroup(null, name);
+            Group group = getRealm().getGroup(null, name);
+
+            //if we cant find the group in our own realm, try the default realm
+            if(group == null) {
+                Realm internalRealm = getRealm().getSecurityManager().getRealm(RealmImpl.ID);
+                group = internalRealm.getGroup(null, name);
+            }
             return addGroup(group);
 	}
 
@@ -206,14 +211,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		}
 	
 		if (other != null)
-			return (realm == other.realm && name.equals(other.name)); //id == other.id;
+			return (getRealm() == other.getRealm() && name.equals(other.name)); //id == other.id;
 
 		return false;
-	}
-
-	@Override
-	public Realm getRealm() {
-		return realm;
 	}
 
 	@Override

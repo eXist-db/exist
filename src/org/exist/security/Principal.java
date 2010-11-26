@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import org.exist.config.Configurable;
+import org.exist.security.realm.Realm;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,7 +31,9 @@ import org.exist.config.Configurable;
 public interface Principal extends java.security.Principal, Configurable {
 
 	public int getId();
-	
+
+        public Realm getRealm();
+
 	public String getRealmId();
 
         public void save() throws PermissionDeniedException;

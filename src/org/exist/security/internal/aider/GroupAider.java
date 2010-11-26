@@ -28,6 +28,7 @@ import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.RealmImpl;
+import org.exist.security.realm.Realm;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -102,5 +103,12 @@ public class GroupAider implements Group {
     public boolean isMembersManager(Account account) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public Realm getRealm() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
 
 }

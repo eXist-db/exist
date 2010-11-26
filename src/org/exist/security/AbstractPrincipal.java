@@ -42,7 +42,7 @@ import org.exist.xmldb.XmldbURI;
 @ConfigurationClass("")
 public abstract class AbstractPrincipal implements Principal {
 
-	protected Realm realm;
+	private Realm realm;
 	
 	@ConfigurationFieldAsElement("name")
 	protected final String name;
@@ -109,10 +109,15 @@ public abstract class AbstractPrincipal implements Principal {
 		return id;
 	}
 
-    @Override
-	public final String getRealmId() {
-		return realm.getId();
-	}
+        @Override
+        public Realm getRealm() {
+            return realm;
+        }
+
+        @Override
+        public String getRealmId() {
+            return realm.getId();
+        }
 
 	@Override
 	public final boolean isConfigured() {

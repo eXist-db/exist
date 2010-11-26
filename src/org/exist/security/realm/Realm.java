@@ -29,6 +29,7 @@ import org.exist.EXistException;
 import org.exist.security.Group;
 import org.exist.security.Account;
 import org.exist.security.Subject;
+import org.exist.security.SecurityManager;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
 import org.exist.storage.DBBroker;
@@ -55,4 +56,6 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
+
+    public SecurityManager getSecurityManager();
 }

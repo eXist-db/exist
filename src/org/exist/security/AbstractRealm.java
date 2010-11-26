@@ -75,7 +75,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
 		return getSecurityManager().getDatabase();
 	}
 
-    protected SecurityManager getSecurityManager() {
+    @Override
+    public SecurityManager getSecurityManager() {
         return sm;
     }
 
@@ -379,6 +380,4 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public Group getExternalGroup(Subject invokingUser, String name) {
         return getSecurityManager().getGroup(invokingUser, name);
     }
-
-
 }

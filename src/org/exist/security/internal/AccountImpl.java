@@ -238,7 +238,7 @@ public class AccountImpl extends AbstractAccount {
 
         _cred = from_user._cred;
 
-        this.realm = realm;
+        //this.realm = realm;   //set via super()
     }
 
     public AccountImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
@@ -317,7 +317,7 @@ public class AccountImpl extends AbstractAccount {
             case PLAIN_ENCODING:
                 return passwd;
             case MD5_ENCODING:
-                return MessageDigester.md5(name + ":" + realm.getId() + ":" + passwd, false);
+                return MessageDigester.md5(name + ":" + getRealm().getId() + ":" + passwd, false);
             default:
                 return MessageDigester.md5(passwd, true);
         }
