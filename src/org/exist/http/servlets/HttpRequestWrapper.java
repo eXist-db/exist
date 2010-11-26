@@ -33,10 +33,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +50,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import org.apache.log4j.Logger;
 
-import org.exist.xquery.Constants;
 
 /**
  * A wrapper for requests processed by a servlet.
@@ -61,21 +59,19 @@ import org.exist.xquery.Constants;
  * @author Dannes Wessels <dannes@exist-db.org>
  */
 public class HttpRequestWrapper implements RequestWrapper {
-    
+
     private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
-
     private HttpServletRequest servletRequest;
-
     private String formEncoding = null;
     private String containerEncoding = null;
-
     private String pathInfo = null;
     private String servletPath = null;
 
-    private Map<String, Object> params = null;
+    // linkedhashmap to preserver order
+    private Map<String, Object> params = new LinkedHashMap<String, Object>();
 
+    // flag to administer wether multi-part formdata was processed
     private boolean isFormDataParsed = false;
-
 
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding) {
@@ -95,24 +91,21 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.containerEncoding = containerEncoding;
         this.pathInfo = servletRequest.getPathInfo();
         this.servletPath = servletRequest.getServletPath();
-       
 
-        // DW originally the parameters from the URL were only parsed
-        // upon multipart formdata?
-        
+
+        // Get multi-part formdata parameters when it is a mpfd request
+        // and when instructed to do so
         if (parseMultipart && ServletFileUpload.isMultipartContent(servletRequest)) {
 
             // Formdata is actually parsed
-            isFormDataParsed=true;
-            
-            params = new HashMap<String, Object>();
+            isFormDataParsed = true;
 
             // Get multi-part formdata
             parseMultipartContent();
-
-            // Get parameters url-encoded
-            parseParameters();
         }
+
+        // Get url-encoded parameters  (GET and POST)
+        parseParameters();
 
     }
 
@@ -171,12 +164,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         ServletFileUpload upload = new ServletFileUpload(factory);
 
         try {
-            
+
             List items = upload.parseRequest(servletRequest);
 
             // Iterate over all mult-part formdata items and
             // add all data (field and files) to parmeters
-            for (Object i :  items) {
+            for (Object i : items) {
                 FileItem item = (FileItem) i;
                 addParameter(params, item.getFieldName(), item);
             }
@@ -187,27 +180,25 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     }
 
-    private void parseParameters(){
+    /**
+     * Parses the url-encoded parameters
+     */
+    private void parseParameters() {
         Map map = servletRequest.getParameterMap();
         for (Object one : map.keySet()) {
 
             // Get key and corresponding values
             String key = (String) one;
 
-            // DWES this prevents adding a second value for the same key
-            // This is wrong. If a parameters 2 times on the URL, or is entered
-            // via a form and a URL, basically all values bust be accessible.
-            if(!params.containsKey(key)){
-                String[] values = (String[]) map.get(one);
+            // Get values belonging to the key
+            String[] values = (String[]) map.get(one);
 
-                // Write keys and values
-                for (String value : values) {
-                    addParameter(params, key, value);
-                }
+            // Write keys and values
+            for (String value : values) {
+                addParameter(params, key, decode(value));
             }
         }
     }
-
 
     /**
      * Get file item
@@ -228,6 +219,11 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @return
      */
     private String decode(String value) {
+
+        if (formEncoding == null || value == null) {
+            return value;
+        }
+
         if (containerEncoding == null) {
             //TODO : use file.encoding system property ?
             containerEncoding = "ISO-8859-1";
@@ -240,7 +236,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         try {
             byte[] bytes = value.getBytes(containerEncoding);
             return new String(bytes, formEncoding);
-            
+
         } catch (UnsupportedEncodingException e) {
             LOG.warn(e);
             return value;
@@ -321,60 +317,50 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     public String getParameter(String name) {
-        if (params == null) {
-            // DW: Params is null when request is not multipart-formdata
-            // isFormDataParsed=false
 
-            String value = servletRequest.getParameter(name);
-            if (formEncoding == null || value == null) {
-                return value;
-            }
-            return decode(value);
-
-        } else {
-            // Parameters
-            Object o = params.get(name);
-            if (o == null) {
-                return null;
-            }
-
-            // If Parameter is a List, get first entry. The data is used later on
-            if (o instanceof List) {
-                List lst = ((List) o);
-                o = lst.get(0);
-            }
-
-            // If parameter is file item, convert to string
-            if (o instanceof FileItem) {
-
-                FileItem fi = (FileItem) o;
-                if (formEncoding == null) {
-                    return fi.getString();
-
-                } else {
-                    try {
-                        return fi.getString(formEncoding);
-                        
-                    } catch (UnsupportedEncodingException e) {
-                        LOG.warn(e);
-                        return null;
-                    }
-                }
-
-            // Return just a simple value
-            } else if (o instanceof String) {
-                return (String) o;
-            }
-
+        // Parameters
+        Object o = params.get(name);
+        if (o == null) {
             return null;
         }
+
+        // If Parameter is a List, get first entry. The data is used later on
+        if (o instanceof List) {
+            List lst = ((List) o);
+            o = lst.get(0);
+        }
+
+        // If parameter is file item, convert to string
+        if (o instanceof FileItem) {
+
+            FileItem fi = (FileItem) o;
+            if (formEncoding == null) {
+                return fi.getString();
+
+            } else {
+                try {
+                    return fi.getString(formEncoding);
+
+                } catch (UnsupportedEncodingException e) {
+                    LOG.warn(e);
+                    return null;
+                }
+            }
+
+            // Return just a simple value
+        } else if (o instanceof String) {
+            return (String) o;
+        }
+
+        return null;
+
     }
 
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     public File getFileUploadParam(String name) {
-        if (params == null) {
+        if (!isFormDataParsed) {
             return null;
         }
 
@@ -395,7 +381,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     public String getUploadedFileName(String name) {
-        if (params == null) {
+        if (!isFormDataParsed) {
             return null;
         }
 
@@ -423,11 +409,11 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameterNames()
      */
     public Enumeration getParameterNames() {
-        if (params == null) {
-            return servletRequest.getParameterNames();
-        } else {
+//        if (!isFormDataParsed) {
+//            return servletRequest.getParameterNames();
+//        } else {
             return Collections.enumeration(params.keySet());
-        }
+//        }
     }
 
     /**
@@ -435,80 +421,41 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     public String[] getParameterValues(String key) {
 
-        if (params == null) {
-            // na params available yet, retrieve from request
-            String[] values = servletRequest.getParameterValues(key);
+        // params already retrieved
+        Object obj = params.get(key);
 
-            // If no encoding is required, just return
-            if (formEncoding == null || values == null) {
-                return values;
-            }
+        // Fast return
+        if (obj == null) {
+            return null;
+        }
 
-            // decode values
-            for (int i = 0; i < values.length; i++) {
-                values[i] = decode(values[i]);
-            }
-            return values;
+        // Allocate return values
+        String[] values;
 
-        } else {
-            // params already retrieved
-            Object obj = params.get(key);
+        // If object is a List, retrieve data from list
+        if (obj instanceof List) {
 
-            // Fast return
-            if (obj == null) {
-                return null;
-            }
+            // Cast to List
+            List list = (List) obj;
 
-            // Allocate return values
-            String[] values;
+            // Reserve the right aboumt of elements
+            values = new String[list.size()];
 
-            // If object is a List, retrieve data from list
-            if (obj instanceof List) {
+            // position in array
+            int position = 0;
 
-                // Cast to List
-                List list = (List) obj;
-
-                // Reserve the right aboumt of elements
-                values = new String[list.size()];
-
-                // position in array
-                int position = 0;
-
-                // Iterate over list
-                for (Object object : list) {
-                    
-                    // Item is a FileItem
-                    if (object instanceof FileItem) {
-
-                        // Cast
-                        FileItem item = (FileItem) object;
-
-                        // Get string representation of FileItem
-                        try {
-                            values[position] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                        } catch (UnsupportedEncodingException e) {
-                            LOG.warn(e);
-                            e.printStackTrace();
-                        }
-
-                    } else {
-                        // Normal formfield
-                        values[position] = (String) object;
-                    }
-                    position++;
-                }
-
-            } else {
-                // No list retrieve one element only
-
-                // Allocate space
-                values = new String[1];
+            // Iterate over list
+            for (Object object : list) {
 
                 // Item is a FileItem
-                if (obj instanceof FileItem) {
-                    FileItem item = (FileItem) obj;
+                if (object instanceof FileItem) {
+
+                    // Cast
+                    FileItem item = (FileItem) object;
+
+                    // Get string representation of FileItem
                     try {
-                        values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+                        values[position] = formEncoding == null ? item.getString() : item.getString(formEncoding);
                     } catch (UnsupportedEncodingException e) {
                         LOG.warn(e);
                         e.printStackTrace();
@@ -516,13 +463,36 @@ public class HttpRequestWrapper implements RequestWrapper {
 
                 } else {
                     // Normal formfield
-                    values[0] = (String) obj;
+                    values[position] = (String) object;
                 }
-
+                position++;
             }
 
-            return values;
+        } else {
+            // No list retrieve one element only
+
+            // Allocate space
+            values = new String[1];
+
+            // Item is a FileItem
+            if (obj instanceof FileItem) {
+                FileItem item = (FileItem) obj;
+                try {
+                    values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
+                } catch (UnsupportedEncodingException e) {
+                    LOG.warn(e);
+                    e.printStackTrace();
+                }
+
+            } else {
+                // Normal formfield
+                values[0] = (String) obj;
+            }
+
         }
+
+        return values;
+
     }
 
     /**
