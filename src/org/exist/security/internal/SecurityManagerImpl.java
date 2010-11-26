@@ -471,7 +471,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		
 		//XXX: one transaction?
 		save();
-                new_account.save();
+        new_account.save();
 		
 		createUserHome(new_account);
 

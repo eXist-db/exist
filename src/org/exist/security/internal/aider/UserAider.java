@@ -23,6 +23,7 @@ package org.exist.security.internal.aider;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class UserAider implements Account {
 	private int id;
 	
 	private Group defaultRole = null;
-	private Map<String, Group> roles = new HashMap<String, Group>();
+	private Map<String, Group> roles = new LinkedHashMap<String, Group>();
 	
 	public UserAider(int id) {
 		this(id, null, null);
