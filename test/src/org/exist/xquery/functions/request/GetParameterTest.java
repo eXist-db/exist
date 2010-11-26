@@ -121,6 +121,50 @@ public class GetParameterTest extends RESTTest {
         });
     }
 
+    @Test
+    public void testPostMultiValueParameterWithQueryStringMultiValueParameter() {
+        testPost(
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                }),
+            },
+            new NameValues[]{
+                new NameValues("param2", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                }),
+            }
+        );
+    }
+
+    @Test
+    public void testPostMultiValueParameterWithQueryStringMultiValueParameterMerge() {
+        testPost(
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                }),
+            },
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                }),
+            }
+        );
+    }
+
     private void testGet(NameValues queryStringParams[]) {
 
         StringBuilder expectedResponse = new StringBuilder();
@@ -140,6 +184,25 @@ public class GetParameterTest extends RESTTest {
         NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
 
         PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+
+        if(fParams.length > 0) {
+            post.setRequestBody(fParams);
+        }
+
+        testRequest(post, expectedResponse);
+    }
+
+    private void testPost(NameValues queryStringParams[], NameValues formParams[]) {
+
+        StringBuilder expectedResponse = new StringBuilder();
+        NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
+        NameValuePair fParams[] = convertNameValuesToNameValuePairs(formParams, expectedResponse);
+
+        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+
+        if(qsParams.length > 0) {
+            post.setQueryString(qsParams);
+        }
 
         if(fParams.length > 0) {
             post.setRequestBody(fParams);
