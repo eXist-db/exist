@@ -10,28 +10,26 @@ import static org.junit.Assert.fail;
 
 public abstract class RESTTest {
 
-	protected final static String REST_URL = "http://localhost:8088";
-	protected final static String COLLECTION_ROOT_URL = REST_URL
-			+ DBBroker.ROOT_COLLECTION;
+    protected final static String REST_URL = "http://localhost:8088";
+    protected final static String COLLECTION_ROOT_URL = REST_URL + DBBroker.ROOT_COLLECTION;
+    protected static JettyStart server = null;
+    protected static HttpClient client = new HttpClient();
 
-	private static JettyStart server = null;
-	protected static HttpClient client = new HttpClient();
-
-	@BeforeClass
-	public static void startupServer() {
-		try {
-			if (server == null) {
-				server = new JettyStart();
+    @BeforeClass
+    public static void startupServer() {
+        try {
+            if(server == null) {
+                server = new JettyStart();
                 System.out.println("Starting standalone server...");
                 server.run();
             }
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
 
-	@AfterClass
-	public static void shutdownServer() {
-		server.shutdown();
-	}
+    @AfterClass
+    public static void shutdownServer() {
+        server.shutdown();
+    }
 }
