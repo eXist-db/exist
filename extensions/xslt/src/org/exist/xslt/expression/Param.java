@@ -253,7 +253,7 @@ public class Param extends Declaration implements Variable {
 	@Override
 	public boolean isInitialized() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

@@ -36,6 +36,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.StAXSequenceIterator;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
 import org.exist.xslt.pattern.Pattern;
@@ -212,5 +213,11 @@ public class ApplyTemplates extends SimpleConstructor {
 
         result.append("</xsl:apply-templates>");
         return result.toString();
-    }    
+    }
+
+	public static void searchAndProcess(SequenceIterator sequenceIterator, XSLContext context) {
+		
+		if (sequenceIterator.hasNext()) {
+		}
+	}    
 }

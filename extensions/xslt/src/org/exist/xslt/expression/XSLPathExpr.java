@@ -161,26 +161,32 @@ public class XSLPathExpr extends PathExpr implements XSLExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
 
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
-        
         Sequence result = null;
         if (steps.size() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             result = new ValueSequence();
 
-            Sequence currentContext = contextSequence;
+            Sequence currentContext;
+            if (contextItem != null)
+            	currentContext = contextItem.toSequence();
+            else
+            	currentContext = contextSequence;
             
             for (Expression expr : steps) {
                 
-                //Restore a position which may have been modified by inner expressions 
+                if (currentContext == null) {
+                	result.addAll(expr.eval(null, null));
+                	continue;
+                }
+                	
+            	//Restore a position which may have been modified by inner expressions 
                 int p = context.getContextPosition();
                 Sequence seq = context.getContextSequence();
                 
                 for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
                     context.setContextSequencePosition(p, seq);
-
+                    
                 	result.addAll(expr.eval(currentContext, iterInner.nextItem()));
                 }
             }
@@ -191,4 +197,17 @@ public class XSLPathExpr extends PathExpr implements XSLExpression {
         
         return result;
     }
+    
+	/**
+	 * @deprecated Use {@link #process(XSLContext,SequenceIterator)} instead
+	 */
+	public void process(SequenceIterator sequenceIterator, XSLContext context) {
+		process(context, sequenceIterator);
+	}
+
+	public void process(XSLContext context, SequenceIterator sequenceIterator) {
+		for (Expression step : steps) {
+			((XSLPathExpr) step).process(context, sequenceIterator);
+		}
+	}
 }

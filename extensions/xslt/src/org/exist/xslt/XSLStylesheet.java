@@ -24,7 +24,6 @@ package org.exist.xslt;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,19 +38,18 @@ import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Expression;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.NodeAtExist;
 import org.exist.dom.QName;
 import org.exist.dom.NamespaceNodeAtExist;
 import org.exist.dom.Validation;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.xslt.expression.AttributeSet;
 import org.exist.xslt.expression.Declaration;
 import org.exist.xslt.expression.Param;
@@ -95,8 +93,8 @@ public class XSLStylesheet extends Declaration
 	
 	private boolean simplified = false; 
 	
-	private Template rootTemplate = null;
-	private Set<Template> templates = new TreeSet<Template>();
+	protected Template rootTemplate = null;
+	protected Set<Template> templates = new TreeSet<Template>();
 	private Map<QName, Template> namedTemplates = new HashMap<QName, Template>();
 	
 	private Map<String, List<AttributeSet>> attributeSets = 
@@ -340,13 +338,15 @@ public class XSLStylesheet extends Declaration
 		
 //		for (Item item : currentSequence) {
 		for (SequenceIterator iterInner = currentSequence.iterate(); iterInner.hasNext();) {
-			Item item = iterInner.nextItem();   
+			Item item = iterInner.nextItem();
+//			if (currentSequence == item)
+//				item = null;
 
 			//UNDERSTAND: work around
-			if (item instanceof org.w3c.dom.Document) {
-				org.w3c.dom.Document document = (org.w3c.dom.Document) item;
-				item = (Item) document.getDocumentElement();
-			}
+//			if (item instanceof org.w3c.dom.Document) {
+//				org.w3c.dom.Document document = (org.w3c.dom.Document) item;
+//				item = (Item) document.getDocumentElement();
+//			}
 			
 			context.setContextSequencePosition(pos, currentSequence);
 			
@@ -370,10 +370,10 @@ public class XSLStylesheet extends Declaration
 			
 			//XXX: performance !?! how to get subelements sequence?? fast...
 			if (!matched) {
-				if (item instanceof ElementAtExist) {
-					ElementAtExist element = (ElementAtExist) item;
+				if (item instanceof ElementAtExist || item instanceof DocumentAtExist) {
+					NodeAtExist node = (NodeAtExist) item;
 					
-					NodeList children = element.getChildNodes();
+					NodeList children = node.getChildNodes();
 					for (int i=0; i<children.getLength(); i++) {
 						NodeAtExist child = (NodeAtExist)children.item(i);
 						
@@ -382,7 +382,7 @@ public class XSLStylesheet extends Declaration
 //		            		builder.characters(item.getStringValue());
 //		            		result.add(item);
 //						} else {
-							Sequence res = templates((Sequence)element, (Item)child);
+							Sequence res = templates((Sequence)node, (Item)child);
 							if (res != null) {
 								result.addAll(res);
 								matched = true;
@@ -419,10 +419,10 @@ public class XSLStylesheet extends Declaration
 			Item item = iterInner.nextItem();   
 			
 			//UNDERSTAND: work around
-			if (item instanceof org.w3c.dom.Document) {
-				org.w3c.dom.Document document = (org.w3c.dom.Document) item;
-				item = (Item) document.getDocumentElement();
-			}
+//			if (item instanceof org.w3c.dom.Document) {
+//				org.w3c.dom.Document document = (org.w3c.dom.Document) item;
+//				item = (Item) document.getDocumentElement();
+//			}
 			
 			context.setContextSequencePosition(pos, currentSequence);
 
@@ -453,8 +453,9 @@ public class XSLStylesheet extends Declaration
 		if (params.containsKey(param.getName()))
 			compileError(XSLExceptions.ERR_XTSE0580);
 
-		Variable variable = context.declareVariable(param.getName(), param);//UNDERSTAND: global
-		params.put(param.getName(), variable);
+        context.declareGlobalVariable(param);
+//        Variable variable = context.declareVariable(param.getName(), param);//UNDERSTAND: global
+		params.put(param.getName(), param);
 	}
 
 	public void setTransformer(Transformer transformer) {

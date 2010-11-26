@@ -121,7 +121,7 @@ public class Comment extends SimpleConstructor {
                     Item next = i.nextItem();
                     if(buf.length() > 0)
                         buf.append(' ');
-                    buf.append(next.toString());
+                    buf.append(next.getStringValue());
                 }
 
                 if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {

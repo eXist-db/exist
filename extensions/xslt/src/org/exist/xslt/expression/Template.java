@@ -35,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
@@ -215,12 +216,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	context.pushDocumentContext();
     	try {
-			Sequence result = new ValueSequence();
-			
-			Sequence answer = super.eval(contextSequence, contextItem);
-			result.addAll(answer);
-			
-			return result;
+			return super.eval(contextSequence, contextItem);
     	} finally {
     		context.popDocumentContext();
     	}
@@ -358,5 +354,16 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 	
 	public QName getName() {
 		return name;
+	}
+	
+	/**
+	 * @deprecated Use {@link #process(XSLContext,SequenceIterator)} instead
+	 */
+	public void process(SequenceIterator sequenceIterator, XSLContext context) {
+		process(context, sequenceIterator);
+	}
+
+	public void process(XSLContext context, SequenceIterator sequenceIterator) {
+		super.process(context, sequenceIterator);
 	}
 }

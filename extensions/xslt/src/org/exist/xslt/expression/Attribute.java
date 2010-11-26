@@ -166,7 +166,10 @@ public class Attribute extends SimpleConstructor {
 		valueExpr = Pattern.parse(contextInfo.getContext(), value);
 		if (valueExpr != null)
 			valueExpr.analyze(contextInfo);
-
+		else if (value == null){
+			contextInfo.addFlag(NON_STREAMABLE);
+			super.analyze(contextInfo);
+		}
 	}
 
 
@@ -228,7 +231,12 @@ public class Attribute extends SimpleConstructor {
             if (valueExpr != null) {
 	            valueSeq = valueExpr.eval(contextSequence, contextItem);
             } else {
+                context.pushDocumentContext();
+
             	valueSeq = super.eval(contextSequence, contextItem);
+            	
+                context.popDocumentContext();
+
             }
             if(!valueSeq.isEmpty()) {
                 StringBuilder buf = new StringBuilder();

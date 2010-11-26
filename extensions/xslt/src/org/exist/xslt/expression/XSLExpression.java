@@ -23,8 +23,9 @@ package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.XPathException;
-import org.exist.xslt.ErrorCodes;
+import org.exist.xslt.XSLContext;
 import org.exist.xslt.compiler.Names;
 import org.w3c.dom.Attr;
 
@@ -73,6 +74,23 @@ public interface XSLExpression extends Names {
 	 * @throws XPathException
 	 */
 	public void compileError(ErrorCode code, String description) throws XPathException;
+	
+	/**
+	 * Process expression.
+	 *  
+	 * @param sequenceIterator
+	 * @param context
+	 * @deprecated Use {@link #process(XSLContext,SequenceIterator)} instead
+	 */
+	public void process(SequenceIterator sequenceIterator, XSLContext context);
+
+	/**
+	 * Process expression.
+	 * 
+	 * @param context
+	 * @param sequenceIterator
+	 */
+	public void process(XSLContext context, SequenceIterator sequenceIterator);
 
 	public Boolean getBoolean(String value) throws XPathException;
 }
