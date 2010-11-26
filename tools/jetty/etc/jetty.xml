@@ -13,127 +13,129 @@
 
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
 
-    <!-- =========================================================== -->
-    <!-- Server Thread Pool                                          -->
-    <!-- =========================================================== -->
-    <Set name="ThreadPool">
-      <!-- Default queued blocking threadpool 
-      -->
-      <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
-        <Set name="name">eXistThread</Set>
-        <Set name="minThreads">10</Set>
-        <Set name="maxThreads">200</Set>
-      </New>
+  <!-- =========================================================== -->
+  <!-- Server Thread Pool                                          -->
+  <!-- =========================================================== -->
+  <Set name="ThreadPool">
+    <!-- Default queued blocking threadpool -->
+    <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
+      <Set name="name">eXistThread</Set>
+      <Set name="minThreads">10</Set>
+      <Set name="maxThreads">200</Set>
+    </New>
 
-      <!-- Optional Java 5 bounded threadpool with job queue 
+    <!-- Optional Java 5 bounded threadpool with job queue 
       <New class="org.eclipse.thread.concurrent.ThreadPool">
         <Set name="corePoolSize">50</Set>
         <Set name="maximumPoolSize">50</Set>
       </New>
       -->
-    </Set>
+  </Set>
 
 
 
-    <!-- =========================================================== -->
-    <!-- Set connectors                                              -->
-    <!-- =========================================================== -->
+  <!-- =========================================================== -->
+  <!-- Set connectors                                              -->
+  <!-- =========================================================== -->
 
-    <Call name="addConnector">
-      <Arg>
-          <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
-            <Set name="host"><SystemProperty name="jetty.host" /></Set>
-            <Set name="port"><SystemProperty name="jetty.port" default="8080"/></Set>
-            <Set name="maxIdleTime">300000</Set>
-            <Set name="Acceptors">2</Set>
-            <Set name="statsOn">false</Set>
-            <Set name="confidentialPort">8443</Set>
-	    <Set name="lowResourcesConnections">20000</Set>
-	    <Set name="lowResourcesMaxIdleTime">5000</Set>
-          </New>
-      </Arg>
-    </Call>
-
-    
-    <!-- if NIO is not available, use org.eclipse.jetty.server.ssl.SslSocketConnector -->
-
-    <Call name="addConnector">
-      <Arg>
-        <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-          <Set name="Port">8443</Set>
-          <Set name="maxIdleTime">30000</Set>
-          <Set name="Acceptors">2</Set>
-          <Set name="AcceptQueueSize">100</Set>
-          <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
-          <Set name="Password">secret</Set>
-          <Set name="KeyPassword">secret</Set>
-          <Set name="truststore"><SystemProperty name="jetty.home" default="." />/etc/keystore</Set>
-          <Set name="trustPassword">secret</Set>
-        </New>
-      </Arg>
-    </Call>
-
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-    <!-- To add a HTTPS SSL connector                                    -->
-    <!-- mixin jetty-ssl.xml:                                            -->
-    <!--   java -jar start.jar etc/jetty.xml etc/jetty-ssl.xml           -->
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-    
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-    <!-- To add a HTTP blocking connector                                -->
-    <!-- mixin jetty-bio.xml:                                            -->
-    <!--   java -jar start.jar etc/jetty.xml etc/jetty-bio.xml           -->
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-    
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-    <!-- To allow Jetty to be started from xinetd                        -->
-    <!-- mixin jetty-xinetd.xml:                                         -->
-    <!--   java -jar start.jar etc/jetty.xml etc/jetty-xinetd.xml        -->
-    <!--                                                                 -->
-    <!-- See jetty-xinetd.xml for further instructions.                  -->
-    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-
-    <!-- =========================================================== -->
-    <!-- Set handler Collection Structure                            --> 
-    <!-- =========================================================== -->
-    <Set name="handler">
-      <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
-        <Set name="handlers">
-         <Array type="org.eclipse.jetty.server.Handler">
-           <Item>
-             <New id="webapp" class="org.exist.http.WebAppContext">
-               <!-- can either be '/exist' or '/' -->
-               <Set name="contextPath">/exist</Set>
-               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
-               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
-               />/etc/webdefault.xml</Set>
-             </New>
-           </Item>
-           <Item>
-             <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
-           </Item>
-           <Item>
-             <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
-           </Item>
-           <Item>
-             <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
-           </Item>
-         </Array>
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
+        <Set name="host">
+          <SystemProperty name="jetty.host"/>
         </Set>
+        <Set name="port">
+          <SystemProperty name="jetty.port" default="8080"/>
+        </Set>
+        <Set name="maxIdleTime">300000</Set>
+        <Set name="Acceptors">2</Set>
+        <Set name="statsOn">false</Set>
+        <Set name="confidentialPort">8443</Set>
+        <Set name="lowResourcesConnections">20000</Set>
+        <Set name="lowResourcesMaxIdleTime">5000</Set>
       </New>
-    </Set>
+    </Arg>
+  </Call>
 
-    <!-- =========================================================== -->
-    <!-- Configure the context deployer                              -->
-    <!-- A context deployer will deploy contexts described in        -->
-    <!-- configuration files discovered in a directory.              -->
-    <!-- The configuration directory can be scanned for hot          -->
-    <!-- deployments at the configured scanInterval.                 -->
-    <!--                                                             -->
-    <!-- This deployer is configured to deploy contexts configured   -->
-    <!-- in the $JETTY_HOME/contexts directory                       -->
-    <!--                                                             -->
-    <!-- =========================================================== -->
+
+  <!-- if NIO is not available, use org.eclipse.jetty.server.ssl.SslSocketConnector -->
+
+  <Call name="addConnector">
+    <Arg>
+      <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+        <Set name="Port">8443</Set>
+        <Set name="maxIdleTime">30000</Set>
+        <Set name="Acceptors">2</Set>
+        <Set name="AcceptQueueSize">100</Set>
+        <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
+        <Set name="Password">secret</Set>
+        <Set name="KeyPassword">secret</Set>
+        <Set name="truststore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
+        <Set name="trustPassword">secret</Set>
+      </New>
+    </Arg>
+  </Call>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- To add a HTTPS SSL connector                                    -->
+  <!-- mixin jetty-ssl.xml:                                            -->
+  <!--   java -jar start.jar etc/jetty.xml etc/jetty-ssl.xml           -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- To add a HTTP blocking connector                                -->
+  <!-- mixin jetty-bio.xml:                                            -->
+  <!--   java -jar start.jar etc/jetty.xml etc/jetty-bio.xml           -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- To allow Jetty to be started from xinetd                        -->
+  <!-- mixin jetty-xinetd.xml:                                         -->
+  <!--   java -jar start.jar etc/jetty.xml etc/jetty-xinetd.xml        -->
+  <!--                                                                 -->
+  <!-- See jetty-xinetd.xml for further instructions.                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- =========================================================== -->
+  <!-- Set handler Collection Structure                            -->
+  <!-- =========================================================== -->
+  <Set name="handler">
+    <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+      <Set name="handlers">
+        <Array type="org.eclipse.jetty.server.Handler">
+          <Item>
+            <New id="webapp" class="org.exist.http.WebAppContext">
+              <!-- can either be '/exist' or '/' -->
+              <Set name="contextPath">/exist</Set>
+              <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
+              <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+            </New>
+          </Item>
+          <Item>
+            <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+          </Item>
+          <Item>
+            <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
+          </Item>
+          <Item>
+            <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+          </Item>
+        </Array>
+      </Set>
+    </New>
+  </Set>
+
+  <!-- =========================================================== -->
+  <!-- Configure the context deployer                              -->
+  <!-- A context deployer will deploy contexts described in        -->
+  <!-- configuration files discovered in a directory.              -->
+  <!-- The configuration directory can be scanned for hot          -->
+  <!-- deployments at the configured scanInterval.                 -->
+  <!--                                                             -->
+  <!-- This deployer is configured to deploy contexts configured   -->
+  <!-- in the $JETTY_HOME/contexts directory                       -->
+  <!--                                                             -->
+  <!-- =========================================================== -->
   <!-- 
     <Call name="addBean">
       <Arg>
@@ -149,19 +151,19 @@
       </Arg>
     </Call>
   -->
-    <!-- =========================================================== -->
-    <!-- Configure the webapp deployer.                              -->
-    <!-- A webapp  deployer will deploy standard webapps discovered  -->
-    <!-- in a directory at startup, without the need for additional  -->
-    <!-- configuration files.    It does not support hot deploy or   -->
-    <!-- non standard contexts (see ContextDeployer above).          -->
-    <!--                                                             -->
-    <!-- This deployer is configured to deploy webapps from the      -->
-    <!-- $JETTY_HOME/webapps directory                               -->
-    <!--                                                             -->
-    <!-- Normally only one type of deployer need be used.            -->
-    <!--                                                             -->
-    <!-- =========================================================== -->
+  <!-- =========================================================== -->
+  <!-- Configure the webapp deployer.                              -->
+  <!-- A webapp  deployer will deploy standard webapps discovered  -->
+  <!-- in a directory at startup, without the need for additional  -->
+  <!-- configuration files.    It does not support hot deploy or   -->
+  <!-- non standard contexts (see ContextDeployer above).          -->
+  <!--                                                             -->
+  <!-- This deployer is configured to deploy webapps from the      -->
+  <!-- $JETTY_HOME/webapps directory                               -->
+  <!--                                                             -->
+  <!-- Normally only one type of deployer need be used.            -->
+  <!--                                                             -->
+  <!-- =========================================================== -->
   <!--
     <Call name="addBean">
       <Arg>
@@ -181,50 +183,58 @@
     </Call>
   -->
 
-    <!-- =========================================================== -->
-    <!-- Configure Authentication Login Service                      -->
-    <!-- =========================================================== -->
-    <Call class="java.lang.System" name="setProperty">
-      <Arg>java.security.auth.login.config</Arg>
-      <Arg><SystemProperty name="jetty.home" default="." />/etc/login.conf</Arg>
-    </Call>
+  <!-- =========================================================== -->
+  <!-- Configure Authentication Login Service                      -->
+  <!-- =========================================================== -->
+  <Call class="java.lang.System" name="setProperty">
+    <Arg>java.security.auth.login.config</Arg>
+    <Arg><SystemProperty name="jetty.home" default="."/>/etc/login.conf</Arg>
+  </Call>
 
-    <Call name="addBean">
-      <Arg>
-        <New class="org.eclipse.jetty.plus.jaas.JAASLoginService">
-          <Set name="name">JAASLoginService</Set>
-          <Set name="LoginModuleName">eXistDB</Set>
-        </New>
-      </Arg>
-    </Call>
+  <Call name="addBean">
+    <Arg>
+      <New class="org.eclipse.jetty.plus.jaas.JAASLoginService">
+        <Set name="name">JAASLoginService</Set>
+        <Set name="LoginModuleName">eXistDB</Set>
+      </New>
+    </Arg>
+  </Call>
 
-    <!-- =========================================================== -->
-    <!-- Configure Request Log                                       -->
-    <!-- Request logs  may be configured for the entire server here, -->
-    <!-- or they can be configured for a specific web app in a       -->
-    <!-- contexts configuration (see $(jetty.home)/contexts/test.xml -->
-    <!-- for an example).                                            -->
-    <!-- =========================================================== -->
-    <Ref id="RequestLog">
-      <Set name="requestLog">
-        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
-          <Set name="filename"><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Set>
-          <Set name="filenameDateFormat">yyyy_MM_dd</Set>
-          <Set name="retainDays">90</Set>
-          <Set name="append">true</Set>
-          <Set name="extended">false</Set>
-          <Set name="logCookies">false</Set>
-          <Set name="LogTimeZone">GMT</Set>
-        </New>
-      </Set>
-    </Ref>
+  <!-- =========================================================== -->
+  <!-- Configure Request Log                                       -->
+  <!-- Request logs  may be configured for the entire server here, -->
+  <!-- or they can be configured for a specific web app in a       -->
+  <!-- contexts configuration (see $(jetty.home)/contexts/test.xml -->
+  <!-- for an example).                                            -->
+  <!-- =========================================================== -->
+  <Ref id="RequestLog">
+    <Set name="requestLog">
+      <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+        <Set name="filename"><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Set>
+        <Set name="filenameDateFormat">yyyy_MM_dd</Set>
+        <Set name="retainDays">90</Set>
+        <Set name="append">true</Set>
+        <Set name="extended">false</Set>
+        <Set name="logCookies">false</Set>
+        <Set name="LogTimeZone">GMT</Set>
+      </New>
+    </Set>
+  </Ref>
 
-    <!-- =========================================================== -->
-    <!-- extra options                                               -->
-    <!-- =========================================================== -->
-    <Set name="stopAtShutdown">true</Set>
-    <Set name="sendServerVersion">true</Set>
-    <Set name="sendDateHeader">true</Set>
-    <Set name="gracefulShutdown">1000</Set>
+  <!-- =========================================================== -->
+  <!-- extra options                                               -->
+  <!-- =========================================================== -->
+  <Set name="stopAtShutdown">true</Set>
+  <Set name="sendServerVersion">true</Set>
+  <Set name="sendDateHeader">true</Set>
+  <Set name="gracefulShutdown">1000</Set>
+
+  <!-- =========================================================== -->
+  <!-- change java.io.tmpdir default value                         -->
+  <!-- =========================================================== -->
+  <Call class="java.lang.System" name="setProperty">
+    <Arg>java.io.tmpdir</Arg>
+    <Arg><SystemProperty name="jetty.home" default="."/>/tmp</Arg>
+  </Call>
 
 </Configure>
