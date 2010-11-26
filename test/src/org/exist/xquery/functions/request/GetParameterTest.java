@@ -129,59 +129,6 @@ public class GetParameterTest extends RESTTest {
     }
 
     @Test
-    public void testMultipartPostMultiValueParameterAndFile() {
-        testMultipartPost(
-            new Param[]{
-                new NameValues("param1", new String[] {
-                    "value1",
-                    "value2",
-                    "value3",
-                    "value4"
-                }),
-                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT)
-            }
-        );
-    }
-
-    @Test
-    public void testMultipartPostFileAndMultiValueParameter() {
-        testMultipartPost(
-            new Param[]{
-                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
-                new NameValues("param1", new String[] {
-                    "value1",
-                    "value2",
-                    "value3",
-                    "value4"
-                })
-            }
-        );
-    }
-    
-    @Test
-    public void testMultipartPostMultiValueParameterAndFileAndMultiValueParameter() {
-        testMultipartPost(
-            new Param[]{
-                new NameValues("param1", new String[] {
-                    "value1",
-                    "value2",
-                    "value3",
-                    "value4"
-                }),
-                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
-                new NameValues("param2", new String[] {
-                    "valueA",
-                    "valueB",
-                    "valueC",
-                    "valueD"
-                })
-            }
-        );
-    }
-
-
-
-    @Test
     public void testPostMultiValueParameterWithQueryStringMultiValueParameter() {
         testPost(
             new NameValues[]{
@@ -221,6 +168,115 @@ public class GetParameterTest extends RESTTest {
                     "valueC",
                     "valueD"
                 }),
+            }
+        );
+    }
+
+    @Test
+    public void testMultipartPostMultiValueParameterAndFile() {
+        testMultipartPost(
+            new Param[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT)
+            }
+        );
+    }
+
+    @Test
+    public void testMultipartPostFileAndMultiValueParameter() {
+        testMultipartPost(
+            new Param[]{
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                })
+            }
+        );
+    }
+
+    @Test
+    public void testMultipartPostMultiValueParameterAndFileAndMultiValueParameter() {
+        testMultipartPost(
+            new Param[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+                new NameValues("param2", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                })
+            }
+        );
+    }
+
+    @Test
+    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParameters() {
+        testMultipartPost(
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                })
+            },
+            new Param[]{
+                new NameValues("param2", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+                new NameValues("param3", new String[] {
+                    "valueZ",
+                    "valueY",
+                    "valueX",
+                    "valueW"
+                })
+            }
+        );
+    }
+
+    @Test
+    public void testMultipartPostAndMultiValueParameterAndFileAndMultiValueParameterWithQueryStringMultiValueParametersMerged() {
+        testMultipartPost(
+            new NameValues[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                })
+            },
+            new Param[]{
+                new NameValues("param1", new String[] {
+                    "value5",
+                    "value6",
+                    "value7",
+                    "value8"
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+                new NameValues("param2", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                })
             }
         );
     }
@@ -288,6 +344,35 @@ public class GetParameterTest extends RESTTest {
         }
 
         PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
+
+        testRequest(post, expectedResponse);
+    }
+
+    private void testMultipartPost(NameValues queryStringParams[], Param multipartParams[]) {
+
+        List<Part> parts = new ArrayList<Part>();
+
+        StringBuilder expectedResponse = new StringBuilder();
+
+        NameValuePair qsParams[] = convertNameValuesToNameValuePairs(queryStringParams, expectedResponse);
+
+        for(Param multipartParam : multipartParams) {
+            if(multipartParam instanceof NameValues) {
+                for(NameValuePair nameValuePair : convertNameValueToNameValuePairs((NameValues)multipartParam, expectedResponse)) {
+                    parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+                }
+            } else if(multipartParam instanceof TextFileUpload) {
+                parts.add(convertFileUploadToFilePart((TextFileUpload)multipartParam, expectedResponse));
+            }
+        }
+
+        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
+
+        if(qsParams.length > 0) {
+            post.setQueryString(qsParams);
+        }
+
         post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
 
         testRequest(post, expectedResponse);
