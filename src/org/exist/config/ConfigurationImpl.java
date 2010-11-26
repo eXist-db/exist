@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
@@ -256,6 +257,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     @Override
     public Set<String> getProperties() {
+        
         Set<String> properties = new HashSet<String>();
         NamedNodeMap attrs = getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
@@ -273,7 +275,9 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         }
         return properties;
 
-        /*Map<String, Boolean> map = new HashMap<String, Boolean>();
+        /*
+        Set<String> properties = new HashSet<String>();
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
         //XXX: detect single element as field value
         NodeList children = getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -290,7 +294,8 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         }
 
         return properties;
-        */
+         */
+        
     }
 
     @Override

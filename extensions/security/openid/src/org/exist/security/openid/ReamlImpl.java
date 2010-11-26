@@ -31,6 +31,7 @@ import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
@@ -220,6 +221,11 @@ public class ReamlImpl implements Realm {
     @Override
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
         return new ArrayList<String>(); //TODO
+    }
+
+    @Override
+    public SecurityManager getSecurityManager() {
+        return null;
     }
 
 }
