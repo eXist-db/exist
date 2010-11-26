@@ -131,23 +131,23 @@ public class GetParameterTest extends RESTTest {
     @Test
     public void testMultipartPostMultiValueParameterAndFile() {
         testMultipartPost(
-            new NameValues[]{
+            new Param[]{
                 new NameValues("param1", new String[] {
                     "value1",
                     "value2",
                     "value3",
                     "value4"
-                })
-            },
-            new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT)
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT)
+            }
         );
     }
 
     @Test
     public void testMultipartPostFileAndMultiValueParameter() {
         testMultipartPost(
-            new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
-            new NameValues[]{
+            new Param[]{
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
                 new NameValues("param1", new String[] {
                     "value1",
                     "value2",
@@ -157,6 +157,29 @@ public class GetParameterTest extends RESTTest {
             }
         );
     }
+    
+    @Test
+    public void testMultipartPostMultiValueParameterAndFileAndMultiValueParameter() {
+        testMultipartPost(
+            new Param[]{
+                new NameValues("param1", new String[] {
+                    "value1",
+                    "value2",
+                    "value3",
+                    "value4"
+                }),
+                new TextFileUpload(TEST_FILE_NAME, TEST_FILE_CONTENT),
+                new NameValues("param2", new String[] {
+                    "valueA",
+                    "valueB",
+                    "valueC",
+                    "valueD"
+                })
+            }
+        );
+    }
+
+
 
     @Test
     public void testPostMultiValueParameterWithQueryStringMultiValueParameter() {
@@ -248,32 +271,20 @@ public class GetParameterTest extends RESTTest {
         testRequest(post, expectedResponse);
     }
 
-    private void testMultipartPost(NameValues formParams[], final TextFileUpload txtFileUpload) {
+    private void testMultipartPost(Param multipartParams[]) {
        
         List<Part> parts = new ArrayList<Part>();
 
         StringBuilder expectedResponse = new StringBuilder();
-        for(NameValuePair nameValuePair : convertNameValuesToNameValuePairs(formParams, expectedResponse)) {
-            parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
-        }
 
-        parts.add(convertFileUploadToFilePart(txtFileUpload, expectedResponse));
-
-        PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
-        post.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), post.getParams()));
-
-        testRequest(post, expectedResponse);
-    }
-
-    private void testMultipartPost(final TextFileUpload txtFileUpload, NameValues formParams[]) {
-
-        List<Part> parts = new ArrayList<Part>();
-
-        StringBuilder expectedResponse = new StringBuilder();
-        parts.add(convertFileUploadToFilePart(txtFileUpload, expectedResponse));
-
-        for(NameValuePair nameValuePair : convertNameValuesToNameValuePairs(formParams, expectedResponse)) {
-            parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+        for(Param multipartParam : multipartParams) {
+            if(multipartParam instanceof NameValues) {
+                for(NameValuePair nameValuePair : convertNameValueToNameValuePairs((NameValues)multipartParam, expectedResponse)) {
+                    parts.add(new StringPart(nameValuePair.getName(), nameValuePair.getValue()));
+                }
+            } else if(multipartParam instanceof TextFileUpload) {
+                parts.add(convertFileUploadToFilePart((TextFileUpload)multipartParam, expectedResponse));
+            }
         }
 
         PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
@@ -314,17 +325,26 @@ public class GetParameterTest extends RESTTest {
 
         if(nameValues != null) {
             for(NameValues param : nameValues) {
-                for(String paramValue : param.getValues()) {
-                    nameValuePairs.add(new NameValuePair(param.getName(), paramValue));
-
-                    expectedResponse.append(param.getName());
-                    expectedResponse.append("=");
-                    expectedResponse.append(paramValue);
-                }
+                nameValuePairs.addAll(convertNameValueToNameValuePairs(param, expectedResponse));
             }
         }
 
         return nameValuePairs.toArray(new NameValuePair[nameValuePairs.size()]);
+    }
+
+    private List<NameValuePair> convertNameValueToNameValuePairs(NameValues nameValues, StringBuilder expectedResponse) {
+
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+
+        for(String paramValue : nameValues.getData()) {
+            nameValuePairs.add(new NameValuePair(nameValues.getName(), paramValue));
+
+            expectedResponse.append(nameValues.getName());
+            expectedResponse.append("=");
+            expectedResponse.append(paramValue);
+        }
+
+        return nameValuePairs;
     }
 
     private FilePart convertFileUploadToFilePart(final TextFileUpload txtFileUpload, StringBuilder expectedResponse) {
@@ -332,7 +352,7 @@ public class GetParameterTest extends RESTTest {
         final String filePartName = "fileUpload";
 
         FilePart filePart = new FilePart(filePartName, new PartSource() {
-            private byte data[] = txtFileUpload.getContent().getBytes();
+            private byte data[] = txtFileUpload.getData().getBytes();
 
             @Override
             public long getLength() {
@@ -352,12 +372,12 @@ public class GetParameterTest extends RESTTest {
 
         expectedResponse.append(filePartName);
         expectedResponse.append("=");
-        expectedResponse.append(txtFileUpload.getContent());
+        expectedResponse.append(txtFileUpload.getData());
 
         return filePart;
     }
 
-    public class NameValues {
+    public class NameValues implements Param<String[]> {
 
         final String name;
         final String values[];
@@ -367,16 +387,17 @@ public class GetParameterTest extends RESTTest {
             this.values = values;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
-        public String[] getValues() {
+        public String[] getData() {
             return values;
         }
     }
 
-    public class TextFileUpload {
+    public class TextFileUpload implements Param<String> {
         final String name;
         final String content;
 
@@ -385,12 +406,19 @@ public class GetParameterTest extends RESTTest {
             this.content = content;
         }
 
-        public String getContent() {
+        @Override
+        public String getData() {
             return content;
         }
 
+        @Override
         public String getName() {
             return name;
         }
+    }
+
+    public interface Param<T> {
+        public String getName();
+        public T getData();
     }
 }
