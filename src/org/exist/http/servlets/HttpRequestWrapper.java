@@ -32,7 +32,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,9 @@ import org.apache.log4j.Logger;
 
 
 /**
- * A wrapper for requests processed by a servlet.
+ * A wrapper for requests processed by a servlet. All parameters, submitted as part of
+ * the URL and via the http POST body (application/x-www-form-urlencoded and
+ * multipart/form-data encoded) are made available transparently.
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
@@ -61,18 +62,28 @@ import org.apache.log4j.Logger;
 public class HttpRequestWrapper implements RequestWrapper {
 
     private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
+    
     private HttpServletRequest servletRequest;
     private String formEncoding = null;
     private String containerEncoding = null;
+
     private String pathInfo = null;
     private String servletPath = null;
 
-    // linkedhashmap to preserver order
+    // Use linkedhashmap to preserver order
     private Map<String, Object> params = new LinkedHashMap<String, Object>();
 
     // flag to administer wether multi-part formdata was processed
     private boolean isFormDataParsed = false;
 
+    /**
+     * Constructs a wrapper for the given servlet request. multipart/form-data will be parsed
+     * when evailable/
+     *
+     * @param servletRequest The request as viewed by the servlet
+     * @param formEncoding The encoding of the request's forms
+     * @param containerEncoding The encoding of the servlet
+     */
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding) {
         this(servletRequest, formEncoding, containerEncoding, true);
@@ -80,9 +91,11 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     /**
      * Constructs a wrapper for the given servlet request.
+     *
      * @param servletRequest The request as viewed by the servlet
      * @param formEncoding The encoding of the request's forms
      * @param containerEncoding The encoding of the servlet
+     * @param parseMultipart Set to TRUE to enable parse multipart/form-data when available.
      */
     public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
             String containerEncoding, boolean parseMultipart) {
@@ -93,7 +106,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         this.servletPath = servletRequest.getServletPath();
 
 
-        // Get url-encoded parameters  (GET and POST)
+        // Get url-encoded parameters (url-ecoded from http GET and POST)
         parseParameters();
 
 
@@ -107,6 +120,8 @@ public class HttpRequestWrapper implements RequestWrapper {
             // Get multi-part formdata
             parseMultipartContent();
         }
+
+        LOG.debug("Retrieved "+params.size() + " parameters.");
 
     }
 
@@ -132,7 +147,6 @@ public class HttpRequestWrapper implements RequestWrapper {
         if (original != null) {
 
             // Check if original value was already a List
-
             if (original instanceof List) {
                 // Add value to existing List
                 ((List) original).add(value);
@@ -410,11 +424,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameterNames()
      */
     public Enumeration getParameterNames() {
-//        if (!isFormDataParsed) {
-//            return servletRequest.getParameterNames();
-//        } else {
-            return Collections.enumeration(params.keySet());
-//        }
+        return Collections.enumeration(params.keySet());
     }
 
     /**
@@ -687,6 +697,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
         servletRequest.setCharacterEncoding(arg0);
     }
+
 
     public void setPathInfo(String arg0) {
         pathInfo = arg0;

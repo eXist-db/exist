@@ -59,7 +59,7 @@ public class GetParameter extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
 				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist")},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value")),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of parameter values")),
 	
 		new FunctionSignature(
 			new QName(
@@ -74,7 +74,7 @@ public class GetParameter extends BasicFunction {
 				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name"),
 				new FunctionParameterSequenceType("default-value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The default value if the parameter does not exist"),
 				new FunctionParameterSequenceType( "failonerror", Type.BOOLEAN, Cardinality.ZERO_OR_MORE, "The fail on error flag.  If the value is set to false, then the function will not fail if there is no request in scope." )},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the parameter value"))
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "a sequence of parameter values"))
 		
 	};
 	
