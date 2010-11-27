@@ -39,7 +39,8 @@ declare function status:main() as element()
                 status:status-line("Vendor", util:system-property("java.vendor")),
                 status:status-line("Version", util:system-property("java.version")),
                 status:status-line("Implementation", util:system-property("java.vm.name")),
-                status:status-line("Installation", util:system-property("java.home"))
+                status:status-line("Installation", util:system-property("java.home")),
+                status:status-line("Temp file path", util:system-property("java.io.tmpdir"))
             }
             <tr><th colspan="2">Memory Usage</th></tr>
             {
