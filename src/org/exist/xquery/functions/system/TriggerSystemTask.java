@@ -68,33 +68,37 @@ public class TriggerSystemTask extends BasicFunction {
         if (args[1].hasOne()) {
             parseParameters(((NodeValue) args[1].itemAt(0)).getNode(), properties);
         }
+        
         try {
             Class<?> clazz = Class.forName(className);
             Object taskObject = clazz.newInstance();
+
             if (!(taskObject instanceof SystemTask)) {
                 XPathException xPathException = new XPathException(this, className + " is not an instance of org.exist.storage.SystemTask");
                 logger.error("Java classname is not a SystemTask", xPathException);
 				throw xPathException;
             }
+
             SystemTask task = (SystemTask) taskObject;
             task.configure(context.getBroker().getConfiguration(), properties);
             LOG.info("Triggering SystemTask: " + className);
             context.getBroker().getBrokerPool().triggerSystemTask(task);
-        }
-        catch (ClassNotFoundException e) {
+
+        } catch (ClassNotFoundException e) {
             String message = "system task class '" + className + "' not found";
             logger.error(message, e);
 			throw new XPathException(this, message);
-        }
-        catch (InstantiationException e) {
+
+        } catch (InstantiationException e) {
             String message = "system task '" + className + "' can not be instantiated";
             logger.error(message, e);
 			throw new XPathException(this, message);
-        }
-        catch (IllegalAccessException e) {
+
+        } catch (IllegalAccessException e) {
             String message = "system task '" + className + "' can not be accessed";
             logger.error(message, e);
 			throw new XPathException(this, message);
+
         } catch (EXistException e) {
             String message = "system task " + className + " reported an error during initialization: ";
             logger.error(message, e);

@@ -31,12 +31,14 @@ public class SystemTaskManager {
 
     public void processTasks() {
         //dont run the task if we are shutting down
-    	if(pool.isShuttingDown())
-    		return;
+        if (pool.isShuttingDown()) {
+            return;
+        }
+
         synchronized (waitingSystemTasks) {
             DBBroker broker = null;
             Subject oldUser = null;
-    	    try {
+            try {
                 broker = pool.get(null);
                 oldUser = broker.getUser();
                 broker.setUser(pool.getSecurityManager().getSystemSubject());
@@ -45,11 +47,14 @@ public class SystemTaskManager {
                     SystemTask task = waitingSystemTasks.pop();
                     runSystemTask(task, broker);
                 }
-            } catch(Exception e) {
+
+            } catch (Exception e) {
                 LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
+                
             } finally {
-                if (oldUser != null)
+                if (oldUser != null) {
                     broker.setUser(oldUser);
+                }
                 pool.release(broker);
             }
         }
