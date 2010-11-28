@@ -192,16 +192,20 @@ public class TransactionManager {
         try {
             lock.lock();
             --activeTransactions;
+
             try {
                 journal.writeToLog(new TxnAbort(txn.getId()));
             } catch (TransactionException e) {
                 LOG.warn("Failed to write abort record to journal: " + e.getMessage());
             }
+
             if (!groupCommit)
                 journal.flushToLog(true);
+            
             txn.signalAbort();
             txn.releaseAll();
             processSystemTasks();
+
         } finally {
             lock.unlock();
         }
@@ -225,6 +229,7 @@ public class TransactionManager {
 	public void checkpoint(boolean switchFiles) throws TransactionException {
         if (!enabled)
             return;
+        
 		long txnId = nextTxnId++;
 		journal.checkpoint(txnId, switchFiles);
 	}
@@ -239,8 +244,10 @@ public class TransactionManager {
         broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
+
         } catch (PermissionDeniedException e) {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
+            
         } finally {
         	broker.setUser(currentUser);
         }

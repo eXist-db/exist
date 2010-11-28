@@ -641,11 +641,10 @@ public class RESTServer {
                         
 					} catch (XPathException e) {
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
-									e);
+							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,	e);
+                            
 						} else {
-							writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null,
-									path, e);
+							writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path, e);
 						}
 					}
 					return;
@@ -787,6 +786,8 @@ public class RESTServer {
 							search(broker, query, path,	nsExtractor.getNamespaces(), variables,
 									howmany, start, typed, outputProperties,
 									enclose, cache, request, response);
+
+                            transact.commit(transaction);
 
 						} catch (XPathException e) {
 							result = e.getMessage();
@@ -1165,8 +1166,8 @@ public class RESTServer {
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
-			List<Namespace> namespaces, Node variables, int howmany, int start, boolean typed, Properties outputProperties, boolean wrap,
-			boolean cache, HttpServletRequest request,
+			List<Namespace> namespaces, Node variables, int howmany, int start, boolean typed,
+            Properties outputProperties, boolean wrap,	boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
 
@@ -1211,6 +1212,7 @@ public class RESTServer {
 
 			if (compiled == null)
 				compiled = xquery.compile(context, source);
+            
 			else {
 				compiled.getContext().updateContext(context);
                 context.getWatchDog().reset();
@@ -1226,9 +1228,7 @@ public class RESTServer {
 
 				if (cache) {
 					int sessionId = sessionManager.add(query, resultSequence);
-					outputProperties.setProperty(
-							Serializer.PROPERTY_SESSION_ID, Integer
-									.toString(sessionId));
+					outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, Integer.toString(sessionId));
 					if (!response.isCommitted())
 						response.setIntHeader("X-Session-Id", sessionId);
 				}
@@ -1336,10 +1336,10 @@ public class RESTServer {
 
 			// now declare variable
 			if(prefix != null) {
-                            context.declareVariable(q.getPrefix() + ":" + q.getLocalPart(), sequence);
-                        } else {
-                            context.declareVariable(q.getLocalPart(), sequence);
-                        }
+                context.declareVariable(q.getPrefix() + ":" + q.getLocalPart(), sequence);
+            } else {
+                context.declareVariable(q.getLocalPart(), sequence);
+            }
 
 		}
     }

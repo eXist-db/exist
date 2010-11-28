@@ -67,6 +67,7 @@ public class ConsistencyCheckTask implements SystemTask {
 
     
     public void configure(Configuration config, Properties properties) throws EXistException {
+        
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         File dir = new File(exportDir);
         if (!dir.isAbsolute())
@@ -79,10 +80,13 @@ public class ConsistencyCheckTask implements SystemTask {
 
         String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
+
         String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
         incremental = inc.equalsIgnoreCase("YES");
+
         String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
         incrementalCheck = incCheck.equalsIgnoreCase("YES");
+
         String max = properties.getProperty(MAX_PROP_NAME, "5");
         try {
             maxInc = Integer.parseInt(max);
@@ -110,12 +114,12 @@ public class ConsistencyCheckTask implements SystemTask {
         PrintWriter report = null;
         try {
             boolean doBackup = createBackup;
-            // TODO: don't use the direct access feature for now. needs more
-            // testing
+            // TODO: don't use the direct access feature for now. needs more testing
             List<ErrorReport> errors = null;
             if (!incremental || incrementalCheck) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Starting consistency check...");
+                }
                 report = openLog();
                 CheckCallback cb = new CheckCallback(report);
 
@@ -126,27 +130,38 @@ public class ConsistencyCheckTask implements SystemTask {
                     endStatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
                     endStatus.setReason(errors);
 
-                    if (LOG.isDebugEnabled())
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug("Errors found: " + errors.size());
+                    }
+
                     doBackup = true;
+
                     if (fatalErrorsFound(errors)) {
-                        if (LOG.isDebugEnabled())
+                        if (LOG.isDebugEnabled()) {
                             LOG.debug("Fatal errors were found: pausing the consistency check task.");
+                        }
                         paused = true;
                     }
                 }
             }
+
             if (doBackup) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Starting backup...");
+                }
+
                 SystemExport sysexport = new SystemExport(broker, null, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
-                if (LOG.isDebugEnabled() && lastExportedBackup != null)
+
+                if (LOG.isDebugEnabled() && lastExportedBackup != null) {
                     LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
+                }
             }
+
         } catch (TerminatedException e) {
             throw new EXistException(e.getMessage(), e);
+            
         } finally {
             if (report != null)
                 report.close();
