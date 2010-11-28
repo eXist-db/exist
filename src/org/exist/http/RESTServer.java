@@ -714,6 +714,8 @@ public class RESTServer {
 						search(broker, query, path, nsExtractor.getNamespaces(), howmany, start,
 								outputProperties, enclose, cache, request,
 								response);
+                        transact.commit(transaction);
+                        
 					} catch (XPathException e) {
 						result = e.getMessage();
                         if (MimeType.XML_TYPE.getName().equals(mimeType)) {
