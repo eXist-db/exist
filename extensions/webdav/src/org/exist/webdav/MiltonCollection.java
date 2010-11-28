@@ -84,7 +84,7 @@ public class MiltonCollection extends MiltonResource
      *
      * @param host  FQ host name including port number.
      * @param uri   Path on server indicating path of resource
-     * @param brokerPool Handle to Exist database.
+     * @param pool  Handle to Exist database.
      */
     public MiltonCollection(String host, XmldbURI uri, BrokerPool pool) {
         this(host, uri, pool, null);
@@ -96,10 +96,10 @@ public class MiltonCollection extends MiltonResource
      *
      * @param host  FQ host name including port number.
      * @param uri   Path on server indicating path of resource.
-     * @param subject  An Exist operation is performed with  User. Can be NULL.
-     * @param brokerPool Handle to Exist database.
+     * @param subject  An Exist operation is performed with Subject. Can be NULL.
+     * @param pool  Handle to Exist database.
      */
-    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, Subject user) {
+    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
 
         super();
 
@@ -114,8 +114,8 @@ public class MiltonCollection extends MiltonResource
         existResource = existCollection;
 
         // If subject is available, additional data can be retrieved.
-        if (user != null) {
-            existCollection.setUser(user);
+        if (subject != null) {
+            existCollection.setUser(subject);
             existCollection.initMetadata();
         }
     }

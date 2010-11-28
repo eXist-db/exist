@@ -140,7 +140,7 @@ public class JnlpJarFiles {
     /**
      * Get file reference for JAR file.
      * @param key
-     * @return
+     * @return Reference to the jar file, NULL if not existent.
      */
     public File getJarFile(String key){
         File retVal = allFiles.get(key);

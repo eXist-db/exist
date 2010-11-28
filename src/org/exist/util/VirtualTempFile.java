@@ -404,7 +404,7 @@ public class VirtualTempFile
 	
 	/**
 	 * An easy way to obtain an InputStream
-	 * @return
+	 * @return byte stream
 	 * @throws IOException
 	 */
 	public InputStream getByteStream()
