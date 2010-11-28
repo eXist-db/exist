@@ -70,7 +70,7 @@ public interface XSLExpression extends Names {
 	 * Report error message.
 	 * 
 	 * @param code
-	 * @param error
+	 * @param description
 	 * @throws XPathException
 	 */
 	public void compileError(ErrorCode code, String description) throws XPathException;

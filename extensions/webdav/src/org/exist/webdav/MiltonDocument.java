@@ -102,7 +102,7 @@ public class MiltonDocument extends MiltonResource
      * @param subject  An Exist operation is performed with  User. Can be NULL.
      * @param pool Handle to Exist database.
      */
-    public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, Subject user) {
+    public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
 
         super();
 
@@ -116,8 +116,8 @@ public class MiltonDocument extends MiltonResource
         // store simpler type
         existResource = existDocument;
 
-        if (user != null) {
-            existDocument.setUser(user);
+        if (subject != null) {
+            existDocument.setUser(subject);
             existDocument.initMetadata();
         }
     }

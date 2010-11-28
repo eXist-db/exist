@@ -19,9 +19,7 @@ import java.util.zip.GZIPInputStream;
  * @author José María Fernández (jmfg@users.sourceforge.net)
  *
  */
-public final class GZIPInputSource
-	extends EXistInputSource
-{
+public final class GZIPInputSource extends EXistInputSource {
 	private File file;
 	private InputStream inputStream;
 	private long streamLength;

@@ -36,14 +36,14 @@ public interface Reference<R,O> {
 	/**
 	 * Reference resolver.
 	 * 
-	 * @return
+	 * @return resolver
 	 */
 	public R resolver();
 	
 	/**
 	 * Resolve reference and return referent.
 	 *  
-	 * @return
+	 * @return referent
 	 */
 	public O resolve();
 }
