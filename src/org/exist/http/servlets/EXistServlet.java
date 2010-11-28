@@ -559,6 +559,7 @@ public class EXistServlet extends HttpServlet {
 			// Else return a FORBIDDEN Error
 			if (user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
+                
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
 			}

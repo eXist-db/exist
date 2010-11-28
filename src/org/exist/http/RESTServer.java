@@ -571,12 +571,12 @@ public class RESTServer {
 	public void doPost(DBBroker broker, HttpServletRequest request,
 			HttpServletResponse response, String path)
 			throws BadRequestException, PermissionDeniedException, IOException, NotFoundException {
+        
 		// if required, set character encoding
 		if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
 
-		Properties outputProperties = new Properties(
-				defaultOutputKeysProperties);
+		Properties outputProperties = new Properties(defaultOutputKeysProperties);
 		XmldbURI pathUri = XmldbURI.create(path);
 		DocumentImpl resource = null;
 
@@ -618,6 +618,7 @@ public class RESTServer {
 				}
 			}
 
+            // either xquery binary file or xproc xml file
 			if (resource != null) {
 				if (resource.getResourceType() == DocumentImpl.BINARY_FILE
 						&& xquery_mime_type.equals(resource.getMetadata().getMimeType()) ||
@@ -637,6 +638,7 @@ public class RESTServer {
 							executeXProc(broker, resource, request, response,
 									outputProperties, servletPath.toString(), pathInfo);
 						}
+                        
 					} catch (XPathException e) {
 						if (MimeType.XML_TYPE.getName().equals(mimeType)) {
 							writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path,
@@ -649,6 +651,7 @@ public class RESTServer {
 					return;
 				}
 			}
+
 		} finally {
 			if (resource != null)
 				resource.getUpdateLock().release(Lock.READ_LOCK);
@@ -661,6 +664,7 @@ public class RESTServer {
 			if (semicolon > 0)
 				requestType = requestType.substring(0, semicolon).trim();
 		}
+        
 		// content type != application/x-www-form-urlencoded
 		if (!requestType.equals(MimeType.URL_ENCODED_TYPE.getName())) {
 			// third, normal POST: read the request content and check if
@@ -674,15 +678,18 @@ public class RESTServer {
 			@SuppressWarnings("unused")
 			String mime = MimeType.XML_TYPE.getName();
 			String query = null;
-			TransactionManager transact = broker.getBrokerPool()
-					.getTransactionManager();
+
+			TransactionManager transact = broker.getBrokerPool().getTransactionManager();
 			Txn transaction = transact.beginTransaction();
+            
 			try {
 				String content = getRequestContent(request);
 				NamespaceExtractor nsExtractor = new NamespaceExtractor();
 				Element root = parseXML(content, nsExtractor);
 				String rootNS = root.getNamespaceURI();
+
 				if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
+
 					if (root.getLocalName().equals("query")) {
 						// process <query>xpathQuery</query>
 						String option = root.getAttribute("start");
@@ -690,12 +697,15 @@ public class RESTServer {
 							try {
 								start = Integer.parseInt(option);
 							} catch (NumberFormatException e) {
+                                //
 							}
+
 						option = root.getAttribute("max");
 						if (option != null)
 							try {
 								howmany = Integer.parseInt(option);
 							} catch (NumberFormatException e) {
+                                //
 							}
 
 						option = root.getAttribute("enclose");
@@ -725,12 +735,14 @@ public class RESTServer {
 							outputProperties.setProperty(
 									Serializer.PROPERTY_SESSION_ID, option);
 						}
+                        
 						NodeList children = root.getChildNodes();
 						for (int i = 0; i < children.getLength(); i++) {
+
 							Node child = children.item(i);
 							if (child.getNodeType() == Node.ELEMENT_NODE
-									&& child.getNamespaceURI().equals(
-											Namespaces.EXIST_NS)) {
+									&& child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
+
 								if (child.getLocalName().equals("text")) {
 									StringBuilder buf = new StringBuilder();
 									Node next = child.getFirstChild();
@@ -741,27 +753,24 @@ public class RESTServer {
 										next = next.getNextSibling();
 									}
 									query = buf.toString();
-								} else if (child.getLocalName().equals(
-										"variables")) {
+
+								} else if (child.getLocalName().equals("variables")) {
 									variables = child;
-								} else if (child.getLocalName().equals(
-										"properties")) {
+
+								} else if (child.getLocalName().equals("properties")) {
 									Node node = child.getFirstChild();
 									while (node != null) {
 										if (node.getNodeType() == Node.ELEMENT_NODE
-												&& node.getNamespaceURI()
-														.equals(Namespaces.EXIST_NS)
-												&& node.getLocalName().equals(
-														"property")) {
+												&& node.getNamespaceURI().equals(Namespaces.EXIST_NS)
+												&& node.getLocalName().equals("property")) {
+
 											Element property = (Element) node;
-											String key = property
-													.getAttribute("name");
-											String value = property
-													.getAttribute("value");
+											String key = property.getAttribute("name");
+											String value = property.getAttribute("value");
 											LOG.debug(key + " = " + value);
+
 											if (key != null && value != null)
-												outputProperties.setProperty(
-														key, value);
+												outputProperties.setProperty(key, value);
 										}
 										node = node.getNextSibling();
 									}
@@ -769,24 +778,23 @@ public class RESTServer {
 							}
 						}
 					}
+                    
 					// execute query
 					if (query != null) {
-						@SuppressWarnings("unused")
+
 						String result;
 						try {
-							search(broker, query, path,
-									nsExtractor.getNamespaces(), variables,
+							search(broker, query, path,	nsExtractor.getNamespaces(), variables,
 									howmany, start, typed, outputProperties,
 									enclose, cache, request, response);
+
 						} catch (XPathException e) {
 							result = e.getMessage();
 							if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-								writeXPathException(response,
-										HttpServletResponse.SC_ACCEPTED,
+								writeXPathException(response, HttpServletResponse.SC_ACCEPTED,
 										encoding, null, path, e);
 							} else {
-								writeXPathExceptionHtml(response,
-										HttpServletResponse.SC_ACCEPTED,
+								writeXPathExceptionHtml(response, HttpServletResponse.SC_ACCEPTED,
 										encoding, null, path, e);
 							}
 						}
@@ -795,16 +803,18 @@ public class RESTServer {
 						transact.abort(transaction);
 						throw new BadRequestException("No query specified");
 					}
-				} else if (rootNS != null
-						&& rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+                    
+				} else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+
 					LOG.debug("Got xupdate request: " + content);
 					MutableDocumentSet docs = new DefaultDocumentSet();
 					Collection collection = broker.getCollection(pathUri);
 					if (collection != null) {
 						collection.allDocs(broker, docs, true, true);
+
 					} else {
-						DocumentImpl xupdateDoc = (DocumentImpl) broker
-								.getXMLResource(pathUri);
+						DocumentImpl xupdateDoc = (DocumentImpl) broker.getXMLResource(pathUri);
+
 						if (xupdateDoc != null) {
 							if (!xupdateDoc.getPermissions().validate(
 									broker.getUser(), Permission.READ)) {
@@ -813,61 +823,59 @@ public class RESTServer {
 										"Not allowed to read collection");
 							}
 							docs.add(xupdateDoc);
+
 						} else
 							broker.getAllXMLResources(docs);
 					}
 
-					XUpdateProcessor processor = new XUpdateProcessor(broker,
-							docs, AccessContext.REST);
-					Modification modifications[] = processor
-							.parse(new InputSource(new StringReader(content)));
+					XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.REST);
+					Modification modifications[] = processor.parse(new InputSource(new StringReader(content)));
 					long mods = 0;
 					for (int i = 0; i < modifications.length; i++) {
 						mods += modifications[i].process(transaction);
 						broker.flush();
 					}
+
 					transact.commit(transaction);
 
 					// FD : Returns an XML doc
 					writeXUpdateResult(response, encoding, mods);
 					// END FD
+
 				} else {
 					transact.abort(transaction);
-					throw new BadRequestException("Unknown XML root element: "
-							+ root.getNodeName());
+					throw new BadRequestException("Unknown XML root element: " + root.getNodeName());
 				}
+
 			} catch (SAXException e) {
 				transact.abort(transaction);
 				Exception cause = e;
 				if (e.getException() != null)
 					cause = e.getException();
-				LOG.debug(
-						"SAX exception while parsing request: "
-								+ cause.getMessage(), cause);
-				throw new BadRequestException(
-						"SAX exception while parsing request: "
-								+ cause.getMessage());
+				LOG.debug("SAX exception while parsing request: " + cause.getMessage(), cause);
+				throw new BadRequestException("SAX exception while parsing request: " + cause.getMessage());
+
 			} catch (ParserConfigurationException e) {
 				transact.abort(transaction);
-				throw new BadRequestException(
-						"Parser exception while parsing request: "
-								+ e.getMessage());
+				throw new BadRequestException("Parser exception while parsing request: " + e.getMessage());
+
 			} catch (XPathException e) {
 				transact.abort(transaction);
-				throw new BadRequestException(
-						"Query exception while parsing request: "
-								+ e.getMessage());
+				throw new BadRequestException("Query exception while parsing request: "	+ e.getMessage());
+                
 			} catch (IOException e) {
 				transact.abort(transaction);
-				throw new BadRequestException(
-						"IO exception while parsing request: " + e.getMessage());
+				throw new BadRequestException("IO exception while parsing request: " + e.getMessage());
+
 			} catch (EXistException e) {
 				transact.abort(transaction);
 				throw new BadRequestException(e.getMessage());
+
 			} catch (LockException e) {
 				transact.abort(transaction);
 				throw new PermissionDeniedException(e.getMessage());
 			}
+            
 		// content type = application/x-www-form-urlencoded
 		} else {
 			doGet(broker, request, response, path);
@@ -1161,8 +1169,8 @@ public class RESTServer {
 			boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
-		String sessionIdParam = outputProperties
-				.getProperty(Serializer.PROPERTY_SESSION_ID);
+
+		String sessionIdParam = outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID);
 		if (sessionIdParam != null) {
 			try {
 				int sessionId = Integer.parseInt(sessionIdParam);
@@ -1170,32 +1178,34 @@ public class RESTServer {
 					Sequence cached = sessionManager.get(query, sessionId);
 					if (cached != null) {
 						LOG.debug("Returning cached query result");
-						writeResults(response, broker, cached, howmany, start, typed,
-								outputProperties, wrap);
+						writeResults(response, broker, cached, howmany, start, typed, outputProperties, wrap);
+                        
 					} else {
-						LOG
-								.debug("Cached query result not found. Probably timed out. Repeating query.");
+						LOG.debug("Cached query result not found. Probably timed out. Repeating query.");
 					}
 				}
+                
 			} catch (NumberFormatException e) {
-				throw new BadRequestException(
-						"Invalid session id passed in query request: "
-								+ sessionIdParam);
+				throw new BadRequestException("Invalid session id passed in query request: " + sessionIdParam);
 			}
 		}
+        
 		XmldbURI pathUri = XmldbURI.create(path);
 		try {
 			Source source = new StringSource(query);
 			XQuery xquery = broker.getXQueryService();
 			XQueryPool pool = xquery.getXQueryPool();
 			CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+
 			XQueryContext context;
 			if (compiled == null)
 				context = xquery.newContext(AccessContext.REST);
 			else
 				context = compiled.getContext();
+
 			context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
 			context.setBaseURI(new AnyURIValue(pathUri.toString()));
+            
 			declareNamespaces(context, namespaces);
 			declareVariables(context, variables, request, response);
 
@@ -1210,9 +1220,9 @@ public class RESTServer {
 				long startTime = System.currentTimeMillis();
 				Sequence resultSequence = xquery.execute(compiled, null, outputProperties);
 				long queryTime = System.currentTimeMillis() - startTime;
+                
 				if (LOG.isDebugEnabled())
-					LOG.debug("Found " + resultSequence.getItemCount() + " in "
-							+ queryTime + "ms.");
+					LOG.debug("Found " + resultSequence.getItemCount() + " in "	+ queryTime + "ms.");
 
 				if (cache) {
 					int sessionId = sessionManager.add(query, resultSequence);
@@ -1223,11 +1233,12 @@ public class RESTServer {
 						response.setIntHeader("X-Session-Id", sessionId);
 				}
 
-				writeResults(response, broker, resultSequence, howmany, start, typed,
-						outputProperties, wrap);
+				writeResults(response, broker, resultSequence, howmany, start, typed, outputProperties, wrap);
+
 			} finally {
 				pool.returnCompiledXQuery(source, compiled);
 			}
+            
 		} catch (IOException e) {
 			throw new BadRequestException(e.getMessage(), e);
 		}
@@ -1254,24 +1265,27 @@ public class RESTServer {
 	private HttpRequestWrapper declareVariables(XQueryContext context, Node variables,
 			HttpServletRequest request, HttpServletResponse response)
 			throws XPathException {
-		HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding,
-				containerEncoding);
+        
+		HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding,	containerEncoding);
 		ResponseWrapper respw = new HttpResponseWrapper(response);
+        
 		// context.declareNamespace(RequestModule.PREFIX,
 		// RequestModule.NAMESPACE_URI);
 		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
 		context.declareVariable(ResponseModule.PREFIX + ":response", respw);
 		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
 
-                if(variables != null){
-                    declareExternalAndXQJVariables(context, variables);
-                }
+        if(variables != null){
+            declareExternalAndXQJVariables(context, variables);
+        }
 
 		return reqw;
 	}
 
-        private void declareExternalAndXQJVariables(XQueryContext context, Node variables) throws XPathException {
-            NodeList childs = variables.getChildNodes();
+    private void declareExternalAndXQJVariables(XQueryContext context, Node variables) throws XPathException {
+
+        NodeList childs = variables.getChildNodes();
+
 		for (int i = 0; i < childs.getLength(); i++) {
 			Node child = childs.item(i);// <variable> element
 
@@ -1279,14 +1293,17 @@ public class RESTServer {
 			Node qname = child.getFirstChild();
 			NodeList l = qname.getChildNodes();
 			String localname = null, prefix = null, uri = null;
+            
 			for (int j = 0; j < l.getLength(); j++) {
 				Node c = l.item(j);
 				if (c.getLocalName().equals("localname")) {
 					if ((c.getFirstChild()) != null)
 						localname = c.getFirstChild().getNodeValue();
+
 				} else if (c.getLocalName().equals("namespace")) {
 					if (c.getFirstChild() != null)
 						uri = c.getFirstChild().getNodeValue();
+
 				} else if (c.getLocalName().equals("prefix")) {
 					if (c.getFirstChild() != null)
 						prefix = c.getFirstChild().getNodeValue();
@@ -1301,16 +1318,18 @@ public class RESTServer {
 
 			QName q;
 			if(prefix != null && localname != null) {
-                            q = new QName(uri, localname, prefix);
-                        } else {
-                            q = new QName(uri, localname, XMLConstants.DEFAULT_NS_PREFIX);
-                        }
+                q = new QName(uri, localname, prefix);
+                
+            } else {
+                q = new QName(uri, localname, XMLConstants.DEFAULT_NS_PREFIX);
+            }
 
 			// get serialized sequence
 			NodeImpl seq = (NodeImpl) qname.getNextSibling();
 			Sequence sequence;
 			try {
 				sequence = Marshaller.demarshall(seq);
+                
 			} catch (XMLStreamException xe) {
 				throw new XPathException(xe.toString());
 			}
@@ -1323,7 +1342,7 @@ public class RESTServer {
                         }
 
 		}
-        }
+    }
 
 	/**
 	 * Directly execute an XQuery stored as a binary document in the database.
@@ -1332,41 +1351,48 @@ public class RESTServer {
 			HttpServletRequest request, HttpServletResponse response,
 			Properties outputProperties, String servletPath, String pathInfo)
 			throws XPathException, BadRequestException {
+
 		Source source = new DBSource(broker, (BinaryDocument) resource, true);
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
 		XQueryContext context;
+
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		if (compiled == null) {
 			// special header to indicate that the query is not returned from
 			// cache
 			response.setHeader("X-XQuery-Cached", "false");
 			context = xquery.newContext(AccessContext.REST);
+
 		} else {
 			response.setHeader("X-XQuery-Cached", "true");
 			context = compiled.getContext();
 		}
+
 		// TODO: don't hardcode this?
 		context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(
 				resource.getCollection().getURI()).toString());
 		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
 				.getCollection().getURI() });
+        
 		HttpRequestWrapper reqw = declareVariables(context, null, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);
+
 		if (compiled == null) {
 			try {
 				compiled = xquery.compile(context, source);
 			} catch (IOException e) {
-				throw new BadRequestException("Failed to read query from "
-						+ resource.getURI(), e);
+				throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
 			}
 		}
 
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-		if (xdebug != null)
+        
+		if (xdebug != null) {
 			compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
-		else {
+            
+		} else {
 			//if have session
 			xdebug = request.getParameter("XDEBUG_SESSION");
 			if (xdebug != null) {
@@ -1385,12 +1411,14 @@ public class RESTServer {
     			}
 			}
 		}
-		boolean wrap = outputProperties.getProperty("_wrap") != null &&
-            outputProperties.getProperty("_wrap").equals("yes");
+
+		boolean wrap = outputProperties.getProperty("_wrap") != null
+                    && outputProperties.getProperty("_wrap").equals("yes");
 
 		try {
 			Sequence result = xquery.execute(compiled, null, outputProperties);
 			writeResults(response, broker, result, -1, 1, false, outputProperties, wrap);
+            
 		} finally {
 			pool.returnCompiledXQuery(source, compiled);
 		}
