@@ -266,6 +266,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
         Sequence rightSeq = getRight().eval(contextSequence);
 
+        if (rightSeq.getItemCount() > 1)
+        	preselectResult = new NewArrayNodeSet();
+        
         for (SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext();) {
             //Get the index key
             Item key = itRightSeq.nextItem().atomize();
@@ -316,7 +319,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if (preselectResult == null)
                     preselectResult = temp;
                 else {
-                    preselectResult = preselectResult.union(temp);
+                    preselectResult.addAll(temp);
                 }
             }
         }
