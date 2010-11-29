@@ -105,10 +105,14 @@ declare function xqts:create-collections($parent as xs:string,
             $newColl
 };
 
+declare function xqts:read($filePath as xs:string) {
+	system:as-user("admin", (), file:read($filePath, "UTF-8"))
+};
+
 declare function xqts:get-query($case as element(catalog:test-case)) {
     let $query-name := $case//catalog:query/@name
     let $filePath := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
-    let $xq-string := file:read($filePath, "UTF-8")
+    let $xq-string := xqts:read($filePath)
     return 
         $xq-string
 };
@@ -135,7 +139,7 @@ declare function xqts:get-input-value-uri($input as element(catalog:input-file))
 
 declare function xqts:get-variable($case as element(catalog:test-case), $varName as xs:string) as item()* {
     let $filePath := concat($xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $varName, ".xq")
-    let $xq-string := file:read($filePath, "UTF-8")
+    let $xq-string := xqts:read($filePath)
     return
         if (empty($xq-string)) then
             ()
@@ -259,14 +263,14 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                 <expected-result compare="{$compare}">                
                 {
                     if ($compare eq "Text") then
-                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(xqts:read($outputFilePath))
                     else if ($compare eq "UnnormalizedText") then
-                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(xqts:read($outputFilePath))
                     else if ($compare eq "TextAsXML") then
-                        xqts:normalize-and-expand(file:read($outputFilePath, "UTF-8"))
+                        xqts:normalize-and-expand(xqts:read($outputFilePath))
                     else if ($compare eq "XML") then
                         if ($inMemory) then
-                            util:parse(file:read($outputFilePath, "UTF-8"))
+                            util:parse(xqts:read($outputFilePath))
                         else
                             util:catch(
                                 "java.lang.Exception",
@@ -275,7 +279,7 @@ declare function xqts:get-expected-results($testCase as element(catalog:test-cas
                                 util:log("ERROR", concat("Exception while loading expected result: ", $util:exception-message))
                             )
                     else if ($compare eq "Fragment") then
-                        let $xmlFrag := concat("<f>", file:read($outputFilePath, "UTF-8"), "</f>")
+                        let $xmlFrag := concat("<f>", xqts:read($outputFilePath), "</f>")
                         return
                             if ($inMemory) then
                                 util:parse($xmlFrag)
@@ -453,27 +457,10 @@ declare function xqts:format-result($testCase as element(catalog:test-case), $pa
 };
 
 declare function xqts:run-single-test-case($case as element(catalog:test-case),
-    $resultRoot as element()?, $inMemory as xs:boolean) as empty() {
+    $resultRoot as element()?, $inMemory as xs:boolean) as item()* {
     let $result := xqts:execute-test-case($case, $inMemory)
-    return 
-        util:catch(
-            "java.lang.Exception",            
-            update insert $result into $resultRoot,
-            update insert <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}" print="unhandled-error">
-                    <exception>Caught late exception while inserting result: {$util:exception-message}</exception>
-               </test-case> into $resultRoot
-        ),
-        let $added := $resultRoot/test-case[@name = $case/@name]
-        let $log := 
-            if (fn:empty($added)) then 
-                util:log("DEBUG", ("FAILURE in-memory-frag in test: ", xs:string($case/@name))) 
-            else 
-                ()
-        return
-            if ($added) then 
-                xqts:report-progress($added)
-            else 
-                ()
+    return            
+        $result
 };
 
 declare function xqts:run-test-group($group as element(catalog:test-group), $inMemory as xs:boolean) as empty() {
@@ -483,19 +470,32 @@ declare function xqts:run-test-group($group as element(catalog:test-group), $inM
     return 
         (
             (: Execute the test cases :)
-            for $test in $tests
+            let $singleTestResults :=
+                for $test in $tests
                 let $log := util:log("DEBUG", ("Running test case: ", string($test/@name)))
                 return
-                    xqts:run-single-test-case($test, $resultsDoc/test-result, $inMemory),
-                    if (fn:exists($tests) and fn:exists($resultsDoc/test-result)) then 
-                        xqts:finish($resultsDoc/test-result)
-                    else
-                        xdb:remove(util:collection-name($resultsDoc), util:document-name($resultsDoc)),
-                        (: Execute tests in child groups :)
-                        for $childGroup in $group/catalog:test-group
-                            let $log := util:log("DEBUG", ("Entering group: ", string($childGroup/@name)))
-                            return
-                                xqts:run-test-group($childGroup, $inMemory)
+                    xqts:run-single-test-case($test, $resultsDoc/test-result, $inMemory)
+            let $null := xqts:report-progress($singleTestResults)
+            return
+                util:catch(
+                   "java.lang.Exception",            
+                   update insert $singleTestResults into $resultsDoc/test-result,
+                   update insert
+                        <test-case result="fail" dateRun="{util:system-time()}" print="unhandled-error">
+                                <exception>Caught late exception while inserting result: {$util:exception-message}</exception>
+                        </test-case>
+                    into $resultsDoc/test-result
+                ),
+            
+            if (fn:exists($tests) and fn:exists($resultsDoc/test-result)) then (
+                xqts:finish($resultsDoc/test-result)
+            ) else
+                xdb:remove(util:collection-name($resultsDoc), util:document-name($resultsDoc)),
+            (: Execute tests in child groups :)
+            for $childGroup in $group/catalog:test-group
+                let $log := util:log("DEBUG", ("Entering group: ", string($childGroup/@name)))
+                return
+                    xqts:run-test-group($childGroup, $inMemory)
         )
 };
 
@@ -525,18 +525,17 @@ declare function xqts:test-all($inMemory as xs:boolean) as empty() {
         xqts:test-group($test/@name, $inMemory)
 };
 
-declare function xqts:report-progress($test-case as element()) as empty() {
-    let $result := string($test-case/@result)
+declare function xqts:report-progress($testResults as element()*) as empty() {
+    let $fails := count($testResults[@result = 'fail'])
+    let $errors := count($testResults[@result = 'error'])
+    let $passed := count($testResults[@result = 'pass'])
     let $progress := if (doc-available("/db/XQTS/progress.xml")) then doc("/db/XQTS/progress.xml")/progress else ()
     let $counter := $progress/@done
     return (
-        update value $counter with xs:int($counter + 1),
-        if ($result eq 'fail') then
-            update value $progress/@failed with xs:int($progress/@failed + 1)
-        else if ($result eq 'error') then
-            update value $progress/@error with xs:int($progress/@error + 1)
-        else
-            update value $progress/@passed with xs:int($progress/@passed + 1)
+        update value $counter with xs:int($counter + count($testResults)),
+        update value $progress/@failed with xs:int($progress/@failed + $fails),
+        update value $progress/@error with xs:int($progress/@error + $errors),
+        update value $progress/@passed with xs:int($progress/@passed + $passed)
     )
 };
 
