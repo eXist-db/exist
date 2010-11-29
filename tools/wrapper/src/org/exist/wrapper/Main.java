@@ -122,10 +122,10 @@ public class Main implements WrapperListener, Observer {
 	}
 
     public void update(Observable o, Object arg) {
-        if ("startup".equals(arg))
-            WrapperManager.signalStarting(60000);
-        else
+        if ("shutdown".equals(arg))
             WrapperManager.signalStopping(60000);
+        else
+        	WrapperManager.signalStarting(60000);
     }
 
 	public static void main(String[] args) throws Exception {
