@@ -2136,8 +2136,13 @@ public class BTree extends Paged {
             if (nKeys == 0)
                 return;
             if (nKeys == 1) {
-                prefix = keys[0];
-                keys[0] = Value.EMPTY_VALUE;
+            	if (keys[0].getLength() > 0) {
+            		byte[] newPrefix = new byte[prefix.getLength() + keys[0].getLength()];
+            		System.arraycopy(prefix.data(), prefix.start(), newPrefix, 0 , prefix.getLength());
+            		System.arraycopy(keys[0].data(), keys[0].start(), newPrefix, prefix.getLength(), keys[0].getLength());
+            		prefix = new Value(newPrefix);
+            		keys[0] = Value.EMPTY_VALUE;
+            	}
                 return;
             }
             int idx;
