@@ -1,4 +1,4 @@
-This is xprocxq release v0.6.74 BETA                                      
+This is xprocxq release v0.8 BETA
 ------------------------------------
 xprocxq is an experimental bootstrap implementation of W3C XProc 
 Specification, written in xquery.
@@ -23,13 +23,13 @@ Documentation
 
 Documentation is online at http://exist.sourceforge.net/xproc
 
-Examples are included in the /examples directory
+Examples are included in the /examples directory as well as in the documentation for xproc.
 
 
 Prerequisites
 -------------
 This version of xprocxq requires the current trunk version of eXist XML Database 
-(exist.sourceforge.net) and is built and enabled by default.
+(exist.sourceforge.net), xprocxq is built and enabled by default.
 
 xprocxq uses the EXPath http-client module which is included within the xprocxq.jar
 
