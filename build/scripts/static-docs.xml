@@ -47,8 +47,6 @@
             <replacefilter token="examples.html" value="${demo.host}/examples.xml"/>
             <replacefilter token="../webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
             <replacefilter token='href="webstart/exist.jnlp' value='href="${webstart.host}/webstart/exist.jnlp'/>
-            <replacefilter token='href="cocoon/status"' value='href="${demo.host}/cocoon/status"'/>
-            <replacefilter token='href="../cocoon/status"' value='href="${demo.host}/cocoon/status"'/>
             <replacefilter token='href="articles"' value='href="${demo.host}/articles"'/>
             <replacefilter token='href="../articles"' value='href="${demo.host}/articles"'/>
         </replace>
