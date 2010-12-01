@@ -117,16 +117,17 @@ public abstract class DBBroker extends Observable {
     protected IndexController indexController;
 
     //TODO: remove after interface it
-    public DBBroker() {}
-    
-    public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
-		this.config = config;
-		Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-		if (temp != null)
-			caseSensitive = temp.booleanValue();
+    public DBBroker() {
+        //Nothing todo
+    }
 
-		this.pool = pool;
-		xqueryService = new XQuery(this);
+    public DBBroker(BrokerPool pool, Configuration config) {
+        this.config = config;
+        Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        if (temp != null)
+            caseSensitive = temp.booleanValue();
+        this.pool = pool;
+        xqueryService = new XQuery(this);
         initIndexModules();
     }
 
@@ -134,355 +135,354 @@ public abstract class DBBroker extends Observable {
         indexController = new IndexController(this);
     }
     
-    /**
-	 * Set the user that is currently using this DBBroker object.
-	 *
-	 * @param user
-	 */
-	public void setUser(Subject user) {
-		this.subject = user;
-
-		/*
-		 * synchronized (this){ System.out.println("DBBroker.setUser(" +
-		 * user.getName() + ")"); Thread.dumpStack(); }
-		 */// debugging user escalation permissions problem - deliriumsky.
-	}
 
     /**
-	 * @return The user that is currently using this DBBroker object
-	 * @deprecated user getSubject
-	 */
-	public Subject getUser() {
-		return subject;
-	}
+     * Set the user that is currently using this DBBroker object.
+     *
+     * @param user
+     */
+    public void setUser(Subject user) {
+        this.subject = user;
+
+        /*
+        synchronized (this){ System.out.println("DBBroker.setUser(" +
+        user.getName() + ")"); Thread.dumpStack(); }
+         */
+        // debugging user escalation permissions problem - deliriumsky.
+    }
 
     /**
-	 * Set the subject that is currently using this DBBroker object.
-	 *
-	 * @param user
-	 */
-	//TODO: this should be done in connection with authenticate (SecurityManager)
-	public void setSubject(Subject subject) {
-		this.subject = subject;
+     * @return The user that is currently using this DBBroker object
+     * @deprecated user getSubject
+     */
+    @Deprecated
+    public Subject getUser() {
+        return subject;
+    }
 
-		/*
-		 * synchronized (this){ System.out.println("DBBroker.setUser(" +
-		 * user.getName() + ")"); Thread.dumpStack(); }
-		 */// debugging user escalation permissions problem - deliriumsky.
-	}
+    /**
+     * Set the subject that is currently using this DBBroker object.
+     *
+     * @param user
+     */
+    //TODO: this should be done in connection with authenticate (SecurityManager)
+    public void setSubject(Subject subject) {
+        this.subject = subject;
+        /*
+        synchronized (this){ System.out.println("DBBroker.setUser(" +
+            user.getName() + ")"); Thread.dumpStack(); }
+        */
+        // debugging user escalation permissions problem - deliriumsky.
+    }
 
-	/**
+    /**
      * The subject that is currently using this DBBroker object
      * 
-	 * @return Subject 
-	 */
-	public Subject getSubject() {
-		return subject;
-	}
+     * @return Subject 
+     */
+    public Subject getSubject() {
+        return subject;
+    }
 
-	public IndexController getIndexController() {
+    public IndexController getIndexController() {
         return indexController;
     }
 
     /**
-	 * @return A reference to the global {@link XQuery} service.
-	 */
-	public XQuery getXQueryService() {
-		return xqueryService;
-	}
+     * @return A reference to the global {@link XQuery} service.
+     */
+    public XQuery getXQueryService() {
+        return xqueryService;
+    }
 
     public abstract ElementIndex getElementIndex();
 
     public abstract StructuralIndex getStructuralIndex();
-    
-	/** Flush all data that has not been written before. */
-	public void flush() {
-		/*
-		 * do nothing
-		 */
-	}
-	
+
+    /** Flush all data that has not been written before. */
+    public void flush() {
+        // do nothing
+    }
+
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
     protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<ContentLoadingObserver>();	
-	
+
     /** Remove all observers */
     public void clearContentLoadingObservers() {
         contentLoadingObservers.clear();
     }    
-    
+
     /** Observer Design Pattern: add an observer. */
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
-    	if (!contentLoadingObservers.contains(observer))
-    		contentLoadingObservers.add(observer);
+        if (!contentLoadingObservers.contains(observer))
+            contentLoadingObservers.add(observer);
     }
-    
+
     /** Observer Design Pattern: remove an observer. */
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
-    	if (contentLoadingObservers.contains(observer))
-    		contentLoadingObservers.remove(observer);
-    }	
+        if (contentLoadingObservers.contains(observer))
+            contentLoadingObservers.remove(observer);
+    }
 
-	/**
-	 * Adds all the documents in the database to the specified DocumentSet.
-	 * 
-	 * @param docs
-	 *            a (possibly empty) document set to which the found documents
-	 *            are added.
-	 * 
-	 */
-	public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
+    /**
+     * Adds all the documents in the database to the specified DocumentSet.
+     * 
+     * @param docs
+     *            a (possibly empty) document set to which the found documents
+     *            are added.
+     * 
+     */
+    public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
 
     public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) throws TerminatedException;
 
     public abstract void getCollectionsFailsafe(BTreeCallback callback) throws TerminatedException;
 
     /**
-	 * Returns the database collection identified by the specified path. The
-	 * path should be absolute, e.g. /db/shakespeare.
-	 * 
-	 * @return collection or null if no collection matches the path
-	 * 
-	 * deprecated Use XmldbURI instead!
-	 * 
-	 * public abstract Collection getCollection(String name);
-	 */
+     * Returns the database collection identified by the specified path. The
+     * path should be absolute, e.g. /db/shakespeare.
+     * 
+     * @return collection or null if no collection matches the path
+     * 
+     * deprecated Use XmldbURI instead!
+     * 
+     * public abstract Collection getCollection(String name);
+     */
 
-	/**
-	 * Returns the database collection identified by the specified path. The
-	 * path should be absolute, e.g. /db/shakespeare.
-	 * 
-	 * @return collection or null if no collection matches the path
-	 */
-	public abstract Collection getCollection(XmldbURI uri);
+    /**
+     * Returns the database collection identified by the specified path. The
+     * path should be absolute, e.g. /db/shakespeare.
+     * 
+     * @return collection or null if no collection matches the path
+     */
+    public abstract Collection getCollection(XmldbURI uri);
 
-	/**
-	 * Returns the database collection identified by the specified path. The
-	 * storage address is used to locate the collection without looking up the
-	 * path in the btree.
-	 * 
-	 * @return deprecated Use XmldbURI instead!
-	 * 
-	 * public abstract Collection getCollection(String name, long address);
-	 */
+    /**
+     * Returns the database collection identified by the specified path. The
+     * storage address is used to locate the collection without looking up the
+     * path in the btree.
+     * 
+     * @return deprecated Use XmldbURI instead!
+     * 
+     * public abstract Collection getCollection(String name, long address);
+     */
 
-	/**
-	 * Returns the database collection identified by the specified path. The
-	 * storage address is used to locate the collection without looking up the
-	 * path in the btree.
-	 * 
-	 * @return Database collection
-	 * 
-	 * public abstract Collection getCollection(XmldbURI uri, long address);
-	 */	
+    /**
+     * Returns the database collection identified by the specified path. The
+     * storage address is used to locate the collection without looking up the
+     * path in the btree.
+     * 
+     * @return Database collection
+     * 
+     * public abstract Collection getCollection(XmldbURI uri, long address);
+     */	
 
-	/**
-	 * Open a collection for reading or writing. The collection is identified by
-	 * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
-	 * according to the lockMode argument.
-	 * 
-	 * The caller should take care to release the collection lock properly.
-	 * 
-	 * @param name
-	 *            the collection path
-	 * @param lockMode
-	 *            one of the modes specified in class
-	 *            {@link org.exist.storage.lock.Lock}
-	 * @return collection or null if no collection matches the path
-	 * 
-	 * deprecated Use XmldbURI instead!
-	 * 
-	 * public abstract Collection openCollection(String name, int lockMode);
-	 */
+    /**
+     * Open a collection for reading or writing. The collection is identified by
+     * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
+     * according to the lockMode argument.
+     * 
+     * The caller should take care to release the collection lock properly.
+     * 
+     * @param name
+     *            the collection path
+     * @param lockMode
+     *            one of the modes specified in class
+     *            {@link org.exist.storage.lock.Lock}
+     * @return collection or null if no collection matches the path
+     * 
+     * deprecated Use XmldbURI instead!
+     * 
+     * public abstract Collection openCollection(String name, int lockMode);
+     */
 
-	/**
-	 * Open a collection for reading or writing. The collection is identified by
-	 * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
-	 * according to the lockMode argument.
-	 * 
-	 * The caller should take care to release the collection lock properly.
-	 * 
-	 * @param uri
-	 *            The collection path
-	 * @param lockMode
-	 *            one of the modes specified in class
-	 *            {@link org.exist.storage.lock.Lock}
-	 * @return collection or null if no collection matches the path
-	 * 
-	 */
-	public abstract Collection openCollection(XmldbURI uri, int lockMode);
-	
+    /**
+     * Open a collection for reading or writing. The collection is identified by
+     * its absolute path, e.g. /db/shakespeare. It will be loaded and locked
+     * according to the lockMode argument.
+     * 
+     * The caller should take care to release the collection lock properly.
+     * 
+     * @param uri
+     *            The collection path
+     * @param lockMode
+     *            one of the modes specified in class
+     *            {@link org.exist.storage.lock.Lock}
+     * @return collection or null if no collection matches the path
+     * 
+     */
+    public abstract Collection openCollection(XmldbURI uri, int lockMode);
 
-	/**
-	 * Returns the database collection identified by the specified path. If the
-	 * collection does not yet exist, it is created - including all ancestors.
-	 * The path should be absolute, e.g. /db/shakespeare.
-	 * 
-	 * @return collection or null if no collection matches the path
-	 * 
-	 * deprecated Use XmldbURI instead!
-	 * 
-	 * public Collection getOrCreateCollection(Txn transaction, String name)
-	 * throws PermissionDeniedException { return null; }
-	 */
+    /**
+     * Returns the database collection identified by the specified path. If the
+     * collection does not yet exist, it is created - including all ancestors.
+     * The path should be absolute, e.g. /db/shakespeare.
+     * 
+     * @return collection or null if no collection matches the path
+     * 
+     * deprecated Use XmldbURI instead!
+     * 
+     * public Collection getOrCreateCollection(Txn transaction, String name)
+     * throws PermissionDeniedException { return null; }
+     */
 
-	/**
-	 * Returns the database collection identified by the specified path. If the
-	 * collection does not yet exist, it is created - including all ancestors.
-	 * The path should be absolute, e.g. /db/shakespeare.
-	 * 
-	 * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
-	 * @param uri The collection's URI
-	 * @return The collection or <code>null</code> if no collection matches the path
-	 * @throws PermissionDeniedException
-	 * @throws IOException
-	 * @throws TriggerException 
-	 */
-	public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
-			throws PermissionDeniedException, IOException, TriggerException;
+    /**
+     * Returns the database collection identified by the specified path. If the
+     * collection does not yet exist, it is created - including all ancestors.
+     * The path should be absolute, e.g. /db/shakespeare.
+     * 
+     * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+     * @param uri The collection's URI
+     * @return The collection or <code>null</code> if no collection matches the path
+     * @throws PermissionDeniedException
+     * @throws IOException
+     * @throws TriggerException 
+     */
+    public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
+        throws PermissionDeniedException, IOException, TriggerException;
 
-	/**
-	 * Returns the configuration object used to initialize the current database
-	 * instance.
-	 * 
-	 */
-	public Configuration getConfiguration() {
-		return config;
-	}
+    /**
+     * Returns the configuration object used to initialize the current database
+     * instance.
+     * 
+     */
+    public Configuration getConfiguration() {
+        return config;
+    }
 
-	/**
-	 * Return a {@link org.exist.storage.dom.NodeIterator} starting at the
-	 * specified node.
-	 * 
-	 * @param node
-	 * @return NodeIterator of node.
-	 */
-	public Iterator<StoredNode> getNodeIterator(StoredNode node) {
-		throw new RuntimeException("not implemented for this storage backend");
-	}
+    /**
+     * Return a {@link org.exist.storage.dom.NodeIterator} starting at the
+     * specified node.
+     * 
+     * @param node
+     * @return NodeIterator of node.
+     */
+    public Iterator<StoredNode> getNodeIterator(StoredNode node) {
+        throw new RuntimeException("not implemented for this storage backend");
+    }
 
-	/**
-	 * Return the document stored at the specified path. The path should be
-	 * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
-	 * 
-	 * @return the document or null if no document could be found at the
-	 *         specified location.
-	 * 
-	 * deprecated Use XmldbURI instead!
-	 * 
-	 * public abstract Document getXMLResource(String path) throws
-	 * PermissionDeniedException;
-	 */
+    /**
+     * Return the document stored at the specified path. The path should be
+     * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
+     * 
+     * @return the document or null if no document could be found at the
+     *         specified location.
+     * 
+     * deprecated Use XmldbURI instead!
+     * 
+     * public abstract Document getXMLResource(String path) throws
+     * PermissionDeniedException;
+     */
 
-	/**
-	 * Return the document stored at the specified path. The path should be
-	 * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
-	 * 
-	 * @return the document or null if no document could be found at the
-	 *         specified location.
-	 */
-	public abstract Document getXMLResource(XmldbURI docURI)
-			throws PermissionDeniedException;
+    /**
+     * Return the document stored at the specified path. The path should be
+     * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
+     * 
+     * @return the document or null if no document could be found at the
+     *         specified location.
+     */
+    public abstract Document getXMLResource(XmldbURI docURI)
+        throws PermissionDeniedException;
 
-	/**
-	 * deprecated Use XmldbURI instead!
-	 * 
-	 * public abstract DocumentImpl getXMLResource(String docPath, int lockMode)
-	 * throws PermissionDeniedException;
-	 */
+    /**
+     * deprecated Use XmldbURI instead!
+     * 
+     * public abstract DocumentImpl getXMLResource(String docPath, int lockMode)
+     * throws PermissionDeniedException;
+     */
 
-	/**
-	 * Return the document stored at the specified path. The path should be
-	 * absolute, e.g. /db/shakespeare/plays/hamlet.xml, with the specified lock.
-	 * 
-	 * @return the document or null if no document could be found at the
-	 *         specified location.
-	 */
-	public abstract DocumentImpl getXMLResource(XmldbURI docURI, int lockMode)
-			throws PermissionDeniedException;
+    /**
+     * Return the document stored at the specified path. The path should be
+     * absolute, e.g. /db/shakespeare/plays/hamlet.xml, with the specified lock.
+     * 
+     * @return the document or null if no document could be found at the
+     *         specified location.
+     */
+    public abstract DocumentImpl getXMLResource(XmldbURI docURI, int lockMode)
+        throws PermissionDeniedException;
 
-	/**
-	 * Get a new document id that does not yet exist within the collection.
-	 */
-	public abstract int getNextResourceId(Txn transaction, Collection collection);
+    /**
+     * Get a new document id that does not yet exist within the collection.
+     */
+    public abstract int getNextResourceId(Txn transaction, Collection collection);
 
-	/**
-	 * Get the string value of the specified node.
-	 * 
-	 * If addWhitespace is set to true, an extra space character will be added
-	 * between adjacent elements in mixed content nodes.
-	 */
-	public String getNodeValue(StoredNode node, boolean addWhitespace) {
-		throw new RuntimeException("not implemented for this storage backend");
-	}
+    /**
+     * Get the string value of the specified node.
+     * 
+     * If addWhitespace is set to true, an extra space character will be added
+     * between adjacent elements in mixed content nodes.
+     */
+    public String getNodeValue(StoredNode node, boolean addWhitespace) {
+        throw new RuntimeException("not implemented for this storage backend");
+    }
 
-	/**
-	 * Get an instance of the Serializer used for converting nodes back to XML.
-	 * Subclasses of DBBroker may have specialized subclasses of Serializer to
-	 * convert a node into an XML-string
-	 */
-	public abstract Serializer getSerializer();
+    /**
+     * Get an instance of the Serializer used for converting nodes back to XML.
+     * Subclasses of DBBroker may have specialized subclasses of Serializer to
+     * convert a node into an XML-string
+     */
+    public abstract Serializer getSerializer();
 
-	/**
-	 * Get the TextSearchEngine associated with this broker. Every subclass of
-	 * DBBroker will have it's own implementation of TextSearchEngine.
-	 */
-	public abstract TextSearchEngine getTextEngine();
+    /**
+     * Get the TextSearchEngine associated with this broker. Every subclass of
+     * DBBroker will have it's own implementation of TextSearchEngine.
+     */
+    public abstract TextSearchEngine getTextEngine();
 
-	public abstract NativeValueIndex getValueIndex();
+    public abstract NativeValueIndex getValueIndex();
 
-	public abstract Serializer newSerializer();
+    public abstract Serializer newSerializer();
 
-	/**
-	 * Get a node with given owner document and id from the database.
-	 * 
-	 * @param doc
-	 *            the document the node belongs to
-	 * @param nodeId
-	 *            the node's unique identifier
-	 */
-	public abstract StoredNode objectWith(Document doc, NodeId nodeId);
+    /**
+     * Get a node with given owner document and id from the database.
+     * 
+     * @param doc
+     *            the document the node belongs to
+     * @param nodeId
+     *            the node's unique identifier
+     */
+    public abstract StoredNode objectWith(Document doc, NodeId nodeId);
 
-	public abstract StoredNode objectWith(NodeProxy p);
+    public abstract StoredNode objectWith(NodeProxy p);
 
-	/**
-	 * Remove the collection and all its subcollections from the database.
-	 * 
-	 * @throws PermissionDeniedException 
-	 * @throws IOException 
-	 * @throws TriggerException 
-	 * 
-	 */
-	public abstract boolean removeCollection(Txn transaction,
-			Collection collection) throws PermissionDeniedException, IOException, TriggerException;
+    /**
+     * Remove the collection and all its subcollections from the database.
+     * 
+     * @throws PermissionDeniedException 
+     * @throws IOException 
+     * @throws TriggerException 
+     * 
+     */
+    public abstract boolean removeCollection(Txn transaction,
+        Collection collection) throws PermissionDeniedException, IOException, TriggerException;
 
-	/**
-	 * Remove a document from the database.
-	 * 
-	 */
-	public void removeXMLResource(Txn transaction, DocumentImpl document)
-			throws PermissionDeniedException {
-		removeXMLResource(transaction, document, true);
-	}
+    /**
+     * Remove a document from the database.
+     * 
+     */
+    public void removeXMLResource(Txn transaction, DocumentImpl document)
+            throws PermissionDeniedException {
+        removeXMLResource(transaction, document, true);
+    }
 
-	public abstract void removeXMLResource(Txn transaction,
-			DocumentImpl document, boolean freeDocId)
-			throws PermissionDeniedException;
+    public abstract void removeXMLResource(Txn transaction,
+        DocumentImpl document, boolean freeDocId) throws PermissionDeniedException;
 
-	/**
-	 * Reindex a collection.
-	 * 
-	 * @param collectionName
-	 * @throws PermissionDeniedException
-	 * 
-	 * public abstract void reindexCollection(String collectionName) throws
-	 * PermissionDeniedException;
-	 */
-	public abstract void reindexCollection(XmldbURI collectionName)
-			throws PermissionDeniedException;
+    /**
+     * Reindex a collection.
+     * 
+     * @param collectionName
+     * @throws PermissionDeniedException
+     * 
+     * public abstract void reindexCollection(String collectionName) throws
+     * PermissionDeniedException;
+     */
+    public abstract void reindexCollection(XmldbURI collectionName)
+        throws PermissionDeniedException;
 
-	public abstract void repair() throws PermissionDeniedException;
+    public abstract void repair() throws PermissionDeniedException;
 
-	/**
+    /**
      * Saves the specified collection to storage. Collections are usually cached
      * in memory. If a collection is modified, this method needs to be called to
      * make the changes persistent. Note: appending a new document to a
@@ -491,117 +491,116 @@ public abstract class DBBroker extends Observable {
      * @param transaction 
      * @param collection Collection to store
      * @throws org.exist.security.PermissionDeniedException 
-	 * @throws IOException 
-	 * @throws TriggerException 
+     * @throws IOException 
+     * @throws TriggerException 
      */
-	public abstract void saveCollection(Txn transaction, Collection collection)
-			throws PermissionDeniedException, IOException, TriggerException;
+    public abstract void saveCollection(Txn transaction, Collection collection)
+        throws PermissionDeniedException, IOException, TriggerException;
 
-	public void closeDocument() {
-	}
+    public void closeDocument() {
+        //Nothing to do
+    }
 
-	/**
-	 * Shut down the database instance. All open files, jdbc connections etc.
-	 * should be closed.
-	 */
-	public void shutdown() {
-	}
+    /**
+     * Shut down the database instance. All open files, jdbc connections etc.
+     * should be closed.
+     */
+    public void shutdown() {
+        //Nothing to do
+    }
 
-	/**
-	 * Store a node into the database. This method is called by the parser to
-	 * write a node to the storage backend.
-	 * 
-	 * @param node
-	 *            the node to be stored
-	 * @param currentPath
-	 *            path expression which points to this node's element-parent or
-	 *            to itself if it is an element (currently used by the Broker to
-	 *            determine if a node's content should be fulltext-indexed).
-	 */
-	public abstract void storeNode(Txn transaction, StoredNode node,
-			NodePath currentPath, IndexSpec indexSpec, boolean index);
+    /**
+     * Store a node into the database. This method is called by the parser to
+     * write a node to the storage backend.
+     * 
+     * @param node
+     *            the node to be stored
+     * @param currentPath
+     *            path expression which points to this node's element-parent or
+     *            to itself if it is an element (currently used by the Broker to
+     *            determine if a node's content should be fulltext-indexed).
+     */
+    public abstract void storeNode(Txn transaction, StoredNode node,
+        NodePath currentPath, IndexSpec indexSpec, boolean index);
 
-	public void storeNode(Txn transaction, StoredNode node, NodePath currentPath, IndexSpec indexSpec) {
-		storeNode(transaction, node, currentPath, indexSpec, true);
-	}
+    public void storeNode(Txn transaction, StoredNode node, NodePath currentPath, IndexSpec indexSpec) {
+        storeNode(transaction, node, currentPath, indexSpec, true);
+    }
 
-	public void endElement(final StoredNode node, NodePath currentPath, String content) {
+    public void endElement(final StoredNode node, NodePath currentPath, String content) {
         endElement(node, currentPath, content, false);
     }
 
     public abstract void endElement(final StoredNode node, NodePath currentPath, String content, boolean remove);
 
     /**
-	 * Store a document (descriptor) into the database.
-	 * 
-	 * @param doc
-	 *            the document's metadata to store.
-	 */
-	public abstract void storeXMLResource(Txn transaction, DocumentImpl doc);
+     * Store a document (descriptor) into the database.
+     * 
+     * @param doc
+     *            the document's metadata to store.
+     */
+    public abstract void storeXMLResource(Txn transaction, DocumentImpl doc);
 
-	/**
-	 * Stores the given data under the given binary resource descriptor
-	 * (BinaryDocument).
-	 * 
-	 * @param blob
-	 *            the binary document descriptor
-	 * @param data
-	 *            the document binary data
-	 */
-	public abstract void storeBinaryResource(Txn transaction,
-			BinaryDocument blob, byte[] data)
+    /**
+     * Stores the given data under the given binary resource descriptor
+     * (BinaryDocument).
+     * 
+     * @param blob
+     *            the binary document descriptor
+     * @param data
+     *            the document binary data
+     */
+    public abstract void storeBinaryResource(Txn transaction,
+        BinaryDocument blob, byte[] data) throws IOException;
+
+    /**
+     * Stores the given data under the given binary resource descriptor
+     * (BinaryDocument).
+     * 
+     * @param blob
+     *            the binary document descriptor
+     * @param is
+     *            the document binary data as input stream
+     */
+    public abstract void storeBinaryResource(Txn transaction,
+        BinaryDocument blob, InputStream is) throws IOException;
+
+    public abstract void getCollectionResources(Collection collection);
+
+    /* *
+     * Retrieve the binary data stored under the resource descriptor
+     * BinaryDocument.
+     * 
+     * @param blob
+     *            the binary document descriptor
+     * @return the document binary data
+     */
+    /*
+    public abstract byte[] getBinaryResource(BinaryDocument blob)
+           throws IOException;
+     */
+
+    public abstract void readBinaryResource(final BinaryDocument blob,
+        final OutputStream os) throws IOException;
+
+    public abstract InputStream getBinaryResource(final BinaryDocument blob)
            throws IOException;
 
-	/**
-	 * Stores the given data under the given binary resource descriptor
-	 * (BinaryDocument).
-	 * 
-	 * @param blob
-	 *            the binary document descriptor
-	 * @param is
-	 *            the document binary data as input stream
-	 */
-	public abstract void storeBinaryResource(Txn transaction,
-			BinaryDocument blob, InputStream is)
+    public abstract long getBinaryResourceSize(final BinaryDocument blob)
            throws IOException;
 
-	public abstract void getCollectionResources(Collection collection);
+    public abstract void getResourceMetadata(DocumentImpl doc);
 
-	/* *
-	 * Retrieve the binary data stored under the resource descriptor
-	 * BinaryDocument.
-	 * 
-	 * @param blob
-	 *            the binary document descriptor
-	 * @return the document binary data
-	 */
-        /*
-	public abstract byte[] getBinaryResource(BinaryDocument blob)
-           throws IOException;
-         */
-
-	public abstract void readBinaryResource(final BinaryDocument blob,
-			final OutputStream os)
-           throws IOException;
-
-	public abstract InputStream getBinaryResource(final BinaryDocument blob)
-           throws IOException;
-        
-	public abstract long getBinaryResourceSize(final BinaryDocument blob)
-           throws IOException;
-        
-	public abstract void getResourceMetadata(DocumentImpl doc);
-
-	/**
-	 * Completely delete this binary document (descriptor and binary data).
-	 * 
-	 * @param blob
-	 *            the binary document descriptor
-	 * @throws PermissionDeniedException
-	 *             if you don't have the right to do this
-	 */
-	public abstract void removeBinaryResource(Txn transaction,
-			BinaryDocument blob) throws PermissionDeniedException,IOException;
+    /**
+     * Completely delete this binary document (descriptor and binary data).
+     * 
+     * @param blob
+     *            the binary document descriptor
+     * @throws PermissionDeniedException
+     *             if you don't have the right to do this
+     */
+    public abstract void removeBinaryResource(Txn transaction,
+        BinaryDocument blob) throws PermissionDeniedException,IOException;
 
 	/**
 	 * Move a collection and all its subcollections to another collection and
@@ -810,6 +809,7 @@ public abstract class DBBroker extends Observable {
 		return id;
 	}
 
+	@Override
 	public String toString() {
 		return id;
 	}

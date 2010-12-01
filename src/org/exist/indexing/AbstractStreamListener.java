@@ -39,37 +39,44 @@ public abstract class AbstractStreamListener implements StreamListener {
     
     private StreamListener next = null;
 
+    @Override
     public void setNextInChain(StreamListener listener) {
         this.next = listener;
     }
 
+    @Override
     public StreamListener getNextInChain() {
         return next;
     }
-    
+
+    @Override
     public void startElement(Txn transaction, ElementImpl element, NodePath path) {
         if (next != null)
             next.startElement(transaction, element, path);
     }
 
-
+    @Override
     public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
         if (next != null) {
             next.attribute(transaction, attrib, path);
         }
     }
 
+    @Override
     public void endElement(Txn transaction, ElementImpl element, NodePath path) {
         if (next != null) {
             next.endElement(transaction, element, path);
         }
     }
 
+    @Override
     public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
         if (next != null) {
             next.characters(transaction, text, path);
         }
     }
-    
+
+    @Override
     public abstract IndexWorker getWorker();
+
 }

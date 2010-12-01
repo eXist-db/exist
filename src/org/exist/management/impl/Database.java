@@ -42,22 +42,27 @@ public class Database implements DatabaseMBean {
         this.pool = pool;
     }
 
+    @Override
     public String getInstanceId() {
         return pool.getId();
     }
 
+    @Override
     public int getMaxBrokers() {
         return pool.getMax();
     }
 
+    @Override
     public int getAvailableBrokers() {
         return pool.available();
     }
 
+    @Override
     public int getActiveBrokers() {
         return pool.active();
     }
 
+    @Override
     public TabularData getActiveBrokersMap() {
         OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
         try {
@@ -78,14 +83,17 @@ public class Database implements DatabaseMBean {
         }
     }
 
+    @Override
     public long getReservedMem() {
         return pool.getReservedMem();
     }
 
+    @Override
     public long getCacheMem() {
         return pool.getCacheManager().getTotalMem();
     }
 
+    @Override
     public long getCollectionCacheMem() {
         return pool.getCollectionCacheMgr().getMaxTotal();
     }
