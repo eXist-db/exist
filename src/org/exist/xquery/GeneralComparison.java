@@ -309,7 +309,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         Sequence rightSeq = getRight().eval( contextSequence );
-
+        
+        // if the right hand sequence has more than one item, we need to merge them
+        // into preselectResult
+        if (rightSeq.getItemCount() > 1)
+        	preselectResult = new NewArrayNodeSet();
+        
+        // Iterate through each item in the right-hand sequence
         for( SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
 
             //Get the index key
@@ -372,10 +378,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     }
                 }
 
+                // if the right-hand sequence has more than one item,
+                // merge the result of the iteration into preselectResult,
+                // else replace it.
                 if( preselectResult == null ) {
                     preselectResult = temp;
                 } else {
-                    preselectResult = preselectResult.union( temp );
+                	preselectResult.addAll(temp);
                 }
             }
         }
