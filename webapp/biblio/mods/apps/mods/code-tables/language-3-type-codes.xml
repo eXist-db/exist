@@ -16,7 +16,6 @@
         <item>
             <label>(no language selected)</label>
             <value/>
-            <frequencyClassifier>common</frequencyClassifier>
         </item>
         <item>
             <label>--more common languages above--</label>
@@ -902,7 +901,7 @@
             <valueTwo>en</valueTwo>
             <label>English</label>
             <labelFrench>anglais</labelFrench>
-            <frequencyClassifier>common</frequencyClassifier>
+            <frequencyClassifier>default</frequencyClassifier>
             <scriptClassifier>Latin</scriptClassifier>
         </item>
         <item>

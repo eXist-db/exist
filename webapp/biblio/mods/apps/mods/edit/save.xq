@@ -282,9 +282,6 @@ if ( string-length($incoming-id) = 0 )
 let $file-to-update := concat($incoming-id, '.xml')
 let $file-path := concat($data-collection, '/', $file-to-update)
 
-(: uncomment the following line in for testing if you have not run the security setup tools :)
-(: let $login := xmldb:login($style:db-path-to-app-data, 'admin', 'admin123') :)
- 
 (: this is the document on disk to be updated :)
 let $doc := doc($file-path)/mods:mods
 

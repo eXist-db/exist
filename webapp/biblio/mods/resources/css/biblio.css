@@ -42,6 +42,20 @@ a:link, a:visited { color: #5DB0E6; }
 #toggle-collection-tree {
     margin: 8px 4px 8px 4px;
 }
+
+.language-label {
+    padding: .5em;
+}
+
+.language-list {
+    position: absolute;
+    right: 2em;
+}
+
+.language-list option {
+    margin: .25em .5em .25em .5em;
+}
+
 div.ui-dynatree-container {
     border: 0;
 }
