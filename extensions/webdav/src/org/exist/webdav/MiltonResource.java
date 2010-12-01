@@ -165,12 +165,11 @@ public class MiltonResource implements Resource {
         Long timeout = existLT.getTimeOut();
 
         // Special treatment when no LOCK was present
-        if(timeout==existLT.NO_LOCK_TIMEOUT){
+        if(timeout == org.exist.dom.LockToken.NO_LOCK_TIMEOUT){
             timeout=null;
-        }
 
         // Special treatment infinite lock
-        if(timeout==existLT.LOCK_TIMEOUT_INFINITE){
+        } else if(timeout == org.exist.dom.LockToken.LOCK_TIMEOUT_INFINITE){ 
             timeout=Long.MAX_VALUE;
         }
 

@@ -262,7 +262,7 @@ public class MiltonCollection extends MiltonResource
 
         } catch (IOException e){
             LOG.debug(e.getMessage());
-            throw e;
+            throw new ConflictException(this);
         }
         return resource;
     }
@@ -354,7 +354,7 @@ public class MiltonCollection extends MiltonResource
     //@Override
     public void sendContent(OutputStream out, Range range, Map<String, String> params,
             String contentType) throws IOException, NotAuthorizedException, BadRequestException {
-System.out.println("sendContent");
+
         try {
             Writer w = new OutputStreamWriter(out);
             XMLWriter xw = new XMLWriter(w);
