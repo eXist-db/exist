@@ -463,8 +463,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         DocumentImpl doc = null;
         try {
             broker = pool.get(session.getUser());
-// TODO check XML/Binary resource
-//            doc = (DocumentImpl) broker.openXmlDocument(name, Lock.READ_LOCK);
+            // TODO check XML/Binary resource
             doc = broker.getXMLResource(name, Lock.READ_LOCK);
             if (doc == null)
                 throw new EXistException("Resource " + name + " not found");
@@ -474,9 +473,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(!doc.getPermissions().validate(session.getUser(), Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             InputStream is = broker.getBinaryResource((BinaryDocument) doc);
-	    long resourceSize = broker.getBinaryResourceSize((BinaryDocument) doc);
-	    if(resourceSize > (long)Integer.MAX_VALUE)
-	    	throw new RemoteException("Resource too big to be read using this port.");
+            long resourceSize = broker.getBinaryResourceSize((BinaryDocument) doc);
+            if(resourceSize > Integer.MAX_VALUE)
+                throw new RemoteException("Resource too big to be read using this port.");
             byte [] data = new byte[(int)resourceSize];
             is.read(data);
             is.close();
@@ -537,7 +536,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             Permission perms = collection.getPermissions();
             desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
-            desc.setDocuments(new DocumentDescs((DocumentDesc[])docs.toArray(new DocumentDesc[docs.size()])));
+            desc.setDocuments(new DocumentDescs(docs.toArray(new DocumentDesc[docs.size()])));
             desc.setName(collection.getURI().toString());
             desc.setCreated(collection.getCreationTime());
             desc.setOwner(perms.getOwner().getName());
@@ -573,9 +572,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             org.exist.security.SecurityManager manager = pool.getSecurityManager();
             collection = broker.openCollection(resource, Lock.WRITE_LOCK);
             if (collection == null) {
-// TODO check XML/Binary resource
-//                doc = (DocumentImpl) broker.openDocument(resource, Lock.WRITE_LOCK);
-                doc = (DocumentImpl) broker.getXMLResource(resource, Lock.WRITE_LOCK);
+                // TODO check XML/Binary resource
+                doc = broker.getXMLResource(resource, Lock.WRITE_LOCK);
                 if (doc == null)
                     throw new RemoteException("document or collection "
                             + resource + " not found");
@@ -1026,9 +1024,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         DocumentImpl doc = null;
         try {
             broker = pool.get(user);
-// TODO check XML/Binary resource
-//            doc = (DocumentImpl) broker.openDocument(path, Lock.WRITE_LOCK);
-            doc = (DocumentImpl) broker.getXMLResource(path, Lock.WRITE_LOCK);
+            // TODO check XML/Binary resource
+            doc = broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null)
                 throw new EXistException("Resource "
                         + path + " not found");
@@ -1073,14 +1070,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             broker = pool.get(user);
 // TODO check XML/Binary resource
 //            doc = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
-            doc = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
+            doc = broker.getXMLResource(path, Lock.READ_LOCK);
             if (doc == null)
                 throw new EXistException("Resource "
                         + path + " not found");
             if(!doc.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
-            if (doc == null)
-                throw new EXistException("Resource " + path + " not found");
             Account u = doc.getUserLock();
             return u == null ? "" : u.getName();
         } catch (Exception ex) {
@@ -1115,7 +1110,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 					// DocumentImpl doc = (DocumentImpl) broker.openDocument(resource, Lock.READ_LOCK);
 	            	DocumentImpl doc = null;
 	            	try {
-	            		doc = (DocumentImpl) broker.getXMLResource(resource, Lock.READ_LOCK);
+	            	    doc = broker.getXMLResource(resource, Lock.READ_LOCK);
 		                if (doc == null)
 		                    throw new EXistException("document or collection " + resource + " not found");
 		                perm = doc.getPermissions();

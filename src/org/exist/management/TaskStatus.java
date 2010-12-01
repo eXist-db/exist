@@ -13,12 +13,12 @@ import javax.management.openmbean.SimpleType;
 
 public class TaskStatus implements Serializable {
 
-	private static final long serialVersionUID = -8405783622910875893L;
+    private static final long serialVersionUID = -8405783622910875893L;
 
     public enum Status {
         NA, NEVER_RUN, INIT, PAUSED, STOPPED_OK, STOPPED_ERROR, RUNNING_CHECK, RUNNING_BACKUP,
         PING_OK, PING_ERROR, PING_WAIT
-    };
+    }
 
     private Status status = Status.NA;
 
@@ -112,6 +112,7 @@ public class TaskStatus implements Serializable {
         return status;
     }
 
+    @Override
     public String toString() {
         return status.toString();
     }
