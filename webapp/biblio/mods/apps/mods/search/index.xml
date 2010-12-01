@@ -137,7 +137,7 @@
             </jquery:tabset>
             <biblio:collection-tree id="collection-tree">
                 <div class="collection-tree-head">
-                    <img id="toggle-collection-tree" src="../../../resources/images/tree.gif"  title="Folder View"/>
+                    <img id="toggle-collection-tree" src="../../../resources/images/tree.gif" title="Folder View"/>
                 </div>
                 <div id="collection-tree-main">
                     <ul class="collection-tree-toolbar">
@@ -176,14 +176,14 @@
                         <!-- collection owner -->
                         <li>
                             <a href="#" id="collection-sharing">
-                                <img src="../../../resources/images/user_edit.png" title="Edit Collection Sharing"/>
+                                <img src="../../../resources/images/user_edit.png" title="Manage Folder Sharing"/>
                             </a>
                         </li>
                         <!-- end collection owner -->
                         <!-- create new resource -->
                         <li>
                             <a href="#" id="collection-create-resource">
-                                <img src="../../../resources/images/page_add.png" title="New Resource"/>
+                                <img src="../../../resources/images/page_add.png" title="Create New Resource"/>
                             </a>
                         </li>
                         <!-- end create new resource -->
@@ -191,7 +191,7 @@
                     <div id="collection-tree-tree"/>
                     <div class="box">
                         <p>
-                            To view all records in a collection, select it and run an empty search. 
+                            To view all records in a folder, select it and perform an empty search. 
                         </p>
                     </div>
                 </div>
@@ -261,11 +261,11 @@
                 </form>
             </jquery:dialog>
             <!-- collection writeable -->
-            <jquery:dialog id="new-collection-dialog" modal="true" title="Create New Folder" trigger="#collection-create-folder" width="450">
+            <jquery:dialog id="new-collection-dialog" modal="true" title="Create Folder" trigger="#collection-create-folder" width="450">
                 <jquery:button label="Create" function="createCollection"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <form id="create-collection-form" action="operations.xql">
-                    <div>New Collection: </div>
+                    <div>Name of new folder: </div>
                     <div>
                         <input name="name" type="text"/>
                     </div>
@@ -276,7 +276,7 @@
                 <jquery:button id="cancel" label="Cancel"/>
                 <form id="move-collection-form" action="operations.xql">
                     <input id="move-collection-path_" type="hidden" name="collection"/>
-                    <div>Move collection '<span id="move-collection-path_"/>' to
+                    <div>Move folder '<span id="move-collection-path_"/>' to
                             <biblio:form-select-collection name="path"/>
                     </div>
                 </form>
@@ -286,7 +286,7 @@
                 <jquery:button id="cancel" label="Cancel"/>
                 <form id="remove-collection-form" action="operations.xql">
                     <input id="remove-collection-path_" type="hidden" name="collection"/>
-                    <div>Are you sure you wish to remove the collection: <span id="sharing-collection-path_"/>
+                    <div>Are you sure you wish to remove the folder named "<span id="sharing-collection-path_"/>"?
                     </div>
                 </form>
             </jquery:dialog>
@@ -316,12 +316,12 @@
                     <input id="move-resource-id" name="resource" type="hidden" value=""/>
                 </form>
             </jquery:dialog>
-            <jquery:dialog id="new-resource-dialog" modal="true" title="New Resource" trigger="#collection-create-resource" width="450">
+            <jquery:dialog id="new-resource-dialog" modal="true" title="New Resource" trigger="#collection-create-resource" width="550">
                 <jquery:button id="create" label="Create" function="newResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <biblio:resource-types classifier="stand-alone"/>
             </jquery:dialog>
-            <jquery:dialog id="add-related-dialog" modal="true" title="Add Related Resource" width="450">
+            <jquery:dialog id="add-related-dialog" modal="true" title="Add Related Resource" width="550">
                 <jquery:button id="create" label="Create" function="newRelatedResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <biblio:resource-types classifier="related-item"/>

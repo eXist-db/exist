@@ -55,9 +55,9 @@ declare function mods:space-before($node as node()?) as xs:string? {
 
 declare function mods:get-collection($entry as element(mods:mods)) {
     let $collection := util:collection-name($entry)
-    let $collection-short := functx:replace-first($collection, "/db/", "")
+    let $collection-short := functx:replace-first($collection, "/db", "")
     return
-        <tr><td class="label">In Collection:</td><td>
+        <tr><td class="label">In Folder:</td><td>
         {$collection-short}
         </td></tr>            
 };

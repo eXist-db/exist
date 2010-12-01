@@ -90,21 +90,52 @@ let $create-new-from-template :=
          (: store it in the right location :)
          let $stored := xmldb:store($tempCollection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)
-         let $lang := request:get-parameter("lang", "")
-         let $script := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $lang]/data(scriptClassifier)
+         let $languageOfResource := request:get-parameter("languageOfResource", "")
+         let $scriptOfResource := request:get-parameter("scriptOfResource", "")
+         let $languageOfCataloging := request:get-parameter("languageOfCataloging", "")
+         let $scriptOfCataloging := request:get-parameter("scriptOfCataloging", "")
+         let $scriptTypeOfResource := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfResource]/data(scriptClassifier)
+         let $scriptTypeOfCataloging := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfCataloging]/data(scriptClassifier)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
          return (
             update value doc($stored)/mods:mods/@ID with $id,
-            (: save used template name and language into a mods:extension element :)
-            update insert
+            (: save used template name and script type into a mods:extension element; save language of resource and language of cataloguing :)
+            update insert                
+                (
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
                     <e:collection>{$data-collection}</e:collection>
                     <e:template>{util:document-name($template)}</e:template>
-                    <e:language>{$lang}</e:language>
-                    <e:script>{$script}</e:script>
-                    
+                    <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
+                    <e:scriptTypeOfCataloging>{$scriptTypeOfResource}</e:scriptTypeOfCataloging>                    
                 </extension>
+                ,
+                <mods:language>
+                    <mods:languageTerm authority="iso639-2b" type="code">
+                        {$languageOfResource}
+                    </mods:languageTerm>
+                    <mods:scriptTerm authority="iso15924" type="code">
+                        {$scriptOfResource}
+                    </mods:scriptTerm>
+                </mods:language>
+                ,
+                <mods:recordInfo lang="eng" script="Latn">
+                    <mods:recordContentSource authority="marcorg">DE-16-158</mods:recordContentSource>
+                    <mods:recordCreationDate encoding="w3cdtf">
+                        {current-date()}
+                    </mods:recordCreationDate>
+                    <mods:recordChangeDate encoding="w3cdtf"/>
+                    <mods:languageOfCataloging>
+                        <mods:languageTerm authority="iso639-2b" type="code">
+                            {$languageOfCataloging}
+                        </mods:languageTerm>
+                        <mods:scriptTerm authority="iso15924" type="code">
+                            {$scriptOfCataloging}
+                    </mods:scriptTerm>
+                    </mods:languageOfCataloging>
+                </mods:recordInfo>
+                )
+            
             into doc($stored)/mods:mods,
             if ($host) then (
                 update value doc($stored)/mods:mods/mods:relatedItem/@xlink:href with $host,

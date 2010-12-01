@@ -522,8 +522,10 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             let $code-tables := concat($app-collection, '/apps/mods/code-tables')
             let $document-path := concat($code-tables, '/document-type-codes.xml')
             let $language-path := concat($code-tables, '/language-3-type-codes.xml')
+            let $script-path := concat($code-tables, '/script-codes.xml')
             let $code-table-type := doc($document-path)/code-table
             let $code-table-lang := doc($language-path)/code-table
+            let $code-table-script := doc($script-path)/code-table
             return 
                 <div class="content">
                     <form id="{if ($classifier eq 'stand-alone') then 'new-resource-form' else 'add-related-form'}" action="../edit/edit.xq" method="GET">
@@ -541,20 +543,97 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 </li>
                         }
                         </ul>
-                        <div>
-                            <label for="lang">Language: </label>
-                            <select name="lang">
+                        
+                        <div class="language-label">
+                            <label for="languageOfResource">Resource Language: </label>
+                        <span class="language-list">
+                        <select name="languageOfResource">
                             {
                                 for $item in $code-table-lang//item
                                 let $label := $item/label/text()
                                 let $labelValue := $item/value/text()
-                                let $common := if ($item/frequencyClassifier[. = 'common']) then '' else 'A'
-                                order by $common, $label
+                                let $sortOrder := 
+                                if (empty($item/frequencyClassifier)) 
+                                then 'B' 
+                                else 
+                                    if ($item/frequencyClassifier[. = 'common']) 
+                                    then 'A' 
+                                    (: else frequencyClassifier = 'default':)
+                                    else ''
+                                order by $sortOrder, $label
                                 return
                                     <option value="{$labelValue}">{$item/label/text()}</option>
                             }
                             </select>
+                        </span>
                         </div>
+                        
+                        <div class="language-label">
+                            <label for="scriptOfResource">Resource Script: </label>
+                        <span class="language-list">
+                        <select name="scriptOfResource">
+                            {
+                                for $item in $code-table-script//item
+                                let $label := $item/label/text()
+                                let $labelValue := $item/value/text()
+                                let $sortOrder := 
+                                if (empty($item/frequencyClassifier)) 
+                                then 'B' 
+                                else 
+                                    if ($item/frequencyClassifier[. = 'common']) 
+                                    then 'A' 
+                                    (: else frequencyClassifier = 'default':)
+                                    else ''
+                                order by $sortOrder, $label
+                                return
+                                    <option value="{$labelValue}">{$item/label/text()}</option>
+                            }
+                            </select>
+                        </span>
+                        </div>
+                        
+                        <div class="language-label">
+                            <label for="languageOfCataloging">Cataloging Language: </label>
+                        <span class="language-list">
+                        <select name="languageOfCataloging">
+                            {
+                                for $item in $code-table-lang//item[(frequencyClassifier)]
+                                let $label := $item/label/text()
+                                let $labelValue := $item/value/text()
+                                let $sortOrder :=                                  
+                                    if ($item/frequencyClassifier[. = 'common']) 
+                                    then 'A' 
+                                    (: else frequencyClassifier = 'default':)
+                                    else ''
+                                order by $sortOrder, $label
+                                return
+                                    <option value="{$labelValue}">{$item/label/text()}</option>
+                            }
+                            </select>
+                        </span>
+                        </div>
+                        
+                        <div class="language-label">
+                            <label for="scriptOfCataloging">Cataloging Script: </label>
+                        <span class="language-list">
+                        <select name="scriptOfCataloging">
+                            {
+                                for $item in $code-table-script//item[(frequencyClassifier)]
+                                let $label := $item/label/text()
+                                let $labelValue := $item/value/text()
+                                let $sortOrder :=  
+                                    if ($item/frequencyClassifier[. = 'common']) 
+                                    then 'A' 
+                                    (: else frequencyClassifier = 'default':)
+                                    else ''
+                                order by $sortOrder, $label
+                                return
+                                    <option value="{$labelValue}">{$item/label/text()}</option>
+                            }
+                            </select>
+                        </span>
+                        </div>
+                        
                         <input type="hidden" name="collection"/>
                         <input type="hidden" name="host"/>
                     </form>
@@ -627,7 +706,7 @@ declare function biblio:form-add-sharing-group() {
 };
 
 declare function biblio:form-collection-sharing($collection as xs:string) {
-    <jquery:dialog id="sharing-collection-dialog" modal="true" title="Collection Sharing" trigger="#collection-sharing" width="450">
+    <jquery:dialog id="sharing-collection-dialog" modal="true" title="Folder Sharing" trigger="#collection-sharing" width="450">
         <jquery:button label="Update" function="updateCollectionSharing"/>
         <jquery:button id="cancel" label="Cancel"/>
         <form id="update-collection-sharing-form" action="operations.xql">
