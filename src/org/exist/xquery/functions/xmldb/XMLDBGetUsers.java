@@ -21,7 +21,9 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
@@ -69,14 +71,20 @@ public class XMLDBGetUsers extends BasicFunction {
 
         //TODO replace with SecurityManager.getUsers(groupName)
         SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
-        Collection<Account> users = manager.getUsers();
+        List<Account> users = manager.getGroupMembers(groupName);
+        Collections.sort(users, new Comparator<Account>(){
+            @Override
+            public int compare(Account t, Account t1) {
+                return t.getUsername().compareTo(t1.getUsername());
+            }
+        });
+
         ValueSequence userNames = new ValueSequence(users.size());
         for(Account user : users) {
             if(user.hasGroup(groupName)) {
                 userNames.add(new StringValue(user.getName()));
             }
         }
-
         return userNames;
     }
 }

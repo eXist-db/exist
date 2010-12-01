@@ -104,6 +104,8 @@ public interface SecurityManager extends Configurable {
    public Subject getGuestSubject();
    public Group getDBAGroup();
 
+   public List<Account> getGroupMembers(String groupName);
+
    @Deprecated //use realm's method
    <A extends Account> java.util.Collection<A> getUsers();
 
