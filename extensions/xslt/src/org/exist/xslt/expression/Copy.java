@@ -29,6 +29,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -99,12 +100,18 @@ public class Copy extends Declaration {
         try {
 //            for (Item item : contextSequence) {
             for (SequenceIterator iterInner = contextSequence.iterate(); iterInner.hasNext();) {
-                Item item = iterInner.nextItem();   
+                Item i = iterInner.nextItem();
+                
+                org.w3c.dom.Node item;
+                if (i instanceof NodeValue) {
+                	item = ((NodeValue) i).getNode();
+				} else 
+	                item = (org.w3c.dom.Node) i;
 
                 //UNDERSTAND: strange place to workaround
             	if (item instanceof org.w3c.dom.Document) {
     				org.w3c.dom.Document document = (org.w3c.dom.Document) item;
-    				item = (Item) document.getDocumentElement();
+    				item = document.getDocumentElement();
     			}
     			
     			if (item instanceof org.w3c.dom.Element) {
@@ -120,19 +127,19 @@ public class Copy extends Declaration {
     				int nodeNr = builder.startElement(qn, null);
     				
     				if (use_attribute_sets != null)
-    					getXSLContext().getXSLStylesheet().attributeSet(use_attribute_sets, contextSequence, item);
+    					getXSLContext().getXSLStylesheet().attributeSet(use_attribute_sets, contextSequence, i);
 
-    				super.eval(contextSequence, item);
+    				super.eval(contextSequence, i);
     				
     	            builder.endElement();
     	            NodeImpl node = builder.getDocument().getNode(nodeNr);
     	            result.add(node);
     			} else if (item instanceof org.w3c.dom.Text) {
-    				int nodeNr = builder.characters(item.getStringValue());
+    				int nodeNr = builder.characters(i.getStringValue());
     	            NodeImpl node = builder.getDocument().getNode(nodeNr);
     	            result.add(node);
     			} else {
-    				throw new XPathException("not supported node type "+item.getType());
+    				throw new XPathException("not supported node type "+i.getType());
     			}
     		}
         } finally {
