@@ -400,10 +400,26 @@ public class SecurityManagerImpl implements SecurityManager {
 		return ++lastUserId; 
 	}
 
+    @Override
+    public List<Account> getGroupMembers(String groupName) {
+
+        List<Account> groupMembers = new ArrayList<Account>();
+
+        for(Realm realm : realms) {
+            for(Account account : realm.getAccounts()) {
+                if(account.hasGroup(groupName)) {
+                    groupMembers.add(account);
+                }
+            }
+        }
+
+        return groupMembers;
+    }
+
     @Deprecated
 	@Override
 	public <A extends Account> java.util.Collection<A> getUsers() {
-		return (java.util.Collection<A>)defaultRealm.getAccounts();
+            return (java.util.Collection<A>)defaultRealm.getAccounts();
 
                 //TODO should be refactored to get users from all realms
 	}
