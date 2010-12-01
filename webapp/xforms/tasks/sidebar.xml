@@ -91,9 +91,6 @@
             <link href="../../admin/admin.xql">Admin</link>
         </item>
         <item>
-            <link href="../../cocoon/status">Server Status</link>
-        </item>
-        <item>
             <link href="../../webstart/exist.jnlp">Webstart Client</link>
         </item>
         <item>

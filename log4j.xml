@@ -73,7 +73,7 @@
     </appender>
     
     <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/ehcache.log"/>
         <param name="MaxFileSize" value="500KB"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
