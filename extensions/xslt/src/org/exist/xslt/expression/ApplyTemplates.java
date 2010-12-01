@@ -33,6 +33,7 @@ import org.exist.xquery.TextConstructor;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
@@ -138,7 +139,7 @@ public class ApplyTemplates extends SimpleConstructor {
 	                    MemTreeBuilder builder = context.getDocumentBuilder();
 	            		builder.characters(item.getStringValue());
 	            		result.add(item);
-	            	} else if (item instanceof Node) {
+	            	} else if (item instanceof Node || item instanceof NodeValue) {
 	            		res = eval(selected, item); //item.toSequence();//
 	            	} else
 	            		throw new XPathException("not supported item type");

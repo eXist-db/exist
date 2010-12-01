@@ -34,6 +34,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
@@ -313,7 +314,8 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 			if (!expr.match(contextSequence, item))
 				return false;
 			if (expr instanceof LocationStep) {
-				item = (Item)((Node)item).getParentNode();
+				
+				item = (Item)((NodeValue)item).getNode().getParentNode();
 			}
 			matched = true;
 		}
