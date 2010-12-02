@@ -165,12 +165,14 @@ as node()+ {
                 <a href="index.xml" style="text-decoration: none">
                     <img src="{$style:site-resources}/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
                 </a>
+                <!--
                 <div id="quicksearch">
                     <form action="" method="GET">
                         <input type="text" size="20" name="q"/>
                         <input type="submit" value="Search"/>
                     </form>
                 </div>
+                -->
                 <div id="navbar">
                     <h1>Open Source Native XML Database</h1>
                 </div>

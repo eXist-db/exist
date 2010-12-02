@@ -2,7 +2,7 @@
     <head>
         <!--XXX<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
         <title>eXist - Bibliographic Demo</title>
-    <!--<title>Cluster Multimedia Search</title>-->
+        <!--<title>Tamboti Metadata Framework</title>-->
         <jquery:header base="scripts/jquery" cssbase="scripts/jquery/css"/>
         <script type="text/javascript" src="scripts/jquery/jquery.dynatree.min.js"/>
         <script type="text/javascript" src="scripts/jquery/jquery.cookie.js"/>
@@ -16,12 +16,14 @@
             <a href="/exist/" style="text-decoration: none">
                 <img src="../../../resources/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
             </a>
+            <!--
             <div id="quicksearch">
                 <form action="" method="GET">
                     <input type="text" size="20" name="q"/>
                     <input type="submit" value="Search"/>
                 </form>
             </div>
+            -->
             <div id="navbar">
                 <h1>Open Source Native XML Database</h1>
             </div>
@@ -183,7 +185,7 @@
                         <!-- create new resource -->
                         <li>
                             <a href="#" id="collection-create-resource">
-                                <img src="../../../resources/images/page_add.png" title="Create New Resource"/>
+                                <img src="../../../resources/images/page_add.png" title="Create Stand-Alone Record"/>
                             </a>
                         </li>
                         <!-- end create new resource -->
@@ -304,7 +306,7 @@
                     <input id="remove-resource-id" name="resource" type="hidden" value=""/>
                 </form>
             </jquery:dialog>
-            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Resource" width="450">
+            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Record" width="450">
                 <jquery:button label="Move" function="moveResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <form id="move-resource-form" action="operations.xql">
@@ -316,12 +318,12 @@
                     <input id="move-resource-id" name="resource" type="hidden" value=""/>
                 </form>
             </jquery:dialog>
-            <jquery:dialog id="new-resource-dialog" modal="true" title="New Resource" trigger="#collection-create-resource" width="550">
+            <jquery:dialog id="new-resource-dialog" modal="true" title="Create Stand-Alone Record" trigger="#collection-create-resource" width="550">
                 <jquery:button id="create" label="Create" function="newResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <biblio:resource-types classifier="stand-alone"/>
             </jquery:dialog>
-            <jquery:dialog id="add-related-dialog" modal="true" title="Add Related Resource" width="550">
+            <jquery:dialog id="add-related-dialog" modal="true" title="Create Related Record" width="550">
                 <jquery:button id="create" label="Create" function="newRelatedResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <biblio:resource-types classifier="related-item"/>
