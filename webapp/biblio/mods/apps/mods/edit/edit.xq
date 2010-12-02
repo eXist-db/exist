@@ -12,15 +12,6 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 
 declare function xf:get-temp-collection() {
     let $collection := collection($config:mods-temp-collection)
-    let $create :=
-        if ($collection) then
-            ()
-        else
-            (: TODO this can probably be removed, its now done by the build.xml install script :)
-            system:as-user($config:dba-credentials[1], $config:dba-credentials[2], (
-                xmldb:create-collection(fn:replace($config:mods-temp-collection, "(.*)/.*", "$1"), fn:replace($config:mods-temp-collection, ".*/", "")), 
-                xmldb:set-collection-permissions($config:mods-temp-collection, "editor", "biblio.users", xmldb:string-to-permissions("rwurwu---"))
-            ))
     return
         $config:mods-temp-collection
 };
@@ -83,10 +74,6 @@ let $create-new-from-template :=
                else concat($style:db-path-to-app, '/edit/instances/', $type, '.xml')
          let $template := doc($template-path)
          let $new-file-name := concat($id, '.xml')
-         
-         (: uncomment the following line in for testing if you are not admin :)
-         (: let $login := xmldb:login($data-collection, 'admin', ()) :)
-         let $login := xmldb:login($data-collection, 'admin', 'his2RIen')
          (: store it in the right location :)
          let $stored := xmldb:store($tempCollection, $new-file-name, $template)
          let $new-file-path := concat($data-collection, '/', $new-file-name)

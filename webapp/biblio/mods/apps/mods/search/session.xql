@@ -73,12 +73,12 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                 <td class="detail-view">
                                     <div class="actions-toolbar">
                                         <a id="save_{$id}" href="#{$currentPos}" class="save">
-                                           <img title="Save to My List" 
+                                           <img title="Save Record to My List" 
                                                src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                                class="{if ($saved) then 'stored' else ''}"/>
                                         </a>
                                         <a target="_new" href="source.xql?id={$item/@ID}&amp;clean=yes">
-                                            <img title="View XML Source"
+                                            <img title="View XML Source of Record"
                                                 src="../../../resources/images/script_code.png"/>
                                         </a>
                                         {
@@ -96,7 +96,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                             (: button to add a related item :)
                                             if ($bs:USER ne "guest") then
                                                 <a class="add-related" href="#{if ($isWritable) then util:collection-name($item) else $home}#{$item/@ID}">
-                                                    <img title="Add Related Item (Article to Periodical or Contribution to Anthology)" src="../../../resources/images/page_add.png"/>
+                                                    <img title="Create Related Item" src="../../../resources/images/page_add.png"/>
                                                 </a>
                                             else
                                                 ()
