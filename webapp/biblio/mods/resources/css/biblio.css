@@ -8,8 +8,42 @@ p, td {
 
 a:link, a:visited { color: #5DB0E6; }
 
-#login { text-align: right; font-size: 120%; margin-bottom: 4px; }
+.help {
+    text-align: left; 
+    font-size: 120%; 
+    margin-bottom: -1.2em; /*not beautiful!*/
+}
+
+.login {    
+    text-align: right; 
+    font-size: 120%; 
+    margin-bottom: 4px;
+}
+
 .username { font-weight: bold; }
+
+#page-head {
+    height: 14em;
+}
+
+/*Tamboti
+#page-head {
+    height: 8em;
+    margin-bottom: 5px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 5px;
+}
+
+#page-head .banner {
+    position: absolute;
+    right: .5em;
+    }
+#page-head .name {
+    position: absolute;
+    left: .5em;
+    }
+*/
 
 .search-form {
 }

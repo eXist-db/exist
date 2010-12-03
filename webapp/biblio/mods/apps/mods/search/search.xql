@@ -463,11 +463,20 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
     typeswitch ($node)
         case element(biblio:login) return
             let $user := request:get-attribute("xquery.user")
-            return (
+            return 
+            (
                 if ($user eq 'guest') then
-                    <div id="login"><a href="#" id="login-link">Login</a></div>
+                    (
+                    <div class="help"><a href="../docs/index.xml" style="text-decoration: none" target="_blank">Help</a></div>
+                    ,
+                    <div class="login"><a href="#" id="login-link">Login</a></div>
+                    )
                 else
-                    <div id="login">Logged in as <span class="username">{$user}</span>. <a href="?logout=1">Logout</a></div>
+                    (
+                    <div class="help"><a href="../docs/index.xml" style="text-decoration: none">Help</a></div>
+                    ,
+                    <div class="login">Logged in as <span class="username">{$user}</span>. <a href="?logout=1">Logout</a></div>
+                    )
             )
         case element(biblio:optimize-trigger) return
             let $user := request:get-attribute("xquery.user")
