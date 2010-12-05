@@ -215,7 +215,7 @@ public class JettyStart implements LifeCycle.Listener {
             //TODO: use pluggable interface
             Class<?> openid = null;
             try {
-            	openid = Class.forName("org.exist.security.openid.servlet.AuthenticatorOpenId");
+            	openid = Class.forName("org.exist.security.realm.openid.AuthenticatorOpenIdServlet");
             } catch (ClassNotFoundException e) {
 			}
             //*************************************************************
