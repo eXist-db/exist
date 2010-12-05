@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.security.openid;
+package org.exist.security.realm.openid;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
@@ -48,6 +48,7 @@ public class OpenIDUtility {
     private final static Logger LOG = Logger.getLogger(OpenIDUtility.class);
     private static final String REGISTER_XQUERY_SCRIPT_PROPERTY = "org.exist.security.openid.verify_logging_script";
 
+    //TODO: implement this at eXist's security core 
     /**
      * Executes an XQuery script whose filename is retrieved from the
      * java option 'org.exist.security.openid.verify_logging_script'.

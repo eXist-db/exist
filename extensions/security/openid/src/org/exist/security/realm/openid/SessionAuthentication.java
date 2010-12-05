@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.openid;
+package org.exist.security.realm.openid;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;

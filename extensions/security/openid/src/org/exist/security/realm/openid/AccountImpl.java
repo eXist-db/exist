@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.security.openid;
+package org.exist.security.realm.openid;
 
 import java.util.Set;
 
@@ -43,7 +43,7 @@ import org.openid4java.discovery.Identifier;
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
 
-	Identifier  _identifier = null;
+	Identifier _identifier = null;
 	
 	public AccountImpl(AbstractRealm realm, Identifier identifier) throws ConfigurationException {
 		super(realm, -1, identifier.getIdentifier());
