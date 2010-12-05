@@ -36,7 +36,6 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.realm.ldap.LDAPRealm;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -45,7 +44,7 @@ import org.exist.security.realm.ldap.LDAPRealm;
 @ConfigurationClass("realm") //TODO: id = OpenID
 public class OpenIDRealm extends AbstractRealm {
 
-    private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
+    private final static Logger LOG = Logger.getLogger(OpenIDRealm.class);
     
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "OpenID";
