@@ -375,28 +375,47 @@ public class Configurator {
                             }
 
                             String clazzName = "org.exist.security.realm."+id.toLowerCase()+"."+id+"Realm";
+                            //org.exist.security.realm.openid.OpenIDRealm
                             Class<?> clazz;
                             try {
                                 clazz = Class.forName(clazzName);
                                 Constructor<Configurable> constructor = 
                                     (Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
-                                list.add( constructor.newInstance(instance, conf) );
+                                
+                                Configurable obj = constructor.newInstance(instance, conf);
+                                
+                                if (obj instanceof Startable) {
+                                	BrokerPool db = null;
+                                	try {
+                                		db = BrokerPool.getInstance();
+                                	} catch (EXistException e) {
+                                		//ignore if database starting-up
+									}
+                                	if (db != null) 
+                                		((Startable) obj).startUp(db.get(null));
+                                }
+
+                                list.add( obj );
                             } catch (ClassNotFoundException e) {
-                                LOG.warn("Class ["+clazzName+"] not found, skip instance creation.");
+                                LOG.error("Class ["+clazzName+"] not found, skip instance creation.");
                                 continue;
                             } catch (SecurityException e) {
-                                LOG.warn("Security exception on class ["+clazzName+"] creation, skip instance creation.");
+                                LOG.error("Security exception on class ["+clazzName+"] creation, skip instance creation.");
                                 continue;
                             } catch (NoSuchMethodException e) {
-                                LOG.warn("Class ["+clazzName+"] constructor not found, skip instance creation.");
+                                LOG.error("Class ["+clazzName+"] constructor not found, skip instance creation.");
                                 continue;
                             } catch (InstantiationException e) {
-                                LOG.warn("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");
+                                LOG.error("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");
                                 continue;
                             } catch (InvocationTargetException e) {
-                                LOG.warn("Invocation target exception on class ["+clazzName+"] creation, skip instance creation.");
+                                LOG.error("Invocation target exception on class ["+clazzName+"] creation, skip instance creation.");
                                 continue;
-                            }
+                            } catch (EXistException e) {
+                                LOG.error("Databasse exception on class ["+clazzName+"] startup, skip instance creation.");
+                                LOG.error(e);
+                                continue;
+							}
                         }
                     }
                 }
