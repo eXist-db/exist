@@ -19,45 +19,22 @@
  *  
  *  $Id$
  */
-package org.exist.security.realm;
+package org.exist.config;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.exist.Database;
 import org.exist.EXistException;
-import org.exist.config.Startable;
-import org.exist.security.Group;
-import org.exist.security.Account;
-import org.exist.security.Subject;
-import org.exist.security.SecurityManager;
-import org.exist.security.management.AccountsManagement;
-import org.exist.security.management.GroupsManagement;
 import org.exist.storage.DBBroker;
 
 /**
+ * The instance must start-up after configuration and 
+ * shutdown at database stopping process.
+ *  
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Realm extends AuthenticatingRealm, AuthorizingRealm, 
-								AccountsManagement, GroupsManagement, Startable {
+public interface Startable {
 	
-	public String getId();
-	
-	public Collection<Account> getAccounts();
-	
-	public Collection<Group> getGroups();
-	@Deprecated //use getGroups (remove after 1.6)
-	public Collection<Group> getRoles();
-
 	public void startUp(DBBroker broker) throws EXistException;
 
-	public Database getDatabase();
-
-    public Group getExternalGroup(Subject invokingUser, String name);
-
-    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
-
-    public SecurityManager getSecurityManager();
+	//public void shutDown(DBBroker broker) throws EXistException;
+	
 }
