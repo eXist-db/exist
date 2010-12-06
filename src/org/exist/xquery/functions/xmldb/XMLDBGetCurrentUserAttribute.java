@@ -68,7 +68,13 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
         }
         
         String attributeName = args[0].getStringValue();
-        Object value = context.getUser().getMetadataValue(AXSchemaType.valueOfNamespace(attributeName));
+        
+        AXSchemaType type = AXSchemaType.valueOfNamespace(attributeName);
+        
+        if (type == null)
+        	return Sequence.EMPTY_SEQUENCE; //UNDERSTAND: error?
+        
+        Object value = context.getSubject().getMetadataValue(type);
         if (value != null) {
             StringValue stringValue = new StringValue((String) value);
             return stringValue;
