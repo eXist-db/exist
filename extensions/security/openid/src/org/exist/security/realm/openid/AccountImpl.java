@@ -21,6 +21,8 @@
  */
 package org.exist.security.realm.openid;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 import org.exist.config.ConfigurationException;
@@ -32,6 +34,7 @@ import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
 import org.exist.security.internal.GroupImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.SecurityManager;
 import org.exist.xmldb.XmldbURI;
 import org.openid4java.discovery.Identifier;
@@ -41,85 +44,98 @@ import org.openid4java.discovery.Identifier;
  *
  */
 @ConfigurationClass("account")
-public class AccountImpl extends AbstractAccount {
+public class AccountImpl extends SubjectAccreditedImpl {
 
 	Identifier _identifier = null;
 	
-	public AccountImpl(AbstractRealm realm, Identifier identifier) throws ConfigurationException {
-		super(realm, -1, identifier.getIdentifier());
+	protected static String escape(String id) throws ConfigurationException {
+		URI uri;
+		try {
+			uri = new URI( id );
+		} catch (URISyntaxException e) {
+			throw new ConfigurationException(e);
+		}
+		if ("www.google.com".equals(uri.getAuthority()))
+			return uri.getQuery().replace("id=", "") + "@google.com";
+		
+		return id.replace("https://", "/");
+	}
+
+	public AccountImpl(AbstractAccount account, Identifier identifier) throws ConfigurationException {
+		super(account, identifier);
 		_identifier = identifier;
 	}
 
-	@Override
-	public void setPassword(String passwd) {
-	}
-
-	@Override
-	public String getPassword() {
-		return null;
-	}
-
-	@Override
-	public XmldbURI getHome() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDigestPassword() {
-		return null;
-	}
-
-	//TODO: find a place to construct 'full' name
-	public String getName_() {
-            String name = "";
-
-            Set<AXSchemaType> metadataKeys = getMetadataKeys();
-
-            if(metadataKeys.contains(AXSchemaType.FIRSTNAME)) {
-                name += getMetadataValue(AXSchemaType.FIRSTNAME);
-            }
-
-            if(metadataKeys.contains(AXSchemaType.LASTNAME)) {
-                if(name.length() > 0 ) {
-                    name += " ";
-                }
-                name += getMetadataValue(AXSchemaType.LASTNAME);
-            }
-
-            if(name.length() == 0) {
-                name += getMetadataValue(AXSchemaType.FULLNAME);
-            }
-
-            if(name.length() == 0) {
-                name = _identifier.getIdentifier();
-            }
-
-            return name;
-	}
-
-    @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
-
-        if(group == null){
-            return null;
-        }
-
-        Account user = getDatabase().getSubject();
-
-
-        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){
-                throw new PermissionDeniedException("not allowed to change group memberships");
-        }
-
-        if(!groups.contains(group)) {
-            groups.add(group);
-
-            if(SecurityManager.DBA_GROUP.equals(name)) {
-                hasDbaRole = true;
-            }
-        }
-
-        return group;
-    }
+//	@Override
+//	public void setPassword(String passwd) {
+//	}
+//
+//	@Override
+//	public String getPassword() {
+//		return null;
+//	}
+//
+//	@Override
+//	public XmldbURI getHome() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public String getDigestPassword() {
+//		return null;
+//	}
+//
+//	//TODO: find a place to construct 'full' name
+//	public String getName_() {
+//            String name = "";
+//
+//            Set<AXSchemaType> metadataKeys = getMetadataKeys();
+//
+//            if(metadataKeys.contains(AXSchemaType.FIRSTNAME)) {
+//                name += getMetadataValue(AXSchemaType.FIRSTNAME);
+//            }
+//
+//            if(metadataKeys.contains(AXSchemaType.LASTNAME)) {
+//                if(name.length() > 0 ) {
+//                    name += " ";
+//                }
+//                name += getMetadataValue(AXSchemaType.LASTNAME);
+//            }
+//
+//            if(name.length() == 0) {
+//                name += getMetadataValue(AXSchemaType.FULLNAME);
+//            }
+//
+//            if(name.length() == 0) {
+//                name = _identifier.getIdentifier();
+//            }
+//
+//            return name;
+//	}
+//
+//    @Override
+//    public Group addGroup(Group group) throws PermissionDeniedException {
+//
+//        if(group == null){
+//            return null;
+//        }
+//
+//        Account user = getDatabase().getSubject();
+//
+//
+//        if(!((user != null && user.hasDbaRole()) || ((GroupImpl)group).isMembersManager(user))){
+//                throw new PermissionDeniedException("not allowed to change group memberships");
+//        }
+//
+//        if(!groups.contains(group)) {
+//            groups.add(group);
+//
+//            if(SecurityManager.DBA_GROUP.equals(name)) {
+//                hasDbaRole = true;
+//            }
+//        }
+//
+//        return group;
+//    }
 }

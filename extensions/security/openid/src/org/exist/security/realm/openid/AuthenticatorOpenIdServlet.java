@@ -37,11 +37,16 @@ import org.eclipse.jetty.security.DefaultIdentityService;
 import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.security.AXSchemaType;
+import org.exist.security.AbstractAccount;
 import org.exist.security.Account;
 import org.exist.security.AbstractRealm;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.SubjectAccreditedImpl;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.xquery.util.HTTPUtils;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
@@ -157,6 +162,28 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			HttpServletRequest httpReq, HttpServletResponse httpResp)
 			throws IOException, ServletException {
 
+		if (OpenIDRealm.instance == null) {
+			ServletOutputStream out = httpResp.getOutputStream();
+	        httpResp.setContentType("text/html; charset=\"UTF-8\"");
+	        httpResp.addHeader( "pragma", "no-cache" );
+	        httpResp.addHeader( "Cache-Control", "no-cache" );
+
+	        httpResp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+	        out.print("<html><head>");
+	        out.print("<title>OpenIDServlet Error</title>");
+	        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
+	        out.print("<body><div id=\"container\"><h1>Error found</h1>");
+            
+	        out.print("<h2>Message:");
+            out.print("OpenID realm wasn't initialized.");
+            out.print("</h2>");
+	        
+            //out.print(HTTPUtils.printStackTraceHTML(t));
+	        
+	        out.print("</div></body></html>");
+	        return null;
+		}
 		try {
 			String returnAfterAuthentication = httpReq.getParameter("return_to");
 
@@ -300,7 +327,26 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			Identifier verified = verification.getVerifiedId();
 			if (verified != null) {
 				// success
-				org.exist.security.Subject principal = new SubjectAccreditedImpl(new AccountImpl(realm, verified), verified);
+				
+				String accountName = AccountImpl.escape(verified.getIdentifier());
+				AbstractAccount account = (AbstractAccount) OpenIDRealm.instance.getAccount(null, accountName);
+				if (account == null) {
+					Database db = OpenIDRealm.instance.getDatabase();
+					org.exist.security.Subject currentSubject = db.getSubject();
+					try {
+						db.setSubject(db.getSecurityManager().getSystemSubject());
+					
+						//XXX: set OpenID group by default 
+						account = (AbstractAccount) OpenIDRealm.instance.addAccount(
+								new UserAider(OpenIDRealm.instance.getId(), accountName)
+							);
+					} finally {
+						db.setSubject(currentSubject);
+					}
+				}
+				
+				org.exist.security.Subject principal = 
+					new SubjectAccreditedImpl( account, verified );
 				
 				AuthSuccess authSuccess = (AuthSuccess) verification.getAuthResponse();
 				authSuccess.getExtensions();
@@ -335,10 +381,13 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 				return principal; 
 			}
 		} catch (OpenIDException e) {
-			// present error to the user
+			//XXX: present error to the user
 		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//XXX: present error to the user
+		} catch (PermissionDeniedException e) {
+			//XXX: present error to the user
+		} catch (EXistException e) {
+			//XXX: present error to the user
 		}
 
 		return null;

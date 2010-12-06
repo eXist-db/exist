@@ -34,8 +34,8 @@ import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
+import org.exist.security.internal.SecurityManagerImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -46,16 +46,18 @@ public class OpenIDRealm extends AbstractRealm {
 
     private final static Logger LOG = Logger.getLogger(OpenIDRealm.class);
     
+    public static OpenIDRealm instance = null;
+    
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "OpenID";
 
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
 
-    public OpenIDRealm(SecurityManager sm, Configuration config) {
+    public OpenIDRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
 		
-		AuthenticatorOpenIdServlet.realm = this;
+		instance = this;
 	}
 
 	@Override
