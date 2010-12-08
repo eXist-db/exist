@@ -20,7 +20,7 @@
         <namePart type="given" lang="" script="Latn" transliteration="ala-lc"/>
         <namePart type="family" lang="" script="Latn" transliteration="ala-lc"/>
         <role>
-            <roleTerm type="code" authority="marcrelator">aut</roleTerm>
+            <roleTerm type="code" authority="marcrelator">edt</roleTerm>
         </role>
     </name>
     <originInfo lang="" script="" transliteration="">
@@ -39,7 +39,6 @@
     <physicalDescription lang="" script="" transliteration="">
         <extent/>
     </physicalDescription>
-    <relatedItem type="" xlink=""/>
     <targetAudience authority="marctarget">adult</targetAudience>
     <typeOfResource>text</typeOfResource>
     <genre type="code" authority="marcgt">book</genre>
@@ -58,34 +57,13 @@
     </subject>
     <abstract lang="eng" script="" transliteration=""/>
     <tableOfContents lang="" script="" xlink=""/>
-    <note lang="eng" type=""/>
-    <relatedItem/>
+    <note lang="" type=""/>
+    <relatedItem type="" xlink=""/>
     <identifier type="isbn"/>
-    <recordInfo lang="eng" script="Latn" transliteration="" type="" authority="">
-        <recordCreationDate encoding="w3cdtf"/>
-        <languageOfCataloging>
-            <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
-            <languageTerm type="text">English</languageTerm>
-        </languageOfCataloging>
-    </recordInfo>
+    <identifier displayLabel="" type="local"/>
     <location>
         <physicalLocation/>
         <shelfLocator/>
     </location>
-    <part type="">
-        <detail type="" level="" order="">
-            <number/>
-            <caption/>
-            <title/>
-        </detail>
-        <extent unit="">
-            <start/>
-            <end/>
-            <total/>
-            <list/>
-        </extent>
-        <date encoding="w3cdtf" point="" qualifier=""/>
-        <text/>
-    </part>
     <classification authority="lcc" displayLabel="" lang=""/>
 </mods>
