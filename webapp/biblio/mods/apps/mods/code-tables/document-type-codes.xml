@@ -8,7 +8,7 @@
         </item>
         <item>
             <label>Anthology with Transliterated Script</label>
-            <value>anthology-latin</value>
+            <value>anthology-transliterated</value>
             <classifier>stand-alone</classifier>
         </item>
         <item>

@@ -193,13 +193,8 @@ let $model :=
           action="save.xq?collection={$tempCollection}&amp;action=cancel" replace="instance"
           instance="save-results">
        </xf:submission>
-       
-       <xf:submission id="echo-post-submission" method="post"
-          ref="instance('save-data')"
-          action="echo-post.xq" replace="all">
-       </xf:submission>
-       
-    </xf:model>
+
+</xf:model>
 
 let $content :=
 <div class="content">
@@ -238,14 +233,6 @@ let $content :=
     </xf:submit>
     -->
     <!--
-    <xf:submit submission="echo-post-submission">
-        <xf:label class="xforms-group-label-centered-general">Echo Post (no save)</xf:label>
-    </xf:submit>
-    
-    <br/>
-    Body Elements = {count($form-body/*/*)}
-    -->
-    <!--
     <div class="debug">
         <xf:output value="count(instance('save-data')/*)">
            <xf:label>Root Element Count: </xf:label>
@@ -260,7 +247,7 @@ let $content :=
         </xf:output>
     </div>
     -->
-    <a href="../views/get-instance.xq?id={$id}&amp;data={$data-collection}">View XML for the whole MODS record</a> -
+    <a href="get-instance.xq?id={$id}&amp;data={$data-collection}">View XML for the whole MODS record</a> -
     <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}&amp;data={$data-collection}">View XML for the current tab</a>
 </div>
 

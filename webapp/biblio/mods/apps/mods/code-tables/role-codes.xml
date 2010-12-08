@@ -32,6 +32,7 @@
         <item>
             <label>compiler</label>
             <value>com</value>
+            <labelSecondary>Compiled by</labelSecondary>
             <use>Use for a person or organization who produces a work or publication by selecting and putting together material from the works of various
                 persons or bodies.</use>
         </item>
@@ -42,6 +43,7 @@
         </item>
         <item>
             <label>editor</label>
+            <labelSecondary>Edited by</labelSecondary>
             <value>edt</value>
             <use>Use for a person or organization who prepares for publication a work not primarily his/her own, such as by elucidating text, adding
                 introductory or other critical matter, or technically directing an editorial staff.</use>
@@ -54,6 +56,7 @@
         <item>
             <label>translator</label>
             <value>trl</value>
+            <labelSecondary>Translated by</labelSecondary>
             <use>Use for a person or organization who renders a text from one language into another, or from an older form of a language into the modern
                 form.</use>
         </item>
@@ -87,6 +90,7 @@
         <item>
             <label>annotator</label>
             <value>ann</value>
+            <labelSecondary>Annotated by</labelSecondary>
             <use>Use for a person who writes manuscript annotations on a printed item.</use>
         </item>
         <item>
