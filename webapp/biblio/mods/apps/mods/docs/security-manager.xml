@@ -1,0 +1,67 @@
+<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="footer.xml"/><xi:include href="sidebar.xml"/><chapter><title>Sharing</title><section><title>Login</title>
+
+            <!--table frame="all">
+                <title/>
+                <tgroup cols="2" align="char" charoff="50" char=".">
+                <thead>
+                <row>
+                <entry/>
+                <entry/>
+                
+                </row>
+                </thead>
+                <tbody>
+                <row>
+                <entry>In order to log into the tamboti framework, use your cluster
+                username and password. After clicking the login button a pop-up
+                window will appear. Your username has to be entered in the following
+                format. <emphasis role="bold"><emphasis role="italic"
+                >USERNAME@ad.uni-heidelberg.de</emphasis>
+                </emphasis></entry>
+                <entry>
+                <graphic fileref="images/login.bmp" width="500" align="center"
+                valign="middle"/>
+                </entry>
+                
+                </row>
+                <row></row>
+                <row>
+                <entry> After successful authentication, you can see the interface
+                changed. </entry>
+                <entry><graphic fileref="images/login-confirm.PNG"  align="center" valign="middle"/></entry>
+                </row>
+                <row><entry>On the left hand side of the Tamboti you will find the document collection
+                view. You have reading access to the grey colored collections. You have the editing
+                access to the bold and black collections.</entry>
+                <entry>
+                <graphic fileref="images/mycollection.PNG" align="center" valign="middle"/>   
+                </entry>
+                </row>
+                
+                </tbody>
+                </tgroup>
+                </table--><para>In order to log into the tamboti framework, use your cluster username and
+                password. After clicking the login button a pop-up window will appear. Your username
+                has to be entered in the following format. </para><para><emphasis role="bold"><emphasis role="italic">USERNAME@ad.uni-heidelberg.de</emphasis></emphasis></para><para><graphic fileref="images/login.png" width="500px" align="center" valign="middle"/></para><para>After successful authentication, you can see the interface changed.</para><graphic fileref="images/login-confirm.PNG" align="center" valign="middle"/><para>On the left hand side of the Tamboti you will find the document collection
+                view.</para><graphic fileref="images/mycollection.PNG" align="center" valign="middle"/><para>You can see all the collections, which are accessible to you. The collection “mods
+                “ is the root collection. </para><para>You have reading access to the grey colored collections. You have the editing
+                access to the bold and black collections. </para></section><section><title>Create a collection</title><para>Click on the <graphic fileref="images/folder_add.png"/> button to add a new
+                collection to your home folder.</para><para><graphic fileref="images/createCollection.png" align="center" valign="middle" width="500px"/></para><para/><para>After creating the collection you will see the following folder view. When you
+                click on the “collection” it gets selected and marked in blue. </para><graphic fileref="images/mycoll-highlight.png" align="center" valign="middle"/><para>You can see the following action buttons on the top of the collection. From left
+                to right, they allow you to move, delete and edit collections or to add a new
+                entry.</para><para><graphic fileref="images/folder--action-buttons.png" align="center" valign="middle"/></para></section><section><title>Move the collection to another location</title><para>When you click the <graphic fileref="images/folder_go.png"/> button, a dialog
+                window will appear and you can move the collection to any location, where you have
+                the permissions to write.</para><para><graphic fileref="images/move.png" align="center" valign="middle"/></para></section><section><title>Delete the collection </title><para>You can delete an entire collection by clicking the <graphic fileref="images/folder_delete.png"/> button. Please be aware that the deleted
+                collections are not recoverable! </para></section><section><title>Edit permissions</title><para>You can change the permissions to the collections using the “collection
+                permissions” <graphic fileref="images/user_edit.png"/> button. On the first step,
+                you get the collection sharing template. </para><graphic fileref="images/sharing-template.png"/><section><title>Share with a group of cluster members</title><para>If you select to share with a group the dialog window expands as follows. You
+                    can see the existing group memberships and (e.g. publications) and the
+                    membership rights. </para><graphic fileref="images/collection-sharing-group.png"/><para>Click on the “New Group” Button to add a new group of users, who can edit your
+                    collection</para><graphic fileref="images/my-collection-editors.png" height="300px" width="400px"/><para>After you click the “Add” button , you will be redirected to the “collection
+                    sharing template”. When you click the group sharing button, you will see the
+                    group “mycollection_editors” in the group menu.</para><graphic fileref="images/collection-sharing-group2.png" height="300px" width="400px"/><para>You can add the members (e.g. editors) to your group by clicking the “Add
+                    Member” button. A dialog window “Add user to group” will pop-up as
+                    follows.</para><graphic fileref="images/add-user.png" width="400px"/><para>If you just type the first name of the user , the system will automatically
+                    suggest you the users. Add any number of users to the group. You can grant the
+                    group either read or write permissions or both</para><graphic fileref="images/collection-sharing-group.png" width="400px"/><para>A good practice is to name the group according to your work process. Be aware
+                that editing the users in a group is only possible for the group creator! </para><graphic fileref="images/collection-sharing-users.png" wigth="400px"/></section></section></chapter></book>
