@@ -1,0 +1,27 @@
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-F3FCEC9E-638F-4C68-94D9-5AE6323EC665">
+    <titleInfo>
+        <title>XML databases with eXist and ColdFusion</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <name type="personal">
+        <namePart type="family">Dyson</namePart>
+        <namePart type="given">Tom</namePart>
+    </name>
+    <originInfo>
+        <dateCreated>2005</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://www.throwingbeans.org/xml_databases_with_exist_and_coldfusion.html</url>
+    </location>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>Throwing Beans</title>
+        </titleInfo>
+        <location>
+            <url>http://www.throwingbeans.org/</url>
+        </location>
+    </relatedItem>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

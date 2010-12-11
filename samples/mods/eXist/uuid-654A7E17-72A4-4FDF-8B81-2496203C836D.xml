@@ -1,0 +1,29 @@
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-654A7E17-72A4-4FDF-8B81-2496203C836D">
+    <titleInfo>
+        <title>And the Winner is: eXist-db.org</title>
+        <subTitle>My Award for the Most Innovative Product of 2007</subTitle>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <name type="personal">
+        <namePart type="family">McCreary</namePart>
+        <namePart type="given">Dan</namePart>
+    </name>
+    <relatedItem type="host">
+        <titleInfo>
+            <title>
+            Dr. Data Dictionary
+            </title>
+        </titleInfo>
+        <location>
+            <url>http://datadictionary.blogspot.com/</url>
+        </location>
+    </relatedItem>
+    <location>
+        <url>http://datadictionary.blogspot.com/2007/12/and-winner-is-exist-dborg-my-award-for.html</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>
