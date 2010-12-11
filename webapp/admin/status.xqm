@@ -24,6 +24,7 @@ declare function status:main() as element()
         <table id="status" cellpadding="7">
             <tr><th colspan="2">General</th></tr>
             {
+                status:status-line("Uptime", xs:string(system:get-uptime())),
                 status:status-line("eXist Version", system:get-version()),
                 status:status-line("eXist Build", system:get-build()),
                 status:status-line("eXist Home", system:get-exist-home()),
