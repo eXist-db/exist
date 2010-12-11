@@ -31,7 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -41,6 +41,7 @@ import org.exist.xquery.value.Type;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.exist.xquery.value.BinaryValue;
 
 
 public class StreamBinary extends BasicFunction
@@ -74,7 +75,7 @@ public class StreamBinary extends BasicFunction
             return( Sequence.EMPTY_SEQUENCE );
         }
         
-        Base64Binary binary      = (Base64Binary)args[0].itemAt( 0 );
+        BinaryValue binary      = (BinaryValue)args[0].itemAt( 0 );
         String       contentType = args[1].getStringValue();
         String       filename    = null;
 
@@ -109,8 +110,8 @@ public class StreamBinary extends BasicFunction
         }
 
         try {
-            OutputStream os = new BufferedOutputStream( response.getOutputStream() );
-            os.write( binary.getBinaryData() );
+            OutputStream os = response.getOutputStream();
+            binary.streamTo(response.getOutputStream());
             os.close();
 
             //commit the response

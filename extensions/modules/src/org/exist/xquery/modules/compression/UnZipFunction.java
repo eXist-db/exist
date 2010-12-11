@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -30,7 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -78,12 +77,12 @@ public class UnZipFunction extends AbstractExtractFunction {
     }
 
     @Override
-    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException, XMLDBException
+    protected Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException
     {
         ZipInputStream zis = null;
         try
         {
-            zis = new ZipInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
+            zis = new ZipInputStream(compressedData.getInputStream());
             ZipEntry entry = null;
 
             Sequence results = new ValueSequence();

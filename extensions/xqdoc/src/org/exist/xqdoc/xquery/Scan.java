@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import org.xqdoc.conversion.XQDocException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,7 +72,7 @@ public class Scan extends BasicFunction {
         Source source = null;
         String name;
         if (getArgumentCount() == 2) {
-            byte[] data = ((Base64Binary) args[0].itemAt(0)).getBinaryData();
+            byte data[] = ((BinaryValue) args[0].itemAt(0)).getReadOnlyBuffer().array();
             name = args[1].getStringValue();
             source = new BinarySource(data, true);
         } else {

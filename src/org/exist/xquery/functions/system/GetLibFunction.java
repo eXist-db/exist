@@ -18,17 +18,15 @@
 
 package org.exist.xquery.functions.system;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromFile;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -65,6 +63,7 @@ public class GetLibFunction extends LibFunction {
 		super(context, signature);
 	}
 
+    @Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		
 		Sequence result = Sequence.EMPTY_SEQUENCE;
@@ -74,14 +73,17 @@ public class GetLibFunction extends LibFunction {
 		File lib = getLib(name);
 		
 		if (lib != null){
-			try {
+			/* try {
 				DataInputStream in = new DataInputStream( new FileInputStream(lib));		
 				byte[] buffer = new byte[(int)lib.length()];
 				in.readFully(buffer);
 				result = new Base64Binary(buffer);
 			} catch (IOException e) {
 				throw( new XPathException(this, e.getMessage()));
-			}
+			}*/
+
+                        return BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), lib);
+
 		}
 		
 		return result;

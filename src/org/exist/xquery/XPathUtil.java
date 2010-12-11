@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +88,7 @@ public class XPathUtil {
         else if (obj instanceof Long)
             return new IntegerValue(((Long) obj).longValue(), Type.LONG);
         else if (obj instanceof byte[])
-            return new Base64Binary((byte[]) obj);
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream((byte[]) obj));
         else if (obj instanceof ResourceSet) {
             Sequence seq = new AVLTreeNodeSet();
             try {

@@ -34,7 +34,7 @@ import org.exist.util.Base64Decoder;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
 
 
 /**
@@ -90,36 +90,6 @@ public class ImageModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-	
-	/**
-	 * Get's an the raw binary data from base64 binary encoded image data
-	 * 
-	 * @param imgBase64Data	The base64 encoded image data
-	 * 
-	 * @return The raw binary data
-	 */
-	protected static byte[] getImageData(Base64Binary imgBase64Data) throws XPathException
-	{
-		//decode the base64 image data
-		Base64Decoder dec = new Base64Decoder();
-        dec.translate(imgBase64Data.getStringValue());
-        
-        //return the raw binary data
-        return dec.getByteArray();
-	}
-	
-	/**
-	 * Get's an Image object from base64 binary encoded image data
-	 * 
-	 * @param imgBase64Data	The base64 encoded image data
-	 * 
-	 * @return An Image object
-	 */
-	protected static Image getImage(Base64Binary imgBase64Data) throws IOException, XPathException
-	{
-        //Create an Image object from the byte array
-        return ImageIO.read(new ByteArrayInputStream(getImageData(imgBase64Data)));
-	}
 	
 	/**
 	 * @author Rafael Troilo (rtroilo@gmail.com)

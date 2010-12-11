@@ -33,7 +33,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -72,14 +74,13 @@ public class UnGZipFunction extends BasicFunction
         if(args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
-        Base64Binary bin = (Base64Binary) args[0].itemAt(0);
-        ByteArrayInputStream bais = new ByteArrayInputStream(bin.getBinaryData());
+        BinaryValue bin = (BinaryValue) args[0].itemAt(0);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // ungzip the data
         try
         {
-            GZIPInputStream gzis = new GZIPInputStream(bais);
+            GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
             int size;
             byte[] b = new byte[4096];
             while ((size = gzis.read(b, 0, 4096)) != -1)
@@ -88,7 +89,7 @@ public class UnGZipFunction extends BasicFunction
             }
             baos.flush();
             baos.close();
-            return new Base64Binary(baos.toByteArray());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
         }
         catch(IOException ioe)
         {

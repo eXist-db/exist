@@ -21,13 +21,14 @@
  */
 package org.exist.xquery.value;
 
+import java.io.InputStream;
 import org.exist.xquery.XPathException;
 
 /**
  * Wrapper around Base64Binary.
  * @author dizzzzz
  */
-public class Base64BinaryDocument extends Base64Binary {
+public class Base64BinaryDocument extends BinaryValueFromInputStream {
 
     private String url = null;
 
@@ -39,11 +40,13 @@ public class Base64BinaryDocument extends Base64Binary {
         this.url = url;
     }
 
-    public Base64BinaryDocument(byte[] data) {
-        super(data);
+    private Base64BinaryDocument(InputStream is) throws XPathException {
+        super(new Base64BinaryValueType(), is);
     }
 
-    public Base64BinaryDocument(String str) throws XPathException {
-    	super(str);
+    public static Base64BinaryDocument getInstance(BinaryValueManager manager, InputStream is) throws XPathException {
+        Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(is);
+        manager.registerBinaryValueInstance(b64BinaryDocument);
+        return b64BinaryDocument;
     }
 }

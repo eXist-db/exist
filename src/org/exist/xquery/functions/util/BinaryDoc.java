@@ -108,12 +108,14 @@ public class BinaryDoc extends BasicFunction {
             {
                 BinaryDocument bin = (BinaryDocument) doc;
                 InputStream is = context.getBroker().getBinaryResource(bin);
-		long binaryLength = context.getBroker().getBinaryResourceSize(bin);
+
+                /*
+                long binaryLength = context.getBroker().getBinaryResourceSize(bin);
 
                 byte[] data = new byte[(binaryLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)binaryLength];
                 is.read(data);
-                is.close();
-                Base64BinaryDocument b64doc = new Base64BinaryDocument(data);
+                is.close(); */
+                Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
                 b64doc.setUrl(path);
                 return b64doc;
             }

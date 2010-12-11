@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
@@ -32,7 +33,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -72,17 +75,17 @@ public class GZipFunction extends BasicFunction
         if(args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
-        Base64Binary bin = (Base64Binary) args[0].itemAt(0);
+        BinaryValue bin = (BinaryValue) args[0].itemAt(0);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // gzip the data
         try
         {
             GZIPOutputStream gzos = new GZIPOutputStream(baos);
-            gzos.write(bin.getBinaryData());
+            bin.streamTo(gzos);
             gzos.close();
 
-            return new Base64Binary(baos.toByteArray());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
         }
         catch(IOException ioe)
         {

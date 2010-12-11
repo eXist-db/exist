@@ -36,7 +36,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromFile;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -82,16 +83,21 @@ public class FileReadBinary extends BasicFunction {
 		}
 
 		String arg 		= args[0].itemAt(0).getStringValue();
-		byte[] buffer;
+		//byte[] buffer;
 		
 		try {
 			URL 			url  	= new URL( arg );	
-			File 			file 	= new File( url.toURI() ); 		
-			DataInputStream in 	 	= new DataInputStream( new FileInputStream( file ) );		
+			File 			file 	= new File( url.toURI() );
+
+			//DataInputStream in 	 	= new DataInputStream( new FileInputStream( file ) );
 			
-			buffer 	= new byte[ (int)file.length() ];
+			//buffer 	= new byte[ (int)file.length() ];
 			
-			in.readFully( buffer );
+			//in.readFully( buffer );
+
+                        new FileInputStream(file).getFD();
+                        
+                        return(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(),file));
 		} 
 		
 		catch( MalformedURLException e ) {
@@ -105,7 +111,5 @@ public class FileReadBinary extends BasicFunction {
 		catch( IOException e ) {
 			throw( new XPathException(this, e.getMessage() ) );	
 		}
-
-		return( new Base64Binary( buffer ) );
 	}
 }

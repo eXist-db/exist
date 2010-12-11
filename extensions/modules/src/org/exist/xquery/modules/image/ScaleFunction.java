@@ -27,6 +27,7 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import javax.imageio.ImageIO;
 
 import org.exist.dom.QName;
@@ -35,7 +36,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -122,12 +125,11 @@ public class ScaleFunction extends BasicFunction
 		try
 		{
 			//get the image data
-			image = ImageModule.getImage((Base64Binary)args[0].itemAt(0));
+			image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
 		
-			if(image == null)
-			{
-				logger.error("Unable to read image data!");
-	        	return Sequence.EMPTY_SEQUENCE;
+			if(image == null) {
+                            logger.error("Unable to read image data!");
+                            return Sequence.EMPTY_SEQUENCE;
 			}
 			
 			//scale the image
@@ -138,7 +140,7 @@ public class ScaleFunction extends BasicFunction
 			ImageIO.write(bImage, formatName, os);
 			
 			//return the new scaled image data
-			return new Base64Binary(os.toByteArray());
+			return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(os.toByteArray()));
 		}
 		catch(Exception e)
 		{

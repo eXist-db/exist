@@ -535,7 +535,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-        params.add(res.getMimeType());
+                params.add(res.getMimeType());
 		params.add(Boolean.TRUE);
 
 

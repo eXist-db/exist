@@ -24,6 +24,7 @@ package org.exist.xquery.modules.image;
 
 import java.awt.Image;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -32,7 +33,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -96,7 +98,7 @@ public class GetHeightFunction extends BasicFunction
         Image image = null;
         try
         {
-        	image = ImageModule.getImage((Base64Binary)args[0].itemAt(0));
+            image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
         }
         catch(IOException ioe)
         {
