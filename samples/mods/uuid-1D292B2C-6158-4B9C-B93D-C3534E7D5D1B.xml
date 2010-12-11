@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-1D292B2C-6158-4B9C-B93D-C3534E7D5D1B">
+    <titleInfo>
+        <title>CATEWE - A Comparative Analysis of Transitions from Education to Work in Europe</title>
+    </titleInfo>
+    <abstract>The transition from education to work is one of the most crucial phases in the life-cycle of individuals because it often channels and shapes individual careers and life chances. These transitions differ between European countries due to different educational systems, labour markets, and organization of societal work.</abstract>
+    <name type="personal">
+        <namePart>Gangl, Markus</namePart>
+    </name>
+    <name type="personal">
+        <namePart>Hannan, Damian</namePart>
+    </name>
+    <name type="personal">
+        <namePart>Raffe, David</namePart>
+    </name>
+    <name type="personal">
+        <namePart>Smyth, Emer</namePart>
+    </name>
+    <location>
+        <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no8/catewe.html</url>
+    </location>
+    <originInfo>
+        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
+        <dateCreated encoding="w3cdtf">1998</dateCreated>
+    </originInfo>
+    <physicalDescription>
+        <internetMediaType>text/html</internetMediaType>
+    </physicalDescription>
+    <relatedItem type="otherFormat">
+        <titleInfo>
+            <title>EURODATA Newsletter No.8</title>
+        </titleInfo>
+    </relatedItem>
+    <classification authority="IZSOZ">10208</classification>
+    <subject authority="IZSOZ">
+        <topic>Bildungswesen</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>berufliche Integration</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>dreigliedriges Schulwesen</topic>
+    </subject>
+    <subject authority="IZSOZ">
+        <topic>internationaler Vergleich</topic>
+    </subject>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-46E6B592-3574-4B19-A79C-5F2F0D068F2F">
+    <titleInfo>
+        <title>eXist at ASML</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">conferencePaper</genre>
+    <name type="personal">
+        <namePart type="family">Wessels</namePart>
+        <namePart type="given">Dannes</namePart>
+    </name>
+    <name type="conference">
+        <namePart>eXist Workshop at XML Prague</namePart>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text">Prague</placeTerm>
+        </place>
+        <dateCreated>2006-06-17</dateCreated>
+    </originInfo>
+    <location>
+        <url>http://atomic.exist-db.org/articles/ASML%20and%20eXist.pdf</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>

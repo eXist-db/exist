@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3"
+    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-BFF44A67-05F0-45C7-9D28-E17442B54EEC">
+    <titleInfo>
+        <title>TEI Day in Kyoto 2006</title>
+    </titleInfo>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="local">webpage</genre>
+    <genre authority="marcgt">web site</genre>
+    <name type="personal">
+        <namePart type="family">Cummings</namePart>
+        <namePart type="given">James</namePart>
+    </name>
+    <name type="personal">
+        <namePart type="family">Bingenheimer</namePart>
+        <namePart type="given">Marcus</namePart>
+    </name>
+    <originInfo>
+        <dateCreated>2006-05-17</dateCreated>
+        <dateCaptured>2009-02-14 21:12:54</dateCaptured>
+    </originInfo>
+    <location>
+        <url>http://coe21.zinbun.kyoto-u.ac.jp/tei-day/</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+    </language>
+</mods>
