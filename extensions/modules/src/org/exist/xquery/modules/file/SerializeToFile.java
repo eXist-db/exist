@@ -44,7 +44,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -162,7 +163,7 @@ public class SerializeToFile extends BasicFunction
             else if(isCalledAs(FN_SERIALIZE_BINARY_LN))
             {
                 boolean doAppend = (args.length > 2) && "true".equals(args[2].itemAt(0).getStringValue());
-                serializeBinary((Base64Binary)args[0].itemAt(0), file, doAppend);
+                serializeBinary((BinaryValue)args[0].itemAt(0), file, doAppend);
             }
             else
             {
@@ -226,13 +227,13 @@ public class SerializeToFile extends BasicFunction
 		}
 	}
 
-    private void serializeBinary(Base64Binary binary, File file, boolean doAppend) throws XPathException
+    private void serializeBinary(BinaryValue binary, File file, boolean doAppend) throws XPathException
     {
         try
         {
             OutputStream fos = new BufferedOutputStream(new FileOutputStream(file, doAppend));
 
-            fos.write(binary.getBinaryData());
+            binary.streamBinaryTo(fos);
 
             fos.flush();
             fos.close();

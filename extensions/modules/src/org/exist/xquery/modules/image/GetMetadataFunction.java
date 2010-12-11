@@ -22,7 +22,6 @@
 
 package org.exist.xquery.modules.image;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -44,7 +43,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -123,10 +122,10 @@ public class GetMetadataFunction extends BasicFunction
 		}
         
                 //get the images raw binary data
-		byte imgData[] = ImageModule.getImageData((Base64Binary)args[0].itemAt(0));
+		BinaryValue imageData = (BinaryValue)args[0].itemAt(0);
 
                 if(isCalledAs("get-exif-metadata")) {
-                    return parseWithTikaJpegParser(imgData);
+                    return parseWithTikaJpegParser(imageData);
                 } else {
                     if(args[1].isEmpty()) {
                         return Sequence.EMPTY_SEQUENCE;
@@ -136,7 +135,7 @@ public class GetMetadataFunction extends BasicFunction
 
                     try {
                         //get an input stream
-                        ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imgData));
+                        ImageInputStream iis = ImageIO.createImageInputStream(imageData.getInputStream());
                         return parseWithImageIO(iis, nativeFormat);
                     } catch(IOException ioe) {
                         throw (new XPathException(this, ioe.getMessage(), ioe));
@@ -144,7 +143,7 @@ public class GetMetadataFunction extends BasicFunction
             }
 	}
 
-        private Sequence parseWithTikaJpegParser(byte imgData[]) throws XPathException {
+        private Sequence parseWithTikaJpegParser(BinaryValue imageData) throws XPathException {
 
             context.pushDocumentContext();
             try {
@@ -161,7 +160,7 @@ public class GetMetadataFunction extends BasicFunction
                 DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 
                 parseMethod.invoke(jpegParser, new Object[]{
-                    new ByteArrayInputStream(imgData),
+                    imageData.getInputStream(),
                     receiver,
                     metadata
 

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +49,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -131,7 +133,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		} catch (IOException ioe) {
 			throw new XPathException(this, ioe.getMessage());
 		}
-		return new Base64Binary(baos.toByteArray());
+		return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
 	}
 
     private void compressFromUri(OutputStream os, XmldbURI uri, boolean useHierarchy, String stripOffset, String method, String resourceName) throws XPathException

@@ -209,9 +209,9 @@ public class StringValue extends AtomicValue {
 			case Type.UNSIGNED_BYTE :
 				return new IntegerValue(value, requiredType);
 			case Type.BASE64_BINARY :
-				return new Base64Binary(value);
+				return new BinaryValueFromString(new Base64BinaryValueType(), value);
             case Type.HEX_BINARY :
-                return new HexBinary(value);
+                return new BinaryValueFromString(new HexBinaryValueType(), value);
 			case Type.DATE_TIME :
 				return new DateTimeValue(value);
 			case Type.TIME :

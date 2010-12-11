@@ -21,29 +21,40 @@
  */
 package org.exist.xquery.value;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.text.Collator;
+import org.apache.log4j.Logger;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
+/**
+ * @author Adam Retter <adam@existsolutions.com>
+ */
 public abstract class BinaryValue extends AtomicValue {
 
-    protected byte[] data;
-    
-    public BinaryValue() {
-    }
-    
-    public BinaryValue(byte[] data) {
-        super();
-        this.data = data;
+    private final static Logger LOG = Logger.getLogger(BinaryValue.class);
+
+    protected final int READ_BUFFER_SIZE = 4 * 1024; //4kb
+
+    private final BinaryValueType binaryValueType;
+
+    protected BinaryValue(BinaryValueType binaryValueType) {
+        this.binaryValueType = binaryValueType;
     }
 
-    public byte[] getBinaryData() {
-        return data;
+    @Override
+    public int getType() {
+        return binaryValueType.getXQueryType();
     }
     
-    public boolean compareTo(Collator collator, int operator, AtomicValue other)
-    throws XPathException {
+    @Override
+    public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
             int value = compareTo((BinaryValue)other);
             switch(operator) {
@@ -62,50 +73,210 @@ public abstract class BinaryValue extends AtomicValue {
                 default:
                     throw new XPathException("Type error: cannot apply operator to numeric value");
             }
-        } else
-            throw new XPathException("Cannot compare value of type xs:hexBinary with " +
-                    Type.getTypeName(other.getType()));
+        } else {
+            throw new XPathException("Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
+        }
     }
 
-    public int compareTo(Collator collator, AtomicValue other)
-    throws XPathException {
+    @Override
+    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
             return compareTo((BinaryValue)other);
-        } else
-            throw new XPathException("Cannot compare value of type xs:hexBinary with " +
-                    Type.getTypeName(other.getType()));
+        } else {
+            throw new XPathException("Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
+        }
     }
 
-    public AtomicValue max(Collator collator, AtomicValue other)
-    throws XPathException {
-        throw new XPathException("Cannot compare values of type " +
-                Type.getTypeName(getType()));
+    //TODO need to understand the expense of this
+    private int compareTo(BinaryValue otherValue) {
+        return this.getReadOnlyBuffer().compareTo(otherValue.getReadOnlyBuffer());
     }
 
-    public AtomicValue min(Collator collator, AtomicValue other)
-    throws XPathException {
-        throw new XPathException("Cannot compare values of type " +
-                Type.getTypeName(getType()));
+    @Override
+    public Object toJavaObject(Class<?> target) throws XPathException {
+        if(target.isAssignableFrom(getClass())) {
+            return this;
+        }
+
+        if(target == byte[].class) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                streamBinaryTo(baos);
+                return baos.toByteArray();
+            } catch(IOException ioe) {
+                LOG.error("Unable to Stream BinaryValue to byte[]: " + ioe.getMessage(), ioe);
+            }
+
+        }
+
+        throw new XPathException("Cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 
+    @Override
+    public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+        throw new XPathException("Cannot compare values of type " + Type.getTypeName(getType()));
+    }
+
+    @Override
+    public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+        throw new XPathException("Cannot compare values of type " + Type.getTypeName(getType()));
+    }
+
+    @Override
+    public AtomicValue convertTo(int requiredType) throws XPathException {
+        switch(requiredType) {
+            case Type.UNTYPED_ATOMIC:
+                //TODO still needed? Added trim() since it looks like a new line character is added
+                return new UntypedAtomicValue(getStringValue());
+            case Type.STRING:
+                //TODO still needed? Added trim() since it looks like a new line character is added
+                return new StringValue(getStringValue());
+            default:
+                throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+        }
+    }
+
+    @Override
     public int conversionPreference(Class<?> javaClass) {
-        if (javaClass.isArray() && javaClass.isInstance(Byte.class))
+        if (javaClass.isArray() && javaClass.isInstance(Byte.class)) {
             return 0;
+        }
+
         return Integer.MAX_VALUE;
     }
 
-    protected int compareTo(BinaryValue otherValue) {
-        byte[] other = otherValue.data;
-        int a1len = data.length;
-        int a2len = other.length;
-
-        int limit = a1len <= a2len ? a1len : a2len;
-        for (int i = 0; i < limit; i++) {
-            byte b1 = data[i];
-            byte b2 = other[i];
-            if (b1 != b2)
-                return (b1 & 0xFF) - (b2 & 0xFF);
-        }
-        return (a1len - a2len);
+    @Override
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) + " has no boolean value.");
     }
+    
+    //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
+    @Override
+    public String getStringValue() throws XPathException {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try {
+            streamTo(baos);
+        } catch(IOException ex) {
+            throw new XPathException("Unable to encode string value: " + ex.getMessage(), ex);
+        } finally {
+            try {
+                baos.close();   //close the stream to ensure all data is flushed
+            } catch(IOException ioe) {
+                LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+            }
+        }
+
+        return new String(baos.toByteArray());
+    }
+
+
+    public abstract void streamBinaryTo(OutputStream os) throws IOException;
+
+    public final void streamTo(OutputStream os) throws IOException {
+        
+        //we need to create a safe output stream that cannot be closed
+        FilterOutputStream safeOutputStream = new FilterOutputStream(os){
+            @Override
+            public void close() throws IOException {
+                //do nothing
+            }
+        };
+
+        //get the encoder
+        FilterOutputStream fos = binaryValueType.getEncoder(safeOutputStream);
+
+        //stream with the encoder
+        streamBinaryTo(fos);
+
+        //we do have to close the encoders output stream though
+        //to ensure that all bytes have been written, this is
+        //particularly nessecary for Apache Commons Codec stream encoders
+        try {
+            fos.close();
+        } catch(IOException ioe) {
+            LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+        }
+    }
+
+    //TODO the expense of this function needs to be measured
+    public abstract ByteBuffer getReadOnlyBuffer();
+
+    //TODO the expense of the underlying call to getReadOnlyBuffer needs to be established
+    public InputStream getInputStream() {
+        return new InputStream() {
+
+            private final ByteBuffer b = getReadOnlyBuffer();
+
+            @Override
+            public int read() throws IOException {
+                return b.get();
+            }
+        };
+    }
+
+    public abstract void close() throws IOException;
+
+    /*
+    public class BinaryValueInputStream extends InputStream {
+
+        private InputStream src;
+
+        public BinaryValueInputStream(InputStream src) {
+            if(is.markSupported()) {
+                this.src = src;
+            } else {
+                this.src = new CachingFilterInputStream(src);
+            }
+
+            //mark the start of the stream so that we can read again
+            src.mark(Integer.MAX_VALUE);
+        }
+
+        @Override
+        public boolean markSupported() {
+            return true;
+        }
+
+        @Override
+        public synchronized void mark(int i) {
+            src.mark(i);
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            src.reset();
+        }
+
+        @Override
+        public int read() throws IOException {
+            return src.read();
+        }
+
+        @Override
+        public int read(byte[] bytes) throws IOException {
+            return src.read(bytes);
+        }
+
+        @Override
+        public int read(byte[] bytes, int off, int len) throws IOException {
+            return src.read(bytes, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return src.skip(n);
+        }
+
+        @Override
+        public int available() throws IOException {
+            return src.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            src.close();
+        }
+    }*/
 }

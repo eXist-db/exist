@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Pipe;
+import java.nio.channels.Pipe.SinkChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,8 +48,9 @@ import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.Base64BinaryDocument;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -150,13 +153,16 @@ public class Shared {
             InputStream is = new NodeInputStream(serializer, node); 
             streamSource.setInputStream(is);
 
-        } else if (item.getType() == Type.BASE64_BINARY) {
+        } else if (item.getType() == Type.BASE64_BINARY || item.getType() == Type.HEX_BINARY) {
             LOG.debug("Streaming base64 binary");
 
-            Base64Binary base64 = (Base64Binary) item;
-            byte[] data = (byte[]) base64.toJavaObject(byte[].class);
+            BinaryValue binary = (BinaryValue) item;
+            
+            byte[] data = (byte[]) binary.toJavaObject(byte[].class);
             InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
+
+            //TODO consider using BinaryValue.getInputStream()
 
             if (item instanceof Base64BinaryDocument) {
                 Base64BinaryDocument b64doc = (Base64BinaryDocument) item;

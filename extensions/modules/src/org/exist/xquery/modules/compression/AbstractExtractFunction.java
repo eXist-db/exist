@@ -39,7 +39,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.NodeValue;
@@ -100,7 +102,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
         storeParam = args[4];
         
-        Base64Binary compressedData = ((Base64Binary)args[0].itemAt(0));
+        BinaryValue compressedData = ((BinaryValue)args[0].itemAt(0));
         
         try {
 			return processCompressedData(compressedData);
@@ -115,7 +117,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * @param compressedData the compressed data to extract
      * @return Sequence of results
      */
-    protected abstract Sequence processCompressedData(Base64Binary compressedData) throws XPathException, XMLDBException;
+    protected abstract Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException;
 
     /**
      * Processes a compressed entry from an archive
@@ -215,7 +217,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 catch(SAXException saxe)
                 {
                     if(entryData.length > 0)
-                        uncompressedData = new Base64Binary(entryData);
+                        uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(entryData));
                 }
 
                 //call the entry-data function

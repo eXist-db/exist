@@ -55,7 +55,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -69,6 +69,8 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 
 
 /**
@@ -388,7 +390,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
 
                     if( body != null ) {
-                        Base64Binary binary = new Base64Binary( body );
+                        BinaryValue binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(body));
                         builder.characters( binary.getStringValue() );
                     }
                 }

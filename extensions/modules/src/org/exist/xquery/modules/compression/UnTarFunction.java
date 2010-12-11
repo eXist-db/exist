@@ -32,7 +32,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -80,12 +81,12 @@ public class UnTarFunction extends AbstractExtractFunction {
     }
 	
     @Override
-    protected Sequence processCompressedData(Base64Binary compressedData) throws XPathException, XMLDBException
+    protected Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException
     {
         TarArchiveInputStream tis = null;
         try
         {
-            tis = new TarArchiveInputStream(new ByteArrayInputStream(compressedData.getBinaryData()));
+            tis = new TarArchiveInputStream(compressedData.getInputStream());
             TarArchiveEntry entry = null;
 
             Sequence results = new ValueSequence();

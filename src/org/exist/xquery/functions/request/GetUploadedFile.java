@@ -40,7 +40,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromFile;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
@@ -73,6 +74,7 @@ public class GetUploadedFile extends BasicFunction {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
 
@@ -107,7 +109,7 @@ public class GetUploadedFile extends BasicFunction {
             }
 
 
-            InputStream is = null;
+            /* InputStream is = null;
             try {
                 is = new BufferedInputStream(new FileInputStream(file));
                 byte buf[] = new byte[1024];
@@ -133,7 +135,11 @@ public class GetUploadedFile extends BasicFunction {
                         logger.warn(ioe.getMessage(), ioe);
                     }
                 }
-            }
+            } */
+
+            return BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file);
+
+
 
         } else {
             throw new XPathException(this, "Variable $request is not bound to a Request object.");

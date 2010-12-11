@@ -106,7 +106,7 @@ import antlr.collections.AST;
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryContext
+public class XQueryContext implements BinaryValueManager
 {
     public static final String                         CONFIGURATION_ELEMENT_NAME                       = "xquery";
     public static final String                         CONFIGURATION_MODULES_ELEMENT_NAME               = "builtin-modules";
@@ -1418,6 +1418,18 @@ public class XQueryContext
         clearUpdateListeners();
 
         profiler.reset();
+
+        //clear any binary value resources
+        if(binaryValueInstances != null) {
+            for(BinaryValue bv : binaryValueInstances) {
+                try {
+                    bv.close();
+                } catch (IOException ioe) {
+                    LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                }
+            }
+            binaryValueInstances.clear();
+        }
     }
 
 
@@ -3545,6 +3557,15 @@ public class XQueryContext
 	{
 		return isVarDeclared( Debuggee.SESSION );
 	}
+
+    private List<BinaryValue> binaryValueInstances;
+    @Override
+    public void registerBinaryValueInstance(BinaryValue binaryValue) {
+        if(binaryValueInstances == null) {
+             binaryValueInstances = new ArrayList();
+        }
+        binaryValueInstances.add(binaryValue);
+    }
 
 
     // ====================================================================================

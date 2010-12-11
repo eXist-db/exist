@@ -22,6 +22,9 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
@@ -31,7 +34,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -92,6 +97,7 @@ public class BinaryToString extends BasicFunction {
 		super(context, signature);
 	}
 	
+    @Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
@@ -102,18 +108,18 @@ public class BinaryToString extends BasicFunction {
 		if (args.length == 2)
 			encoding = args[1].getStringValue();
         if (isCalledAs("binary-to-string")) {
-            Base64Binary binary = (Base64Binary) args[0].itemAt(0);
-            byte[] data = binary.getBinaryData();
+            BinaryValue binary = (BinaryValue) args[0].itemAt(0);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             try {
-                return new StringValue(new String(data, encoding));
-            } catch (UnsupportedEncodingException e) {
-                throw new XPathException(this, "Unsupported encoding: " + encoding);
+                binary.streamTo(os);
+                return new StringValue(new String(os.toByteArray(), encoding));
+            } catch(IOException ioe) {
+                throw new XPathException(this, ioe.getMessage(), ioe);
             }
         } else {
             String str = args[0].getStringValue();
             try {
-                byte[] data = str.getBytes(encoding);
-                return new Base64Binary(data);
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(str.getBytes(encoding)));
             } catch (UnsupportedEncodingException e) {
                 throw new XPathException(this, "Unsupported encoding: " + encoding);
             }
