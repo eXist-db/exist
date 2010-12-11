@@ -78,6 +78,6 @@ public class HexOutputStream extends FilterOutputStream {
             throw new NullPointerException();
         }
 
-        super.write(hex.encode(b));
+        out.write(hex.encode(b));
     }
 }
