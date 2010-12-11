@@ -24,6 +24,7 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -549,6 +550,9 @@ public class BrokerPool extends Observable implements Database {
     private Subject serviceModeUser = null;
     private boolean inServiceMode = false;
 
+    //the time that the database was started
+    private final Calendar startupTime;
+
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
@@ -559,8 +563,10 @@ public class BrokerPool extends Observable implements Database {
 	//TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
 	private BrokerPool(String instanceName, int minBrokers, int maxBrokers, Configuration conf)
             throws EXistException, DatabaseConfigurationException {
-		
-		Integer anInteger;
+
+            startupTime = Calendar.getInstance();
+
+            Integer anInteger;
 		Long aLong;
 		Boolean aBoolean;
 		NumberFormat nf = NumberFormat.getNumberInstance();
@@ -1750,6 +1756,10 @@ public class BrokerPool extends Observable implements Database {
     	}
     	
     	return debuggee;
+    }
+
+    public Calendar getStartupTime() {
+        return startupTime;
     }
     
 }
