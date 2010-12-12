@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.jfreechart;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,7 +32,6 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
-import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.BasicFunction;
@@ -48,6 +48,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -158,7 +160,7 @@ public class JFreeCharting extends BasicFunction {
             // Render output
             if(isCalledAs("render")){
                 byte[] image=writePNG(config, chart);
-                return new Base64Binary(image);
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(image));
 
             } else {
                 ResponseWrapper response = getResponseWrapper(context);
