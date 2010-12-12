@@ -27,7 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -91,7 +91,7 @@ public class MemcachedStoreFunction extends BasicFunction
 		
 		Object o;
 		if (data.getType() == Type.BASE64_BINARY){
-			o = ((Base64Binary)data).getBinaryData();
+			o = ((BinaryValue)data).toJavaObject(byte[].class);
 		} else {
 			o = data.getStringValue();
 		}
