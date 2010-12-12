@@ -31,10 +31,31 @@ declare function opt:order-by-name($node as element()) as xs:string? {
 };
 
 (:~ Callback function to index by date :)
+(:
 declare function opt:order-by-date($node as node()) as xs:integer* {
     for $year in $node//mods:dateCreated[1]
     return
         xs:integer($year)
+        :)
+        (:~ Callback function to index by date :)
+declare function opt:order-by-date($node as node()) as xs:integer? {
+    let $year :=
+        for $date in $node/mods:relatedItem/mods:part/mods:date[1]
+        return
+            xs:integer(substring($date, 1, 4))
+    return
+        if (empty($year)) 
+        then 
+            for $date in $node/mods:originInfo/mods:dateIssued[1]
+            return
+            xs:integer(substring($date, 1, 4))
+        else 
+        if (empty($year)) 
+        then 
+            for $date in $node/mods:relatedItem/mods:originInfo/mods:dateIssued[1]
+            return
+            xs:integer(substring($date, 1, 4))
+        else $year        
 };
 
 (:~ Callback function to return the normalized title :)

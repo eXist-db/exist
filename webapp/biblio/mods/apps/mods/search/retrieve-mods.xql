@@ -107,11 +107,11 @@ declare function mods:get-language($language as node()?) as xs:string? {
 : @author Jens Østergaard Petersen
 : @version 1.0
 : @see xqdoc/xqdoc-display;get-language
-: @param $entry The MODS languageTerm element, child of the top-level language element
+: @param $language The MODS languageTerm element, child of the top-level language element
 : @return The language label string
 :)
 declare function mods:language-of-resource($language as element(mods:language)*) as xs:anyAtomicType? {
-        let $languageTerm := $language/mods:languageTerm
+        let $languageTerm := $language/mods:languageTerm[1]
         return
             if ($languageTerm) 
             then
@@ -135,7 +135,7 @@ declare function mods:language-of-resource($language as element(mods:language)*)
 : @return The language label string
 :)
 declare function mods:language-of-cataloging($language as element(mods:languageOfCataloging)*) as xs:anyAtomicType? {
-        let $languageTerm := $language/mods:languageTerm
+        let $languageTerm := $language/mods:languageTerm[1]
         return
         if ($languageTerm) then
         mods:get-language($languageTerm)
@@ -211,17 +211,6 @@ declare function mods:get-role-term-secondary($roleTerm as xs:string?) as xs:str
                 else ()
             return
             $roleLabel
-(:
-            
-            
-            if ($roleTerm)
-            then
-            let $roleLabel := functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[label = $roleTerm]/labelSecondary)
-            return
-                if ($roleLabel)
-            $roleLabel
-            else ()
-            :)
 };
 
 declare function mods:add-part($part, $sep as xs:string) {
@@ -239,35 +228,12 @@ declare function mods:get-publisher($publishers as element(mods:publisher)?) as 
             if ($publisher/mods:name) 
             then
             (: the encoding of <publisher> with <name> and <namePart> is not standard.:)
-                
-                
-                        $publisher/mods:name[1]/mods:namePart
+                $publisher/mods:name[1]/mods:namePart
             else
-                
-                    $publisher,
+                $publisher,
         ', '
     )
 };
-(:
-declare function mods:get-publisher($publishers as element(mods:publisher)?) as xs:string? {
-    string-join(
-        for $publisher in $publishers
-        let $order := $publisher[@transliteration]
-        order by $order
-        return
-            if ($publisher/mods:name) 
-            then
-            (: the encoding of <publisher> with <name> and <namePart> is not standard.:)
-                
-                
-                        $publisher/mods:name[1]/mods:namePart
-            else
-                
-                    $publisher,
-        ', '
-    )
-};
-:)
 
 
 (: ### <subject> begins ### :)
@@ -342,11 +308,11 @@ declare function mods:format-subjects($entry as element()) {
 Under <physicalDescription>, <extent> has no subelements.:)
 
 declare function mods:get-extent($extent as element(mods:extent)?) as xs:string? {
-let $unit := functx:trim($extent/@unit)
-let $start := functx:trim($extent/mods:start)
-let $end := functx:trim($extent/mods:end)
-let $total := functx:trim($extent/mods:total)
-let $list := functx:trim($extent/mods:list)
+let $unit := functx:trim($extent/@unit/string())
+let $start := functx:trim($extent/mods:start/string())
+let $end := functx:trim($extent/mods:end/string())
+let $total := functx:trim($extent/mods:total/string())
+let $list := functx:trim($extent/mods:list/string())
 return
     if ($start and $end) 
     then 
@@ -372,7 +338,7 @@ return
         (: if not $start or $end. :)
         else
             if ($total) 
-            then $total
+            then concat('(', $total, ')')
             else
                 if ($list) 
                 then $list
@@ -385,8 +351,8 @@ declare function mods:get-date($date as element(mods:date)?) as xs:string? {
     (: some dates have keyDate. :)
 let $start := functx:trim($date[@point = 'start'])
 let $end := functx:trim($date[@point = 'end'])
-let $qualifier := $date/@qualifier
-let $encoding := $date/@encoding
+let $qualifier := functx:trim($date/@qualifier)
+let $encoding := functx:trim($date/@encoding)
 return
     (
     if ($start and $end) 
@@ -438,14 +404,16 @@ declare function mods:get-place($places as element(mods:place)*) as xs:string? {
     string-join(
         for $place in $places
         let $placeTerm := $place/mods:placeTerm
+        (:
         let $order := $place/mods:placeTerm[@transliteration]
         order by $order
+        :)
         return
             if ($placeTerm[@type = 'text']) 
             then string-join((
                 $placeTerm[@transliteration],
                 $placeTerm[not(@transliteration)]),
-                ', ')
+                ' ')
             else
                 if ($placeTerm[@authority = 'marccountry']) 
                 then
@@ -494,20 +462,23 @@ declare function mods:get-part-and-origin($entry as element()) {
     (: contains no subelements. :)
     (: has: encoding; point; qualifier. :)
     return
+        (: If there is a part with issue information and a date, i.e. if the publication is an article in a periodical. :)
         if ($detail and $date) 
-        then concat
-            (
+        then 
+            concat(
+            string-join(
             if ($issue and $volume)
             then
                 concat($volume, ', no. ', $issue)
                 (: concat((if ($part/mods:detail/mods:caption) then $part/mods:detail/mods:caption/string() else '/'), $part/mods:detail[@type='issue']/mods:number) :)
             else 
                 if (not($volume) and ($issue))
-                then $issue
+                then (', ', $issue)
                 else
                     if ($volume and not($issue))
                     then $volume
                     else ()
+            , ' ')
             ,
             if ($page) 
             then
@@ -524,42 +495,43 @@ declare function mods:get-part-and-origin($entry as element()) {
                 concat(', ', mods:get-extent($extent),'.')
             else ()
             )
-        else 
-            if ($date) 
+        else
+            (: If there is no part, but there is a dateIssued and a place or a publisher, i.e. if the publication is an an anthology. :)
+            if ($dateIssued and ($place | $publisher)) 
             then
-                concat(' (', mods:get-date($date), ')',
-                if ($extent) 
+                (
+                if ($extent)
                 then
-                    concat(': ', mods:get-extent($extent),'.')
+                    concat(', ', mods:get-extent($extent),'.')
                 else ()
-            )
+                ,
+                if ($place)
+                then
+                    mods:get-place($place)
+                else ()
+                ,
+                if ($publisher)
+                then
+                    (': ', mods:get-publisher($publisher))
+                else ()
+                ,
+                concat(', ', $dateIssued, '.')
+                )
+            (: If not a periodical and not an anthology, we don't know what it is and just try to extract the information. :)
             else
             (
-                if ($place/mods:placeTerm[@transliteration])
-                then
-                    normalize-space(mods:add-part(concat($place/mods:placeTerm[@transliteration][1], ' ', $originInfo/mods:place/mods:placeTerm[not(@transliteration)][1]), ': '))
-                else 
-                    normalize-space(mods:add-part($place/mods:placeTerm[not(@transliteration)][1], ': '))
+            if ($place)
+            then
+                mods:get-place($place)
+            else ()
             ,
-                normalize-space(mods:add-part(mods:get-publisher($publisher[1]), ', ')
+            normalize-space(mods:add-part(mods:get-publisher($publisher[1]), ', ')
             )
-            (:
-            ,
-            if ($entry/mods:relatedItem/mods:originInfo/mods:dateCreated) 
-            then () 
-            else
-                normalize-space(mods:add-part($originInfo/mods:dateCreated/string(),'.'))
-            :)
             , 
-            (:
-            if ($entry/mods:relatedItem/mods:originInfo/mods:dateIssued) 
-            then () 
-            else
-            :)
-                normalize-space(mods:add-part($originInfo/mods:dateIssued/string(), '.'))
-                ,
-                mods:get-extent($extent)
-                )
+            normalize-space(mods:add-part($originInfo/mods:dateIssued/string(), '.'))
+            ,
+            mods:get-extent($extent)
+            )
 };
 
 (: ### <originInfo> ends ### :)
@@ -580,7 +552,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             (: Subelements: <start>, <end>, <total>, <list>. :)
                 (: Unaccounted for: <total>, <list>. :)
 
-(:not used:)
+(: not used. :)
 declare function mods:get-related-item-part($entry as element()) {
 
     let $part := $entry/mods:relatedItem[@type='host'][1]/mods:part
@@ -907,7 +879,7 @@ declare function mods:format-untransliterated-secondary-name($name as element(mo
             		    ,
             		    ' '
             		    , 
-            		    functx:trim(string-join($family/string(), ' '))
+            		    functx:trim(string-join($family, ' '))
             		    ,
             		    if ($address) 
             		    then functx:trim(string-join($address, ', ')) 
@@ -1049,22 +1021,15 @@ declare function mods:format-multiple-secondary-names($entry as element()) {
         if ($nameCount eq 0) then
             ()
         else if ($nameCount eq 1) then
-            if (ends-with($names, '.')) then
-            (: Places period after single author name, if it does not end in period. :)
-            (: NB: this should not be necessary:)
-            concat($names, ' ')
-            else
-            concat($names, '. ')
+            $names
         else
             concat(
                 string-join(subsequence($names, 1, $nameCount - 1), ', '),
                 (: Places commas after all names that do not come last. :)
                 ', and ',
                 (: Places comma and "and" after name that comes second-to-last. :)
-                $names[$nameCount],
-                '. '
-                (: Places period after last name. :)
-            )
+                $names[$nameCount])
+                (: In secondary names, no period is placed after last name if the publication is an article in a periodical. :)
     return
     normalize-space(
         $formatted
@@ -1285,7 +1250,8 @@ declare function mods:get-short-title($id as xs:string?, $entry as element()) {
         then ('(', $titleTranslationFormat,')')
         else ()
         ,
-        if ($titleInfo/../mods:originInfo/mods:issuance[. = 'continuing']) 
+        (: If the publication is a periodical (continuing) or if it is an anthology, it should have no period attached. :)
+        if (local-name($titleInfo/..) = 'relatedItem') 
         then ()
         else '.'        
         )
@@ -1361,7 +1327,7 @@ if ($titleInfo)
         ()
         }
         {
-        if ($titleInfo/@script)
+        if (string-length($titleInfo/@script))
         then
         (<br/>, concat('(Script: ', 
         doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $titleInfo/@script]/label
@@ -1375,15 +1341,12 @@ if ($titleInfo)
         </td>
         <td class='record'>
         {
-        if ($titleInfo/mods:partNumber, $titleInfo/mods:partName)
+        if ($titleInfo/mods:partNumber | $titleInfo/mods:partName)
         then
-        concat(
-        string-join((concat($titleInfo/mods:nonSort, ' ', $titleInfo/mods:title), $titleInfo/mods:subTitle), ': ')
-        , '. ')
+        concat(concat(concat($titleInfo/mods:nonSort, ' ', $titleInfo/mods:title), (if ($titleInfo/mods:subTitle) then ': ' else ()), string-join($titleInfo/mods:subTitle, '; ')), '. ', string-join(($titleInfo/mods:partNumber, $titleInfo/mods:partName), ': '))
         else
-        string-join((concat($titleInfo/mods:nonSort, ' ', $titleInfo/mods:title), string-join($titleInfo/mods:subTitle, '; ')), ': ')
-        ,
-        string-join(($titleInfo/mods:partNumber, $titleInfo/mods:partName), ': ')        
+        concat(concat($titleInfo/mods:nonSort, ' ', $titleInfo/mods:title), (if ($titleInfo/mods:subTitle) then ': ' else ()), string-join($titleInfo/mods:subTitle, '; '))
+                
         }
         </td>
     </tr>
@@ -1404,59 +1367,65 @@ if ($titleInfo)
 
 declare function mods:get-related-item($entry as element(mods:mods)) {
     for $item at $pos in $entry/mods:relatedItem
-    let $relatedItem0 := $entry/mods:relatedItem[$pos]
+    let $relatedItemPos := $entry/mods:relatedItem[$pos]
     let $collection := util:collection-name($entry)
-    let $type := functx:capitalize-first(functx:camel-case-to-words($relatedItem0/@type, ' '))
+    let $type := functx:capitalize-first(functx:camel-case-to-words($relatedItemPos/@type, ' '))
     let $relatedItem :=
-        if (($relatedItem0/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItem0/@xlink:href])) 
-        then collection($collection)//mods:mods[@ID = $relatedItem0/@xlink:href][1]
-        else $relatedItem0
+        if (($relatedItemPos/@xlink:href) and (collection($collection)//mods:mods[@ID = $relatedItemPos/@xlink:href])) 
+        then collection($collection)//mods:mods[@ID = $relatedItemPos/@xlink:href][1]
+        else $relatedItemPos
     return
-        if ($relatedItem)
+        if ($relatedItem/@type = 'host')
         then
-            <span class="related"><span class="title">
-                {
-                mods:format-multiple-primary-names($relatedItem)
-                , 
-                mods:get-short-title((), $relatedItem)
-                
-                }
-                </span>
-                ,
-                {
-                let $names := $relatedItem/mods:name
-                let $roles := $relatedItem/mods:name/mods:role
-                return
-                for $role in distinct-values($roles)
-                where $role = ('com', 'compiler', 'editor', 'edt', 'trl', 'translator', 'annotator', 'ann')        
-                return
+                replace(
+                replace(
+                replace(
                 (
-                mods:get-role-term-secondary($role)
-                ,
-                for $name at $pos in $names
-                where $name/mods:role/mods:roleTerm = $role
-                return
-                (: temporary :)
-                (:(mods:retrieve-secondary-name($name, $pos), ', '):)
-                mods:retrieve-secondary-names($name/..)
-                ,'. ')
+            <span class="related">
+                {
+                (: format-multiple-primary-names is not needed for host and series types, but for other relatedItem types. :)
+                mods:format-multiple-primary-names($relatedItem)
+                } 
+                <span class="title">
+                {
+                string-join(mods:get-short-title((), $relatedItem),'')
                 }
-                ,
+                </span>,
+                {
+                let $roles := $relatedItem/mods:name/mods:role
+                for $role in distinct-values($roles/mods:roleTerm)
+                return
+                    (
+                    mods:get-role-term-secondary($role)
+                    ,
+                    mods:format-multiple-secondary-names($relatedItem)
+                    )
+                }
+                {
+                if ($relatedItem/mods:originInfo/mods:issuance = 'monographic')
+                then ()
+                else '.'
+                }
                 {
                 if ($relatedItem/mods:originInfo or $relatedItem/mods:part) 
                 then
                 (
                 ' ',                
                 mods:get-part-and-origin($relatedItem)
-                )
-                else ()
                 ,                
                 if ($relatedItem/mods:location/mods:url) 
                 then concat(' <', $relatedItem/mods:location/mods:url, '>')
                 else ()
+                )
+                else ()                
                 }
             </span>
+            )
+            , ' ,', ',')
+            , ' :', ':')
+            , '"\.', '."')
         else ()
+        
 };
 
 declare function mods:get-related-item-title($entry as element(mods:mods)) {
@@ -1467,74 +1436,78 @@ declare function mods:get-related-item-title($entry as element(mods:mods)) {
         if (($related0/@xlink:href) and (collection($collection)//mods:mods[@ID = $related0/@xlink:href])) 
         then collection($collection)//mods:mods[@ID = $related0/@xlink:href][1]
         else $related0[1]
+    let $type := $related/@type
+    let $roles := $related/mods:name/mods:role
     return
         if ($related) 
         then
             <tr><td class="label">
                 {
-                if ($related/@type ='host')
+                if ($type ='host')
                 then 'In:'
                 else
-                    if ($related/@type ='series')
+                    if ($type ='series')
                     then 'In Series:'
                     else
-                        if ($related/@type ='preceding')
+                        if ($type ='preceding')
                         then 'Preceding:'
                         else
-                            if ($related/@type ='succeeding')
+                            if ($type ='succeeding')
                             then 'Succeeding:'
                             else
-                                if ($related/@type ='original')
+                                if ($type ='original')
                                 then 'Original:'
                                 else
-                                    if ($related/@type ='constituent')
+                                    if ($type ='constituent')
                                     then 'Constituent:'
                                     else
-                                        if ($related/@type ='otherVersion')
+                                        if ($type ='otherVersion')
                                         then 'Other Version:'
                                         else
-                                            if ($related/@type ='otherFormat')
+                                            if ($type ='otherFormat')
                                             then 'Other Format:'
                                             else
-                                                if ($related/@type ='isReferencedBy')
+                                                if ($type ='isReferencedBy')
                                                 then 'Is Referenced By:'
                                                 else
-                                                    if ($related/@type ='references')
+                                                    if ($type ='references')
                                                     then 'References:'
-                                                    else ()
+                                                    else functx:capitalize-first($type)
             }
             </td>
             <td class="record"><span class="related">
             { 
-                (: Is mods:format-multiple-primary-names($related) needed? :)
-                mods:format-multiple-primary-names($related)
+                (: format-multiple-primary-names is not needed for host and series types, but for other relatedItem types. :)
+                if ($type != ('host', 'series'))
+                then
+                    mods:format-multiple-primary-names($related)
+                else ()
                 , 
                 mods:get-short-title((), $related)
                 ,
-                for $role in distinct-values($related/mods:name/mods:role/mods:roleTerm)
+                ', '
+                ,
+                for $role in distinct-values($roles/mods:roleTerm)
                 return
                     (
                     mods:get-role-term-secondary($role)
                     ,
                     mods:format-multiple-secondary-names($related)
                     )
+                (: If there are several roles, they should be separated by commas. :)
                 ,
                 if ($related/mods:originInfo or $related/mods:part) 
                 then mods:get-part-and-origin($related)
                 else 
                     if ($related/mods:location/mods:url) 
                     then concat(' <', $related/mods:location/mods:url, '>')
-                    else ()    
+                    else ()
             }
             </span></td>
         </tr>
         else ()
 };
-(:        <tr>
-            <td class="label">{$label}</td>
-            <td class="record">{string($data)}</td>
-        </tr>
-:)
+
 (: ### <relatedItem> ends ### :)
 
 declare function mods:names-full($entry as element()) {
@@ -1563,9 +1536,6 @@ if ($entry/mods:name) then
             else
                 'Author'
             (: interpreting this as the default value for roleTerm. :)
-(:
-            mods:get-role-term($name/mods:role)
-:)
             }
             </td><td class="record">
             {       
@@ -1645,28 +1615,35 @@ else
 ()
 };
 
+(: Prepares one or more rows for the detail view. :)
 declare function mods:simple-row($data as item()?, $label as xs:string) as element(tr)? {
     for $d in $data
-    where $data != ''
+    where $d != ''
     return
         <tr>
             <td class="label">{$label}</td>
-            <td class="record">{string($data)}</td>
+            <td class="record">{string($d)}</td>
         </tr>
 };
 
+(: Prepares the clickable url for mods:entry-full. :)
 declare function mods:url($entry as element()) as element(tr)* {
     for $url in $entry/mods:location/mods:url
     return
         <tr>
-            <td class="label">URL {if ($url[@displayLabel]) then
-            concat('(',($url/@displayLabel/string()),')')
-        else ()}</td>
+            <td class="label">URL 
+            {
+            if ($url[@displayLabel]) 
+            then
+                concat('(',($url/@displayLabel/string()),')')
+            else ()
+            }
+            </td>
             <td class="record"><a href="{$url}">{$url/string()}</a></td>
         </tr>
 };
         
-(: Prepares for the recursive mods:format-full. :)
+(: Prepares for mods:format-full. :)
 declare function mods:entry-full($entry as element()) 
     {
     (: names :)
@@ -1704,7 +1681,6 @@ declare function mods:entry-full($entry as element())
     then () 
     else mods:simple-row($entry/mods:originInfo[1]/mods:dateModified[1], 'Date Modified')
     ,
-    (: NB! [1] should not be necessary. :)
     mods:simple-row($entry/mods:originInfo/mods:dateOther, 'Other date')
     ,
     
@@ -1720,43 +1696,44 @@ declare function mods:entry-full($entry as element())
     
     (: relatedItem :)
     for $item in ($entry)
+    where $item/mods:relatedItem/@type = 'host'
     return
-    mods:get-related-item-title($item)
+    mods:simple-row(mods:get-related-item($item), 'In')
     ,
     
     (: typeOfResource :)
-    mods:simple-row($entry/mods:typeOfResource[1]/string(), 'Type of Resource'),
+    mods:simple-row($entry/mods:typeOfResource[1]/string(), 'Type of Resource')
+    ,
     
     (: internetMediaType :)
     mods:simple-row(
-    (let $label := doc('/db/org/library/apps/mods/code-tables/internet-media-type-codes.xml')/code-table/items/item[value = $entry/mods:physicalDescription[1]/mods:internetMediaType]/label
+    (
+    let $label := doc('/db/org/library/apps/mods/code-tables/internet-media-type-codes.xml')/code-table/items/item[value = $entry/mods:physicalDescription[1]/mods:internetMediaType]/label
     return
-    if ($label) 
-    then $label
-    else $entry/mods:physicalDescription[1]/mods:internetMediaType)
+        if ($label) 
+        then $label
+        else $entry/mods:physicalDescription[1]/mods:internetMediaType)
     , 'Internet Media Type')
     ,
     
     (: language :)
     for $language in $entry/mods:language
+    let $languageTerm := $language/mods:languageTerm 
     return
-    <tr>
-    <td class="label subject">Language of Resource</td>
-        <td>
-            {mods:language-of-resource($language)}
-        </td>
-    </tr>
+    if ($languageTerm)
+    then
+    mods:simple-row(mods:language-of-resource($language), 'Language of Resource') 
+    else ()
     ,
     
     (: languageOfCataloging :)
     for $language in ($entry/mods:recordInfo/mods:languageOfCataloging)
+    let $languageTerm := $language/mods:languageTerm 
     return    
-    <tr>
-    <td class="label subject">Language of Cataloging</td>
-        <td>
-            {mods:language-of-cataloging($language)}
-        </td>
-    </tr>
+    if ($languageTerm)
+    then
+    mods:simple-row(mods:language-of-cataloging($language), 'Language of Cataloging')
+    else ()
     ,
     
     (: genre :)
@@ -1773,7 +1750,8 @@ declare function mods:entry-full($entry as element())
                 concat(' (', doc('/db/org/library/apps/mods/code-tables/genre-authority-codes.xml')/code-table/items/item[value = $authority]/label, ')')
             else concat(' (', $authority, ')')
         else ()            
-        ))
+        )
+    )
     ,
     
     (: abstract :)
@@ -1807,6 +1785,7 @@ declare function mods:entry-full($entry as element())
 };
 
 (: Creates view for detail view. :)
+(: NB: "mods:format-full()" is referenced in session.xql. :)
 declare function mods:format-full($id as xs:string, $entry as element(mods:mods), $original as element(mods:mods)) {
     <table class="biblio-full">
     {
@@ -1816,14 +1795,20 @@ declare function mods:format-full($id as xs:string, $entry as element(mods:mods)
     </table>
 };
 
-(:(<span class="pagination-toggle"><a>{$formatted}</a></span>):)
-
 (: Creates view for hitlist. :)
+(: NB: "mods:format-short()" is referenced in session.xql. :)
 declare function mods:format-short($id as xs:string, $entry as element(mods:mods)) {
+    let $format :=
+        (
+        (: The author, etc. of the primary publication. :)
         mods:format-multiple-primary-names($entry)
+        , ' ',
+        
+        (: The title of the primary publication. :)
+        string-join(mods:get-short-title($id, $entry),'')
         ,
-        mods:get-short-title($id, $entry)
-        ,
+        
+        (: The editor, etc. of the primary publication. :)
         let $names := $entry/mods:name
         let $roles := $names/mods:role
         return
@@ -1836,32 +1821,47 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
                 for $name at $pos in $names
                 where $name/mods:role/mods:roleTerm = $role
                 return
-                mods:retrieve-secondary-names($entry)
-                (: temporary :)
-                (:(mods:retrieve-secondary-name($name, $pos), ', '):)
-                ,'. ')
-        ,
+                mods:format-multiple-secondary-names($entry)
+                )
+        , ' ',
+        
+        (: The conference of the primary publication, containing originInfo and part information. :)
         if ($entry/mods:name[@type = 'conference']) 
         then
             mods:get-conference-hitlist($entry)
         else 
-            (
-            mods:get-part-and-origin($entry),
-                if ($entry/mods:relatedItem/@type = 'host') 
-                then
-                    ('In ', mods:get-related-item($entry))
-                else ()
-        )
+        (: If not a publication, get originInfo and part information for primary publication. :)
+            mods:get-part-and-origin($entry)
         ,
+        
+        (: The periodical or anthology that the primary publication occurs in. :)
+        if ($entry/mods:relatedItem/@type = 'host') 
+        then
+        ('In ', 
+        mods:get-related-item($entry)
+        )
+        else ()
+        ,
+        
+        (: The url of the primary publication. :)
         for $url in $entry/mods:location/mods:url
         return
         concat(' <', $url, '>')
-        (:
-            if ($url[@displayLabel]) 
-            then <span> (<a href="{$entry/mods:location/mods:url}">{$entry/mods:location/mods:url/@displayLabel/string()}</a>)</span>
-            else
-                if ($url) 
-                then <span> (<a href="{$entry/mods:location/mods:url}">Link</a>)</span>
-                else ()
-        :)                
+        )
+        
+    return
+        (: The result. :)
+        <div class="select">
+        {
+        replace(
+        replace(
+        replace(
+        replace(
+            normalize-space(string-join($format,' '))
+        , ' ,', ',')
+        , ' :', ':')
+        , '"\.', '."')
+        , '\. "', '. "')
+        }
+        </div>
 };
