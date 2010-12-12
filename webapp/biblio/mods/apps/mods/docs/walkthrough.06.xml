@@ -1,0 +1,21 @@
+<book xmlns:xi="http://www.w3.org/2001/XInclude"><bookinfo><productname>Tamboti</productname><title>Tamboti Walkthrough</title></bookinfo><sidebar xmlns="http://exist-db.org/NS/sidebar" title="Navigation"><search href="xquery/search.xql"/><toolbar><link href="index.xml">Home</link><link href="download.xml">Download</link><link href="http://atomic.exist-db.org">Wiki</link><link href="examples.xml">Demo</link></toolbar><group name="Tamboti"><item><link href="index.xml">What is Tamboti?</link></item><item><link href="acknowledge.xml">Who are we?</link></item></group><group name="Documentation"><item><link href="walkthrough.xml">Walk-through</link></item><item><link href="search.xml">Search Functions</link></item><item><link href="editor.xml">Editor</link></item><item><link href="security-manager.xml">Sharing</link></item></group><group name="MODS"><item><link href="examples.xml">Overview</link></item><item><link href="examples.xml">Examples</link></item><item><link href="links.xml">Links</link></item></group><group name="Feedback"><item><link href="http://kjc-fs-cluster.kjc.uni-heidelberg.de/helpdesk/" target="blank">Ticket System</link></item></group><group name="Development"><item><link href="development.html">How to Join</link></item><item><link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">Changelog</link></item></group><banner><link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/></link></banner></sidebar><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>Paths</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.xml"><div><graphic fileref="images/resultset_first.png" align="left" alt="Go To First"/>&#160;
+                                </div></ulink></entry><entry><ulink href="walkthrough.05.xml"><div><graphic fileref="images/resultset_previous.png" align="left" href="walkthough.01.xml" alt="Go To Previous"/>&#160;
+                                </div></ulink></entry><entry><ulink href="walkthrough.07.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>&#160;
+                                </div></ulink></entry><entry><ulink href="walkthrough.10.xml"><div><graphic fileref="images/resultset_last.png" align="right" alt="Go To Last"/>&#160;
+                                </div></ulink></entry></row></tbody></tgroup></table><para>
+            If you click on the first button at the top 
+            &#160;<graphic fileref="../../../resources/images/arrow_out.png" align="center" valign="middle"/>&#160;, 
+            all folders are opened fully, where all folders close up if you click the second
+            &#160;<graphic fileref="../../../resources/images/arrow_in.png" align="center" valign="middle"/>&#160;. 
+            The third button
+            &#160;<graphic fileref="../../../resources/images/arrow_refresh.png" align="center" valign="middle"/>&#160;, 
+            the one for reloading the folder view, is only needed if you work for a long time on the database and new folders have been created (or deleted) by others since you logged in - these you will only have access to if you reload the Folder View.
+        </para><para>
+            When you click on a folder or a folder name and thereby select it, you will see that the "path" leading to the folder from the base folder, "mods", separated by slashes, in the manner of "/mods/Cluster_publications", in the search panel. 
+        </para><para>
+            Clicking on a folder in this way is how you determine where to perform a search. If you search for something, it will be searched for inside the path you have chosen. 
+        </para>
+        <!--<para>
+            You can at the present moment only choose one path to search in at a time. If you choose "/mods" as your search path, a search will search through all material available to you in the database.
+        </para>
+        --><para><graphic fileref="images/walk-through.06.png" align="center" valign="middle"/></para></chapter></book>

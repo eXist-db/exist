@@ -57,7 +57,8 @@ declare variable $biblio:FIELDS :=
 		      union
 		mods:mods[ft:query(mods:relatedItem/mods:name, '$q', $options)]		
 		)</field>
-		<field name="Date">(
+		<field name="Date">
+		(
 		mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)]
 		      union
 		mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)]
@@ -73,14 +74,17 @@ declare variable $biblio:FIELDS :=
 		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:dateCaptured, '$q', $options)]
 		      union
 		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:copyrightDate, '$q', $options)]
-		)</field>
+		      union
+		mods:mods[ft:query(mods:part/mods:date, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:part/mods:date, '$q', $options)]
+		)
+		</field>
 		<field name="Abstract">mods:mods[ft:query(mods:abstract, '$q', $options)]</field>
         <field name="Note">mods:mods[ft:query(mods:note, '$q', $options)]</field>
         <field name="Subject">mods:mods[ft:query(mods:subject, '$q', $options)]</field>
-        <field name="All">(
-        mods:mods[ft:query(.//*, '$q', $options)]
-		)</field>
-        <field name="Id">mods:mods[@ID = '$q']</field>
+        <field name="All">mods:mods[ft:query(.//*, '$q', $options)]</field>
+        <field name="ID">mods:mods[@ID = '$q']</field>
 	</fields>;
 
 (:
@@ -336,7 +340,7 @@ declare function biblio:process-form() as element(query)? {
 :)
 declare function biblio:orderByAuthor($m as element()) as xs:string?
 {
-    for $name in $m/mods:name[1]
+    for $name in $m/mods:name[mods:role/mods:roleTerm = ('aut', 'author', 'Author', '')][1]
     return
         mods:retrieve-primary-name($name, 1)
 };
