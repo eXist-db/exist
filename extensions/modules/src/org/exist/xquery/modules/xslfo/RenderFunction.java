@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.xslfo;
 
 
+import java.io.ByteArrayInputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -45,7 +46,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -185,7 +187,7 @@ public class RenderFunction extends BasicFunction {
 			dh.endDocument();
 
 			// return the result
-			return new Base64Binary(baos.toByteArray());
+			return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
 		} catch (TransformerException te) {
 			throw new XPathException(this, te.getMessageAndLocation(), te);
 		} catch (SAXException se) {
