@@ -69,6 +69,14 @@
             <lib dir="extensions/indexes/spatial/lib">
                 <include name="*.jar"/>
             </lib>
+            <!-- Include additional xqdoc jars -->
+            <lib dir="extensions/xqdoc/lib">
+                <include name="*.jar"/>
+            </lib>
+            <!-- Include webdav milton jars  -->
+            <lib dir="extensions/webdav/lib">
+                <include name="*.jar"/>
+            </lib>
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
