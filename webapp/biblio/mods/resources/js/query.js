@@ -20,6 +20,7 @@ $(document).ready(function(){
 /* sharing dialog actions */
 $(document).ready(function(){
 
+    /*
     $('#sharing-collection-with-group').click(function(){
             if($(this).is(':checked')) {
                 $('#group-sharing-panel').show();
@@ -35,8 +36,10 @@ $(document).ready(function(){
                 $('#other-sharing-panel').hide();
             }
     });
+    */
 
     //when the sharing dialog is opened
+    /*
     $('#sharing-collection-dialog').bind("dialogopen", function(event, ui) {
     
         //show/hide group sharing panel
@@ -48,7 +51,7 @@ $(document).ready(function(){
         if(!$('#sharing-collection-with-other').is(':checked')) {
             $('#other-sharing-panel').hide()
         }
-    });
+    });*/
     
     updateSharingGroupMembers($('#group-list').val());
     $('#group-list').change(function(){
@@ -521,11 +524,11 @@ function updateSharingGroupCheckboxes(groupId) {
         if(readPermissions.size() + writePermissions.size() >= 1) {
             //$('#sharing-collection-with-group').attr('checked','checked');
             $('#sharing-collection-with-group').get(0).checked = true;
-            $('#group-sharing-panel').show();
+            //$('#group-sharing-panel').show();
         } else {
             //$('#sharing-collection-with-group').removeAttr('checked');
             $('#sharing-collection-with-group').get(0).checked = false;
-            $('#group-sharing-panel').hide();
+            //$('#group-sharing-panel').hide();
         }
     });
 }
@@ -555,10 +558,10 @@ function updateSharingOtherCheckboxes() {
         //set sharing checkbox
         if(readPermissions.size() + writePermissions.size() >= 1) {
             $('#sharing-collection-with-other').get(0).checked = true;
-            $('#other-sharing-panel').show();
+            //$('#other-sharing-panel').show();
         } else {
             $('#sharing-collection-with-other').get(0).checked = false;
-            $('#other-sharing-panel').hide();
+            //$('#other-sharing-panel').hide();
         }
     });
 }

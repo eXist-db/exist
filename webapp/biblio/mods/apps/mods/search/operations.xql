@@ -50,7 +50,7 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
     (: other :)
     let $share-with-other-outcome := if($sharing-collection-with = "other")then
     (
-        sharing:share-with-other($collection, ($other-sharing-permissions = "read"), ($other-sharing-permissions = "write"))
+        sharing:share-with-other($collection, true(), ($other-sharing-permissions = "write"))
     )
     else
     (
@@ -88,7 +88,7 @@ declare function op:update-collection-sharing($collection as xs:string, $sharing
         )
         return
             (: change the collection permissions to that of the group and appropriate read/write :)
-            sharing:share-with-group($collection, $group-id, ($group-sharing-permissions = "read"), ($group-sharing-permissions = "write"))
+            sharing:share-with-group($collection, $group-id, true(), ($group-sharing-permissions = "write"))
     )
     else
     (
