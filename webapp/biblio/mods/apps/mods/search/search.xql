@@ -738,6 +738,19 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                 let $groups := sharing:get-groups(),
                 $collection-group-id := sharing:get-group-id($collection) return
                     <div id="group-sharing-panel" class="sharing-panel">
+                        <div>   
+                            <span>
+                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write">
+                                {
+                                    (:
+                                    if(sharing:group-writeable($collection))then(attribute checked{ "checked" })else()
+                                    :)
+                                    ()
+                                }
+                                </input>
+                                <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
+                            </span>
+                        </div>
                         <div>
                             <label for="group-list">Group</label>
                             <select id="group-list" name="group">
@@ -775,30 +788,6 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                             </div>
                             <input id="add-new-member-to-group-button" type="button" value="Add Member"/>
                         </div>
-                        <div>
-                            <span>
-                                <input id="group-sharing-premissions-read" type="checkbox" name="group-sharing-permissions" value="read">
-                                {
-                                (:
-                                    if(sharing:group-readable($collection))then(attribute checked{ "checked" })else()
-                                    :)
-                                    ()
-                                }
-                                </input>
-                                <label for="group-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
-                            </span>
-                            <span style="margin-left: 1em">
-                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write">
-                                {
-                                    (:
-                                    if(sharing:group-writeable($collection))then(attribute checked{ "checked" })else()
-                                    :)
-                                    ()
-                                }
-                                </input>
-                                <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
-                            </span>
-                        </div>
                     </div>
             }
             </div>
@@ -815,17 +804,6 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                 <div id="other-sharing-panel" class="sharing-panel">
                     <div>
                         <span>
-                            <input id="other-sharing-premissions-read" type="checkbox" name="other-sharing-permissions" value="read">
-                            {
-                                (:
-                                if(sharing:other-readable($collection))then(attribute checked{ "checked" })else()
-                                :)
-                                ()
-                            }
-                            </input>
-                            <label for="other-sharing-premissions-read" class="labelWithCheckboxLeft">Read</label>
-                        </span>
-                        <span style="margin-left: 1em">
                             <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write">
                             {
                                 (:
@@ -834,7 +812,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                 ()
                             }
                             </input>
-                            <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Write</label>
+                            <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
                         </span>
                     </div>
                 </div>
