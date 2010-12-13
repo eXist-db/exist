@@ -503,21 +503,21 @@ function updateSharingGroupCheckboxes(groupId) {
         //set read checkbox
         var readPermissions = $(data).find('read');
         if(readPermissions.size() == 1){
-         //$('#group-sharing-premissions-read').attr('checked','checked');
-         $('#group-sharing-premissions-read').get(0).checked = true;
+         //$('#group-sharing-permissions-read').attr('checked','checked');
+         $('#group-sharing-permissions-read').get(0).checked = true;
         } else {
-         //$('#group-sharing-premissions-read').removeAttr('checked');
-         $('#group-sharing-premissions-read').get(0).checked = false;
+         //$('#group-sharing-permissions-read').removeAttr('checked');
+         $('#group-sharing-permissions-read').get(0).checked = false;
         }
         
         //set write checkbox
         var writePermissions = $(data).find('write');
          if(writePermissions.size() == 1){
-         //$('#group-sharing-premissions-write').attr('checked','checked');
-         $('#group-sharing-premissions-write').get(0).checked = true;
+         //$('#group-sharing-permissions-write').attr('checked','checked');
+         $('#group-sharing-permissions-write').get(0).checked = true;
         } else {
-         //$('#group-sharing-premissions-write').removeAttr('checked');
-         $('#group-sharing-premissions-write').get(0).checked = false;
+         //$('#group-sharing-permissions-write').removeAttr('checked');
+         $('#group-sharing-permissions-write').get(0).checked = false;
         }
         
         //set sharing checkbox
@@ -542,17 +542,17 @@ function updateSharingOtherCheckboxes() {
         //set read checkbox
         var readPermissions = $(data).find('read');
         if(readPermissions.size() == 1){
-         $('#other-sharing-premissions-read').get(0).checked = true;
+         $('#other-sharing-permissions-read').get(0).checked = true;
         } else {
-         $('#other-sharing-premissions-read').get(0).checked = false;
+         $('#other-sharing-permissions-read').get(0).checked = false;
         }
         
         //set write checkbox
         var writePermissions = $(data).find('write');
          if(writePermissions.size() == 1){
-         $('#other-sharing-premissions-write').get(0).checked = true;
+         $('#other-sharing-permissions-write').get(0).checked = true;
         } else {
-         $('#other-sharing-premissions-write').get(0).checked = false;
+         $('#other-sharing-permissions-write').get(0).checked = false;
         }
         
         //set sharing checkbox
