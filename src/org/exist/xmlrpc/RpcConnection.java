@@ -5135,4 +5135,18 @@ public class RpcConnection implements RpcAPI {
         BrokerPool brokerPool = factory.getBrokerPool();
         brokerPool.exitServiceMode(user);
     }
+
+	@Override
+	public void runCommand(String collectionURI, String... params) throws EXistException, PermissionDeniedException {
+
+		DBBroker broker = null;
+        try {
+            broker = factory.getBrokerPool().get(user);
+            
+            org.exist.plugin.command.Commands.command(XmldbURI.create(collectionURI), params);
+
+		} finally {
+            factory.getBrokerPool().release(broker);
+        }
+	}
 }
