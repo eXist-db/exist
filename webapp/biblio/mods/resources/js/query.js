@@ -503,30 +503,24 @@ function updateSharingGroupCheckboxes(groupId) {
         //set read checkbox
         var readPermissions = $(data).find('read');
         if(readPermissions.size() == 1){
-         //$('#group-sharing-permissions-read').attr('checked','checked');
-         $('#group-sharing-permissions-read').get(0).checked = true;
+            //$('#group-sharing-permissions-read').get(0).checked = true;
         } else {
-         //$('#group-sharing-permissions-read').removeAttr('checked');
-         $('#group-sharing-permissions-read').get(0).checked = false;
+            //$('#group-sharing-permissions-read').get(0).checked = false;
         }
         
         //set write checkbox
         var writePermissions = $(data).find('write');
-         if(writePermissions.size() == 1){
-         //$('#group-sharing-permissions-write').attr('checked','checked');
-         $('#group-sharing-permissions-write').get(0).checked = true;
+        if(writePermissions.size() == 1){
+            $('#group-sharing-permissions-write').get(0).checked = true;
         } else {
-         //$('#group-sharing-permissions-write').removeAttr('checked');
-         $('#group-sharing-permissions-write').get(0).checked = false;
+            $('#group-sharing-permissions-write').get(0).checked = false;
         }
         
         //set sharing checkbox
         if(readPermissions.size() + writePermissions.size() >= 1) {
-            //$('#sharing-collection-with-group').attr('checked','checked');
             $('#sharing-collection-with-group').get(0).checked = true;
             //$('#group-sharing-panel').show();
         } else {
-            //$('#sharing-collection-with-group').removeAttr('checked');
             $('#sharing-collection-with-group').get(0).checked = false;
             //$('#group-sharing-panel').hide();
         }
@@ -542,17 +536,17 @@ function updateSharingOtherCheckboxes() {
         //set read checkbox
         var readPermissions = $(data).find('read');
         if(readPermissions.size() == 1){
-         $('#other-sharing-permissions-read').get(0).checked = true;
+            //$('#other-sharing-permissions-read').get(0).checked = true;
         } else {
-         $('#other-sharing-permissions-read').get(0).checked = false;
+            //$('#other-sharing-permissions-read').get(0).checked = false;
         }
         
         //set write checkbox
         var writePermissions = $(data).find('write');
-         if(writePermissions.size() == 1){
-         $('#other-sharing-permissions-write').get(0).checked = true;
+        if(writePermissions.size() == 1){
+            $('#other-sharing-permissions-write').get(0).checked = true;
         } else {
-         $('#other-sharing-permissions-write').get(0).checked = false;
+            $('#other-sharing-permissions-write').get(0).checked = false;
         }
         
         //set sharing checkbox
