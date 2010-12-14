@@ -63,6 +63,9 @@ public class LDAPRealm extends AbstractRealm {
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "LDAP";
 
+    @ConfigurationFieldAsAttribute("version")
+    public final static String version = "1.0";
+
     @ConfigurationFieldAsElement("context")
     protected LdapContextFactory ldapContextFactory;
 
