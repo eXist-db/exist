@@ -1268,12 +1268,16 @@ public class BrokerPool extends Observable implements Database {
 			//Try to get an active broker
 			DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if(broker != null) {
-				return broker.getUser();
+				return broker.getSubject();
 			}
 		}
 		
 		return securityManager.getGuestSubject();
     }
+
+	public DBBroker getBroker() throws EXistException {
+		return get(null);
+	}
 
     /** Returns an active broker for the database instance.
 	 * @return The broker

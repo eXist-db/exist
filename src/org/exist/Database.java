@@ -81,8 +81,22 @@ public interface Database {
 	 */
 	public boolean setSubject(Subject subject);
 
+	public DBBroker getBroker() throws EXistException; //TODO: remove 'throws EXistException'?
 	
-	public DBBroker get(Subject subject) throws EXistException;
+	/*
+	 * @Deprecated ?
+	 * try {
+	 * 	broker = database.authenticate(account, credentials);
+	 * 
+	 * 	broker1 = database.get();
+	 * 	broker2 = database.get();
+	 * 	...
+	 * 	brokerN = database.get();
+	 * 
+	 * } finally {
+	 * 	database.release(broker);
+	 * }
+	 */
+	public DBBroker get(Subject subject) throws EXistException;   
 	public void release(DBBroker broker);
-	
 }
