@@ -54,7 +54,11 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 
 	private final static Logger LOG = Logger.getLogger(LDAPRealm.class);
 
-	public static String ID = "ActiveDirectory";
+    @ConfigurationFieldAsAttribute("id")
+    public static String ID = "ActiveDirectory";
+
+    @ConfigurationFieldAsAttribute("version")
+    public final static String version = "1.0";
 
 	public ActiveDirectoryRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
