@@ -205,6 +205,21 @@ public class InteractiveClient {
     protected ClientFrame frame;
     
     private static Logger LOG = Logger.getLogger(InteractiveClient.class.getName());
+    
+    //XXX:make pluggable
+    private static boolean havePluggableCommands = false;
+    
+    static {
+    	try {
+    		Class.forName("org.exist.plugin.command.Commands");
+			havePluggableCommands = true;
+		} catch (Exception e) {
+			havePluggableCommands = false;
+		}
+    }
+    
+    //*************************************
+    
     public InteractiveClient() {
     }
     
@@ -246,6 +261,10 @@ public class InteractiveClient {
         messageln("                     the current collection.");
         messageln("lock resource        put a write lock on the specified resource.");
         messageln("unlock resource      remove a write lock from the specified resource.");
+        if (havePluggableCommands) {
+        	messageln("svn                  subversion command-line client.");
+        	messageln("threads              threads debug information.");
+        }
         messageln("quit                 quit the program");
     }
     
@@ -1040,7 +1059,16 @@ public class InteractiveClient {
                 return true;
             } else if (args[0].equalsIgnoreCase("help") || args[0].equals("?"))
                 displayHelp();
-            else if (args[0].equalsIgnoreCase("quit")) {
+            
+            //XXX:make it pluggable
+        	else if (havePluggableCommands) {
+                CollectionManagementServiceImpl mgtService = 
+                	(CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
+                
+                mgtService.runCommand(args);
+
+            //****************************************************************
+        	} else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
                 
             } else {
