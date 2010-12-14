@@ -313,7 +313,7 @@ public class SVNConfigFile {
         Writer os = null;
         try {
 //            os = new BufferedWriter(new OutputStreamWriter(SVNFileUtil.openFileForWriting(configFile)));
-          os = SVNFileUtil.openFileForWriting(configFile);
+        	os = SVNFileUtil.openFileForWriting(configFile);
             String line;
             while((line = is.readLine()) != null) {
                 os.write(line);

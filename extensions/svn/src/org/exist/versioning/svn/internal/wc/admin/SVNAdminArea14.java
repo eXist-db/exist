@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.core.internal.io.fs.FSFile;
 import org.exist.versioning.svn.internal.util.SVNDate;
 import org.exist.versioning.svn.internal.wc.SVNAdminUtil;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
@@ -44,7 +45,6 @@ import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNProperties;
 import org.tmatesoft.svn.core.SVNProperty;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.internal.io.fs.FSFile;
 import org.tmatesoft.svn.core.internal.util.SVNEncodingUtil;
 import org.tmatesoft.svn.core.internal.util.SVNFormatUtil;
 import org.tmatesoft.svn.core.internal.util.SVNHashMap;

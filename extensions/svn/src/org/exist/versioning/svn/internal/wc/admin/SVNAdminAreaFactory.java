@@ -54,9 +54,9 @@ public abstract class SVNAdminAreaFactory implements Comparable {
 
     static {
         SVNAdminAreaFactory.registerFactory(new SVNAdminArea16Factory());
-        SVNAdminAreaFactory.registerFactory(new SVNAdminArea15Factory());
-        SVNAdminAreaFactory.registerFactory(new SVNAdminArea14Factory());
-        SVNAdminAreaFactory.registerFactory(new SVNXMLAdminAreaFactory());
+//        SVNAdminAreaFactory.registerFactory(new SVNAdminArea15Factory());
+//        SVNAdminAreaFactory.registerFactory(new SVNAdminArea14Factory());
+//        SVNAdminAreaFactory.registerFactory(new SVNXMLAdminAreaFactory());
     }
     
     public static void setUpgradeEnabled(boolean enabled) {

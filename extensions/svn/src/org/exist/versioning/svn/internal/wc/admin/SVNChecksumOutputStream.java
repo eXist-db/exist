@@ -16,8 +16,7 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
-
+import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 
 /**
  * @version 1.3
