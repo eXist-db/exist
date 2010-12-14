@@ -200,7 +200,7 @@ public class XmldbURL {
             } else {
                 int lastSep=path.lastIndexOf('/');
                 if(lastSep!=-1){
-                    collectionName=path.substring(dbLocation, lastSep);
+                    collectionName=path.substring(0, lastSep);
                 } else {
                     collectionName="/";
                 }
