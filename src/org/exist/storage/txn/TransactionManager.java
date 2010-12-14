@@ -22,6 +22,7 @@
 package org.exist.storage.txn;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -239,7 +240,7 @@ public class TransactionManager {
 	}
     
     public void reindex(DBBroker broker) {
-    	Subject currentUser = broker.getUser();
+    	Subject currentUser = broker.getSubject();
     	
         broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
@@ -279,4 +280,8 @@ public class TransactionManager {
             lock.unlock();
         }
     }
+
+	public void debug(PrintStream out) {
+		out.println("Active transactions: "+activeTransactions);
+	}
 }
