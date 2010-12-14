@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.plugin.command.Command;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
@@ -505,5 +506,21 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void setProperty( String property,
                              String value ) {
     }
+	
+    @Override
+	public void runCommand(String[] params) throws XMLDBException {
+    	
+    	DBBroker broker = null;
+        try {
+            broker = brokerPool.get(user);
+            
+            org.exist.plugin.command.Commands.command(XmldbURI.create(parent.getPath()), params);
+
+        } catch (EXistException e) {
+        	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "", e);
+		} finally {
+        	brokerPool.release(broker);
+        }
+	}
 }
 

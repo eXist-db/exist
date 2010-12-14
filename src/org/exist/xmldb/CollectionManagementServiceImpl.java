@@ -94,4 +94,6 @@ public interface CollectionManagementServiceImpl extends
     public void removeCollection( String collName) throws XMLDBException;
     public void removeCollection( XmldbURI collName) throws XMLDBException;
     
+    public void runCommand( String[] params) throws XMLDBException;
+    
 }
