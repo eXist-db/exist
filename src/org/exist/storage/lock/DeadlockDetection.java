@@ -249,7 +249,8 @@ public class DeadlockDetection {
         System.out.println(sout.toString());
     }
 
-    private static String arrayToString(Object[] a) {
+    //TODO: move to utils
+    public static String arrayToString(Object[] a) {
         if (a == null)
             return "null";
         if (a.length == 0)

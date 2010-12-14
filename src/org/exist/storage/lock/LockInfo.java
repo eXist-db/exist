@@ -21,11 +21,15 @@
  */
 package org.exist.storage.lock;
 
+import java.io.PrintStream;
+
+import org.exist.Debuggable;
+
 /**
  * Encapsulates debug information about a log. This information can be exported
  * via the JMX management interface, if enabled.
  */
-public class LockInfo {
+public class LockInfo implements Debuggable {
 
     public final static String COLLECTION_LOCK = "COLLECTION";
     public final static String RESOURCE_LOCK = "RESOURCE";
@@ -93,4 +97,15 @@ public class LockInfo {
     public void setReadLocks(String[] readLocks) {
         this.readLocks = readLocks;
     }
+
+	@Override
+	public void debug(PrintStream out) {
+    	out.println("Lock type: " + getLockType());
+    	out.println("Lock mode: " + getLockMode());
+    	out.println("Lock id: " + getId());
+    	out.println("Held by: " + DeadlockDetection.arrayToString(getOwners()));
+    	out.println("Read locks: " + DeadlockDetection.arrayToString(getReadLocks()));
+    	out.println("Wait for read: " + DeadlockDetection.arrayToString(getWaitingForRead()));
+    	out.println("Wait for write: " + DeadlockDetection.arrayToString(getWaitingForWrite()));
+	}
 }

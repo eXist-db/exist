@@ -22,9 +22,10 @@
  */
 package org.exist.storage.lock;
 
+import org.exist.Debuggable;
 import org.exist.util.LockException;
 
-public interface Lock {
+public interface Lock extends Debuggable {
 
 	public final static int READ_LOCK = 0;
 	public final static int WRITE_LOCK = 1;

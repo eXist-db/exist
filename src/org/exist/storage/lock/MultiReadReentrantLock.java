@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.exist.util.DeadlockException;
 import org.exist.util.LockException;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -598,4 +599,9 @@ public class MultiReadReentrantLock implements Lock {
         }
         return buf.toString();
     }
+
+	@Override
+	public void debug(PrintStream out) {
+		getLockInfo().debug(out);
+	}
 }
