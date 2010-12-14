@@ -55,8 +55,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.exist.xmldb.XmldbURI;
-import org.tmatesoft.svn.core.internal.wc.SVNFileUtil;
 
 /**
  * eXist's resource. It extend java.io.File
@@ -244,17 +244,17 @@ public class Resource extends File {
 		try {
      		source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
     		if(source == null) {
-    			tm.abort(transaction);
+    			//tm.abort(transaction);
     			return false;
             }
     		DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
             if(doc == null) {
-            	tm.abort(transaction);
+            	//tm.abort(transaction);
                 return false;
             }
             destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
             if(destination == null) {
-            	tm.abort(transaction);
+            	//tm.abort(transaction);
                 return false;
             }
             
@@ -297,7 +297,7 @@ public class Resource extends File {
         try {
             collection = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
             if (collection == null) {
-            	tm.abort(transaction);
+            	//tm.abort(transaction);
                 return false;
             }
             // keep the write lock in the transaction
@@ -305,7 +305,7 @@ public class Resource extends File {
 
             DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
             if (doc == null) {
-            	tm.abort(transaction);
+            	//tm.abort(transaction);
             	return true;
             }
             
@@ -355,6 +355,7 @@ public class Resource extends File {
 			resource = broker.getXMLResource(uri, Lock.READ_LOCK);
 		} catch (PermissionDeniedException e1) {
 			if (resource != null) {
+				resource.getUpdateLock().release(Lock.READ_LOCK);
 				collection = resource.getCollection();
 				initialized = true;
 				
@@ -386,7 +387,7 @@ public class Resource extends File {
 //
 //			} else {
 				// store as binary resource
-				is = new StringBufferInputStream("");
+				is = new StringBufferInputStream(" ");
 
 				collection.addBinaryResource(transaction, broker, fileName, is,
 						mimeType.getName(), 0L , new Date(), new Date());
@@ -442,7 +443,11 @@ public class Resource extends File {
 		} catch (Exception e) {
 			throw new IOException(e);
 		} finally {
+			if (resource != null)
+				resource.getUpdateLock().release(Lock.READ_LOCK);
+				
 			db.release(broker);
+			
 		}
 		
 		initialized = true;
@@ -466,7 +471,7 @@ public class Resource extends File {
 			db = BrokerPool.getInstance();
 			broker = db.get(null);
 			
-			return broker.getUser();
+			return broker.getSubject();
 		} catch (EXistException e) {
 			throw new IOException(e);
 		} finally {
@@ -489,7 +494,7 @@ public class Resource extends File {
 			try {
 				database = BrokerPool.getInstance();
 				broker = database.get(null);
-				Subject subject = broker.getUser();
+				Subject subject = broker.getSubject();
 				
 				URL url = new URL("xmldb:exist://jsessionid:"+subject.getSessionId()+"@"+ uri.toString());
 				connection = url.openConnection();
@@ -521,6 +526,8 @@ public class Resource extends File {
 
     public OutputStream getOutputStream(boolean append) throws IOException {
     	//XXX: code append
+    	if (append)
+    		System.err.println("BUG: OutputStream in append mode!");
     	return getConnection().getOutputStream();
     }
 
@@ -608,7 +615,6 @@ public class Resource extends File {
                 if(lock==null || (!lock.isNullResource()) ){
                     allresources.add( doc.getURI() );
                 }
-                
             }
             
             // Copy content of list into String array.
@@ -621,9 +627,23 @@ public class Resource extends File {
         	//throw new IOException("Failed to acquire lock on collection '" + uri + "'");
     		return null;
 	    } finally {
-	    	db.release(broker);
 	        collection.release(Lock.READ_LOCK);
+	    	db.release(broker);
 	    }
     }
+    
+    public long length() {
+		try {
+			init();
+		} catch (IOException e) {
+			return 0;
+		}
+
+    	if (resource != null)
+    		return resource.getContentLength();
+    	
+    	return 0;
+    }
+
 
 }

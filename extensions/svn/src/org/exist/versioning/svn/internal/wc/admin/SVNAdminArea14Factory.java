@@ -64,6 +64,12 @@ public class SVNAdminArea14Factory extends SVNAdminAreaFactory {
     protected int doCheckWC(File path, Level logLevel) throws SVNException {
         File adminDir = new Resource(path, SVNFileUtil.getAdminDirectoryName());
         File entriesFile = new Resource(adminDir, "entries");
+        if (!entriesFile.exists()) {
+        	return 0;
+//            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "Cannot read entries file ''{0}'': {1}", new Object[] {entriesFile, "This resource does not exist."});
+//            throw new SVNException(err);
+        }
+        	
         int formatVersion = -1;
 
         BufferedReader reader = null;
