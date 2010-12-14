@@ -30,6 +30,7 @@
 */
 package org.exist.storage.lock;
 
+import java.io.PrintStream;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -371,4 +372,9 @@ public class ReentrantReadWriteLock implements Lock {
         String lockType = mode_ == Lock.WRITE_LOCK ? LockInfo.WRITE_LOCK : LockInfo.READ_LOCK;
         return new LockInfo(LockInfo.COLLECTION_LOCK, lockType, getId(), new String[] { owner_.getName() });
     }
+
+	@Override
+	public void debug(PrintStream out) {
+		getLockInfo().debug(out);
+	}
 }
