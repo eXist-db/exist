@@ -59,7 +59,7 @@ import org.w3c.dom.NodeList;
  * It leads to more performance for most XML documents because it
  * determines the fragment directly by the EmbeddedXmlReader and not by 
  * XQL operators.
- * @author Josef Willenborg, Max Planck Institute for the history of science,
+ * @author Josef Willenborg, Max Planck Institute for the History of Science,
  * http://www.mpiwg-berlin.mpg.de, jwillenborg@mpiwg-berlin.mpg.de 
  */
 public class GetFragmentBetween extends BasicFunction {
@@ -231,6 +231,8 @@ public class GetFragmentBetween extends BasicFunction {
       String nsPrefix = reader.getNamespacePrefix(ni);
       String nsUri = reader.getNamespaceURI(ni);
       String nsString = "xmlns:" + nsPrefix + "=\"" + nsUri + "\"";
+      if (nsPrefix != null && nsPrefix.equals(""))  
+        nsString = "xmlns" + "=\"" + nsUri + "\"";  
       elemNsString = elemNsString + " " +nsString;
     }
     int attrCount = reader.getAttributeCount();
