@@ -142,7 +142,7 @@ function initCollectionTree() {
         return false;
     });
     $('#collection-reload').click(function () {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         return false;
     });
 }
@@ -233,7 +233,7 @@ function removeResource(dialog) {
 }
 
 /*
-    Called when the user clicks on the "remove" button in the remove resource dialog
+    Called when the user clicks on the "move" button in the remove resource dialog
  */
 function moveResource(dialog) {
     var path = $('#move-resource-form select[name = path]').val();
@@ -252,7 +252,7 @@ function createCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'create-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         dialog.dialog("close");
     });
 }
@@ -265,7 +265,7 @@ function renameCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'rename-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         dialog.dialog("close");
     });
 }
@@ -278,7 +278,7 @@ function moveCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'move-collection', path: path, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         dialog.dialog("close");
     });
 }
@@ -290,7 +290,7 @@ function removeCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'remove-collection', collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         dialog.dialog("close");
     });
 }
@@ -325,7 +325,7 @@ function updateCollectionSharing(dialog) {
     
     var params = { "action":"update-collection-sharing", "collection":collection, "sharingCollectionWith":sharingCollectionWith, "groupList": groupList, "groupMember": groupMember, "groupSharingPermissions": groupSharingPermissions, "otherSharingPermissions": otherSharingPermissions };
     $.post("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("getRoot").reload();
+        $("#collection-tree-tree").dynatree("reload");
         dialog.dialog("close");
     });
 }
