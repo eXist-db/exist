@@ -37,7 +37,7 @@ declare function local:db-collection-children($collection-path as xs:string) as 
 declare function local:group-children($collection-path as xs:string) as element(children)* {
     let $user-groups := sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
         for $group at $i in  $user-groups return
-            <children>{local:tree-node(fn:concat($sharing:groups-collection, "/", $group/@id), false(), $group/group:name, (), util:function(xs:QName("local:group-collection-children"), 1))/*}</children>
+            <children>{local:tree-node(fn:concat($sharing:groups-collection, "/", $group/@id), false(), $group/group:name, (), (), util:function(xs:QName("local:group-collection-children"), 1))/*}</children>
 };
 
 (:~
@@ -51,7 +51,7 @@ declare function local:user-collection-for-group($group-id as xs:string, $user-c
         let $user-sub-collection-path := fn:concat($user-collection-path, "/", $user-sub-collection) return
             (
                 if(security:get-group($user-sub-collection-path) eq $system-group)then(
-                    local:tree-node($user-sub-collection-path, sharing:group-writeable($user-sub-collection-path, $group-id), (), (), ())
+                    local:tree-node($user-sub-collection-path, sharing:group-writeable($user-sub-collection-path, $group-id), (), (), (), ())
                 )else(),
                     local:user-collection-for-group($group-id, $user-sub-collection-path)
             )
@@ -74,20 +74,47 @@ declare function local:group-collection-children($group-collection-path as xs:st
 (:~
 : Generates a node for the navigation tree
 :)
-declare function local:tree-node($collection-path as xs:string, $can-write as xs:boolean, $title as xs:string?, $icon-path as xs:string?, $children-function) as element(node)
+declare function local:tree-node($collection-path as xs:string, $can-write as xs:boolean, $title as xs:string?, $icon-path as xs:string?, $additional-classes as xs:string*, $children-function) as element(node)
 {
+    let $is-user-home-subcollection := fn:starts-with($collection-path, fn:concat(security:get-home-collection-uri(security:get-user-credential-from-session()[1]), '/')) return
+
     <node>
         <title>{if($title)then($title)else(fn:replace($collection-path, '.*/',''))}</title>
         <isFolder json:literal="true">true</isFolder>
         <key>{$collection-path}</key>
         <writeable json:literal="true">{$can-write}</writeable>
-        <addClass>{if ($can-write) then 'writable' else 'readable'}</addClass>
+        <addClass>
         {
-            if($icon-path)then(
+            fn:concat(
+                if($can-write) then 'writable' else 'readable',
+                ' ',
+                fn:string-join(
+                    for $additional-class in $additional-classes return
+                        $additional-class,
+                    ' '
+                ),
+                if($is-user-home-subcollection)then 'userHomeSubCollection' else ''
+            )
+        }
+        </addClass>
+        {
+            if($icon-path)then
+            (
                 <icon>{$icon-path}</icon>
             )else(),
             
-            if(not(empty($children-function)))then(
+            if($is-user-home-subcollection)then
+            (   
+                let $group-id := sharing:get-group-id($collection-path) return
+                    if($group-id)then
+                    (
+                        <tooltip>Shared With: {sharing:get-group($group-id)/group:name/text()}</tooltip>
+                    )else()
+            )else(),
+            
+            
+            if(not(empty($children-function)))then
+            (
                 util:call($children-function, $collection-path)
             )else()
         }
@@ -115,19 +142,19 @@ declare function local:collections($root as xs:string) {
                     (
                         (: found a mods home collection for the currently logged in user :)
                         let $home-collection-uri := security:get-home-collection-uri($user) return
-                            local:tree-node($home-collection-uri, $can-write, "Home", "../skin/ltFld.user.gif", util:function(xs:QName("local:db-collection-children"), 1))/*
+                            local:tree-node($home-collection-uri, $can-write, "Home", "../skin/ltFld.user.gif", (), util:function(xs:QName("local:db-collection-children"), 1))/*
                     )else()
                 )
                 (: groups collection is treated specially, i.e. skipped :)
                 else if($root eq $sharing:groups-collection)then
                 (
                     if($user ne "guest")then(
-                        local:tree-node($sharing:groups-collection, false(), "Groups", "../skin/ltFld.groups.gif", util:function(xs:QName("local:group-children"), 1))/*
+                        local:tree-node($sharing:groups-collection, false(), "Groups", "../skin/ltFld.groups.gif", (), util:function(xs:QName("local:group-children"), 1))/*
                     )else()
                 )
                 else
                 (   (: normal collection:)
-                    local:tree-node($root, $can-write, (), (), util:function(xs:QName("local:db-collection-children"), 1))/*
+                    local:tree-node($root, $can-write, (), (), (), util:function(xs:QName("local:db-collection-children"), 1))/*
                 )
             else()
     )else()
