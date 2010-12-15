@@ -10,6 +10,7 @@ $(function() {
 /* collection action buttons */
 $(document).ready(function(){ 
     $('#collection-create-folder').hide();
+    $('#collection-rename-folder').hide();
     $('#collection-move-folder').hide();
     $('#collection-remove-folder').hide();
     $('#collection-sharing').hide();
@@ -196,9 +197,11 @@ function showHideCollectionWriteableControls() {
     params = { action: "can-write-collection-and-not-home", collection: collection };
     $.get("checkuser.xql", params, function(data) {
         if($(data).text() == 'true') {
+            $('#collection-rename-folder').show();
             $('#collection-move-folder').show();
             $('#collection-remove-folder').show();
         } else {
+            $('#collection-rename-folder').hide();
             $('#collection-move-folder').hide();
             $('#collection-remove-folder').hide();
         }
@@ -248,6 +251,19 @@ function createCollection(dialog) {
     var name = $('#create-collection-form input[name = name]').val();
     var collection = getCurrentCollection();
     var params = { action: 'create-collection', name: name, collection: collection };
+    $.get("operations.xql", params, function (data) {
+        $("#collection-tree-tree").dynatree("getRoot").reload();
+        dialog.dialog("close");
+    });
+}
+
+/*
+    Called when the user clicks on the "rename" button in the rename collection dialog.
+ */
+function renameCollection(dialog) {
+    var name = $('#rename-collection-form input[name = name]').val();
+    var collection = getCurrentCollection();
+    var params = { action: 'rename-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
         $("#collection-tree-tree").dynatree("getRoot").reload();
         dialog.dialog("close");
