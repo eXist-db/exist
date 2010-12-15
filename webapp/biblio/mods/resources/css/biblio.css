@@ -20,35 +20,30 @@ a:link, a:visited { color: #5DB0E6; }
     margin-bottom: 4px;
 }
 
-#login-form table tr td input {
-    width: 20em !important;
-}
-
 .username { font-weight: bold; }
 
 #page-head {
     height: 14em;
 }
 
-/*Tamboti begins
+/*Tamboti
 #page-head {
-    height: 6em;
+    height: 8em;
     margin-bottom: 5px;
-    margin-left: 15px;
+    margin-left: 50px;
     margin-right: 50px;
     margin-top: 5px;
 }
 
-.banner {
-    margin-top: 18em;
+#page-head .banner {
+    position: absolute;
+    right: .5em;
     }
-
 #page-head .name {
     position: absolute;
     left: .5em;
-    font-size: 500%;
     }
-Tamboti ends*/
+*/
 
 .search-form {
 }
@@ -77,9 +72,15 @@ Tamboti ends*/
     float: left;
     margin: 4px 8px 4px 0;
 }
+
 .collection-tree-toolbar img { border: 0; }
+
 #toggle-collection-tree {
     margin: 8px 4px 8px 4px;
+}
+
+#collection-tree-tree {
+    clear: left;    
 }
 
 .language-label {
@@ -95,7 +96,7 @@ Tamboti ends*/
     margin: .25em .5em .25em .5em;
 }
 
-div.ui-dynatree-container {
+ul.dynatree-container {
     border: 0;
 }
 
@@ -266,12 +267,10 @@ a:hover {
     border-bottom: 0
 }
 
-.banner {margin-top: 15em;}
-
 .pagination-toggle {
     cursor: pointer;
     text-decoration: none;
-    line-height:1.9em;
+    line-height:2em;
     padding: .2em;
     width:100%;
 }
@@ -335,31 +334,12 @@ a:hover {
     width: 80%;
 }
 
-td .biblio-full .label,
-.biblio-full .record
-    {
-    }
-
 td .biblio-full .label {
     font-weight: bold;
     text-align: right;
     padding-right: 1em;
+    vertical-align: middle;
     width: 16em;
-}
-
-.biblio-full .record {
-    font-weight: normal;
-    text-align: left;
-    width: 40em;
-    line-height: 1.4em;
-    vertical-align: middle;
-}
-
-.biblio-full .subrecord {
-    font-weight: normal;
-    text-align: left;
-    vertical-align: middle;
-    width:40em;
 }
 
 td .biblio-full .host {
@@ -385,6 +365,20 @@ td .biblio-full .deemph {
     vertical-align: middle;
     color: gray;
     width: 10em;
+}
+
+.biblio-full .record {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: middle;
+    width:40em;
+}
+
+.biblio-full .subrecord {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: middle;
+    width:40em;
 }
 
 .biblio-full .related td {
@@ -425,7 +419,7 @@ form ul li {
 	list-style: none;
 }
 
-span.readable .ui-dynatree-title {
+span.readable .dynatree-title {
     font-weight: normal;
     color: #999;
 }

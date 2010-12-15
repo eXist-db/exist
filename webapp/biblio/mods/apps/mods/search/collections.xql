@@ -115,14 +115,14 @@ declare function local:collections($root as xs:string) {
                     (
                         (: found a mods home collection for the currently logged in user :)
                         let $home-collection-uri := security:get-home-collection-uri($user) return
-                            local:tree-node($home-collection-uri, $can-write, "Home", "../css/dynatree/ltFld.user.gif", util:function(xs:QName("local:db-collection-children"), 1))/*
+                            local:tree-node($home-collection-uri, $can-write, "Home", "../skin/ltFld.user.gif", util:function(xs:QName("local:db-collection-children"), 1))/*
                     )else()
                 )
                 (: groups collection is treated specially, i.e. skipped :)
                 else if($root eq $sharing:groups-collection)then
                 (
                     if($user ne "guest")then(
-                        local:tree-node($sharing:groups-collection, false(), "Groups", "../css/dynatree/ltFld.groups.gif", util:function(xs:QName("local:group-children"), 1))/*
+                        local:tree-node($sharing:groups-collection, false(), "Groups", "../skin/ltFld.groups.gif", util:function(xs:QName("local:group-children"), 1))/*
                     )else()
                 )
                 else

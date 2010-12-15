@@ -9,7 +9,7 @@
         <script type="text/javascript" src="scripts/jquery/jquery.cookie.js"/>
         <script type="text/javascript" src="../../../resources/js/query.js"/>
         <link rel="stylesheet" type="text/css" href="styles/default-style2.css"/>
-        <link rel="stylesheet" type="text/css" href="scripts/jquery/css/dynatree/ui.dynatree.css"/>
+        <link rel="stylesheet" type="text/css" href="scripts/jquery/skin/ui.dynatree.css"/>
         <link rel="stylesheet" type="text/css" href="../../../resources/css/biblio.css"/>
     </head>
     <body>
