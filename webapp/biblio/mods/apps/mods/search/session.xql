@@ -54,7 +54,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                         if ($count gt 1) then
                             <td class="actions-cell">
                                 <a id="save_{$id}" href="#{$currentPos}" class="save">
-                                    <img title="save to my list" 
+                                    <img title="Save Record to My List" 
                                         src="../../../resources/images/{if ($saved) then 'disk_gew.gif' else 'disk.gif'}"
                                         class="{if ($saved) then 'stored' else ''}"/>
                                 </a>
