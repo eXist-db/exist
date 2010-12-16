@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns:biblio="http:/exist-db.org/xquery/biblio" xmlns:jquery="http://exist-db.org/xquery/jquery">
     <head>
         <!--<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
@@ -9,7 +8,7 @@
         <script type="text/javascript" src="scripts/jquery/jquery.cookie.js"/>
         <script type="text/javascript" src="../../../resources/js/query.js"/>
         <link rel="stylesheet" type="text/css" href="styles/default-style2.css"/>
-        <link rel="stylesheet" type="text/css" href="scripts/jquery/css/dynatree/ui.dynatree.css"/>
+        <link rel="stylesheet" type="text/css" href="scripts/jquery/skin/ui.dynatree.css"/>
         <link rel="stylesheet" type="text/css" href="../../../resources/css/biblio.css"/>
     </head>
     <body>
@@ -292,7 +291,7 @@
                     <div>New folder name: </div>
                     <div>
                         <input name="name" type="text"/>
-                    </div>    
+                    </div>
                 </form>
             </jquery:dialog>
             <jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder" trigger="#collection-move-folder" width="450">
