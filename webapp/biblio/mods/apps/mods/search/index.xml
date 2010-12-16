@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns:biblio="http:/exist-db.org/xquery/biblio" xmlns:jquery="http://exist-db.org/xquery/jquery">
     <head>
-        <!--XXX<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
+        <!--<graphic fileref="http://kjc-fs1.kjc.uni-heidelberg.de/refbase/img/logovjc.gif"/>-->
         <title>eXist - Bibliographic Demo</title>
         <!--<title>Tamboti Metadata Framework</title>-->
         <jquery:header base="scripts/jquery" cssbase="scripts/jquery/css"/>
@@ -9,7 +9,7 @@
         <script type="text/javascript" src="scripts/jquery/jquery.cookie.js"/>
         <script type="text/javascript" src="../../../resources/js/query.js"/>
         <link rel="stylesheet" type="text/css" href="styles/default-style2.css"/>
-        <link rel="stylesheet" type="text/css" href="scripts/jquery/skin/ui.dynatree.css"/>
+        <link rel="stylesheet" type="text/css" href="scripts/jquery/css/dynatree/ui.dynatree.css"/>
         <link rel="stylesheet" type="text/css" href="../../../resources/css/biblio.css"/>
     </head>
     <body>
@@ -52,7 +52,7 @@
                             </tr>
                             <tr>
                                 <td class="label">Sort results by </td>
-                                <td class="buttons">
+                                <td class="dropdown">
                                     <jquery:select name="sort">
                                         <jquery:option value="Score"/>
                                         <jquery:option value="Author"/>
@@ -107,7 +107,7 @@
                             <tr>
                                 <td/>
                                 <td colspan="2">
-                                    <button class="button" name="clear" value="clear" type="submit">Clear all</button>
+                                    <button class="button" name="clear" value="clear" type="submit">Clear All</button>
                                     <div class="advanced-search">
                                         <button class="advanced-search" name="action" id="form-submit" type="submit">Search</button>
                                     </div>
@@ -214,7 +214,7 @@
                 <div id="result-container">
                     <div id="filters" style="display: none;">
                         <jquery:ajax-accordion id="facets">
-                            <jquery:panel id="keywords" title="Index Terms" on-select="loadIndexTerms">
+                            <jquery:panel id="keywords" title="Title Terms" on-select="loadIndexTerms">
                                 <div class="keyword-prefix">
                                     <form id="keyword-form">
                                         <input type="text" name="input-keyword-prefix" size="8" value="a" title="Change prefix to view more terms."/>
@@ -226,6 +226,11 @@
                             <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
                             <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
                         </jquery:ajax-accordion>
+                        <div class="banner">
+                            <a href="http://exist-db.org">
+                                <img xmlns:xi="http://www.w3.org/2001/XInclude" alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/>
+                            </a>
+                        </div>
                     </div>
                     <jquery:paginate id="results" attribute="mods:cached" href="retrieve" navcontainer="#results-head .navbar" on-ready="resultsLoaded"/>
                 </div>
@@ -323,7 +328,7 @@
                     <input id="remove-resource-id" name="resource" type="hidden" value=""/>
                 </form>
             </jquery:dialog>
-            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Record" width="450">
+            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Record" width="500">
                 <jquery:button label="Move" function="moveResource"/>
                 <jquery:button id="cancel" label="Cancel"/>
                 <form id="move-resource-form" action="operations.xql">
