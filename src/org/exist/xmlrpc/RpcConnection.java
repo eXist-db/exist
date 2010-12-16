@@ -5137,13 +5137,13 @@ public class RpcConnection implements RpcAPI {
     }
 
 	@Override
-	public void runCommand(String collectionURI, String... params) throws EXistException, PermissionDeniedException {
+	public void runCommand(XmldbURI collectionURI, Vector<String> params) throws EXistException, PermissionDeniedException {
 
 		DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
             
-            org.exist.plugin.command.Commands.command(XmldbURI.create(collectionURI), params);
+            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[params.size()]));
 
 		} finally {
             factory.getBrokerPool().release(broker);
