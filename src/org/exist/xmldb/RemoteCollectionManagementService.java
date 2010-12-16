@@ -298,8 +298,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
 	public void runCommand(String[] params) throws XMLDBException {
         List<Object> _params_ = new ArrayList<Object>(params.length+1);
         _params_.add(parent.getPathURI());
-        for (int i = 0; i < params.length; i++)
-        	_params_.add( params[i] );
+       	_params_.add( params );
         try {
             client.execute( "runCommand", _params_ );
         } catch ( XmlRpcException xre ) {

@@ -848,6 +848,6 @@ public interface RpcAPI {
     boolean setDocType(String documentName, String doctypename, String publicid, String systemid)
 	throws EXistException, PermissionDeniedException, URISyntaxException;
     
-    public void runCommand(String collectionURI, String ... params) throws EXistException, PermissionDeniedException;
+    public void runCommand(XmldbURI collectionURI, Vector<String> params) throws EXistException, PermissionDeniedException;
 }
 
