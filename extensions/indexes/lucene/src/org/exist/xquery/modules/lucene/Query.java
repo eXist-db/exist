@@ -158,6 +158,10 @@ public class Query extends Function implements Optimizable {
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+    	if (!contextSequence.isPersistentSet())
+    		// in-memory docs won't have an index
+    		return NodeSet.EMPTY_SET;
+    	
         long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
@@ -189,6 +193,10 @@ public class Query extends Function implements Optimizable {
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
 
+        if (contextSequence != null && !contextSequence.isPersistentSet())
+    		// in-memory docs won't have an index
+    		return Sequence.EMPTY_SEQUENCE;
+        
         NodeSet result;
         if (preselectResult == null) {
             Sequence input = getArgument(0).eval(contextSequence);
