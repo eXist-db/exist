@@ -160,6 +160,9 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
     }
     
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+    	if (contextSequence != null && !contextSequence.isPersistentSet())
+    		return NodeSet.EMPTY_SET;
+    	
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
         
@@ -200,6 +203,9 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 
+        if (contextSequence != null && !contextSequence.isPersistentSet())
+        	return Sequence.EMPTY_SEQUENCE;
+        
         if (preselectResult == null && !checkForQNameIndex(contextSequence))
             contextQName = null;
 
