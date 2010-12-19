@@ -46,6 +46,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -123,7 +124,7 @@ public class VersioningTrigger extends FilteringTrigger {
     	if (documentPath.startsWith(VERSIONS_COLLECTION))
     		return;
 
-    	Subject activeUser = broker.getUser();
+    	Subject activeSubject = broker.getSubject();
 
     	try {
     		broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
@@ -183,7 +184,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     				sax.startDocument();
     				sax.startElement(ELEMENT_VERSION, null);
-    				writeProperties(sax, getVersionProperties(revision, documentPath));
+    				writeProperties(sax, getVersionProperties(revision, documentPath, activeSubject));
 
     				if(event == REMOVE_DOCUMENT_EVENT) {
     					sax.startElement(ELEMENT_REMOVED, null);
@@ -239,7 +240,7 @@ public class VersioningTrigger extends FilteringTrigger {
     			}
     		}
     	} finally {
-    		broker.setUser(activeUser);
+    		broker.setUser(activeSubject);
     	}
     }
     
@@ -251,7 +252,7 @@ public class VersioningTrigger extends FilteringTrigger {
             return;
 
         this.broker = broker;
-        Subject activeUser = broker.getUser();
+        Subject activeSubject = broker.getSubject();
 
         try {
             broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
@@ -305,7 +306,7 @@ public class VersioningTrigger extends FilteringTrigger {
         } catch (Exception e) {
             LOG.warn("Caught exception in VersioningTrigger: " + e.getMessage(), e);
         } finally {
-            broker.setUser(activeUser);
+            broker.setUser(activeSubject);
         }
     }
 
@@ -313,7 +314,7 @@ public class VersioningTrigger extends FilteringTrigger {
     	if (documentPath.startsWith(VERSIONS_COLLECTION))
     		return;
 
-    	Subject activeUser = broker.getUser();
+    	Subject activeSubject = broker.getSubject();
 
     	try {
     		broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
@@ -360,7 +361,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     				sax.startDocument();
     				sax.startElement(ELEMENT_VERSION, null);
-    				writeProperties(sax, getVersionProperties(revision, documentPath));
+    				writeProperties(sax, getVersionProperties(revision, documentPath, activeSubject));
 
     				if (remove) {
     					sax.startElement(ELEMENT_REMOVED, null);
@@ -416,18 +417,18 @@ public class VersioningTrigger extends FilteringTrigger {
     			}
     		}
     	} finally {
-    		broker.setUser(activeUser);
+    		broker.setUser(activeSubject);
     	}
     }
 
-    private Properties getVersionProperties(long revision, XmldbURI documentPath) 
+    private Properties getVersionProperties(long revision, XmldbURI documentPath, Account commitAccount) 
     throws XPathException {
         Properties properties = new Properties();
 
         properties.setProperty("document", documentPath.toString());
         properties.setProperty("revision", Long.toString(revision));
         properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
-        properties.setProperty("user", broker.getUser().getName());
+        properties.setProperty("user", commitAccount.getName());
         if (documentKey != null) {
             properties.setProperty("key", documentKey);
         }
