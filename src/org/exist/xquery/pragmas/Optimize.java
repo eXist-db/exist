@@ -120,7 +120,9 @@ public class Optimize extends Pragma {
                     LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
-                if (contextStep == null || current > 0) {
+                if (selection.isEmpty())
+                	ancestors = selection;
+                else if (contextStep == null || current > 0) {
                     ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
                         true, contextId, false);
                 } else {
