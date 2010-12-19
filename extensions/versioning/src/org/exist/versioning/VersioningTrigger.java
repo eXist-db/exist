@@ -237,7 +237,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
                     sax.startDocument();
                     sax.startElement(ELEMENT_VERSION, null);
-                    writeProperties(sax, getVersionProperties(revision, documentPath));
+                    writeProperties(sax, getVersionProperties(revision, documentPath, activeUser));
 
                     if(event == REMOVE_DOCUMENT_EVENT)
                     {
@@ -316,14 +316,14 @@ public class VersioningTrigger extends FilteringTrigger {
         }
     }
 
-    private Properties getVersionProperties(long revision, XmldbURI documentPath) throws XPathException
+    private Properties getVersionProperties(long revision, XmldbURI documentPath, User user) throws XPathException
     {
         Properties properties = new Properties();
 
         properties.setProperty("document", documentPath.toString());
         properties.setProperty("revision", Long.toString(revision));
         properties.setProperty("date", new DateTimeValue(new Date()).getStringValue());
-        properties.setProperty("user", broker.getUser().getName());
+        properties.setProperty("user", user.getName());
         if (documentKey != null) {
             properties.setProperty("key", documentKey);
         }
