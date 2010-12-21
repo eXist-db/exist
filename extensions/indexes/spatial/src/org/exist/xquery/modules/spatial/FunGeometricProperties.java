@@ -38,7 +38,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -52,6 +51,13 @@ import org.w3c.dom.Element;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 
 public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
     protected static final Logger logger = Logger.getLogger(FunGeometricProperties.class);
@@ -322,7 +328,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                 NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
                 if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     //The node should be indexed : get its property
-                    result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+                    result = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, propertyName);
                     hasUsedIndex = true;
                 } else {
                     //builds the geometry
@@ -338,7 +344,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         if (isCalledAs("getEPSG4326WKT")) {
                             result = new StringValue(wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
-                            result = new Base64Binary(wkbWriter.write(geometry));
+                            byte data[] = wkbWriter.write(geometry);
+                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(data));
                         } else if (isCalledAs("getEPSG4326MinX")) {
                             result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                         } else if (isCalledAs("getEPSG4326MaxX")) {
@@ -357,7 +364,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     } else if (isCalledAs("getWKT")) {
                         result = new StringValue(wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
-                        result = new Base64Binary(wkbWriter.write(geometry));
+                        byte data[] = wkbWriter.write(geometry);
+                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(data));
                     } else if (isCalledAs("getMinX")) {
                         result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                     } else if (isCalledAs("getMaxX")) {

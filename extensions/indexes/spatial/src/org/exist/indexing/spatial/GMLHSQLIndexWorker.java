@@ -46,7 +46,6 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.StringValue;
@@ -54,6 +53,10 @@ import org.exist.xquery.value.ValueSequence;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
+import java.io.ByteArrayInputStream;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
@@ -525,7 +528,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     }
 
     @Override
-    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
+    protected AtomicValue getGeometricPropertyForNode(XQueryContext context, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
         PreparedStatement ps = conn.prepareStatement(
             "SELECT " + propertyName + 
             " FROM " + GMLHSQLIndex.TABLE_NAME + 
@@ -550,7 +553,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                 result = new StringValue(rs.getString(1));
             } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                result = new Base64Binary(rs.getBytes(1));
+                result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(rs.getBytes(1)));
             } else 
                 throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
             if (rs.next()) {
@@ -566,7 +569,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     }
 
     @Override
-    protected ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
+    protected ValueSequence getGeometricPropertyForNodes(XQueryContext context, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException {
         //TODO : generate it in AbstractGMLJDBCIndexWorker
         String docConstraint = "";
         boolean refine_query_on_doc = false;
@@ -636,7 +639,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                             result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                            result.add(new Base64Binary(rs.getBytes(1)));
+                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(rs.getBytes(1))));
                         } else 
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     }

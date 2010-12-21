@@ -197,7 +197,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     //Try to get the geometry from the index
                     String sourceSRS = null;
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        sourceSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+                        sourceSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
                         geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
                         hasUsedIndex = true;
                     }
@@ -238,7 +238,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+                        targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
                         geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
                         hasUsedIndex = true;
                     }
@@ -280,7 +280,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+                        targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
                         geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
                         hasUsedIndex = true;
                     }
@@ -302,7 +302,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+                        targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
                         geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
                         hasUsedIndex = true;
                     }
@@ -324,7 +324,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        targetSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+                        targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
                         geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
                         hasUsedIndex = true;
                     }
@@ -355,12 +355,12 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     String srsName2 = null;
                     //Try to get the geometries from the index
                     if (geometryNode1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        srsName1 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
+                        srsName1 = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
                         geometry1 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode1, false);
                         hasUsedIndex = true;
                     }
                     if (geometryNode2.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
+                        srsName2 = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
                         geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2, false);
                         hasUsedIndex = true;
                     }
