@@ -67,7 +67,9 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(FunctionTrace.signatures[1], FunctionTrace.class),
             new FunctionDef(FunctionTrace.signatures[2], FunctionTrace.class),
             new FunctionDef(FunctionTrace.signatures[3], FunctionTrace.class),
-            new FunctionDef(FunctionTrace.signatures[4], FunctionTrace.class)
+            new FunctionDef(FunctionTrace.signatures[4], FunctionTrace.class),
+            new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class)
+            
     };
 	
 	public SystemModule() {
