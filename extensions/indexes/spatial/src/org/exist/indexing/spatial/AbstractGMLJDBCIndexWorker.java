@@ -413,12 +413,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName)
+    public AtomicValue getGeometricPropertyForNode(XQueryContext context, NodeProxy p, String propertyName)
             throws  SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
-            return getGeometricPropertyForNode(broker, p, conn, propertyName);
+            return getGeometricPropertyForNode(context, p, conn, propertyName);
         } catch (SQLException e) {
             throw new SpatialIndexException(e);
         } catch (XPathException e) {
@@ -434,12 +434,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    public ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, String propertyName) 
+    public ValueSequence getGeometricPropertyForNodes(XQueryContext context, NodeSet contextSet, String propertyName) 
             throws  SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
-            return getGeometricPropertyForNodes(broker, contextSet, conn, propertyName);
+            return getGeometricPropertyForNodes(context, contextSet, conn, propertyName);
         } catch (SQLException e) {
             throw new SpatialIndexException(e);
         } catch (XPathException e) {
@@ -487,9 +487,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     protected abstract Map<Geometry, String> getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
 
-    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
+    protected abstract AtomicValue getGeometricPropertyForNode(XQueryContext context, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
 
-    protected abstract ValueSequence getGeometricPropertyForNodes(DBBroker broker, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException;
+    protected abstract ValueSequence getGeometricPropertyForNodes(XQueryContext context, NodeSet contextSet, Connection conn, String propertyName) throws SQLException, XPathException;
 
     protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException;
 
