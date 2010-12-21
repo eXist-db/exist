@@ -105,7 +105,7 @@ public class StreamBinary extends BasicFunction {
 
         try {
             OutputStream os = response.getOutputStream();
-            binary.streamTo(response.getOutputStream());
+            binary.streamBinaryTo(response.getOutputStream());
             os.close();
 
             //commit the response
