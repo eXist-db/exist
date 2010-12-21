@@ -1,7 +1,5 @@
 package org.exist.xquery.functions.util;
 
-import org.easymock.classextension.EasyMock;
-import static org.easymock.EasyMock.expect;
 import org.exist.security.xacml.AccessContext;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
