@@ -45,85 +45,91 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 public class BinaryToString extends BasicFunction {
-	
-	protected static final Logger logger = Logger.getLogger(BinaryToString.class);
 
-	public final static FunctionSignature signatures[] = {
+    protected static final Logger logger = Logger.getLogger(BinaryToString.class);
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-            new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a binary resource as an xs:string value. The binary data " +
-            "is transformed into a Java string using the encoding specified in the optional " +
-            "second argument or the default of UTF-8.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("binary-resource", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "The binary resource")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the encoded binary resource")
-        ),
+        new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+        "Returns the contents of a binary resource as an xs:string value. The binary data "
+        + "is transformed into a Java string using the encoding specified in the optional "
+        + "second argument or the default of UTF-8.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("binary-resource", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "The binary resource")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the encoded binary resource")),
         new FunctionSignature(
-            new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a binary resource as an xs:string value. The binary data " +
-            "is transformed into a Java string using the encoding specified in the optional " +
-            "second argument or the default of UTF-8.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("binary-resource", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "The binary resource"),
-                new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type.  i.e. 'UTF-8'")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the encoded binary resource")
-        ),
+        new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+        "Returns the contents of a binary resource as an xs:string value. The binary data "
+        + "is transformed into a Java string using the encoding specified in the optional "
+        + "second argument or the default of UTF-8.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("binary-resource", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "The binary resource"),
+            new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type.  i.e. 'UTF-8'")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the encoded binary resource")),
         new FunctionSignature(
-            new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a string as an base64binary value. The string data " +
-            "is transformed into a binary using the encoding specified in the optional " +
-            "second argument or the default of UTF-8.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource")
-            },
-            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary resource")
-        ),
+        new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+        "Returns the contents of a string as an base64binary value. The string data "
+        + "is transformed into a binary using the encoding specified in the optional "
+        + "second argument or the default of UTF-8.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource")
+        },
+        new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary resource")),
         new FunctionSignature(
-            new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns the contents of a string as a base64binary value. The string data " +
-            "is transformed into a binary using the encoding specified in the optional " +
-            "second argument or the default of UTF-8.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource"),
-                new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding type.  i.e. 'UTF-8'")
-            },
-            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary resource")
-        )
+        new QName("string-to-binary", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+        "Returns the contents of a string as a base64binary value. The string data "
+        + "is transformed into a binary using the encoding specified in the optional "
+        + "second argument or the default of UTF-8.",
+        new SequenceType[]{
+            new FunctionParameterSequenceType("encoded-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string containing the encoded binary resource"),
+            new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "the encoding type.  i.e. 'UTF-8'")
+        },
+        new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary resource"))
     };
-	
-	public BinaryToString(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
+
+    public BinaryToString(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
     @Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
-		String encoding = "UTF-8";
-		if (args.length == 2)
-			encoding = args[1].getStringValue();
-        if (isCalledAs("binary-to-string")) {
-            BinaryValue binary = (BinaryValue) args[0].itemAt(0);
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            try {
-                binary.streamTo(os);
-                return new StringValue(new String(os.toByteArray(), encoding));
-            } catch(IOException ioe) {
-                throw new XPathException(this, ioe.getMessage(), ioe);
-            }
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+            throws XPathException {
+
+        if(args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        String encoding = "UTF-8";
+        if(args.length == 2) {
+            encoding = args[1].getStringValue();
+        }
+        if(isCalledAs("binary-to-string")) {
+            return binaryToString((BinaryValue) args[0].itemAt(0), encoding);
         } else {
-            String str = args[0].getStringValue();
+            return stringToBinary(args[0].getStringValue(), encoding);
+        }
+    }
+
+    protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            binary.streamBinaryTo(os);
+            return new StringValue(new String(os.toByteArray(), encoding));
+        } catch(IOException ioe) {
+            throw new XPathException(this, ioe.getMessage(), ioe);
+        } finally {
             try {
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(str.getBytes(encoding)));
-            } catch (UnsupportedEncodingException e) {
-                throw new XPathException(this, "Unsupported encoding: " + encoding);
+                os.close();
+            } catch(IOException ex) {
             }
         }
     }
 
+    protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
+        try {
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(str.getBytes(encoding)));
+        } catch(UnsupportedEncodingException e) {
+            throw new XPathException(this, "Unsupported encoding: " + encoding);
+        }
+    }
 }
