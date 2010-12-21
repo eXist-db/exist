@@ -20,9 +20,13 @@
 <mime-types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/mime-types.xsd">
 
     <!-- Mime types stored as XML -->
-    <mime-type name="text/xml" type="xml">
+    <mime-type name="application/xml" type="xml">
         <description>XML document</description>
         <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi,.cmdi</extensions>
+    </mime-type>
+    <mime-type name="text/xml" type="xml">
+        <description>Deprecated XML document</description>
+        <extensions>.xml</extensions>
     </mime-type>
     <mime-type name="application/xslt+xml" type="xml">
         <description>XSL document</description>
@@ -209,6 +213,43 @@
         <extensions>.vsd</extensions>
     </mime-type>
 
+    <!-- OOXML -->
+    <mime-type name="application/vnd.openxmlformats-officedocument.wordprocessingml.document" type="binary">
+        <description>OOXML Text Document</description>
+        <extensions>.docx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.wordprocessingml.template" type="binary">
+        <description>OOXML Text Template</description>
+        <extensions>.dotx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.presentationml.template" type="binary">
+        <description>OOXML Presentation Template</description>
+        <extensions>.potx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.presentationml.presentation" type="binary">
+        <description>OOXML Presentation</description>
+        <extensions>.pptx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.presentationml.slideshow" type="binary">
+        <description>OOXML Presentation Slideshow</description>
+        <extensions>.ppsx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" type="binary">
+        <description>OOXML Spreadsheet</description>
+        <extensions>.xlsx</extensions>
+    </mime-type>
+    
+    <mime-type name="application/vnd.openxmlformats-officedocument.spreadsheetml.template" type="binary">
+        <description>OOXML Spreadsheet Template</description>
+        <extensions>.xltx</extensions>
+    </mime-type>
+    
+    
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
         <extensions>.txt,.text,.java,.dtd,.rnc,.properties</extensions>
@@ -264,6 +305,20 @@
     <mime-type name="application/x-javascript" type="binary">
         <description>JavaScript</description>
         <extensions>.js</extensions>
+    </mime-type>
+    
+<!-- Media types -->
+    <mime-type name="audio/mpeg" type="binary">
+        <description>MPEG Audio</description>
+        <extensions>.mp2,.mp3,.mpga</extensions>
+    </mime-type>
+    <mime-type name="video/mpeg" type="binary">
+        <description>MPEG Video</description>
+        <extensions>.mpg,.mpeg</extensions>
+    </mime-type>
+    <mime-type name="video/mp4" type="binary">
+        <description>MP4 Video</description>
+        <extensions>.mp4</extensions>
     </mime-type>
     
 </mime-types>
