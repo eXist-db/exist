@@ -250,6 +250,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         /* (non-Javadoc)
          * @see org.exist.soap.Query#xquery(java.lang.String, byte[])
          */
+    @Override
     public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException {
         String query;
         try {
@@ -262,6 +263,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     }
 
     /**  @deprecated use {@link #xquery(String, byte[])} instead. */
+    @Override
     public org.exist.soap.QueryResponse query(java.lang.String sessionId, java.lang.String xpath) throws java.rmi.RemoteException {
         Session session = getSession(sessionId);
         
@@ -273,6 +275,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             LOG.debug("query: " + xpath);
             broker = pool.get(session.getUser());
             XQueryContext context = new XQueryContext(broker, AccessContext.SOAP);
+            
+            session.registerContext(context);
             
             // TODO(pkaminsk2): why replicate XQuery.compile here?
             

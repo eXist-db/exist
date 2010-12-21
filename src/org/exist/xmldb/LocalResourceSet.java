@@ -21,10 +21,12 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
+import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -38,6 +40,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -54,6 +57,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 public class LocalResourceSet implements ResourceSet {
+
+        protected final static Logger LOG = Logger.getLogger(LocalResourceSet.class);
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;
@@ -102,12 +107,26 @@ public class LocalResourceSet implements ResourceSet {
 		}
 	}
 
+    @Override
 	public void addResource(Resource resource) throws XMLDBException {
 		resources.add(resource);
 	}
 
+    @Override
 	public void clear() throws XMLDBException {
-		resources.clear();
+
+            //cleanup any binary values
+            for(Object resource : resources) {
+                if(resource instanceof BinaryValue) {
+                    try {
+                        ((BinaryValue) resource).close();
+                    } catch(IOException ioe) {
+                        LOG.warn("Unable to cleanup BinaryValue: " + resource.hashCode(), ioe);
+                    }
+                }
+            }
+
+                resources.clear();
 	}
 
 	public ResourceIterator getIterator() throws XMLDBException {

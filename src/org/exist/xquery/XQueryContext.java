@@ -1418,20 +1418,7 @@ public class XQueryContext implements BinaryValueManager
         clearUpdateListeners();
 
         profiler.reset();
-
-        //clear any binary value resources
-        if(binaryValueInstances != null) {
-            for(BinaryValue bv : binaryValueInstances) {
-                try {
-                    bv.close();
-                } catch (IOException ioe) {
-                    LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
-                }
-            }
-            binaryValueInstances.clear();
-        }
     }
-
 
     /**
      * Returns true if whitespace between constructed element nodes should be stripped by default.
@@ -3559,12 +3546,27 @@ public class XQueryContext implements BinaryValueManager
 	}
 
     private List<BinaryValue> binaryValueInstances;
+    
     @Override
     public void registerBinaryValueInstance(BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
              binaryValueInstances = new ArrayList();
         }
         binaryValueInstances.add(binaryValue);
+    }
+
+    @Override
+    public void cleanupBinaryValueInstances() {
+        if(binaryValueInstances != null) {
+            for(BinaryValue bv : binaryValueInstances) {
+                try {
+                    bv.close();
+                } catch (IOException ioe) {
+                    LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                }
+            }
+            binaryValueInstances.clear();
+        }
     }
 
 

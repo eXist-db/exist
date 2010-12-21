@@ -8,4 +8,5 @@ public interface BinaryValueManager {
 
     public void registerBinaryValueInstance(BinaryValue binaryValue);
 
+    public void cleanupBinaryValueInstances();
 }
