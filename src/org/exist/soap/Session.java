@@ -6,8 +6,11 @@
 package org.exist.soap;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.security.Subject;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
 public class Session implements Serializable {
@@ -52,4 +55,20 @@ public class Session implements Serializable {
 	public void updateLastAccessTime() {
 		lastAccessTime_ = System.currentTimeMillis();
 	}
+        
+        private List<XQueryContext> contexts;
+        public void registerContext(XQueryContext context) {
+            if(contexts == null) {
+                contexts = new ArrayList<XQueryContext>();
+            }
+            contexts.add(context);
+        }
+        
+        public void cleanupContexts() {
+            if(contexts != null) {
+                for(XQueryContext context : contexts) {
+                    context.cleanupBinaryValueInstances();
+                }
+            }
+        }
 }

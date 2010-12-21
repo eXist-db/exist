@@ -44,6 +44,8 @@ public class SessionManager {
 	}
 
 	public synchronized void disconnect(String id) {
+                Session session = sessions.get(id);
+                session.cleanupContexts();
 		sessions.remove(id);
 	}
 	
@@ -55,4 +57,6 @@ public class SessionManager {
 				i.remove();
 		}
 	}
+        
+        
 }
