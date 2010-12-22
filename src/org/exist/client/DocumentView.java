@@ -86,6 +86,7 @@ class DocumentView extends JFrame {
 	protected JButton saveButton;
 	protected JButton saveAsButton;
 	protected JTextField statusMessage;
+	protected JTextField positionDisplay;
 	protected JProgressBar progress;
 	protected JPopupMenu popup;
 	protected Properties properties;
@@ -354,6 +355,11 @@ class DocumentView extends JFrame {
 		progress.setPreferredSize(new Dimension(200, 30));
 		progress.setVisible(false);
 		statusbar.add(progress);
+		positionDisplay = new JTextField(5);
+		positionDisplay.setEditable(false);
+		positionDisplay.setFocusable(true);
+        statusbar.add(positionDisplay);
+        text.setPositionOutputTextArea(positionDisplay);
 		getContentPane().add(statusbar, BorderLayout.SOUTH);
 	}
 	
