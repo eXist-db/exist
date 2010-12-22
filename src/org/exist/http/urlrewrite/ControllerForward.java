@@ -84,6 +84,7 @@ public class ControllerForward extends URLRewrite {
                 colPath = "";
             request.setPaths("/rest" + colPath + contextPath, "/rest");
             request.setBasePath("/rest" + colPath);
+            request.setAttribute(XQueryURLRewrite.RQ_ATTR, "true");
         }
     }
 

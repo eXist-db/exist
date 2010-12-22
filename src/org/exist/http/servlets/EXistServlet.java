@@ -29,6 +29,7 @@ import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.http.SOAPServer;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -78,6 +79,8 @@ public class EXistServlet extends HttpServlet {
 	private String defaultUsername = SecurityManager.GUEST_USER;
 	private String defaultPassword = SecurityManager.GUEST_USER;
 
+	private boolean internalOnly = false;
+	
 	private RESTServer srvREST;
 	private SOAPServer srvSOAP;
 
@@ -172,6 +175,10 @@ public class EXistServlet extends HttpServlet {
 
 		// XML lib checks....
 		XmlLibraryChecker.check();
+		
+		String param = config.getInitParameter("hidden");
+		if (param != null)
+			internalOnly = Boolean.valueOf(param);
 	}
 
 	/*
@@ -599,6 +606,10 @@ public class EXistServlet extends HttpServlet {
 	}
 
 	private Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
+		if (internalOnly && request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return null;
+		}
 		Principal principal = AccountImpl.getUserFromServletRequest(request);
 		if (principal != null) return (Subject) principal;
 		
