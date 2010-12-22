@@ -125,9 +125,11 @@ public class XQueryURLRewrite implements Filter {
     public final static String DEFAULT_USER = "guest";
     public final static String DEFAULT_PASS = "guest";
 
+    public final static String RQ_ATTR = "org.exist.forward";
     public final static String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
     public final static String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
     public final static String RQ_ATTR_RESULT = "org.exist.forward.result";
+    
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 

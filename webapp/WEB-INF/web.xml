@@ -99,6 +99,22 @@
             <param-value>true</param-value>
         </init-param>
 
+		<!--
+			If parameter "hidden" is set to true, direct access to the 
+			REST interface will be denied. Only requests coming from the
+			URL rewriting will be processed.
+
+			Rationale: on a production server, you may want to store the
+			application within the database, but without allowing users
+			to browse the database contents. By setting hidden=true, you
+			can expose defined URLs to the outside world via URL rewriting
+			while hiding the rest of the database.
+		-->
+		<init-param>
+			<param-name>hidden</param-name>
+			<param-value>false</param-value>
+		</init-param>
+
         <load-on-startup>2</load-on-startup>
     </servlet>
 
