@@ -500,7 +500,7 @@
         <delete failonerror="no" file="exist-optional.jar"/>
         <delete failonerror="no" file="start.jar"/>
         <delete>
-            <fileset dir="installer" includes="eXist-*.jar,install.xml"/>
+            <fileset dir="installer" includes="eXist-*.exe,eXist-*.jar,install.xml"/>
         </delete>
 
         <delete failonerror="no" dir="${dist}"/>
