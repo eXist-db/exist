@@ -3,6 +3,7 @@ package org.exist.util.io;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 /**
@@ -13,6 +14,7 @@ import org.apache.commons.codec.binary.Hex;
 public class HexOutputStream extends FilterOutputStream {
 
     private final Hex hex = new Hex();
+    private boolean doEncode = false;
 
     /**
      * Creates a HexOutputStream such that all data written is Hex-encoded to the original provided OutputStream.
@@ -20,8 +22,9 @@ public class HexOutputStream extends FilterOutputStream {
      * @param out
      *            OutputStream to wrap.
      */
-    public HexOutputStream(OutputStream out) {
+    public HexOutputStream(OutputStream out, boolean doEncode) {
         super(out);
+        this.doEncode = doEncode;
     }
 
     /**
@@ -78,6 +81,14 @@ public class HexOutputStream extends FilterOutputStream {
             throw new NullPointerException();
         }
 
-        out.write(hex.encode(b));
+        if(doEncode) {
+            out.write(hex.encode(b));
+        } else {
+            try {
+                out.write(hex.decode(b));
+            } catch(DecoderException de) {
+                throw new IOException("Unable to decode: " + de.getMessage(), de);
+            }
+        }
     }
 }
