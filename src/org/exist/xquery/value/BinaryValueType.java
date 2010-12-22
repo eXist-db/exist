@@ -13,11 +13,11 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class BinaryValueType<T extends FilterOutputStream> {
 
     private final int xqueryType;
-    private final Class<T> encoder;
+    private final Class<T> coder;
 
-    public BinaryValueType(int xqueryType, Class<T> encoder) {
+    public BinaryValueType(int xqueryType, Class<T> coder) {
         this.xqueryType = xqueryType;
-        this.encoder = encoder;
+        this.coder = coder;
     }
 
     public int getXQueryType() {
@@ -25,20 +25,28 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
     }
 
     public T getEncoder(OutputStream os) throws IOException {
+        return instantiateCoder(os, true);
+    }
+    
+    public T getDecoder(OutputStream os) throws IOException {
+        return instantiateCoder(os, false);
+    }
+    
+    private T instantiateCoder(OutputStream stream, boolean encoder) throws IOException {
         try {
-            Constructor<T> c = encoder.getConstructor(OutputStream.class);
-            T fos = c.newInstance(os);
-            return fos;
+            Constructor<T> c = coder.getConstructor(OutputStream.class, boolean.class);
+            T f = c.newInstance(stream, encoder);
+            return f;
         } catch(NoSuchMethodException nsme) {
-            throw new IOException("Unable to get binary encoder '" + encoder.getName() +  "': " + nsme.getMessage(), nsme);
+            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + nsme.getMessage(), nsme);
         } catch(InstantiationException ie) {
-            throw new IOException("Unable to get binary encoder '" + encoder.getName() +  "': " + ie.getMessage(), ie);
+            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ie.getMessage(), ie);
         } catch(IllegalArgumentException iae) {
-            throw new IOException("Unable to get binary encoder '" + encoder.getName() +  "': " + iae.getMessage(), iae);
+            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
         } catch(IllegalAccessException iae) {
-            throw new IOException("Unable to get binary encoder '" + encoder.getName() +  "': " + iae.getMessage(), iae);
+            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
         } catch(InvocationTargetException ite) {
-            throw new IOException("Unable to get binary encoder '" + encoder.getName() +  "': " + ite.getMessage(), ite);
+            throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ite.getMessage(), ite);
         }
     }
 }
