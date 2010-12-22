@@ -47,10 +47,14 @@ public abstract class BinaryValue extends AtomicValue {
     protected BinaryValue(BinaryValueType binaryValueType) {
         this.binaryValueType = binaryValueType;
     }
+    
+    protected BinaryValueType getBinaryValueType() {
+        return binaryValueType;
+    }
 
     @Override
     public int getType() {
-        return binaryValueType.getXQueryType();
+        return getBinaryValueType().getXQueryType();
     }
     
     @Override
@@ -171,21 +175,21 @@ public abstract class BinaryValue extends AtomicValue {
         return new String(baos.toByteArray());
     }
 
-
+    /**
+     * Streams the raw binary data
+     */
     public abstract void streamBinaryTo(OutputStream os) throws IOException;
 
-    public final void streamTo(OutputStream os) throws IOException {
+    /**
+     * Streams the encoded binary data
+     */
+    public void streamTo(OutputStream os) throws IOException {
         
         //we need to create a safe output stream that cannot be closed
-        FilterOutputStream safeOutputStream = new FilterOutputStream(os){
-            @Override
-            public void close() throws IOException {
-                //do nothing
-            }
-        };
+        OutputStream safeOutputStream = makeSafeOutputStream(os);
 
         //get the encoder
-        FilterOutputStream fos = binaryValueType.getEncoder(safeOutputStream);
+        FilterOutputStream fos = getBinaryValueType().getEncoder(safeOutputStream);
 
         //stream with the encoder
         streamBinaryTo(fos);
@@ -218,65 +222,15 @@ public abstract class BinaryValue extends AtomicValue {
 
     public abstract void close() throws IOException;
 
-    /*
-    public class BinaryValueInputStream extends InputStream {
-
-        private InputStream src;
-
-        public BinaryValueInputStream(InputStream src) {
-            if(is.markSupported()) {
-                this.src = src;
-            } else {
-                this.src = new CachingFilterInputStream(src);
+   /**
+     * Creates a safe OutputStream that cannot be closed
+     */
+    protected OutputStream makeSafeOutputStream(OutputStream os) {
+        return new FilterOutputStream(os){
+            @Override
+            public void close() throws IOException {
+                //do nothing
             }
-
-            //mark the start of the stream so that we can read again
-            src.mark(Integer.MAX_VALUE);
-        }
-
-        @Override
-        public boolean markSupported() {
-            return true;
-        }
-
-        @Override
-        public synchronized void mark(int i) {
-            src.mark(i);
-        }
-
-        @Override
-        public synchronized void reset() throws IOException {
-            src.reset();
-        }
-
-        @Override
-        public int read() throws IOException {
-            return src.read();
-        }
-
-        @Override
-        public int read(byte[] bytes) throws IOException {
-            return src.read(bytes);
-        }
-
-        @Override
-        public int read(byte[] bytes, int off, int len) throws IOException {
-            return src.read(bytes, off, len);
-        }
-
-        @Override
-        public long skip(long n) throws IOException {
-            return src.skip(n);
-        }
-
-        @Override
-        public int available() throws IOException {
-            return src.available();
-        }
-
-        @Override
-        public void close() throws IOException {
-            src.close();
-        }
-    }*/
+        };
+    }
 }
