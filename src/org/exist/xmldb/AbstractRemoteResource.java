@@ -489,6 +489,10 @@ public abstract class AbstractRemoteResource
 		if(contentVFile==null)
 			getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);
 		
+		// vfile may have been set by getRemoteContentIntoLocalFile
+		if(vfile != null)
+			return vfile.getContent();
+		
 		return contentVFile.getContent();
 	}
 
