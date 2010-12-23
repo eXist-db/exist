@@ -1,37 +1,84 @@
 <?xml version='1.0'?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/ns/xproc" elementFormDefault="qualified" xmlns:p="http://www.w3.org/ns/xproc">
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.w3.org/ns/xproc"
+        elementFormDefault="qualified"
+        xmlns:p="http://www.w3.org/ns/xproc">
 
-  <!-- This is schema version $Id: xproc.xsd,v 1.15 2008/02/08 19:58:44 NormanWalsh Exp $ -->
+  <!-- This is schema version $Id: xproc.xsd,v 1.1 2010/05/11 13:38:08 bertails Exp $ -->
  
  <import namespace="http://www.w3.org/XML/1998/namespace"/>
  
+ <element name="annotation" abstract="true" type="p:anyProc"/>
+
  <complexType name="anyProc">
   <sequence>
    <any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
   </sequence>
   <attribute ref="xml:id"/>
   <attribute ref="xml:base"/>
+  <attribute name="use-when" type="p:XPathExpression"/>
   <anyAttribute processContents="lax"/>
  </complexType>
 
-  <element name="component" type="p:componentType" abstract="true"/>
- 
- <element name="extra" abstract="true">
-  <annotation>
-   <documentation>Temporary mechanism to allow for extension with
-non-components -- give them p:extra as their subst. group heads.</documentation>
-  </annotation>
- </element>
+ <element name="component" type="p:componentType" abstract="true"/>
 
-  <complexType name="componentType">
-   <complexContent>
-    <extension base="p:anyProc">
-     <attribute name="name" type="NCName"/>     
-    </extension>
-   </complexContent>
-  </complexType>
+ <complexType name="componentType">
+  <complexContent>
+   <extension base="p:anyProc">
+    <attribute name="name" type="NCName"/>     
+   </extension>
+  </complexContent>
+ </complexType>
 
-  <element name="step" type="p:stepType" abstract="true" substitutionGroup="p:component"/>
+ <group name="subPipe">
+  <sequence>
+   <sequence minOccurs="0" maxOccurs="unbounded">
+    <element ref="p:variable"/>
+    <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+   <sequence maxOccurs="unbounded">
+    <element ref="p:component"/>
+    <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </sequence>
+ </group>
+
+ <group name="seqConnection">
+  <sequence>
+   <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+   <choice>
+    <sequence>
+     <element ref="p:empty"/>
+     <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <sequence minOccurs="0" maxOccurs="unbounded">
+     <element ref="p:oneConnection"/>
+     <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+   </choice>
+  </sequence>
+ </group>
+
+ <element name="connection" abstract="true"/> 
+ <element name="oneConnection" abstract="true" substitutionGroup="p:connection"/>
+
+ <group name="optConnection">
+  <sequence>
+   <choice minOccurs="0" maxOccurs="unbounded">
+    <element ref="p:namespaces"/>
+    <element ref="p:annotation"/>
+   </choice>
+   <sequence minOccurs="0">
+     <element ref="p:connection"/>
+     <choice minOccurs="0" maxOccurs="unbounded">
+      <element ref="p:namespaces"/>
+      <element ref="p:annotation"/>
+     </choice>
+    </sequence>
+  </sequence>
+ </group>
+
+ <element name="step" type="p:stepType" abstract="true" substitutionGroup="p:component"/>
 
  <complexType name="stepType">
   <complexContent>
@@ -40,42 +87,18 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
       <choice minOccurs="0" maxOccurs="unbounded">        
        <element ref="p:input"/>
        <element ref="p:output"/>
-       <element ref="p:option"/>
        <element ref="p:log"/>
-       <element ref="p:parameter"/>
-       <element ref="p:documentation"/>
+       <element ref="p:with-option"/>
+       <element ref="p:with-param"/>
+       <element ref="p:annotation"/>
       </choice>     
      <group ref="p:subPipe" minOccurs="0"/>
     </sequence>
-    <anyAttribute namespace="##other" processContents="lax"/>
+    <anyAttribute processContents="lax"/>
    </restriction>
   </complexContent>
  </complexType>
- 
- <group name="subPipe">
-  <sequence>
-   <element ref="p:component"/>
-   <choice minOccurs="0" maxOccurs="unbounded">
-    <element ref="p:component"/>
-    <element ref="p:documentation"/>
-   </choice>
-  </sequence>
- </group>
 
- <element name="atomicStep" abstract="true" substitutionGroup="p:step" type="p:atomicStepType"/>
- 
- <group name="atomicStepModel">  
-  <sequence>
-   <choice minOccurs="0" maxOccurs="unbounded">
-    <element ref="p:input"/>
-    <element ref="p:log"/>
-    <element ref="p:option"/>
-    <element ref="p:parameter"/>
-    <element ref="p:documentation"/>
-   </choice>
-  </sequence>
- </group>
- 
  <complexType name="atomicStepType">
   <complexContent>
    <restriction base="p:stepType">
@@ -84,7 +107,30 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
    </restriction>
   </complexContent>
  </complexType>
+ 
+ <group name="atomicStepModel">  
+  <sequence>
+   <annotation>
+    <documentation>
+     Include an empty sequence (&lt;sequence/>)
+     at the end of _this_ sequence if you need to
+     work around a problem Xerces has with this
+     (reported as a restriction failure wrt atomicStepType)
+     if you turn on strict schema checking
+    </documentation>
+   </annotation>
+   <choice minOccurs="0" maxOccurs="unbounded">
+    <element ref="p:input"/>
+    <element ref="p:log"/>
+    <element ref="p:with-option"/>
+    <element ref="p:with-param"/>
+    <element ref="p:annotation"/>
+   </choice>
+  </sequence>
+ </group>
 
+ <element name="atomicStep" abstract="true" substitutionGroup="p:step" type="p:atomicStepType"/>
+ 
   <element name="compoundStep" abstract="true" substitutionGroup="p:step">
    <complexType>
     <complexContent>
@@ -93,9 +139,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
        <choice minOccurs="0" maxOccurs="unbounded">        
         <element ref="p:input"/>
         <element ref="p:output"/>
-        <element ref="p:option"/>
         <element ref="p:log"/>
-        <element ref="p:documentation"/>
+        <element ref="p:annotation"/>
        </choice>     
        <group ref="p:subPipe" minOccurs="0"/>
       </sequence>
@@ -104,86 +149,67 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
     </complexContent>
    </complexType>
   </element>
- 
- <group name="seqBinding">
-  <sequence>
-   <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-   <choice>
-    <sequence>
-     <element ref="p:empty"/>
-     <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-    </sequence>
-    <sequence minOccurs="0">
-     <element ref="p:oneBinding"/>
-     <choice minOccurs="0" maxOccurs="unbounded">
-      <element ref="p:oneBinding"/>
-      <element ref="p:documentation"/>
-     </choice>
-    </sequence>       
-   </choice>
-  </sequence>
- </group>
- 
- <group name="optBinding">
-  <sequence>
-   <choice minOccurs="0" maxOccurs="unbounded">
-    <element ref="p:namespaces"/>
-    <element ref="p:documentation"/>
-   </choice>
-   <sequence minOccurs="0">
-     <element ref="p:binding"/>
-     <choice minOccurs="0" maxOccurs="unbounded">
-      <element ref="p:namespaces"/>
-      <element ref="p:documentation"/>
-     </choice>
-    </sequence>
-  </sequence>
- </group>
-
-  <element name="binding" abstract="true"/> 
- <element name="oneBinding" abstract="true" substitutionGroup="p:binding"/>
 
  <simpleType name="ipType">
-  <list itemType="NCName"/>
+  <union>
+   <simpleType>
+    <restriction base="token">
+     <enumeration value="#all"/>
+    </restriction>
+   </simpleType>
+   <simpleType>
+    <list itemType="p:ipItem"/>
+   </simpleType>
+  </union>
+ </simpleType>
+ 
+ <simpleType name="ipItem">
+  <union memberTypes="NCName">
+   <simpleType>
+    <restriction base="token">
+     <enumeration value="#default"/>
+    </restriction>
+   </simpleType>
+  </union>
  </simpleType>
 
  <attributeGroup name="pipeTopAttrs">
-  <attribute name="ignore-prefixes" type="p:ipType"/>
-  <attribute name="xpath-version" type="token" default="1.0"/>
-  <attribute name="psvi-required" type="boolean" default="false"/>
+  <attribute name="exclude-inline-prefixes" type="p:ipType"/>
+  <attribute name="version" type="token"/>
+  <attribute name="xpath-version" type="token"/>
+  <attribute name="psvi-required" type="boolean"/>
  </attributeGroup>
- 
- <element name="documentation">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <sequence>
-      <any processContents="lax"/>
-     </sequence>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
+
+ <group name="declProlog">
+  <sequence>
+   <choice minOccurs="0" maxOccurs="unbounded">        
+    <element ref="p:input"/>
+    <element ref="p:output"/>
+    <element ref="p:option"/>
+    <element ref="p:log"/>
+    <element ref="p:serialization"/>
+    <element ref="p:annotation"/>
+   </choice>
+   <sequence minOccurs="0" maxOccurs="unbounded">
+    <choice>
+     <element ref="p:import"/>
+     <element ref="p:declare-step"/>
+     <element ref="p:pipeline"/>
+    </choice>
+    <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+   </sequence>
+  </sequence>
+ </group>
 
  <element name="pipeline">
   <complexType>
    <complexContent>
     <restriction base="p:componentType">
      <sequence>
-      <choice minOccurs="0" maxOccurs="unbounded">        
-       <element ref="p:input"/>
-       <element ref="p:output"/>
-       <element ref="p:option"/>
-       <element ref="p:import"/>
-       <element ref="p:declare-step"/>
-       <element ref="p:log"/>
-       <element ref="p:serialization"/>
-       <element ref="p:documentation"/>
-       <element ref="p:extra"/>
-      </choice>
-      <group ref="p:subPipe" minOccurs="0"/>
+      <group ref="p:declProlog"/>
+      <group ref="p:subPipe"/>
      </sequence>
+     <attribute name="name" type="NCName"/>
      <attribute name="type" type="QName"/>
      <attributeGroup ref="p:pipeTopAttrs"/>
      <anyAttribute namespace="##other" processContents="lax"/>
@@ -192,15 +218,204 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
   </complexType>
  </element>
 
+ <element name="for-each" substitutionGroup="p:component">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <sequence minOccurs="0">
+       <element ref="p:iteration-source"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0" maxOccurs="unbounded">
+       <choice>
+	<element ref="p:output"/>
+	<element ref="p:log"/>
+       </choice>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <group ref="p:subPipe"/>
+     </sequence>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="viewport" substitutionGroup="p:component">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <sequence minOccurs="0">       
+       <element ref="p:viewport-source"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0">       
+       <element ref="p:output"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0">       
+       <element ref="p:log"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <group ref="p:subPipe"/>
+     </sequence>
+     <attribute name="match" type="p:XSLTMatchPattern" use="required"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="choose" substitutionGroup="p:component">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <sequence minOccurs="0">
+       <element ref="p:xpath-context"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0" maxOccurs="unbounded">
+       <element ref="p:variable"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0" maxOccurs="unbounded">
+       <element ref="p:when"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0">
+       <element ref="p:otherwise"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+     </sequence>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="xpath-context">
+  <complexType>
+   <complexContent>
+    <restriction base="p:anyProc">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <element ref="p:connection"/>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>   
+  </complexType>
+ </element>
+
+ <element name="when">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <sequence minOccurs="0">
+       <element ref="p:xpath-context"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <sequence minOccurs="0" maxOccurs="unbounded">
+       <choice>
+        <element ref="p:output"/>
+        <element ref="p:log"/>
+       </choice>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+      <group ref="p:subPipe"/>
+     </sequence>
+     <attribute name="name" use="prohibited"/>
+     <attribute name="test" type="p:XPathExpression" use="required"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <group name="groupModel">
+  <sequence>
+   <choice minOccurs="0" maxOccurs="unbounded">
+    <element ref="p:output"/>
+    <element ref="p:log"/>
+    <element ref="p:annotation"/>
+   </choice>
+   <group ref="p:subPipe"/>
+  </sequence>
+ </group>
+
+ <element name="otherwise">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <group ref="p:groupModel"/>
+     <attribute name="name" use="prohibited"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+ 
+ <element name="group" substitutionGroup="p:component">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <group ref="p:groupModel"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="try" substitutionGroup="p:component">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <sequence>
+      <choice minOccurs="0" maxOccurs="unbounded">
+       <element ref="p:annotation"/>
+       <element ref="p:variable"/>
+      </choice>
+      <element ref="p:group"/>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <element ref="p:catch"/>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="catch">
+  <complexType>
+   <complexContent>
+    <restriction base="p:componentType">
+     <group ref="p:groupModel"/>
+     <attribute name="name" use="prohibited"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+ 
  <element name="input">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
-     <group ref="p:seqBinding" minOccurs="0"/>
+     <group ref="p:seqConnection"/>
      <attribute name="port" type="NCName" use="required"/>
-     <attribute name="sequence" type="boolean" default="false"/>
-     <attribute name="primary" type="boolean" default="false"/>
-     <attribute name="kind" default="document">
+     <attribute name="sequence" type="boolean"/>
+     <attribute name="primary" type="boolean"/>
+     <attribute name="kind">
       <simpleType>
        <restriction base="NMTOKEN">
         <enumeration value="document"/>
@@ -215,54 +430,28 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
   </complexType>
  </element>
 
- <element name="pipe" substitutionGroup="p:oneBinding">
+ <element name="iteration-source">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
-     </sequence>
-     <attribute name="step" type="NCName" use="required"/>
-     <attribute name="port" type="NCName" use="required"/>
+     <group ref="p:seqConnection"/>
+     <attribute name="select" type="p:XPathExpression"/>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
   </complexType>
  </element>
 
- <element name="document" substitutionGroup="p:oneBinding">
+ <element name="viewport-source">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
-     </sequence>
-     <attribute name="href" type="anyURI" use="required"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
- 
- <element name="empty" substitutionGroup="p:binding">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
-     </sequence>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="inline" substitutionGroup="p:oneBinding">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <sequence>
-      <any namespace="##any" processContents="lax"/>
+      <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      <sequence minOccurs="0">
+       <element ref="p:oneConnection"/>
+       <element ref="p:annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
      </sequence>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
@@ -274,10 +463,10 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
-     <group ref="p:seqBinding" minOccurs="0"/>
+     <group ref="p:seqConnection"/>
      <attribute name="port" type="NCName" use="required"/>
-     <attribute name="sequence" type="boolean" default="false"/>
-     <attribute name="primary" type="boolean" default="false"/>
+     <attribute name="sequence" type="boolean"/>
+     <attribute name="primary" type="boolean"/>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
@@ -289,7 +478,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
    <complexContent>
     <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
+      <element ref="p:annotation" minOccurs="0"/>
      </sequence>
      <attribute name="port" type="NCName" use="required"/>
      <attribute name="href" type="anyURI"/>
@@ -334,7 +523,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
    <complexContent>
     <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
+      <element ref="p:annotation" minOccurs="0"/>
      </sequence>
      <attributeGroup ref="p:serializationAttrs"/>
      <attribute name="port" type="NCName" use="required"/>
@@ -347,24 +536,69 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
  <complexType name="poType">
   <complexContent>
    <restriction base="p:anyProc">
-    <group ref="p:optBinding"/>
+    <group ref="p:optConnection"/>
     <attribute name="name" type="QName" use="required"/>
-    <attribute name="required" type="boolean" default="false"/>
-    <attribute name="value" type="string"/>
+    <attribute name="required" type="boolean"/>
     <attribute name="select" type="p:XPathExpression"/>
     <anyAttribute namespace="##other" processContents="lax"/>
    </restriction>
   </complexContent>
   </complexType>
+
+ <complexType name="bindingType">
+  <complexContent>
+   <restriction base="p:poType">
+    <group ref="p:optConnection"/>
+    <attribute name="required" use="prohibited"/>
+    <attribute name="select" type="p:XPathExpression" use="required"/>
+    <anyAttribute namespace="##other" processContents="lax"/>
+   </restriction>
+  </complexContent>
+ </complexType>
  
+ <element name="variable" type="p:bindingType"/>
+
+ <element name="option">
+  <complexType>
+   <complexContent>
+    <restriction base="p:poType">
+     <sequence>
+      <annotation>
+       <documentation>
+       Include an empty sequence (&lt;sequence/>)
+       at the end of _this_ sequence if you need to
+       work around a problem Xerces has with this
+       (reported as a restriction failure wrt atomicStepType)
+       if you turn on strict schema checking
+       </documentation>
+      </annotation> 
+      <element ref="p:annotation" minOccurs="0"/>
+     </sequence>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+ 
+ <element name="with-option" type="p:bindingType"/>
+ <element name="with-param">
+  <complexType>
+   <complexContent>
+    <extension base="p:bindingType">
+     <attribute name="port" type="NCName"/>
+    </extension>
+   </complexContent>
+  </complexType>
+ </element>
+
  <element name="namespaces">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0"/>
+      <element ref="p:annotation" minOccurs="0"/>
      </sequence>
-     <attribute name="option" type="QName"/>
+     <attribute name="binding" type="QName"/>
      <attribute name="element" type="p:XPathExpression"/>
      <attribute name="except-prefixes" type="NMTOKENS"/>
      <anyAttribute namespace="##other" processContents="lax"/>
@@ -372,229 +606,103 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
    </complexContent>
   </complexType>
  </element>
- 
- <element name="option" type="p:poType"/>
- <element name="parameter">
-  <complexType>
-   <complexContent>
-    <restriction base="p:poType">
-     <group ref="p:optBinding"/>
-     <attribute name="required" use="prohibited"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
 
- <element name="for-each" substitutionGroup="p:component">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <sequence minOccurs="0">
-       <element ref="p:iteration-source"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-      <sequence minOccurs="0">
-       <choice>
-        <element ref="p:output"/>
-        <element ref="p:option"/>
-        <element ref="p:log"/>
-       </choice>
-       <choice minOccurs="0" maxOccurs="unbounded">
-        <element ref="p:output"/>
-        <element ref="p:option"/>
-        <element ref="p:log"/>
-        <element ref="p:documentation"/>
-       </choice>
-      </sequence>
-      <group ref="p:subPipe" minOccurs="0"/>
-     </sequence>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="iteration-source">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <group ref="p:seqBinding" minOccurs="0"/>
-     <attribute name="select" type="p:XPathExpression"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="viewport" substitutionGroup="p:component">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <sequence minOccurs="0">       
-       <element ref="p:viewport-source"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-      <sequence minOccurs="0">       
-       <element ref="p:output"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-      <sequence minOccurs="0">       
-       <element ref="p:log"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>      
-      <sequence minOccurs="0">
-       <element ref="p:option"/>
-       <choice minOccurs="0" maxOccurs="unbounded">
-        <element ref="p:option"/>
-        <element ref="p:documentation"/>
-       </choice>
-      </sequence>
-      <group ref="p:subPipe" minOccurs="0"/>
-     </sequence>
-     <attribute name="match" type="p:XSLTMatchPattern" use="required"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="viewport-source">
+ <element name="declare-step">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <sequence minOccurs="0">
-       <element ref="p:oneBinding"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-     </sequence>
-     <attribute name="match" type="p:XSLTMatchPattern" use="required"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="choose" substitutionGroup="p:component">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <sequence minOccurs="0">
-       <element ref="p:xpath-context"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-      <sequence minOccurs="0">
-       <element ref="p:when"/>
-       <choice minOccurs="0" maxOccurs="unbounded">
-        <element ref="p:when"/>
-        <element ref="p:documentation"/>
-       </choice>
-      </sequence>
-      <sequence minOccurs="0">
-       <element ref="p:otherwise"/>
-       <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      </sequence>
-     </sequence>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="when">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <element ref="p:xpath-context" minOccurs="0"/>
-      <sequence minOccurs="0">
-       <choice>
-        <element ref="p:output"/>
-        <element ref="p:option"/>
-        <element ref="p:log"/>
-       </choice>
-       <choice minOccurs="0" maxOccurs="unbounded">
-        <element ref="p:output"/>
-        <element ref="p:option"/>
-        <element ref="p:log"/>
-        <element ref="p:documentation"/>
-       </choice>
-      </sequence>
+      <group ref="p:declProlog"/>
       <group ref="p:subPipe" minOccurs="0"/>
      </sequence>
-     <attribute name="name" use="prohibited"/>
-     <attribute name="test" type="p:XPathExpression" use="required"/>
+     <attribute name="name" type="NCName"/>
+     <attribute name="type" type="QName"/>
+     <attributeGroup ref="p:pipeTopAttrs"/>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
   </complexType>
  </element>
- 
- <group name="groupModel">
-  <sequence>
-   <choice minOccurs="0" maxOccurs="unbounded">
-    <element ref="p:output"/>
-    <element ref="p:option"/>
-    <element ref="p:log"/>
-    <element ref="p:documentation"/>
-   </choice>
-   <group ref="p:subPipe" minOccurs="0"/>
-  </sequence>
- </group>
 
- <element name="otherwise">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <group ref="p:groupModel"/>
-     <attribute name="name" use="prohibited"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
- 
- <element name="xpath-context">
+ <element name="library">
   <complexType>
    <complexContent>
     <restriction base="p:anyProc">
-     <group ref="p:optBinding"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>   
-  </complexType>
- </element>
-
- <element name="group" substitutionGroup="p:component">
-  <complexType>
-   <complexContent>
-    <restriction base="p:componentType">
-     <group ref="p:groupModel"/>
+     <sequence>
+      <choice minOccurs="0" maxOccurs="unbounded">        
+       <element ref="p:import"/>
+       <element ref="p:declare-step"/>
+       <element ref="p:pipeline"/>
+       <element ref="p:annotation"/>
+      </choice>
+     </sequence>
+     <attributeGroup ref="p:pipeTopAttrs"/>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
   </complexType>
  </element>
 
- <element name="try" substitutionGroup="p:component">
+ <element name="import">
+  <complexType>
+   <sequence>
+    <element ref="p:annotation" minOccurs="0"/>
+   </sequence>
+   <attribute name="href" type="anyURI" use="required"/>
+  </complexType>
+ </element>
+
+ <element name="pipe" substitutionGroup="p:oneConnection">
   <complexType>
    <complexContent>
-    <restriction base="p:componentType">
+    <restriction base="p:anyProc">
      <sequence>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <element ref="p:group"/>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
-      <element ref="p:catch"/>
-      <element ref="p:documentation" minOccurs="0" maxOccurs="unbounded"/>
+      <element ref="p:annotation" minOccurs="0"/>
+     </sequence>
+     <attribute name="step" type="NCName" use="required"/>
+     <attribute name="port" type="NCName" use="required"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="document" substitutionGroup="p:oneConnection">
+  <complexType>
+   <complexContent>
+    <restriction base="p:anyProc">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0"/>
+     </sequence>
+     <attribute name="href" type="anyURI" use="required"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+
+ <element name="data" substitutionGroup="p:oneConnection">
+  <complexType>
+   <complexContent>
+    <restriction base="p:anyProc">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0"/>
+     </sequence>
+     <attribute name="href" type="anyURI" use="required"/>
+     <attribute name="wrapper" type="QName"/>
+     <attribute name="content-type" type="token"/>
+     <anyAttribute namespace="##other" processContents="lax"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </element>
+ 
+ <element name="empty" substitutionGroup="p:connection">
+  <complexType>
+   <complexContent>
+    <restriction base="p:anyProc">
+     <sequence>
+      <element ref="p:annotation" minOccurs="0"/>
      </sequence>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
@@ -602,37 +710,34 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
   </complexType>
  </element>
 
- <element name="catch">
+ <element name="inline" substitutionGroup="p:oneConnection">
   <complexType>
    <complexContent>
-    <restriction base="p:componentType">
-     <group ref="p:groupModel"/>
-     <attribute name="name" use="prohibited"/>
+    <restriction base="p:anyProc">
+     <sequence>
+      <any namespace="##any" processContents="lax"/>
+     </sequence>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
   </complexType>
  </element>
- 
+
+ <element name="documentation" substitutionGroup="p:annotation"/>
+
+ <element name="pipeinfo" substitutionGroup="p:annotation"/>
+
  <element name="vanillaStep" abstract="true" substitutionGroup="p:atomicStep">
   <complexType>
    <complexContent>
     <restriction base="p:atomicStepType">
-     <sequence>
-      <choice minOccurs="0" maxOccurs="unbounded">
-       <element ref="p:input"/>
-       <element ref="p:log"/>
-       <element ref="p:option"/>
-       <element ref="p:parameter"/>
-       <element ref="p:documentation"/>
-      </choice>
-     </sequence>
+     <group ref="p:atomicStepModel"/>
      <anyAttribute namespace="##other" processContents="lax"/>
     </restriction>
    </complexContent>
   </complexType>
  </element>
-
+ 
    <element name="add-attribute" substitutionGroup="p:atomicStep">
       <complexType>
          <complexContent>
@@ -640,6 +745,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <group ref="p:atomicStepModel"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
                <attribute name="attribute-name" type="QName"/>
+               <attribute name="attribute-prefix" type="NCName"/>
+               <attribute name="attribute-namespace" type="anyURI"/>
                <attribute name="attribute-value" type="string"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -669,7 +776,17 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          </complexContent>
       </complexType>
    </element>
-   <element name="count" substitutionGroup="p:vanillaStep"/>
+   <element name="count" substitutionGroup="p:atomicStep">
+      <complexType>
+         <complexContent>
+            <restriction base="p:atomicStepType">
+               <group ref="p:atomicStepModel"/>
+               <attribute name="limit" type="integer"/>
+               <anyAttribute namespace="##other" processContents="lax"/>
+            </restriction>
+         </complexContent>
+      </complexType>
+   </element>
    <element name="delete" substitutionGroup="p:atomicStep">
       <complexType>
          <complexContent>
@@ -700,6 +817,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="code" type="QName"/>
+               <attribute name="code-prefix" type="NCName"/>
+               <attribute name="code-namespace" type="anyURI"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -717,7 +836,6 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                </attribute>
                <attribute name="doctype-public" type="string"/>
                <attribute name="doctype-system" type="anyURI"/>
-               <attribute name="encoding" type="string"/>
                <attribute name="escape-uri-attributes" type="boolean"/>
                <attribute name="include-content-type" type="boolean"/>
                <attribute name="indent" type="boolean"/>
@@ -735,6 +853,17 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                </attribute>
                <attribute name="undeclare-prefixes" type="boolean"/>
                <attribute name="version" type="string"/>
+               <anyAttribute namespace="##other" processContents="lax"/>
+            </restriction>
+         </complexContent>
+      </complexType>
+   </element>
+   <element name="filter" substitutionGroup="p:atomicStep">
+      <complexType>
+         <complexContent>
+            <restriction base="p:atomicStepType">
+               <group ref="p:atomicStepModel"/>
+               <attribute name="select" type="p:XPathExpression"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -805,10 +934,11 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="attribute" type="QName"/>
-               <attribute name="prefix" type="string"/>
-               <attribute name="suffix" type="string"/>
+               <attribute name="attribute-prefix" type="NCName"/>
+               <attribute name="attribute-namespace" type="anyURI"/>
+               <attribute name="label" type="p:XPathExpression"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
-               <attribute name="scheme" type="QName"/>
+               <attribute name="replace" type="boolean"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -845,7 +975,15 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <group ref="p:atomicStepModel"/>
                <attribute name="from" type="anyURI"/>
                <attribute name="to" type="anyURI"/>
-               <attribute name="elements-only" type="boolean"/>
+               <attribute name="apply-to">
+                  <simpleType>
+                     <restriction base="NMTOKEN">
+                        <enumeration value="all"/>
+                        <enumeration value="elements"/>
+                        <enumeration value="attributes"/>
+                     </restriction>
+                  </simpleType>
+               </attribute>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -857,6 +995,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="wrapper" type="QName"/>
+               <attribute name="wrapper-prefix" type="NCName"/>
+               <attribute name="wrapper-namespace" type="anyURI"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -870,6 +1010,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <group ref="p:atomicStepModel"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
                <attribute name="new-name" type="QName"/>
+               <attribute name="new-prefix" type="NCName"/>
+               <attribute name="new-namespace" type="anyURI"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -903,6 +1045,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          <complexContent>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
+               <attribute name="initial-only" type="boolean"/>
                <attribute name="test" type="p:XPathExpression"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -947,6 +1090,18 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          </complexContent>
       </complexType>
    </element>
+   <element name="string-replace" substitutionGroup="p:atomicStep">
+      <complexType>
+         <complexContent>
+            <restriction base="p:atomicStepType">
+               <group ref="p:atomicStepModel"/>
+               <attribute name="match" type="p:XSLTMatchPattern"/>
+               <attribute name="replace" type="p:XPathExpression"/>
+               <anyAttribute namespace="##other" processContents="lax"/>
+            </restriction>
+         </complexContent>
+      </complexType>
+   </element>
    <element name="unescape-markup" substitutionGroup="p:atomicStep">
       <complexType>
          <complexContent>
@@ -956,18 +1111,6 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <attribute name="content-type" type="string"/>
                <attribute name="encoding" type="string"/>
                <attribute name="charset" type="string"/>
-               <anyAttribute namespace="##other" processContents="lax"/>
-            </restriction>
-         </complexContent>
-      </complexType>
-   </element>
-   <element name="string-replace" substitutionGroup="p:atomicStep">
-      <complexType>
-         <complexContent>
-            <restriction base="p:atomicStepType">
-               <group ref="p:atomicStepModel"/>
-               <attribute name="match" type="p:XSLTMatchPattern"/>
-               <attribute name="replace" type="p:XPathExpression"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -990,6 +1133,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="wrapper" type="QName"/>
+               <attribute name="wrapper-prefix" type="NCName"/>
+               <attribute name="wrapper-namespace" type="anyURI"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
                <attribute name="group-adjacent" type="p:XPathExpression"/>
                <anyAttribute namespace="##other" processContents="lax"/>
@@ -1003,6 +1148,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="wrapper" type="QName"/>
+               <attribute name="wrapper-prefix" type="NCName"/>
+               <attribute name="wrapper-namespace" type="anyURI"/>
                <attribute name="group-adjacent" type="p:XPathExpression"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -1048,7 +1195,9 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <attribute name="wrap-result-lines" type="boolean"/>
                <attribute name="errors-is-xml" type="boolean"/>
                <attribute name="wrap-error-lines" type="boolean"/>
-               <attribute name="fix-slashes" type="boolean"/>
+               <attribute name="path-separator" type="string"/>
+               <attribute name="failure-threshold" type="integer"/>
+               <attribute name="arg-separator" type="string"/>
                <attribute name="byte-order-mark" type="boolean"/>
                <attribute name="cdata-section-elements">
                   <simpleType>
@@ -1089,6 +1238,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
                <attribute name="value" type="string"/>
                <attribute name="algorithm" type="QName"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
+               <attribute name="version" type="string"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -1100,6 +1250,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
                <attribute name="match" type="p:XSLTMatchPattern"/>
+               <attribute name="version" type="integer"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
          </complexContent>
@@ -1110,7 +1261,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          <complexContent>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
-               <attribute name="dtd-compatibility" type="boolean"/>
+               <attribute name="dtd-attribute-values" type="boolean"/>
+               <attribute name="dtd-id-idref-warnings" type="boolean"/>
                <attribute name="assert-valid" type="boolean"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -1122,6 +1274,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          <complexContent>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
+               <attribute name="phase" type="string"/>
                <attribute name="assert-valid" type="boolean"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -1133,6 +1286,8 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          <complexContent>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
+               <attribute name="use-location-hints" type="boolean"/>
+               <attribute name="try-namespaces" type="boolean"/>
                <attribute name="assert-valid" type="boolean"/>
                <attribute name="mode">
                   <simpleType>
@@ -1175,7 +1330,7 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
          <complexContent>
             <restriction base="p:atomicStepType">
                <group ref="p:atomicStepModel"/>
-               <attribute name="uri" type="anyURI"/>
+               <attribute name="href" type="anyURI"/>
                <attribute name="content-type" type="string"/>
                <anyAttribute namespace="##other" processContents="lax"/>
             </restriction>
@@ -1183,70 +1338,12 @@ non-components -- give them p:extra as their subst. group heads.</documentation>
       </complexType>
    </element>
 
- <element name="declare-step">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <sequence>
-      <choice minOccurs="0" maxOccurs="unbounded">        
-       <element ref="p:input"/>
-       <element ref="p:output"/>
-       <element ref="p:option"/>
-       <element ref="p:import"/>
-       <element ref="p:declare-step"/>
-       <element ref="p:log"/>
-       <element ref="p:serialization"/>
-       <element ref="p:documentation"/>
-       <element ref="p:extra"/>
-      </choice>
-      <group ref="p:subPipe" minOccurs="0"/>
-     </sequence>
-     <attribute name="type" type="QName" use="required"/>
-     <attributeGroup ref="p:pipeTopAttrs"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="library">
-  <complexType>
-   <complexContent>
-    <restriction base="p:anyProc">
-     <sequence>
-      <choice minOccurs="0" maxOccurs="unbounded">        
-       <element ref="p:import"/>
-       <element ref="p:declare-step"/>
-       <element ref="p:extra"/>
-       <element ref="p:documentation"/>
-      </choice>
-     </sequence>
-     <attributeGroup ref="p:pipeTopAttrs"/>
-     <anyAttribute namespace="##other" processContents="lax"/>
-    </restriction>
-   </complexContent>
-  </complexType>
- </element>
-
- <element name="import">
-  <complexType>
-   <sequence>
-    <element ref="p:documentation" minOccurs="0"/>
-   </sequence>
-   <attribute name="href" type="anyURI" use="required"/>
-  </complexType>
- </element>
-
  <simpleType name="XPathExpression">
   <restriction base="string"/>
  </simpleType>
 
  <simpleType name="XSLTMatchPattern">
   <restriction base="string"/>
- </simpleType>
- 
- <simpleType name="step-name">
-  <union memberTypes="NCName QName"/>
  </simpleType>
 
  <simpleType name="normFormType">
