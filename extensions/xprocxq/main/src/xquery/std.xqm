@@ -124,7 +124,6 @@ else
 
     return
 
-
        if($fail-if-not-equal) then
             if ($result) then          
       			u:outputResultElement('true')
@@ -508,12 +507,9 @@ let $query := if (contains($match,'/')) then
 				concat('//',$match)
 let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replace := string(u:get-option('replace',$options,$v))
-
-(:
-let $replace := u:evalXPATH(string(u:get-option('replace',$options,$v)),$v)
-:)
 return
-	u:string-replace-matching-elements($v/*,$matchresult,$replace)
+    util:catch('*',u:string-replace-matching-elements($v/*,$matchresult,$replace),u:dynamicError("err:XD0001",": p:string-replace resulted in non xml output"))
+
 };
 
 

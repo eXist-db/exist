@@ -286,27 +286,34 @@ else
 declare function naming:fixup($xproc as item(),$stdin){
 (: -------------------------------------------------------------------------- :)
 let $pipeline := $xproc/p:*[name(.) = "p:pipeline" or name(.) ="p:declare-step"]
-let $steps := <p:declare-step>
-               <ext:pre name="!{$pipeline/@name}">
+let $pipelinename :=  if (empty($pipeline/@name)) then 'xproc:default-pipeline' else $pipeline/@name
+let $steps := <p:declare-step name="{$pipelinename}">
+               <ext:pre name="!{$pipelinename}">
             {
             if ($pipeline/p:input[@primary='true']) then
                     $pipeline/p:input[@primary='true']
-            else
+            else if ($pipeline/p:input[@port='source']) then
                     <p:input port="source"
                              kind="document"
                              primary="true"
                              select="{if(empty($pipeline/p:input[@port='source']/@select)) then '/' else $pipeline/p:input[@port='source']/@select}"
                              sequence="{$pipeline/p:input[@port='source']/@sequence}">
                     {if($stdin) then
-                        <p:pipe step="{$pipeline/@name}" port="stdin"/>
+                        <p:pipe step="{$pipelinename}" port="stdin"/>
                     else
                         $pipeline/p:input[@port='source'][@primary="true"]
                     }
-                    </p:input>,
+                    </p:input>
+            else
+                (),
+
+            for $input in $pipeline/p:input[not(@port='source')]
+            return
+                <p:input port="{$input/@port}" primary="false">
+                    {$input/*}
+                </p:input>,
 
             <p:output port="result" primary="true" select="{if ($pipeline/p:output[@port='result']/@select) then $pipeline/p:output[@port='result']/@select else '/' }"/>,
-
-            $pipeline/p:input[@primary='false'],
 
             $pipeline/p:output[@primary='false']
             }
@@ -329,9 +336,7 @@ let $steps := <p:declare-step>
 
 </p:declare-step>
 return
-    <p:declare-step name="{if ($pipeline/@name) then $pipeline/@name else 'xproc:default-pipeline'}">
-        {$steps/*}
-    </p:declare-step>
+        $steps
 };
 
 

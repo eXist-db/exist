@@ -2,6 +2,10 @@
 priority
 ----------------------------------------
 
+test runner
+* testing errors
+* testing documents that refer to file items
+
     viewport and all path iterators (p:viewport,p:for-each)
     implement p:outputs
     implement variables & params & options
@@ -91,4 +95,55 @@ parameters are like options, names until runtime (good to use with p:xslt).
 Variables are created in compound steps and are immutable
 Options can be declared on atomic or compound steps.
 Parameters, unlike options and variables, have names that can be computed at runtime.
+
+
+
+
+add- 50%
+choose - 4/7
+compare - 4/5
+count - 2/3
+data - 0
+declare-step - 6/11
+delete - 2/4
+directory - 0
+evaluation order - 2/3
+exclude-inline - 0
+filter - only 1
+for - only 1
+group - 0
+http-request - ok (blocks)
+identity - most
+import - 1 
+input - blocks
+insert - 2
+iteration - 0 
+labelelements - 0
+load - 0
+log - 1
+make-absolute-uri -
+multipart -
+namespace-rename -
+option -
+rename - 
+set-attributes - 0 (prob needs more tests)
+sink - 
+split-sequence - 50%
+unescape-markup - 1 
+unwrap - 1
+wrap - some
+variable
+value-available-
+versioning - passed most of them, surprisingly! tests are probably invalid
+viewport - 1
+wrap-sequence - 1
+xinclude - 
+xmlid - 
+xslt - a few
+ 
+
+How to make development faster ?
+
+* build 'in database' e.g. avoid build/compile cycle
+* run error tests
 

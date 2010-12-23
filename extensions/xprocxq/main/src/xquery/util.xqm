@@ -267,7 +267,7 @@ if($primary//t:document) then
 	return
 		    document{$child}
 else
-	for $child in $primary/node()
+	for $child in $primary/*
 	return
 		    document{$child}
 };
@@ -734,6 +734,9 @@ declare function u:add-attributes-matching-elements($element as element(),$selec
 };
 
 declare function u:string-replace-matching-elements($element as element(),$select,$replace) as element() {
+if($element intersect $select) then
+    string($replace)
+else
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()

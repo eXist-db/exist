@@ -6,6 +6,8 @@
       <p:output port="result"/>
       <p:option name="match" required="true"/>
       <p:option name="attribute-name" required="true"/>
+      <p:option name="attribute-prefix"/>                          
+      <p:option name="attribute-namespace"/>                       
       <p:option name="attribute-value" required="true"/>
    </p:declare-step>
    <p:declare-step type="p:add-xml-base" xml:id="add-xml-base">
@@ -39,6 +41,9 @@
    <p:declare-step type="p:error" xml:id="error">
       <p:input port="source" primary="false"/>
       <p:option name="code" required="true"/>
+      <p:option name="code" required="true"/>                       
+      <p:option name="code-prefix"/>                                
+      <p:option name="code-namespace"/>                             
    </p:declare-step>
    <p:declare-step type="p:escape-markup" xml:id="escape-markup">
       <p:input port="source"/>
@@ -95,6 +100,8 @@
       <p:input port="source"/>
       <p:output port="result"/>
       <p:option name="attribute" select="'xml:id'"/>
+      <p:option name="attribute-prefix"/>                          
+      <p:option name="attribute-namespace"/>                       
       <p:option name="label" select="'concat(&#34;_&#34;,$p:index)'"/>
       <p:option name="match" select="'*'"/>
       <p:option name="replace" select="'true'"/>
@@ -121,7 +128,9 @@
       <p:input port="source" sequence="true" primary="true"/>
       <p:input port="alternate" sequence="true"/>
       <p:output port="result" sequence="true"/>
-      <p:option name="wrapper" required="true"/>
+      <p:option name="wrapper" required="true"/>                   
+      <p:option name="wrapper-prefix"/>                            
+      <p:option name="wrapper-namespace"/>                         
    </p:declare-step>
    <p:declare-step type="p:parameters" xml:id="parameters">
       <p:input port="parameters" kind="parameter" primary="false"/>
@@ -132,6 +141,8 @@
       <p:output port="result"/>
       <p:option name="match" required="true"/>
       <p:option name="new-name" required="true"/>
+      <p:option name="new-prefix"/>                              
+      <p:option name="new-namespace"/>                           
    </p:declare-step>
    <p:declare-step type="p:replace" xml:id="replace">
       <p:input port="source" primary="true"/>
@@ -197,15 +208,19 @@
    <p:declare-step type="p:wrap" xml:id="wrap">
       <p:input port="source"/>
       <p:output port="result"/>
-      <p:option name="wrapper" required="true"/>
-      <p:option name="match" required="true"/>
-      <p:option name="group-adjacent"/>
+      <p:option name="wrapper" required="true"/>                   
+      <p:option name="wrapper-prefix"/>                            
+      <p:option name="wrapper-namespace"/>                         
+      <p:option name="match" required="true"/>                     
+      <p:option name="group-adjacent"/>                            
    </p:declare-step>
    <p:declare-step type="p:wrap-sequence" xml:id="wrap-sequence">
       <p:input port="source" sequence="true"/>
       <p:output port="result" sequence="true"/>
-      <p:option name="wrapper" required="true"/>
-      <p:option name="group-adjacent"/>
+      <p:option name="wrapper" required="true"/>                  
+      <p:option name="wrapper-prefix"/>                           
+      <p:option name="wrapper-namespace"/>                        
+      <p:option name="group-adjacent"/>                           
    </p:declare-step>
    <p:declare-step type="p:xinclude" xml:id="xinclude">
       <p:input port="source"/>
@@ -224,6 +239,9 @@
       <p:option name="output-base-uri"/>
       <p:option name="version"/>
    </p:declare-step>
+
+
+
    <p:declare-step type="p:exec" xml:id="exec">
       <p:input port="source" primary="true" sequence="true"/>
       <p:output port="result" primary="true"/>

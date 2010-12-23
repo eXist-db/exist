@@ -12,7 +12,8 @@
  declare namespace c="http://www.w3.org/ns/xproc-step";
  declare namespace err="http://www.w3.org/ns/xproc-error";
  declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
- 
+ declare namespace t="http://xproc.org/ns/testsuite";
+
  (: Module Imports :)
  import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
  import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
@@ -808,10 +809,8 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:resolve-external-bindings($bindings,$pipelinename){
  (: -------------------------------------------------------------------------- :)
- if (empty($bindings)) then
-     () 
- else if($bindings/bindings) then
-    for $binding in $bindings/bindings/binding
+if($bindings) then
+    for $binding in $bindings//*
     return
         <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
             {
@@ -822,12 +821,20 @@ declare function xproc:explicitbindings($xproc,$unique_id){
             }
         </xproc:output>
  else
+      ()
+
+ (:
+ if ($bindings/t:input) then
+
     (: TODO- this is used for tests.xproc.org unit testing purposes :)
-    for $binding in $bindings/*
+    for $binding in $bindings//t:input
     return
-   <xproc:output port-type="external" port="{$binding/@port}" step="{concat('!',$pipelinename)}">
-       {$binding/node()}
+   <xproc:output port-type="external" port="{fn:string($binding/@port)}" step="{concat('!',$pipelinename)}">
+       {$binding/.}
    </xproc:output>
+ else
+   <xsl:stylesheet/>
+ :)
  };
 
 

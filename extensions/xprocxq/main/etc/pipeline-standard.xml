@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <p:library xmlns:p="http://www.w3.org/ns/xproc"
 		xmlns:xproc="http://xproc.net/xproc">
+
+
    <p:declare-step type="p:add-attribute" xml:id="add-attribute"  xmlns:xproc="http://xproc.net/xproc" xproc:support="true">
-      <p:input port="source" primary="true" select="/"/>
-      <p:output port="result" primary="true" select="/"/>
+      <p:input port="source"/>
+      <p:output port="result"/>
       <p:option name="match" required="true"/>
       <p:option name="attribute-name" required="true"/>
+      <p:option name="attribute-prefix"/>                          
+      <p:option name="attribute-namespace"/>                       
       <p:option name="attribute-value" required="true"/>
    </p:declare-step>
    <p:declare-step type="p:add-xml-base" xml:id="add-xml-base" xmlns:xproc="http://xproc.net/xproc"  xproc:support="true">
@@ -228,4 +232,6 @@
       <p:option name="output-base-uri"/>
       <p:option name="version"/>
    </p:declare-step>
+
+
 </p:library>
