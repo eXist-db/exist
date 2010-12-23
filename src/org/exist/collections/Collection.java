@@ -1027,7 +1027,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
         } finally {
             //This lock has been acquired in validateXMLResourceInternal()
-            document.getUpdateLock().release(Lock.WRITE_LOCK);
+    		document.getUpdateLock().release(Lock.WRITE_LOCK);
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
         collectionConfEnabled = true;
@@ -1207,9 +1207,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     documents.remove(oldDoc.getFileURI().getRawCollectionPath());
                     //This lock is released in storeXMLInternal()
                     //TODO : check that we go until there to ensure the lock is released
-                    if (transaction != null)
-                    	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
-                	else
+//                    if (transaction != null)
+//                    	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
+//                	else
                 		document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     
                     document.setDocId(broker.getNextResourceId(transaction, this));
@@ -1228,9 +1228,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             } else {
                 //This lock is released in storeXMLInternal()
                 //TODO : check that we go until there to ensure the lock is released
-            	if (transaction != null)
-                	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
-            	else
+//            	if (transaction != null)
+//                	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
+//            	else
             		document.getUpdateLock().acquire(Lock.WRITE_LOCK);
             	
                 document.setDocId(broker.getNextResourceId(transaction, this));
