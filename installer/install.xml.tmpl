@@ -3,7 +3,7 @@
         <appname>@name@</appname>
         <appversion>@version@</appversion>
         <url>http://exist-db.org</url>
-        <javaversion>1.4</javaversion>
+        <javaversion>1.5</javaversion>
         <run-privileged condition="izpack.windowsinstall.vista"/>
     </info>
     <guiprefs height="450" resizable="yes" width="640">
@@ -31,6 +31,8 @@
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
     <native type="izpack" name="ShellLink.dll"/>
+	<native type="izpack" name="ShellLink_x64.dll"/>
+
     <variables>
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>

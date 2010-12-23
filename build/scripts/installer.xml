@@ -15,8 +15,17 @@
     </target>
 
     <target depends="all,samples,javadocs" name="prepare-installer">
-        <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
-                classname="com.izforge.izpack.ant.IzPackTask"/>
+	
+		<path id="izpackdeps">
+			<fileset dir="${izpack.dir}/lib/">
+				<include name="*.jar"/>
+			</fileset>
+		</path>
+
+        <taskdef name="izpack" classname="com.izforge.izpack.ant.IzPackTask">
+			<classpath refid="izpackdeps" />
+		</taskdef>
+		
         <tstamp/>
         <delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
         <touch file="webapp/WEB-INF/logs/exist.log"/>
