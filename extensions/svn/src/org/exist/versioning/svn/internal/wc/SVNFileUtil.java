@@ -87,9 +87,9 @@ public class SVNFileUtil {
         }
     };
 
-    private static boolean ourUseUnsafeCopyOnly = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("svnkit.no.safe.copy", System.getProperty("javasvn.no.safe.copy", "false")));
-    private static boolean ourCopyOnSetWritable = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("svnkit.fast.setWritable", "true"));
-    private static boolean ourUseNIOCopying = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("svnkit.nio.copy", "true"));
+    private static boolean ourUseUnsafeCopyOnly = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("exist.svnkit.no.safe.copy", "true"));
+    private static boolean ourCopyOnSetWritable = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("exist.svnkit.fast.setWritable", "true"));
+    private static boolean ourUseNIOCopying = Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("exist.svnkit.nio.copy", "false"));
 
     private static String nativeEOLMarker;
     private static File ourAppDataPath;
