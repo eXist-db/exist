@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apache.commons.codec.binary.Base64;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
@@ -27,7 +28,7 @@ public class StreamBinaryTest extends RESTTest {
 	public void testStreamBinary() {
 		
                 final String testValue = "hello world";
-                final String xquery = "response:stream-binary(xs:base64Binary('" + testValue + "'), 'application/octet-stream', 'test.bin')";
+                final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
             
                 GetMethod get = new GetMethod(COLLECTION_ROOT_URL);
 
