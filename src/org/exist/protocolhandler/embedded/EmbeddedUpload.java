@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -155,23 +155,16 @@ public class EmbeddedUpload {
             
             broker = pool.get(user);
             
-            transact = pool.getTransactionManager();
-            txn = transact.beginTransaction();
-            
             XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
             XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
             
             collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
             
-            if(collection == null) {
-                transact.abort(txn);
+            if(collection == null)
                 throw new ExistIOException("Resource "+collectionUri.toString()+" is not a collection.");
-            }
             
-            if(collection.hasChildCollection(documentUri)) {
-                transact.abort(txn);
+            if(collection.hasChildCollection(documentUri))
                 throw new ExistIOException("Resource "+documentUri.toString()+" is a collection.");
-            }
             
             MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
             String contentType=null;
@@ -180,6 +173,9 @@ public class EmbeddedUpload {
             } else {
                 mime = MimeType.BINARY_TYPE;
             }
+            
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
             
             if(mime.isXMLType()) {
                 LOG.debug("storing XML resource");
@@ -195,9 +191,11 @@ public class EmbeddedUpload {
             } else {
                 LOG.debug("storing Binary resource");
                 InputStream is = new FileInputStream(tmp);
-                @SuppressWarnings("unused")
-				DocumentImpl doc = collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
-                is.close();
+                try {
+                	collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
+                } finally {
+                	is.close();
+                }
                 LOG.debug("done");
             }
             
@@ -206,8 +204,10 @@ public class EmbeddedUpload {
             
         } catch (IOException ex) {
             try { 
+            	// is it still actual? -shabanovd
                 // Throws an exception when the user is unknown!
-                transact.abort(txn);
+            	if (transact != null)
+            		transact.abort(txn);
             } catch (Exception abex) {
                 LOG.debug(abex);
             }
@@ -217,8 +217,10 @@ public class EmbeddedUpload {
             
         } catch (Exception ex) {
             try { 
+            	// is it still actual? -shabanovd
                 // Throws an exception when the user is unknown!
-                transact.abort(txn);
+            	if (transact != null)
+            		transact.abort(txn);
             } catch (Exception abex) {
                 LOG.debug(abex);
             }
