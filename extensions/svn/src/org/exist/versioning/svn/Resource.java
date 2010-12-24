@@ -42,6 +42,7 @@ import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
@@ -236,7 +237,7 @@ public class Resource extends File {
 		}
 
 		tm = db.getTransactionManager();
-        Txn transaction = tm.beginTransaction();
+		Txn transaction = null;
 
         org.exist.collections.Collection destination = null;
         org.exist.collections.Collection source = null;
@@ -244,28 +245,26 @@ public class Resource extends File {
 		try {
      		source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
     		if(source == null) {
-    			//tm.abort(transaction);
     			return false;
             }
     		DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
             if(doc == null) {
-            	//tm.abort(transaction);
                 return false;
             }
             destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
             if(destination == null) {
-            	//tm.abort(transaction);
                 return false;
             }
             
             newName = destinationPath.lastSegment();
 
+            transaction = tm.beginTransaction();
             broker.copyResource(transaction, doc, destination, newName);
             tm.commit(transaction);
             return true;
             
         } catch ( Exception e ) {
-        	tm.abort(transaction);
+        	if (transaction != null) tm.abort(transaction);
         	return false;
         } finally {
         	if(source != null) source.release(Lock.WRITE_LOCK);
@@ -293,22 +292,21 @@ public class Resource extends File {
 		}
 
 		tm = db.getTransactionManager();
-        Txn transaction = tm.beginTransaction();
+        Txn transaction = null;
         try {
-            collection = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
+            collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
             if (collection == null) {
-            	//tm.abort(transaction);
                 return false;
             }
             // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            //transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
 
             DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
             if (doc == null) {
-            	//tm.abort(transaction);
             	return true;
             }
             
+            transaction = tm.beginTransaction();
             if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
                 collection.removeBinaryResource(transaction, broker, doc);
             else
@@ -317,7 +315,7 @@ public class Resource extends File {
             return true;
 
         } catch (Exception e) {
-    		tm.abort(transaction);
+        	if (transaction != null) tm.abort(transaction);
             return false;
             
         } finally {
@@ -374,31 +372,30 @@ public class Resource extends File {
 
 		InputStream is = null;
 		try {
-//			if (mimeType.isXMLType()) {
-//				// store as xml resource
-//				is = new FileInputStream(temp);
-//				IndexInfo info = collection.validateXMLResource(
-//						transaction, broker, fileName, new InputSource(new InputStreamReader(is)));
-//				is.close();
-//				info.getDocument().getMetadata().setMimeType(mimeType.getName());
-//				is = new FileInputStream(temp);
-//				collection.store(transaction, broker, info, new InputSource(new InputStreamReader(is)), false);
-//				is.close();
-//
-//			} else {
+			if (mimeType.isXMLType()) {
+				// store as xml resource
+				String str = "<empty/>"; 
+				IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
+				info.getDocument().getMetadata().setMimeType(mimeType.getName());
+				collection.store(transaction, broker, info, str, false);
+
+			} else {
 				// store as binary resource
-				is = new StringBufferInputStream(" ");
+				is = new StringBufferInputStream("");
 
 				collection.addBinaryResource(transaction, broker, fileName, is,
 						mimeType.getName(), 0L , new Date(), new Date());
 
-//			}
+			}
 			tm.commit(transaction);
 		} catch (Exception e) {
 			tm.abort(transaction);
 			throw new IOException(e);
 		} finally {
 			SVNFileUtil.closeFile(is);
+
+			if (resource != null)
+				resource.getUpdateLock().release(Lock.READ_LOCK);
 
 			db.release(broker);
 		}
@@ -431,7 +428,7 @@ public class Resource extends File {
 			} else {
 				resource = broker.getXMLResource(uri, Lock.READ_LOCK);
 				if (resource == null) {
-					//may be, it's collection ... cheking ...
+					//may be, it's collection ... checking ...
 					collection = broker.getCollection(uri);
 					if (collection == null) {
 						throw new IOException("Resource not found: "+uri);
