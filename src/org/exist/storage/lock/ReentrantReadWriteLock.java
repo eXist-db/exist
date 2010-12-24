@@ -370,7 +370,8 @@ public class ReentrantReadWriteLock implements Lock {
 
     public synchronized LockInfo getLockInfo() {
         String lockType = mode_ == Lock.WRITE_LOCK ? LockInfo.WRITE_LOCK : LockInfo.READ_LOCK;
-        return new LockInfo(LockInfo.COLLECTION_LOCK, lockType, getId(), new String[] { owner_.getName() });
+        return new LockInfo(LockInfo.COLLECTION_LOCK, lockType, getId(), 
+        		new String[] { (owner_==null)?"":owner_.getName() });
     }
 
 	@Override
