@@ -49,16 +49,15 @@ public class LogEntryTypes {
 
         @SuppressWarnings("unused")
         private byte type;
-        private Class<Loggable> clazz;
+        private Class<? extends Loggable> clazz;
 
-        @SuppressWarnings("unchecked")
-        public LogEntry(byte type, Class myClass) {
+        public LogEntry(byte type, Class<? extends Loggable> myClass) {
             this.type = type;
             this.clazz = myClass;
         }
 
         public Loggable newInstance(DBBroker broker, long transactId) throws Exception {
-            Constructor<Loggable> constructor = clazz.getConstructor(constructorArgs);
+            Constructor<? extends Loggable> constructor = clazz.getConstructor(constructorArgs);
             return constructor.newInstance(new Object[] { broker, new Long(transactId) });
         }
     }
@@ -84,7 +83,7 @@ public class LogEntryTypes {
      * @param type
      * @param clazz the class implementing {@link Loggable}.
      */
-    public final static void addEntryType(byte type, Class<?> clazz) {
+    public final static void addEntryType(byte type, Class<? extends Loggable> clazz) {
         LogEntry entry = new LogEntry(type, clazz);
         entryTypes.put(type, entry);
     }
