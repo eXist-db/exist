@@ -166,9 +166,13 @@ public class EXistServlet extends HttpServlet {
 		if (useDynamicContentType == null)
 			useDynamicContentType = "no";
 
+		String param = config.getInitParameter("hidden");
+		if (param != null)
+			internalOnly = Boolean.valueOf(param);
+		
 		// Instantiate REST Server
 		srvREST = new RESTServer(pool, formEncoding, containerEncoding, useDynamicContentType.equalsIgnoreCase("yes")
-				|| useDynamicContentType.equalsIgnoreCase("true"));
+				|| useDynamicContentType.equalsIgnoreCase("true"), internalOnly);
 
 		// Instantiate SOAP Server
 		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
@@ -176,9 +180,6 @@ public class EXistServlet extends HttpServlet {
 		// XML lib checks....
 		XmlLibraryChecker.check();
 		
-		String param = config.getInitParameter("hidden");
-		if (param != null)
-			internalOnly = Boolean.valueOf(param);
 	}
 
 	/*
@@ -659,7 +660,7 @@ public class EXistServlet extends HttpServlet {
 		}
 		return null;
 	}
-
+	
 	private void startup(Configuration configuration) throws ServletException {
 		if (configuration == null)
 			throw new ServletException("database has not been " + "configured");
