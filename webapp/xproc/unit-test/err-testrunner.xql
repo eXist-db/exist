@@ -44,10 +44,12 @@ let $result   :=  util:catch("*",xproc:run($pipeline,$stdin,$runtime-debug,$bind
 let $pass     := if ($error) then
     fn:contains($result,$error)
   else
-    if (count($expected) eq 1 and count($result) eq 1) then
-        fn:deep-equal(normalize-space($expected),normalize-space($result))
+    if (contains($result,"ERROR:")) then
+      fn:false()
+    else if (count($expected/*) eq 1 and count($result/*) eq 1 ) then
+        fn:deep-equal(u:treewalker($expected),u:treewalker($result))
     else
-        fn:deep-equal($expected,$result)
+       fn:deep-equal($expected,$result)
 return
 
 <test pass="{$pass}" uri="{$file/@name}" title="{$test//t:title/node()}">
