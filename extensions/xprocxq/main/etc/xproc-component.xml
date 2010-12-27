@@ -65,7 +65,7 @@
     <xproc:element type="p:option" xproc:support="true"/>            
     <xproc:element type="p:with-option" xproc:support="true"/>            
     <xproc:element type="p:with-param"/>            
-    <xproc:element type="p:variable" xproc:support="true"/>            
+    <xproc:element type="p:variable" xproc:step="true" xproc:support="true"/>
 
 <!-- //-->    
 

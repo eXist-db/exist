@@ -21,23 +21,14 @@ import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc
 (: -------------------------------------------------------------------------- :)
 
 (: Module Vars :)
-declare variable $ext:pre := util:function(xs:QName("ext:pre"), 3);
-declare variable $ext:post := util:function(xs:QName("ext:post"), 3);
-declare variable $ext:xproc := util:function(xs:QName("ext:xproc"), 3);
-declare variable $ext:xsltforms := util:function(xs:QName("ext:xsltforms"), 3);
+declare variable $ext:pre := util:function(xs:QName("ext:pre"), 4);
+declare variable $ext:post := util:function(xs:QName("ext:post"), 4);
+declare variable $ext:xproc := util:function(xs:QName("ext:xproc"), 4);
+declare variable $ext:xsltforms := util:function(xs:QName("ext:xsltforms"), 4);
 
 
 (: -------------------------------------------------------------------------- :)
-declare function ext:pre($primary,$secondary,$options){
-(: -------------------------------------------------------------------------- :)
-let $v := u:get-primary($primary)
-return
-	$v
-};
-
-
-(: -------------------------------------------------------------------------- :)
-declare function ext:post($primary,$secondary,$options){
+declare function ext:pre($primary,$secondary,$options,$variables){
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 return
@@ -46,7 +37,16 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function ext:xproc($primary,$secondary,$options){
+declare function ext:post($primary,$secondary,$options,$variables){
+(: -------------------------------------------------------------------------- :)
+let $v := u:get-primary($primary)
+return
+	$v
+};
+
+
+(: -------------------------------------------------------------------------- :)
+declare function ext:xproc($primary,$secondary,$options,$variables){
 (: -------------------------------------------------------------------------- :)
 (: NOTE - this function needs to be defined here, but use-function in xproc.xqm :)
     ()
@@ -54,7 +54,7 @@ declare function ext:xproc($primary,$secondary,$options){
 
 
 (:-------------------------------------------------------------------------- :)
-declare function ext:xsltforms($primary,$secondary,$options){
+declare function ext:xsltforms($primary,$secondary,$options,$variables){
 (: TODO- unsure about the logic of this :)
 (: -------------------------------------------------------------------------- :)
 (

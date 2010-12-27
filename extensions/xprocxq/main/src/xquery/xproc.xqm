@@ -30,14 +30,16 @@
  declare variable $xproc:parse-and-eval := util:function(xs:QName("xproc:parse_and_eval"), 5);
  (: -------------------------------------------------------------------------- :)
  declare variable $xproc:declare-step :=util:function(xs:QName("xproc:declare-step"), 5);
- declare variable $xproc:choose :=util:function(xs:QName("xproc:choose"), 5);
- declare variable $xproc:try :=util:function(xs:QName("xproc:try"), 5);
- declare variable $xproc:catch :=util:function(xs:QName("xproc:catch"), 5);
- declare variable $xproc:group :=util:function(xs:QName("xproc:group"), 5);
- declare variable $xproc:for-each :=util:function(xs:QName("xproc:for-each"), 5);
- declare variable $xproc:viewport :=util:function(xs:QName("xproc:viewport"), 5);
- declare variable $xproc:library :=util:function(xs:QName("xproc:library"), 4);
- declare variable $xproc:pipeline :=util:function(xs:QName("xproc:pipeline"), 4);
+ declare variable $xproc:choose       :=util:function(xs:QName("xproc:choose"), 5);
+ declare variable $xproc:try          :=util:function(xs:QName("xproc:try"), 5);
+ declare variable $xproc:catch        :=util:function(xs:QName("xproc:catch"), 5);
+ declare variable $xproc:group        :=util:function(xs:QName("xproc:group"), 5);
+ declare variable $xproc:for-each     :=util:function(xs:QName("xproc:for-each"), 5);
+ declare variable $xproc:viewport     :=util:function(xs:QName("xproc:viewport"), 5);
+ declare variable $xproc:library      :=util:function(xs:QName("xproc:library"), 4);
+ declare variable $xproc:pipeline     :=util:function(xs:QName("xproc:pipeline"), 4);
+ declare variable $xproc:variable     :=util:function(xs:QName("xproc:variable"), 4);
+
  (: -------------------------------------------------------------------------- :)
 
 
@@ -142,6 +144,12 @@ declare function xproc:pipeline($primary,$secondary,$options,$step) {
 
 
 (: -------------------------------------------------------------------------- :)
+declare function xproc:variable($primary,$secondary,$options,$step) {
+(: -------------------------------------------------------------------------- :)
+    <test6/>
+};
+
+(: -------------------------------------------------------------------------- :)
 declare function xproc:group($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
     let $v := u:get-primary($primary)
@@ -198,9 +206,10 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
 
      let $whens := $currentstep/p:when
      let $otherwise := $currentstep/p:otherwise
+
     let $when := (
         for $when in $whens
-            let $when_eval := u:evalXPATH(string($when/@test),$v, $primary)
+            let $when_eval := u:xquery(string($when/@test),$v, $outputs//xproc:variable)
             return
                 if($when_eval) then
                     $when
@@ -661,12 +670,12 @@ declare function xproc:explicitbindings($xproc,$unique_id){
  (: -------------------------------------------------------------------------- :)
  declare function xproc:evalstep ($step,$namespaces,$primaryinput,$pipeline,$outputs) {
  (: -------------------------------------------------------------------------- :)
+     let $outputs := document{$outputs}
+     let $variables :=  $outputs//xproc:variable
      let $declarens :=  u:declare-ns($namespaces)
      let $currentstep := $pipeline/*[@name=$step][1]
      let $stepfuncname := $currentstep/@xproc:step
      let $stepfunc := concat($const:default-imports,$stepfuncname)
-     let $outputs := document{$outputs}
-
      let $primary := xproc:eval-primary($pipeline,$step,$currentstep,$primaryinput,$outputs)
      let $secondary := xproc:eval-secondary($pipeline,$step,$currentstep,$primaryinput,$outputs)
 
@@ -676,10 +685,14 @@ declare function xproc:explicitbindings($xproc,$unique_id){
      let $log-href := $currentstep/p:log/@href
      let $log-port := $currentstep/p:log/@port
 
+     (: let $log-x    := util:log("info),$stepfunc) :)
+
      return
          if(name($currentstep) = "p:declare-step") then
             (: TODO: refactor p:pipeline and p:declare-step :)
              ()
+         else if(name($currentstep) = "p:variable") then
+              <xproc:variable name="{fn:string($currentstep/@name)}">{u:evalXPATH(fn:string($currentstep/@select),<test/>)}</xproc:variable>
          else
             let $primaryinput:= <xproc:output step="{$step}"
                            port-type="input"
@@ -716,14 +729,14 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                                            if(contains($stepfuncname,'xproc:')) then
                                              u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
                                            else
-                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options)
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options, $variables)
                                        }
                       </xproc:output>
                 else
                       <xproc:output step="{$step}"
                                        port-type="output"
                                        primary="false"
-                                      xproc:defaultname="{$currentstep/@xproc:defaultname}"
+                                       xproc:defaultname="{$currentstep/@xproc:defaultname}"
                                        select="{$currentstep/p:output[@primary='false']/@select}"
                                        port="{if (empty($currentstep/p:output[@primary='false']/@port)) then 'result' else $currentstep/p:output[@primary='false']/@port}"
                                        func="{$stepfuncname}">
@@ -731,7 +744,7 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                                            if(contains($stepfuncname,'xproc:')) then
                                              u:call(u:xquery($stepfunc),$primary,$secondary,$options,$currentstep,($outputs,$primaryinput,$secondaryinput))
                                            else
-                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options)
+                                             u:call(u:xquery($stepfunc),$primary,$secondary,$options,$variables)
                                        }
                       </xproc:output>
              )
