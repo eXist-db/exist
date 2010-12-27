@@ -7,15 +7,15 @@
 
 <xsl:output indent="yes"/>
 
-<xsl:template match ='/'>
+<xsl:template match ='tests'>
     <test-report xmlns='http://xproc.org/ns/testreport'>
-    <title>XProc Test Results for XML Calabash</title>
-    <date>2009-12-01T09:55:12</date>
+    <title>XProc Test Results eXist XProc (xprocxq)</title>
+    <date>2010-12-23T09:55:12</date>
     <processor>
     <name>eXist XProc</name>
     <vendor>James Fuller</vendor>
     <vendor-uri>http://xproc.net/xproc</vendor-uri>
-    <version>1.5.0</version>
+    <version>1.5.1</version>
     <language>en_US</language>
     <xproc-version>1.0</xproc-version>
     <xpath-version>1.0</xpath-version>
@@ -28,17 +28,18 @@
 </xsl:template>
 
 <xsl:template match="test">
+
+
     <xsl:choose>
-        <xsl:when test="c:result">
-            <pass uri="{@file}">
-                <title><xsl:value-of select="@file"/></title>
+        <xsl:when test="./@pass eq 'true'">
+            <pass uri="{@uri}">
+                <title><xsl:value-of select="@title"/></title>
             </pass>
         </xsl:when>
         <xsl:otherwise>
-           <fail uri="{@file}">
-                <title><xsl:value-of select="@file"/></title>
+           <fail uri="{@uri}">
+                <title><xsl:value-of select="@title"/></title>
            </fail>
         </xsl:otherwise>
-    </xsl:choose>
-</xsl:template>
+    </xsl:choose></xsl:template>
 </xsl:stylesheet>
