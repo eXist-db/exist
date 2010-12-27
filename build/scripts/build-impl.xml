@@ -430,14 +430,15 @@
             <link href="http://commons.apache.org/collections/api/"/>
             <link href="http://commons.apache.org/discovery/apidocs/"/>
             <link href="http://commons.apache.org/fileupload/apidocs/"/>
-            <link href="http://commons.apache.org/io/api-1.4/"/>
+            <link href="http://commons.apache.org/io/api-release/"/>
             <link href="http://commons.apache.org/logging/apidocs/"/>
             <link href="http://commons.apache.org/pool/apidocs/"/>
             <link href="http://hc.apache.org/httpclient-3.x/apidocs/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://www.slf4j.org/api/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
-            <link href="http://www.quartz-scheduler.org/docs/api/"/>
+            <link href="http://www.quartz-scheduler.org/docs/api/1.8.1/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
             <link href="http://ws.apache.org/axis/java/apiDocs/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
@@ -450,6 +451,7 @@
             <link href="http://xml.apache.org/xalan-j/apidocs/"/>
             <link href="http://java.sun.com/products/javamail/javadocs/"/>
             <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>   
+            <link href="http://download.eclipse.org/jetty/stable-7/apidocs/"/> 
         </javadoc>
 
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
