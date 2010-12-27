@@ -129,7 +129,7 @@ public class GetData extends BasicFunction {
 				}
 				bufRequestData = bos.toByteArray();*/
 			} catch(IOException ioe) {
-				throw new XPathException(this, "An IO exception ocurred: " + ioe.getMessage(), ioe);
+				throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
 			}
 			
 			//was there any POST content
@@ -218,7 +218,7 @@ public class GetData extends BasicFunction {
                                         return new StringValue(s);
 
                                     } catch (IOException e) {
-                                        throw new XPathException(this, "An IO exception ocurred: " + e.getMessage(), e);
+                                        throw new XPathException(this, "An IO exception occurred: " + e.getMessage(), e);
                                     }
                             } else {
                                 //no post data
