@@ -11,14 +11,16 @@
             <category name="System Requirements">
 
                 <topic name="Java Version">
-                    <p>JDK &gt; 1.5.</p>
+                    <p>Java6 "Java SE 6"; development and testing is performed using Oracle's Java6 JVM, 32bit (x86) and 64bit (x64).</p>
+                    <p>Java7 "OpenJDK7" will be supported when officially released for all platforms.</p>
+                    <p>eXist-db requires a JDK, a JRE only is not sufficient.</p>
                 </topic>
 
                 <topic name="Supported Platforms">
 
                     <p>Platform independent. Tested on Linux (Debian GNU/Linux
                         3.1-5.0/Mandrake/Slackware 10-12/SUSE 9.3/Fedora 6-10.90/RHEL 5.2), FreeBSD 5.4/6.0, Sun Solaris
-                        10/Sparc/x86/x64, Mac OS X 10.5.7, Windows 2000/XP/XP Server Edition</p>
+                        10/Sparc/x86/x64, Mac OS X (10.5.x, 10.6.x), Windows 7/Vista/2000/XP/XP Server Edition</p>
 
                 </topic>
 
@@ -209,7 +211,8 @@
 
                 <topic name="WebDAV">
 
-                    <p>Complete support for all core WebDAV operations.</p>
+                    <p>Complete support for all core <a href="webdav.xml">WebDAV</a> operations, based on the 
+                       <a href="http://milton.ettrema.com">Milton</a> server-side webdav API </p>
                 </topic>
 
             </category>
