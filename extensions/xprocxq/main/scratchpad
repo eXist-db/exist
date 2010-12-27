@@ -26,7 +26,7 @@ current issues
 * declare-step/pipeline need require name attribute
 * sequence issue with input to choose
 * dont forget I changed p namespace and p1 namespace in util.xqm
-* pipelines need name attribute, should default to xproc:defaultname
+FIXED * pipelines need name attribute, should default to xproc:defaultname
 * add primary input to evaluation in u:xquery, instead of passing
 to each function
 * fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
@@ -147,3 +147,30 @@ How to make development faster ?
 * build 'in database' e.g. avoid build/compile cycle
 * run error tests
 
+----------------------------------------------------------------------
+27/12/10
+----------------------------------------------------------------------
+
+prob with validxsd-006
+prob with rename-004
+prob with add-xml-base
+prob with Test delete-002
+
+64 normal pass
+273 normal fail
+
+337 total normal required tests
+
+8 normal pass
+250 normal fail
+258 total normal err required tests
+
+12% pass rate
+
+----------------------------------------------------------------------
+
+
+
+              for $author in //author[contains(firstname, $local:str)]
+              order by $author/firstname
+              return $author

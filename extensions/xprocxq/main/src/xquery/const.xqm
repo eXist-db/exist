@@ -89,9 +89,8 @@ declare variable $const:default-imports :='
      import module namespace std = "http://xproc.net/xproc/std" at "resource:net/xproc/xprocxq/src/xquery/std.xqm";
      import module namespace ext = "http://xproc.net/xproc/ext" at "resource:net/xproc/xprocxq/src/xquery/ext.xqm";
 
-    declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
-
-	declare option exist:serialize "expand-xincludes=no";
+     declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
+	 declare option exist:serialize "expand-xincludes=no";
 
 ';
 

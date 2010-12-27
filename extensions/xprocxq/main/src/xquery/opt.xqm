@@ -22,27 +22,27 @@ import module namespace const = "http://xproc.net/xproc/const" at "resource:net/
 (: -------------------------------------------------------------------------- :)
 
 (: Module Vars :)
-declare variable $opt:exec := util:function(xs:QName("opt:exec"), 3);
-declare variable $opt:hash := util:function(xs:QName("opt:hash"), 3);
-declare variable $opt:uuid := util:function(xs:QName("opt:uuid"), 3);
-declare variable $opt:www-form-urldecode := util:function(xs:QName("opt:www-form-urldecode"), 3);
-declare variable $opt:www-form-urlencode := util:function(xs:QName("opt:www-form-urlencode"), 3);
-declare variable $opt:validate-with-xml-schema := util:function(xs:QName("opt:validate"), 3);
-declare variable $opt:validate-with-schematron := util:function(xs:QName("opt:validate"), 3);
-declare variable $opt:validate-with-relax-ng := util:function(xs:QName("opt:validate"), 3);
-declare variable $opt:xquery := util:function(xs:QName("opt:xquery"), 3);
-declare variable $opt:xsl-formatter :=util:function(xs:QName("opt:xsl-formatter"), 3);
+declare variable $opt:exec := util:function(xs:QName("opt:exec"), 4);
+declare variable $opt:hash := util:function(xs:QName("opt:hash"), 4);
+declare variable $opt:uuid := util:function(xs:QName("opt:uuid"), 4);
+declare variable $opt:www-form-urldecode := util:function(xs:QName("opt:www-form-urldecode"), 4);
+declare variable $opt:www-form-urlencode := util:function(xs:QName("opt:www-form-urlencode"), 4);
+declare variable $opt:validate-with-xml-schema := util:function(xs:QName("opt:validate"), 4);
+declare variable $opt:validate-with-schematron := util:function(xs:QName("opt:validate"), 4);
+declare variable $opt:validate-with-relax-ng := util:function(xs:QName("opt:validate"), 4);
+declare variable $opt:xquery := util:function(xs:QName("opt:xquery"), 4);
+declare variable $opt:xsl-formatter :=util:function(xs:QName("opt:xsl-formatter"), 4);
 
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:exec($primary,$secondary,$options) {
+declare function opt:exec($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
     u:outputResultElement(<test3/>)
 };
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:hash($primary,$secondary,$options) {
+declare function opt:hash($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
@@ -59,7 +59,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:uuid($primary,$secondary,$options) {
+declare function opt:uuid($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
@@ -75,7 +75,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:www-form-urldecode($primary,$secondary,$options) {
+declare function opt:www-form-urldecode($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $value := u:get-option('value',$options,$v)
@@ -92,7 +92,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:www-form-urlencode($primary,$secondary,$options) {
+declare function opt:www-form-urlencode($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 return
@@ -101,7 +101,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:validate($primary,$secondary,$options) {
+declare function opt:validate($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $schema := u:get-secondary('schema',$secondary)
@@ -119,7 +119,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:xsl-formatter($primary,$secondary,$options) {
+declare function opt:xsl-formatter($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 let $v := u:get-primary($primary)
 let $href-uri := u:get-option('href',$options,$v)
@@ -149,7 +149,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function opt:xquery($primary,$secondary,$options) {
+declare function opt:xquery($primary,$secondary,$options,$variables) {
 (: -------------------------------------------------------------------------- :)
 u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is required'),
 (:TODO: need to sort out multiple c:query elements and implied cdata sections :)
@@ -162,9 +162,9 @@ u:assert(exists(u:get-secondary('query',$secondary)/c:query),'p:input query is r
     let $preserve-context := u:get-option('xproc:preserve-context',$options,$v)
     return
         if ($preserve-context eq 'true') then
-            u:xquery-with-context($query,$v)
+            u:xquery-with-context($query,$v,$variables)
         else
-            u:xquery($query,$v)
+            u:xquery($query,$v,$variables)
 };
 
 

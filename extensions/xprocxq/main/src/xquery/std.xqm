@@ -26,41 +26,41 @@ import module namespace http = "http://www.expath.org/mod/http-client";
 (: -------------------------------------------------------------------------- :)
 
 (: Module Vars :)
-declare variable $std:add-attribute :=util:function(xs:QName("std:add-attribute"), 3);
-declare variable $std:add-xml-base :=util:function(xs:QName("std:add-xml-base"), 3);
-declare variable $std:count :=util:function(xs:QName("std:count"), 3);
-declare variable $std:compare :=util:function(xs:QName("std:compare"),3);
-declare variable $std:delete :=util:function(xs:QName("std:delete"),3);
-declare variable $std:error :=util:function(xs:QName("std:error"), 3);
-declare variable $std:filter :=util:function(xs:QName("std:filter"), 3);
-declare variable $std:directory-list :=util:function(xs:QName("std:directory-list"), 3);
-declare variable $std:escape-markup :=util:function(xs:QName("std:escape-markup"), 3);
-declare variable $std:http-request :=util:function(xs:QName("std:http-request"), 3);
-declare variable $std:identity :=util:function(xs:QName("std:identity"), 3);
-declare variable $std:insert :=util:function(xs:QName("std:insert"), 3);
-declare variable $std:label-elements :=util:function(xs:QName("std:label-elements"), 3);
-declare variable $std:load :=util:function(xs:QName("std:load"), 3);
-declare variable $std:make-absolute-uris :=util:function(xs:QName("std:make-absolute-uris"), 3);
-declare variable $std:namespace-rename :=util:function(xs:QName("std:namespace-rename"), 3);
-declare variable $std:pack :=util:function(xs:QName("std:pack"), 3);
-declare variable $std:parameters :=util:function(xs:QName("std:parameters"), 3);
-declare variable $std:rename :=util:function(xs:QName("std:rename"), 3);
-declare variable $std:replace :=util:function(xs:QName("std:replace"), 3);
-declare variable $std:set-attributes :=util:function(xs:QName("std:set-attributes"), 3);
-declare variable $std:sink :=util:function(xs:QName("std:sink"), 3);
-declare variable $std:split-sequence :=util:function(xs:QName("std:split-sequence"), 3);
-declare variable $std:store :=util:function(xs:QName("std:store"), 3);
-declare variable $std:string-replace :=util:function(xs:QName("std:string-replace"), 3);
-declare variable $std:unescape-markup :=util:function(xs:QName("std:unescape-markup"), 3);
-declare variable $std:xinclude :=util:function(xs:QName("std:xinclude"), 3);
-declare variable $std:wrap :=util:function(xs:QName("std:wrap"), 3);
-declare variable $std:wrap-sequence :=util:function(xs:QName("std:wrap-sequence"), 3);
-declare variable $std:unwrap :=util:function(xs:QName("std:unwrap"), 3);
-declare variable $std:xslt :=util:function(xs:QName("std:xslt"), 3);
+declare variable $std:add-attribute :=util:function(xs:QName("std:add-attribute"), 4);
+declare variable $std:add-xml-base :=util:function(xs:QName("std:add-xml-base"), 4);
+declare variable $std:count :=util:function(xs:QName("std:count"), 4);
+declare variable $std:compare :=util:function(xs:QName("std:compare"),4);
+declare variable $std:delete :=util:function(xs:QName("std:delete"),4);
+declare variable $std:error :=util:function(xs:QName("std:error"), 4);
+declare variable $std:filter :=util:function(xs:QName("std:filter"), 4);
+declare variable $std:directory-list :=util:function(xs:QName("std:directory-list"), 4);
+declare variable $std:escape-markup :=util:function(xs:QName("std:escape-markup"), 4);
+declare variable $std:http-request :=util:function(xs:QName("std:http-request"), 4);
+declare variable $std:identity :=util:function(xs:QName("std:identity"), 4);
+declare variable $std:insert :=util:function(xs:QName("std:insert"), 4);
+declare variable $std:label-elements :=util:function(xs:QName("std:label-elements"), 4);
+declare variable $std:load :=util:function(xs:QName("std:load"), 4);
+declare variable $std:make-absolute-uris :=util:function(xs:QName("std:make-absolute-uris"), 4);
+declare variable $std:namespace-rename :=util:function(xs:QName("std:namespace-rename"), 4);
+declare variable $std:pack :=util:function(xs:QName("std:pack"), 4);
+declare variable $std:parameters :=util:function(xs:QName("std:parameters"), 4);
+declare variable $std:rename :=util:function(xs:QName("std:rename"), 4);
+declare variable $std:replace :=util:function(xs:QName("std:replace"), 4);
+declare variable $std:set-attributes :=util:function(xs:QName("std:set-attributes"), 4);
+declare variable $std:sink :=util:function(xs:QName("std:sink"), 4);
+declare variable $std:split-sequence :=util:function(xs:QName("std:split-sequence"), 4);
+declare variable $std:store :=util:function(xs:QName("std:store"), 4);
+declare variable $std:string-replace :=util:function(xs:QName("std:string-replace"), 4);
+declare variable $std:unescape-markup :=util:function(xs:QName("std:unescape-markup"), 4);
+declare variable $std:xinclude :=util:function(xs:QName("std:xinclude"), 4);
+declare variable $std:wrap :=util:function(xs:QName("std:wrap"), 4);
+declare variable $std:wrap-sequence :=util:function(xs:QName("std:wrap-sequence"), 4);
+declare variable $std:unwrap :=util:function(xs:QName("std:unwrap"), 4);
+declare variable $std:xslt :=util:function(xs:QName("std:xslt"), 4);
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:add-attribute($primary,$secondary,$options) {
+declare function std:add-attribute($primary,$secondary,$options,$variables) {
 
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
@@ -91,7 +91,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:add-xml-base($primary,$secondary,$options) {
+declare function std:add-xml-base($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $all := u:get-option('all',$options,$v)
 let $relative := u:get-option('relative',$options,$v)
@@ -104,7 +104,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:compare($primary,$secondary,$options) {
+declare function std:compare($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $alternate : = u:get-secondary('alternate',$secondary)
 let $strict := xs:boolean(u:get-option('xproc:strict',$options,$v)) (: ext attribute xproc:strict:)
@@ -135,7 +135,7 @@ else
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:count($primary,$secondary,$options){
+declare function std:count($primary,$secondary,$options,$variables){
 let $v := u:get-primary($primary)
 let $limit := xs:integer(u:get-option('limit',$options,$v))
 let $count := count($v/*)
@@ -148,7 +148,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:delete($primary,$secondary,$options){
+declare function std:delete($primary,$secondary,$options,$variables){
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if (contains($match,'/')) then
@@ -162,7 +162,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:directory-list($primary,$secondary,$options) {
+declare function std:directory-list($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $path := u:get-option('path',$options,$v)
 let $include-filter := u:get-option('include-filter',$options,$v)
@@ -196,7 +196,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:escape-markup($primary,$secondary,$options) {
+declare function std:escape-markup($primary,$secondary,$options,$variables) {
 (: TODO: test with sequences :)
 let $v := u:get-primary($primary)
 return
@@ -207,7 +207,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:error($primary,$secondary,$options) {
+declare function std:error($primary,$secondary,$options,$variables) {
 (: TODO: this should be generated to the error port:)
 
 let $v := u:get-primary($primary)
@@ -228,7 +228,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:filter($primary,$secondary,$options) {
+declare function std:filter($primary,$secondary,$options,$variables) {
 (: TODO - broken :)
 u:assert(exists($options/p:with-option[@name='select']/@select),'p:with-option match is required'),
 let $v := u:get-primary($primary)
@@ -243,7 +243,7 @@ let $result := u:evalXPATH($select, $v, $primary)
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:http-request($primary,$secondary,$options) {
+declare function std:http-request($primary,$secondary,$options,$variables) {
     let $v := u:get-primary($primary)
     let $href := $v/c:request/@href
     let $method := $v/c:request/@method
@@ -297,7 +297,7 @@ declare function std:http-request($primary,$secondary,$options) {
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:identity($primary,$secondary,$options) {
+declare function std:identity($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 return
 	$v
@@ -305,7 +305,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:insert($primary,$secondary,$options) {
+declare function std:insert($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $position := u:get-option('position',$options,$v)
@@ -321,7 +321,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:label-elements($primary,$secondary,$options) {
+declare function std:label-elements($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $attribute := u:get-option('attribute',$options,$v)
@@ -338,7 +338,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:load($primary,$secondary,$options) {
+declare function std:load($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $href := u:get-option('href',$options,$v)
 let $xproc:output-uri := u:get-option('xproc:output-uri',$options,$v)
@@ -368,7 +368,7 @@ else
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:make-absolute-uris($primary,$secondary,$options) {
+declare function std:make-absolute-uris($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 return
 	$v
@@ -376,7 +376,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:namespace-rename($primary,$secondary,$options) {
+declare function std:namespace-rename($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 return
 	$v
@@ -385,7 +385,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:pack($primary,$secondary,$options) {
+declare function std:pack($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $alternate := u:get-secondary('alternate',$secondary)
 let $wrapper := u:get-option('wrapper',$options,$v)
@@ -401,7 +401,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:parameters($primary,$secondary,$options) {
+declare function std:parameters($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 return
 	$v
@@ -409,7 +409,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:rename($primary,$secondary,$options) {
+declare function std:rename($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if (contains($match,'/')) then
@@ -424,7 +424,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:replace($primary,$secondary,$options) {
+declare function std:replace($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if (contains($match,'/')) then
@@ -439,7 +439,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:set-attributes($primary,$secondary,$options) {
+declare function std:set-attributes($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $attributes := u:get-secondary('attributes',$secondary)
 let $match := u:get-option('match',$options,$v)
@@ -450,13 +450,13 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:sink($primary,$secondary,$options) {
+declare function std:sink($primary,$secondary,$options,$variables) {
     (string(''))
 };
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:split-sequence($primary,$secondary,$options) {
+declare function std:split-sequence($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $test := u:get-option('test',$options,$v)
 let $match := u:evalXPATH($test, $v, $primary)
@@ -471,7 +471,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:store($primary,$secondary,$options) {
+declare function std:store($primary,$secondary,$options,$variables) {
 (:TODO - check existence of collection path :)
 let $v := u:get-primary($primary)
 let $href-uri := u:get-option('href',$options,$v)
@@ -498,7 +498,7 @@ if($xproc:output-document eq 'true') then
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:string-replace($primary,$secondary,$options) {
+declare function std:string-replace($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if (contains($match,'/')) then
@@ -514,7 +514,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:unescape-markup($primary,$secondary,$options){
+declare function std:unescape-markup($primary,$secondary,$options,$variables){
 (: TODO: test with sequences :)
 let $v := u:get-primary($primary)
 return
@@ -525,7 +525,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:xinclude($primary,$secondary,$options){
+declare function std:xinclude($primary,$secondary,$options,$variables){
 let $v := u:get-primary($primary)
 return
 	u:parse-string(u:serialize($v,'expand-xincludes=yes'))
@@ -533,7 +533,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:wrap($primary,$secondary,$options) {
+declare function std:wrap($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $query := if(contains($match,'/')) then
@@ -554,7 +554,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:wrap-sequence($primary,$secondary,$options){
+declare function std:wrap-sequence($primary,$secondary,$options,$variables){
 let $v := u:get-primary($primary)
 let $wrapper := u:get-option('wrapper',$options,$v)
 let $group-adjacent := u:get-option('group-adjacent',$options,$v)
@@ -566,7 +566,7 @@ return
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:unwrap($primary,$secondary,$options) {
+declare function std:unwrap($primary,$secondary,$options,$variables) {
     let $v := u:get-primary($primary)
     let $match := u:get-option('match',$options,$v)
     let $query := if (contains($match,'/')) then
@@ -580,7 +580,7 @@ declare function std:unwrap($primary,$secondary,$options) {
 
 
 (: -------------------------------------------------------------------------- :)
-declare function std:xslt($primary,$secondary,$options){
+declare function std:xslt($primary,$secondary,$options,$variables){
 	let $v := u:get-primary($primary)
     let $stylesheet := u:get-secondary('stylesheet',$secondary)
     return

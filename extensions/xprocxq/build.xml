@@ -8,7 +8,7 @@
 
     <property name="xprocxq.dir" value="main"/>
 
-    <target name="all">
+    <target name="all" depends="clean">
         <echo message="-------------------------------------"/>
         <echo message="Building XProcXQ"/>
         <echo message="-------------------------------------"/>

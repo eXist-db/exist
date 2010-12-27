@@ -333,6 +333,27 @@ let $result := util:eval-with-context($qry,$static-content,false())
         $result
 };
 
+(: -------------------------------------------------------------------------- :)
+declare function u:xquery($query,$xml,$variables){
+    let $static-content := <static-context>
+                           {for $var in $variables
+                           return
+                           <variable name="{$var/@name}">{$var/node()}</variable>
+                           }
+
+						<default-context>{$xml}</default-context>
+						</static-context>
+    let $qry := if (starts-with(normalize-space($query),'/') or starts-with(normalize-space($query),'//')) then
+                concat('.',$query)
+			  else if(contains($query,'(/')) then
+				replace($query,'\(/','(./')
+              else
+                  $query
+
+let $result := util:eval-with-context($qry,$static-content,false())
+    return
+        $result
+};
 
 (: -------------------------------------------------------------------------- :)
 declare function u:xquery-with-context($query,$xml){
@@ -356,6 +377,31 @@ let $result : = util:eval-inline($xml,$query)
 };
 
 
+(: -------------------------------------------------------------------------- :)
+declare function u:xquery-with-context($query,$xml,$variables){
+    let $static-content := <static-context>
+                            {for $var in $variables
+                           return
+                           <variable name="{$var/@name}">{$var/node()}</variable>
+                           }
+						<default-context>{$xml}</default-context>
+						</static-context>
+	let $log-x := util:log("info",$variables)
+    let $qry := if (starts-with(normalize-space($query),'/') or starts-with(normalize-space($query),'//')) then
+                concat('.',$query)
+			  else if(contains($query,'(/')) then
+				replace($query,'\(/','(./')
+              else
+                  $query
+
+
+let $result : = util:eval-inline($xml,$query)
+
+(:  let $result := util:eval-with-context($qry,$static-content,false())
+:)
+    return
+        $result
+};
 (: -------------------------------------------------------------------------- :)
 declare function u:xquery($query as xs:string){
     let $qry := if (starts-with($query,'/') or starts-with($query,'//')) then
