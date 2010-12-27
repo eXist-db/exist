@@ -34,7 +34,6 @@ import javax.servlet.http.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.security.DefaultIdentityService;
-import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import org.exist.Database;
@@ -147,9 +146,7 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			DefaultIdentityService _identityService = new DefaultIdentityService();
 			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
             
-			FormAuthenticator authenticator = new FormAuthenticator("","",false);
-			
-			Authentication cached=new SessionAuthentication(session,authenticator,user);
+			Authentication cached=new SessionAuthentication(session, user);
             session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
 			//*******************************************************
             
