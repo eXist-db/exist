@@ -136,7 +136,7 @@ public class Serialize extends BasicFunction {
 	        }
 	        catch(IOException e)
 	        {
-	        	throw new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+	        	throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
 	        }
 	        
 	        //do the serialization
@@ -164,7 +164,7 @@ public class Serialize extends BasicFunction {
         	}
         	catch(UnsupportedEncodingException e)
         	{
-        		throw new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+        		throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         	}
         }
         
@@ -217,11 +217,11 @@ public class Serialize extends BasicFunction {
         }
         catch(SAXException e)
         {
-            throw new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+            throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         }
         catch (IOException e)
         {
-            throw new XPathException(this, "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+            throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         }
         finally
         {

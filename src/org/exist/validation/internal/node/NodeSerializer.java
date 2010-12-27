@@ -70,7 +70,7 @@ public class NodeSerializer {
             writer.close();
             
         } catch(Exception e) {
-            String txt = "A problem ocurred while serializing the node set";
+            String txt = "A problem occurred while serializing the node set";
             LOG.debug(txt+".", e);
             throw new ExistIOException(txt+": " + e.getMessage(), e);
         

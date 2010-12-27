@@ -217,10 +217,10 @@ public class SerializeToFile extends BasicFunction
 			writer.close();
 		}
 		catch( SAXException e ) {
-			throw( new XPathException( this, "Cannot serialize file. A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException( this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		catch ( IOException e ) {
-			throw( new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the node set: " + e.getMessage(), e ) );
+			throw( new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e ) );
 		}
 		finally {
 			SerializerPool.getInstance().returnObject( sax );
@@ -240,11 +240,11 @@ public class SerializeToFile extends BasicFunction
         }
         catch(FileNotFoundException fnfe)
         {
-            throw new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the binary data: " + fnfe.getMessage(), fnfe);
+            throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + fnfe.getMessage(), fnfe);
         }
         catch(IOException ioe)
         {
-            throw new XPathException(this, "Cannot serialize file. A problem ocurred while serializing the binary data: " + ioe.getMessage(), ioe);
+            throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);
         }
     }
 }
