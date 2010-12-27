@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import org.eclipse.jetty.security.Authenticator;
+import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.UserIdentity;
 
@@ -39,8 +39,8 @@ public class SessionAuthentication extends UserAuthentication implements HttpSes
     
 	HttpSession _session;
     
-    public SessionAuthentication(HttpSession session,Authenticator authenticator, UserIdentity userIdentity) {
-        super(authenticator,userIdentity);
+    public SessionAuthentication(HttpSession session, UserIdentity userIdentity) {
+        super(Constraint.__FORM_AUTH, userIdentity);
         _session=session;
     }
 
