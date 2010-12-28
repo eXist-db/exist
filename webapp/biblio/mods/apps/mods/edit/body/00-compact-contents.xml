@@ -1,0 +1,100 @@
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xf="http://www.w3.org/2002/xforms" class="compact" tab-id="compact-c"><div class="block-form"><xf:group id="fieldset-subject"><fieldset class="level-1"><div class="join"><legend>Subjects</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A subject is a term or a phrase that represents the primary topic(s) on which a work is focused. Use at least one subject field in
+                            each record. Enter as many specific terms as necessary to capture the subject content, and be consistent in the formatting of
+                            subject terms. </p><p> Values for subject indicate what content is found within or represented by the work, and typically answer such questions as who,
+                            what, where, and when. </p><p> It is highly recommended to use subject values from a controlled list and to designate this list in the authority field. </p><p> There are a number of different formats for Subjects. While it is allowed to place multiple values in a single Topic string, it is
+                            the preferred practice to split up subject terms into separate subfields, each of which e.g. the question of who, what, where, and
+                            when in relation to the resource being catalogued. </p><p> A Subject is basically composed of a Topic, a Geographic reference and a Temporal reference. All these fields are optional, that is,
+                            one can have a Topic without any Geographic or Temporal reference, and one can have a Geographic reference without a Topic or a
+                            Temporal reference. To have a Temporal reference all on its own would be a little unusual, but if period labels are used, this might
+                            still be acceptable. Topics can be divided into different kinds: abstract topics (here simply called "Topics"), Name topics and
+                            Title topics. This means that a topic can be an abstract concept, the name of a person or institution or the name of a publication.
+                            These three address the "what" of a subject. When Name or Title is used, the full repetoire of fields used when cataloguing titles
+                            and names can be used. </p><p> The "where" of a subject can be expressed in a number of ways. "Geographic" simply contains the name of the place. "Hierarchical
+                            Geographic" gives a breakdown into a hiearchy of geographical divisions, from continent to area within a city. "Cartographic"
+                            identifies the place by means of coordinates. "Geographic Code" identifies the place by means of a code in an authority file. The
+                            recommendation is to use the simple "Geographic", linking this to the Getty TGN. </p><p> Compared to the geographical options, "Temporal" is relatively simple, but time can be encoded in a number of different ways. The
+                            recommendation is to use the w3cdtf encoding. According to this encoding, dates are formatted in the following way: Year: YYYY (eg
+                            1997); Year and month: YYYY-MM (eg 1997-07); Complete date: YYYY-MM-DD (eg 1997-07-16). </p><p> More precise temporal notations are possible; see <a href="http://www.w3.org/TR/NOTE-datetime">Date and Time Formats</a>.
+                            <!--Do we accept the Date element without refinement? How to deal with inadequacies of the possible encoding schemes? There are limitations in conveying: 1) BCE dates; 2) non-Gregorian calendar dates; 3) ambiguity, approximation (e.g., about, near, flourished, assumed); 4) partially known dates (e.g., 19?? ); 5) date is unknown/unavailable; 6) open-ended intervals (e.g., 1999-); 7) complex, multi-instance/period intervals. Are there conventions (e.g. bracket, slash, etc.) or other encoding schemes we want to specify to allow for these limitations? <http://dublincore.org/documents/2001/09/17/gov-application-profile/> -->
+                            BCE dates are prefixed with "-". <!--<http://www.loc.gov/marc/marbi/2009/2009-01-1.html>--> If dates are approximate, inferred or
+                            questionable, this is noted using the Qualifier. Date ranges are indicated using "start" and "end" in Point. If a date range is open
+                            to one side, leave that side blank. If the date is completely unknown, leave the Date field blank. </p></div></span></div>
+            <!--subject repeat begins--><xf:repeat nodeset="instance('save-data')/mods:subject" id="subject-repeat">
+                <!--subject/topic begins--><xf:group id="fieldset-topic" ref=".[mods:topic]"><fieldset class="level-2"><div class="join"><legend>Topic</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Topic to indicate any primary topical/abstract subjects that do not fit into the Geographic, Temporal, Title
+                                        Information, or Name subfields. In general, abstract nouns should be used. While it is highly recommended that subject
+                                        values be parsed into subfields, they may also be listed as a string, divided by e.g. dashes, as in Library of Congress
+                                        Subject Headings. </p></div></span></div>
+                        <!--subject/topic repeat begins--><xf:repeat nodeset="./mods:topic" id="topic-repeat">
+                            <!--subject/topic input begins--><xf:group ref="."><xf:input ref="." class="text_50"><xf:label>&#160;</xf:label></xf:input></xf:group>
+                            <!--subject/topic input ends--></xf:repeat>
+                        <!--subject/topic repeat ends--></fieldset></xf:group>
+                <!--subject/topic ends-->
+                <!--subject/geographic begins--><xf:group id="fieldset-geographic" ref=".[mods:geographic]"><fieldset class="level-2"><div class="join"><legend>Place</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Geographic for geographic subject terms that are not parsed within the Hierarchical Geographic field. If the
+                                        geographic name is part of a corporate body (for example, United States. Senate), it is coded as Name, not Geographic.
+                                    </p></div></span></div>
+                        <!--subject/geographic repeat begins--><xf:repeat nodeset="./mods:geographic" id="geographic-repeat">
+                            <!--subject/geographic input begins--><xf:group ref="."><xf:input ref="." class="text_50"><xf:label>&#160;</xf:label></xf:input></xf:group>
+                            <!--subject/geographic input ends--></xf:repeat>
+                        <!--subject/geographic repeat ends--></fieldset></xf:group>
+                <!--subject/geographic ends-->
+                <!--subject/temporal begins--><xf:group id="fieldset-temporal" ref=".[mods:temporal]"><fieldset class="level-2"><div class="join"><legend>Time</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Temporal for chronological subject terms or temporal coverage. It may be expressed as a controlled subject term
+                                        (e.g. "Middle Ages") or as a structured date (e.g. "2001-09-11"). </p><p>Point is used to note whether the date noted is a start point or an end point. If no point is specified, date is
+                                        assumed to be a single date. </p><p> Use Temporal for chronological subject terms or temporal coverage. It may be expressed as a controlled subject term
+                                            (e.g. "Middle Ages") or as a structured date (e.g. "2001-09-11"). </p></div></span></div>
+                        <!--subject/temporal repeat begins--><xf:repeat nodeset="./mods:temporal" id="temporal-repeat">
+                            <!--subject/temporal input begins--><xf:group ref=".[@point]"><xf:select1 ref="./@point"><xf:label>Point</xf:label><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='date-point-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref="."><xf:input ref="." class="text_50"><xf:label>Year</xf:label></xf:input></xf:group>
+                            <!--subject/temporal input ends--></xf:repeat>
+                        <!--subject/temporal repeat ends--><xf:trigger ref=".[mods:temporal]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Time</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:temporal" at="index('temporal-repeat')" position="after" origin="instance('author-template')/mods:temporal"/><xf:setvalue ref="instance('save-data')/mods:temporal[last()]" value="''"/></xf:action></xf:trigger></fieldset></xf:group>
+                <!--subject/temporal ends-->
+                <!--subject/titleInfo begins--><xf:group id="fieldset-subject-titleInfo" ref=".[mods:titleInfo]">
+                        <!--subject/titleInfo repeat begins--><fieldset class="level-2" id="fieldset-subject-titleInfo"><div class="join"><legend>Works as Topic</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> At least one Title inside a Title Information is required. Title Information can be repeated for alternative,
+                                            translated, transliterated or uniform titles. These values are chosen in Type. For the basic Title Information
+                                            entry, leave Type blank or use the value "Basic Title Information". If, in addition to the basic title, you also
+                                            wish to record an alternative, translated, transliterated or uniform title, add a Title Information and choose the
+                                            relevant Type. Repeat Title Information as many times as necessary. </p><p> A Title Information consists of a main Title, plus a number of supplementary fields that relate to it. A Title may
+                                            have a Subtitle, usually an expansion of the Title proper. If the Title begins with a word according to which it
+                                            should not be sorted (such as "The" or "A" and the like), enter this word in Non Sort and remove it from Title. If a
+                                            publication consists of several parts, parts that are either numbered or named, use Part Number and/or Part Name. "A
+                                            History of Philosophy" may have several numbered parts, such as "Part One. Ancient Greek Philosophy." Enter "Part
+                                            One" in Part Number and "Ancient Greek Philosophy" in Part Name. </p><p> When no title appears on the item being described, a title should be supplied. Use Display Label to indicate that
+                                            the title is supplied, by giving it the value "Supplied Title". A supplied title should be created in accordance
+                                            with an established standard and describe, as concisely as possible, the content of the resource in question. If no
+                                            standards apply, consider carefully the expectations users have for the naming of similar resources. </p><p> If an alternative, translated or transliterated title is recorded, choose the relevant Type for each separate Title
+                                            Information. </p><p> If a uniform or an abbreviated title is recorded, choose the appropriate value in Type and note in which authority
+                                            file the uniform or abbreviated title in Authority has been found. Authority files are only used in connection with
+                                            uniform and abbreviated titles. </p><p> Record the language of the Title Information by choosing the language used in the resource, if this is different
+                                            from the language noted in Language of Resource, a field describing the language of the resource as a whole. The
+                                            Language of Resource was selected when opening the editor; it may be modified in the Resource Languages tab.</p></div></span></div><xf:repeat nodeset="./mods:titleInfo" id="subject-titleinfo-repeat">
+                                <!--titleInfo input begins--><xf:group><xf:input ref="./mods:title" class="text_150"><xf:label>Title</xf:label></xf:input></xf:group><xf:group><xf:input ref="./mods:subTitle" class="text_150"><xf:label>Subtitle</xf:label></xf:input></xf:group></xf:repeat></fieldset>
+                        <!--title repeat ends--></xf:group>
+                <!--subject/titleInfo ends-->
+                <!--subject/name begins--><xf:group id="fieldset-subject-name"><fieldset class="level-2"><div class="join wide"><legend>Persons and Institutions as Topics</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Names contain the names of persons, organisations, or events (conferences, meetings, etc.) associated in some way
+                                            with the resource catalogued. </p><p> Include as many Names blocks as needed. </p><p> In addition to describing creators, Names is used as a kind of Subject. For names used as subjects, see the Subjects
+                                            tab. </p><p> For textual materials, include the names of all known authors, translators, compilers, and editors. </p><p> For images, include the name of the creator of the original intellectual content (photographer, painter, architect,
+                                            etc.) and the name of anyone capturing that content in a new medium (for a photograph of a building, include both
+                                            the architect and the photographer). </p><p> If no known person or organisation, etc. is known to be associated with the resource, or if the person or
+                                            organisation etc. is anonymous, do not include "unknown," "anonymous," or similar annotations; rather, leave the
+                                            Names block empty. </p></div></span></div>
+                            <!--name repeat begins--><xf:repeat nodeset="./mods:name" id="subject-name-repeat">
+                                <!--name input begins-->
+                                <!--name input ends-->
+                                <!--namePart begins--><xf:group id="fieldset-subject-namePart-personal" ref=".[@type = 'personal']"><fieldset class="level-2"><div class="join"><legend>Persons as Topics</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>The name itself is always entered into a Name Part. This is the case even if it is not possible to parse the name into separate units.</p></div></span></div>
+                                            <!--namePart repeat begins--><xf:repeat nodeset="./mods:namePart" id="subject-namePart-repeat" class="display-none"><xf:select1 ref="./@type" class="right"><xf:label>&#160;</xf:label><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-part-type-compact-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:input ref="." class="text_100"><xf:label>&#160;</xf:label></xf:input>
+                                                <!--namePart input ends--></xf:repeat>
+                                            <!--namePart repeat ends--></fieldset></xf:group><xf:group id="fieldset-subject-namePart-corporate" ref=".[@type = 'corporate']"><fieldset class="level-2"><div class="join"><legend>Institutions as Topics</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>The name itself is always entered into a Name Part. This is the case even if it is not possible to parse the name into separate units.</p></div></span></div>
+                                            <!--namePart repeat begins--><xf:repeat nodeset="./mods:namePart" id="subject-namePart-repeat" class="display-none"><xf:select1 ref="./@type" class="right"><xf:label>&#160;</xf:label><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='name-part-type-compact-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1><xf:input ref="." class="text_100"><xf:label>&#160;</xf:label></xf:input>
+                                                <!--namePart input ends--></xf:repeat>
+                                            <!--namePart repeat ends--></fieldset></xf:group>
+                                <!--namePart ends-->
+                                <!--role begins--></xf:repeat>
+                            <!--name repeat ends--></fieldset></xf:group>                        
+                <!--subject/name ends-->
+                <!--subject delete begins--></xf:repeat>
+            <!--subject repeat ends-->
+            <!--subject add begins--><xf:trigger ref=".[mods:subject]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Subject</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:subject" at="index('subject-repeat')" position="after" origin="instance('subject-template')/mods:subject"/><xf:setvalue value="''"/></xf:action></xf:trigger>
+            <!--subject add ends--></fieldset></xf:group><xf:group id="fieldset-note"><fieldset><div class="join"><legend><span class="legend">Notes</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> General information relating to a resource. </p><p> Note should be used only for information that cannot be encoded in another, more specific, ways. </p></div></span></div>
+                    <!--note repeat begins--><xf:repeat nodeset="instance('save-data')/mods:note" id="note-repeat"><div class="block-form">
+                            <!--note input begins--><xf:group><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>&#160;</xf:label></xf:textarea></xf:group>
+                            <!--note input ends--></div></xf:repeat>
+                    <!--note repeat ends--></fieldset>
+                <!--note ends--></xf:group></div></div>

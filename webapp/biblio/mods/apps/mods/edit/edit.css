@@ -188,7 +188,7 @@ fieldset,
     margin-bottom: .1em;
     }
 
-fieldset .level-1,
+
 fieldset .level-2,
 fieldset .level-3
     {
@@ -245,13 +245,16 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
 }
 
 .text_10 .xforms-value {
-    width: 5em;
+    width: 15em;
     }
 .text_50 .xforms-value {
     width: 25em;
     }
 .text_100 .xforms-value {
     width: 40em;
+    }
+.text_150 .xforms-value {
+    width: 60em;
     }
 .textarea .xforms-value  {
     width: 40em; 
@@ -300,6 +303,209 @@ div.xforms-hint-value
 
 .xforms-value {
     padding-left: .5ex;
+}
+
+/*compact
+*/
+.compact .textarea .xforms-value  {
+    width: 50em; 
+    height: 4em; 
+    padding: 0;
+    margin: 0 0 0 2em;
+    }
+
+.compact .xforms-label,
+.compact .join
+{
+    color: #886699;
+}
+.compact .join,
+.compact .xforms-repeat-item,
+.compact .xforms-repeat-item-selected,
+.compact fieldset,
+.compact .node-adds, 
+.compact .node-adds-compact 
+    {
+    border-color: #886699;
+}
+.compact button {
+    width: 35ex;
+    margin-left: 4.25em;
+}
+
+.compact .wide {
+    width: 25em;
+}
+
+.compact fieldset .level-2, 
+.compact fieldset .level-3 
+{
+    margin-bottom: .5em;
+    margin-top: 2.25em !important;
+}
+.compact .block-form {
+    1margin-top: 2em;
+    border: 0;
+}
+
+.compact .xforms-value {
+    border: grey 1px solid;
+    1padding-left: .5em;
+    height: 1.5em;
+}
+
+.compact input {
+    margin-bottom: 0.25em !important;
+    margin-top: 0 !important;
+    padding-left: .25em !important;
+    height: 1.25em !important;
+}
+
+.compact label .xforms-value {
+    border: 0;
+}
+
+.compact #relatedItem-publisher-anthology-repeat .xforms-repeat-item,
+.compact #relatedItem-publisher-periodical-repeat .xforms-repeat-item,
+.compact #relatedItem-publisher-series-repeat .xforms-repeat-item,
+
+.compact #relatedItem-date-issued-anthology-repeat .xforms-repeat-item,
+.compact #relatedItem-date-issued-periodical-repeat .xforms-repeat-item,
+.compact #relatedItem-date-issued-series-repeat .xforms-repeat-item,
+
+.compact #related-item-part-detail-anthology-repeat .xforms-repeat-item,
+.compact #related-item-part-detail-periodical-repeat .xforms-repeat-item,
+.compact #related-item-part-detail-series-repeat .xforms-repeat-item,
+
+.compact #related-item-extent-anthology-repeat .xforms-repeat-item,
+.compact #related-item-extent-periodical-repeat .xforms-repeat-item,
+.compact #related-item-extent-series-repeat .xforms-repeat-item,
+
+.compact #related-item-part-date-anthology-repeat .xforms-repeat-item,
+.compact #related-item-part-date-periodical-repeat .xforms-repeat-item,
+.compact #related-item-part-date-series-repeat .xforms-repeat-item,
+
+.compact #relatedItem-place-anthology-repeat .xforms-repeat-item,
+.compact #relatedItem-place-periodical-repeat .xforms-repeat-item,
+.compact #relatedItem-place-series-repeat .xforms-repeat-item,
+
+.compact #relatedItem-name-anthology-repeat .xforms-repeat-item,
+.compact #relatedItem-name-periodical-repeat .xforms-repeat-item,
+.compact #relatedItem-name-series-repeat .xforms-repeat-item,
+
+.compact #relatedItem-titleInfo-anthology-repeat .xforms-repeat-item,
+.compact #relatedItem-titleInfo-periodical-repeat .xforms-repeat-item,
+.compact #relatedItem-titleInfo-series-repeat .xforms-repeat-item,
+
+.compact #relatedItem-place-anthology-repeat .level-3,
+.compact #relatedItem-place-periodical-repeat .level-3,
+.compact #relatedItem-place-series-repeat .level-3,
+
+.compact #subject-titleinfo-repeat .xforms-repeat-item,
+.compact #titleInfo-repeat .xforms-repeat-item,
+.compact #name-repeat .xforms-repeat-item,
+.compact #name-author-repeat .xforms-repeat-item,
+.compact #name-editor-repeat .xforms-repeat-item,
+.compact #place-repeat .xforms-repeat-item,
+.compact #publisher-repeat .xforms-repeat-item,
+.compact #date-issued-repeat .xforms-repeat-item,
+.compact #extent-repeat .xforms-repeat-item,
+.compact #topic-repeat .xforms-repeat-item,
+.compact #geographic-repeat .xforms-repeat-item,
+.compact #temporal-repeat .xforms-repeat-item,
+.compact #fieldset-subject-namePart-personal .xforms-repeat-item,
+.compact #fieldset-subject-namePart-corporate .xforms-repeat-item,
+.compact #note-repeat .xforms-repeat-item,
+.compact #fieldset-placeTerm .level-3
+{
+    border: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.compact #fieldset-dateIssued .level-2 {
+    margin-bottom: 1em !important;
+    }
+
+.compact .level-1,
+.compact .level-2,
+.compact .level-3,
+.compact #fieldset-geographic .level-2,
+.compact #fieldset-temporal .level-2,
+.compact #fieldset-topic .level-2,
+.compact #fieldset-publisher .level-2
+{
+    margin-top: 2em;
+    margin-bottom: 2em;    
+}
+
+.compact #namePart-repeat .xforms-value,
+.compact #extent-repeat .xforms-value
+{
+    position: absolute;
+    margin-left: -1.6em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.compact #subject-namePart-repeat .xforms-value
+{
+    position: absolute;
+    margin-left: -2em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.compact #relatedItem-namePart-anthology-repeat .xforms-label,
+.compact #relatedItem-namePart-periodical-repeat .xforms-label,
+.compact #relatedItem-namePart-series-repeat .xforms-label
+{
+    1position: absolute;
+    margin-left: -.5em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+.compact #relatedItem-namePart-anthology-repeat input,
+.compact #relatedItem-namePart-periodical-repeat input,
+.compact #relatedItem-namePart-series-repeat input
+{
+    1position: absolute;
+    margin-left: -9em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.compact .xforms-label
+{    
+    1margin-top: -.5em;
+}
+
+.compact #place-repeat .xforms-repeat-item,
+{
+    margin-left: -2.5em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.compact #relatedItem-titleInfo-anthology-repeat .xforms-repeat-item .xforms-group-content,
+.compact #relatedItem-titleInfo-periodical-repeat .xforms-repeat-item .xforms-group-content,
+.compact #relatedItem-titleInfo-series-repeat .xforms-repeat-item .xforms-group-content
+{
+    margin-left: 2em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+
+.compact #publisher-repeat .xforms-repeat-item,
+.compact #date-issued-repeat .xforms-repeat-item
+{
+    margin-left: -3em;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 /*title

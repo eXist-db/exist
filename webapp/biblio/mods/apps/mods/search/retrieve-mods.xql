@@ -37,6 +37,18 @@ declare function mods:space-before($node as node()?) as xs:string? {
         ()
 };
 
+(: derived from functx:remove-empty-attributes :)
+(: not used :)
+declare function mods:remove-empty-attributes($element as element()) as element() {
+element { node-name($element)}
+{ $element/@*[string-length(.) eq 0],
+for $child in $element/node( )
+return 
+    if ($child instance of element())
+    then mods:remove-empty-attributes($child)
+    else $child }
+};
+
 (: ### general functions end ###:)
 
 declare function mods:get-collection($entry as element(mods:mods)) {
@@ -66,27 +78,27 @@ declare function mods:get-collection($entry as element(mods:mods)) {
 :)
 declare function mods:get-language($language as node()?) as xs:string? {
         let $languageTerm :=
-            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language[@type = 'code']]/label
+            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language[@type = 'code']][1]/label
             return
             if ($languageTerm)
             then $languageTerm
             else
-                let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $language[@type = 'code']]/label
+                let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $language[@type = 'code']][1]/label
                 return
                 if ($languageTerm)
                 then $languageTerm
                 else
-                    let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTerm = $language[@type = 'code']]/label
+                    let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTerm = $language[@type = 'code']][1]/label
                     return
                     if ($languageTerm)
                     then $languageTerm
                     else
-                        let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = $language[@type = 'text']/upper-case(label)]/label
+                        let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = $language[@type = 'text']/upper-case(label)][1]/label
                         return
                         if ($languageTerm)
                         then $languageTerm
                         else
-                            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = upper-case($language[1])]/label
+                            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = upper-case($language[1])][1]/label
                             return
                             if ($languageTerm)
                             then $languageTerm
@@ -159,11 +171,11 @@ declare function mods:language-of-cataloging($language as element(mods:languageO
 declare function mods:get-role-term($role as xs:string?) as xs:string {
             if ($role/mods:roleTerm)
             then
-                if ($role/mods:roleTerm/@type)
+                if ($role/mods:roleTerm/@type/string())
                 then
                     if ($role/mods:roleTerm[@type = 'code']) 
                     then
-                        functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $role/mods:roleTerm/@type]/label)
+                        functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $role/mods:roleTerm[1]/@type]/label)
                     else
                         (: type = 'text'. :)                    
                         functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($role/mods:roleTerm)]/label)                            
@@ -268,7 +280,7 @@ declare function mods:format-subjects($entry as element()) {
             if ($item/mods:*) 
             then
                 if ($item/name() = 'name')
-                then mods:format-untransliterated-primary-name($item, 1) 
+                then mods:format-primary-name($item, 1) 
                 else
                     if ($item/name() = 'titleInfo')
                     then mods:get-short-title('', $item/..)
@@ -492,7 +504,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             ,
             if ($extent) 
             then
-                concat(', ', mods:get-extent($extent),'.')
+                concat(', ', mods:get-extent($extent[1]),'.')
             else ()
             )
         else
@@ -502,7 +514,7 @@ declare function mods:get-part-and-origin($entry as element()) {
                 (
                 if ($extent)
                 then
-                    concat(', ', mods:get-extent($extent),'.')
+                    concat(', ', mods:get-extent($extent[1]),'.')
                 else ()
                 ,
                 if ($place)
@@ -512,10 +524,10 @@ declare function mods:get-part-and-origin($entry as element()) {
                 ,
                 if ($publisher)
                 then
-                    (': ', mods:get-publisher($publisher))
+                    (': ', mods:get-publisher($publisher[1]))
                 else ()
                 ,
-                concat(', ', $dateIssued, '.')
+                concat(', ', $dateIssued[1], '.')
                 )
             (: If not a periodical and not an anthology, we don't know what it is and just try to extract the information. :)
             else
@@ -530,7 +542,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             , 
             normalize-space(mods:add-part($originInfo/mods:dateIssued/string(), '.'))
             ,
-            mods:get-extent($extent)
+            mods:get-extent($extent[1])
             )
 };
 
@@ -639,7 +651,7 @@ declare function mods:get-related-item-part($entry as element()) {
 
 (: Both the name as given in the publication and the autority name should be rendered. :)
 
-declare function mods:format-transliterated-eastern-name($name as element()) as xs:string? {
+declare function mods:format-transliterated-eastern-name($name as element()?) as xs:string? {
     if ($name/mods:namePart[@transliteration = ('pinyin', 'romaji')]) then
     let $family := string-join(($name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'family']), ' ')
     (: What if several transliterations (both Japanese and Chinese) are used?  :)
@@ -653,7 +665,7 @@ declare function mods:format-transliterated-eastern-name($name as element()) as 
         $given,
             if ($address) then $address else (),
             if ($date) then concat(' (', $date, ')') else (),
-        $name/mods:namePart[@transliteration][not(@type)]
+        $name/mods:namePart[@transliteration][not(@type) or @type = '']
         )
          , ' ')
     else ()
@@ -670,7 +682,7 @@ declare function mods:format-transliterated-non-eastern-name($name as element())
         string-join((
             functx:trim($family), functx:trim($given),
             if ($address) then concat(' ,', functx:trim($address)) else (),
-            $name/mods:namePart[@transliteration][not(@type)]
+            $name/mods:namePart[@transliteration][not(@type) or @type = '']
             (: NB: What does the last line do??? :)
             ), ' ')
     else ()
@@ -706,15 +718,16 @@ declare function mods:get-conference-detail-view($entry as element()) {
     ()
 };
 
-declare function mods:format-untransliterated-primary-name($name as element(mods:name), $pos as xs:integer) {
-    if ($name[not(@type)])
-    (: if the name is (erroneously) not typed :)    
+declare function mods:format-primary-name($name as element(mods:name), $pos as xs:integer) {
+    (: If the name is (erroneously) not typed, then format the Eastern name and string-join the nameParts. :)
+    if ($name[not(@type) or @type = ''])    
     then
         concat(
-        mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type)]), 
+        mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type) or @type = '']), 
         ' ', 
-        string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+        string-join($name/mods:namePart[not(@transliteration)][not(@type) or @type = ''], ' ')
         )
+    (: If the name is typed :)
     else
     	if ($name/@type = 'conference') 
     	then ()
@@ -725,96 +738,100 @@ declare function mods:format-untransliterated-primary-name($name as element(mods
             concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
             (: Does not need manipulation, since it is never decomposed. :)
             else
-            if ($name/@type = 'personal')
-            then
-            	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration)]
-            	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration)]
-            	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration)]
-            	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration)], ' ') 
-            return
-        	concat(
-        	(:concat appends dates to name proper:)
-        	string-join(
-        	if ($family or $given) 
-        	then
-        	(: If one of the nameParts is properly typed :)
-        	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) 
-        	   then
-    				(: If the name is transliterated and Eastern :)
-    				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
-    				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
-    				(: We assume that the name in native script occurs first, that the existence of a transliterated name implies the existence of a native-script name. :)
-    				(mods:format-transliterated-eastern-name($name), ' ',
-        			(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')),
-        			functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
-        			, ' '))))
-        			(: The string-joins are meant to capture multiple family and given names. Needed?:)
-                else
-                    if (($family[@transliteration]) or ($given[@transliteration])) 
-                    then
-            		(: If the name is transliterated but not Eastern :)
-            		(mods:format-transliterated-non-eastern-name($name), ' ',
-            		(functx:trim(string-join($family, ' ')),
-            		functx:trim(string-join($given, ' '))))
-            		(: The string-joins are meant to capture multiple family and given names. :)
-            		else
-            		(: If the name is not transliterated :)        		 
-                		if ($pos eq 1)
-                		(: If it is the first name :)
-                		then
-                		(: If we have a non-Chinese, non-Japanese name occurring first. :)
-                		(functx:trim(string-join($family/string(), ' ')), 
-                		', ', 
-                		functx:trim(string-join($given, ' ')),
-                		    if ($address)
-                		    then functx:trim(concat(', ',$address)) 
-                		    else ()
-            				    )
-            		    else
-            		    (: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
-            		    (functx:trim(string-join($given, ' '))
-            		    ,
-            		    ' '
-            		    , 
-            		    functx:trim(string-join($family/string(), ' '))
-            		    ,
-            		      if ($address) 
-            		      then functx:trim(string-join($address, ', ')) 
-            		      else ()
-            				    )
-                else
-                    if ($pos eq 1) 
-                    then
-                    (: If we have an untyped name occurring first. :)
-                        (functx:trim(string-join($name/mods:namePart, ', ')),
-                            if ($address) 
-                            then functx:trim(string-join($address, ', ')) 
-                            else ()
-                    )
+                if ($name/@type = 'personal')
+                then
+                	let $family := $name/mods:namePart[@type = 'family'][not(@transliteration/string())]
+                	let $given := $name/mods:namePart[@type = 'given'][not(@transliteration/string())]
+                	let $address := $name/mods:namePart[@type = 'termsOfAddress'][not(@transliteration/string())]
+                	let $date := string-join($name/mods:namePart[@type = 'date'][not(@transliteration/string())], ' ') 
+                    return
+                	concat(
+                	(: Concat appends dates to the name proper at the end. :)
+                	string-join(
+                	if ($family or $given) 
+                	(: If one of the nameParts is properly typed :)
+                	then
+                	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) 
+                	   then
+            				(: If the name is transliterated and Eastern :)
+            				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
+            				(: Problem: what if Westeners have Chinese names? Can one assume that the form in original script comes first? Can one assume that transliteration comes after original script? This is actually a fault in MODS. <namePart>s that belong together should be grouped. :) 
+            				(: We assume that the name in native script occurs first, that the existence of a transliterated name implies the existence of a native-script name. :)
+            				(mods:format-transliterated-eastern-name($name), ' ',
+                			(functx:trim(string-join($family[@lang = ('zh', 'ja')]/string(), ' ')),
+                			functx:trim(string-join($given[@lang= ('zh', 'ja')]/string()
+                			, ' '))))
+                			(: The string-joins are meant to capture multiple family and given names. Needed?:)
+                        else
+                            if (($family[@transliteration]) or ($given[@transliteration])) 
+                            then
+                        		(: If the name is transliterated but not Eastern :)
+                        		(mods:format-transliterated-non-eastern-name($name), ' ',
+                        		(functx:trim(string-join($family, ' ')),
+                        		functx:trim(string-join($given, ' '))))
+                        		(: The string-joins are meant to capture multiple family and given names. :)
+                    		else
+                    		(: If the name is not transliterated :)        		 
+                        		if ($pos eq 1)
+                        		(: If it is the first name :)
+                        		then
+                            		(: If we have a non-Chinese, non-Japanese name occurring first. :)
+                            		(functx:trim(string-join($family/string(), ' ')), 
+                            		', ', 
+                            		functx:trim(string-join($given, ' ')),
+                            		    if ($address)
+                            		    then functx:trim(concat(', ',$address)) 
+                            		    else ()
+                        				    )
+                    		    else
+                    		    (: If we have a non-Chinese, non-Japanese name occurring elsewhere. :)
+                    		    (functx:trim(string-join($given, ' '))
+                    		    ,
+                    		    ' '
+                    		    , 
+                    		    functx:trim(string-join($family/string(), ' '))
+                    		    ,
+                    		      if ($address) 
+                    		      then 
+                    		          functx:trim(string-join($address, ', ')) 
+                    		      else ()
+                    	)
+                        else
+                            if ($pos eq 1) 
+                            then
+                            (: If we have an untyped name occurring first. :)
+                                (functx:trim(string-join($name/mods:namePart, ', ')),
+                                    if ($address) 
+                                    then 
+                                        functx:trim(string-join($address, ', ')) 
+                                    else ()
+                            )
                     else
                     (: If we have an untyped name occurring later. :)
                     (functx:trim(string-join($name/mods:namePart, ' ')),
                         if ($address) 
-                        then functx:trim(string-join($address, ', ')) 
+                        then 
+                            functx:trim(string-join($address, ', ')) 
                         else ()
-                    )                    (: One could check for ($family or $given). :)
-(:                    (functx:trim(mods:format-transliterated-eastern-name($name))):)
-                    (: If there is a transliteration, but no name in original script. :)
-              , ' '), 
-              (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
-              (if ($date) then concat(' (', functx:trim($date), ')') else ()))
-              (: NB: Why is this part only shown in list-view? :)
-        else ()
+                            )
+                            (: One could check for ($family or $given). :)
+                            (:(functx:trim(mods:format-transliterated-eastern-name($name))):)
+                            (: If there is a transliteration, but no name in original script. :)
+                      , ' '), 
+                      (: If there are any nameParts with @date, they are given last, without regard to transliteration or language. :)
+                      (if ($date) then concat(' (', functx:trim($date), ')') else ()))
+                      (: NB: Why is this part only shown in list-view? :)
+                else ()
         };
 
 declare function mods:format-untransliterated-secondary-name($name as element(mods:name), $pos as xs:integer) {
-    if ($name[not(@type)])
+    if ($name[not(@type) or @type = ''])
     (: if the name is (erroneously) not typed :)    
     then
         concat(
-        mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type)][1]), 
+        mods:format-transliterated-eastern-name($name/mods:namePart[@transliteration][(not(@type)) or @type = ''][1]), 
         ' ', 
-        string-join($name/mods:namePart[not(@transliteration)][not(@type)], ' ')
+        string-join($name/mods:namePart[not(@transliteration)][not(@type) or @type = ''], ' ')
         )
     else
     	if ($name/@type = 'conference') 
@@ -948,7 +965,7 @@ declare function mods:retrieve-primary-name($name as element(mods:name), $pos as
     return
         if ($mads) 
         then mods:get-name-from-mads($mads, $pos)
-        else mods:format-untransliterated-primary-name($name, $pos)
+        else mods:format-primary-name($name, $pos)
 };
 
 declare function mods:retrieve-secondary-name($name as element(mods:name), $pos as xs:int) {
@@ -1283,13 +1300,13 @@ if ($titleInfo)
         }
         <span class="deemph">
         {
-        let $lang := $titleInfo/@lang
+        let $lang := $titleInfo/@lang/string()
         return
-        if ($titleInfo/@lang)
+        if ($lang)
         then        
         (<br/>,
-        let $lang3 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $titleInfo/@lang]/label
-        let $lang2 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $titleInfo/@lang]/label
+        let $lang3 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $lang]/label
+        let $lang2 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $lang]/label
         return
         if ($lang3) 
         then concat('(Language: ', $lang3[1])
@@ -1302,7 +1319,7 @@ if ($titleInfo)
         ()
         }
         {
-        if ($titleInfo/@xml:lang)
+        if ($titleInfo/@xml:lang/string())
         then
         (<br/>, concat('(Language: ', 
         doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $titleInfo/@xml:lang]/label
@@ -1313,7 +1330,7 @@ if ($titleInfo)
         ()
         }
         {
-        if ($titleInfo/@transliteration)
+        if ($titleInfo/@transliteration/string())
         then
             if (doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration]/label)
             then
@@ -1327,7 +1344,7 @@ if ($titleInfo)
         ()
         }
         {
-        if (string-length($titleInfo/@script))
+        if ($titleInfo/@script/string())
         then
         (<br/>, concat('(Script: ', 
         doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $titleInfo/@script]/label
@@ -1377,6 +1394,12 @@ declare function mods:get-related-item($entry as element(mods:mods)) {
     return
         if ($relatedItem/@type = 'host')
         then
+        mods:format-related-item($relatedItem)
+        else ()
+        
+};
+
+declare function mods:format-related-item($relatedItem as element()) {
                 replace(
                 replace(
                 replace(
@@ -1424,8 +1447,6 @@ declare function mods:get-related-item($entry as element(mods:mods)) {
             , ' ,', ',')
             , ' :', ':')
             , '"\.', '."')
-        else ()
-        
 };
 
 declare function mods:get-related-item-title($entry as element(mods:mods)) {
@@ -1513,29 +1534,32 @@ declare function mods:get-related-item-title($entry as element(mods:mods)) {
 declare function mods:names-full($entry as element()) {
 if ($entry/mods:name) then
     let $names := $entry/mods:name
-    let $roles := $names/mods:role
     for $name in $names
     return
-    if ($name[not(@type) or @type = 'personal' or @type = '']) 
+    if ($name[not(@type) or @type = 'personal']) 
     then
         <tr><td class="label">
             {
-            if ($name/mods:role/mods:roleTerm)
-            then
-                if ($name/mods:role/mods:roleTerm/@type)
-                then
-                    if ($name/mods:role/mods:roleTerm[@type = 'code']) 
-                    then
-                        functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $name/mods:role/mods:roleTerm/@type]/label)
+            let $roles := $name/mods:role
+            for $role in $roles
+            let $roleTerm :=
+                let $roleTerm := functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $role/mods:roleTerm]/label)
+                return
+                    if ($roleTerm)
+                    then $roleTerm
                     else
-                    (: if a code value is used that is not in the code table. :)                    
-                        functx:capitalize-first($name/mods:role[1]/mods:roleTerm[@type = 'text'][1])                        
-                else
-                (: try if the @type='text' value is a label. :)
-                    functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($name/mods:role/mods:roleTerm)]/label)
-            else
-                'Author'
-            (: interpreting this as the default value for roleTerm. :)
+                        let $roleTerm := functx:capitalize-first(doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($role/mods:roleTerm)]/label)
+                        return
+                            if ($roleTerm)
+                            then $roleTerm
+                            else
+                                let $roleTerm := functx:capitalize-first($role/mods:roleTerm)
+                                return
+                                    if ($roleTerm)
+                                    then $roleTerm
+                                    else 'Author'
+            return
+            $roleTerm
             }
             </td><td class="record">
             {       
@@ -1695,10 +1719,9 @@ declare function mods:entry-full($entry as element())
     ,
     
     (: relatedItem :)
-    for $item in ($entry)
-    where $item/mods:relatedItem/@type = 'host'
+    for $item in ($entry/mods:relatedItem[@type = 'host'])
     return
-    mods:simple-row(mods:get-related-item($item), 'In')
+    mods:simple-row(mods:format-related-item($item), 'In')
     ,
     
     (: typeOfResource :)
@@ -1757,17 +1780,24 @@ declare function mods:entry-full($entry as element())
     (: abstract :)
     for $abstract in ($entry/mods:abstract)
     return
-    mods:simple-row($abstract, 'Abstract'),
+    mods:simple-row($abstract, 'Abstract')
+    ,
     
     (: note :)
     for $note in ($entry/mods:note)
     return
         if ($note/@type=('refbase', 'clusterPublication')) 
         then () 
-        else mods:simple-row($note, 'Note'),
+        else mods:simple-row($note, 'Note')
+    ,
     
     (: subject :)
-    mods:format-subjects($entry), 
+    (: We assume that there are not many subjects with the first one empty. :)
+    if (normalize-space($entry/mods:subject[1]/string()))
+    then
+    mods:format-subjects($entry)    
+    else ()
+    , 
     
     (: ISBN :)
     mods:simple-row($entry/mods:identifier[@type='isbn'][1], 'ISBN'),

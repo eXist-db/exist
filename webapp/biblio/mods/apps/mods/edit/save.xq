@@ -16,230 +16,244 @@ declare function xf:do-updates($item, $doc) {
     If we do then it first deletes the titleInfo in the saved document.
     Next it goes through each titleInfo in the incoming record and inserts it in the saved document. 
     If name (the "next" element in the canonical order) occurs in the saved document, the titleInfo is inserted before name, maintaining order in the document.
+    (: The canonical order is: titleInfo, name, originInfo, part, physicalDescription, targetAudience, typeOfResource, genre, subject, classification, abstract, tableOfContents, note, relatedItem, identifier, location, accessCondition, language, recordInfo, extension. :)
     If name does not occur, titleInfo is inserted at the end of the saved document.:)
+    
     if ($item/mods:titleInfo)
-     then
+    then
         (
-        update delete $doc/mods:titleInfo,
-            if ($doc/mods:name)
-            then
-                update insert $item/mods:titleInfo preceding $doc/mods:name
-            else
-                update insert $item/mods:titleInfo into $doc
-         )
-    else (),
+        update delete $doc/mods:titleInfo
+        ,
+        if ($doc/mods:name)
+        then update insert $item/mods:titleInfo preceding $doc/mods:name[1]
+        else update insert $item/mods:titleInfo into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:name)
-      then
+    then
         (
-        update delete $doc/mods:name,
-              if ($doc/mods:originInfo)
-              then
-                 update insert $item/mods:name preceding $doc/mods:originInfo
-              else
-                 update insert $item/mods:name into $doc
-         )
-      else (),
+        update delete $doc/mods:name
+        ,
+        if ($doc/mods:originInfo)
+        then update insert $item/mods:name preceding $doc/mods:originInfo[1]
+        else update insert $item/mods:name into $doc
+        )
+      else ()
+    ,
       
     if ($item/mods:originInfo)
-      then
+    then
         (
-        update delete $doc/mods:originInfo,
-              if ($doc/mods:part)
-              then
-                 update insert $item/mods:originInfo preceding $doc/mods:part
-              else
-                 update insert $item/mods:originInfo into $doc
-         )
-      else (),
+        update delete $doc/mods:originInfo
+        ,
+        if ($doc/mods:part)
+        then update insert $item/mods:originInfo preceding $doc/mods:part[1]
+        else update insert $item/mods:originInfo into $doc
+        )
+      else ()
+    ,
     
     if ($item/mods:part)
-      then
+    then
         (
-        update delete $doc/mods:part,
-              if ($doc/mods:physicalDescription)
-              then
-                 update insert $item/mods:part preceding $doc/mods:physicalDescription
-              else
-                 update insert $item/mods:part into $doc
-         )
-      else (),
+        update delete $doc/mods:part
+        ,
+        if ($doc/mods:physicalDescription)
+        then update insert $item/mods:part preceding $doc/mods:physicalDescription[1]
+        else update insert $item/mods:part into $doc
+        )
+      else ()
+    ,
     
     if ($item/mods:physicalDescription)
-      then
+    then
         (
-        update delete $doc/mods:physicalDescription,
-              if ($doc/mods:targetAudience)
-              then
-                 update insert $item/mods:physicalDescription preceding $doc/mods:targetAudience
-              else
-                 update insert $item/mods:physicalDescription into $doc
-         )
-      else (),
+        update delete $doc/mods:physicalDescription
+        ,
+        if ($doc/mods:targetAudience)
+        then update insert $item/mods:physicalDescription preceding $doc/mods:targetAudience[1]
+        else update insert $item/mods:physicalDescription into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:targetAudience)
-      then
+    then
         (
-        update delete $doc/mods:targetAudience,
-              if ($doc/mods:language)
-              then
-                 update insert $item/mods:targetAudience preceding $doc/mods:language
-              else
-                 update insert $item/mods:targetAudience into $doc
-         )
-      else (),
-      
-    if ($item/mods:language)
-      then
-        (
-        update delete $doc/mods:language,
-              if ($doc/mods:typeOfResource)
-              then
-                 update insert $item/mods:language preceding $doc/mods:typeOfResource
-              else
-                 update insert $item/mods:language into $doc
-         )
-      else (),
+        update delete $doc/mods:targetAudience
+        ,
+        if ($doc/mods:typeOfResource)
+        then update insert $item/mods:targetAudience preceding $doc/mods:typeOfResource[1]
+        else update insert $item/mods:targetAudience into $doc
+        )
+    else ()
+    ,      
     
     if ($item/mods:typeOfResource)
-      then
+    then
         (
         update delete $doc/mods:typeOfResource,
-              if ($doc/mods:genre)
-              then
-                 update insert $item/mods:typeOfResource preceding $doc/mods:genre
-              else
-                 update insert $item/mods:typeOfResource into $doc
-         )
-      else (),
+        if ($doc/mods:genre)
+        then update insert $item/mods:typeOfResource preceding $doc/mods:genre[1]
+        else update insert $item/mods:typeOfResource into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:genre)
-      then
+    then
         (
         update delete $doc/mods:genre,
-              if ($doc/mods:subject)
-              then
-                 update insert $item/mods:genre preceding $doc/mods:subject
-              else
-                 update insert $item/mods:genre into $doc
-         )
-      else (),
+        if ($doc/mods:subject)
+        then update insert $item/mods:genre preceding $doc/mods:subject[1]
+        else update insert $item/mods:genre into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:subject)
-      then
+    then
         (
-        update delete $doc/mods:subject,
-              if ($doc/mods:classification)
-              then
-                 update insert $item/mods:subject preceding $doc/mods:classification
-              else
-                 update insert $item/mods:subject into $doc
-         )
-      else (),      
+        update delete $doc/mods:subject
+        ,
+        if ($doc/mods:classification)
+        then update insert $item/mods:subject preceding $doc/mods:classification[1]
+        else
+        update insert $item/mods:subject into $doc
+        )
+    else ()
+    ,      
     
     if ($item/mods:classification)
-      then
+    then
         (
-        update delete $doc/mods:classification,
-              if ($doc/mods:abstract)
-              then
-                 update insert $item/mods:classification preceding $doc/mods:abstract
-              else
-                 update insert $item/mods:classification into $doc
-         )
-      else (),     
+        update delete $doc/mods:classification
+        ,
+        if ($doc/mods:abstract)
+        then update insert $item/mods:classification preceding $doc/mods:abstract[1]
+        else update insert $item/mods:classification into $doc
+        )
+    else ()
+    ,     
     
     if ($item/mods:abstract)
-      then
+    then
         (
-        update delete $doc/mods:abstract,
-              if ($doc/mods:tableOfContents)
-              then
-                 update insert $item/mods:abstract preceding $doc/mods:tableOfContents
-              else
-                 update insert $item/mods:abstract into $doc
-         )
-      else (),
+        update delete $doc/mods:abstract
+        ,
+        if ($doc/mods:tableOfContents)
+        then update insert $item/mods:abstract preceding $doc/mods:tableOfContents[1]
+        else update insert $item/mods:abstract into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:tableOfContents)
-      then
+    then
         (
-        update delete $doc/mods:tableOfContents,
-              if ($doc/mods:note)
-              then
-                 update insert $item/mods:tableOfContents preceding $doc/mods:note
-              else
-                 update insert $item/mods:tableOfContents into $doc
-         )
-      else (),
+        update delete $doc/mods:tableOfContents
+        ,
+        if ($doc/mods:note)
+        then update insert $item/mods:tableOfContents preceding $doc/mods:note[1]
+        else update insert $item/mods:tableOfContents into $doc
+        )
+    else ()
+    ,
       
     if ($item/mods:note)
-      then
+    then
         (
-        update delete $doc/mods:note,
-              if ($doc/mods:relatedItem)
-              then
-                 update insert $item/mods:note preceding $doc/mods:relatedItem
-              else
-                 update insert $item/mods:note into $doc
-         )
-      else (),
+        update delete $doc/mods:note
+        ,
+        if ($doc/mods:relatedItem)
+        then update insert $item/mods:note preceding $doc/mods:relatedItem[1]
+        else update insert $item/mods:note into $doc
+        )
+    else ()
+    ,
       
     if ($item/mods:relatedItem)
-      then
+    then
         (
-        update delete $doc/mods:relatedItem,
-              if ($doc/mods:identifier)
-              then
-                 update insert $item/mods:relatedItem preceding $doc/mods:identifier
-              else
-                 update insert $item/mods:relatedItem into $doc
-         )
-      else (),
+        update delete $doc/mods:relatedItem
+        ,
+        if ($doc/mods:identifier)
+        then update insert $item/mods:relatedItem preceding $doc/mods:identifier[1]
+        else update insert $item/mods:relatedItem into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:identifier)
-      then
+    then
         (
-        update delete $doc/mods:identifier,
-              if ($doc/mods:recordInfo)
-              then
-                 update insert $item/mods:identifier preceding $doc/mods:recordInfo
-              else
-                 update insert $item/mods:identifier into $doc
-         )
-      else (),
-    
-    if ($item/mods:recordInfo)
-      then
-        (
-        update delete $doc/mods:recordInfo,
-              if ($doc/mods:accessCondition)
-              then
-                 update insert $item/mods:recordInfo preceding $doc/mods:location
-              else
-                 update insert $item/mods:recordInfo into $doc
-         )
-      else (),
+        update delete $doc/mods:identifier
+        ,
+        if ($doc/mods:location)
+        then update insert $item/mods:identifier preceding $doc/mods:location[1]
+        else update insert $item/mods:identifier into $doc
+        )
+    else ()
+    ,
     
     if ($item/mods:location)
-      then
+    then
         (
-        update delete $doc/mods:location,
-              if ($doc/mods:location)
-              then
-                 update insert $item/mods:location preceding $doc/mods:accessCondition 
-              else
-                 update insert $item/mods:location into $doc
-         )
-      else (),
-    
+        update delete $doc/mods:location
+        ,
+        if ($doc/mods:accessCondition)
+        then update insert $item/mods:location preceding $doc/mods:accessCondition[1] 
+        else update insert $item/mods:location into $doc
+        )
+    else ()
+    ,
+
     if ($item/mods:accessCondition)
-      then
+    then
         (
-        update delete $doc/mods:accessCondition,
-                 update insert $item/mods:accessCondition into $doc
-         )
-      else ()
+        update delete $doc/mods:accessCondition
+        ,
+        if ($doc/mods:language)
+        then update insert $item/mods:accessCondition preceding $doc/mods:language[1] 
+        else update insert $item/mods:accessCondition into $doc
+        )
+    else ()
+    ,
+
+    if ($item/mods:language)
+    then
+        (
+        update delete $doc/mods:language
+        ,
+        if ($doc/mods:recordInfo)
+        then update insert $item/mods:language preceding $doc/mods:recordInfo[1]
+        else update insert $item/mods:language into $doc
+        )
+    else ()
+    ,
+    
+    if ($item/mods:recordInfo)
+    then
+        (
+        update delete $doc/mods:recordInfo
+        ,
+        if ($doc/mods:extension)
+        then update insert $item/mods:recordInfo preceding $doc/mods:extension[1]
+        else update insert $item/mods:recordInfo into $doc
+        )
+    else ()
+    ,
+    
+    if ($item/mods:extension)
+    then
+        (
+        update delete $doc/mods:extension
+        ,
+        update insert $item/mods:extension into $doc
+        )
+    else ()
 };
 
 let $title := 'MODS Record Save'
@@ -289,9 +303,9 @@ let $doc := doc($file-path)/mods:mods
 
 Note that is has the side effect of adding the mods prefix in the data files.  Semantically this
 means the same thing but I don't know of a way to tell eXist to always use a default namespace
-when doing an update.  :)
+when doing an update. :)
 
-(: TODO figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
+(: TODO: figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
 
 let $updates := 
     if ($action eq 'cancel') then

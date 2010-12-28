@@ -27,7 +27,7 @@ let $show-all := if ($show-all-string = 'true') then true() else false()
 let $host := request:get-parameter('host', ())
 
 (: if no tab is specified, we default to the title tab :)
-let $tab-id := request:get-parameter('tab-id', 'title')
+let $tab-id := request:get-parameter('tab-id', 'compact-a')
 
 (: display the label attached to the tab to the user :)
 let $tab-data := concat($style:db-path-to-app, '/edit/tab-data.xml')
@@ -83,20 +83,17 @@ let $create-new-from-template :=
          let $scriptOfCataloging := request:get-parameter("scriptOfCataloging", "")
          let $scriptTypeOfResource := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfResource]/data(scriptClassifier)
          let $scriptTypeOfCataloging := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfCataloging]/data(scriptClassifier)
+         let $doc := doc($stored)
          
          (: note that we can not use "update replace" if we want to keep the default namespace :)
          return (
-            update value doc($stored)/mods:mods/@ID with $id,
-            (: save used template name and script type into a mods:extension element; save language of resource and language of cataloguing :)
-            update insert                
-                (
-                <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
-                    <e:collection>{$data-collection}</e:collection>
-                    <e:template>{util:document-name($template)}</e:template>
-                    <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
-                    <e:scriptTypeOfCataloging>{$scriptTypeOfResource}</e:scriptTypeOfCataloging>                    
-                </extension>
-                ,
+            update value $doc/mods:mods/@ID with $id
+            ,
+            (: NB: does not work. :)
+            update delete $doc/mods:language
+            ,
+            (: Save language and script of resource. :)
+            let $language-insert:=
                 <mods:language>
                     <mods:languageTerm authority="iso639-2b" type="code">
                         {$languageOfResource}
@@ -105,7 +102,17 @@ let $create-new-from-template :=
                         {$scriptOfResource}
                     </mods:scriptTerm>
                 </mods:language>
-                ,
+            return
+            (: NB: does not work. Always inserted into end of document. :)
+            if ($doc/*:typeOfResource)
+            then update insert $language-insert preceding $doc/*:typeOfResource
+            else update insert $language-insert into $doc/mods:mods
+            ,
+            (: NB: does not work. :)
+            update delete $doc/mods:recordInfo
+            ,
+            (: Save creation date and language and script of cataloguing :)
+            let $recordInfo-insert:=
                 <mods:recordInfo lang="eng" script="Latn">
                     <mods:recordContentSource authority="marcorg">DE-16-158</mods:recordContentSource>
                     <mods:recordCreationDate encoding="w3cdtf">
@@ -120,14 +127,30 @@ let $create-new-from-template :=
                             {$scriptOfCataloging}
                     </mods:scriptTerm>
                     </mods:languageOfCataloging>
-                </mods:recordInfo>
-                )
-            
-            into doc($stored)/mods:mods,
-            if ($host) then (
+                </mods:recordInfo>            
+            return
+            (: NB: does not work. Always inserted into end of document. :)
+            if ($doc/mods:accessCondition)
+            then update insert $recordInfo-insert preceding $doc/mods:accessCondition
+            else update insert $recordInfo-insert into $doc/mods:mods
+            ,
+            (: Save used template name and script type into a mods:extension element. :)
+            update insert
+                <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
+                    <e:collection>{$data-collection}</e:collection>
+                    <e:template>{util:document-name($template)}</e:template>
+                    <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
+                    <e:scriptTypeOfCataloging>{$scriptTypeOfResource}</e:scriptTypeOfCataloging>                    
+                </extension>
+            into $doc/mods:mods
+            ,
+            if ($host) 
+            then 
+            (
                 update value doc($stored)/mods:mods/mods:relatedItem/@xlink:href with $host,
                 update value doc($stored)/mods:mods/mods:relatedItem/@type with "host"
-            ) else ()
+            )
+            else ()
          )
       ) else if (not(doc-available(concat($tempCollection, '/', $id, '.xml')))) then
         xmldb:copy($data-collection, $tempCollection, concat($id, '.xml'))
@@ -157,7 +180,14 @@ let $model :=
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates'/>
        
        (: A selection of elements and attributes from the MODS schema used for default records.:)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance'/>       
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance'/>
+
+       (: Author and editor elements for the compact forms.:)
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="author-template.xml" id='author-template'/>
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="author-transliteration-template.xml" id='author-transliteration-template'/>
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="editor-template.xml" id='editor-template'/>
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="editor-transliteration-template.xml" id='editor-transliteration-template'/>
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="subject-template.xml" id='subject-template'/>
        
        (: A selection of elements from the MODS schema with all possible attributes used for inserting a repetition.:)
        (: NB: When it becomes possible to insert attributes this instance is not needed. For now, we have to present all attributes, not just the recommended ones. Once it is possible to insert attributes, new-instance can be used instead of element-selection-with-attributes. :)

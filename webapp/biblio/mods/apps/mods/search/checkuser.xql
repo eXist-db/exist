@@ -13,7 +13,7 @@ declare function local:authenticate($user as xs:string, $password as xs:string?)
     )
     else (
         response:set-status-code(403),
-        <span>Wrong user or password.</span>
+        <span>Wrong username or wrong password.</span>
     )
 };
 

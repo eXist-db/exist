@@ -61,7 +61,25 @@ declare function clean:cleanup($node as node()) {
             
         case element(mods:classification) return
             clean:remove-if-empty-text($node)
-            
+        
+        case element(mods:topic) return
+            clean:remove-if-empty-text($node)
+        case element(mods:geographic) return
+            clean:remove-if-empty-text($node)            
+        case element(mods:temporal) return
+            clean:remove-if-empty-text($node)            
+        case element(mods:namePart) return
+            clean:remove-if-empty-text($node)
+        case element(mods:name) return
+            clean:remove-if-empty-text($node)
+        case element(mods:title) return
+            clean:remove-if-empty-text($node)            
+        case element(mods:subTitle) return
+            clean:remove-if-empty-text($node)            
+        case element(mods:titleInfo) return
+            clean:remove-if-empty-text($node)            
+        
+        
         case element(mods:nonSort) return
             clean:remove-if-empty-text($node)
         case element(mods:subTitle) return
