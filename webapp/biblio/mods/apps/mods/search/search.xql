@@ -57,7 +57,8 @@ declare variable $biblio:FIELDS :=
 		      union
 		mods:mods[ft:query(mods:relatedItem/mods:name, '$q', $options)]		
 		)</field>
-		<field name="Date">(
+		<field name="Date">
+		(
 		mods:mods[ft:query(mods:originInfo/mods:dateCreated, '$q', $options)]
 		      union
 		mods:mods[ft:query(mods:originInfo/mods:dateIssued, '$q', $options)]
@@ -73,14 +74,17 @@ declare variable $biblio:FIELDS :=
 		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:dateCaptured, '$q', $options)]
 		      union
 		mods:mods[ft:query(mods:relatedItem/mods:originInfo/mods:copyrightDate, '$q', $options)]
-		)</field>
+		      union
+		mods:mods[ft:query(mods:part/mods:date, '$q', $options)]
+		      union
+		mods:mods[ft:query(mods:relatedItem/mods:part/mods:date, '$q', $options)]
+		)
+		</field>
 		<field name="Abstract">mods:mods[ft:query(mods:abstract, '$q', $options)]</field>
         <field name="Note">mods:mods[ft:query(mods:note, '$q', $options)]</field>
         <field name="Subject">mods:mods[ft:query(mods:subject, '$q', $options)]</field>
-        <field name="All">(
-        mods:mods[ft:query(.//*, '$q', $options)]
-		)</field>
-        <field name="Id">mods:mods[@ID = '$q']</field>
+        <field name="All">mods:mods[ft:query(.//*, '$q', $options)]</field>
+        <field name="ID">mods:mods[@ID = '$q']</field>
 	</fields>;
 
 (:
@@ -336,7 +340,7 @@ declare function biblio:process-form() as element(query)? {
 :)
 declare function biblio:orderByAuthor($m as element()) as xs:string?
 {
-    for $name in $m/mods:name[1]
+    for $name in $m/mods:name[mods:role/mods:roleTerm = ('aut', 'author', 'Author', '')][1]
     return
         mods:retrieve-primary-name($name, 1)
 };
@@ -539,9 +543,6 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                 <div class="content">
                     <form id="{if ($classifier eq 'stand-alone') then 'new-resource-form' else 'add-related-form'}" action="../edit/edit.xq" method="GET">
                         <ul>
-                            <li>
-                                <input type="radio" name="type" value="default" selected="true"/><span> Default</span>
-                            </li>
                         {
                             for $item in $code-table-type//item[classifier = $classifier]
                             let $label := $item/label/text()
@@ -551,7 +552,13 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                   <input type="radio" name="type" value="{$item/value/text()}"/><span> {$item/label/text()}</span>
                                 </li>
                         }
-                        </ul>
+                            <li>
+                                ---
+                            </li>
+                            <li>
+                                <input type="radio" name="type" value="default" selected="true"/><span> Default Record</span>
+                            </li>
+</ul>
                         
                         <div class="language-label">
                             <label for="languageOfResource">Resource Language: </label>
@@ -736,7 +743,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                     <div id="group-sharing-panel" class="sharing-panel">
                         <div>   
                             <span>
-                                <input id="group-sharing-permissions-write" type="checkbox" name="group-sharing-permissions" value="write">
+                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write">
                                 {
                                     (:
                                     if(sharing:group-writeable($collection))then(attribute checked{ "checked" })else()
@@ -744,7 +751,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                     ()
                                 }
                                 </input>
-                                <label for="group-sharing-permissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
+                                <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
                             </span>
                         </div>
                         <div>
@@ -800,7 +807,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                 <div id="other-sharing-panel" class="sharing-panel">
                     <div>
                         <span>
-                            <input id="other-sharing-permissions-write" type="checkbox" name="other-sharing-permissions" value="write">
+                            <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write">
                             {
                                 (:
                                 if(sharing:other-writeable($collection))then(attribute checked{ "checked" })else()
@@ -808,7 +815,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                 ()
                             }
                             </input>
-                            <label for="other-sharing-permissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
+                            <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
                         </span>
                     </div>
                 </div>
