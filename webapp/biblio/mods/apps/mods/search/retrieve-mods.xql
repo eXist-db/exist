@@ -1332,10 +1332,10 @@ if ($titleInfo)
         {
         if ($titleInfo/@transliteration/string())
         then
-            if (doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration]/label)
+            if (doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration][1]/label)
             then
             (<br/>, concat('(Transliteration: ', 
-            doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration]/label
+            doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration][1]/label
             , ')'))
             else
             (<br/>, concat('(Transliteration: ',($titleInfo/@transliteration)

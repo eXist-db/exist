@@ -152,14 +152,14 @@
                                                 <!--placeTerm delete ends--></xf:repeat>
                                             <!--placeTerm repeat ends-->
 
-                                            <!--placeTerm add begins--><xf:group appearance="full" class="add"><xf:trigger ref=".[mods:placeTerm]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Place Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after" origin="instance('insert-templates')/mods:placeTerm"/></xf:action></xf:trigger></xf:group>
+                                            <!--placeTerm add begins--><xf:group appearance="full" class="add"><xf:trigger ref=".[mods:placeTerm]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Place Term</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:placeTerm" at="index('place-term-repeat')" position="after" origin="instance('new-instance')/mods:placeTerm"/></xf:action></xf:trigger></xf:group>
                                             <!--placeTerm add ends--></fieldset></xf:group>
                                     <!--placeTerm ends-->
 
                                     <!--place delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Place</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:place" at="index('place-repeat')"/></xf:trigger>
                                     <!--place delete ends--></xf:repeat>
                                 <!--place repeat ends-->
-                                <!--place add begins--><xf:trigger ref=".[mods:place]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Place</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:place" at="index('place-repeat')" position="after" origin="instance('insert-templates')/mods:place"/></xf:action></xf:trigger>
+                                <!--place add begins--><xf:trigger ref=".[mods:place]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Place</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:place" at="index('place-repeat')" position="after" origin="instance('new-instance')/mods:place"/></xf:action></xf:trigger>
                                 <!--place add ends--></fieldset></xf:group>
                         <!--place ends-->
 
@@ -181,7 +181,7 @@
                                     <!--publisher delete ends--></xf:repeat>
                                 <!--publisher repeat ends-->
 
-                                <!--publisher add begins--><xf:trigger ref=".[mods:publisher]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Publisher</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:publisher" at="index('publisher-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:publisher"/></xf:action></xf:trigger>
+                                <!--publisher add begins--><xf:trigger ref=".[mods:publisher]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Publisher</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:publisher" at="index('publisher-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:publisher"/></xf:action></xf:trigger>
                                 <!--publisher add ends--></fieldset></xf:group>
                         <!--publisher ends-->
 
@@ -204,7 +204,7 @@
                                 <!--edition repeat ends-->
                                 
                                 <!--edition add begins-->
-                                <!--NB: do we really want to repeat edition?--><xf:trigger ref=".[mods:edition]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Edition</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:edition" at="index('edition-repeat')" position="after" origin="instance('insert-templates')/mods:edition"/></xf:action></xf:trigger>
+                                <!--NB: do we really want to repeat edition?--><xf:trigger ref=".[mods:edition]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Edition</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:edition" at="index('edition-repeat')" position="after" origin="instance('new-instance')/mods:edition"/></xf:action></xf:trigger>
                                 <!--issuance add ends--></fieldset></xf:group>
                         <!--edition ends-->
 
@@ -220,7 +220,7 @@
                                 <!--issuance repeat ends-->
 
                                 <!--issuance add begins-->
-                                <!--NB: do we really want to repeat issuance?--><xf:trigger ref=".[mods:issuance]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Issuance</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:issuance" at="index('issuance-repeat')" position="after" origin="instance('insert-templates')/mods:issuance"/></xf:action></xf:trigger>
+                                <!--NB: do we really want to repeat issuance?--><xf:trigger ref=".[mods:issuance]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Issuance</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:issuance" at="index('issuance-repeat')" position="after" origin="instance('new-instance')/mods:issuance"/></xf:action></xf:trigger>
                                 <!--issuance add ends--></fieldset></xf:group>
                         <!--issuance ends-->
 
@@ -236,7 +236,7 @@
                                 <!--frequency repeat ends-->
 
                                 <!--frequency add begins-->
-                                <!--NB: do we really want to repeat frequency?--><xf:trigger ref=".[mods:frequency]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Frequency</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:frequency" at="index('frequency-repeat')" position="after" origin="instance('insert-templates')/mods:frequency"/></xf:action></xf:trigger>
+                                <!--NB: do we really want to repeat frequency?--><xf:trigger ref=".[mods:frequency]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Frequency</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:frequency" at="index('frequency-repeat')" position="after" origin="instance('new-instance')/mods:frequency"/></xf:action></xf:trigger>
                                 <!--frequency add ends--></fieldset></xf:group>
                         <!--frequency ends-->
 
@@ -261,7 +261,7 @@
                                     <!--dateIssued delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date Issued</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateIssued" at="index('date-issued-repeat')"/></xf:trigger>
                                     <!--dateIssued delete ends--></xf:repeat>
                                 <!--dateIssued repeat ends-->
-                                <!--dateIssued add begins--><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Issued</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateIssued" at="index('date-issued-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateIssued"/></xf:action></xf:trigger>
+                                <!--dateIssued add begins--><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Issued</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateIssued" at="index('date-issued-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateIssued"/></xf:action></xf:trigger>
                                 <!--dateIssued add ends--></fieldset></xf:group>
                         <!--dateIssued ends-->
                         <!--dateCreated begins--><xf:group id="fieldset-dateCreated" ref=".[mods:dateCreated]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Date Created</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The date of creation of the resource. </p></div></span></div>
@@ -285,7 +285,7 @@
                                     <!--dateCreated delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date Created</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCreated" at="index('date-created-repeat')"/></xf:trigger>
                                     <!--dateCreated delete ends--></xf:repeat>
                                 <!--dateCreated repeat ends-->
-                                <!--dateCreated add begins--><xf:trigger ref=".[mods:dateCreated]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Created</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCreated" at="index('date-created-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCreated"/></xf:action></xf:trigger>
+                                <!--dateCreated add begins--><xf:trigger ref=".[mods:dateCreated]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Created</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCreated" at="index('date-created-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateCreated"/></xf:action></xf:trigger>
                                 <!--dateCreated add ends--></fieldset></xf:group>
                         <!--dateCreated ends-->
                         <!--dateCaptured begins--><xf:group id="fieldset-dateCaptured" ref=".[mods:dateCaptured]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Date Captured</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The date on which a digital resource was digitized or a subsequent snapshot was taken. </p></div></span></div>
@@ -309,7 +309,7 @@
                                     <!--dateCaptured delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date Captured</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateCaptured" at="index('date-captured-repeat')"/></xf:trigger>
                                     <!--dateCaptured delete ends--></xf:repeat>
                                 <!--dateCaptured repeat ends-->
-                                <!--dateCaptured add begins--><xf:trigger ref=".[mods:dateCaptured]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Captured</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCaptured" at="index('date-captured-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateCaptured"/></xf:action></xf:trigger>
+                                <!--dateCaptured add begins--><xf:trigger ref=".[mods:dateCaptured]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Captured</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateCaptured" at="index('date-captured-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateCaptured"/></xf:action></xf:trigger>
                                 <!--dateCaptured add ends--></fieldset></xf:group>
                         <!--dateCaptured ends-->
                         <!--fieldset-dateValid begins--><xf:group id="fieldset-dateValid" ref=".[mods:dateValid]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Date Valid</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A date in which the content of a resource is valid. </p></div></span></div>
@@ -333,7 +333,7 @@
                                     <!--dateValid delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date Valid</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateValid" at="index('date-valid-repeat')"/></xf:trigger>
                                     <!--dateValid delete ends--></xf:repeat>
                                 <!--dateValid repeat ends-->
-                                <!--dateValid add begins--><xf:trigger ref=".[mods:dateValid]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('date-valid-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateValid"/></xf:action></xf:trigger>
+                                <!--dateValid add begins--><xf:trigger ref=".[mods:dateValid]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Valid</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateValid" at="index('date-valid-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateValid"/></xf:action></xf:trigger>
                                 <!--dateValid add ends--></fieldset></xf:group>
                         <!--dateValid ends-->
                         <!--fieldset-dateModified begins--><xf:group id="fieldset-dateModified" ref=".[mods:dateModified]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Date Modified</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The date in which a resource is modified or changed. </p></div></span></div>
@@ -357,7 +357,7 @@
                                     <!--dateModified delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date Modified</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateModified" at="index('date-modified-repeat')"/></xf:trigger>
                                     <!--dateModified delete ends--></xf:repeat>
                                 <!--dateModified repeat ends-->
-                                <!--dateModified add begins--><xf:trigger ref=".[mods:dateModified]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Modified</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateModified" at="index('date-modified-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateModified"/></xf:action></xf:trigger>
+                                <!--dateModified add begins--><xf:trigger ref=".[mods:dateModified]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date Modified</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateModified" at="index('date-modified-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateModified"/></xf:action></xf:trigger>
                                 <!--dateModified add ends--></fieldset></xf:group>
                         <!--dateModified ends-->
                         <!--copyrightDate begins--><xf:group id="fieldset-copyrightDate" ref=".[mods:copyrightDate]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Copyright Date</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A date in which a resource is copyrighted. </p></div></span></div>
@@ -381,7 +381,7 @@
                                     <!--copyrightDate delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Copyright Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:copyrightDate" at="index('copyright-date-repeat')"/></xf:trigger>
                                     <!--copyrightDate delete ends--></xf:repeat>
                                 <!--copyrightDate repeat ends-->
-                                <!--copyrightDate add begins--><xf:trigger ref=".[mods:copyrightDate]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Copyright Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyrightDate" at="index('copyright-date-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:copyrightDate"/></xf:action></xf:trigger>
+                                <!--copyrightDate add begins--><xf:trigger ref=".[mods:copyrightDate]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Copyright Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:copyrightDate" at="index('copyright-date-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:copyrightDate"/></xf:action></xf:trigger>
                                 <!--copyrightDate add ends--></fieldset></xf:group>
                         <!--copyrightDate ends-->
                         <!--dateOther begins--><xf:group id="fieldset-dateOther" ref=".[mods:dateOther]" appearance="full"><fieldset class="level-2"><div class="join"><legend>Other Date</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> A date that does not fall into another category but is important to record. </p></div></span></div>
@@ -405,7 +405,7 @@
                                     <!--dateOther delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Other Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:originInfo/mods:dateOther" at="index('date-other-repeat')"/></xf:trigger>
                                     <!--dateOther delete ends--></xf:repeat>
                                 <!--dateOther repeat ends-->
-                                <!--dateOther add begins--><xf:trigger ref=".[mods:dateOther]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Other Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateOther" at="index('date-other-repeat')" position="after" origin="instance('insert-templates')/mods:originInfo/mods:dateOther"/></xf:action></xf:trigger>
+                                <!--dateOther add begins--><xf:trigger ref=".[mods:dateOther]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Other Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:dateOther" at="index('date-other-repeat')" position="after" origin="instance('new-instance')/mods:originInfo/mods:dateOther"/></xf:action></xf:trigger>
                                 <!--dateOther add ends--></fieldset></xf:group>
                         <!--dateOther ends-->
 

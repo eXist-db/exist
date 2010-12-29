@@ -36,7 +36,7 @@
                                 <!--namePart ends-->
                                 <!--role begins--></xf:repeat>
                             <!--name repeat ends-->
-                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-periodical-repeat')" position="after" origin="instance('editor-template')/mods:name"/></xf:action></xf:trigger></xf:group>
+                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-periodical-repeat')" position="after" origin="instance('compact-template')/mods:name[3]"/></xf:action></xf:trigger></xf:group>
                             <!--name add ends--></fieldset></xf:group>
                     <!--relatedItem/part begins--><xf:group id="fieldset-relatedItem-periodical-part"><fieldset class="level-2"><div class="join wide"><legend>Location of Article in Periodical</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The designation of physical parts of a resource in a detailed form. Part is used to provide detailed coding for
                                             physical parts of a resource. It may be used as a top level element to designate physical parts or under Related
@@ -118,7 +118,7 @@
                                 <!--namePart ends-->
                                 <!--role begins--></xf:repeat>
                             <!--name repeat ends-->
-                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-anthology-repeat')" position="after" origin="instance('editor-template')/mods:name"/></xf:action></xf:trigger></xf:group>
+                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-anthology-repeat')" position="after" origin="instance('compact-template')/mods:name[3]"/></xf:action></xf:trigger></xf:group>
                             <!--name add ends--></fieldset></xf:group><xf:group id="fieldset-relatedItem-anthology-originInfo"><fieldset class="level-1"><div class="join wide"><legend>Anthology Origin Information</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Information about the origin of the resource, including its place of origin or publication, publisher/originator,
                                             and the dates associated with the resource. </p></div></span></div>
                             <!--originInfo repeat begins--><xf:repeat nodeset="./mods:originInfo" id="relatedItem-origininfo-anthology-repeat">
@@ -237,7 +237,7 @@
                                 <!--namePart ends-->
                                 <!--role begins--></xf:repeat>
                             <!--name repeat ends-->
-                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-series-repeat')" position="after" origin="instance('editor-template')/mods:name"/></xf:action></xf:trigger></xf:group>
+                            <!--name add begins--><xf:group><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">Add Another Editor Name</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:name" at="index('relatedItem-name-series-repeat')" position="after" origin="instance('compact-template')/mods:name[3]"/></xf:action></xf:trigger></xf:group>
                             <!--name add ends--></fieldset></xf:group>
                     <!--relatedItem/part begins--><xf:group id="fieldset-relatedItem-series-part"><fieldset class="level-2"><div class="join wide"><legend>Location of Book in Series</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The designation of physical parts of a resource in a detailed form. Part is used to provide detailed coding for
                                             physical parts of a resource. It may be used as a top level element to designate physical parts or under Related

@@ -1,1 +1,127 @@
-<code-table><code-table-name>document-type-code</code-table-name><items><item><label>Anthology</label><value>anthology-latin</value><classifier>stand-alone</classifier></item><item><label>Anthology with Transliterated Title</label><value>anthology-transliterated</value><classifier>stand-alone</classifier></item><item><label>Article in Serial/Periodical/Magazine</label><value>article-in-periodical-latin-compact</value><classifier>stand-alone</classifier></item><item><label>Article in Serial/Periodical/Magazine</label><value>article-in-serial</value><classifier>related-item</classifier></item><item><label>Book Chapter</label><value>book-chapter</value><classifier>related-item</classifier></item><item><label>Computer File</label><value>computer-file</value><classifier>stand-alone</classifier></item><item><label>Conference Publication</label><value>conference-publication</value><classifier>stand-alone</classifier></item><item><label>Contribution to Anthology</label><value>contribution-to-anthology-latin</value><classifier>related-item</classifier></item><item><label>Contribution to Anthology</label><value>contribution-to-anthology-latin-compact</value><classifier>stand-alone</classifier></item><item><label>Contribution to Anthology with Transliterated Title</label><value>contribution-to-anthology-transliterated-compact</value><classifier>related-item</classifier></item><item><label>Contribution to Conference Publication</label><value>contribution-to-conference-publication</value><classifier>related-item</classifier></item><item><label>Electronic Serial/Periodical/Magazine</label><value>electronic-serial</value><classifier>stand-alone</classifier></item><item><label>Map</label><value>map</value><classifier>stand-alone</classifier></item><item><label>Book</label><value>monograph-latin</value><classifier>stand-alone</classifier></item><item><label>Book with Transliterated Title</label><value>monograph-transliteration</value><classifier>stand-alone</classifier></item><item><label>Motion Picture</label><value>motion-picture</value><classifier>stand-alone</classifier></item><item><label>Sheet Music</label><value>music</value><classifier>stand-alone</classifier></item><item><label>Photo</label><value>photo</value><classifier>stand-alone</classifier></item><item><label>Serial/Periodical/Magazine</label><value>serial</value><classifier>stand-alone</classifier></item><item><label>Serial Special Issue</label><value>serial-special-issue</value><classifier>related-item</classifier></item><item><label>Serial Supplement</label><value>serial-supplement</value><classifier>related-item</classifier></item><item><label>Sound Recording</label><value>sound-recording</value><classifier>stand-alone</classifier></item><item><label>Web Site</label><value>computer-file</value><classifier>stand-alone</classifier></item></items></code-table>
+<code-table>
+    <code-table-name>document-type-code</code-table-name>
+    <items>
+        <item>
+            <label>Anthology</label>
+            <value>anthology-latin</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Anthology with Transliterated Title</label>
+            <value>anthology-transliterated</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Article in Periodical</label>
+            <value>article-in-periodical-latin-compact</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Article in Periodical with Transliterated Title</label>
+            <value>article-in-periodical-transliterated</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Article in Serial/Periodical/Magazine</label>
+            <value>article-in-serial</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Book Chapter</label>
+            <value>book-chapter</value>
+            <classifier>related-item</classifier>
+        </item>
+        <!--
+            <item>
+            <label>Computer File</label>
+            <value>computer-file</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        -->
+        <item>
+            <label>Conference Publication</label>
+            <value>conference-publication</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Contribution to Anthology</label>
+            <value>contribution-to-anthology-latin</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Contribution to Anthology</label>
+            <value>contribution-to-anthology-latin-compact</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Contribution to Anthology with Transliterated Title</label>
+            <value>contribution-to-anthology-transliterated-compact</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Contribution to Conference Publication</label>
+            <value>contribution-to-conference-publication</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Electronic Serial/Periodical/Magazine</label>
+            <value>electronic-serial</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Map</label>
+            <value>map</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Book</label>
+            <value>monograph-latin</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Book with Transliterated Title</label>
+            <value>monograph-transliteration</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Motion Picture</label>
+            <value>motion-picture</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Sheet Music</label>
+            <value>music</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Photo</label>
+            <value>photo</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Serial/Periodical/Magazine</label>
+            <value>serial</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Serial Special Issue</label>
+            <value>serial-special-issue</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Serial Supplement</label>
+            <value>serial-supplement</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Sound Recording</label>
+            <value>sound-recording</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Web Site</label>
+            <value>computer-file</value>
+            <classifier>stand-alone</classifier>
+        </item>
+    </items>
+</code-table>
