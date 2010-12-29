@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Rev. 465
+<!-- Rev. 472
 
 Copyright (C) 2008-2010 agenceXML - Alain COUTHURES
 Contact at : info@agencexml.com
@@ -42,13 +42,53 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		<xsl:param xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="xsltforms_config"/>
 		<xsl:param xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="xsltforms_debug"/>
 		<xsl:param xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="xsltforms_lang"/>
-		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="config" select="document('config.xsl')/xsl:stylesheet/xsl:template[@name='config']"/>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="configdoc" select="document('config.xsl')/xsl:stylesheet/xsl:template[@name='config']"/>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="config0">
+			<xsl:choose>
+				<xsl:when test="$configdoc/properties"><xsl:copy-of select="$configdoc"/></xsl:when>
+				<xsl:otherwise>
+					<config xmlns="">
+						<options>
+						</options>
+						<properties>
+							<language>navigator</language>
+							<calendar.day0>Mon</calendar.day0>
+							<calendar.day1>Tue</calendar.day1>
+							<calendar.day2>Wed</calendar.day2>
+							<calendar.day3>Thu</calendar.day3>
+							<calendar.day4>Fri</calendar.day4>
+							<calendar.day5>Sat</calendar.day5>
+							<calendar.day6>Sun</calendar.day6>
+							<calendar.initDay>6</calendar.initDay>
+							<calendar.month0>January</calendar.month0>
+							<calendar.month1>February</calendar.month1>
+							<calendar.month2>March</calendar.month2>
+							<calendar.month3>April</calendar.month3>
+							<calendar.month4>May</calendar.month4>
+							<calendar.month5>June</calendar.month5>
+							<calendar.month6>July</calendar.month6>
+							<calendar.month7>August</calendar.month7>
+							<calendar.month8>September</calendar.month8>
+							<calendar.month9>October</calendar.month9>
+							<calendar.month10>November</calendar.month10>
+							<calendar.month11>December</calendar.month11>
+							<format.date>MM/dd/yyyy</format.date>
+							<format.datetime>MM/dd/yyyy hh:mm:ss</format.datetime>
+							<format.decimal>.</format.decimal>
+							<status>... Loading ...</status>
+						</properties>
+						<extensions/>
+					</config>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
 		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="main" select="/"/>
 		<msxsl:script language="JScript" implements-prefix="exslt">
 			this['node-set'] =  function (x) {
 			return x;
 			}
 		</msxsl:script>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="config" select="exslt:node-set($config0)/*"/>
 		<!--
 		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="confignodes"><xsl:call-template name="config"/></xsl:variable>
 		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" name="config" select="exslt:node-set($confignodes)"/>
@@ -98,8 +138,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<head>
 					<xsl:copy-of select="xhtml:head/@* | head/@*"/>
 					<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+					<xsl:copy-of select="xhtml:meta[@http-equiv != 'Content-Type'] | head/meta[@http-equiv != 'Content-Type']"/>
 					<link type="text/css" href="{$resourcesdir}xsltforms.css" rel="stylesheet"/>
-					<xsl:apply-templates select="xhtml:head/xhtml:*[local-name() != 'script' and local-name() != 'style' and local-name() != 'link' and (local-name() != 'meta' or @http-equiv != 'Content-Type')] | xhtml:head/comment() | head/title | head/meta[@http-equiv != 'Content-Type'] | head/comment()" mode="nons"/>
+					<xsl:apply-templates select="xhtml:head/xhtml:*[local-name() != 'script' and local-name() != 'style' and local-name() != 'link' and local-name() != 'meta'] | xhtml:head/comment() | head/title | head/comment()" mode="nons"/>
 					<xsl:apply-templates select="xhtml:head/xhtml:style | xhtml:head/xhtml:link | head/style | head/link"/>
 					<script src="{$resourcesdir}xsltforms.js" type="text/javascript">/* */</script>
 					<xsl:if test="not($config/extensions/beforeInit) and not($config/extensions/onBeginInit) and not($config/extensions/onEndInit) and not($config/extensions/afterInit)">
@@ -125,6 +166,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						<xsl:text>";
 </xsl:text>
 						<xsl:text>function initImpl() {
+</xsl:text>
+						<xsl:text>var d1 = new Date();
 </xsl:text>
 						<xsl:text>Core.fileName='xsltforms.js';
 </xsl:text>
@@ -186,7 +229,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						</xsl:for-each>
 						<xsl:variable name="xexprs">
 							<xexprs xmlns="">
-								<xsl:for-each select="//xforms:*/@at | //xforms:*/@calculate | //xforms:*/@constraint | //xforms:*/@context | //xforms:*/@if | //xforms:*/@index | //xforms:*/@nodeset | //xforms:*/@origin | //xforms:*/@readonly | //xforms:*/@ref | //xforms:*/@relevant | //xforms:*/@required | //xforms:*/@target | //xforms:*/@value | //xforms:*/@while">
+								<xsl:for-each select="//xforms:*/@at | //xforms:*/@calculate | //xforms:*/@constraint | //xforms:*/@context | //xforms:*/@if | //xforms:*/@index | //xforms:*/@nodeset | //xforms:*/@origin | //xforms:*/@readonly | //xforms:*/@ref | //xforms:*/@relevant | //xforms:*/@required | //xforms:*/@target | //xforms:*/@value | //xforms:*/@while | //xforms:script[@type = 'application/xquery']">
 									<xsl:sort select="."/>
 									<xexpr><xsl:value-of select="."/></xexpr>
 								</xsl:for-each>
@@ -210,7 +253,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						</xsl:for-each>
 						<xsl:text>var xf_model_config = new XFModel("xf-model-config",null);
 </xsl:text>
-						<xsl:text>var xf_instance_config = new XFInstance("xf-instance-config",xf_model_config,null,'</xsl:text>
+						<xsl:text>var xf_instance_config = new XFInstance("xf-instance-config",xf_model_config,true,'application/xml',null,'</xsl:text>
 						<xsl:choose>
 							<xsl:when test="$xsltforms_config != ''">
 								<xsl:value-of select="normalize-space($xsltforms_config)"/>
@@ -249,6 +292,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							</xsl:if>
 						</xsl:for-each>
 						<xsl:copy-of select="$config/extensions/onEndInit"/>
+						<xsl:text>var d2 = new Date();
+</xsl:text>
+						<xsl:text>xforms.loadingtime = d2 - d1;
+</xsl:text>
 						<xsl:text>} catch (e) {
 </xsl:text>
 						<xsl:text>alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
@@ -312,8 +359,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						</div>
 					</xsl:if>
 					<xsl:apply-templates select="xhtml:body/node() | body/node()"/>
-					<div id="console"><xsl:text/></div>
-					<div id="statusPanel"><xsl:value-of select="$config/properties/status"/></div>
+					<div id="console">&#xA0;<xsl:text/></div>
+					<div id="statusPanel"><xsl:value-of select="$config/properties/status"/>&#xA0;<xsl:text/></div>
 				</body>
 			</html>
 		</xsl:template>
@@ -601,6 +648,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							</xsl:when>
 							<!-- <xsl:otherwise><xsl:text/></xsl:otherwise> -->
 						</xsl:choose>
+						<xsl:text>&#xA0;</xsl:text>
 					</span>
 				</xsl:when>
 				<xsl:when test="local-name(../..) = 'tabs' or $appearance = 'none' or $appearance = 'groupNone'"/>
@@ -866,7 +914,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="field">
 				<xsl:with-param name="appearance" select="$appearance"/>
 				<xsl:with-param name="body">
-					<textarea><xsl:copy-of select="@*[local-name() != 'ref']"/><xsl:call-template name="comun"/><xsl:text/></textarea>
+					<textarea><xsl:copy-of select="@*[local-name() != 'ref']"/><xsl:call-template name="comun"/><xsl:text/>&#xA0;</textarea>
 				</xsl:with-param>
 			</xsl:call-template>
 		</xsl:template>
@@ -911,9 +959,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 		<xsl:template xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:trigger|xforms:submit">
 			<xsl:variable name="innerbody">
-				<xsl:apply-templates select="xforms:label">
-					<xsl:with-param name="appearance" select="'span'"/>
-				</xsl:apply-templates>
+				<xsl:choose>
+					<xsl:when test="xforms:label">
+						<xsl:apply-templates select="xforms:label">
+							<xsl:with-param name="appearance" select="'span'"/>
+						</xsl:apply-templates>
+					</xsl:when>
+					<xsl:otherwise>&#xA0;</xsl:otherwise>
+				</xsl:choose>
 			</xsl:variable>
 			<xsl:call-template name="field">
 				<xsl:with-param name="appearance">none</xsl:with-param>
@@ -2323,7 +2376,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
 			<xsl:text>)</xsl:text>
-			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:load|xforms:message|xforms:dispatch|xforms:reset|xforms:show|xforms:hide">
+			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:load|xforms:message|xforms:dispatch|xforms:reset|xforms:show|xforms:hide|xforms:script">
 				<xsl:text>.add(xf_</xsl:text>
 				<xsl:variable name="lname" select="local-name()"/>
 				<xsl:variable name="nsuri" select="namespace-uri()"/>
@@ -2593,6 +2646,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			</xsl:for-each>
 			<xsl:text>,</xsl:text>
 			<xsl:choose>
+				<xsl:when test="@readonly = 'true'">true</xsl:when>
+				<xsl:otherwise>false</xsl:otherwise>
+			</xsl:choose>
+			<xsl:text>,</xsl:text>
+			<xsl:choose>
+				<xsl:when test="@mediatype">
+					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@mediatype"/></xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>"application/xml"</xsl:otherwise>
+			</xsl:choose>
+			<xsl:text>,</xsl:text>
+			<xsl:choose>
 				<xsl:when test="@src">
 				<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@src"/></xsl:call-template>
 				<xsl:text>,null);
@@ -2605,9 +2670,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:text>null,'</xsl:text>
-					<xsl:apply-templates select="*" mode="xml2string">
-						<xsl:with-param name="root" select="true()"/>
-					</xsl:apply-templates>
+					<xsl:choose>
+						<xsl:when test="@mediatype and @mediatype != 'application/xml'">
+							<xsl:call-template name="escapeJS">
+								<xsl:with-param name="text" select="."/>
+								<xsl:with-param name="trtext" select="translate(.,'&#10;&#13;&#9;','&#10;&#10;&#10;')"/>
+							</xsl:call-template>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:apply-templates select="*" mode="xml2string">
+								<xsl:with-param name="root" select="true()"/>
+							</xsl:apply-templates>
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:text>');
 </xsl:text>
 				</xsl:otherwise>
@@ -3368,6 +3443,38 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	
 		
 <!--
+/branches/dataisland/src/xslt/script/xscript.xsl.xml
+-->
+
+		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:script" mode="script" priority="1">
+			<xsl:variable name="idscript" select="count(preceding::xforms:script|ancestor::xforms:script)"/>
+			<xsl:text>var xf_script_</xsl:text>
+			<xsl:value-of select="$idscript"/>
+			<xsl:text> = new XFScript(</xsl:text>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@ref"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:variable name="type">
+				<xsl:choose>
+					<xsl:when test="@type = 'application/xquery'">application/xquery</xsl:when>
+					<xsl:otherwise>text/javascript</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="$type"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="."/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@show"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>);
+</xsl:text>
+			<xsl:apply-templates select="*" mode="script"/>
+	</xsl:template>
+	
+		
+<!--
 /branches/dataisland/src/xslt/script/named-templates/named-templates.xsl.xml
 -->
 
@@ -3391,7 +3498,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
-			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:load|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:dispatch|xforms:message|xforms:show|xforms:hide">
+			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:load|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:dispatch|xforms:message|xforms:show|xforms:hide|xforms:script">
 				<xsl:text>new Listener(document.getElementById("</xsl:text>
 				<xsl:choose>
 					<xsl:when test="@ev:observer"><xsl:value-of select="@ev:observer"/></xsl:when>
