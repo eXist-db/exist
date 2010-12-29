@@ -90,7 +90,7 @@
                                 <!--part/detail delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Detail</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:detail" at="index('part-detail-repeat')"/></xf:trigger>
                                 <!--part/detail delete ends--></xf:repeat>
                             <!--part/detail repeat ends-->
-                            <!--part/detail add begins--><xf:trigger ref=".[count(mods:detail) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Detail</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:detail" at="index('part-detail-repeat')" position="after" origin="instance('insert-templates')/mods:part/mods:detail"/><xf:setvalue ref="instance('save-data')/mods:detail[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--part/detail add begins--><xf:trigger ref=".[count(mods:detail) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Detail</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:detail" at="index('part-detail-repeat')" position="after" origin="instance('new-instance')/mods:part/mods:detail"/><xf:setvalue ref="instance('save-data')/mods:detail[last()]" value="''"/></xf:action></xf:trigger>
                             <!--part/detail add ends--></fieldset></xf:group>
                     <!--part/detail ends-->
                     <!--part/extent begins-->
@@ -120,7 +120,7 @@
                                 <!--part/extent delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Extent</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:extent" at="index('extent-repeat')"/></xf:trigger>
                                 <!--part/extent delete ends--></xf:repeat>
                             <!--part/extent repeat ends-->
-                            <!--part/extent add begins--><xf:trigger ref=".[mods:extent]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Extent</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:extent" at="index('extent-repeat')" position="after" origin="instance('insert-templates')/mods:part/mods:extent"/><xf:setvalue ref="instance('save-data')/mods:extent[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--part/extent add begins--><xf:trigger ref=".[mods:extent]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Extent</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:extent" at="index('extent-repeat')" position="after" origin="instance('new-instance')/mods:part/mods:extent"/><xf:setvalue ref="instance('save-data')/mods:extent[last()]" value="''"/></xf:action></xf:trigger>
                             <!--part/extent add ends--></fieldset></xf:group>
                     <!--part/extent ends-->
                     <!--part/date begins-->
@@ -149,7 +149,7 @@
                                 <!--part/date delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Date</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:date" at="index('part-date-repeat')"/></xf:trigger>
                                 <!--date delete ends--></xf:repeat>
                             <!--part/date repeat ends-->
-                            <!--part/date add begins--><xf:trigger ref=".[count(mods:date) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:date" at="index('part-date-repeat')" position="after" origin="instance('insert-templates')/mods:part/mods:date"/><xf:setvalue ref="instance('save-data')/mods:part/mods:date[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--part/date add begins--><xf:trigger ref=".[count(mods:date) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:date" at="index('part-date-repeat')" position="after" origin="instance('new-instance')/mods:part/mods:date"/><xf:setvalue ref="instance('save-data')/mods:part/mods:date[last()]" value="''"/></xf:action></xf:trigger>
                             <!--part/date add ends--></fieldset></xf:group>
                     <!--part/date ends--><xf:group id="fieldset-text" ref=".[mods:text]"><fieldset class="level-2"><div class="join"><legend>Text</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subfield to record information in textual form. Use this subfield when other subfields will not capture the
                                             appropriate information. </p></div></span></div>
@@ -160,7 +160,7 @@
                                 <!--part/text delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Text</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part/mods:text" at="index('text-repeat')"/></xf:trigger>
                                 <!--part/text delete ends--></xf:repeat>
                             <!--part/text repeat ends-->
-                            <!--part/text add begins--><xf:trigger ref=".[mods:text]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Text</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:text" at="index('text-repeat')" position="after" origin="instance('insert-templates')/mods:part/mods:text"/><xf:setvalue ref="instance('save-data')/mods:text[last()]" value="''"/></xf:action></xf:trigger>
+                            <!--part/text add begins--><xf:trigger ref=".[mods:text]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Text</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:text" at="index('text-repeat')" position="after" origin="instance('new-instance')/mods:part/mods:text"/><xf:setvalue ref="instance('save-data')/mods:text[last()]" value="''"/></xf:action></xf:trigger>
                             <!--part/text add ends--></fieldset></xf:group>
                     <!--part/text ends-->
                     <!--part delete begins--><xf:trigger class="delete-button"><xf:label class="xforms-group-label-centered">Delete This Part</xf:label><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:part" at="index('part-repeat')"/></xf:trigger>
