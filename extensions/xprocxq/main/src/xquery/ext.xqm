@@ -26,7 +26,6 @@ declare variable $ext:post := util:function(xs:QName("ext:post"), 4);
 declare variable $ext:xproc := util:function(xs:QName("ext:xproc"), 4);
 declare variable $ext:xsltforms := util:function(xs:QName("ext:xsltforms"), 4);
 
-
 (: -------------------------------------------------------------------------- :)
 declare function ext:pre($primary,$secondary,$options,$variables){
 (: -------------------------------------------------------------------------- :)

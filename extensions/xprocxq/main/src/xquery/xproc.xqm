@@ -424,8 +424,9 @@ declare function xproc:explicitbindings($xproc,$unique_id){
          let $is_component := u:get-comp($stepname)
 
            return
-
-             if ($is_declare-step) then
+             if ($stepname eq 'xproc:variable') then
+                $step
+             else if ($is_declare-step) then
                 xproc:generate-declare-step-binding($step,$is_declare-step)
              else if($is_step) then
                 xproc:generate-step-binding($step,$xproc,$count,$stepname,$is_declare-step,$unique_current,$unique_before,$is_step)
@@ -691,8 +692,6 @@ declare function xproc:explicitbindings($xproc,$unique_id){
          if(name($currentstep) = "p:declare-step") then
             (: TODO: refactor p:pipeline and p:declare-step :)
              ()
-         else if(name($currentstep) = "p:variable") then
-              <xproc:variable name="{fn:string($currentstep/@name)}">{u:evalXPATH(fn:string($currentstep/@select),<test/>)}</xproc:variable>
          else
             let $primaryinput:= <xproc:output step="{$step}"
                            port-type="input"
@@ -775,7 +774,28 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                  util:function(xs:QName("xproc:evalstep"), 5),
                  $stdin,
                  (xproc:resolve-external-bindings($bindings,$pipeline/@name),
-                 (<xproc:output
+                 for $var in $pipeline/xproc:variable
+                 return
+                 <xproc:variable name="{$var/@var-name}">
+                  {
+                  let $v :=
+                  if ($var/p:empty) then
+                    xproc:resolve-empty-binding()
+                  else if ($var/p:inline) then
+                    xproc:resolve-inline-binding($var/p:inline)
+                  else if ($var/p:document) then
+                    xproc:resolve-document-binding($var/p:document)
+                  else if ($var/p:data) then
+                    xproc:resolve-data-binding($var/p:data)
+                  else if ($var/p:pipe) then
+                     $stdin
+                  else
+                      $stdin
+                  return
+                    u:safe-evalXPATH(string($var/@select),document{$v/*},$pipeline)
+                  }
+                 </xproc:variable>
+                 ,(<xproc:output
                      step="{if ($steps[1] = '|') then 
                                 '!1|'
                             else $steps[1]}"
@@ -801,6 +821,28 @@ declare function xproc:explicitbindings($xproc,$unique_id){
                      $stdin,
                     ($outputs,
                      xproc:resolve-external-bindings($bindings,$pipeline/@name),
+                     for $var in $pipeline/xproc:variable
+                     return
+                     <xproc:variable name="{$var/@var-name}">
+                      {
+                      let $v :=
+                      if ($var/p:empty) then
+                        xproc:resolve-empty-binding()
+                      else if ($var/p:inline) then
+                        xproc:resolve-inline-binding($var/p:inline)
+                      else if ($var/p:document) then
+                        xproc:resolve-document-binding($var/p:document)
+                      else if ($var/p:data) then
+                        xproc:resolve-data-binding($var/p:data)
+                      else if ($var/p:pipe) then
+                        xproc:resolve-pipe-binding($outputs,$var/p:pipe)
+                      else
+                          $stdin
+                      return
+                        u:safe-evalXPATH(string($var/@select),document{$v/*},$pipeline)
+                      }
+                     </xproc:variable>
+                     ,
                      <xproc:output
                         step="{concat('!',$pipeline/@name)}"
                         port="stdin"
