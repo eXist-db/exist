@@ -247,6 +247,8 @@ else
             return
                if ( name($step) eq 'p:import') then
                     ()
+               else if (name($step) eq 'p:variable') then
+                    <xproc:variable var-name="{$step/@name}" select="{$step/@select}">{$step/node()}</xproc:variable>
                else if (name($step) eq 'p:documentation') then
                     ()
                else if (exists($is_component) and $step/@type)then
@@ -257,9 +259,10 @@ else
                else if (exists($is_component)) then
                     (: generate p:declare-step and all other xproc components :)
                     naming:generate-component($xproc,$is_component,$step,$stepname)
+
                else
                     (: throws error on unknown element in pipeline namespace :)
-                    u:staticError('err:XS0044', concat("static error during explicit naming pass:  ",$stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
+                    u:staticError('err:XS0044', concat(" static error during explicit naming pass:  ",$stepname,":",$step/@name,u:serialize($step,$const:TRACE_SERIALIZE)))
     return
 
 		let $sorted := naming:pipeline-step-sort($explicitnames,(),$pipelinename)

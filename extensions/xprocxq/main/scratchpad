@@ -2,17 +2,12 @@
 priority
 ----------------------------------------
 
-test runner
-* testing errors
-* testing documents that refer to file items
-
     viewport and all path iterators (p:viewport,p:for-each)
     implement p:outputs
-    implement variables & params & options
+    implement params & options
     implement xproc xpath functions
     serialization
     error assertions
-
 
 util:eval('request:get-parameter-names()')
 vs
@@ -23,16 +18,13 @@ util:eval-inline('request:get-parameter-names()',$xml)
 current issues
 ----------------------------------------
 
-* declare-step/pipeline need require name attribute
 * sequence issue with input to choose
 * dont forget I changed p namespace and p1 namespace in util.xqm
-FIXED * pipelines need name attribute, should default to xproc:defaultname
 * add primary input to evaluation in u:xquery, instead of passing
 to each function
 * fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
 * need to check eq and = throughout the codebase to ensure we are testing equality properly
 * migrate errors from string to QName
-* make error reporting look nicer and try to get some kind of line number reporting
 * inputs in nested p:declare-steps need fixing due to $allcomp in xproc:explicitnames
 * create namespace module to manage namespace fixups
 * target main eXist scenarios
@@ -98,55 +90,6 @@ Parameters, unlike options and variables, have names that can be computed at run
 
 
 
-
-add- 50%
-choose - 4/7
-compare - 4/5
-count - 2/3
-data - 0
-declare-step - 6/11
-delete - 2/4
-directory - 0
-evaluation order - 2/3
-exclude-inline - 0
-filter - only 1
-for - only 1
-group - 0
-http-request - ok (blocks)
-identity - most
-import - 1 
-input - blocks
-insert - 2
-iteration - 0 
-labelelements - 0
-load - 0
-log - 1
-make-absolute-uri -
-multipart -
-namespace-rename -
-option -
-rename - 
-set-attributes - 0 (prob needs more tests)
-sink - 
-split-sequence - 50%
-unescape-markup - 1 
-unwrap - 1
-wrap - some
-variable
-value-available-
-versioning - passed most of them, surprisingly! tests are probably invalid
-viewport - 1
-wrap-sequence - 1
-xinclude - 
-xmlid - 
-xslt - a few
- 
-
-How to make development faster ?
-
-* build 'in database' e.g. avoid build/compile cycle
-* run error tests
-
 ----------------------------------------------------------------------
 27/12/10
 ----------------------------------------------------------------------
@@ -170,7 +113,3 @@ prob with Test delete-002
 ----------------------------------------------------------------------
 
 
-
-              for $author in //author[contains(firstname, $local:str)]
-              order by $author/firstname
-              return $author
