@@ -1,4 +1,4 @@
-/* Rev. 465
+/* Rev. 472
 
 Copyright (C) 2008-2010 <agenceXML> - Alain COUTHURES
 Contact at : <info@agencexml.com>
@@ -213,7 +213,20 @@ if (window.XMLHttpRequest) {
 	Core.openRequest = function(method, uri, async) {
 		// netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
 		var req = new XMLHttpRequest();
-		req.open(method, Core.constructURI(uri), async);
+		try {
+			req.open(method, Core.constructURI(uri), async);
+		} catch (e) {
+			try {
+				req = new ActiveXObject("Msxml2.XMLHTTP.3.0"); 
+			} catch (e) {
+				try {
+					req = new ActiveXObject("Msxml2.XMLHTTP");
+				} catch (e) {
+					throw new Error("This browser does not support XHRs(Ajax)! \n Cause: " + (e.message || e.description || e) + " \n Enable Javascript or ActiveX controls (on IE) or lower security restrictions.");
+				}
+			}
+			req.open(method, Core.constructURI(uri), async);
+		}
 		if (Core.isMozilla) {
 			req.overrideMimeType("text/xml");
 		}
@@ -313,6 +326,10 @@ if (Core.isIE) {
 		d.loadXML(xml);
 		return d;
 	}
+	Core.setAttributeNS = function(node, ns, name, value) {
+		node.setAttributeNode(node.ownerDocument.createNode(NodeType.ATTRIBUTE, name, ns));
+		node.setAttribute(name, value);
+	}
 	Core.selectSingleNode = function(xpath, node) {
 		try {
 			return node.selectSingleNode(xpath);
@@ -356,6 +373,9 @@ if (Core.isIE) {
 } else {
 	Core.createXMLDocument = function(xml) {
 		return Core.parser.parseFromString(xml, "text/xml");
+	}
+	Core.setAttributeNS = function(node, ns, name, value) {
+		node.setAttributeNS(ns, name, value);
 	}
 	Core.selectSingleNode = function(xpath, node) {
 		try {
@@ -420,6 +440,15 @@ Core.unescape = function(xml) {
 		xml = xml.replace(/&amp;/g, "&");
 	}
 	return xml;
+}
+Core.escape = function(text) {
+	if (text == null) {
+		return "";
+	}
+	text = text.replace(/&/g, "&amp;");
+	text = text.replace(/</g, "&lt;");
+	text = text.replace(/>/g, "&gt;");
+	return text;
 }
 
 Core.getMeta = function(node, meta) {
@@ -1177,8 +1206,24 @@ function getValue(node, format, serialize) {
 	if (serialize) {
 		return node.nodeType == NodeType.ATTRIBUTE ? node.nodeValue : Core.saveXML(node);
 	}
+	/*****************
 	var value = node.nodeType == NodeType.ATTRIBUTE ? node.nodeValue :
 		(node.firstChild != null? node.firstChild.nodeValue : "");
+	var value = "";
+	if (node.nodeType == NodeType.ATTRIBUTE) {
+		value = node.nodeValue;
+	} else if (node.firstChild == null) {
+	} else if (node.firstChild.nodeType == NodeType.TEXT) {
+		var childNodes = node.childNodes;
+		var len = childNodes.length;
+		for (var i = 0; i < len; i++) {
+			value = value + childNodes[i].nodeValue;
+		}
+	} else {
+		value = node.firstChild.nodeValue;
+	}
+	******************/
+	var value = node.text ? node.text : node.textContent;
 
 	if (value && format) {
 		var schtyp = Schema.getType(Core.getType(node) || "xsd_:string");
@@ -1199,10 +1244,15 @@ function setValue(node, value) {
 		node.nodeValue = value;
 	} else if (Core.isIE && node.innerHTML) {
 		node.innerHTML = value;
-	} else if (node.firstChild) {
-		node.firstChild.nodeValue = value;
 	} else {
-		node.appendChild(node.ownerDocument.createTextNode(value));
+		while (node.firstChild) {
+			node.removeChild(node.firstChild);
+		}
+		if (value != null) {
+			for (var i = 0, l = value.length; i < l; i += 4096) {
+				node.appendChild(node.ownerDocument.createTextNode(value.substr(i, 4096)));
+			}
+		}
 	}
 }
 
@@ -1302,6 +1352,41 @@ var xforms = {
 	building : false,
 	posibleBlur : false,
 	bindErrMsgs : [],		// binding-error messages gathered during refreshing
+	loadingtime: 0,
+	refreshtime: 0,
+	refreshcount: 0,
+
+		
+
+	profiling : function() {
+		var s = "XSLTForms Version Id: Rev. 472\n";
+		s += "\nLoading Time: " + this.loadingtime + "ms";
+		s += "\nRefresh Counter: " + this.refreshcount;
+		s += "\nCumulative Refresh Time: " + this.refreshtime + "ms";
+		s += "\nXPath Evaluation:";
+		var exprtab = [];
+		for (var expr in XPath.expressions) {
+			exprtab[exprtab.length] = {expr: expr, evaltime: XPath.expressions[expr].evaltime};
+		}
+		exprtab.sort(function(a,b) { return b.evaltime - a.evaltime; });
+		var top = 0;
+		for (var i = 0; i < exprtab.length && i < 20; i++) {
+			s += "\n   \"" + (exprtab[i].expr.length > 60 ? exprtab[i].expr.substring(0,60)+"..." : exprtab[i].expr) + "\": " + exprtab[i].evaltime + "ms";
+			top += exprtab[i].evaltime;
+		}
+		if (exprtab.length > 20) {
+			var others = 0;
+			for (var i = 20; i < exprtab.length; i++) {
+				others += exprtab[i].evaltime;
+			}
+			s += "\n   Others (" + (exprtab.length - 20) + " expr.): " + others + "ms";
+			top += others;
+			s += "\n   Total: " + top + "ms";
+		}
+		s += "\n\n(c) Alain Couthures - agenceXML - 2010   http://www.agencexml.com/xsltforms";
+		s += "\nPlease donate at http://sourceforge.net/projects/xsltforms/";
+		alert(s);
+	},
 
 		
 
@@ -1311,6 +1396,23 @@ var xforms = {
 		var b = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body")[0] : document.getElementsByTagName("body")[0];
 		this.body = b;
 
+		document.onhelp = new Function("return false;");
+		window.onhelp = new Function("return false;");
+		Event.attach(document, "keydown", function(evt) {
+			if (evt.keyCode == 112) {
+				xforms.profiling();
+				event.stopPropagation();
+				event.preventDefault();
+				return false;
+			}
+		});
+		Event.attach(document, "keypress", function(evt) {
+			if (evt.keyCode == 112) {
+				event.stopPropagation();
+				event.preventDefault();
+				return false;
+			}
+		});
 		Event.attach(b, "click", function(evt) {
 			var target = Event.getTarget(evt);
 			var parent = target;
@@ -1452,6 +1554,7 @@ var xforms = {
 		
 
 	refresh : function() {
+		var d1 = new Date();
 		this.building = true;
 		this.build(this.body, (this.defaultModel.getInstanceDocument() ? this.defaultModel.getInstanceDocument().documentElement : null), true);
 		
@@ -1484,6 +1587,10 @@ var xforms = {
 			this.error(this.defaultModel, "xforms-binding-exception",	"Binding Errors: \n" + this.bindErrMsgs.join("\n  "));
 			this.bindErrMsgs = [];
 		}
+		
+		var d2 = new Date();
+		this.refreshtime += d2 - d1;
+		this.refreshcount++;
 	},
 
 		
@@ -1605,6 +1712,7 @@ Binding.prototype.evaluate = function(ctx, depsNodes, depsId, depsElements) {
 		if (typeof this.bind == "string") {
 			var idel = document.getElementById(this.bind);
 			if (!idel) {
+				DebugConsole.write("Binding evaluation returned null for bind: " + this.bind); 
 				return null;	// A 'null' signifies bind-ID not found.
 			}
 			this.bind = idel.xfElement;
@@ -1927,10 +2035,24 @@ XFModel.prototype.setRebuilded = function(value) {
 		
 		
 		
-function XFInstance(id, model, src, srcXML) {
+function XFInstance(id, model, readonly, mediatype, src, srcXML) {
 	this.init(id, model, "xforms-instance");
+	this.readonly = readonly;
+	this.mediatype = mediatype;
 	this.src = Core.unescape(src);
-	this.srcXML = Core.unescape(srcXML);
+	switch(mediatype) {
+		case "application/xml":
+			this.srcXML = Core.unescape(srcXML);
+			break;
+		case "application/json":
+			var json;
+			eval("json = " + Core.unescape(srcXML));
+			this.srcXML = json2xml("", json, true, false);
+			break;
+		default:
+			alert("Unsupported mediatype '" + mediatype + "' for instance #" + id);
+			return;
+	}
 	this.model = model;
 	this.doc = Core.createXMLDocument("<dummy/>");
 	Core.setMeta(this.doc.documentElement, "instance", id);
@@ -2026,7 +2148,9 @@ XFInstance.prototype.setDoc = function(xml, isReset, preserveOld) {
 		
 
 XFInstance.prototype.revalidate = function() {
-    this.validation_(this.doc.documentElement);
+	if (!this.readonly) {
+		this.validation_(this.doc.documentElement);
+	}
 };
 
 XFInstance.prototype.validation_ = function(node, readonly, notrelevant) {
@@ -2104,29 +2228,61 @@ XFInstance.prototype.setProperty_ = function (node, property, value) {
 		
 
 function json2xml(name, json, root, inarray) {
-	var ret = root ? "<root>" : "";
+	var fullname = "";
+	if (name == "________") {
+		fullname = " exml:fullname=\"" + Core.escape(name) + "\"";
+		name = "________";
+	}
+	var ret = root ? "<exml:anonymous xmlns:exml=\"http://www.agencexml.com/exml\" xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" xmlns:exsi=\"http://www.agencexml.com/exi\" xmlns=\"\">" : "";
 	if (json instanceof Array) {
 		if (inarray) {
-			ret += "<item>";
+			ret += "<exml:anonymous exsi:maxOccurs=\"unbounded\">";
 		}
-		for (var i = 0, len = json.length; i < len; i++) {
-			ret += json2xml(name == "" ? "item" : name, json[i], false, true);
+		if (json.length == 0) {
+			ret += "<" + (name == "" ? "exml:anonymous" : name) + fullname + " exsi:maxOccurs=\"unbounded\" xsi:nil=\"true\"/>";
+		} else {
+			for (var i = 0, len = json.length; i < len; i++) {
+				ret += json2xml(name == "" ? "exml:anonymous" : name, json[i], false, true);
+			}
 		}
 		if (inarray) {
-			ret += "</item>";
+			ret += "</exml:anonymous>";
 		}
 	} else {
-		ret += name == "" ? "" : "<"+name+">";
-		if (typeof(json) == "object") {
+		var xsdtype = "";
+		switch(typeof(json)) {
+			case "number":
+				xsdtype = " xsi:type=\"xsd:double\"";
+				break;
+			case "boolean":
+				xsdtype = " xsi:type=\"xsd:boolean\"";
+				break;
+			case "object":
+				if (json instanceof Date) {
+					xsdtype = " xsi:type=\"xsd:dateTime\"";
+				}
+				break;
+		}
+		ret += name == "" ? "" : "<"+name+fullname+(inarray?" exsi:maxOccurs=\"unbounded\"":"")+xsdtype+">";
+		if (typeof(json) == "object" && !(json instanceof Date)) {
 			for (var m in json) {
 				ret += json2xml(m, json[m], false, false);
 			}
 		} else {
-			ret += json;
+			if (json instanceof Date) {
+				ret += json.getFullYear() + "-";
+				ret += (json.getMonth() < 9 ? "0" : "") + (json.getMonth()+1) + "-";
+				ret += (json.getDate() < 10 ? "0" : "") + json.getDate() + "T";
+				ret += (json.getHours() < 10 ? "0" : "") + json.getHours() + ":";
+				ret += (json.getMinutes() < 10 ? "0" : "") + json.getMinutes() + ":";
+				ret += (json.getSeconds() < 10 ? "0" : "") + json.getSeconds() + "Z";
+			} else {
+				ret += json;
+			}
 		}
 		ret += name == "" ? "" : "</"+name+">";
 	}
-	ret += root ? "</root>" : "";
+	ret += root ? "</exml:anonymous>" : "";
 	return ret;
 }
 
@@ -2997,7 +3153,7 @@ XFInsert.prototype.run = function(element, ctx) {
 			+ " at " + index + " - " + ctx.nodeName);
 			
 		if (node.nodeType == NodeType.ATTRIBUTE) {
-			parent.setAttributeNS(node.namespaceURI, node.prefix, node.nodeName, node.nodeValue);
+			Core.setAttributeNS(parent, node.namespaceURI, (node.prefix ? node.prefix+":" : "")+node.nodeName, node.nodeValue);
 		} else {
 			var clone = node.cloneNode(true);
 
@@ -3067,6 +3223,10 @@ XFLoad.prototype.run = function(element, ctx) {
 	} else {
 		if (typeof href == 'object') {
 			href = stringValue(this.resource.xpath.evaluate(ctx));
+		} else {
+			if (typeof href == 'string') {
+				href = Core.unescape(href); 
+			}
 		}
 	}
 
@@ -3121,6 +3281,55 @@ XFMessage.prototype.run = function(element, ctx) {
 
 	if (text) {
 		alert(text.trim());
+	}
+};
+    
+	
+		
+		
+		
+function XFScript(binding, stype, script, ifexpr, whileexpr) {
+	this.binding = binding;
+	this.stype = stype;
+	this.script = script;
+	this.init(ifexpr, whileexpr);
+}
+
+XFScript.prototype = new XFAbstractAction();
+
+
+		
+
+XFScript.prototype.run = function(element, ctx) {
+	var script = this.script;
+
+	switch (this.stype) {
+		case "text/javascript":
+			if (this.binding) {
+				var node = this.binding.evaluate(ctx)[0];
+				if (node) {
+					script = getValue(node);
+				}
+			} else {
+				if (typeof script == 'object') {
+					script = stringValue(this.script.xpath.evaluate(ctx));
+				} else {
+					if (typeof script == 'string') {
+						script = Core.unescape(script); 
+					}
+				}
+			}
+			if (script) {
+				try {
+					eval("{XSLTFormsContext={elementId:\""+element.getAttribute("id")+"\"};"+script+"}");
+				} catch (e) {
+					alert("XSLTForms Exception\n--------------------------\n\nError evaluating the following Javascript expression :\n\n"+script+"\n\n"+e);
+				}
+			}
+			break;
+		case "application/xquery":
+			this.script.xpath.evaluate(ctx);
+			break;
 	}
 };
     
@@ -6929,8 +7138,11 @@ XMLEvents.dispatch = function(target, name, type, bubbles, cancelable, defaultAc
 					canceler.detach();
 				}
 			} catch (e) {
+				alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
 			}
 		}
+	} catch (e) {
+		alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
 	} finally {
 		XMLEvents.EventContexts.pop();
 	}
@@ -7662,22 +7874,24 @@ StepExpr.prototype.evaluate = function(ctx) {
 			_pushDescendants(ctx, list, input, this.nodetest);
 			break;
 		case XPathAxis.FOLLOWING :
-			for (var n = input.nodeType == NodeType.ATTRIBUTE ? input.ownerElement ? input.ownerElement : input.selectSingleNode("..") : input; n; n = n.parentNode) {
+			var n = input.nodeType == NodeType.ATTRIBUTE ? input.ownerElement ? input.ownerElement : input.selectSingleNode("..") : input;
+			while (n.nodeType != NodeType.DOCUMENT) {
 				for (var nn = n.nextSibling; nn; nn = nn.nextSibling) {
 					_push(ctx, list, nn, this.nodetest);
 					_pushDescendants(ctx, list, nn, this.nodetest);
 				}
+				n = n.parentNode;
 			}
 			break;
 		case XPathAxis.FOLLOWING_SIBLING :
-      for (var ns = input.nextSibling; ns; ns = ns.nextSibling) {
-         _push(ctx, list, ns, this.nodetest);
-      }
-      break;
-    case XPathAxis.NAMESPACE : 
-      alert('not implemented: axis namespace');
-      break;
-    case XPathAxis.PARENT :
+			for (var ns = input.nextSibling; ns; ns = ns.nextSibling) {
+				_push(ctx, list, ns, this.nodetest);
+			}
+			break;
+		case XPathAxis.NAMESPACE : 
+			alert('not implemented: axis namespace');
+			break;
+		case XPathAxis.PARENT :
 			if (input.parentNode) {
 				_push(ctx, list, input.parentNode, this.nodetest);
 			} else {
@@ -7685,41 +7899,43 @@ StepExpr.prototype.evaluate = function(ctx) {
 					_push(ctx, list, input.ownerElement ? input.ownerElement : input.selectSingleNode(".."), this.nodetest);
 				}
 			}
-      break;
-    case XPathAxis.PRECEDING :
-      for (var p = input.nodeType == NodeType.ATTRIBUTE ? input.ownerElement ? input.ownerElement : input.selectSingleNode("..") : input; p; p = p.parentNode) {
-        for (var pp = p.previousSibling; pp; pp = pp.previousSibling) {
-          _push(ctx, list, pp, this.nodetest);
-          _pushDescendantsRev(ctx, list, pp, this.nodetest);
-        }
-      }
-      break;
-    case XPathAxis.PRECEDING_SIBLING :
-      for (var ps = input.previousSibling; ps; ps = ps.previousSibling) {
-        _push(ctx, list, ps, this.nodetest);
-      }
 			break;
-    case XPathAxis.SELF :
-      _push(ctx, list, input, this.nodetest);
-      break;
-    default :
-      throw {name:'ERROR -- NO SUCH AXIS: ' + this.axis};
+		case XPathAxis.PRECEDING :
+			var p = input.nodeType == NodeType.ATTRIBUTE ? input.ownerElement ? input.ownerElement : input.selectSingleNode("..") : input;
+			while (p.nodeType != NodeType.DOCUMENT) {
+				for (var ps = p.previousSibling; ps; ps = ps.previousSibling) {
+					_pushDescendantsRev(ctx, list, ps, this.nodetest);
+					_push(ctx, list, ps, this.nodetest);
+				}
+				p = p.parentNode;
+			}
+			break;
+		case XPathAxis.PRECEDING_SIBLING :
+			for (var ps = input.previousSibling; ps; ps = ps.previousSibling) {
+				_push(ctx, list, ps, this.nodetest);
+			}
+			break;
+		case XPathAxis.SELF :
+			_push(ctx, list, input, this.nodetest);
+			break;
+		default :
+			throw {name:'ERROR -- NO SUCH AXIS: ' + this.axis};
     }   
 
     for (var i = 0, len = this.predicates.length; i < len; i++) {
-      var pred = this.predicates[i];
-      var newList = [];
+		var pred = this.predicates[i];
+		var newList = [];
 
-      for (var j = 0, len1 = list.length; j < len1; j++) {
-        var x = list[j];
-        var newCtx = ctx.clone(x, j + 1, list);
+		for (var j = 0, len1 = list.length; j < len1; j++) {
+			var x = list[j];
+			var newCtx = ctx.clone(x, j + 1, list);
 
-        if (booleanValue(pred.evaluate(newCtx))) {
-          newList.push(x);
-        }
-      }
-    
-      list = newList;
+			if (booleanValue(pred.evaluate(newCtx))) {
+				newList.push(x);
+			}
+		}
+
+		list = newList;
     }
 
     return list;
@@ -7745,7 +7961,7 @@ function _pushDescendants(ctx, list, node, test) {
 }
 
 function _pushDescendantsRev(ctx, list, node, test) {
-    for (var n = node.lastChildd; n; n = n.previousSibling) {
+    for (var n = node.lastChild; n; n = n.previousSibling) {
         _push(ctx, list, n, test);
         arguments.callee(ctx, list, n, test);
     }
@@ -7944,12 +8160,14 @@ function XPath(expression, compiled, ns) {
 	if (this.nsresolver.notfound) {
 		XPath.notfound = true;
 	}
+	this.evaltime = 0;
 }
 
 
 		
 
 XPath.prototype.evaluate = function(ctx, current) {
+	var d1 = new Date();
 	assert(ctx);
 
 //	alert("XPath evaluate \""+this.expression+"\"");
@@ -7971,6 +8189,8 @@ XPath.prototype.evaluate = function(ctx, current) {
 				res[i] = posres[i].node;
 			}
 		}
+		var d2 = new Date();
+		this.evaltime += d2 - d1;
 		return res;
 	} catch(e) {
 		alert("XSLTForms Exception\n--------------------------\n\nError evaluating the following XPath expression :\n\n"+this.expression+"\n\n"+e.name+"\n\n"+e.message);
@@ -8982,6 +9202,25 @@ XPathCoreFunctions = {
 
 		
 
+	"http://www.w3.org/2005/xpath-functions distinct-values" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+		function(nodeSet) {
+			if (arguments.length != 1) {
+				throw XPathCoreFunctionsExceptions.distinctValuesInvalidArgumentsNumber;
+			}
+			var nodeSet2 = [];
+			var values = {};
+			for (var i = 0, len = nodeSet.length; i < len; ++i) {
+				var xvalue = xmlValue(nodeSet[i]);
+				if (!values[xvalue]) {
+					nodeSet2.push(nodeSet[i]);
+					values[xvalue] = true;
+				}
+			}
+			return nodeSet2;
+		} ),
+
+		
+
 	"http://www.w3.org/2002/xforms transform" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(nodeSet, xslhref) {
 			if (arguments.length != 2) {
@@ -9152,6 +9391,17 @@ XPathCoreFunctions = {
 				throw XPathCoreFunctionsExceptions.math1InvalidArgumentsNumber;
 			}
 			return Math.tan(numberValue(number));
+		} ),
+
+		
+
+	"http://www.w3.org/2005/xpath-functions alert" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
+		function(arg) {
+			if (arguments.length != 1) {
+				throw XPathCoreFunctionsExceptions.alertInvalidArgumentsNumber;
+			}
+			alert(stringValue(arg));
+			return arg;
 		} ),
 
 		
@@ -9442,6 +9692,10 @@ XPathCoreFunctionsExceptions = {
 		name : "lower-case() : Invalid number of arguments",
 		message : "lower-case() function must have one argument exactly"
 	},
+	distinctValuesInvalidArgumentsNumber : {
+		name : "distinct-values() : Invalid number of arguments",
+		message : "distinct-values() function must have one argument exactly"
+	},
 	transformInvalidArgumentsNumber : {
 		name : "transform() : Invalid number of arguments",
 		message : "transform() function must have two arguments exactly"
@@ -9457,6 +9711,10 @@ XPathCoreFunctionsExceptions = {
 	eventInvalidArgumentsNumber : {
 		name : "event() : Invalid number of arguments",
 		message : "event() function must have one argument exactly"
+	},
+	alertInvalidArgumentsNumber : {
+		name : "alert() : Invalid number of arguments",
+		message : "alert() function must have one argument exactly"
 	},
 	stringJoinInvalidArgumentsNumber : {
 		name : "string-join() : Invalid number of arguments",
