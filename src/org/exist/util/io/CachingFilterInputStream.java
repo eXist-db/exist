@@ -39,6 +39,13 @@ public class CachingFilterInputStream extends FilterInputStream {
     }
 
     @Override
+    public int available() throws IOException {
+        return (getCache().getLength() - cacheOffset);
+    }
+
+
+
+    @Override
     public synchronized void mark(int readLimit) {
         mark = srcOffset;
     }
