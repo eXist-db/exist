@@ -136,7 +136,7 @@ public class GetData extends BasicFunction {
                         FilterInputStreamCache cache = null;
                         try
                         {
-                            if(is != null) {
+                            if(is != null && is.available()>0) {
                                     //determine if exists mime database considers this binary data
                                     String contentType = request.getContentType();
                                     if(contentType != null) {
