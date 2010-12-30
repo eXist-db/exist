@@ -57,6 +57,11 @@ public class Lock extends AbstractCommand {
 			
 			Collection collection = broker.getCollection(collectionURI);
 			
+			out().println("Collection lock:");
+			collection.getLock().debug(out());
+			
+			if (commandData.length == 0) return;
+			
 			DocumentImpl doc = collection.getDocument(broker, XmldbURI.create(commandData[0]) );
 			
 			if (doc == null) {
