@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:jquery="http://exist-db.org/xquery/jquery">
+    <head>
+        <title>eXist - jQuery/URL rewriting demo</title>
+        <jquery:header base="../scripts/jquery" cssbase="../scripts/jquery/css"/>
+        <link rel="stylesheet" type="text/css" href="../styles/default-style2.css"/>
+        <style type="text/css">
+            label { width: 120px; float: left; }
+        </style>
+        <script type="text/javascript">
+            function dialogAction(node) { node.dialog("close"); alert("OK clicked!"); }
+            function accordionCallback(node) { alert("Opening panel..."); }
+        </script>
+    </head>
+    <body>
+        <div id="page-head">
+            <a href="../" style="text-decoration: none">
+                <img src="../logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
+            </a>
+            <div id="navbar">
+                <h1>Open Source Native XML Database</h1>
+            </div>
+        </div>
+        <div id="content1col">
+            <p>This document is a complex demonstration of how to expand a set of known, namespaced tags in an HTML file
+                by passing the source through an <a href="https://secure.wikimedia.org/wikibooks/en/wiki/XQuery/Typeswitch_Transformations">XQuery 
+                    typeswitch transformation</a>.</p> 
+            <p>The demo extends the HTML page with a set of jQuery widgets. Instead of directly creating the widgets in Javascript, we use an XQuery
+                module which expands a set of known tags in the jquery namespace and generates the required HTML and Javascript code for each widget.</p>
+                
+            <jquery:tabset id="tabs">
+                <jquery:tab id="tab-info" label="Tabs">
+                    <p>Tabs can be created easily with a &lt;jquery:tabset&gt; element. The tabs are contained in its
+                    &lt;jquery:tab&gt; children. Tab sets can be nested:</p>
+                    <jquery:tabset id="nested-tabs">
+                        <jquery:tab id="nested-tab1" label="Nested Tab 1">
+                            <p>Nested tab 1.</p>
+                        </jquery:tab>
+                        <jquery:tab id="nested-tab2" label="Nested Tab 2">
+                            <p>Nested tab 2.</p>
+                        </jquery:tab>
+                        <jquery:tab href="ajax.html" label="AJAX"/>
+                    </jquery:tabset>
+                </jquery:tab>
+                <jquery:tab id="tab-repeats" label="Repeating Fields">
+                    <p>Repeat a given part of a form. An index will be added to the name of each form element,
+                    so "query" becomes "query1", "query2", ...</p>
+                    <jquery:form-repeat trigger="#add-field" delete="#remove-field" form="#advanced-search"/>
+                    <form id="advanced-search" method="GET">
+                        <table>
+                            <tr class="repeat">
+                                <td>
+                                    <jquery:select name="field">
+                                        <jquery:option value="Author"/>
+                                        <jquery:option value="Title"/>
+                                    </jquery:select>
+                                </td>
+                                <td><jquery:input name="term"/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <button class="button" id="add-field">
+                                        <span>+</span> Add search field</button>
+                                    <button class="button" id="remove-field">
+                                        <span>-</span> Remove selected search field</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <button type="submit">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </jquery:tab>
+                <jquery:tab id="tab-accordion" label="Accordions">
+                    <jquery:ajax-accordion>
+                        <jquery:panel title="Default">
+                            <p>An accordion consists of one or more panels, whose content can be either contained
+                            within the &lt;jquery:panel&gt; element itself or loaded from an AJAX source specified
+                            in the href attribute.</p>
+                        </jquery:panel>
+                        <jquery:panel title="Second panel">
+                            <p>Second panel.</p>
+                        </jquery:panel>
+                        <jquery:panel title="Callback function" on-select="accordionCallback">
+                            <p>Callback.</p>
+                        </jquery:panel>
+                        <jquery:panel title="AJAX panel" href="ajax.html"/>
+                    </jquery:ajax-accordion>
+                </jquery:tab>
+                <jquery:tab id="tab-dialogs" label="Dialogs">
+                    <ul>
+                        <li><a href="#" id="create-new">Simple Dialog</a></li>
+                        <li><a href="#" id="action">Dialog with action</a></li>
+                    </ul>
+                    <jquery:dialog id="new-dialog" modal="true" title="New" trigger="#create-new" width="550">
+                        <jquery:button id="cancel" label="Cancel"/>
+                        <p>The dialog may contain one or more &lt;jquery:button&gt; elements. The button with id="cancel" will automatically
+                        be set up to abort the action and close the dialog.</p>
+                    </jquery:dialog>
+                    <jquery:dialog id="action-dialog" modal="true" title="New" trigger="#action" width="550">
+                        <jquery:button id="cancel" label="Cancel"/>
+                        <jquery:button label="OK" function="dialogAction"/>
+                        <p>Clicking on the OK button calls the Javascript function "dialogAction".</p>
+                    </jquery:dialog>
+                </jquery:tab>
+            </jquery:tabset>
+        </div>
+    </body>
+</html>
