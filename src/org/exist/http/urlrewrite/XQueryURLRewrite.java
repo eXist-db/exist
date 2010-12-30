@@ -275,6 +275,8 @@ public class XQueryURLRewrite implements Filter {
 	                                    Element action = (Element) node;
 	                                    if ("view".equals(action.getLocalName())) {
 	                                        parseViews(modifiedRequest, action, modelView);
+	                                    } else if ("error-handler".equals(action.getLocalName())) {
+	                                    	parseErrorHandlers(modifiedRequest, action, modelView);
 	                                    } else if ("cache-control".equals(action.getLocalName())) {
 	                                        String option = action.getAttribute("cache");
 	                                        modelView.setUseCache("yes".equals(option));
@@ -316,9 +318,8 @@ public class XQueryURLRewrite implements Filter {
                 if (LOG.isTraceEnabled())
                     LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
 
-                HttpServletResponse wrappedResponse = response;
-                if (modelView.hasViews())
-                    wrappedResponse = new CachingResponseWrapper(response, true);
+            	HttpServletResponse wrappedResponse = 
+            		new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
                 if (modelView.getModel() == null)
                     modelView.setModel(new PassThrough(modifiedRequest));
 
@@ -327,46 +328,27 @@ public class XQueryURLRewrite implements Filter {
                 }
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse, filterChain);
 
-                if (modelView.hasViews()) {
-                    int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
-                    if (status == HttpServletResponse.SC_NOT_MODIFIED) {
-                        response.flushBuffer();
-                    } else if (status < 400) {
-                        List<URLRewrite> views = modelView.views;
-                        for (int i = 0; i < views.size(); i++) {
-                            URLRewrite view = (URLRewrite) views.get(i);
-                            RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
-                            wrappedReq.setMethod("POST");
-                            wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
-                            wrappedReq.setContentType(wrappedResponse.getContentType());
-                            byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-                            if (data != null)
-                                wrappedReq.setData(data);
-
-                            if (i < views.size() - 1)
-                                wrappedResponse = new CachingResponseWrapper(response, true);
-                            else
-                                wrappedResponse = new CachingResponseWrapper(response, false);
-                            doRewrite(view, wrappedReq, wrappedResponse, null);
-                            wrappedResponse.flushBuffer();
-
-                            // catch errors in the view
-                            status = ((CachingResponseWrapper) wrappedResponse).getStatus();
-                            if (status >= 400) {
-                                flushError(response, wrappedResponse);
-                                break;
-                            }
-                        }
-                    } else {
-                        // HTTP response code indicates an error
-                        flushError(response, wrappedResponse);
-                    }
+                int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
+                if (status == HttpServletResponse.SC_NOT_MODIFIED) {
+                	response.flushBuffer();
+                } else if (status < 400) {
+                	if (modelView.hasViews())
+                		applyViews(modelView.views, response, modifiedRequest, wrappedResponse);
+                	else
+                		((CachingResponseWrapper) wrappedResponse).flush();
+                } else {
+                	// HTTP response code indicates an error
+                	if (modelView.hasErrorHandlers()) {
+                		applyViews(modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
+                	} else {
+                		flushError(response, wrappedResponse);
+                	}
                 }
+            }
 //            Sequence result;
 //            if ((result = (Sequence) request.getAttribute(RQ_ATTR_RESULT)) != null) {
 //                writeResults(response, broker, result);
 //            }
-            }
         } catch (EXistException e) {
             LOG.error(e.getMessage(), e);
             throw new ServletException("An error occurred while retrieving query results: " 
@@ -386,6 +368,34 @@ public class XQueryURLRewrite implements Filter {
                     + e.getMessage(), e);
         }
     }
+
+	private void applyViews(List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
+			HttpServletResponse wrappedResponse)
+			throws UnsupportedEncodingException, IOException, ServletException {
+		int status;
+		for (int i = 0; i < views.size(); i++) {
+			URLRewrite view = (URLRewrite) views.get(i);
+			
+			RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
+			wrappedReq.setMethod("POST");
+			wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
+			wrappedReq.setContentType(wrappedResponse.getContentType());
+			byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+			if (data != null)
+				wrappedReq.setData(data);
+			
+			wrappedResponse = new CachingResponseWrapper(response, i < views.size() - 1);
+			doRewrite(view, wrappedReq, wrappedResponse, null);
+			wrappedResponse.flushBuffer();
+
+			// catch errors in the view
+			status = ((CachingResponseWrapper) wrappedResponse).getStatus();
+			if (status >= 400) {
+				flushError(response, wrappedResponse);
+				break;
+			}
+		}
+	}
 
     private void response(DBBroker broker, NodeValue value, ServletResponse response, Properties outputProperties) throws IOException {
     	
@@ -529,6 +539,18 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
+    private void parseErrorHandlers(HttpServletRequest request, Element view, ModelAndView modelView) throws ServletException {
+        Node node = view.getFirstChild();
+        while (node != null) {
+            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
+                URLRewrite urw = parseAction(request, (Element) node);
+                if (urw != null)
+                    modelView.addErrorHandler(urw);
+            }
+            node = node.getNextSibling();
+        }
+    }
+    
     private void configure() throws ServletException {
     	if (pool != null)
     		return;
@@ -873,6 +895,7 @@ public class XQueryURLRewrite implements Filter {
 
         URLRewrite rewrite = null;
         List<URLRewrite> views = new LinkedList<URLRewrite>();
+        List<URLRewrite> errorHandlers = null;
         boolean useCache = false;
 
         private ModelAndView() {
@@ -886,6 +909,12 @@ public class XQueryURLRewrite implements Filter {
             return rewrite;
         }
 
+        public void addErrorHandler(URLRewrite handler) {
+        	if (errorHandlers == null)
+        		errorHandlers = new LinkedList<URLRewrite>();
+        	errorHandlers.add(handler);
+        }
+        
         public void addView(URLRewrite view) {
             views.add(view);
         }
@@ -894,6 +923,10 @@ public class XQueryURLRewrite implements Filter {
             return views.size() > 0;
         }
 
+        public boolean hasErrorHandlers() {
+        	return errorHandlers != null && errorHandlers.size() > 0;
+        }
+        
         public boolean useCache() {
             return useCache;
         }
@@ -1248,7 +1281,15 @@ public class XQueryURLRewrite implements Filter {
         @Override
         public void flushBuffer() throws IOException {
             if (!cache)
-                super.flushBuffer();
+                super.flushBuffer(); 
+        }
+        
+        public void flush() throws IOException {
+        	if (sos != null) {
+            	ServletOutputStream out = super.getOutputStream();
+            	out.write(sos.getData());
+            	out.flush();
+            }
         }
     }
 
