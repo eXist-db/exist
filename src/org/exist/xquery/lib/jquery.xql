@@ -29,9 +29,9 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $base := $config/@base/string()
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     return (
-        <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"/>,
-        <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"/>,
-        <script type="text/javascript" src="{$base}/jquery-utils.js"/>,
+        <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"></script>,
+        <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"></script>,
+        <script type="text/javascript" src="{$base}/jquery-utils.js"></script>,
         <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>
     )
 };
@@ -68,7 +68,7 @@ declare function jquery:tabset($config as element(jquery:tabset)) as element() {
             }
             </ul>
             {
-                for $tab in $config/jquery:tab
+                for $tab in $config/jquery:tab[@id]
                 return
                     <div id="{$tab/@id}">
                     {
@@ -214,12 +214,12 @@ declare function jquery:toggle($config as element(jquery:toggle)) as element()+ 
 :)
 declare function jquery:paginate($config as element(jquery:paginate)) as element()+ {
     let $hits := session:get-attribute($config/@attribute)
-    let $id := if ($config/@id) then $config/@id else 'jquery-paginate'
+    let $id := if ($config/@id) then $config/@id/string() else util:uuid()
     let $onReady := $config/@on-ready/string()
     return (
         <div id="{$id}"/>,
         <jquery:script>
-            $('#{$id/string()}').pagination('{$config/@href/string()}', {{
+            $('#{$id}').pagination('{$config/@href/string()}', {{
                     totalItems: {count($hits)},
                     itemsPerPage: 10,
                     navContainer: '{$config/@navcontainer/string()}'
@@ -351,34 +351,36 @@ declare function jquery:button($node as element(jquery:button)) as element()+ {
 };
 
 declare function jquery:accordion($config as element(jquery:ajax-accordion)) as element()+ {
-    let $id := if ($config/@id) then $config/@id else 'jquery-accordion'
-    return (
-        <div id="{$id}">
-        {
-            for $panel in $config/jquery:panel
-            return (
-                <h3>{$panel/@id}<a href="#">{$panel/@title/string()}</a></h3>,
+    let $id := if ($config/@id) then $config/@id/string() else 'jquery-accordion'
+    let $panels :=
+        for $panel in $config/jquery:panel
+        let $panelId := if ($panel/@id) then $panel/@id/string() else concat('N', util:uuid()) 
+        return
+            <div>
+                <h3 id="{$panelId}"><a href="#">{$panel/@title/string()}</a></h3>
                 <div>
                 {
                     for $child in $panel/node() return
                         jquery:process-templates($child)
                 }
                 </div>
-            )
-        }
+            </div>
+    return (
+        <div id="{$id}">
+        {   $panels/* }
         </div>,
         <jquery:script>
             var actions = {{}};
             {
-                for $panel in $config/jquery:panel
+                for $panel at $p in $config/jquery:panel
                 return
                     if ($panel/@href) then
-                        jquery:script(<s>actions["{$panel/@id/string()}"] = "{$panel/@href/string()}";</s>)
+                        jquery:script(<s>actions["{$panels[$p]/h3/@id/string()}"] = "{$panel/@href/string()}";</s>)
                     else if ($panel/@on-select) then
-                        jquery:script(<s>actions["{$panel/@id/string()}"] = {$panel/@on-select/string()};</s>)
+                        jquery:script(<s>actions["{$panels[$p]/h3/@id/string()}"] = {$panel/@on-select/string()};</s>)
                     else ()
             }
-            $('#{$id/string()}').accordion({{
+            $('#{$id}').accordion({{
                 autoHeight: false,
                 fillSpace: true,
                 active: false,
@@ -496,23 +498,27 @@ declare function jquery:process-templates($node as node()) as node()* {
 };
 
 declare function jquery:process($node as node()) as node()* {
-    jquery:cleanup-javascript(
+     jquery:cleanup-javascript( 
         jquery:process-templates($node)
     )
 };
 
 declare function jquery:cleanup-javascript($node as node(), $scripts as element()*) {
     typeswitch ($node)
-        case element(jquery:javascript) return
-            <script type="text/javascript">
-            /*
-             * Generated code
-             * by jQuery XQuery module
-             */
-            $(function() {{
-                { $scripts/text() }
-            }});
-            </script>
+        case element(body) return
+            <body>{
+                $node/@*, 
+                for $child in $node/node() return jquery:cleanup-javascript($child, $scripts),
+                <script type="text/javascript">
+                    /*
+                    * Generated code
+                    * by jQuery XQuery module
+                    */
+                    $(function() {{
+                      { $scripts/text() }
+                    }});
+                </script>
+            }</body>
         case element(jquery:script) return
             ()
         case element() return
