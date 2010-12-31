@@ -19,6 +19,7 @@ declare function local:sequence-deep-equal
   satisfies deep-equal($seq1[$i],$seq2[$i])
  } ;
 
+let $logon :=  xmldb:login("/","admin", "", fn:false())
 let $runtime-debug := request:get-parameter("dbg", ())
 let $format := request:get-parameter("format", ())
 let $not :=  request:get-parameter("not", ())
