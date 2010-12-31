@@ -197,7 +197,7 @@ declare function xproc:choose($primary,$secondary,$options,$currentstep,$outputs
     let $xpath-context-output := <xproc:output step="{$defaultname}"
                    port-type="output"
                    primary="false"
-                  xproc:defaultname="$defaultname"
+                   xproc:defaultname="$defaultname"
                    select="/"
                    port="xpath-context"
                    func="$xproc:choose">
@@ -686,8 +686,6 @@ declare function xproc:explicitbindings($xproc,$unique_id){
      let $log-href := $currentstep/p:log/@href
      let $log-port := $currentstep/p:log/@port
 
-     (: let $log-x    := util:log("info),$stepfunc) :)
-
      return
          if(name($currentstep) = "p:declare-step") then
             (: TODO: refactor p:pipeline and p:declare-step :)
@@ -963,6 +961,8 @@ if($bindings) then
          else
      (
      (: STEP I: generate parse tree :)
+
+     let $validate := validation:jing-report($pipeline,fn:doc($const:xproc-rng-schema))
      let $namespaces := xproc:enum-namespaces($pipeline)
      let $preparse-naming := naming:explicitnames(naming:fixup($pipeline,$stdin))
      let $xproc-binding := xproc:explicitbindings($preparse-naming,$const:init_unique_id)
@@ -976,14 +976,18 @@ if($bindings) then
           if ($tflag="1") then
                  document
                     {
-                     <xproc:result xproc:timing="disabled" xproc:ts="{current-dateTime()}">
+                     <xproc:result xproc:valid="{$validate}" xproc:timing="disabled" xproc:ts="{current-dateTime()}">
                          {
                           $serialized_result
                          }
                      </xproc:result>
                      }
+              else if ($validate) then
+                $serialized_result
               else
-                     $serialized_result
+                u:xprocxqError('xxq-error:XXQ0003','invalid pipeline.')
+
+
          )
  };
 
@@ -993,6 +997,7 @@ if($bindings) then
  (: -------------------------------------------------------------------------- :)
  if (exists($pipeline)) then
 
+     let $validate := validation:jing($pipeline,fn:doc($const:xproc-rng-schema))
      let $namespaces := xproc:enum-namespaces($pipeline)
 
      (: STEP I: generate parse tree :)

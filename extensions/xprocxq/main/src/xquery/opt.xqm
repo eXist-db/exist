@@ -47,12 +47,8 @@ declare function opt:hash($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $algorithm := u:get-option('algorithm',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
-let $replacement := u:hash($matchresult,$algorithm)
+let $matchresult := u:evalXPATH($match, $v)
+let $replacement := u:hash(string($matchresult),$algorithm)
 return
 	u:replace-matching-elements($v/*,$matchresult,$replacement)
 };
@@ -70,7 +66,7 @@ let $query := if (contains($match,'/')) then
 let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replacement := u:uuid()
 return
-	u:replace-matching-elements($v/*,$matchresult,$replacement)
+	u:replace-matching-elements($v/*,string($matchresult),$replacement)
 };
 
 

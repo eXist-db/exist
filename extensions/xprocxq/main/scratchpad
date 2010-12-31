@@ -9,19 +9,14 @@ priority
     serialization
     error assertions
 
-util:eval('request:get-parameter-names()')
-vs
-util:eval-inline('request:get-parameter-names()',$xml)
-
 
 ----------------------------------------
 current issues
 ----------------------------------------
 
+* u:replace-matching-elements does not match attributes (optional p:hash)
 * sequence issue with input to choose
 * dont forget I changed p namespace and p1 namespace in util.xqm
-* add primary input to evaluation in u:xquery, instead of passing
-to each function
 * fix p:choose deal with xpath-context, each subpipeline must have the same output signature (static check)
 * need to check eq and = throughout the codebase to ensure we are testing equality properly
 * migrate errors from string to QName
@@ -49,8 +44,8 @@ standard steps
 ------------------------------
 optional steps
 ------------------------------
-	p:exec - anywhere in eXist a util:exec function ?
-	p:hash - easy
+	p:exec - anywhere in eXist a util:exec function (require java binding to be enabled )
+	p:hash - problem with XSLTMATCHPATTERN with handling attributes
 	p:www-form-urldecode - easy
 	p:www-form-urlencode - easy
 
@@ -111,5 +106,23 @@ prob with Test delete-002
 12% pass rate
 
 ----------------------------------------------------------------------
+31/12/10
+----------------------------------------------------------------------
+-----------------------------
+required (338)
+-----------------------------
+* pass  78
+* fail  260
+required - err (258)
+* pass  8
+* fail  250
 
-
+-----------------------------
+optional required ()
+-----------------------------
+* pass
+* fail
+optional - err ()
+* pass
+* fail
+-----------------------------
