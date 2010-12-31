@@ -183,7 +183,10 @@ declare function u:uuid()  {
 
 (: -------------------------------------------------------------------------- :)
 declare function u:hash($data,$algorithm)  {
-	util:hash($data,$algorithm)
+	if (contains($algorithm, "md"))then
+	  util:hash($data, 'md5')
+	 else
+ 	  util:hash($data,$algorithm)
 };
 
 (: -------------------------------------------------------------------------- :)
@@ -350,7 +353,7 @@ declare function u:xquery($query,$xml,$variables){
               else
                   $query
 
-let $result := util:eval-with-context($qry,$static-content,false())
+let $result := util:eval-with-context(fn:concat($const:default-ns-imports,$qry),$static-content,false())
     return
         $result
 };
@@ -612,6 +615,9 @@ declare function u:replace-matching-elements($element as element(),$select,$repl
 	    	    	    element {node-name($child)}{
                             $replace
  	    	    	    }
+	    	    	else if ($child/@* intersect $select) then
+	    	    	    <test/>
+
     			    else
                         u:replace-matching-elements($child,$select,$replace)
                 else

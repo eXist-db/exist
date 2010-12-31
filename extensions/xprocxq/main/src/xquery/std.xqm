@@ -233,12 +233,12 @@ declare function std:filter($primary,$secondary,$options,$variables) {
 u:assert(exists($options/p:with-option[@name='select']/@select),'p:with-option match is required'),
 let $v := u:get-primary($primary)
 let $select := string(u:get-option('select',$options,$v))
-let $result := u:evalXPATH($select, $v, $primary)
+let $result := u:evalXPATH($select,document{$v},$primary)
     return
         if(exists($result)) then
         	$result
 		else
-            $select
+            ()
 };
 
 

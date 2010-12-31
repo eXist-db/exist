@@ -4,7 +4,7 @@
 	</error>
    <error code="XXQ0002">This component is not yet supported by xprocxq. 
 	</error>
-   <error code="XXQ0003">XProc pipeline supplied is empty, non-existent or corrupted. 
+   <error code="XXQ0003">XProc pipeline supplied is empty, non-existent, corrupted or invalid when checked against xproc schema.
 	</error>	
    <error code="XXQ0004">This step requires has dependencies which have not loaded. 
 	</error>

@@ -80,17 +80,28 @@ declare variable $const:init_unique_id :="!1";
 (: -------------------------------------------------------------------------- :)
 (: Default imports for eval-step :)
 (: -------------------------------------------------------------------------- :)
+declare variable $const:default-ns-imports :='
+    declare namespace c="http://www.w3.org/ns/xproc-step";
+    declare namespace err="http://www.w3.org/ns/xproc-error";
+    declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
+    declare namespace t="http://xproc.org/ns/testsuite";
+
+    import module namespace p   = "http://xproc.net/xproc/functions" at "resource:net/xproc/xprocxq/src/xquery/functions.xqm";
+
+';
+
 declare variable $const:default-imports :='
 
-     import module namespace xproc = "http://xproc.net/xproc";
-     import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
-     import module namespace u = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
-     import module namespace opt = "http://xproc.net/xproc/opt" at "resource:net/xproc/xprocxq/src/xquery/opt.xqm";
-     import module namespace std = "http://xproc.net/xproc/std" at "resource:net/xproc/xprocxq/src/xquery/std.xqm";
-     import module namespace ext = "http://xproc.net/xproc/ext" at "resource:net/xproc/xprocxq/src/xquery/ext.xqm";
+    import module namespace xproc = "http://xproc.net/xproc";
+    import module namespace const = "http://xproc.net/xproc/const" at "resource:net/xproc/xprocxq/src/xquery/const.xqm";
+    import module namespace u     = "http://xproc.net/xproc/util" at "resource:net/xproc/xprocxq/src/xquery/util.xqm";
+    import module namespace opt   = "http://xproc.net/xproc/opt" at "resource:net/xproc/xprocxq/src/xquery/opt.xqm";
+    import module namespace std   = "http://xproc.net/xproc/std" at "resource:net/xproc/xprocxq/src/xquery/std.xqm";
+    import module namespace ext   = "http://xproc.net/xproc/ext" at "resource:net/xproc/xprocxq/src/xquery/ext.xqm";
+    import module namespace func   = "http://xproc.net/xproc/functions" at "resource:net/xproc/xprocxq/src/xquery/functions.xqm";
 
-     declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
-	 declare option exist:serialize "expand-xincludes=no";
+    declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
+    declare option exist:serialize "expand-xincludes=no";
 
 ';
 
@@ -115,3 +126,8 @@ declare variable $const:pdf-mimetype := 'application/pdf';
 (: XSLT to transform eXist specific file listing :)
 (: -------------------------------------------------------------------------- :)
 declare variable $const:directory-list-xslt := 'resource:net/xproc/xprocxq/etc/directory-list.xsl';
+
+(: -------------------------------------------------------------------------- :)
+(: RELAXNG Schema for XPROC :)
+(: -------------------------------------------------------------------------- :)
+declare variable $const:xproc-rng-schema := 'resource:net/xproc/xprocxq/etc/xproc.rng';

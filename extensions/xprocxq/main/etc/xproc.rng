@@ -1,0 +1,3918 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:sa="http://xproc.org/ns/syntax-annotations" xmlns:c="http://www.w3.org/ns/xproc-step" xmlns:p="http://www.w3.org/ns/xproc" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:s="http://www.ascc.net/xml/schematron" ns="http://www.w3.org/ns/xproc" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <!-- This is schema version $Id: xproc.rng,v 1.1 2010/05/11 13:38:08 bertails Exp $ -->
+  <!-- This schema neither supports nor requires the use of RELAX NG DTD Compatibility -->
+  <define name="XPathExpression" sa:model="XPathExpression">
+    <text/>
+  </define>
+  <define name="XSLTMatchPattern" sa:model="XSLTMatchPattern">
+    <text/>
+  </define>
+
+  <define name="name.ncname.attr">
+    <attribute name="name">
+      <data type="NCName"/>
+    </attribute>
+  </define>
+  <define name="name.qname.attr">
+    <attribute name="name">
+      <data type="QName"/>
+    </attribute>
+
+  </define>
+  <define name="port.attr">
+    <attribute name="port">
+      <data type="NCName"/>
+    </attribute>
+  </define>
+  <define name="required.attr">
+    <attribute name="required">
+      <data type="boolean"/>
+
+    </attribute>
+  </define>
+  <define name="sequence.attr">
+    <attribute name="sequence">
+      <data type="boolean"/>
+    </attribute>
+  </define>
+  <define name="primary.attr">
+    <attribute name="primary">
+
+      <data type="boolean"/>
+    </attribute>
+  </define>
+  <define name="select.attr">
+    <attribute name="select">
+      <ref name="XPathExpression"/>
+    </attribute>
+  </define>
+  <define name="xpath-version.attr">
+
+    <attribute name="xpath-version"/>
+  </define>
+  <define name="psvi-required.attr">
+    <attribute name="psvi-required">
+      <data type="boolean"/>
+    </attribute>
+  </define>
+  <define name="exclude-inline-prefixes.attr">
+    <attribute name="exclude-inline-prefixes">
+
+      <ref name="ExcludeInlinePrefixes"/>
+    </attribute>
+  </define>
+  <!--
+    Bah, humbug. The ExcludeInlinePrefixes pattern should
+    really be ("#all" | (PrefixList & "#default"?)) or
+    maybe ("#all" | (PrefixList | "#default")+), but neither
+    one of those is allowed by RELAX NG.
+  -->
+  <define name="ExcludeInlinePrefixes" sa:model="prefix list">
+    <text/>
+  </define>
+  <define name="PrefixList" sa:model="prefix list">
+    <data type="NMTOKENS"/>
+
+  </define>
+  <define name="xmlid.attr" sa:ignore="yes">
+    <attribute name="xml:id">
+      <data type="ID"/>
+    </attribute>
+  </define>
+  <define name="xmlbase.attr" sa:ignore="yes">
+    <attribute name="xml:base">
+      <data type="anyURI"/>
+
+    </attribute>
+  </define>
+  <define name="href.attr">
+    <attribute name="href">
+      <data type="anyURI"/>
+    </attribute>
+  </define>
+  <define name="use-when.attr" sa:ignore="yes">
+    <attribute name="use-when">
+
+      <ref name="XPathExpression"/>
+    </attribute>
+  </define>
+  <define name="p_use-when.attr" sa:ignore="yes">
+    <attribute name="p:use-when">
+      <ref name="XPathExpression"/>
+    </attribute>
+  </define>
+  <define name="version.attr">
+
+    <attribute name="version"/>
+  </define>
+  <define name="common.attributes">
+    <optional>
+      <ref name="xmlid.attr"/>
+    </optional>
+    <optional>
+      <ref name="xmlbase.attr"/>
+    </optional>
+
+    <zeroOrMore>
+      <ref name="extension.attr"/>
+    </zeroOrMore>
+  </define>
+  <define name="decl.attributes">
+    <optional>
+      <ref name="psvi-required.attr"/>
+    </optional>
+    <optional>
+
+      <ref name="xpath-version.attr"/>
+    </optional>
+    <optional>
+      <ref name="exclude-inline-prefixes.attr"/>
+    </optional>
+    <optional>
+      <ref name="version.attr"/>
+    </optional>
+  </define>
+
+  <!-- ============================================================ -->
+  <start>
+    <choice>
+      <ref name="Pipeline"/>
+      <ref name="Library"/>
+      <ref name="DeclareStep"/>
+      <ref name="VocabParam"/>
+      <ref name="VocabParamSet"/>
+      <ref name="VocabResult"/>
+
+      <ref name="VocabHttpRequest"/>
+      <ref name="VocabHeader"/>
+      <ref name="VocabMultipart"/>
+      <ref name="VocabBody"/>
+      <ref name="VocabHttpResponse"/>
+      <ref name="VocabQuery"/>
+      <ref name="VocabLine"/>
+      <ref name="VocabDirectory"/>
+      <ref name="Errors"/>
+
+      <ref name="StandardStep"/>
+    </choice>
+  </start>
+  <!-- ============================================================ -->
+  <define name="Library" sa:class="language-construct">
+    <element name="library">
+      <ref name="decl.attributes"/>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Import"/>
+          <ref name="DeclareStep"/>
+          <ref name="Pipeline"/>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="Import" sa:class="language-construct">
+    <element name="import">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <ref name="href.attr"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+
+  </define>
+  <define name="Pipeline" sa:class="language-construct">
+    <element name="pipeline">
+        <attribute name="version">
+          <data type="decimal"/>
+        </attribute>
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <optional>
+        <attribute name="type">
+          <data type="QName"/>
+
+        </attribute>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <ref name="decl.attributes"/>
+      <zeroOrMore>
+        <choice>
+
+          <ref name="Input"/>
+          <ref name="ParameterInput"/>
+          <ref name="Output"/>
+          <ref name="Option"/>
+          <ref name="Log"/>
+          <ref name="Serialization"/>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+
+      </zeroOrMore>
+      <zeroOrMore>
+        <choice>
+          <ref name="DeclareStep"/>
+          <ref name="Pipeline"/>
+          <ref name="Import"/>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+
+      </zeroOrMore>
+      <ref name="Subpipeline"/>
+    </element>
+  </define>
+  <define name="Subpipeline" sa:model="subpipeline">
+    <zeroOrMore>
+      <ref name="Variable"/>
+    </zeroOrMore>
+    <oneOrMore>
+
+      <choice>
+        <ref name="ForEach"/>
+        <ref name="Viewport"/>
+        <ref name="Choose"/>
+        <ref name="Group"/>
+        <ref name="Try"/>
+        <ref name="OtherStep"/>
+        <ref name="Documentation"/>
+        <ref name="PipeInfo"/>
+
+      </choice>
+    </oneOrMore>
+  </define>
+  <!-- ============================================================ -->
+  <define name="InputDeclaration" sa:class="language-construct">
+    <element name="input">
+      <ref name="port.attr"/>
+      <optional>
+        <ref name="sequence.attr"/>
+
+      </optional>
+      <optional>
+        <ref name="primary.attr"/>
+      </optional>
+      <optional>
+        <attribute name="kind">
+          <value>document</value>
+        </attribute>
+
+      </optional>
+      <optional>
+        <ref name="select.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <oneOrMore>
+              <choice>
+                <ref name="Document"/>
+                <ref name="Inline"/>
+                <ref name="Data"/>
+              </choice>
+
+            </oneOrMore>
+          </choice>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="InputConnection" sa:class="language-construct">
+    <element name="input">
+      <ref name="port.attr"/>
+      <optional>
+        <ref name="select.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <oneOrMore>
+
+              <choice>
+                <ref name="Pipe"/>
+                <ref name="Document"/>
+                <ref name="Inline"/>
+                <ref name="Data"/>
+              </choice>
+            </oneOrMore>
+          </choice>
+        </optional>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Input" sa:element="input">
+    <choice>
+      <ref name="InputDeclaration"/>
+      <ref name="InputConnection"/>
+    </choice>
+  </define>
+  <!-- ============================================================ -->
+  <define name="ParameterInputDeclaration" sa:class="language-construct" sa:ignore="yes">
+    <element name="input">
+
+      <ref name="port.attr"/>
+      <optional>
+        <attribute name="sequence">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="primary.attr"/>
+      </optional>
+
+      <attribute name="kind">
+        <value>parameter</value>
+      </attribute>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <oneOrMore>
+              <choice>
+                <ref name="Document"/>
+                <ref name="Inline"/>
+              </choice>
+            </oneOrMore>
+
+          </choice>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="ParameterInput" sa:element="input" sa:ignore="yes">
+    <ref name="ParameterInputDeclaration"/>
+  </define>
+  <!-- ============================================================ -->
+  <define name="OutputDeclaration" sa:class="language-construct">
+    <element name="output">
+      <ref name="port.attr"/>
+
+      <optional>
+        <ref name="sequence.attr"/>
+      </optional>
+      <optional>
+        <ref name="primary.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="OutputConnection" sa:class="language-construct">
+    <element name="output">
+      <ref name="port.attr"/>
+      <optional>
+        <ref name="sequence.attr"/>
+      </optional>
+      <optional>
+        <ref name="primary.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <oneOrMore>
+
+              <choice>
+                <ref name="Pipe"/>
+                <ref name="Document"/>
+                <ref name="Inline"/>
+                <ref name="Data"/>
+              </choice>
+            </oneOrMore>
+          </choice>
+        </optional>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Output" sa:element="output">
+    <choice>
+      <ref name="OutputDeclaration"/>
+      <ref name="OutputConnection"/>
+    </choice>
+  </define>
+  <define name="Pipe" sa:class="language-construct">
+    <element name="pipe">
+      <attribute name="step">
+
+        <data type="NCName"/>
+      </attribute>
+      <ref name="port.attr"/>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="Document" sa:class="language-construct">
+    <element name="document">
+      <ref name="href.attr"/>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="Inline" sa:class="language-construct">
+    <element name="inline">
+      <optional>
+        <ref name="exclude-inline-prefixes.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <ref name="Any"/>
+    </element>
+  </define>
+  <define name="Empty" sa:class="language-construct">
+    <element name="empty">
+      <zeroOrMore>
+
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="Data" sa:class="language-construct">
+    <element name="data">
+
+      <ref name="href.attr"/>
+      <optional>
+        <attribute name="wrapper">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrapper-prefix"/>
+      </optional>
+
+      <optional>
+        <attribute name="wrapper-namespace"/>
+      </optional>
+      <optional>
+        <attribute name="content-type"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Log" sa:class="language-construct">
+    <element name="log">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <ref name="port.attr"/>
+      <optional>
+        <ref name="href.attr"/>
+
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Serialization" sa:class="language-construct">
+    <element name="serialization">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <ref name="port.attr"/>
+      <optional>
+        <attribute name="byte-order-mark">
+
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="cdata-section-elements">
+          <data type="NMTOKENS"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="doctype-public"/>
+      </optional>
+      <optional>
+        <attribute name="doctype-system"/>
+      </optional>
+      <optional>
+        <attribute name="encoding"/>
+      </optional>
+      <optional>
+
+        <attribute name="escape-uri-attributes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="include-content-type">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="indent">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="media-type"/>
+      </optional>
+      <optional>
+
+        <attribute name="method">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="normalization-form">
+          <choice>
+            <value>NFC</value>
+
+            <value>NFD</value>
+            <value>NFKC</value>
+            <value>NFKD</value>
+            <value>fully-normalized</value>
+            <value>none</value>
+            <data type="NMTOKEN"/>
+
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="omit-xml-declaration">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="standalone">
+          <choice>
+            <value>true</value>
+            <value>false</value>
+            <value>omit</value>
+          </choice>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="undeclare-prefixes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="version"/>
+      </optional>
+
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+
+  <define name="OptionDeclaration" sa:class="language-construct">
+    <element name="option">
+      <ref name="name.qname.attr"/>
+      <optional>
+        <ref name="required.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="OptionSelect" sa:class="language-construct">
+    <element name="option">
+      <ref name="name.qname.attr"/>
+      <optional>
+        <ref name="required.attr"/>
+      </optional>
+      <ref name="select.attr"/>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+
+  </define>
+  <define name="Option" sa:element="option">
+    <choice>
+      <ref name="OptionDeclaration"/>
+      <ref name="OptionSelect"/>
+    </choice>
+  </define>
+  <!-- ============================================================ -->
+  <define name="WithOptionSelect" sa:class="language-construct">
+
+    <element name="with-option">
+      <ref name="name.qname.attr"/>
+      <ref name="select.attr"/>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+
+          <choice>
+            <ref name="Empty"/>
+            <ref name="Pipe"/>
+            <ref name="Document"/>
+            <ref name="Inline"/>
+            <ref name="Data"/>
+          </choice>
+        </optional>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="Namespaces"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="WithOption" sa:element="with-option">
+    <ref name="WithOptionSelect"/>
+  </define>
+  <!-- ============================================================ -->
+  <define name="VariableSelect" sa:class="language-construct">
+    <element name="variable">
+      <ref name="name.qname.attr"/>
+      <ref name="select.attr"/>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <ref name="Pipe"/>
+            <ref name="Document"/>
+
+            <ref name="Inline"/>
+            <ref name="Data"/>
+          </choice>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Namespaces"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Variable" sa:element="variable">
+    <ref name="VariableSelect"/>
+  </define>
+  <!-- ============================================================ -->
+
+  <define name="Namespaces" sa:class="language-construct">
+    <element name="namespaces">
+      <optional>
+        <attribute name="binding">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="element">
+
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="except-prefixes">
+          <ref name="PrefixList"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+
+        <choice>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="WithParamSelect" sa:class="language-construct">
+
+    <element name="with-param">
+      <ref name="name.qname.attr"/>
+      <ref name="select.attr"/>
+      <optional>
+        <ref name="port.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <ref name="Pipe"/>
+            <ref name="Document"/>
+            <ref name="Inline"/>
+            <ref name="Data"/>
+
+          </choice>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Namespaces"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="WithParam" sa:element="with-param">
+    <ref name="WithParamSelect"/>
+  </define>
+  <!-- ============================================================ -->
+  <define name="DeclareStep" sa:class="language-construct">
+    <element name="declare-step">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <optional>
+        <attribute name="type">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <ref name="decl.attributes"/>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Input"/>
+          <ref name="ParameterInput"/>
+          <ref name="Output"/>
+
+          <ref name="Option"/>
+          <ref name="Log"/>
+          <ref name="Serialization"/>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+      <optional>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="DeclareStep"/>
+            <ref name="Pipeline"/>
+            <ref name="Import"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+
+      </optional>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="ForEach" sa:class="language-construct">
+    <element name="for-each">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <interleave>
+          <optional>
+            <ref name="IterationSource"/>
+          </optional>
+
+          <zeroOrMore>
+            <choice>
+              <ref name="Output"/>
+              <ref name="Log"/>
+              <ref name="Documentation"/>
+              <ref name="PipeInfo"/>
+            </choice>
+          </zeroOrMore>
+        </interleave>
+
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+  <define name="IterationSource" sa:class="language-construct">
+    <element name="iteration-source">
+      <optional>
+        <ref name="select.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Empty"/>
+            <oneOrMore>
+
+              <choice>
+                <ref name="Pipe"/>
+                <ref name="Document"/>
+                <ref name="Inline"/>
+                <ref name="Data"/>
+              </choice>
+            </oneOrMore>
+          </choice>
+        </optional>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <!-- ============================================================ -->
+  <define name="Viewport" sa:class="language-construct">
+    <element name="viewport">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <attribute name="match">
+        <ref name="XSLTMatchPattern"/>
+      </attribute>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <interleave>
+          <optional>
+            <ref name="ViewportSource"/>
+          </optional>
+
+          <optional>
+            <ref name="Output"/>
+          </optional>
+          <optional>
+            <ref name="Log"/>
+          </optional>
+          <zeroOrMore>
+            <ref name="Documentation"/>
+          </zeroOrMore>
+
+          <zeroOrMore>
+            <ref name="PipeInfo"/>
+          </zeroOrMore>
+        </interleave>
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+  <define name="ViewportSource" sa:class="language-construct">
+
+    <element name="viewport-source">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <optional>
+          <choice>
+            <ref name="Pipe"/>
+
+            <ref name="Document"/>
+            <ref name="Inline"/>
+            <ref name="Data"/>
+          </choice>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="Choose" sa:class="language-construct">
+    <element name="choose">
+      <optional>
+
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <optional>
+          <ref name="XPathContext"/>
+        </optional>
+        <zeroOrMore>
+          <ref name="Variable"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="When"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <optional>
+
+          <ref name="Otherwise"/>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </group>
+
+    </element>
+  </define>
+  <define name="XPathContext" sa:class="language-construct">
+    <element name="xpath-context">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+
+        <choice>
+          <ref name="Empty"/>
+          <ref name="Pipe"/>
+          <ref name="Document"/>
+          <ref name="Inline"/>
+          <ref name="Data"/>
+        </choice>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="When" sa:class="language-construct">
+    <element name="when">
+
+      <attribute name="test">
+        <ref name="XPathExpression"/>
+      </attribute>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <optional>
+          <ref name="XPathContext"/>
+        </optional>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="Output"/>
+            <ref name="Log"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+      </group>
+
+    </element>
+  </define>
+  <define name="Otherwise" sa:class="language-construct">
+    <element name="otherwise">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Output"/>
+            <ref name="Log"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+
+      </group>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="Group" sa:class="language-construct">
+    <element name="group">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+          <choice>
+            <ref name="Output"/>
+            <ref name="Log"/>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+
+  <define name="Try" sa:class="language-construct">
+    <element name="try">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <interleave>
+        <group>
+          <zeroOrMore>
+            <ref name="Variable"/>
+          </zeroOrMore>
+          <ref name="TryGroup"/>
+          <ref name="Catch"/>
+        </group>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="TryGroup" sa:class="language-construct">
+
+    <element name="group">
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+          <choice>
+            <ref name="Output"/>
+
+            <ref name="Log"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+
+  <define name="Catch" sa:class="language-construct">
+    <element name="catch">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <group>
+        <zeroOrMore>
+          <choice>
+            <ref name="Output"/>
+            <ref name="Log"/>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="OtherAtomicStep" sa:class="language-construct">
+    <element>
+      <anyName>
+        <except>
+
+          <nsName/>
+        </except>
+      </anyName>
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="option.attr"/>
+      </zeroOrMore>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="p_use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="InputConnection"/>
+          <ref name="WithOption"/>
+          <ref name="WithParam"/>
+
+          <ref name="Log"/>
+          <ref name="Documentation"/>
+          <ref name="PipeInfo"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="OtherCompoundStep" sa:class="language-construct">
+    <element>
+
+      <anyName>
+        <except>
+          <nsName/>
+        </except>
+      </anyName>
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="p_use-when.attr"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+          <choice>
+            <ref name="Output"/>
+            <ref name="Log"/>
+            <ref name="Documentation"/>
+
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+        <ref name="Subpipeline"/>
+      </group>
+    </element>
+  </define>
+  <define name="OtherStep">
+    <choice>
+
+      <ref name="StandardStep"/>
+      <ref name="OtherAtomicStep"/>
+      <ref name="OtherCompoundStep"/>
+    </choice>
+  </define>
+  <!-- ============================================================ -->
+  <define name="Documentation" sa:ignore="yes" sa:class="language-construct">
+    <element name="documentation">
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="DocContent"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="DocContent" sa:model="any-well-formed-content">
+
+    <choice>
+      <text/>
+      <ref name="Any"/>
+    </choice>
+  </define>
+  <!-- ============================================================ -->
+  <define name="PipeInfo" sa:ignore="yes" sa:class="language-construct">
+    <element name="pipeinfo">
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="DocContent"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <!-- ============================================================ -->
+
+  <define name="_any.attr">
+    <attribute>
+      <anyName/>
+    </attribute>
+  </define>
+  <define name="option.attr">
+    <attribute>
+      <nsName ns="">
+        <except>
+
+          <name ns="">name</name>
+        </except>
+      </nsName>
+    </attribute>
+  </define>
+  <define name="extension.attr">
+    <attribute>
+      <anyName>
+
+        <except>
+          <nsName ns=""/>
+          <nsName ns="http://www.w3.org/XML/1998/namespace"/>
+          <nsName/>
+        </except>
+      </anyName>
+    </attribute>
+  </define>
+  <define name="Any" sa:model="anyElement">
+
+    <element>
+      <anyName/>
+      <zeroOrMore>
+        <choice>
+          <ref name="_any.attr"/>
+          <text/>
+          <ref name="Any"/>
+        </choice>
+      </zeroOrMore>
+
+    </element>
+  </define>
+  <!-- ============================================================ -->
+  <define name="VocabParam" sa:class="step-vocabulary">
+    <element name="c:param">
+      <ref name="name.qname.attr"/>
+      <optional>
+        <attribute name="namespace">
+          <data type="anyURI"/>
+
+        </attribute>
+      </optional>
+      <attribute name="value"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="VocabParamSet" sa:class="step-vocabulary">
+    <element name="c:param-set">
+      <zeroOrMore>
+
+        <ref name="VocabParam"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="VocabDirectory" sa:class="step-vocabulary">
+    <element name="c:directory">
+      <attribute name="name"/>
+      <zeroOrMore>
+        <choice>
+
+          <ref name="VocabFile"/>
+          <ref name="VocabDirectory"/>
+          <ref name="VocabOther"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="VocabFile" sa:class="step-vocabulary">
+    <element name="c:file">
+
+      <attribute name="name"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="VocabOther" sa:class="step-vocabulary">
+    <element name="c:other">
+      <attribute name="name"/>
+      <empty/>
+    </element>
+
+  </define>
+  <define name="VocabResult" sa:class="step-vocabulary">
+    <element name="c:result">
+      <text/>
+    </element>
+  </define>
+  <define name="VocabHttpRequest" sa:class="step-vocabulary">
+    <element name="c:request">
+      <attribute name="method">
+
+        <data type="NCName"/>
+      </attribute>
+      <optional>
+        <attribute name="href">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="detailed">
+
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="status-only">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="username"/>
+      </optional>
+      <optional>
+        <attribute name="password"/>
+      </optional>
+      <optional>
+        <attribute name="auth-method"/>
+      </optional>
+      <optional>
+
+        <attribute name="send-authorization">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="override-content-type"/>
+      </optional>
+      <group>
+        <zeroOrMore>
+
+          <ref name="VocabHeader"/>
+        </zeroOrMore>
+        <optional>
+          <choice>
+            <ref name="VocabMultipart"/>
+            <ref name="VocabBody"/>
+          </choice>
+        </optional>
+      </group>
+
+    </element>
+  </define>
+  <define name="VocabHeader" sa:class="step-vocabulary">
+    <element name="c:header">
+      <attribute name="name"/>
+      <attribute name="value"/>
+      <empty/>
+    </element>
+  </define>
+
+  <define name="VocabMultipart" sa:class="step-vocabulary">
+    <element name="c:multipart">
+      <attribute name="content-type"/>
+      <attribute name="boundary"/>
+      <oneOrMore>
+        <ref name="VocabBody"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="VocabBody" sa:class="step-vocabulary">
+    <element name="c:body">
+      <attribute name="content-type"/>
+      <optional>
+        <attribute name="encoding"/>
+      </optional>
+      <optional>
+        <attribute name="id"/>
+      </optional>
+
+      <optional>
+        <attribute name="description"/>
+      </optional>
+      <optional>
+        <attribute name="disposition"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="Any"/>
+      </zeroOrMore>
+
+    </element>
+  </define>
+  <define name="VocabHttpResponse" sa:class="step-vocabulary">
+    <element name="c:response">
+      <optional>
+        <attribute name="status">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+
+      <group>
+        <zeroOrMore>
+          <ref name="VocabHeader"/>
+        </zeroOrMore>
+        <optional>
+          <choice>
+            <ref name="VocabMultipart"/>
+            <ref name="VocabBody"/>
+          </choice>
+
+        </optional>
+      </group>
+    </element>
+  </define>
+  <define name="VocabQuery" sa:class="step-vocabulary">
+    <element name="c:query">
+      <text/>
+    </element>
+  </define>
+
+  <define name="VocabLine" sa:class="step-vocabulary">
+    <element name="c:line">
+      <text/>
+    </element>
+  </define>
+  <define name="VocabData" sa:class="step-vocabulary">
+    <element name="c:data">
+      <optional>
+        <attribute name="content-type"/>
+
+      </optional>
+      <optional>
+        <attribute name="charset"/>
+      </optional>
+      <optional>
+        <attribute name="encoding"/>
+      </optional>
+      <text/>
+    </element>
+
+  </define>
+  <!-- ============================================================ -->
+  <define name="Errors" sa:class="error-vocabulary">
+    <element name="c:errors">
+      <zeroOrMore>
+        <ref name="Error"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Error" sa:class="error-vocabulary">
+    <element name="c:error">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <optional>
+        <attribute name="type">
+          <data type="QName"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="code">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <data type="anyURI"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="line">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="column">
+
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="offset">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+
+        <choice>
+          <text/>
+          <ref name="Any"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="Charset">
+    <text/>
+
+  </define>
+  <define name="Encoding">
+    <text/>
+  </define>
+  <define name="MIMEContentType">
+    <text/>
+  </define>
+  <define name="MIMEMediaType">
+    <text/>
+
+  </define>
+  <define name="RegularExpression">
+    <text/>
+  </define>
+  <define name="NormalizationForm">
+    <choice>
+      <value>NFC</value>
+      <value>NFD</value>
+
+      <value>NFKC</value>
+      <value>NFKD</value>
+      <value>fully-normalized</value>
+      <value>none</value>
+      <data type="NMTOKEN"/>
+    </choice>
+  </define>
+
+  <define name="ListOfQNames">
+    <text/>
+  </define>
+
+
+  <define name="StandardStep">
+    <choice>
+      <ref name="Step-add-attribute"/>
+      <ref name="Step-add-xml-base"/>
+      <ref name="Step-compare"/>
+      <ref name="Step-count"/>
+      <ref name="Step-delete"/>
+
+      <ref name="Step-directory-list"/>
+      <ref name="Step-error"/>
+      <ref name="Step-escape-markup"/>
+      <ref name="Step-filter"/>
+      <ref name="Step-http-request"/>
+      <ref name="Step-identity"/>
+      <ref name="Step-insert"/>
+      <ref name="Step-label-elements"/>
+      <ref name="Step-load"/>
+
+      <ref name="Step-make-absolute-uris"/>
+      <ref name="Step-namespace-rename"/>
+      <ref name="Step-pack"/>
+      <ref name="Step-parameters"/>
+      <ref name="Step-rename"/>
+      <ref name="Step-replace"/>
+      <ref name="Step-set-attributes"/>
+      <ref name="Step-sink"/>
+      <ref name="Step-split-sequence"/>
+
+      <ref name="Step-store"/>
+      <ref name="Step-string-replace"/>
+      <ref name="Step-unescape-markup"/>
+      <ref name="Step-unwrap"/>
+      <ref name="Step-wrap"/>
+      <ref name="Step-wrap-sequence"/>
+      <ref name="Step-xinclude"/>
+      <ref name="Step-xslt"/>
+      <ref name="Step-exec"/>
+
+      <ref name="Step-hash"/>
+      <ref name="Step-uuid"/>
+      <ref name="Step-validate-with-relax-ng"/>
+      <ref name="Step-validate-with-schematron"/>
+      <ref name="Step-validate-with-xml-schema"/>
+      <ref name="Step-www-form-urldecode"/>
+      <ref name="Step-www-form-urlencode"/>
+      <ref name="Step-xquery"/>
+      <ref name="Step-xsl-formatter"/>
+
+    </choice>
+  </define>
+  <define name="Step-add-attribute">
+    <element name="add-attribute">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="attribute-name">
+
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="attribute-prefix">
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="attribute-namespace">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="attribute-value">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-add-xml-base">
+    <element name="add-xml-base">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="all">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="relative">
+          <data type="boolean"/>
+
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-compare">
+    <element name="compare">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="fail-if-not-equal">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Step-count">
+    <element name="count">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <optional>
+        <attribute name="limit">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-delete">
+    <element name="delete">
+      <optional>
+
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-directory-list">
+    <element name="directory-list">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="path">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="include-filter">
+          <ref name="RegularExpression"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="exclude-filter">
+          <ref name="RegularExpression"/>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-error">
+    <element name="error">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="code">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="code-prefix">
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="code-namespace">
+          <data type="anyURI"/>
+        </attribute>
+
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="Step-escape-markup">
+    <element name="escape-markup">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="cdata-section-elements">
+          <ref name="ListOfQNames"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-public">
+
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-system">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="escape-uri-attributes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="include-content-type">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="indent">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="media-type">
+          <data type="string"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="method">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="omit-xml-declaration">
+          <data type="boolean"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="standalone">
+          <choice>
+            <value>true</value>
+            <value>false</value>
+            <value>omit</value>
+
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="undeclare-prefixes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="version">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-filter">
+    <element name="filter">
+      <optional>
+        <ref name="name.ncname.attr"/>
+
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="select">
+          <ref name="XPathExpression"/>
+        </attribute>
+
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="Step-http-request">
+    <element name="http-request">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="byte-order-mark">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="cdata-section-elements">
+
+          <ref name="ListOfQNames"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-public">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="doctype-system">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="encoding">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="escape-uri-attributes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="include-content-type">
+          <data type="boolean"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="indent">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="media-type">
+          <data type="string"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="method">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="normalization-form">
+
+          <ref name="NormalizationForm"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="omit-xml-declaration">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="standalone">
+          <choice>
+            <value>true</value>
+            <value>false</value>
+            <value>omit</value>
+          </choice>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="undeclare-prefixes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="version">
+          <data type="string"/>
+
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-identity">
+    <element name="identity">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-insert">
+    <element name="insert">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="position">
+          <choice>
+
+            <value>first-child</value>
+            <value>last-child</value>
+            <value>before</value>
+            <value>after</value>
+          </choice>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-label-elements">
+    <element name="label-elements">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="attribute">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="attribute-prefix">
+          <data type="NCName"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="attribute-namespace">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="label">
+
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="replace">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-load">
+    <element name="load">
+      <optional>
+        <ref name="name.ncname.attr"/>
+
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <data type="anyURI"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="dtd-validate">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-make-absolute-uris">
+    <element name="make-absolute-uris">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="base-uri">
+          <data type="anyURI"/>
+
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-namespace-rename">
+    <element name="namespace-rename">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="from">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="to">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="apply-to">
+          <choice>
+            <value>all</value>
+
+            <value>elements</value>
+            <value>attributes</value>
+          </choice>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-pack">
+    <element name="pack">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="wrapper">
+
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrapper-prefix">
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="wrapper-namespace">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-parameters">
+    <element name="parameters">
+      <optional>
+        <ref name="name.ncname.attr"/>
+
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-rename">
+    <element name="rename">
+      <optional>
+
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="new-name">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="new-prefix">
+
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="new-namespace">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Step-replace">
+    <element name="replace">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-set-attributes">
+    <element name="set-attributes">
+      <optional>
+
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-sink">
+    <element name="sink">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-split-sequence">
+    <element name="split-sequence">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="initial-only">
+
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="test">
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Step-store">
+    <element name="store">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <optional>
+        <attribute name="href">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="byte-order-mark">
+          <data type="boolean"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="cdata-section-elements">
+          <ref name="ListOfQNames"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-public">
+          <data type="string"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-system">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="encoding">
+
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="escape-uri-attributes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="include-content-type">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="indent">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="media-type">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="method">
+          <data type="QName"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="normalization-form">
+          <ref name="NormalizationForm"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="omit-xml-declaration">
+          <data type="boolean"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="standalone">
+          <choice>
+            <value>true</value>
+            <value>false</value>
+            <value>omit</value>
+
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="undeclare-prefixes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="version">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-string-replace">
+    <element name="string-replace">
+      <optional>
+        <ref name="name.ncname.attr"/>
+
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="replace">
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-unescape-markup">
+    <element name="unescape-markup">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="namespace">
+
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="content-type">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="encoding">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="charset">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-unwrap">
+    <element name="unwrap">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-wrap">
+    <element name="wrap">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="wrapper">
+
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrapper-prefix">
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="wrapper-namespace">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="group-adjacent">
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-wrap-sequence">
+    <element name="wrap-sequence">
+      <optional>
+
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="wrapper">
+          <data type="QName"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrapper-prefix">
+          <data type="NCName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrapper-namespace">
+
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="group-adjacent">
+          <ref name="XPathExpression"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Step-xinclude">
+    <element name="xinclude">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <optional>
+        <attribute name="fixup-xml-base">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="fixup-xml-lang">
+          <data type="boolean"/>
+        </attribute>
+
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="Step-xslt">
+    <element name="xslt">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="initial-mode">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="template-name">
+
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="output-base-uri">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="version">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-exec">
+
+    <element name="exec">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+
+        <attribute name="command">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="args">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="cwd">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="source-is-xml">
+          <data type="boolean"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="result-is-xml">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrap-result-lines">
+          <data type="boolean"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="errors-is-xml">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="wrap-error-lines">
+
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="path-separator">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="failure-threshold">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="arg-separator">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="byte-order-mark">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="cdata-section-elements">
+          <ref name="ListOfQNames"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="doctype-public">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="doctype-system">
+          <data type="anyURI"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="encoding">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="escape-uri-attributes">
+
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="include-content-type">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="indent">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="media-type">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="method">
+          <data type="QName"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="normalization-form">
+          <ref name="NormalizationForm"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="omit-xml-declaration">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="standalone">
+          <choice>
+
+            <value>true</value>
+            <value>false</value>
+            <value>omit</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="undeclare-prefixes">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="version">
+          <data type="string"/>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-hash">
+    <element name="hash">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="value">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="algorithm">
+          <data type="QName"/>
+
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="version">
+
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-uuid">
+    <element name="uuid">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="match">
+
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="version">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="Step-validate-with-relax-ng">
+    <element name="validate-with-relax-ng">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+
+      <optional>
+        <attribute name="dtd-attribute-values">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="dtd-id-idref-warnings">
+          <data type="boolean"/>
+        </attribute>
+
+      </optional>
+      <optional>
+        <attribute name="assert-valid">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-validate-with-schematron">
+    <element name="validate-with-schematron">
+
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="phase">
+
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="assert-valid">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+
+        <zeroOrMore>
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+
+      </interleave>
+    </element>
+  </define>
+  <define name="Step-validate-with-xml-schema">
+    <element name="validate-with-xml-schema">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="use-location-hints">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+
+        <attribute name="try-namespaces">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="assert-valid">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+
+      <optional>
+        <attribute name="mode">
+          <choice>
+            <value>strict</value>
+            <value>lax</value>
+          </choice>
+        </attribute>
+      </optional>
+
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-www-form-urldecode">
+    <element name="www-form-urldecode">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="value">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-www-form-urlencode">
+    <element name="www-form-urlencode">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <optional>
+        <attribute name="match">
+          <ref name="XSLTMatchPattern"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithParam"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+
+  </define>
+  <define name="Step-xquery">
+    <element name="xquery">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+
+    </element>
+  </define>
+  <define name="Step-xsl-formatter">
+    <element name="xsl-formatter">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+
+        <ref name="use-when.attr"/>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <data type="anyURI"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="content-type">
+
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="InputConnection"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="Log"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithParam"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+</grammar>

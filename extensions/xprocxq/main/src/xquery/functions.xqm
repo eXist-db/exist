@@ -43,3 +43,23 @@ else
 	should throw a u:dynamicError('err:XD0015',"")
 	:)
 };
+
+declare function func:version-available($version as xs:decimal){
+  if ($version eq 1.0) then
+    "true"
+  else
+    "false"
+};
+
+declare function func:value-available($value){
+let $check := fn:concat('exists($',$value,')')
+return
+  if (util:eval($check)) then
+    "true"
+  else
+    "false"
+};
+
+declare function func:step-available($step-name){
+    "true"
+};
