@@ -18,7 +18,7 @@ import java.io.InputStream;
 public class CachingFilterInputStream extends FilterInputStream {
 
     private final static int END_OF_STREAM = -1;
-    private final static String INPUTSTREAM_CLOSED = "The InputStream has been closed";
+    private final static String INPUTSTREAM_CLOSED = "The underlying InputStream has been closed";
 
     private boolean srcClosed = false;
     private int srcOffset = 0;
@@ -28,18 +28,26 @@ public class CachingFilterInputStream extends FilterInputStream {
     private final InputStream src;
     private final FilterInputStreamCache cache;
 
+    /**
+     * @param cache The cache implementation
+     * @param src The source InputStream to cache reads for
+     */
     public CachingFilterInputStream(FilterInputStreamCache cache, InputStream src) {
         super(src);
         this.src = src;
         this.cache = cache;
     }
 
+    /**
+     * Gets the cache implementation
+     */
     private FilterInputStreamCache getCache() {
         return cache;
     }
 
     @Override
     public int available() throws IOException {
+        //TODO fix - this is not correct calculation. It does not account for data available in the underlying inputstream
         return (getCache().getLength() - cacheOffset);
     }
 
@@ -110,10 +118,8 @@ public class CachingFilterInputStream extends FilterInputStream {
         if(useCache && cacheOffset < srcOffset) {
 
             //copy data from the cache
-            //byte cacheData[] = getCache().toByteArray();
             int actualLen = (len > getCache().getLength() - cacheOffset ? getCache().getLength() - cacheOffset : len);
             getCache().copyTo(cacheOffset, b, off, actualLen);
-            //System.arraycopy(cache.toByteArray(), cacheOffset, b, off, actualLen);
             cacheOffset += actualLen;
 
             //if the requested bytes were more than what is present in the cache, then also read from the src
@@ -172,17 +178,16 @@ public class CachingFilterInputStream extends FilterInputStream {
 
 
     /**
-     * We cant actually skip as we need to cache the data,
+     * We cant actually skip as we need to read so that we can cache the data,
      * however apart from the potentially increased I/O
-     * and Memory the result is the same
+     * and Memory, the end result is the same
      */
     @Override
     public long skip(long n) throws IOException {
 
         if(srcClosed) {
             throw new IOException(INPUTSTREAM_CLOSED);
-        }
-        else if(n < 1) {
+        } else if(n < 1) {
             return 0;
         }
 
