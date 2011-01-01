@@ -22,14 +22,13 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.apache.commons.io.input.CloseShieldInputStream;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -114,20 +113,9 @@ public class GetData extends BasicFunction {
 			}
 
 			//first, get the content of the request
-			//byte[] bufRequestData = null;
                         InputStream is = null;
 			try {
 				 is = request.getInputStream();
-
-                                /*long contentLength=request.getContentLength();
-				ByteArrayOutputStream bos = new ByteArrayOutputStream((contentLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)contentLength);
-				byte[] buf = new byte[256];
-				int l = 0;
-				while ((l = is.read(buf)) > -1)
-				{
-					bos.write(buf, 0, l);
-				}
-				bufRequestData = bos.toByteArray();*/
 			} catch(IOException ioe) {
 				throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
 			}
@@ -169,7 +157,10 @@ public class GetData extends BasicFunction {
                                             SAXParserFactory factory = SAXParserFactory.newInstance();
                                             factory.setNamespaceAware(true);
                                             //TODO : we should be able to cope with context.getBaseURI()
-                                            InputSource src = new InputSource(is);
+
+                                            //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
+                                            InputSource src = new InputSource(new CloseShieldInputStream(is));
+
                                             SAXParser parser = factory.newSAXParser();
                                             XMLReader reader = parser.getXMLReader();
                                             MemTreeBuilder builder = context.getDocumentBuilder();
