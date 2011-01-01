@@ -359,6 +359,24 @@ let $result := util:eval-with-context(fn:concat($const:default-ns-imports,$qry),
 };
 
 (: -------------------------------------------------------------------------- :)
+declare function u:xsltmatchpattern($match,$xml,$variables){
+for $item in fn:tokenize($match,'\|')
+let $declarevars := for $var in $variables
+                           return
+                           concat('declare variable ',$var/@name,"",$var/node(),";")
+let $query := if (starts-with($item, '//')) then
+    concat($const:default-ns-imports,$declarevars,'.',$item)
+else if (starts-with($item,'/')) then
+    concat($const:default-ns-imports,$declarevars,'./',$item)
+else
+    concat($const:default-ns-imports,$declarevars,'.//',$item)
+let $declarens := u:declare-ns($xml)
+return
+    util:eval-inline($xml,$query)
+};
+
+
+(: -------------------------------------------------------------------------- :)
 declare function u:xquery-with-context($query,$xml){
     let $static-content := <static-context>
 						<default-context>{$xml}</default-context>

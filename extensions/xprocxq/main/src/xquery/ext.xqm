@@ -1,4 +1,4 @@
-xquery version "1.0" encoding "UTF-8";
+ xquery version "1.0" encoding "UTF-8";
 module namespace ext = "http://xproc.net/xproc/ext";
 (: ------------------------------------------------------------------------------------- 
 

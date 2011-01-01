@@ -81,12 +81,13 @@ declare variable $const:init_unique_id :="!1";
 (: Default imports for eval-step :)
 (: -------------------------------------------------------------------------- :)
 declare variable $const:default-ns-imports :='
+    declare namespace p="http://www.w3.org/ns/xproc";
     declare namespace c="http://www.w3.org/ns/xproc-step";
     declare namespace err="http://www.w3.org/ns/xproc-error";
     declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
     declare namespace t="http://xproc.org/ns/testsuite";
 
-    import module namespace p   = "http://xproc.net/xproc/functions" at "resource:net/xproc/xprocxq/src/xquery/functions.xqm";
+    import module namespace func   = "http://xproc.net/xproc/functions" at "resource:net/xproc/xprocxq/src/xquery/functions.xqm";
 
 ';
 
