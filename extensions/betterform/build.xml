@@ -33,8 +33,7 @@
 
 
     <path id="generator.libs" description="classpath for using Saxon XSLT">
-        <pathelement location="${exist.rootdir}/lib/endorsed/saxonb-9.1.0.8.jar"/>
-        <pathelement location="${exist.rootdir}/lib/endorsed/saxonb-dom-9.1.0.8.jar"/>
+        <pathelement location="${exist.rootdir}/lib/endorsed/saxonhe-9.2.1.5.jar"/>
     </path>
 
     <path id="classpath.exist">
@@ -88,7 +87,7 @@
         <xslt in="${exist.web.xml}" out="${exist.web.xml}.bf" force="true"
               style="${betterform.etc}/MergeWebXML.xsl">
             <classpath refid="generator.libs"/>
-            <!--<factory name="net.sf.saxon.TransformerFactoryImpl"/>-->
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <param name="webxml.path" expression="${exist.web.xml}"/>
         </xslt>
         <move file="${exist.web.xml}" tofile="${basedir}/uninstall/web.xml"/>
