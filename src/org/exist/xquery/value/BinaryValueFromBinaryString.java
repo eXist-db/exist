@@ -5,6 +5,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
 
 /**
@@ -28,7 +29,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     public void streamBinaryTo(OutputStream os) throws IOException {
         
         //we need to create a safe output stream that cannot be closed
-        OutputStream safeOutputStream = makeSafeOutputStream(os);
+        OutputStream safeOutputStream = new CloseShieldOutputStream(os);
         
         //get the decoder
         FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);

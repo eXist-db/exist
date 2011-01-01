@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.text.Collator;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
 
 import org.exist.xquery.Constants;
@@ -186,7 +187,7 @@ public abstract class BinaryValue extends AtomicValue {
     public void streamTo(OutputStream os) throws IOException {
         
         //we need to create a safe output stream that cannot be closed
-        OutputStream safeOutputStream = makeSafeOutputStream(os);
+        OutputStream safeOutputStream = new CloseShieldOutputStream(os);
 
         //get the encoder
         FilterOutputStream fos = getBinaryValueType().getEncoder(safeOutputStream);
@@ -221,16 +222,4 @@ public abstract class BinaryValue extends AtomicValue {
     }
 
     public abstract void close() throws IOException;
-
-   /**
-     * Creates a safe OutputStream that cannot be closed
-     */
-    protected OutputStream makeSafeOutputStream(OutputStream os) {
-        return new FilterOutputStream(os){
-            @Override
-            public void close() throws IOException {
-                //do nothing
-            }
-        };
-    }
 }
