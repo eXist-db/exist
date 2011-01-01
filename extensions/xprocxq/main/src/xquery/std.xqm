@@ -64,11 +64,6 @@ declare function std:add-attribute($primary,$secondary,$options,$variables) {
 
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (starts-with($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $attribute-name := u:get-option('attribute-name',$options,$v)
 let $checkname := u:asserterror('err:XC0059', boolean($attribute-name ne 'xmlns'), 'This step cannot be used to add namespace declarations')
 let $attribute-value := u:get-option('attribute-value',$options,$v)
@@ -86,7 +81,7 @@ else
 
 return
 
-	u:add-attribute-matching-elements($v/*,$matchresult,$attrname,$attribute-value)
+	u:add-attribute-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$attrname,$attribute-value)
 };
 
 
@@ -99,7 +94,7 @@ let $matchresult := u:evalXPATH('//*', $v, $primary)
 let $attribute-name := "xml:base"
 let $attribute-value := base-uri($v)
 return
-	u:add-attribute-matching-elements($v,$matchresult,$attribute-name,$attribute-value)
+	u:add-attribute-matching-elements($v,x,$attribute-name,$attribute-value)
 };
 
 
@@ -151,13 +146,8 @@ return
 declare function std:delete($primary,$secondary,$options,$variables){
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v)
 return
-   	u:delete-matching-elements($v/*, $matchresult)
+   	u:delete-matching-elements($v/*,  u:xsltmatchpattern($match,$v,$variables) )
 };
 
 
@@ -309,14 +299,9 @@ declare function std:insert($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $position := u:get-option('position',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $insertion := u:get-secondary('insertion',$secondary)
 return
-	u:insert-matching-elements($v/*,$matchresult,$insertion,$position)
+	u:insert-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$insertion,$position)
 };
 
 
@@ -327,13 +312,8 @@ let $match := u:get-option('match',$options,$v)
 let $attribute := u:get-option('attribute',$options,$v)
 let $label := u:get-option('label',$options,$v)
 let $replace := u:get-option('replace',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 return
-	u:label-matching-elements($v/*,$matchresult,$attribute,$label,$replace)
+	u:label-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$attribute,$label,$replace)
 };
 
 
@@ -412,14 +392,9 @@ return
 declare function std:rename($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $new-name := u:get-option('new-name',$options,$v)
 return
-	u:rename-matching-elements($v/*,$matchresult,$new-name)
+	u:rename-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$new-name)
 };
 
 
@@ -427,14 +402,9 @@ return
 declare function std:replace($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replacement := u:get-secondary('replacement',$secondary)
 return
-	u:replace-matching-elements($v/*,$matchresult,$replacement)
+	u:replace-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$replacement)
 };
 
 
@@ -443,9 +413,8 @@ declare function std:set-attributes($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $attributes := u:get-secondary('attributes',$secondary)
 let $match := u:get-option('match',$options,$v)
-let $matchresult := u:evalXPATH(string($match), $v, $primary)
 return
-	u:add-attributes-matching-elements($v/*,$matchresult,$attributes/*/@*)
+	u:add-attributes-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$attributes/*/@*)
 };
 
 
@@ -501,14 +470,9 @@ if($xproc:output-document eq 'true') then
 declare function std:string-replace($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if (contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $replace := string(u:get-option('replace',$options,$v))
 return
-    util:catch('*',u:string-replace-matching-elements($v/*,$matchresult,$replace),u:dynamicError("err:XD0001",": p:string-replace resulted in non xml output"))
+    util:catch('*',u:string-replace-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$replace),u:dynamicError("err:XD0001",": p:string-replace resulted in non xml output"))
 
 };
 
@@ -536,11 +500,6 @@ return
 declare function std:wrap($primary,$secondary,$options,$variables) {
 let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
-let $query := if(contains($match,'/')) then
-				$match
-			  else
-				concat('//',$match)
-let $matchresult := u:evalXPATH($query, $v, $primary)
 let $wrapper := u:get-option('wrapper',$options,$v)
 let $group-adjacent := u:get-option('group-adjacent',$options,$v)
 return
@@ -549,7 +508,7 @@ return
 	    	$v
 	    }
 	else
-	    u:wrap-matching-elements($v/*,$matchresult,$wrapper)
+	    u:wrap-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$wrapper)
 };
 
 
@@ -569,13 +528,8 @@ return
 declare function std:unwrap($primary,$secondary,$options,$variables) {
     let $v := u:get-primary($primary)
     let $match := u:get-option('match',$options,$v)
-    let $query := if (contains($match,'/')) then
-                    $match
-                  else
-                    concat('//',$match)
-    let $matchresult := u:evalXPATH($query, $v, $primary)
     return
-        u:unwrap-matching-elements($v/*,$matchresult)
+        u:unwrap-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables))
 };
 
 
