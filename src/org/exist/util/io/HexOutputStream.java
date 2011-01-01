@@ -7,6 +7,8 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 /**
+ * Hexadecimal encoding OutputStream
+ *
  * Based on org.apache.commons.codec.binary.Base64OutputStream
  *
  * @author Adam Retter <adam@existsolutions.com>
