@@ -47,35 +47,6 @@ public class BinaryValueFromInputStream extends BinaryValue {
         return binaryInputStream;
     }
 
-    //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel
-    /*@Override
-    public String getStringValue() throws XPathException {
-        Base64Encoder enc = new Base64Encoder();
-
-        StringBuilder builder = new StringBuilder();
-
-        try {
-            int read = -1;
-            byte data[] = new byte[READ_BUFFER_SIZE];
-            while((read = is.read(data)) > -1) {
-                enc.translate(data, read);
-                builder.append(enc.getCharArray());
-            }
-        } catch(IOException ioe) {
-            LOG.error(ioe.getMessage(), ioe);
-            throw new XPathException(ioe.getMessage(), ioe);
-        } finally {
-            //reset the buf
-            try {
-                is.reset();
-            } catch(IOException ioe) {
-                LOG.error("Unable to reset stream: " + ioe.getMessage(), ioe);
-            }
-        }
-
-        return builder.toString();
-    }*/
-
     @Override
     public void streamBinaryTo(OutputStream os) throws IOException {
         try {
