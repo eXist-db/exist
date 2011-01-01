@@ -62,185 +62,174 @@ import org.xml.sax.XMLReader;
 
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class GetData extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(GetData.class);
+    protected static final Logger logger = Logger.getLogger(GetData.class);
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName(
-				"get-data",
-				RequestModule.NAMESPACE_URI,
-				RequestModule.PREFIX),
-			"Returns the content of a POST request.If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
-			null,
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request"));
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("get-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+        "Returns the content of a POST request.If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
+        null,
+        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request")
+    );
 	
-	public GetData(XQueryContext context) {
-		super(context, signature);
-	}
+    public GetData(XQueryContext context) {
+        super(context, signature);
+    }
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
-	{
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException {
 		
-		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+        RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
-		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
-		
-		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "No request object found in the current XQuery context.");
-		
-		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $request is not bound to an Java object.");
-		
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		
-		if(value.getObject() instanceof RequestWrapper)
-		{
-			RequestWrapper request = (RequestWrapper)value.getObject();	
-			
-			//if the content length is unknown or 0, return
-			if (request.getContentLength() == -1 
-			 || request.getContentLength() == 0)
-			{
-				return Sequence.EMPTY_SEQUENCE;
-			}
+        // request object is read from global variable $request
+        Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 
-			//first, get the content of the request
-                        InputStream is = null;
-			try {
-				 is = request.getInputStream();
-			} catch(IOException ioe) {
-				throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
-			}
-			
-			//was there any POST content
-                        FilterInputStreamCache cache = null;
-                        try
-                        {
-                            if(is != null && is.available()>0) {
-                                    //determine if exists mime database considers this binary data
-                                    String contentType = request.getContentType();
-                                    if(contentType != null) {
-                                            //strip off any charset encoding info
-                                            if(contentType.indexOf(";") > -1) {
-                                                    contentType = contentType.substring(0, contentType.indexOf(";"));
-                                            }
+        if(var == null || var.getValue() == null) {
+            throw new XPathException(this, "No request object found in the current XQuery context.");
+        }
 
-                                            MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
-                                            if(mimeType != null)
-                                            {
-                                                    if(!mimeType.isXMLType()) {
-                                                        //binary data
-                                                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is);
-                                                    }
-                                            }
-                                    }
+        if(var.getValue().getItemType() != Type.JAVA_OBJECT) {
+            throw new XPathException(this, "Variable $request is not bound to an Java object.");
+        }
 
-                                    //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-                                    cache = new MemoryMappedFileFilterInputStreamCache();
-                                    is = new CachingFilterInputStream(cache, is);
-                                    is.mark(Integer.MAX_VALUE);
+        JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
+        if(value.getObject() instanceof RequestWrapper) {
 
-                                    //try and parse as an XML documemnt, otherwise fallback to returning the data as a string
-                                    context.pushDocumentContext();
-                                    try
-                                    {
-                                            //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
-                                            SAXParserFactory factory = SAXParserFactory.newInstance();
-                                            factory.setNamespaceAware(true);
-                                            //TODO : we should be able to cope with context.getBaseURI()
+            RequestWrapper request = (RequestWrapper)value.getObject();
 
-                                            //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
-                                            InputSource src = new InputSource(new CloseShieldInputStream(is));
+            //if the content length is unknown or 0, return
+            if (request.getContentLength() == -1 || request.getContentLength() == 0) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
 
-                                            SAXParser parser = factory.newSAXParser();
-                                            XMLReader reader = parser.getXMLReader();
-                                            MemTreeBuilder builder = context.getDocumentBuilder();
-                                            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
-                                            reader.setContentHandler(receiver);
-                                            reader.parse(src);
-                                            Document doc = receiver.getDocument();
+            //first, get the content of the request
+            InputStream is = null;
+            try {
+                 is = request.getInputStream();
+            } catch(IOException ioe) {
+                throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
+            }
 
-                                            return (NodeValue)doc.getDocumentElement();
-                                    }
-                                    catch(ParserConfigurationException e)
-                                    {
-                                            //do nothing, we will default to trying to return a string below
-                                    }
-                                    catch(SAXException e)
-                                    {
-                                            //do nothing, we will default to trying to return a string below
-                                    }
-                                    catch(IOException e)
-                                    {
-                                            //do nothing, we will default to trying to return a string below
-                                    }
-                                    finally
-                                    {
-                                        context.popDocumentContext();
-                                        is.reset(); //reset as we may need to reuse for string parsing
-                                    }
+            //was there any POST content
+            FilterInputStreamCache cache = null;
+            try {
+                if(is != null && is.available()>0) {
+                    //determine if exists mime database considers this binary data
+                    String contentType = request.getContentType();
+                    if(contentType != null) {
+                        //strip off any charset encoding info
+                        if(contentType.indexOf(";") > -1) {
+                            contentType = contentType.substring(0, contentType.indexOf(";"));
+                        }
 
-                                    //not a valid XML document, return a string representation of the document
-                                    String encoding = request.getCharacterEncoding();
-                                    if(encoding == null)
-                                    {
-                                            encoding = "UTF-8";
-                                    }
-
-                                    try {
-
-                                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                                        byte[] buf = new byte[4096];
-                                        int l = -1;
-                                        while ((l = is.read(buf)) > -1)
-                                        {
-                                                bos.write(buf, 0, l);
-                                        }
-                                        String s = new String(bos.toByteArray(), encoding);
-                                        return new StringValue(s);
-
-                                    } catch (IOException e) {
-                                        throw new XPathException(this, "An IO exception occurred: " + e.getMessage(), e);
-                                    }
-                            } else {
-                                //no post data
-                                return Sequence.EMPTY_SEQUENCE;
-                            }
-                        } catch(IOException ioe) {
-                            LOG.error(ioe.getMessage(), ioe);
-                        } finally {
-
-                            if(cache != null) {
-                                try {
-                                    cache.invalidate();
-                                } catch(IOException ioe) {
-                                    LOG.error(ioe.getMessage(), ioe);
-                                }
-                            }
-
-                            if(is != null) {
-                                try {
-                                    is.close();
-                                } catch(IOException ioe) {
-                                    LOG.error(ioe.getMessage(), ioe);
-                                }
+                        MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
+                        if(mimeType != null) {
+                            if(!mimeType.isXMLType()) {
+                                //binary data
+                                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is);
                             }
                         }
-		}
-		else
-		{
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
-		}
+                    }
 
-                return Sequence.EMPTY_SEQUENCE;
-	}
+                    //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
+                    cache = new MemoryMappedFileFilterInputStreamCache();
+                    is = new CachingFilterInputStream(cache, is);
+                    is.mark(Integer.MAX_VALUE);
+
+
+                    //try and parse as an XML documemnt, otherwise fallback to returning the data as a string
+                    context.pushDocumentContext();
+                    try {
+                        //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
+                        SAXParserFactory factory = SAXParserFactory.newInstance();
+                        factory.setNamespaceAware(true);
+                        //TODO : we should be able to cope with context.getBaseURI()
+
+                        //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
+                        InputSource src = new InputSource(new CloseShieldInputStream(is));
+
+                        SAXParser parser = factory.newSAXParser();
+                        XMLReader reader = parser.getXMLReader();
+                        MemTreeBuilder builder = context.getDocumentBuilder();
+                        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+                        reader.setContentHandler(receiver);
+                        reader.parse(src);
+                        Document doc = receiver.getDocument();
+
+                        return (NodeValue)doc.getDocumentElement();
+                    }
+                    catch(ParserConfigurationException e)
+                    {
+                            //do nothing, we will default to trying to return a string below
+                    }
+                    catch(SAXException e)
+                    {
+                            //do nothing, we will default to trying to return a string below
+                    }
+                    catch(IOException e)
+                    {
+                            //do nothing, we will default to trying to return a string below
+                    }
+                    finally
+                    {
+                        context.popDocumentContext();
+                        is.reset(); //reset as we may need to reuse for string parsing
+                    }
+
+                    //not a valid XML document, return a string representation of the document
+                    String encoding = request.getCharacterEncoding();
+                    if(encoding == null) {
+                        encoding = "UTF-8";
+                    }
+
+                    try {
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        byte[] buf = new byte[4096];
+                        int l = -1;
+                        while ((l = is.read(buf)) > -1) {
+                                bos.write(buf, 0, l);
+                        }
+                        String s = new String(bos.toByteArray(), encoding);
+                        return new StringValue(s);
+
+                    } catch (IOException e) {
+                        throw new XPathException(this, "An IO exception occurred: " + e.getMessage(), e);
+                    }
+                } else {
+                    //no post data
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+            } catch(IOException ioe) {
+                LOG.error(ioe.getMessage(), ioe);
+            } finally {
+
+                if(cache != null) {
+                    try {
+                        cache.invalidate();
+                    } catch(IOException ioe) {
+                        LOG.error(ioe.getMessage(), ioe);
+                    }
+                }
+
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch(IOException ioe) {
+                        LOG.error(ioe.getMessage(), ioe);
+                    }
+                }
+            }
+        } else {
+            throw new XPathException(this, "Variable $request is not bound to a Request object.");
+        }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
 }
