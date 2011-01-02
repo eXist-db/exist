@@ -11,8 +11,10 @@ return
             </style>
         </head>
         <body>
-            <style:page-head/>
-            <div id="content1col">
+            <style:page-head base="..">
+                <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+            </style:page-head>
+            <div id="content2col">
                 <h2>An error has occurred</h2>
                 {$input//div[@class = 'description']}
                 

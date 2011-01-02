@@ -5,6 +5,13 @@ if ($exist:path eq '/') then
 		<redirect url="index.xml"/>
 	</dispatch>
 
+else if ($exist:resource eq 'index.xml') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <view>
+            <forward url="style.xql"/>
+    	</view>
+    </dispatch>
+    
 (: 
 	jQuery module demo: tags in the jquery namespace are expanded
 	by style-jquery.xql
@@ -12,6 +19,7 @@ if ($exist:path eq '/') then
 else if ($exist:resource eq 'jquery.xml') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
+            <forward url="style.xql"/>
             <forward url="style-jquery.xql"/>
     	</view>
     </dispatch>
