@@ -26,13 +26,13 @@ declare function style:page-head($node) {
             <h1>Open Source Native XML Database</h1>
         </div>
     </div>,
-    style:sidebar($node/nav:sidebar)
+    style:sidebar($node)
 };
 
 declare function style:sidebar($node) {
     <div id="sidebar">
     {
-        for $group in $node/nav:group
+        for $group in $node//nav:group
         return
             <div class="block">
                 <div class="head rounded-top">
@@ -78,6 +78,5 @@ declare function style:transform($node) {
 let $input := request:get-data()
 let $output :=
     style:transform(util:expand($input))
-let $log := util:log("DEBUG", $output)
 return
     $output

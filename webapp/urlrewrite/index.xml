@@ -19,7 +19,6 @@
                     jQuery/Javascript code.</li>
                 <li><a href="faulty.xql">Error handling</a>: redirect the user to a landing page if an XQuery error occurs.</li>
             </ul>
-            
         </div>
     </body>
 </html>

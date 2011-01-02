@@ -28,12 +28,31 @@ declare function jquery:script($node as element()?) as xs:string? {
 declare function jquery:header($config as element(jquery:header)) as element()* {
     let $base := $config/@base/string()
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
+    let $hasSource := root($config)//jquery:source
     return (
         <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"></script>,
         <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"></script>,
         <script type="text/javascript" src="{$base}/jquery-utils.js"></script>,
-        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>
+        <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>,
+        if ($hasSource) then jquery:syntax-highlighting-libs($base, $cssbase) else ()
     )
+};
+
+declare function jquery:syntax-highlighting-libs($base as xs:string, $cssbase as xs:string) {
+    <script type="text/javascript" src="{$base}/../syntax/shCore.js"></script>,
+    <script type="text/javascript" src="{$base}/../syntax/shBrushCss.js"></script>,
+    <script type="text/javascript" src="{$base}/../syntax/shBrushJScript.js"></script>,
+    <script type="text/javascript" src="{$base}/../syntax/shBrushPlain.js"></script>,
+    <script type="text/javascript" src="{$base}/../syntax/shBrushXml.js"></script>,
+    <script type="text/javascript" src="{$base}/../syntax/shBrushXQuery.js"></script>,
+    <link type="text/css" rel="stylesheet" href="{$base}/../../styles/syntax/shCore.css" />,
+    <link type="text/css" rel="Stylesheet" href="{$base}/../../styles/syntax/shThemeDefault.css" id="theme" />,
+    <jquery:script>
+        SyntaxHighlighter.config.stripBrs = true;
+        SyntaxHighlighter.defaults[ 'auto-links'] = false;
+        SyntaxHighlighter.defaults[ 'wrap-lines'] = true;
+        SyntaxHighlighter.all();
+    </jquery:script>
 };
 
 (:~
@@ -351,7 +370,7 @@ declare function jquery:button($node as element(jquery:button)) as element()+ {
 };
 
 declare function jquery:accordion($config as element(jquery:ajax-accordion)) as element()+ {
-    let $id := if ($config/@id) then $config/@id/string() else 'jquery-accordion'
+    let $id := if ($config/@id) then $config/@id/string() else concat('N', util:uuid())
     let $panels :=
         for $panel in $config/jquery:panel
         let $panelId := if ($panel/@id) then $panel/@id/string() else concat('N', util:uuid()) 
@@ -370,7 +389,7 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
             </div>
     return (
         <div id="{$id}">
-        {   $panels/* }
+        {   $config/@class, $panels/* }
         </div>,
         <jquery:script>
             var actions = {{}};
@@ -387,6 +406,7 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
                 autoHeight: true,
                 fillSpace: false,
                 collapsible: true,
+                active: { if ($config/@active eq "true") then "true" else "false" },
                 change: function (event, ui) {{
                     var id = ui.newHeader.attr('id');
                     var panel = ui.newHeader.next();
@@ -462,6 +482,35 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
         </div>
 };
 
+declare function jquery:escape-xml($node as node()) as xs:string* {
+    typeswitch ($node)
+        case element() return
+            string-join(
+                (
+                    "&lt;", node-name($node),
+                    for $attr in $node/@* return concat(" ", node-name($attr), '="', $attr/string(), '"'),
+                    if ($node/node()) then
+                        ("&gt;", for $child in $node/node() return jquery:escape-xml($child), "&lt;/", node-name($node), "&gt;")
+                    else
+                        "/&gt;"
+                ),
+                ""
+            )
+        default return
+            $node
+};
+
+declare function jquery:source($node as node()) as node()* {
+    let $id := $node/@ref
+    let $code := root($node)//*[@id = $id][1]
+    return
+        <div class="programlisting">
+            <pre class="brush: xml;">
+            { jquery:escape-xml($code) }
+            </pre>
+        </div>
+};
+
 (:~
     Main function to process an HTML template. All jquery:* elements
     in the template are expanded, if known.
@@ -488,6 +537,8 @@ declare function jquery:process-templates($node as node()) as node()* {
             jquery:dialog($node)
         case element(jquery:header) return
             jquery:header($node)
+        case element(jquery:source) return
+            jquery:source($node)
         case element() return
             element { node-name($node) } {
                 $node/@*,
