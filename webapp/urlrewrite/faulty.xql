@@ -11,8 +11,10 @@ return
             </style>
         </head>
         <body>
-            <style:page-head/>
-            <div id="content1col">
+            <style:page-head base="..">
+                <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+            </style:page-head>
+            <div id="content2col">
                 <h2>Error Handler Test</h2>
                 
                 <p>Submitting the following form will trigger a cast error in the server side

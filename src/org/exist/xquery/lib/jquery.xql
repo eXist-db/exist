@@ -360,8 +360,11 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
                 <h3 id="{$panelId}"><a href="#">{$panel/@title/string()}</a></h3>
                 <div>
                 {
-                    for $child in $panel/node() return
-                        jquery:process-templates($child)
+                    if ($panel/node()) then
+                        for $child in $panel/node() return
+                            jquery:process-templates($child)
+                    else
+                        <p>Loading ...</p>
                 }
                 </div>
             </div>
@@ -381,9 +384,8 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
                     else ()
             }
             $('#{$id}').accordion({{
-                autoHeight: false,
-                fillSpace: true,
-                active: false,
+                autoHeight: true,
+                fillSpace: false,
                 collapsible: true,
                 change: function (event, ui) {{
                     var id = ui.newHeader.attr('id');

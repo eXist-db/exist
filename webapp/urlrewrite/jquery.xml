@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<html xmlns:jquery="http://exist-db.org/xquery/jquery">
+<html xmlns:jquery="http://exist-db.org/xquery/jquery" xmlns:style="http://exist-db.org/xquery/style">
     <head>
         <title>eXist - jQuery/URL rewriting demo</title>
         <jquery:header base="../scripts/jquery" cssbase="../scripts/jquery/css"/>
-        <link rel="stylesheet" type="text/css" href="../styles/default-style2.css"/>
+        <style:default-styles/>
         <style type="text/css">
             label { width: 120px; float: left; }
         </style>
@@ -13,15 +13,10 @@
         </script>
     </head>
     <body>
-        <div id="page-head">
-            <a href="../" style="text-decoration: none">
-                <img src="../logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
-            </a>
-            <div id="navbar">
-                <h1>Open Source Native XML Database</h1>
-            </div>
-        </div>
-        <div id="content1col">
+        <style:page-head base="..">
+            <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+        </style:page-head>
+        <div id="content2col">
             <p>This document is a complex demonstration of how to expand a set of known, namespaced tags in an HTML file
                 by passing the source through an <a href="https://secure.wikimedia.org/wikibooks/en/wiki/XQuery/Typeswitch_Transformations">XQuery 
                     typeswitch transformation</a>.</p> 
