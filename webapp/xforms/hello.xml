@@ -11,12 +11,6 @@
         </xf:model>
     </head>
     <body>
-        <div id="xformControl">
-            <span>
-                <input type="checkbox"
-                    onclick="$('console').style.display = this.checked? 'block' : 'none';"
-                    checked="checked"/> Debug </span>
-        </div>
         <p>Type your first name in the input box. If you are running XForms, the output should be
             displayed in the output area.</p>
 
@@ -31,6 +25,5 @@
                 <xf:label>Output: </xf:label>
             </xf:output>
         </p>
-        <div id="console" style="display: block"/>
     </body>
 </html>

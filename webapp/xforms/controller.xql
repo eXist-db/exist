@@ -92,6 +92,7 @@ return
     				    <set-attribute name="xslt.output.media-type" value="text/html"/>
     				    <set-attribute name="xslt.output.method" value="xhtml"/>
     				    <set-attribute name="xslt.baseuri" value="{$relPath}xsltforms/"/>
+						<set-attribute name="xslt.xsltforms_home" value="webapp/xforms/xsltforms/"/>
     				</forward>
     			</view>
     			<cache-control cache="yes"/>
@@ -108,6 +109,7 @@ return
     			    <set-attribute name="xslt.output.media-type" value="text/html"/>
     			    <set-attribute name="xslt.output.method" value="xhtml"/>
     			    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
+    			    <set-attribute name="xslt.xsltforms_home" value="webapp/xforms/xsltforms/"/>
     			</forward>
     		</view>
     		<cache-control cache="yes"/>
