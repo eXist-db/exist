@@ -504,6 +504,25 @@ else
 
 
 (: -------------------------------------------------------------------------- :)
+declare function u:xpathexpression($qry as xs:string, $xml, $namespaces){
+
+if(empty($qry) or $qry eq '/') then
+	$xml
+else
+	let $query := if (starts-with($qry,'/') or starts-with($qry,'//')) then
+                concat('.',$qry)
+			  else if(contains($qry,'(/')) then
+				replace($qry,'\(/','(./')
+              else
+                  $qry
+    return
+        let $declarens := u:declare-ns($namespaces)
+        return
+	       util:eval-inline($xml,$query)
+};
+
+
+(: -------------------------------------------------------------------------- :)
 declare function u:add-ns-node(
     $elem   as element(),
     $prefix as xs:string,
@@ -804,21 +823,23 @@ declare function u:add-attributes-matching-elements($element as element(),$selec
 };
 
 declare function u:string-replace-matching-elements($element as element(),$select,$replace) as element() {
-if($element intersect $select) then
-    string($replace)
-else
+
    element {node-name($element)}
       {$element/@*,
           for $child at $pos in $element/node()
               return                   
-              if ($child instance of element())
-                then
+              if ($child instance of element()) then
         			if ($child intersect $select) then
-    	    			string($replace)
+    	    			(util:log('info','attribute logged'),string($replace))
+			    	else
+                    	u:string-replace-matching-elements($child,$select,$replace)
+                else if ($child instance of attribute()) then
+        			if ($child intersect $select) then
+                        (util:log('INFO','***************** attribute logged'),attribute { name($child) } { string($replace) })
 			    	else
                     	u:string-replace-matching-elements($child,$select,$replace)
                 else
-                    $child          		
+                    $child
       }
 };
 

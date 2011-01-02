@@ -60,30 +60,40 @@
 (: -------------------------------------------------------------------------- :)
 declare function xproc:for-each($primary,$secondary,$options,$currentstep,$outputs) {
 (: -------------------------------------------------------------------------- :)
- let $v := if ($currentstep/p:for-each/p:iteration-source/@select) then
-                u:evalXPATH(string($currentstep/p:iteration-source/@select), u:get-primary($primary), $primary)
-            else
-                u:get-primary($primary)
+ let $iteration-select := string($currentstep/p:iteration-source/@select)
+ let $v := if ($iteration-select) then
+   u:xpathexpression($iteration-select, u:get-primary($primary), $currentstep)
+ else
+   u:get-primary($primary)
  let $defaultname := concat(string($currentstep/@xproc:defaultname),'.0')
- let $subpipeline := $currentstep/node()
+ let $subpipeline := $currentstep/*[not(name(.) eq 'ext:pre')]
  let $namespaces := xproc:enum-namespaces($subpipeline)
 
  return
-    for $child in $v/node()
-    let $iteration-source := <xproc:output step="{$defaultname}"
+    for $child at $count in $v
+    let $iteration-source := <xproc:output step="{concat(string($currentstep/@xproc:defaultname),'.1')}"
                    port-type="output"
-                   primary="false"
-                  xproc:defaultname="$defaultname"
+                   primary="true"
+                   xproc:defaultname="$defaultname"
                    select="/"
-                   port="iteration-source"
+                   port="result"
                    func="$xproc:for-each">
                     {$child}
                   </xproc:output>
+    let $result :=
+        (u:call($xproc:parse-and-eval,<p:declare-step xproc:defaultname="{$defaultname}" >
+        <ext:pre xmlns:ext="http://xproc.net/xproc/ext" name="{$defaultname}.1" xproc:defaultname="{$defaultname}.1" xproc:type="ext" xproc:step="$ext:pre">
+            <p:input port="source" primary="true" select="/">
+                <p:pipe step="{$defaultname}.{$count}" port="result"/>
+            </p:input>
+            <p:output port="result" primary="true" select="/"/>
+        </ext:pre>
+        {$subpipeline}</p:declare-step>,$namespaces,$child,(),($outputs,$iteration-source))/.)[last()]
     return
-
-        (u:call($xproc:parse-and-eval,<p:declare-step name="{$defaultname}" xproc:defaultname="{$defaultname}" >
-        {$subpipeline}</p:declare-step>,$namespaces,$child,(),($outputs,$iteration-source))/.)[last()]/node()
- };
+        for $item in $result
+        return
+            $item/*
+};
 
 (: -------------------------------------------------------------------------- :)
 declare function xproc:replace-matching-elements($element as element(),$select,$defaultname,$currentstep,$outputs) as element() {
