@@ -472,8 +472,7 @@ let $v := u:get-primary($primary)
 let $match := u:get-option('match',$options,$v)
 let $replace := string(u:get-option('replace',$options,$v))
 return
-    util:catch('*',u:string-replace-matching-elements($v/*, u:xsltmatchpattern($match,$v,$variables),$replace),u:dynamicError("err:XD0001",": p:string-replace resulted in non xml output"))
-
+    util:catch('*',u:string-replace-matching-elements($v, u:xsltmatchpattern($match,$v,$variables),$replace),u:dynamicError("err:XD0001",": p:string-replace resulted in non xml output"))
 };
 
 
