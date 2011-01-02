@@ -1,6 +1,6 @@
-/* Rev. 472
+/* Rev. 473
 
-Copyright (C) 2008-2010 <agenceXML> - Alain COUTHURES
+Copyright (C) 2008-2011 <agenceXML> - Alain COUTHURES
 Contact at : <info@agencexml.com>
 
 Copyright (C) 2006 AJAXForms S.L.
@@ -445,9 +445,11 @@ Core.escape = function(text) {
 	if (text == null) {
 		return "";
 	}
-	text = text.replace(/&/g, "&amp;");
-	text = text.replace(/</g, "&lt;");
-	text = text.replace(/>/g, "&gt;");
+	if (typeof(text) == "string") {
+		text = text.replace(/&/g, "&amp;");
+		text = text.replace(/</g, "&lt;");
+		text = text.replace(/>/g, "&gt;");
+	}
 	return text;
 }
 
@@ -1359,7 +1361,7 @@ var xforms = {
 		
 
 	profiling : function() {
-		var s = "XSLTForms Version Id: Rev. 472\n";
+		var s = "XSLTForms Version Id: Rev. 473\n";
 		s += "\nLoading Time: " + this.loadingtime + "ms";
 		s += "\nRefresh Counter: " + this.refreshcount;
 		s += "\nCumulative Refresh Time: " + this.refreshtime + "ms";
@@ -1383,7 +1385,7 @@ var xforms = {
 			top += others;
 			s += "\n   Total: " + top + "ms";
 		}
-		s += "\n\n(c) Alain Couthures - agenceXML - 2010   http://www.agencexml.com/xsltforms";
+		s += "\n\n(c) Alain Couthures - agenceXML - 2011   http://www.agencexml.com/xsltforms";
 		s += "\nPlease donate at http://sourceforge.net/projects/xsltforms/";
 		alert(s);
 	},
@@ -2277,7 +2279,7 @@ function json2xml(name, json, root, inarray) {
 				ret += (json.getMinutes() < 10 ? "0" : "") + json.getMinutes() + ":";
 				ret += (json.getSeconds() < 10 ? "0" : "") + json.getSeconds() + "Z";
 			} else {
-				ret += json;
+				ret += Core.escape(json);
 			}
 		}
 		ret += name == "" ? "" : "</"+name+">";
@@ -2290,6 +2292,7 @@ function json2xml(name, json, root, inarray) {
 
 var jsoninstobj;
 function jsoninst(json) {
+	//alert(json2xml("", json, true, false));
 	jsoninstobj.setDoc(json2xml("", json, true, false));
 	xforms.addChange(jsoninstobj.model);
 	XMLEvents.dispatch(jsoninstobj.model, "xforms-rebuild");
@@ -9264,6 +9267,19 @@ XPathCoreFunctions = {
 
 		
 
+	"http://www.w3.org/2005/xpath-functions is-non-empty-array" : new XPathFunction(false, XPathFunction.DEFAULT_NODESET, false,
+		function(nodeset) {
+			if (arguments.length > 1) {
+				throw XPathCoreFunctionsExceptions.isNonEmptyArrayInvalidArgumentsNumber;
+			}
+			if (typeof nodeset[0] != "object") {
+				throw XPathCoreFunctionsExceptions.isNonEmptyArrayInvalidArgumentType;
+			}
+			return nodeset[0].getAttribute("exsi:maxOccurs") && nodeset[0].getAttribute("xsi:nil") != "true";
+		} ),
+
+		
+
 	"http://exslt.org/math abs" : new XPathFunction(false, XPathFunction.DEFAULT_NONE, false,
 		function(number) {
 			if (arguments.length != 1) {
@@ -9679,6 +9695,14 @@ XPathCoreFunctionsExceptions = {
 	isValidInvalidArgumentType : {
 		name : "is-valid() : Invalid type of argument",
 		message : "is-valid() function must have a nodeset argument"
+	},
+	isNonEmptyArrayArgumentsNumber : {
+		name : "is-non-empty-array() : Invalid number of arguments",
+		message : "is-non-empty-array() function must have zero or one argument"
+	},
+	isNonEmptyArrayInvalidArgumentType : {
+		name : "is-non-empty-array() : Invalid type of argument",
+		message : "is-non-empty-array() function must have a node argument"
 	},
 	isCardNumberInvalidArgumentsNumber : {
 		name : "is-card-number() : Invalid number of arguments",

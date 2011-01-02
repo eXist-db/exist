@@ -21,12 +21,12 @@
         <para>XSLTForms transforms the XForms xml into an XHTML page with javascript that can
             process XForms. As eXist has support for RESTful interactions, the action of saving the
             XML representation of data provided by XForms can be as easy as using HTTP PUT method
-            with an resource attribute referencing an xml document in the XML Database. For more
+            with a resource attribute referencing an xml document in the XML Database. For more
             complex tasks, you can submit your XForms instances to an XQuery, post-process them there
             and get the results back into your XForms. Several <ulink url="examples.xml"
                 >examples</ulink> are provided.</para>
         <section>
-            <title>Using xsltform inside of eXist</title>
+            <title>Using xsltforms inside of eXist</title>
             <para>XSLTForms mainly consists of two components:</para>
             <itemizedlist>
                 <listitem>
@@ -68,6 +68,7 @@
     	    <set-attribute name="xslt.output.media-type" value="text/html"/>
     	    <set-attribute name="xslt.output.method" value="xhtml"/>
     	    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
+    	    <set-attribute name="xslt.xsltforms_home" value="webapp/xforms/xsltforms/"/>
     	</forward>
     </view>
     <cache-control cache="yes"/>
@@ -114,6 +115,8 @@
                 <ul>
                     <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is
                         a useful place to learn XForms</li>
+                    <li><ulink url="http://en.wikibooks.org/wiki/XSLTForms">XSLTForms Wikibook</ulink> is
+                        providing specific informations</li>
                     <li>
                         <a
                             href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/"
