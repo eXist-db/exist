@@ -259,11 +259,13 @@ public class XQueryURLRewrite implements Filter {
 	                        if (node.getNodeType() == Node.DOCUMENT_NODE)
 	                            node = ((Document) node).getDocumentElement();
 	                        if (node.getNodeType() != Node.ELEMENT_NODE) {
-	                            throw new ServletException("Redirect XQuery should return an XML element!");
+	                            //throw new ServletException("Redirect XQuery should return an XML element!");
+	                        	response(broker, response, outputProperties, result);
+	                        	return;
 	                        }
 	                        Element elem = (Element) node;
 	                        if (!(Namespaces.EXIST_NS.equals(elem.getNamespaceURI()))) {
-	                        	response(broker, (NodeValue)resource, servletResponse, outputProperties);
+	                        	response(broker, response, outputProperties, result);
 	                        	return;
 	//                            throw new ServletException("Redirect XQuery should return an element in namespace " + Namespaces.EXIST_NS);
 	                        }
@@ -299,6 +301,9 @@ public class XQueryURLRewrite implements Filter {
 	                                modelView.setUseCache("yes".equals(option));
 	                            }
 	                        }
+	                    } else {
+                            response(broker, response, outputProperties, result);
+                        	return;
 	                    }
 	                    
                     } finally {
@@ -368,7 +373,7 @@ public class XQueryURLRewrite implements Filter {
                     + e.getMessage(), e);
         }
     }
-
+    
 	private void applyViews(List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
 			HttpServletResponse wrappedResponse)
 			throws UnsupportedEncodingException, IOException, ServletException {
@@ -397,18 +402,20 @@ public class XQueryURLRewrite implements Filter {
 		}
 	}
 
-    private void response(DBBroker broker, NodeValue value, ServletResponse response, Properties outputProperties) throws IOException {
-    	
-    	String formEncoding = "UTF-8";
-    	String contentType = "text/html";
+    private void response(DBBroker broker, HttpServletResponse response, Properties outputProperties, Sequence resultSequence) throws IOException {
+        String formEncoding = "UTF-8";
+
+        String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+        if (mediaType != null) {
+            if (!response.isCommitted())
+                response.setContentType(mediaType + "; charset=" + formEncoding);
+        }
+
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-        if (!((HttpServletResponse) response).containsHeader("Content-Type")){
-        	response.setContentType(contentType + "; charset=" + formEncoding);
-        }
 //        response.addHeader( "pragma", "no-cache" );
 //        response.addHeader( "Cache-Control", "no-cache" );
-        
+
         Serializer serializer = broker.getSerializer();
     	serializer.reset();
     
@@ -418,20 +425,19 @@ public class XQueryURLRewrite implements Filter {
     	try {
     		outputProperties.setProperty(OutputKeys.INDENT, "yes");
     		outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-    		
+
     		sax.setOutput(output, outputProperties);
-	    	serializer.setProperties(outputProperties);
-	    	serializer.setSAXHandlers(sax, sax);
-	    	
-	    	serializer.toSAX(value);
+        	serializer.setProperties(outputProperties);
+        	serializer.setSAXHandlers(sax, sax);
+        	
+        	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
     	} catch (SAXException e) {
     		throw new IOException(e);
-		} finally { 
+    	} finally {
     		serializerPool.returnObject(sax);
     	}
-
     	output.flush();
-	}
+    }
 
 	private void flushError(HttpServletResponse response, HttpServletResponse wrappedResponse) throws IOException {
         byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
