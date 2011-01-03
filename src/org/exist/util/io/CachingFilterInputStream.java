@@ -47,8 +47,19 @@ public class CachingFilterInputStream extends FilterInputStream {
 
     @Override
     public int available() throws IOException {
-        //TODO fix - this is not correct calculation. It does not account for data available in the underlying inputstream
-        return (getCache().getLength() - cacheOffset);
+
+        int available = 0;
+
+        if(!srcClosed) {
+
+            available = src.available();
+
+            if(useCache && cacheOffset < srcOffset) {
+                available += getCache().getLength() - cacheOffset;
+            }
+        }
+
+        return available;
     }
 
 
