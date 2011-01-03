@@ -483,7 +483,7 @@ public class Configurator {
         return false;
     }
 
-    protected static void serialize(Configurable instance, SAXSerializer serializer, String referenceBy) throws SAXException {
+    protected static void serialize(Configurable instance, SAXSerializer serializer, String fieldAsElementName, String referenceBy) throws SAXException {
         Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
@@ -516,9 +516,8 @@ public class Configurator {
             LOG.warn(e);
             return;
         }
-        String configName = clazz.getAnnotation(ConfigurationClass.class).value();
 
-        QName qnConfig = new QName(configName, Configuration.NS);
+        QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         serializer.startElement(qnConfig, null);
         serializer.attribute(new QName(referenceBy, null), value);
         serializer.endElement(qnConfig);
@@ -623,7 +622,7 @@ public class Configurator {
                             if (referenceBy == null) {
                                     serialize(el, serializer);
                             } else {
-                                    serialize(el, serializer, referenceBy);
+                                    serialize(el, serializer, element.getAnnotation().value(), referenceBy);
                             }
                         }
                     } else if(implementsInterface(field.getType(), Configurable.class)) {
