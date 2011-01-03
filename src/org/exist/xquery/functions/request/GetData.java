@@ -25,9 +25,6 @@ package org.exist.xquery.functions.request;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.io.input.CloseShieldInputStream;
 
 import org.apache.log4j.Logger;
@@ -48,6 +45,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
@@ -111,7 +109,7 @@ public class GetData extends BasicFunction {
         RequestWrapper request = (RequestWrapper)value.getObject();
 
         //if the content length is unknown or 0, return
-        if (request.getContentLength() == -1 || request.getContentLength() == 0) {
+        if(request.getContentLength() == -1 || request.getContentLength() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -133,7 +131,15 @@ public class GetData extends BasicFunction {
             //was there any POST content?
 
 
-            if(is != null && is.available() > 0) {
+            /**
+             * There is a bug in HttpInput.available() in Jetty 7.2.2.v20101205
+             * This has been filed as Bug 333415 - https://bugs.eclipse.org/bugs/show_bug.cgi?id=333415
+             * It is expected to be fixed in the Jetty 7.3.0 release
+             */
+
+            //TODO reinstate call to .available() when Jetty 7.3.0 is released, use of .getContentLength() is not reliable because of http mechanics
+            //if(is != null && is.available() > 0) {
+            if(is != null && request.getContentLength() > 0) {
 
                 // 1) determine if exists mime database considers this binary data
                 String contentType = request.getContentType();
@@ -145,15 +151,19 @@ public class GetData extends BasicFunction {
 
                     MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
                     if(mimeType != null && !mimeType.isXMLType()) {
+
                         //binary data
+
                         result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is);
                     }
                 }
 
-                //2) try and parse as an XML documemnt
-                result = parseAsXml(is);
+                if(result == Sequence.EMPTY_SEQUENCE) {
+                    //2) not binary, try and parse as an XML documemnt
+                    result = parseAsXml(is);
+                }
 
-                if(result == null) {
+                if(result == Sequence.EMPTY_SEQUENCE) {
 
                     // 3) not a valid XML document, return a string representation of the document
                     String encoding = request.getCharacterEncoding();
@@ -171,8 +181,8 @@ public class GetData extends BasicFunction {
                     }
                 }
             }
-        } catch(IOException ioe) {
-            LOG.error(ioe.getMessage(), ioe);
+        /* } catch(IOException ioe) {
+            LOG.error(ioe.getMessage(), ioe); */
         } finally {
 
             if(cache != null) {
@@ -183,7 +193,8 @@ public class GetData extends BasicFunction {
                 }
             }
 
-            if(is != null) {
+            //dont close the stream if its a binary value, because we will need it later for serialization
+            if(is != null && !(result instanceof BinaryValue)) {
                 try {
                     is.close();
                 } catch(IOException ioe) {
@@ -195,22 +206,19 @@ public class GetData extends BasicFunction {
         return result;
     }
 
-    private NodeValue parseAsXml(InputStream is) {
+    private Sequence parseAsXml(InputStream is) {
 
-        NodeValue result = null;
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+        XMLReader reader = null;
 
         context.pushDocumentContext();
         try {
             //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            //TODO : we should be able to cope with context.getBaseURI()
 
             //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
             InputSource src = new InputSource(new CloseShieldInputStream(is));
 
-            SAXParser parser = factory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
+            reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
             MemTreeBuilder builder = context.getDocumentBuilder();
             DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
@@ -218,15 +226,16 @@ public class GetData extends BasicFunction {
             Document doc = receiver.getDocument();
 
             result = (NodeValue)doc.getDocumentElement();
-
-        } catch(ParserConfigurationException pce) {
-            //do nothing, we will default to trying to return a string below
         } catch(SAXException saxe) {
             //do nothing, we will default to trying to return a string below
         } catch(IOException ioe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             context.popDocumentContext();
+
+            if(reader != null) {
+                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
+            }
         }
 
         return result;
