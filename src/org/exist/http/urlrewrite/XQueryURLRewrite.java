@@ -301,7 +301,7 @@ public class XQueryURLRewrite implements Filter {
 	                                modelView.setUseCache("yes".equals(option));
 	                            }
 	                        }
-	                    } else {
+	                    } else if (result.getItemCount() > 1) {
                             response(broker, response, outputProperties, result);
                         	return;
 	                    }
