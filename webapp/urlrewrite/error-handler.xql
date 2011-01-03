@@ -18,7 +18,7 @@ return
                 <h2>An error has occurred</h2>
                 {$input//div[@class = 'description']}
                 
-                <p><a href="examples.xml">Back</a> to the examples.</p>
+                <p><a href="index.xml">Back</a> to the examples.</p>
             </div>
         </body>
     </html>
