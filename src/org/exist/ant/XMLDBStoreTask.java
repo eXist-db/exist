@@ -65,6 +65,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
     private ArrayList<FileSet> fileSetList = null;
     private boolean createCollection = false;
     private boolean createSubcollections = false;
+    private boolean includeEmptyDirs = true;
     private String type = null;
     private String defaultMimeType = null;
     private String forceMimeType = null;
@@ -189,9 +190,45 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                     DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
                     scanner.scan();
                     String[] includedFiles = scanner.getIncludedFiles();
-                    log("Found " + includedFiles.length + " files.\n");
+                    String[] includedDirs = scanner.getIncludedDirectories();
+                    log("Found " + includedDirs.length+ " directories and " + includedFiles.length + " files.\n");
 
                     File baseDir = scanner.getBasedir();
+
+                    if (includeEmptyDirs && createSubcollections) {
+	                    for(String included : includedDirs) {
+	                        try {
+		                        file = new File(baseDir, included);
+		                        log("Creating " + included + " ...\n");
+		
+		                        //TODO : use dedicated function in XmldbURI
+		                        // check whether the relative file path contains file seps
+		
+		                        p = included.lastIndexOf(File.separatorChar);
+		                        if(p != Constants.STRING_NOT_FOUND) {
+		                            relDir = included.substring(0, p);
+		                            // It's necessary to do this translation on Windows, and possibly MacOS:
+		                            relDir = relDir.replace(File.separatorChar, '/');
+		                            if(createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
+		                                //TODO : use dedicated function in XmldbURI
+		                                col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
+		                                prevDir = relDir;
+		                            }
+		
+		                        } else {
+	                                col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, included);
+		                        }
+	                        } catch(XMLDBException e) {
+	                            String msg = "XMLDB exception caught: " + e.getMessage();
+	                            if(failonerror) {
+	                                throw new BuildException(msg, e);
+	                            } else {
+	                                log(msg, e, Project.MSG_ERR);
+	                            }
+	                        }
+	                    }
+                    }
+
                     for(String included : includedFiles) {
                         try {
                             file = new File(baseDir, included);
@@ -291,6 +328,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 
     public void setCreatesubcollections(boolean create) {
         this.createSubcollections = create;
+    }
+
+    public void setIncludeEmptyDirs(boolean create) {
+        this.includeEmptyDirs = create;
     }
 
     public void setMimeTypesFile(File file) {
