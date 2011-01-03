@@ -157,12 +157,14 @@ declare function admin:display-login-form() as element()
 };
 
 (: main entry point :)
+let $userParam := request:get-parameter("user", ())[1]
+let $passwdParam := request:get-parameter("pass", ())[1]
 let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
     (
         (: is this a login attempt? :)
-        if(request:get-parameter("user", ()) and not(empty(request:get-parameter("pass", ()))))then
+        if($userParam and not(empty($passwdParam)))then
         (
-            if(request:get-parameter("user", ()) eq "guest")then
+            if($userParam = ("", "guest") )then
             (
                 (: prevent the guest user from accessing the admin webapp :)
                 false()
@@ -170,7 +172,7 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
             else
             (
                 (: try and log the user in :)
-                xdb:login( "/db", request:get-parameter("user", ()), request:get-parameter("pass", () ), true() )
+                xdb:login( "/db", $userParam, $passwdParam, true() )
             )
         )
         else
