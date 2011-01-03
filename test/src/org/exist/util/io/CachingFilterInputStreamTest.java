@@ -577,6 +577,163 @@ public class CachingFilterInputStreamTest {
         assertEquals(0, skipped);
     }
 
+    @Test
+    public void available_onClosedStream()  throws IOException, InstantiationException, IllegalAccessException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        cfis.close();
+
+        assertEquals(0, cfis.available());
+    }
+
+    @Test
+    public void available_onEmptyStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        InputStream is = new ByteArrayInputStream(new byte[]{});
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        cfis.close();
+
+        assertEquals(0, cfis.available());
+    }
+
+    @Test
+    public void available_onUnCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        assertEquals(testData.length, cfis.available());
+    }
+
+    @Test
+    public void available_onPartiallyReadStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        assertEquals(testData.length - 2 , cfis.available());
+    }
+
+    @Test
+    public void available_onPartiallyCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        //mark for later reset
+        cfis.mark(Integer.MAX_VALUE);
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        //return to the start of the stream
+        cfis.reset();
+
+        assertEquals(testData.length, cfis.available());
+    }
+
+    @Test
+    public void available_onOffsetPartiallyCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        //mark for later reset
+        cfis.mark(Integer.MAX_VALUE);
+
+        //read next 2 bytes
+        cfis.read();
+        cfis.read();
+
+        //return to the start of the stream
+        cfis.reset();
+
+        assertEquals(testData.length - 2, cfis.available());
+    }
+
+    @Test
+    public void available_onCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        //mark for later reset
+        cfis.mark(Integer.MAX_VALUE);
+
+        for(int i = 0; i < testData.length; i++) {
+            cfis.read();
+        }
+
+        //return to the start of the stream
+        cfis.reset();
+
+        assertEquals(testData.length, cfis.available());
+    }
+
+    @Test
+    public void available_onOffsetCachedStream()  throws IOException, InstantiationException, IllegalAccessException {
+
+        final String testString = "helloWorld";
+        final byte testData[] = testString.getBytes();
+
+        InputStream is = new ByteArrayInputStream(testData);
+
+        CachingFilterInputStream cfis = new CachingFilterInputStream(getNewCache(), is);
+
+        //read first 2 bytes
+        cfis.read();
+        cfis.read();
+
+        //mark for later reset
+        cfis.mark(Integer.MAX_VALUE);
+
+        for(int i = 0; i < testData.length - 2; i++) {
+            cfis.read();
+        }
+
+        //return to the start of the stream
+        cfis.reset();
+
+        assertEquals(testData.length - 2, cfis.available());
+    }
+
+    
+
     private byte[] subArray(byte data[], int len) {
         byte newData[] = new byte[len];
         System.arraycopy(data, 0, newData, 0, len);
