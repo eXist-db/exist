@@ -71,7 +71,11 @@ public class GetData extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("get-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-        "Returns the content of a POST request.If its a binary document xs:base64Binary is returned or if its an XML document a node() is returned. All other data is returned as an xs:string representaion. Returns an empty sequence if there is no data.",
+        "Returns the content of a POST request. " +
+        "If the HTTP Content-Type header in the request identifies it as a binary document, then xs:base64Binary is returned. " +
+        "If its not a binary document, we attempt to parse it as XML and return a document-node(). " +
+        "If its not a binary or XML document, any other data type is returned as an xs:string representation or " +
+        "an empty sequence if there is no data to be read.",
         null,
         new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the content of a POST request")
     );
