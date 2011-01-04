@@ -23,9 +23,6 @@ package org.exist.webdav;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -56,7 +53,6 @@ import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -67,7 +63,10 @@ import org.xml.sax.SAXException;
 public class ExistCollection extends ExistResource {
 
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
-        LOG.debug("New collection object for " + uri);
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("New collection object for " + uri);
+
         brokerPool = pool;
         this.xmldbUri = uri;
     }
@@ -211,7 +210,8 @@ public class ExistCollection extends ExistResource {
      */
     void delete() {
 
-        LOG.debug("Deleting '" + xmldbUri + "'");
+        if(LOG.isDebugEnabled())
+            LOG.debug("Deleting '" + xmldbUri + "'");
 
         DBBroker broker = null;
         Collection collection = null;
@@ -236,7 +236,8 @@ public class ExistCollection extends ExistResource {
             // Commit change
             transact.commit(txn);
 
-            LOG.debug("Document deleted sucessfully");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Document deleted sucessfully");
 
 
         } catch (EXistException e) {
@@ -264,12 +265,15 @@ public class ExistCollection extends ExistResource {
 
             brokerPool.release(broker);
 
-            LOG.debug("Finished delete");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Finished delete");
         }
     }
 
     public XmldbURI createCollection(String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
-        LOG.debug("Create  '" + name + "' in '" + xmldbUri + "'");
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("Create  '" + name + "' in '" + xmldbUri + "'");
 
         XmldbURI newCollection = xmldbUri.append(name);
 
@@ -287,7 +291,9 @@ public class ExistCollection extends ExistResource {
             // checked by ResourceFactory
             collection = broker.openCollection(newCollection, Lock.WRITE_LOCK);
             if (collection != null) {
+
                 LOG.debug("Collection already exists");
+                
                 transact.abort(txn);
                 throw new CollectionExistsException("Collection already exists");
             }
@@ -300,7 +306,8 @@ public class ExistCollection extends ExistResource {
             // Commit change
             transact.commit(txn);
 
-            LOG.debug("Collection created sucessfully");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Collection created sucessfully");
 
 
         } catch (EXistException e) {
@@ -331,7 +338,8 @@ public class ExistCollection extends ExistResource {
 
             brokerPool.release(broker);
 
-            LOG.debug("Finished creation");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Finished creation");
         }
 
         return newCollection;
@@ -340,7 +348,8 @@ public class ExistCollection extends ExistResource {
     public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
 
-        LOG.debug("Create '" + newName + "' in '" + xmldbUri + "'");
+        if(LOG.isDebugEnabled())
+            LOG.debug("Create '" + newName + "' in '" + xmldbUri + "'");
 
         XmldbURI newNameUri = XmldbURI.create(newName);
 
@@ -370,7 +379,10 @@ public class ExistCollection extends ExistResource {
         // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
         // XML documents are not supported a small file will be created.
         if (mime.isXMLType() && vtf.length() == 0L) {
-            LOG.debug("Creating dummy XML file for null resource lock '" + newNameUri + "'");
+
+            if(LOG.isDebugEnabled())
+                LOG.debug("Creating dummy XML file for null resource lock '" + newNameUri + "'");
+
             vtf = new VirtualTempFile();
             IOUtils.write("<null_resource/>", vtf);
             vtf.close();
@@ -387,14 +399,16 @@ public class ExistCollection extends ExistResource {
             // by ResourceFactory
             collection = broker.openCollection(xmldbUri, Lock.WRITE_LOCK);
             if (collection == null) {
-                LOG.debug("Collection does not exist");
+                LOG.debug("Collection does not exist");              
                 transact.abort(txn);
                 throw new CollectionDoesNotExistException(xmldbUri + "");
             }
 
 
             if (mime.isXMLType()) {
-                LOG.debug("Inserting XML document '" + mime.getName() + "'");
+
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Inserting XML document '" + mime.getName() + "'");
 
                 // Stream into database
                 VirtualTempFileInputSource vtfis = new VirtualTempFileInputSource(vtf);
@@ -404,7 +418,9 @@ public class ExistCollection extends ExistResource {
                 collection.store(txn, broker, info, vtfis, false);
 
             } else {
-                LOG.debug("Inserting BINARY document '" + mime.getName() + "'");
+
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Inserting BINARY document '" + mime.getName() + "'");
 
                 // Stream into database
                 InputStream fis = vtf.getByteStream();
@@ -417,7 +433,8 @@ public class ExistCollection extends ExistResource {
             // Commit change
             transact.commit(txn);
 
-            LOG.debug("Document created sucessfully");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Document created sucessfully");
 
 
         } catch (EXistException e) {
@@ -463,7 +480,8 @@ public class ExistCollection extends ExistResource {
 
             brokerPool.release(broker);
 
-            LOG.debug("Finished creation");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Finished creation");
         }
 
         // Send the result back to the client
@@ -473,11 +491,15 @@ public class ExistCollection extends ExistResource {
     }
 
     void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
-        LOG.debug(mode + " '" + xmldbUri + "' to '" + destCollectionUri + "' named '" + newName + "'");
+
+        if(LOG.isDebugEnabled())
+            LOG.debug(mode + " '" + xmldbUri + "' to '" +
+                      destCollectionUri + "' named '" + newName + "'");
 
         XmldbURI newNameUri = null;
         try {
             newNameUri = XmldbURI.xmldbUriFor(newName);
+            
         } catch (URISyntaxException ex) {
             LOG.error(ex);
             throw new EXistException(ex.getMessage());
@@ -524,7 +546,8 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            LOG.debug("Collection " + mode + "d sucessfully");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Collection " + mode + "d sucessfully");
 
         } catch (LockException e) {
             LOG.error("Resource is locked.", e);
@@ -564,7 +587,8 @@ public class ExistCollection extends ExistResource {
 
             brokerPool.release(broker);
 
-            LOG.debug("Finished " + mode);
+            if(LOG.isDebugEnabled())
+                LOG.debug("Finished " + mode);
         }
     }
 }

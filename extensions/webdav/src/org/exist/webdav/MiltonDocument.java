@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -106,7 +107,9 @@ public class MiltonDocument extends MiltonResource
 
         super();
 
-        LOG.debug("DOCUMENT:" + uri.toString());
+        if(LOG.isDebugEnabled())
+            LOG.debug("DOCUMENT:" + uri.toString());
+        
         resourceXmldbUri = uri;
         brokerPool = pool;
         this.host = host;
@@ -152,7 +155,8 @@ public class MiltonDocument extends MiltonResource
     public Long getContentLength() {
         // Only for PROPFIND the estimate size for an XML document must be shown
         if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
-            LOG.debug("Returning NULL for content length XML resource.");
+            if(LOG.isDebugEnabled())
+                LOG.debug("Returning NULL for content length XML resource.");
             return null;
         }
         return 0L + existDocument.getContentLength();
@@ -171,7 +175,8 @@ public class MiltonDocument extends MiltonResource
             createDate = new Date(time);
         }
 
-        LOG.debug("Create date=" + createDate);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Create date=" + createDate);
 
         return createDate;
     }
@@ -196,7 +201,9 @@ public class MiltonDocument extends MiltonResource
 
         org.exist.dom.LockToken inputToken = convertToken(timeout, lockInfo);
 
-        LOG.debug("Lock: " + resourceXmldbUri);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Lock: " + resourceXmldbUri);
+        
         LockResult lr = null;
         try {
             org.exist.dom.LockToken existLT = existDocument.lock(inputToken);
@@ -225,7 +232,8 @@ public class MiltonDocument extends MiltonResource
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         
-        LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
 
         LockResult lr = null;
         try {
@@ -259,7 +267,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
-        LOG.debug("Unlock: " + resourceXmldbUri);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Unlock: " + resourceXmldbUri);
+        
         try {
             existDocument.unlock();
         } catch (PermissionDeniedException ex) {
@@ -278,7 +288,10 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public LockToken getCurrentLock() {
-        LOG.debug("getLock: " + resourceXmldbUri);
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("getLock: " + resourceXmldbUri);
+        
         org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
 
         if (existLT == null) {
@@ -300,6 +313,10 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("moveTo: " + resourceXmldbUri + " newName=" + newName);
+
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.MOVE);
@@ -316,6 +333,10 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public void copyTo(CollectionResource rDest, String newName) {
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("copyTo: " + resourceXmldbUri + " newName=" + newName);
+        
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.COPY);
