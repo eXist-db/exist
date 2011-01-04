@@ -249,6 +249,10 @@ public class XQueryURLRewrite implements Filter {
                         result = runQuery(broker, modifiedRequest, response, staticRewrite, outputProperties);
 
                         logResult(broker, result);
+                        
+                        if (response.isCommitted()) {
+                        	return;
+                        }
 
 	                    // process the query result
 	                    if (result.getItemCount() == 1) {
@@ -270,7 +274,7 @@ public class XQueryURLRewrite implements Filter {
 	//                            throw new ServletException("Redirect XQuery should return an element in namespace " + Namespaces.EXIST_NS);
 	                        }
 	
-	                        if ("dispatch".equals(elem.getLocalName())) {
+	                        if (Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "dispatch".equals(elem.getLocalName())) {
 	                            node = elem.getFirstChild();
 	                            while (node != null) {
 	                                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
@@ -292,7 +296,7 @@ public class XQueryURLRewrite implements Filter {
 	                            }
 	                            if (modelView.getModel() == null)
 	                                modelView.setModel(new PassThrough(elem, modifiedRequest));
-	                        } else if ("ignore".equals(elem.getLocalName())) {
+	                        } else if (Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
 	                            modelView.setModel(new PassThrough(elem, modifiedRequest));
 	                            NodeList nl = elem.getElementsByTagNameNS(Namespaces.EXIST_NS, "cache-control");
 	                            if (nl.getLength() > 0) {
@@ -300,6 +304,9 @@ public class XQueryURLRewrite implements Filter {
 	                                String option = elem.getAttribute("cache");
 	                                modelView.setUseCache("yes".equals(option));
 	                            }
+	                        } else {
+	                        	response(broker, response, outputProperties, result);
+	                        	return;
 	                        }
 	                    } else if (result.getItemCount() > 1) {
                             response(broker, response, outputProperties, result);
@@ -403,16 +410,21 @@ public class XQueryURLRewrite implements Filter {
 	}
 
     private void response(DBBroker broker, HttpServletResponse response, Properties outputProperties, Sequence resultSequence) throws IOException {
-        String formEncoding = "UTF-8";
 
-        String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-        if (mediaType != null) {
-            if (!response.isCommitted())
-                response.setContentType(mediaType + "; charset=" + formEncoding);
-        }
-
+    	String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
         ServletOutputStream sout = response.getOutputStream();
-        PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
+        PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
+		if (!((HttpServletResponse) response).containsHeader("Content-Type")){
+			String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+			if (mimeType != null) {
+				int semicolon = mimeType.indexOf(';');
+				if (semicolon != Constants.STRING_NOT_FOUND) {
+					mimeType = mimeType.substring(0, semicolon);
+				}
+				response.setContentType(mimeType + "; charset=" + encoding);
+			}
+		}
+        
 //        response.addHeader( "pragma", "no-cache" );
 //        response.addHeader( "Cache-Control", "no-cache" );
 
@@ -423,14 +435,12 @@ public class XQueryURLRewrite implements Filter {
 
     	SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
     	try {
-    		outputProperties.setProperty(OutputKeys.INDENT, "yes");
-    		outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-
     		sax.setOutput(output, outputProperties);
-        	serializer.setProperties(outputProperties);
-        	serializer.setSAXHandlers(sax, sax);
-        	
+
+	    	serializer.setProperties(outputProperties);
+	    	serializer.setSAXHandlers(sax, sax);
         	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
+        	
     	} catch (SAXException e) {
     		throw new IOException(e);
     	} finally {
