@@ -58,7 +58,9 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.http.servlets.HttpRequestWrapper;
@@ -245,6 +247,10 @@ public class XQueryURLRewrite implements Filter {
                         modifiedRequest.setAttribute(RQ_ATTR_REQUEST_URI, request.getRequestURI());
                         
                         Properties outputProperties = new Properties();
+                        
+                		outputProperties.setProperty(OutputKeys.INDENT, "yes");
+                		outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                		outputProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
                         
                         result = runQuery(broker, modifiedRequest, response, staticRewrite, outputProperties);
 
