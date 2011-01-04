@@ -89,7 +89,8 @@ public class ExistResourceFactory implements ResourceFactory {
                 path = path.substring(0, path.lastIndexOf("/"));
             }
 
-            LOG.debug("host='" + host + "' path='" + path + "'");
+            if(LOG.isDebugEnabled())
+                LOG.debug("host='" + host + "' path='" + path + "'");
           
             // Create uri inside database
             uri = XmldbURI.xmldbUriFor(path);
@@ -114,7 +115,8 @@ public class ExistResourceFactory implements ResourceFactory {
                 return new MiltonCollection(host, uri, brokerPool);
 
             case IGNORABLE:
-                LOG.debug("ignoring file");
+                if(LOG.isDebugEnabled())
+                    LOG.debug("ignoring file");
                 return null;
 
             default:
@@ -134,7 +136,8 @@ public class ExistResourceFactory implements ResourceFactory {
         ResourceType type = ResourceType.NOT_EXISTING;
 
         try {
-            LOG.debug("Path: " + uri.toString());
+            if(LOG.isDebugEnabled())
+                LOG.debug("Path: " + uri.toString());
             
             // Try to read as system user. Note that the actual user is not know
             // yet. In MiltonResource the actual authentication and authorization
@@ -186,7 +189,9 @@ public class ExistResourceFactory implements ResourceFactory {
             brokerPool.release(broker);
         }
 
-        LOG.debug("Resource type=" + type.toString());
+        if(LOG.isDebugEnabled())
+            LOG.debug("Resource type=" + type.toString());
+        
         return type;
     }
 
