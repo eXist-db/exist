@@ -26,8 +26,9 @@
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
-	import org.exist.xquery.functions.*;
+	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
+	import org.exist.storage.ElementValue;
 
 public interface XQueryTreeParserTokenTypes {
 	int EOF = 1;

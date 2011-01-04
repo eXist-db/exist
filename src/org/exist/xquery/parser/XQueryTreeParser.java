@@ -2,8 +2,6 @@
 
 	package org.exist.xquery.parser;
 
-import org.exist.xquery.functions.fn.ExtFulltext;
-import org.exist.xquery.functions.fn.FunId;
 	import antlr.debug.misc.*;
 	import java.io.StringReader;
 	import java.io.BufferedReader;
@@ -28,8 +26,9 @@ import org.exist.xquery.functions.fn.FunId;
 	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
-	import org.exist.xquery.functions.*;
+	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
+	import org.exist.storage.ElementValue;
 
 import antlr.TreeParser;
 import antlr.Token;
@@ -4077,6 +4076,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 				QName qname= QName.parse(staticContext, qn2.getText(), "");
+				qname.setNameType(ElementValue.ATTRIBUTE);
 									type.setNodeName(qname);
 								
 				break;
@@ -5693,6 +5693,7 @@ public XQueryTreeParser() {
 							if (axis == Constants.ATTRIBUTE_AXIS) {
 				qname.setNamespaceURI(null);
 				test= new NameTest(Type.ATTRIBUTE, qname);
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				} else {
 				test= new NameTest(Type.ELEMENT, qname);
 				}
@@ -5867,6 +5868,7 @@ public XQueryTreeParser() {
 					
 										QName qname= QName.parse(staticContext, qn3.getText());
 										test= new NameTest(Type.ATTRIBUTE, qname);
+										qname.setNameType(ElementValue.ATTRIBUTE);
 										axis= Constants.ATTRIBUTE_AXIS;
 									
 					break;
@@ -6113,6 +6115,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 				qname= QName.parse(staticContext, attr.getText(), "");
+				qname.setNameType(ElementValue.ATTRIBUTE);
 				
 				break;
 			}
@@ -6130,6 +6133,7 @@ public XQueryTreeParser() {
 				
 				qname= new QName(nc2.getText(), null, null);
 				qname.setNamespaceURI(null);
+				qname.setNameType(ElementValue.ATTRIBUTE);
 						
 				break;
 			}
@@ -6149,6 +6153,7 @@ public XQueryTreeParser() {
 							if (namespaceURI == null)
 								throw new EXistException("No namespace defined for prefix " + nc3.getText());
 							qname= new QName(null, namespaceURI, null);
+							qname.setNameType(ElementValue.ATTRIBUTE);
 						
 				break;
 			}

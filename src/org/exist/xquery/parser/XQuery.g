@@ -40,7 +40,7 @@ header {
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;
-	import org.exist.xquery.functions.*;
+	import org.exist.xquery.functions.fn.*;
 }
 
 /**
