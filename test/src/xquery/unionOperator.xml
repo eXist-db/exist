@@ -1,0 +1,97 @@
+<TestSet>
+    <testName>tests for union operator in path step</testName>
+    <description>
+        <p>tests for union operator in path step</p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+    </setup>
+    <test output="xml">
+        <task>union operator, stand-alone</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return ($a|$a)
+        ]]></code>
+        <expected><el><el1/><el2 att="val"/><el3/></el></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, self axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/(.|.)
+        ]]></code>
+        <expected><el><el1/><el2 att="val"/><el3/></el></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, child axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/(*|*)
+        ]]></code>
+        <expected><el1/><el2 att="val"/><el3/></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, parent axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(parent::*|parent::*)
+        ]]></code>
+        <expected><el><el1/><el2 att="val"/><el3/></el></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, descendant axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/(descendant::*[1]|descendant::*[1])
+        ]]></code>
+        <expected><el1/></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, descendant-or-self axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/(descendant-or-self::*[1]|descendant-or-self::*[1])
+        ]]></code>
+        <expected><el><el1/><el2 att="val"/><el3/></el></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, ancestor axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(ancestor::*[1]|ancestor::*[1])
+        ]]></code>
+        <expected><el><el1/><el2 att="val"/><el3/></el></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, ancestor-or-self axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(ancestor-or-self::*[1]|ancestor-or-self::*[1])
+        ]]></code>
+        <expected><el2 att="val"/></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, sibling axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(preceding-sibling::*|following-sibling::*)
+        ]]></code>
+        <expected><el1/><el3/></expected>
+    </test>
+    <test output="xml">
+        <task>inside location step, preceding/following axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(preceding::*|following::*)
+        ]]></code>
+        <expected><el1/><el3/></expected>
+    </test>
+    <test output="text">
+        <task>inside location step, attribute axis</task>
+        <code><![CDATA[
+          let $a := <el><el1/><el2 att="val"/><el3/></el>
+          return $a/el2/(@*[1]|@*[1])/string()
+        ]]></code>
+        <expected>val</expected>
+    </test>
+</TestSet>

@@ -1,0 +1,190 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for index retrieval of Lucene FT and range indexed nodes</testName>
+    <description>
+        <p>these tests test whether the util:index-keys() function returns correct nodes for the Lucene FT and range indexex</p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <fulltext default="none" attributes="no"/>
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+                        <text match="//pPath"/>
+                        <text match="//@typePath"/>
+                        <text qname="pQname"/>
+                        <text qname="@typeQname"/>
+                    </lucene>
+                    <create path="//pPath" type="xs:string"/>
+                    <create path="//@typePath" type="xs:string"/>
+                    <create qname="pQname" type="xs:string"/>
+                    <create qname="@typeQname" type="xs:string"/>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test1.xml">
+            <test>
+                <pPath>
+                    <el typePath="sometype">some text inside an element</el>
+                </pPath>
+                <pPath>some text inside a paragraph</pPath>
+                <pQname>
+                    <el typeQname="sometype">some text inside an element</el>
+                </pQname>
+                <pQname>some text inside a paragraph</pQname>
+            </test>
+        </store>
+        <store collection="/db/coll" name="test2.xml">
+            <test>
+                <pPath>
+                    <el typePath="sometype">some text inside an element</el>
+                </pPath>
+                <pPath>some text inside a paragraph</pPath>
+                <pQname>
+                    <el typeQname="sometype">some text inside an element</el>
+                </pQname>
+                <pQname>some text inside a paragraph</pQname>
+            </test>
+        </store>
+    </setup>
+    <functions><![CDATA[
+        declare function local:term-callback($term as xs:string, $data as xs:int+) as element() {
+        <entry> <term>{$term}</term> <frequency>{$data[1]}</frequency> <documents>{$data[2]}</documents> <position>{$data[3]}</position> </entry>
+        }; 
+        ]]>
+    </functions>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <test output="xml">
+        <task>index scan on path-based Lucene FT indexed nodes</task>
+        <code><![CDATA[
+            let $callback := util:function(xs:QName("local:term-callback"), 2)
+            let $hits := collection('/db/coll')//pPath
+            return  util:index-keys($hits, '', $callback, 1000, 'lucene-index')
+            ]]></code>
+        <expected>
+            <entry>
+                <term>element</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>1</position>
+            </entry>
+            <entry>
+                <term>inside</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>2</position>
+            </entry>
+            <entry>
+                <term>paragraph</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>3</position>
+            </entry>
+            <entry>
+                <term>some</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>4</position>
+            </entry>
+            <entry>
+                <term>text</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>5</position>
+            </entry>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>index scan on qname-based Lucene FT indexed nodes</task>
+        <code><![CDATA[
+            let $callback := util:function(xs:QName("local:term-callback"), 2)
+            let $hits := collection('/db/coll')//pQname
+            return  util:index-keys($hits, '', $callback, 1000, 'lucene-index')
+            ]]></code>
+        <expected>
+            <entry>
+                <term>element</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>1</position>
+            </entry>
+            <entry>
+                <term>inside</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>2</position>
+            </entry>
+            <entry>
+                <term>paragraph</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>3</position>
+            </entry>
+            <entry>
+                <term>some</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>4</position>
+            </entry>
+            <entry>
+                <term>text</term>
+                <frequency>4</frequency>
+                <documents>2</documents>
+                <position>5</position>
+            </entry>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>index scan on path-based range indexed nodes</task>
+        <code><![CDATA[
+            let $callback := util:function(xs:QName("local:term-callback"), 2)
+            let $hits := collection('/db/coll')//pPath
+            return  util:index-keys($hits, '', $callback, 1000)
+            ]]></code>
+        <expected>
+            <entry>
+                <term>some text inside a paragraph</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>1</position>
+            </entry>
+            <entry>
+                <term>some text inside an element</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>2</position>
+            </entry>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>index scan on qname-based range indexed nodes</task>
+        <code><![CDATA[
+            let $callback := util:function(xs:QName("local:term-callback"), 2)
+            let $hits := collection('/db/coll')//pQname
+            return  util:index-keys($hits, '', $callback, 1000)
+            ]]></code>
+        <expected>
+            <entry>
+                <term>some text inside a paragraph</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>1</position>
+            </entry>
+            <entry>
+                <term>some text inside an element</term>
+                <frequency>2</frequency>
+                <documents>2</documents>
+                <position>2</position>
+            </entry>
+        </expected>
+    </test>
+</TestSet>
