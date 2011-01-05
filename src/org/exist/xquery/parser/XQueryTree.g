@@ -50,6 +50,7 @@ header {
 	import org.exist.xquery.value.*;
 	import org.exist.xquery.functions.*;
 	import org.exist.xquery.update.*;
+	import org.exist.storage.ElementValue;
 }
 
 /**
@@ -721,6 +722,7 @@ throws XPathException
 				qn2:QNAME
 				{
                     QName qname= QName.parse(staticContext, qn2.getText(), "");
+                    qname.setNameType(ElementValue.ATTRIBUTE);
 					type.setNodeName(qname);
 				}
 				|
@@ -1478,6 +1480,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			if (axis == Constants.ATTRIBUTE_AXIS) {
                 qname.setNamespaceURI(null);
                 test= new NameTest(Type.ATTRIBUTE, qname);
+                qname.setNameType(ElementValue.ATTRIBUTE);
             } else {
                 test= new NameTest(Type.ELEMENT, qname);
             }
@@ -1556,6 +1559,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				{ 
 					QName qname= QName.parse(staticContext, qn3.getText());
 					test= new NameTest(Type.ATTRIBUTE, qname);
+					qname.setNameType(ElementValue.ATTRIBUTE);
 					axis= Constants.ATTRIBUTE_AXIS;
 				}
 				|
@@ -1635,12 +1639,14 @@ throws PermissionDeniedException, EXistException, XPathException
 		attr:QNAME
 		{
           qname= QName.parse(staticContext, attr.getText(), "");
+          qname.setNameType(ElementValue.ATTRIBUTE);
         }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
 		{ 
           qname= new QName(nc2.getText(), null, null);
           qname.setNamespaceURI(null);
+          qname.setNameType(ElementValue.ATTRIBUTE);
 		}
 		|
 		#( nc3:NCNAME WILDCARD )
@@ -1649,6 +1655,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			if (namespaceURI == null)
 				throw new EXistException("No namespace defined for prefix " + nc3.getText());
 			qname= new QName(null, namespaceURI, null);
+			qname.setNameType(ElementValue.ATTRIBUTE);
 		}
 		|
 		WILDCARD
