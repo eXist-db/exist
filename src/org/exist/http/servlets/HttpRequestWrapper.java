@@ -216,17 +216,34 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * Get file item
+     *  Convert object to FileItem, get FirstItem from list, or null
+     * if object or object in list is not a FileItem
      * 
      * @param obj List or Fileitem
      * @return First Fileitem in list or Fileitem.
      */
     private FileItem getFileItem(Object obj) {
+
         if (obj instanceof List) {
-            return (FileItem) ((List) obj).get(0);
-        } else {
-            return (FileItem) obj;
+
+            // Cast
+            List list = (List) obj;
+
+            // Return first FileItem object if present
+            for(Object listObject : list) {
+                if(listObject instanceof FileItem){
+                    return (FileItem) listObject;
+                }
+            }           
+
+        } else if(obj instanceof FileItem){
+            // Cast and return
+             return (FileItem) obj;         
         }
+
+        // object did not represent a List of FileItem's or FileItem.
+        return null;
+
     }
 
     /**
@@ -385,7 +402,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         FileItem item = getFileItem(o);
-        if (item.isFormField()) {
+        if (item==null || item.isFormField()) {
             return null;
         }
 
@@ -406,7 +423,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         FileItem item = getFileItem(o);
-        if (item.isFormField()) {
+        if (item==null || item.isFormField()) {
             return null;
         }
 
