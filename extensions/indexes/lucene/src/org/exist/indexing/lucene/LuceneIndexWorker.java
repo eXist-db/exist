@@ -497,7 +497,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (contextSet != null) {
                     int sizeHint = contextSet.getSizeHint(storedDocument);
                     if (returnAncestor) {
-                        NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                    	NodeProxy parentNode = contextSet.get(storedNode);
+                        // NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                         if (parentNode != null) {
                             LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
                             match.setScore(scoreDoc.score);
@@ -900,7 +901,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             // by default, Lucene only indexes the first 10,000 terms in a field
             writer.setMaxFieldLength(Integer.MAX_VALUE);
-
             NumericField fDocId = new NumericField(FIELD_DOC_ID, Field.Store.YES, true);
             Field fNodeId = new Field(FIELD_NODE_ID, new byte [] { 0 }, Field.Store.YES);
             for (PendingDoc pending : nodesToWrite) {
