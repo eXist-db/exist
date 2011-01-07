@@ -80,36 +80,39 @@ declare function t:test($result as item()*) {
         exists($result)
 };
 
-declare function t:compare-xml($output as node()*, $expected as node()*) {
-    if (empty($output)) then
-        true()
-    else
-        let $firstEqual :=
-            if ($output[1] instance of text()) then
-                deep-equal($output[1], $expected[1])
-            else
-                t:compare-xml(subsequence($output, 2), subsequence($expected, 2))
-        return
-            if (not($firstEqual)) then
-                false()
-            else if (count($output) gt 1) then
-                t:compare-xml(subsequence($output, 2), subsequence($expected, 2))
-            else
-                true()
-};
-
 declare function t:run-test($test as element(test), $count as xs:integer) {
 	let $context := t:init-prolog($test)
 	let $null := 
 	   if ($test/@trace eq 'yes') then 
 	       (system:clear-trace(), system:enable-tracing(true(), false()))
        else ()
+    let $highlight-option := concat("highlight-matches=",
+          if ($test/expected//@*[matches(., '^(\|{3}).*\1$')] and $test/expected//exist:match) then "both"
+          else if ($test/expected//@*[matches(., '^(\|{3}).*\1$')]) then "attributes"
+          else if ($test/expected//exist:match) then "elements"
+          else "none"        
+          )
+    let $serialize-options := 
+      let $decls := ($test/../*[name() ne 'test']|$test/code)[matches(., 'declare[\- ]option(\((&#34;|&#39;)|\s+)exist:serialize(\2,)?\s+(&#34;|&#39;).*?\4[;)]')]
+      let $ops1 := $decls/replace(., "declare[\- ]option(\((&#34;|&#39;)|\s+)exist:serialize(\2,)?\s+(&#34;|&#39;)(.*?)\4[;)]", "_|$5_")
+      let $ops2 :=
+        for $a in $ops1
+        for $b in tokenize($a, '_')[starts-with(., '|')]
+        return tokenize(substring-after($b, '|'), '\s+')
+      return if (count($ops2[matches(., 'highlight-matches')]))
+        then string-join($ops2, ' ')
+        else string-join(($ops2, $highlight-option), ' ')      
     let $queryOutput :=
 		util:catch("*",
 			util:eval(concat($context, $test/code/string())),
 			<error>Compilation error: {$util:exception-message}</error>
 		)
 	let $output := if ($test/@trace eq 'yes') then system:trace() else $queryOutput
+    let $expanded :=
+		if ($output instance of node()) then
+        	util:expand($output, $serialize-options)        	
+		else
+			$output
     let $expected :=
         if ($test/@output eq 'text') then
             data($test/expected)
@@ -120,20 +123,37 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         else if ($test/@output eq 'text') then
             normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
         else
-            t:compare-xml($output, $expected)
-    let $expanded :=
-		if ($output instance of node()) then
-        	util:expand($output)
-		else
-			$output
+            let $xn := t:normalize($expanded)
+            let $en := t:normalize($expected)
+            return
+        	   deep-equal($xn, $en)
     return
         <test n="{$count}" pass="{$OK}">
         {
             if (not($OK)) then
                 ($test/task, $test/expected, <result>{$expanded}</result>)
-            else ()
+            else
+                ()
         }
         </test>
+};
+
+declare function t:normalize($nodes as node()*) {
+	for $node in $nodes return t:normalize-node($node)
+};
+
+declare function t:normalize-node($node as node()) {
+	typeswitch ($node)
+		case element() return
+			element { node-name($node) } {
+				$node/@*, for $child in $node/node() return t:normalize-node($child)
+			}
+		case text() return
+			let $norm := normalize-space($node)
+			return
+				if (string-length($norm) eq 0) then () else $node
+		default return
+			$node
 };
 
 declare function t:xpath($output as item()*, $xpath as element()) {
