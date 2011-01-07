@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <TestSet xmlns:stats="http://exist-db.org/xquery/profiling">
 	<testName>Lucene indexing tests</testName>
 	<description>
@@ -8,11 +7,12 @@
 	<setup>
 		<create-collection parent="/db/system" name="config"/>
 		<create-collection parent="/db/system/config" name="db"/>
-		<store collection="/db/system/config/db" name="collection.xconf">
+		<create-collection parent="/db/system/config/db" name="lucene"/>
+		<store collection="/db/system/config/db/lucene" name="collection.xconf">
 			<collection xmlns="http://exist-db.org/collection-config/1.0">
 				<index>
 					<!-- Disable the standard full text index -->
-					<fulltext default="none" attributes="false"> </fulltext>
+					<fulltext default="none" attributes="false"></fulltext>
 					<!-- Lucene index is configured below -->
 					<lucene>
 						<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
@@ -43,7 +43,7 @@
 				<x>
 					<y>Nested <z>nodes</z></y>
 				</x>
-				<id>A11.B22.C33.D44</id>
+				<id>A11</id>
 			</test>
 		</store>
 		<store collection="/db/lucene" name="text2.xml">
@@ -65,7 +65,7 @@
 	</setup>
     <tearDown>
         <remove-collection collection="/db/lucene"/>
-        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
+        <remove-document collection="/db/system/config/db/lucene" name="collection.xconf"/>
     </tearDown>
 	<!-- Following axis tests -->
 	<test output="xml">
@@ -551,7 +551,7 @@
 				collection("/db/does/not/exist")/util:index-keys-by-qname(xs:QName("p"), "s", $callback, 10000, "lucene-index")
 			}
 			</terms>]]></code>
-		<expected/>
+		<expected><terms/></expected>
 	</test>
 	<test output="xml">
 		<task>index-keys test 4</task>
@@ -594,7 +594,7 @@
 			</terms>
 		</expected>
 	</test>
-    <test output="text">
+    <test output="xml">
         <task>index-keys test 6</task>
         <code><![CDATA[
             declare function local:key($key, $options) {
@@ -725,13 +725,13 @@
 		<task>Query test: nested elements 1</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(div/p, "second")] </code>
 		<expected>
-			<div>
+			<div type="chapter">
 				<head>Div1</head>
 				<p>First level</p>
-				<div>
+				<div type="section">
 					<head>Div2</head>
 					<p>Second level</p>
-					<div>
+					<div type="subsection">
 						<head>Div3</head>
 						<p>Third level</p>
 					</div>
@@ -743,13 +743,13 @@
 		<task>Query test: nested elements 2</task>
 		<code> doc("/db/lucene/text2.xml")/test/div[ft:query(div/div/p, "third")] </code>
 		<expected>
-			<div>
+			<div type="chapter">
 				<head>Div1</head>
 				<p>First level</p>
-				<div>
+				<div type="section">
 					<head>Div2</head>
 					<p>Second level</p>
-					<div>
+					<div type="subsection">
 						<head>Div3</head>
 						<p>Third level</p>
 					</div>
@@ -766,10 +766,10 @@
 		<task>Query test: nested elements 4</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(div/p, "third")] </code>
 		<expected>
-			<div>
+			<div type="section">
 				<head>Div2</head>
 				<p>Second level</p>
-				<div>
+				<div type="subsection">
 					<head>Div3</head>
 					<p>Third level</p>
 				</div>
@@ -780,10 +780,10 @@
 		<task>Query test: nested elements with wildcard 1</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(div/*, "third")] </code>
 		<expected>
-			<div>
+			<div type="section">
 				<head>Div2</head>
 				<p>Second level</p>
-				<div>
+				<div type="subsection">
 					<head>Div3</head>
 					<p>Third level</p>
 				</div>
@@ -794,13 +794,13 @@
 		<task>Query test: nested elements with wildcard 2</task>
 		<code> doc("/db/lucene/text2.xml")/test/div[ft:query(div/div/*, "third")] </code>
 		<expected>
-			<div>
+			<div type="chapter">
 				<head>Div1</head>
 				<p>First level</p>
-				<div>
+				<div type="section">
 					<head>Div2</head>
 					<p>Second level</p>
-					<div>
+					<div type="subsection">
 						<head>Div3</head>
 						<p>Third level</p>
 					</div>
@@ -817,13 +817,13 @@
 		<task>Query test: nested elements with wildcard 4</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(div/*, "second")] </code>
 		<expected>
-			<div>
+			<div type="chapter">
 				<head>Div1</head>
 				<p>First level</p>
-				<div>
+				<div type="section">
 					<head>Div2</head>
 					<p>Second level</p>
-					<div>
+					<div type="subsection">
 						<head>Div3</head>
 						<p>Third level</p>
 					</div>
@@ -835,10 +835,10 @@
 		<task>Query test: nested elements with wildcard 5</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(div/*, "third")] </code>
 		<expected>
-			<div>
+			<div type="section">
 				<head>Div2</head>
 				<p>Second level</p>
-				<div>
+				<div type="subsection">
 					<head>Div3</head>
 					<p>Third level</p>
 				</div>
@@ -849,10 +849,10 @@
 		<task>Query test: nested elements with wildcard 6</task>
 		<code> doc("/db/lucene/text2.xml")//div[ft:query(./div/*, "third")] </code>
 		<expected>
-			<div>
+			<div type="section">
 				<head>Div2</head>
 				<p>Second level</p>
-				<div>
+				<div type="subsection">
 					<head>Div3</head>
 					<p>Third level</p>
 				</div>
@@ -881,24 +881,24 @@
 	</test>
 	<test output="xml">
 		<task>Fields: keyword analyzer</task>
-		<code>doc("/db/lucene/text1.xml")/test[ft:query-field("id", "a11.b22.c33.d44")]/id</code>
-		<expected><id>A11.B22.C33.D44</id></expected>
+		<code>doc("/db/lucene/text1.xml")/test[ft:query-field("id", "a11")]/id</code>
+		<expected><id>A11</id></expected>
 	</test>
 	<test output="xml">
     	<task>Fields: keyword analyzer, XML syntax</task>
     	<code><![CDATA[
-    		let $query := <query><term>a11.b22.c33.d44</term></query>
+    		let $query := <query><term>a11</term></query>
     		return
     			doc("/db/lucene/text1.xml")/test[ft:query-field("id", $query)]/id
     	]]></code>
-		<expected><id>A11.B22.C33.D44</id></expected>
+		<expected><id>A11</id></expected>
 	</test>
 	<test output="xml">
 		<task>Fields: keyword analyzer, no context</task>
-		<code>ft:query-field("id", "a11.b22.c33.d44")</code>
-		<expected><id>A11.B22.C33.D44</id></expected>
+		<code>ft:query-field("id", "a11")</code>
+		<expected><id>A11</id></expected>
 	</test>
-	<test output="xml">
+	<!--test output="xml">
 		<task>Fields: remove document</task>
 		<code>
 			let $removed := xmldb:remove("/db/lucene", "text1.xml")
@@ -906,5 +906,5 @@
 				ft:query-field("id", "a11.b22.c33.d44")
 		</code>
 		<expected/>
-	</test>
+	</test-->
 </TestSet>
