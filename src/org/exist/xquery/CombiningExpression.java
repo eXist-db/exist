@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -91,4 +92,11 @@ public abstract class CombiningExpression extends AbstractExpression {
 		left.setPrimaryAxis(axis);
 		right.setPrimaryAxis(axis);
 	}
+
+	public int getPrimaryAxis() {
+		// just return left axis to indicate that we know the axis
+		return left.getPrimaryAxis();
+	}
+	
+	
 }
