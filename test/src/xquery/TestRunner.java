@@ -31,24 +31,30 @@ public abstract class TestRunner {
 	@Test
 	public void run() {
 		try {
+			StringBuilder fails = new StringBuilder();
+			StringBuilder results = new StringBuilder();
 			XQueryService xqs = (XQueryService) testCollection.getService("XQueryService", "1.0");
 			Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
 			for (File file : files) {
 				xqs.declareVariable("doc", file.getName());
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
-                System.out.println(resource.getContent());
+                results.append(resource.getContent()).append('\n');
 				Element root = (Element) resource.getContentAsDOM();
 				NodeList tests = root.getElementsByTagName("test");
 				for (int i = 0; i < tests.getLength(); i++) {
 					Element test = (Element) tests.item(i);
 					String passed = test.getAttribute("pass");
 					if (passed.equals("false")) {
-						System.err.println(resource.getContent());
-						fail("Test " + test.getAttribute("n") + " failed");
+						fails.append("Test " + test.getAttribute("n") + "in file " + file.getName() + " failed.\n");
 					}
 				}
 			}
+			if (fails.length() > 0) {
+				System.err.print(results);
+				fail(fails.toString());
+			}
+			System.out.println(results);
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -82,14 +88,16 @@ public abstract class TestRunner {
 	@After
 	public void tearDownAfter() {
 		files = null;
-		try {
-			DatabaseInstanceManager dim =
-			    (DatabaseInstanceManager) testCollection.getService(
-			        "DatabaseInstanceManager", "1.0");
-			dim.shutdown();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
+		if (testCollection != null) {
+			try {
+				DatabaseInstanceManager dim =
+				    (DatabaseInstanceManager) testCollection.getService(
+				        "DatabaseInstanceManager", "1.0");
+				dim.shutdown();
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
         testCollection = null;
 	}
