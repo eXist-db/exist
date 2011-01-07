@@ -76,7 +76,7 @@ declare function mods:get-collection($entry as element(mods:mods)) {
 : @param $node A mods element or attribute recording a value, in textual or coded form
 : @return The language label string
 :)
-declare function mods:get-language($language as node()?) as xs:string? {
+declare function mods:get-language-term($language as node()?) as xs:string? {
         let $languageTerm :=
             let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language[@type = 'code']][1]/label
             return
@@ -127,7 +127,7 @@ declare function mods:language-of-resource($language as element(mods:language)*)
         return
             if ($languageTerm) 
             then
-                mods:get-language($languageTerm)
+                mods:get-language-term($languageTerm)
             else ()
 };
 
@@ -150,7 +150,7 @@ declare function mods:language-of-cataloging($language as element(mods:languageO
         let $languageTerm := $language/mods:languageTerm[1]
         return
         if ($languageTerm) then
-        mods:get-language($languageTerm)
+        mods:get-language-term($languageTerm)
         else ()
 };
 
@@ -271,19 +271,27 @@ declare function mods:format-subjects($entry as element()) {
         if ($item/@encoding/string()) 
         then concat('(', ($item/@encoding/string()), ')') 
         else ()
+    let $type := 
+        if ($item/@type/string()) 
+        then concat('(', ($item/@type/string()), ')') 
+        else ()        
     return
         <tr><td class="sublabel">
-            {replace(functx:capitalize-first(functx:capitalize-first(functx:camel-case-to-words($item/name(), ' '))),'Info',''),
-            $authority, $encoding}
+            {
+            replace(functx:capitalize-first(functx:capitalize-first(functx:camel-case-to-words($item/name(), ' '))),'Info',''),
+            $authority, $encoding, $type
+            }
         </td><td class="subrecord">
             {
             if ($item/mods:*) 
             then
                 if ($item/name() = 'name')
-                then mods:format-primary-name($item, 1) 
+                then 
+                    replace(mods:format-primary-name($item, 1), ' ,',',')
                 else
                     if ($item/name() = 'titleInfo')
-                    then mods:get-short-title('', $item/..)
+                    then 
+                        string-join(mods:get-short-title('', $item/..), '')
                     else
                         for $subitem in ($item/mods:*)
                         let $authority := 
@@ -294,6 +302,10 @@ declare function mods:format-subjects($entry as element()) {
                             if ($subitem/@encoding/string()) 
                             then concat('(', ($subitem/@encoding/string()), ')') 
                             else ()
+                        let $type := 
+                            if ($subitem/@type/string()) 
+                            then concat('(', ($subitem/@type/string()), ')') 
+                            else ()    
                         return
                         <table><tr><td class="sublabel">
                             {functx:capitalize-first(functx:camel-case-to-words($subitem/name(), ' ')),
@@ -658,6 +670,13 @@ declare function mods:format-transliterated-eastern-name($name as element()?) as
     let $given := string-join(($name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'given']), ' ')
     let $address := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'termsOfAddress'][1]
     let $date := $name/mods:namePart[@transliteration = ('pinyin', 'romaji')][@type = 'date'][1]
+    let $language := 
+        if ($name/@lang)
+        then
+            mods:get-language-term($name/@lang)
+        else
+            mods:language-of-resource($name/../mods:language)
+    let $languageType := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language]/nameOrder
     return
         string-join(
         (
@@ -720,7 +739,15 @@ declare function mods:get-conference-detail-view($entry as element()) {
 
 declare function mods:format-primary-name($name as element(mods:name), $pos as xs:integer) {
     (: If the name is (erroneously) not typed, then format the Eastern name and string-join the nameParts. :)
-    if ($name[not(@type) or @type = ''])    
+    let $language := 
+        if ($name/@lang)
+        then
+            mods:get-language-term($name/@lang)
+        else
+            mods:language-of-resource($name/../mods:language)
+    let $languageType := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language]/nameOrder
+    return
+    if ($name[not(@type) or @type = ''])
     then
         concat(
         mods:format-transliterated-eastern-name($name[mods:namePart/@transliteration][not(@type) or @type = '']), 
@@ -751,7 +778,7 @@ declare function mods:format-primary-name($name as element(mods:name), $pos as x
                 	if ($family or $given) 
                 	(: If one of the nameParts is properly typed :)
                 	then
-                	   if (($family/@transliteration = ('pinyin', 'romaji')) or ($given/@transliteration = ('pinyin', 'romaji'))) 
+                	   if ($languageType = 'family-given') 
                 	   then
             				(: If the name is transliterated and Eastern :)
             				(: No matter which position they have, Japanese and Chinese names are formatted the same. :)
@@ -1146,8 +1173,8 @@ declare function mods:get-title-translated($entry as element(mods:mods), $titleI
 (: Constructs the title for the hitlist view. :)
 declare function mods:get-short-title($id as xs:string?, $entry as element()) {
     let $titleInfo := $entry/mods:titleInfo[not(@type='abbreviated')][not(@type='uniform')][not(@type='alternative')][not(@type='translated')]
-    let $titleInfoTransliteration := $titleInfo[@type='translated'][@transliteration]
-    let $titleInfoTranslation := $titleInfo[not(@transliteration)][@type='translated']
+    let $titleInfoTransliteration := $titleInfo[@type='translated'][@transliteration/string()]
+    let $titleInfoTranslation := $titleInfo[@type='translated'][not(@transliteration/string())]
     
     (: not implemented yet. :)
     (:
@@ -1392,7 +1419,7 @@ declare function mods:get-related-item($entry as element(mods:mods)) {
         then collection($collection)//mods:mods[@ID = $relatedItemPos/@xlink:href][1]
         else $relatedItemPos
     return
-        if ($relatedItem/@type = 'host')
+        if ($relatedItemPos/@type = ('host', 'series'))
         then
         mods:format-related-item($relatedItem)
         else ()
@@ -1411,7 +1438,7 @@ declare function mods:format-related-item($relatedItem as element()) {
                 } 
                 <span class="title">
                 {
-                string-join(mods:get-short-title((), $relatedItem),'')
+                mods:get-short-title((), $relatedItem)
                 }
                 </span>,
                 {
@@ -1449,6 +1476,7 @@ declare function mods:format-related-item($relatedItem as element()) {
             , '"\.', '."')
 };
 
+(: Not used. :)
 declare function mods:get-related-item-title($entry as element(mods:mods)) {
     for $item at $pos in $entry/mods:relatedItem
     let $related0 := $entry/mods:relatedItem[$pos]
@@ -1573,8 +1601,9 @@ if ($entry/mods:name) then
         let $language := 
             if ($name/@lang)
             then
-            mods:get-language($entry/mods:language)
-            else ()
+            mods:get-language-term($name/@lang)
+            else
+            mods:language-of-resource($entry/mods:language)
         let $nameOrder := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language]/nameOrder
         order by $type
         return
@@ -1721,9 +1750,18 @@ declare function mods:entry-full($entry as element())
     (: relatedItem :)
     for $item in ($entry/mods:relatedItem[@type = 'host'])
     return
-    mods:simple-row(mods:format-related-item($item), 'In')
+        if ($item/mods:titleInfo/mods:title/string()) 
+        then
+            mods:simple-row(mods:format-related-item($item), 'In:')
+        else ()
     ,
-    
+    for $item in ($entry/mods:relatedItem[@type = 'series'])
+    return
+        if ($item/mods:titleInfo[1]/mods:title/string()) 
+        then
+            mods:simple-row(mods:format-related-item($item), 'In Series:')
+        else ()
+    ,
     (: typeOfResource :)
     mods:simple-row($entry/mods:typeOfResource[1]/string(), 'Type of Resource')
     ,
@@ -1792,7 +1830,7 @@ declare function mods:entry-full($entry as element())
     ,
     
     (: subject :)
-    (: We assume that there are not many subjects with the first one empty. :)
+    (: We assume that there are not many subjects with the first element, topic, empty. :)
     if (normalize-space($entry/mods:subject[1]/string()))
     then
     mods:format-subjects($entry)    

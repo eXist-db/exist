@@ -35,6 +35,8 @@ let $tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label
 
 (: if document type is specified then we will need to use that instance as the template :)
 let $type := request:get-parameter('type', 'default')
+let $type-data := concat($style:db-path-to-app, '/code-tables/document-type-codes.xml')
+let $type-label := doc($type-data)//item[value=$type]/label
 
 (: look for an alternate data collection in the URL, else use the default mods data collection :)
 let $user := request:get-parameter('user', '')
@@ -79,6 +81,7 @@ let $create-new-from-template :=
          let $new-file-path := concat($data-collection, '/', $new-file-name)
          let $languageOfResource := request:get-parameter("languageOfResource", "")
          let $scriptOfResource := request:get-parameter("scriptOfResource", "")
+         let $transliterationOfResource := request:get-parameter("transliterationOfResource", "")
          let $languageOfCataloging := request:get-parameter("languageOfCataloging", "")
          let $scriptOfCataloging := request:get-parameter("scriptOfCataloging", "")
          let $scriptTypeOfResource := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfResource]/data(scriptClassifier)
@@ -140,7 +143,8 @@ let $create-new-from-template :=
                     <e:collection>{$data-collection}</e:collection>
                     <e:template>{util:document-name($template)}</e:template>
                     <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
-                    <e:scriptTypeOfCataloging>{$scriptTypeOfResource}</e:scriptTypeOfCataloging>                    
+                    <e:scriptTypeOfCataloging>{$scriptTypeOfCataloging}</e:scriptTypeOfCataloging>
+                    <e:transliterationOfResource>{$transliterationOfResource}</e:transliterationOfResource>                    
                 </extension>
             into $doc/mods:mods
             ,
@@ -176,29 +180,18 @@ let $model :=
        
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="{$instance-src}" id="save-data"/>
        
-       (: The full embodiment of the MODS schema, 3.3-3.4.:)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates'/>
+       (: The full embodiment of the MODS schema, 3.3-3.4. :)
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates' readonly="true"/>
        
-       (: A selection of elements and attributes from the MODS schema used for default records.:)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance'/>
+       (: A selection of elements and attributes from the MODS schema used for default records. :)
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance' readonly="true"/>
 
-       (: Author and editor elements for the compact forms.:)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="author-template.xml" id='author-template'/>
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="author-transliteration-template.xml" id='author-transliteration-template'/>
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="editor-template.xml" id='editor-template'/>
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="editor-transliteration-template.xml" id='editor-transliteration-template'/>
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="subject-template.xml" id='subject-template'/>
+       (: Elements for the compact forms. :)
+       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="compact-template.xml" id='compact-template' readonly="true"/> 
        
-       (: A selection of elements from the MODS schema with all possible attributes used for inserting a repetition.:)
-       (: NB: When it becomes possible to insert attributes this instance is not needed. For now, we have to present all attributes, not just the recommended ones. Once it is possible to insert attributes, new-instance can be used instead of element-selection-with-attributes. :)
-       <!--<xf:instance xmlns="http://www.loc.gov/mods/v3" src="element-selection-with-attributes.xml" id='new-instance-'/>-->       
-       
-       <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}"/>
+       <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}" readonly="true"/>
        
        <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>       
-       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:languageOfCataloging/mods:languageTerm" required="true()"/>
-       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:languageOfCataloging/mods:languageTerm/@authority" required="true()"/>
-       <xf:bind nodeset="instance('save-data')/mods:recordInfo/mods:accessCondition/@type" required="true()"/>
        
        <xf:instance xmlns="" id="save-results">
           <data>
@@ -228,24 +221,24 @@ let $model :=
 
 let $content :=
 <div class="content">
-    
-    <span class="float-right">editing record <strong>{$id}</strong> on the <strong>{$tab-label}</strong> tab</span>
+    <!--NB: $type should be passed on with the URL.-->
+    <span class="float-right">Editing record <strong>{$id}</strong> of type <strong>{$type-label}</strong> on the <strong>{$tab-label}</strong> tab</span>
     
     
     {mods:tabs($tab-id, $id, $show-all, $tempCollection)}
     
     <xf:submit submission="save-submission">
-        <xf:label class="xforms-group-label-centered-general">Save</xf:label>
+        <xf:label class="xforms-group-label-centered-general">&#160;Save</xf:label>
     </xf:submit>
     <xf:trigger>
-        <xf:label class="xforms-group-label-centered-general">Save and Close</xf:label>
+        <xf:label class="xforms-group-label-centered-general">&#160;Save and Close</xf:label>
         <xf:action ev:event="DOMActivate">
             <xf:send submission="save-and-close-submission"/>
             <xf:load resource="../search/index.xml?reload=true" show="replace"/>
         </xf:action>
     </xf:trigger>
     <xf:trigger>
-        <xf:label class="xforms-group-label-centered-general">Cancel</xf:label>
+        <xf:label class="xforms-group-label-centered-general">&#160;Cancel</xf:label>
         <xf:action ev:event="DOMActivate">
             <xf:send submission="cancel-submission"/>
             <xf:load resource="../search/index.xml?reload=true" show="replace"/>

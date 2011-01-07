@@ -1,10 +1,10 @@
-<code-table><code-table-name>identifier-type-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis><basis>DLFMODS_ImplementationGuidelines.pdf</basis><description/><notes>There is no controlled list of identifier types. Suggested values include, but are not limited to the following. Cluster: unused are commented out. User cannot choose "local" since this is used to identify record.</notes><items><item><label>(none selected)</label><value/></item><item><value>ARK</value><label>Archival Resource Key</label></item><item><value>doi</value><label>DOI (Digital Objects Identifier)</label></item><item><value>hdl</value><label>Handle</label></item><item><value>isbn</value><label>ISBN (International Standard Book Number)</label></item><item><value>ismn</value><label>International Standard Music Number</label></item><item><value>isrc</value><label>International Standard Recording Code</label></item><item><value>issn</value><label>ISSN (International Standard Serials Number)</label></item>
+<code-table><code-table-name>identifier-type-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis><basis>DLFMODS_ImplementationGuidelines.pdf</basis><description/><notes>There is no controlled list of identifier types. Suggested values include, but are not limited to the following. Cluster: unused are commented out.</notes><items><item><label>(none selected)</label><value/></item><item><value>ARK</value><label>Archival Resource Key</label></item><item><value>doi</value><label>DOI (Digital Objects Identifier)</label></item><item><value>hdl</value><label>Handle</label></item><item><value>isbn</value><label>ISBN (International Standard Book Number)</label></item><item><value>ismn</value><label>International Standard Music Number</label></item><item><value>isrc</value><label>International Standard Recording Code</label></item><item><value>issn</value><label>ISSN (International Standard Serials Number)</label></item>
         <!--
             <item>
             <value>issue number</value>
             <label>issue number</label>
             </item>
-        --><item><value>istc</value><label>International Standard Text Code</label></item><item><value>lccn</value><label>Library of Congress Control Number</label></item>
+        --><item><value>istc</value><label>International Standard Text Code</label></item><item><value>Koreana Tripitaka No.</value><label>Koreana Tripitaka No.</label></item><item><value>lccn</value><label>Library of Congress Control Number</label></item>
         <!-- 
             <item>
             <value>local</value>
@@ -24,15 +24,19 @@
             <value>music publisher</value>
             <label>music publisher</label>
             </item>
+        --><item><value>Nanjio Catalogue No.</value><label>Nanjio Catalogue No.</label></item><item><value>Peking Tripitaka No.</value><label>Peking Tripitaka No.</label></item>
+        <!--
             <item>
             <value>sici</value>
             <label>Serial Item and Contribution Identifier</label>
             </item>
+        --><item><value>sDe dge No.</value><label>sDe dge No.</label></item><item><value>sNar thaṅ No.</value><label>sNar thaṅ No.</label></item>
+        <!-- 
             <item>
             <value>stock number</value>
             <label>stock number</label>
             </item>
-        --><item><value>upc</value><label>Universal Product Code</label></item><item><value>uri</value><label>Uniform Resource Identifier</label></item>
+        --><item><value>SUEBS ID</value><label>SUEBS ID</label></item><item><value>Taisho Tripitaka No.</value><label>Taisho Tripitaka No.</label></item><item><value>upc</value><label>Universal Product Code</label></item><item><value>uri</value><label>Uniform Resource Identifier</label></item>
         <!-- 
             <item>
             <value>videorecording identifier</value>

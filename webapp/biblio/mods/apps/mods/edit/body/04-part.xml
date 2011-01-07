@@ -1,5 +1,5 @@
 <div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="part" tab-id="part"><div class="block-form"><xf:group appearance="full">
-            <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend that the part element be used in cases where the part of a resource being represented is a physical or structural part of another resource. Examples include an issue of a journal or a single story from a collection. This element is repeatable. --><fieldset class="level-1"><div class="join"><legend>Parts</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The designation of physical parts of a resource in a detailed form. Part is used to provide detailed description of the physical
+            <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend that the part element be used in cases where the part of a resource being represented is a physical or structural part of another resource. Examples include an issue of a journal or a single story from a collection. This element is repeatable. --><fieldset class="level-1"><div class="join"><span class="legend">Parts</span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> The designation of physical parts of a resource in a detailed form. Part is used to provide detailed description of the physical
                                 parts of a resource. It may be used as a top level field to designate physical parts or under Related Item. If used under
                                 Related Item, Part records the location of a part within a host/parent item. If used as a top level field, Part records a part
                                 of a resource, usually because the library is not in possession of the whole resource. </p><p> Use Part when the record in question refers to either a physical or structural part of a resource, rather than an intellectual
@@ -62,7 +62,7 @@
                     <!--part input ends-->
                     <!--part/detail begins-->
                     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE]-->
-                    <!--Cluster: include--><xf:group id="fieldset-detail" ref=".[mods:detail]"><fieldset class="level-2"><div class="join"><legend>Detail</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Detail to indicate the numbering and type of designation of the part in relation to the parent item. Detail
+                    <!--Cluster: include--><xf:group id="fieldset-detail" ref=".[mods:detail]"><fieldset class="level-2"><div class="join"><span class="legend">Detail</span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Detail to indicate the numbering and type of designation of the part in relation to the parent item. Detail
                                             contains the numbering and type of designation of the part in relation to the host/parent item in which a host item
                                             resides. </p></div></span></div>
                             <!--part/detail repeat begins--><xf:repeat nodeset="./mods:detail" id="part-detail-repeat">
@@ -95,7 +95,7 @@
                     <!--part/detail ends-->
                     <!--part/extent begins-->
                     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                    <!--Cluster: include--><xf:group id="fieldset-extent" ref=".[mods:extent]"><fieldset class="level-2"><div class="join"><legend>Extent</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subfield to indicate the measured units making up the part (for example pages, minutes, etc.). </p></div></span></div>
+                    <!--Cluster: include--><xf:group id="fieldset-extent" ref=".[mods:extent]"><fieldset class="level-2"><div class="join"><span class="legend">Extent</span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subfield to indicate the measured units making up the part (for example pages, minutes, etc.). </p></div></span></div>
                             <!--part/extent repeat begins--><xf:repeat nodeset="./mods:extent" id="extent-repeat">
                                 <!--part/extent input begins-->
                                 <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
@@ -125,7 +125,7 @@
                     <!--part/extent ends-->
                     <!--part/date begins-->
                     <!--DLF/Aquifer: RECOMMENDED IF APPLICABLE-->
-                    <!--Cluster: include--><xf:group id="fieldset-date" ref=".[mods:date]"><fieldset class="level-2"><div class="join"><legend><span class="legend">Date</span></legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Date contains date information relevant to the part described. </p></div></span></div>
+                    <!--Cluster: include--><xf:group id="fieldset-date" ref=".[mods:date]"><fieldset class="level-2"><div class="join"><span class="legend"><span class="legend">Date</span></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Date contains date information relevant to the part described. </p></div></span></div>
                             <!--part/date repeat begins--><xf:repeat nodeset="instance('save-data')/mods:part/mods:date" id="part-date-repeat">
                                 <!--part/date input begins-->
                                 <!--DLF/Aquifer: RECOMMENDED-->
@@ -151,7 +151,7 @@
                             <!--part/date repeat ends-->
                             <!--part/date add begins--><xf:trigger ref=".[count(mods:date) &gt; 0]" class="add-button"><xf:label class="xforms-group-label-centered">Add Another Date</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:date" at="index('part-date-repeat')" position="after" origin="instance('new-instance')/mods:part/mods:date"/><xf:setvalue ref="instance('save-data')/mods:part/mods:date[last()]" value="''"/></xf:action></xf:trigger>
                             <!--part/date add ends--></fieldset></xf:group>
-                    <!--part/date ends--><xf:group id="fieldset-text" ref=".[mods:text]"><fieldset class="level-2"><div class="join"><legend>Text</legend><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subfield to record information in textual form. Use this subfield when other subfields will not capture the
+                    <!--part/date ends--><xf:group id="fieldset-text" ref=".[mods:text]"><fieldset class="level-2"><div class="join"><span class="legend">Text</span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use this subfield to record information in textual form. Use this subfield when other subfields will not capture the
                                             appropriate information. </p></div></span></div>
                             <!--part/text repeat begins--><xf:repeat nodeset="./mods:text" id="text-repeat">
                                 <!--part/text input begins--><xf:group ref="." appearance="full"><xf:textarea ref="." class="textarea" mediatype="dojo"><xf:label>Text:</xf:label><xf:hint><p> Use this subfield to record information in textual form. Use this subfield when other subfields will not capture

@@ -535,9 +535,11 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
             let $code-tables := concat($app-collection, '/apps/mods/code-tables')
             let $document-path := concat($code-tables, '/document-type-codes.xml')
             let $language-path := concat($code-tables, '/language-3-type-codes.xml')
+            let $transliteration-path := concat($code-tables, '/transliteration-codes.xml')
             let $script-path := concat($code-tables, '/script-codes.xml')
             let $code-table-type := doc($document-path)/code-table
             let $code-table-lang := doc($language-path)/code-table
+            let $code-table-transliteration := doc($transliteration-path)/code-table
             let $code-table-script := doc($script-path)/code-table
             return 
                 <div class="content">
@@ -569,13 +571,13 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 let $label := $item/label/text()
                                 let $labelValue := $item/value/text()
                                 let $sortOrder := 
-                                if (empty($item/frequencyClassifier)) 
-                                then 'B' 
-                                else 
-                                    if ($item/frequencyClassifier[. = 'common']) 
-                                    then 'A' 
-                                    (: else frequencyClassifier = 'default':)
-                                    else ''
+                                    if (empty($item/frequencyClassifier)) 
+                                    then 'B' 
+                                    else 
+                                        if ($item/frequencyClassifier[. = 'common']) 
+                                        then 'A' 
+                                        (: else frequencyClassifier = 'default':)
+                                        else ''
                                 order by $sortOrder, $label
                                 return
                                     <option value="{$labelValue}">{$item/label/text()}</option>
@@ -601,6 +603,21 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                     (: else frequencyClassifier = 'default':)
                                     else ''
                                 order by $sortOrder, $label
+                                return
+                                    <option value="{$labelValue}">{$item/label/text()}</option>
+                            }
+                            </select>
+                        </span>
+                        </div>
+                        
+                        <div class="language-label">
+                            <label for="transliterationOfResource">Transliteration Scheme: </label>
+                        <span class="language-list">
+                        <select name="transliterationOfResource">
+                            {
+                                for $item in $code-table-transliteration//item
+                                let $label := $item/label/text()
+                                let $labelValue := $item/value/text()
                                 return
                                     <option value="{$labelValue}">{$item/label/text()}</option>
                             }
