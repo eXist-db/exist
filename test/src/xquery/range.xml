@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>Range index tests</testName>
+    <description>
+        <p>These tests test for differences when element nodes are queried directly, or first stored in a variable. Following test situations are included:
+            <ul>
+                <li>a (positively matching) query on an element node</li>
+                <li>a (negatively matching) query on an element node, querying the value of a nested attribute</li>
+                <li>a (negatively matching) query on an element node, querying the value of a non-nested attribute</li>
+            </ul>
+            These tests are repeated for both qname-based and path-based index definitions, with different index types: the old FT index (match-any()), Lucene FT index (ft:query()), and range index (matches()) search functions.            
+        </p>
+        <author>Wolfgang Meier, Ron van Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <fulltext default="none" attributes="no">                        
+                    </fulltext>
+                    <create qname="p" type="xs:string"/>
+                    <create qname="p1" type="xs:string"/>
+                    <create qname="@att1" type="xs:string"/>
+                    <create qname="p4" type="xs:string"/>
+                    <create path="//p2" type="xs:string"/>
+                    <create path="//@att2" type="xs:string"/>
+                </index>
+            </collection> 
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <p att1="val1" att2="val2">this is a test document</p>
+                <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                <p2 att2="value2">some text inside a path-based indexed element</p2>
+                <p3>element with <p4>inline child</p4></p3>
+            </test> 
+        </store>
+    </setup>
+    <functions><![CDATA[
+        declare function local:term-callback($term as xs:string, $data as xs:int+) {
+        <term>{$term}</term>
+        };
+        ]]></functions>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <test output="text">
+        <task>[query] range index (qname), attribute context (@)</task>
+        <code><![CDATA[
+            collection('/db/coll')//p/@att1[matches(., 'val1')]/string()
+            ]]></code>
+        <expected>val1</expected>
+    </test>
+    <test output="text">
+        <task>[query] range index (path), attribute context (@)</task>
+        <code><![CDATA[
+            collection('/db/coll')//p/@att2[matches(., 'val2')]/string()
+            ]]></code>
+        <expected>val2</expected>
+    </test>
+    <test output="text">
+        <task>[query] range index (qname), attribute context (attribute::)</task>
+        <code><![CDATA[
+            collection('/db/coll')//p/attribute::att1[matches(., 'val1')]/string()
+            ]]></code>
+        <expected>val1</expected>
+    </test>
+    <test output="text">
+        <task>[query] range index (path), attribute context (attribute::)</task>
+        <code><![CDATA[
+            collection('/db/coll')//p/attribute::att2[matches(., 'val2')]/string()
+            ]]></code>
+        <expected>val2</expected>
+    </test>
+    <test output="xml">
+        <task>[query] range index (qname), element context</task>
+        <code><![CDATA[
+            collection('/db/coll')//p[matches(@att1, 'val1')]
+            ]]></code>
+        <expected>
+            <p att1="val1" att2="val2">this is a test document</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query] range index (path), element context</task>
+        <code><![CDATA[
+            collection('/db/coll')//p[matches(@att2, 'val2')]
+            ]]></code>
+        <expected>
+            <p att1="val1" att2="val2">this is a test document</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query] range index (qname), attribute context inside predicate</task>
+        <code><![CDATA[
+            collection('/db/coll')/*/p[descendant-or-self::p/@att1[matches(., 'val1')]]
+            ]]></code>
+        <expected>
+            <p att1="val1" att2="val2">this is a test document</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[query] range index (path), attribute context inside predicate</task>
+        <code><![CDATA[
+            collection('/db/coll')/*/p[descendant-or-self::p/@att2[matches(., 'val2')]]
+            ]]></code>
+        <expected>
+            <p att1="val1" att2="val2">this is a test document</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (qname), attribute context (@)</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p/@att1
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val1</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (path), attribute context (@)</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p/@att2
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val2</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (qname), attribute context (attribute::)</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p/attribute::att1
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val1</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (path), attribute context (attribute::)</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p/attribute::att2
+            return util:index-keys($a,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val2</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (qname), element context</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p
+            return util:index-keys($a/@att1,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val1</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[index] range index (path), element context</task>
+        <code><![CDATA[
+            let $a := collection('/db/coll')//p
+            return util:index-keys($a/@att2,'', util:function(xs:QName('local:term-callback'), 2), 100) 
+            ]]></code>
+        <expected>
+            <term>val2</term>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'qname'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </direct>
+                <indirect>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'path'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </direct>
+                <indirect>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] query on parent element with nested child</task>
+        <code>collection('/db/coll')//p3[. = 'element with inline child']</code>
+        <expected><p3>element with <p4>inline child</p4></p3></expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] indirect query on parent element with nested child</task>
+        <code>let $hits := collection('/db/coll')//p3 return $hits[. = 'element with inline child']</code>
+        <expected><p3>element with <p4>inline child</p4></p3></expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] query on parent element should not match nested child</task>
+        <code>collection('/db/coll')//p3[. = 'inline child']</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] indirect query on parent element should not match nested child</task>
+        <code>let $hits := collection('/db/coll')//p3 return $hits[. = 'inline child']</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] query with wildcard should match</task>
+        <code>collection('/db/coll')//*[. = 'inline child']</code>
+        <expected><p4>inline child</p4></expected>
+    </test>
+</TestSet>
