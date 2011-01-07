@@ -135,6 +135,7 @@ public class IndexKeys extends BasicFunction {
             max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
+        // if we have 5 arguments, query the user-specified index
         if (this.getArgumentCount() == 5) {
         	IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[4].itemAt(0).getStringValue());
         	//Alternate design
@@ -173,12 +174,13 @@ public class IndexKeys extends BasicFunction {
 	            result.addAll(call.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
 	            data.clear();
 	        }
+	    // no index specified: use the range index
         } else {
             Indexable indexable = (Indexable) args[1].itemAt(0);
             ValueOccurrences occur[] = null;
             // First check for indexes defined on qname
             QName[] allQNames = getDefinedIndexes(context.getBroker(), docs);
-            if (qnames != null && allQNames.length > 0)
+            if (allQNames.length > 0)
                 occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, allQNames, indexable);
             // Also check if there's an index defined by path
             ValueOccurrences occur2[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, indexable);
