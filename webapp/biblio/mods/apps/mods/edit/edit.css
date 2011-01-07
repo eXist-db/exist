@@ -35,10 +35,6 @@ td
     text-align: center;
     font-weight: normal;
 }
-legend {
-    font-weight: bold;
-    display: inline-block;    
-}
 
 .float-right {
     float: right; 
@@ -115,8 +111,10 @@ button {
     border-style: solid;
     border-color: gray;
     padding: .2em;
-    vertical-align:middle;
+    vertical-align: middle;
     text-align: center;
+    height: 2em;
+    
     -moz-border-radius: .4em;
     border-bottom-left-radius: 5px 5px;
     border-bottom-right-radius: 5px 5px;
@@ -176,8 +174,7 @@ fieldset,
     border-top-left-radius: 10px 10px;
     border-top-right-radius: 10px 10px;
     }
-    
-    
+
 .block-form xf|label {
     display: inline-block;
     width: 12em; /* fix the width of all the labels in the block form */
@@ -196,7 +193,7 @@ fieldset .level-3
     margin-bottom: 2em;
 }
 
-.join { /*bad class name used for aligning hint in fieldset labels with title*/
+.join {
     margin-bottom: .75em;
     font-weight: bold;
     border-style: solid;
@@ -206,13 +203,17 @@ fieldset .level-3
     width: 15em;
     margin-top: -2.75em; /*to make the fieldset border hit the centre of the box*/
     margin-left: 1.55em;
-    text-align: center;
-    margin-bottom: .75em;    
+    margin-bottom: .75em;
+    text-align: center;    
 }
 
-input {
-    padding: .2em; /*to give a little less cramped input field*/    
+.join .legend {
+    display: inline;
 }
+
+input    {
+    padding: .2em; /*to give a little less cramped input field*/    
+    }
 
 .block-form .xforms-group-label-centered { /*button text*/
     display: inline-block;
@@ -259,7 +260,7 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
 .textarea .xforms-value  {
     width: 40em; 
     height: 3em; 
-    padding-top: 2px;
+    padding: .2em;
     }
 
 div.join span.xforms-hint { /*the fieldset hints*/
@@ -285,6 +286,59 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     display: inline;
 }
 
+.join-button .xforms-control button
+{
+    width: 1.75em !important;
+    height: 1.75em;
+    padding: 0;
+    margin: 0 0 0 .25em;
+}
+
+.wide .xforms-control button
+{
+    width: 2.5em !important;
+}
+
+.join-button .xforms-control button .xforms-label {
+    display: inline;
+    width: 1em;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+
+.title-button   {
+    margin: .5em;
+}
+
+.title-button span.xforms-hint-icon  {
+    margin-left: .5em;
+}
+
+.node-button .xforms-control button
+{
+    width: 2em;
+    padding: 0;
+    margin: 0 0 0 .25em;
+}
+
+.node-button .xforms-control button .xforms-label {
+    display: inline;
+    width: 1em;
+    text-align: center;
+    padding: 0;
+    margin: 0 0 -5em 0;
+}
+
+.xforms-case .node-button {
+    margin-bottom: -1.75em;
+    margin-left: .5em;
+    margin-right: 0;
+    margin-top: -.5em;
+}
+
+.node-adds {margin-top: 2.25em;}
 div.xforms-help-value, 
 div.xforms-alert-value, 
 div.xforms-hint-value 
@@ -295,14 +349,14 @@ div.xforms-hint-value
 	background-color: white;
 	position: absolute;
 	border: gray 1px solid; 
-	width: 35em;
-	margin-top: 1em;
-	margin-left: -1em;
-	padding: 1em;
+	width: 30em;
+	margin: 1em;
+	padding: 1em 1em 0 1em;
+	z-index:1;
 }
 
 .xforms-value {
-    padding-left: .5ex;
+    padding-left: .25em;
 }
 
 /*compact
@@ -310,8 +364,35 @@ div.xforms-hint-value
 .compact .textarea .xforms-value  {
     width: 50em; 
     height: 4em; 
-    padding: 0;
     margin: 0 0 0 2em;
+    }
+/*
+.compact .xforms-repeat-item .xforms-repeat-item-selected {
+    background-color: white;
+    color: grey !important;
+}
+.compact .xforms-repeat-item  {
+    background-color: #F5F5F5;  
+}
+*/
+
+.compact #fieldset-namePart-author label,
+.compact #fieldset-namePart-editor label,
+.compact #fieldset-place label,
+.compact #fieldset-publisher label,
+.compact #fieldset-dateIssued label,
+.compact #fieldset-extent label
+    {
+    margin-left: -1em;
+    }
+
+.compact #fieldset-namePart-author input,
+.compact #fieldset-namePart-editor input,
+.compact #fieldset-relatedItem-periodical-namePart input,
+.compact #fieldset-relatedItem-anthology-namePart input,
+.compact #fieldset-relatedItem-series-namePart input
+    {
+    margin-left: -10em;
     }
 
 .compact .xforms-label,
@@ -334,7 +415,11 @@ div.xforms-hint-value
 }
 
 .compact .wide {
-    width: 25em;
+    width: 20em;
+}
+
+.compact .extra-wide {
+    width: 30em;
 }
 
 .compact fieldset .level-2, 
@@ -343,79 +428,27 @@ div.xforms-hint-value
     margin-bottom: .5em;
     margin-top: 2.25em !important;
 }
-.compact .block-form {
-    1margin-top: 2em;
+.compact .block-form,
+.compact label .xforms-value
+{
     border: 0;
 }
 
 .compact .xforms-value {
     border: grey 1px solid;
-    1padding-left: .5em;
     height: 1.5em;
 }
 
-.compact input {
-    margin-bottom: 0.25em !important;
-    margin-top: 0 !important;
-    padding-left: .25em !important;
-    height: 1.25em !important;
+.compact xf|input {
+    margin-bottom: 0.25em;
+    margin-top: 0;
+    height: 1.5em;
 }
 
-.compact label .xforms-value {
-    border: 0;
-}
-
-.compact #relatedItem-publisher-anthology-repeat .xforms-repeat-item,
-.compact #relatedItem-publisher-periodical-repeat .xforms-repeat-item,
-.compact #relatedItem-publisher-series-repeat .xforms-repeat-item,
-
-.compact #relatedItem-date-issued-anthology-repeat .xforms-repeat-item,
-.compact #relatedItem-date-issued-periodical-repeat .xforms-repeat-item,
-.compact #relatedItem-date-issued-series-repeat .xforms-repeat-item,
-
-.compact #related-item-part-detail-anthology-repeat .xforms-repeat-item,
-.compact #related-item-part-detail-periodical-repeat .xforms-repeat-item,
-.compact #related-item-part-detail-series-repeat .xforms-repeat-item,
-
-.compact #related-item-extent-anthology-repeat .xforms-repeat-item,
-.compact #related-item-extent-periodical-repeat .xforms-repeat-item,
-.compact #related-item-extent-series-repeat .xforms-repeat-item,
-
-.compact #related-item-part-date-anthology-repeat .xforms-repeat-item,
-.compact #related-item-part-date-periodical-repeat .xforms-repeat-item,
-.compact #related-item-part-date-series-repeat .xforms-repeat-item,
-
-.compact #relatedItem-place-anthology-repeat .xforms-repeat-item,
-.compact #relatedItem-place-periodical-repeat .xforms-repeat-item,
-.compact #relatedItem-place-series-repeat .xforms-repeat-item,
-
-.compact #relatedItem-name-anthology-repeat .xforms-repeat-item,
-.compact #relatedItem-name-periodical-repeat .xforms-repeat-item,
-.compact #relatedItem-name-series-repeat .xforms-repeat-item,
-
-.compact #relatedItem-titleInfo-anthology-repeat .xforms-repeat-item,
-.compact #relatedItem-titleInfo-periodical-repeat .xforms-repeat-item,
-.compact #relatedItem-titleInfo-series-repeat .xforms-repeat-item,
-
+.compact .xforms-repeat-item,
 .compact #relatedItem-place-anthology-repeat .level-3,
 .compact #relatedItem-place-periodical-repeat .level-3,
 .compact #relatedItem-place-series-repeat .level-3,
-
-.compact #subject-titleinfo-repeat .xforms-repeat-item,
-.compact #titleInfo-repeat .xforms-repeat-item,
-.compact #name-repeat .xforms-repeat-item,
-.compact #name-author-repeat .xforms-repeat-item,
-.compact #name-editor-repeat .xforms-repeat-item,
-.compact #place-repeat .xforms-repeat-item,
-.compact #publisher-repeat .xforms-repeat-item,
-.compact #date-issued-repeat .xforms-repeat-item,
-.compact #extent-repeat .xforms-repeat-item,
-.compact #topic-repeat .xforms-repeat-item,
-.compact #geographic-repeat .xforms-repeat-item,
-.compact #temporal-repeat .xforms-repeat-item,
-.compact #fieldset-subject-namePart-personal .xforms-repeat-item,
-.compact #fieldset-subject-namePart-corporate .xforms-repeat-item,
-.compact #note-repeat .xforms-repeat-item,
 .compact #fieldset-placeTerm .level-3
 {
     border: 0;
@@ -438,58 +471,6 @@ div.xforms-hint-value
     margin-bottom: 2em;    
 }
 
-.compact #namePart-repeat .xforms-value,
-.compact #extent-repeat .xforms-value
-{
-    position: absolute;
-    margin-left: -1.6em;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
-}
-
-.compact #subject-namePart-repeat .xforms-value
-{
-    position: absolute;
-    margin-left: -2em;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
-}
-
-.compact #relatedItem-namePart-anthology-repeat .xforms-label,
-.compact #relatedItem-namePart-periodical-repeat .xforms-label,
-.compact #relatedItem-namePart-series-repeat .xforms-label
-{
-    1position: absolute;
-    margin-left: -.5em;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
-}
-.compact #relatedItem-namePart-anthology-repeat input,
-.compact #relatedItem-namePart-periodical-repeat input,
-.compact #relatedItem-namePart-series-repeat input
-{
-    1position: absolute;
-    margin-left: -9em;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 0;
-}
-
-.compact .xforms-label
-{    
-    1margin-top: -.5em;
-}
-
-.compact #place-repeat .xforms-repeat-item,
-{
-    margin-left: -2.5em;
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 .compact #relatedItem-titleInfo-anthology-repeat .xforms-repeat-item .xforms-group-content,
 .compact #relatedItem-titleInfo-periodical-repeat .xforms-repeat-item .xforms-group-content,
 .compact #relatedItem-titleInfo-series-repeat .xforms-repeat-item .xforms-group-content
@@ -498,7 +479,6 @@ div.xforms-hint-value
     margin-top: 0;
     margin-bottom: 0;
 }
-
 
 .compact #publisher-repeat .xforms-repeat-item,
 .compact #date-issued-repeat .xforms-repeat-item
@@ -516,9 +496,14 @@ eeddee: tab background
 */
 
 .title .xforms-label,
-.title .join{
+.title .join
+{
     color: #886699;
 }
+.title .join{
+    width: 17em;
+}
+
 .title .join,
 .title .xforms-repeat-item,
 .title .xforms-repeat-item-selected,
