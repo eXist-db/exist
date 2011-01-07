@@ -1,5 +1,7 @@
 package xquery;
 
+import org.exist.Namespaces;
+import org.exist.memtree.SAXAdapter;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
@@ -7,36 +9,48 @@ import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
 import org.junit.*;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import static org.junit.Assert.fail;
 
 public abstract class TestRunner {
 
-    private File[] files;
-	private Collection testCollection;
+	private Collection rootCollection;
 
     protected abstract String getDirectory();
 
 	@Test
 	public void run() {
+		File dir = new File(getDirectory());
+		File[] files = dir.listFiles(new XMLFilenameFilter());
+		
 		try {
 			StringBuilder fails = new StringBuilder();
 			StringBuilder results = new StringBuilder();
-			XQueryService xqs = (XQueryService) testCollection.getService("XQueryService", "1.0");
+			XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
 			Source query = new FileSource(new File("test/src/xquery/runTests.xql"), "UTF-8", false);
 			for (File file : files) {
-				xqs.declareVariable("doc", file.getName());
+				Document doc = parse(file);
+				
+				xqs.declareVariable("doc", doc);
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
                 results.append(resource.getContent()).append('\n');
@@ -58,6 +72,15 @@ public abstract class TestRunner {
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (SAXException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
 		}
 	}
 
@@ -69,29 +92,16 @@ public abstract class TestRunner {
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
 
-		Collection root =
+		rootCollection =
 			DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
-		CollectionManagementService service =
-			(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-		testCollection = service.createCollection("test");
-		Assert.assertNotNull(testCollection);
-
-		File dir = new File(getDirectory());
-		files = dir.listFiles(new XMLFilenameFilter());
-		for (File file : files) {
-			XMLResource resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
-			resource.setContent(file);
-			testCollection.storeResource(resource);
-		}
 	}
 
 	@After
 	public void tearDownAfter() {
-		files = null;
-		if (testCollection != null) {
+		if (rootCollection != null) {
 			try {
 				DatabaseInstanceManager dim =
-				    (DatabaseInstanceManager) testCollection.getService(
+				    (DatabaseInstanceManager) rootCollection.getService(
 				        "DatabaseInstanceManager", "1.0");
 				dim.shutdown();
 			} catch (Exception e) {
@@ -99,6 +109,21 @@ public abstract class TestRunner {
 				fail(e.getMessage());
 			}
 		}
-        testCollection = null;
+        rootCollection = null;
+	}
+	
+	protected static Document parse(File file) throws IOException, SAXException, ParserConfigurationException {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        InputSource src = new InputSource(file.toURI().toASCIIString());
+        SAXParser parser = factory.newSAXParser();
+        XMLReader xr = parser.getXMLReader();
+        
+        SAXAdapter adapter = new SAXAdapter();
+        xr.setContentHandler(adapter);
+        xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+        xr.parse(src);
+        
+        return adapter.getDocument();
 	}
 }
