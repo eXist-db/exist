@@ -1590,8 +1590,8 @@ public class NativeValueIndex implements ContentLoadingObserver
                             int sizeHint = contextSet.getSizeHint( storedDocument );
 
                             if( returnAncestor ) {
-                                NodeProxy parentNode = contextSet.parentWithChild( storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL );
-
+//                                NodeProxy parentNode = contextSet.parentWithChild( storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL );
+                            	NodeProxy parentNode = contextSet.get(storedNode);
                                 if( parentNode != null ) {
                                     result.add( parentNode, sizeHint );
                                 }
@@ -1723,7 +1723,8 @@ public class NativeValueIndex implements ContentLoadingObserver
                         previous = nodeId;
 
                         if( contextSet != null ) {
-                            parentNode = contextSet.parentWithChild( storedDocument, nodeId, false, true );
+                        	parentNode = contextSet.get(storedDocument, nodeId);
+//                            parentNode = contextSet.parentWithChild( storedDocument, nodeId, false, true );
                         } else {
                             parentNode = new NodeProxy( storedDocument, nodeId );
                         }
