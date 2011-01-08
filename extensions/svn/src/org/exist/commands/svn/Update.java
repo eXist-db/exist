@@ -21,24 +21,36 @@
  */
 package org.exist.commands.svn;
 
-import org.exist.plugin.command.AbstractCommandResolver;
+import org.exist.plugin.command.*;
+import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.WorkingCopy;
+import org.exist.xmldb.XmldbURI;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class SvnCommandResolver extends AbstractCommandResolver {
+public class Update extends AbstractCommand {
 	
-	static {
-		SvnCommandResolver resolver = new SvnCommandResolver();
-		
-		resolver.plug(Add.class);
-		resolver.plug(CheckOut.class);
-		resolver.plug(Commit.class);
-		resolver.plug(Status.class);
-		resolver.plug(Update.class);
-		
-		org.exist.plugin.command.Commands.plug("svn", resolver);
+	public Update() {
+		names = new String[] {"update"};
 	}
 	
+	public void process(XmldbURI collection, String[] params) throws CommandException {
+        Resource wcDir = new Resource(collection);
+
+        try {
+        	WorkingCopy wc = new WorkingCopy("", "");
+
+        	out().println( wc.update(wcDir, SVNRevision.HEAD, true) );
+		} catch (SVNException svne) {
+			svne.printStackTrace();
+			throw new CommandException(
+					"error while commiting a working copy to the repository '"
+                    + wcDir + "'", svne);
+		}
+	}
+
 }
