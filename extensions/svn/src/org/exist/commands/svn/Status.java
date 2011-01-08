@@ -52,7 +52,7 @@ public class Status extends AbstractCommand {
 			userName = params[0];
 			password = params[1];
 		}
-    	WorkingCopy wc = new WorkingCopy(userName, password);
+    	new WorkingCopy(userName, password);
 
     	SVNRepositoryFactoryImpl.setup();
 		SVNClientManager manager = SVNClientManager.newInstance(SVNWCUtil.createDefaultOptions(false), userName, password);
