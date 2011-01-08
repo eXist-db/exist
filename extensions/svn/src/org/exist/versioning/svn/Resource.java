@@ -122,30 +122,33 @@ public class Resource extends File {
 		TransactionManager tm;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			return false;
-		}
-
-        Collection collection = broker.getCollection(uri.toCollectionPathURI());
-        if (collection != null) return true;
-
-        Collection parent_collection = broker.getCollection(uri.toCollectionPathURI().removeLastSegment());
-        if (parent_collection == null) return false;
-
-        tm = db.getTransactionManager();
-		Txn transaction = tm.beginTransaction();
-		
-		try {
-			Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
-			broker.saveCollection(transaction, child);
-			tm.commit(transaction);
-		} catch (Exception e) {
-    		tm.abort(transaction);
-			return false;
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				return false;
+			}
+	
+	        Collection collection = broker.getCollection(uri.toCollectionPathURI());
+	        if (collection != null) return true;
+	
+	        Collection parent_collection = broker.getCollection(uri.toCollectionPathURI().removeLastSegment());
+	        if (parent_collection == null) return false;
+	
+	        tm = db.getTransactionManager();
+			Txn transaction = tm.beginTransaction();
+			
+			try {
+				Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
+				broker.saveCollection(transaction, child);
+				tm.commit(transaction);
+			} catch (Exception e) {
+	    		tm.abort(transaction);
+				return false;
+			}
 		} finally {
-			db.release(broker);
+			if (db != null)
+				db.release(broker);
 		}
     	
     	return true;
@@ -157,27 +160,30 @@ public class Resource extends File {
 		TransactionManager tm;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			return false;
-		}
-
-        Collection collection = broker.getCollection(uri.toCollectionPathURI());
-        if (collection != null) return true;
-
-		tm = db.getTransactionManager();
-		Txn transaction = tm.beginTransaction();
-		
-		try {
-			Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
-			broker.saveCollection(transaction, child);
-			tm.commit(transaction);
-		} catch (Exception e) {
-    		tm.abort(transaction);
-			return false;
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				return false;
+			}
+	
+	        Collection collection = broker.getCollection(uri.toCollectionPathURI());
+	        if (collection != null) return true;
+	
+			tm = db.getTransactionManager();
+			Txn transaction = tm.beginTransaction();
+			
+			try {
+				Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
+				broker.saveCollection(transaction, child);
+				tm.commit(transaction);
+			} catch (Exception e) {
+	    		tm.abort(transaction);
+				return false;
+			}
 		} finally {
-			db.release(broker);
+			if (db != null)
+				db.release(broker);
 		}
     	
     	return true;
@@ -230,46 +236,50 @@ public class Resource extends File {
 		TransactionManager tm;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			return false;
-		}
-
-		tm = db.getTransactionManager();
-		Txn transaction = null;
-
-        org.exist.collections.Collection destination = null;
-        org.exist.collections.Collection source = null;
-        XmldbURI newName;
-		try {
-     		source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
-    		if(source == null) {
-    			return false;
-            }
-    		DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
-            if(doc == null) {
-                return false;
-            }
-            destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
-            if(destination == null) {
-                return false;
-            }
-            
-            newName = destinationPath.lastSegment();
-
-            transaction = tm.beginTransaction();
-            broker.copyResource(transaction, doc, destination, newName);
-            tm.commit(transaction);
-            return true;
-            
-        } catch ( Exception e ) {
-        	if (transaction != null) tm.abort(transaction);
-        	return false;
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				return false;
+			}
+	
+			tm = db.getTransactionManager();
+			Txn transaction = null;
+	
+	        org.exist.collections.Collection destination = null;
+	        org.exist.collections.Collection source = null;
+	        XmldbURI newName;
+			try {
+	     		source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
+	    		if(source == null) {
+	    			return false;
+	            }
+	    		DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
+	            if(doc == null) {
+	                return false;
+	            }
+	            destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
+	            if(destination == null) {
+	                return false;
+	            }
+	            
+	            newName = destinationPath.lastSegment();
+	
+	            transaction = tm.beginTransaction();
+	            broker.copyResource(transaction, doc, destination, newName);
+	            tm.commit(transaction);
+	            return true;
+	            
+	        } catch ( Exception e ) {
+	        	if (transaction != null) tm.abort(transaction);
+	        	return false;
+	        } finally {
+	        	if(source != null) source.release(Lock.WRITE_LOCK);
+	        	if(destination != null) destination.release(Lock.WRITE_LOCK);
+	        }
         } finally {
-        	if(source != null) source.release(Lock.WRITE_LOCK);
-        	if(destination != null) destination.release(Lock.WRITE_LOCK);
-            db.release( broker );
+        	if (db != null)
+        		db.release( broker );
         }
     }
     
@@ -285,41 +295,43 @@ public class Resource extends File {
 		TransactionManager tm;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			return false;
-		}
-
-		tm = db.getTransactionManager();
-        Txn transaction = null;
-        try {
-            collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
-            if (collection == null) {
-                return false;
-            }
-            // keep the write lock in the transaction
-            //transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
-
-            DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
-            if (doc == null) {
-            	return true;
-            }
-            
-            transaction = tm.beginTransaction();
-            if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-                collection.removeBinaryResource(transaction, broker, doc);
-            else
-                collection.removeXMLResource(transaction, broker, uri.lastSegment());
-            tm.commit(transaction);
-            return true;
-
-        } catch (Exception e) {
-        	if (transaction != null) tm.abort(transaction);
-            return false;
-            
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				return false;
+			}
+	
+			tm = db.getTransactionManager();
+	        Txn transaction = null;
+	        try {
+	            collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
+	            if (collection == null) {
+	                return false;
+	            }
+	            // keep the write lock in the transaction
+	            //transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+	
+	            DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
+	            if (doc == null) {
+	            	return true;
+	            }
+	            
+	            transaction = tm.beginTransaction();
+	            if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
+	                collection.removeBinaryResource(transaction, broker, doc);
+	            else
+	                collection.removeXMLResource(transaction, broker, uri.lastSegment());
+	            tm.commit(transaction);
+	            return true;
+	
+	        } catch (Exception e) {
+	        	if (transaction != null) tm.abort(transaction);
+	            return false;
+	        }	            
         } finally {
-            db.release(broker);
+        	if (db != null)
+        		db.release(broker);
         }
     }
 
@@ -329,75 +341,78 @@ public class Resource extends File {
 		TransactionManager tm;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			throw new IOException(e);
-		}
-
-		try {
-			if (uri.endsWith("/"))
-				throw new IOException("It collection, but should be resource: "+uri);
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-		
-		XmldbURI collectionURI = uri.removeLastSegment();
-		collection = broker.getCollection(collectionURI);
-		if (collection == null)
-			throw new IOException("Collection not found: "+collectionURI);
-		
-		XmldbURI fileName = uri.lastSegment();
-
-		try {
-			resource = broker.getXMLResource(uri, Lock.READ_LOCK);
-		} catch (PermissionDeniedException e1) {
-			if (resource != null) {
-				resource.getUpdateLock().release(Lock.READ_LOCK);
-				collection = resource.getCollection();
-				initialized = true;
-				
-				return false;
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				throw new IOException(e);
 			}
-		}
-		
-		MimeType mimeType = MimeTable.getInstance().getContentTypeFor(fileName);
-
-		if (mimeType == null) {
-			mimeType = MimeType.BINARY_TYPE;
-		}
-		
-		tm = db.getTransactionManager();
-		Txn transaction = tm.beginTransaction();
-
-		InputStream is = null;
-		try {
-			if (mimeType.isXMLType()) {
-				// store as xml resource
-				String str = "<empty/>"; 
-				IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
-				info.getDocument().getMetadata().setMimeType(mimeType.getName());
-				collection.store(transaction, broker, info, str, false);
-
-			} else {
-				// store as binary resource
-				is = new StringBufferInputStream("");
-
-				collection.addBinaryResource(transaction, broker, fileName, is,
-						mimeType.getName(), 0L , new Date(), new Date());
-
+	
+			try {
+				if (uri.endsWith("/"))
+					throw new IOException("It collection, but should be resource: "+uri);
+			} catch (Exception e) {
+				throw new IOException(e);
 			}
-			tm.commit(transaction);
-		} catch (Exception e) {
-			tm.abort(transaction);
-			throw new IOException(e);
+			
+			XmldbURI collectionURI = uri.removeLastSegment();
+			collection = broker.getCollection(collectionURI);
+			if (collection == null)
+				throw new IOException("Collection not found: "+collectionURI);
+			
+			XmldbURI fileName = uri.lastSegment();
+	
+			try {
+				resource = broker.getXMLResource(uri, Lock.READ_LOCK);
+			} catch (PermissionDeniedException e1) {
+				if (resource != null) {
+					resource.getUpdateLock().release(Lock.READ_LOCK);
+					collection = resource.getCollection();
+					initialized = true;
+					
+					return false;
+				}
+			}
+			
+			MimeType mimeType = MimeTable.getInstance().getContentTypeFor(fileName);
+	
+			if (mimeType == null) {
+				mimeType = MimeType.BINARY_TYPE;
+			}
+			
+			tm = db.getTransactionManager();
+			Txn transaction = tm.beginTransaction();
+	
+			InputStream is = null;
+			try {
+				if (mimeType.isXMLType()) {
+					// store as xml resource
+					String str = "<empty/>"; 
+					IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
+					info.getDocument().getMetadata().setMimeType(mimeType.getName());
+					collection.store(transaction, broker, info, str, false);
+	
+				} else {
+					// store as binary resource
+					is = new StringBufferInputStream("");
+	
+					collection.addBinaryResource(transaction, broker, fileName, is,
+							mimeType.getName(), 0L , new Date(), new Date());
+	
+				}
+				tm.commit(transaction);
+			} catch (Exception e) {
+				tm.abort(transaction);
+				throw new IOException(e);
+			} finally {
+				SVNFileUtil.closeFile(is);
+	
+				if (resource != null)
+					resource.getUpdateLock().release(Lock.READ_LOCK);
+			}
 		} finally {
-			SVNFileUtil.closeFile(is);
-
-			if (resource != null)
-				resource.getUpdateLock().release(Lock.READ_LOCK);
-
-			db.release(broker);
+			if (db != null)
+				db.release(broker);
 		}
 		
 		return true;
@@ -411,40 +426,42 @@ public class Resource extends File {
 		BrokerPool db = null;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			throw new IOException(e);
-		}
-
-		try {
-			//collection
-			if (uri.endsWith("/")) {
-				collection = broker.getCollection(uri);
-				if (collection == null)
-					throw new IOException("Resource not found: "+uri);
-				
-			//resource
-			} else {
-				resource = broker.getXMLResource(uri, Lock.READ_LOCK);
-				if (resource == null) {
-					//may be, it's collection ... checking ...
-					collection = broker.getCollection(uri);
-					if (collection == null) {
-						throw new IOException("Resource not found: "+uri);
-					}
-				} else {
-					collection = resource.getCollection();
-				}
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				throw new IOException(e);
 			}
-		} catch (Exception e) {
-			throw new IOException(e);
+	
+			try {
+				//collection
+				if (uri.endsWith("/")) {
+					collection = broker.getCollection(uri);
+					if (collection == null)
+						throw new IOException("Resource not found: "+uri);
+					
+				//resource
+				} else {
+					resource = broker.getXMLResource(uri, Lock.READ_LOCK);
+					if (resource == null) {
+						//may be, it's collection ... checking ...
+						collection = broker.getCollection(uri);
+						if (collection == null) {
+							throw new IOException("Resource not found: "+uri);
+						}
+					} else {
+						collection = resource.getCollection();
+					}
+				}
+			} catch (Exception e) {
+				throw new IOException(e);
+			} finally {
+				if (resource != null)
+					resource.getUpdateLock().release(Lock.READ_LOCK);
+			}
 		} finally {
-			if (resource != null)
-				resource.getUpdateLock().release(Lock.READ_LOCK);
-				
-			db.release(broker);
-			
+			if (db != null)
+				db.release(broker);
 		}
 		
 		initialized = true;
@@ -472,7 +489,8 @@ public class Resource extends File {
 		} catch (EXistException e) {
 			throw new IOException(e);
 		} finally {
-			db.release(broker);
+			if (db != null)
+				db.release(broker);
 		}
     }
     
@@ -486,11 +504,11 @@ public class Resource extends File {
     
     private URLConnection getConnection() throws IOException {
     	if (connection == null) {
-			BrokerPool database = null;
+			BrokerPool db = null;
 			DBBroker broker = null;
 			try {
-				database = BrokerPool.getInstance();
-				broker = database.get(null);
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
 				Subject subject = broker.getSubject();
 				
 				URL url = new URL("xmldb:exist://jsessionid:"+subject.getSessionId()+"@"+ uri.toString());
@@ -502,8 +520,8 @@ public class Resource extends File {
 			} catch (EXistException e) {
 				throw new IOException(e); 
 			} finally {
-				if (database != null)
-					database.release(broker);
+				if (db != null)
+					db.release(broker);
 			}
     	}
     	return connection;
@@ -540,28 +558,31 @@ public class Resource extends File {
 			BrokerPool db = null;
 
 			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (EXistException e) {
-				throw new IOException(e);
-			}
-
-			try {
-				if (uri.endsWith("/")) {
-					collection = broker.getCollection(uri);
-				} else {
-					collection = broker.getCollection(uri);
-					if (collection == null)
-						collection = broker.getCollection(uri.removeLastSegment());
+				try {
+					db = BrokerPool.getInstance();
+					broker = db.get(null);
+				} catch (EXistException e) {
+					throw new IOException(e);
 				}
-				if (collection == null)
-					throw new IOException("Collection not found: "+uri);
-				
-				return collection;
-			} catch (Exception e) {
-				throw new IOException(e);
+	
+				try {
+					if (uri.endsWith("/")) {
+						collection = broker.getCollection(uri);
+					} else {
+						collection = broker.getCollection(uri);
+						if (collection == null)
+							collection = broker.getCollection(uri.removeLastSegment());
+					}
+					if (collection == null)
+						throw new IOException("Collection not found: "+uri);
+					
+					return collection;
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
 			} finally {
-				db.release(broker);
+				if (db != null)
+					db.release(broker);
 			}
 		}
 
@@ -583,49 +604,53 @@ public class Resource extends File {
 		BrokerPool db = null;
 
 		try {
-			db = BrokerPool.getInstance();
-			broker = db.get(null);
-		} catch (EXistException e) {
-			return null;
-		}
-
-    	try {
-        	collection.getLock().acquire(Lock.READ_LOCK);
-
-        	File[] children = new File[collection.getChildCollectionCount() + 
-                                       collection.getDocumentCount()];
-            
-            //collections
-            int j = 0;
-            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); j++)
-            	children[j] = new Resource(i.next());
-
-            //collections
-            List<XmldbURI> allresources = new ArrayList<XmldbURI>();
-            DocumentImpl doc = null;
-            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-                doc = i.next();
-                
-                // Include only when (1) locktoken is present or (2)
-                // locktoken indicates that it is not a null resource
-                LockToken lock = doc.getMetadata().getLockToken();
-                if(lock==null || (!lock.isNullResource()) ){
-                    allresources.add( doc.getURI() );
-                }
-            }
-            
-            // Copy content of list into String array.
-            for(Iterator<XmldbURI> i = allresources.iterator(); i.hasNext(); j++){
-            	children[j] = new Resource(i.next());
-            }
-            
-            return children;
-        } catch (LockException e) {
-        	//throw new IOException("Failed to acquire lock on collection '" + uri + "'");
-    		return null;
+			try {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
+				return null;
+			}
+	
+	    	try {
+	        	collection.getLock().acquire(Lock.READ_LOCK);
+	
+	        	File[] children = new File[collection.getChildCollectionCount() + 
+	                                       collection.getDocumentCount()];
+	            
+	            //collections
+	            int j = 0;
+	            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); j++)
+	            	children[j] = new Resource(i.next());
+	
+	            //collections
+	            List<XmldbURI> allresources = new ArrayList<XmldbURI>();
+	            DocumentImpl doc = null;
+	            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+	                doc = i.next();
+	                
+	                // Include only when (1) locktoken is present or (2)
+	                // locktoken indicates that it is not a null resource
+	                LockToken lock = doc.getMetadata().getLockToken();
+	                if(lock==null || (!lock.isNullResource()) ){
+	                    allresources.add( doc.getURI() );
+	                }
+	            }
+	            
+	            // Copy content of list into String array.
+	            for(Iterator<XmldbURI> i = allresources.iterator(); i.hasNext(); j++){
+	            	children[j] = new Resource(i.next());
+	            }
+	            
+	            return children;
+	        } catch (LockException e) {
+	        	//throw new IOException("Failed to acquire lock on collection '" + uri + "'");
+	    		return null;
+		    } finally {
+		        collection.release(Lock.READ_LOCK);
+		    }
 	    } finally {
-	        collection.release(Lock.READ_LOCK);
-	    	db.release(broker);
+	    	if (db != null)
+	    		db.release(broker);
 	    }
     }
     
