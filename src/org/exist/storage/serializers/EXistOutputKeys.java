@@ -44,7 +44,15 @@ public class EXistOutputKeys {
 
     public final static String XINCLUDE_PATH = "xinclude-path";
     
-    // enforce XHTML namespace on elements with no namespace
+    /**
+     * Enforce XHTML namespace on elements with no namespace
+     */
     public final static String ENFORCE_XHTML = "enforce-xhtml";
+    
+    /**
+     * Applies to JSON serialization only: preserve namespace prefixes in JSON properties
+     * by replacing ":" with "_", so element foo:bar becomes "foo_bar".
+     */
+    public final static String JSON_OUTPUT_NS_PREFIX = "preserve-prefix";
 	
 }
