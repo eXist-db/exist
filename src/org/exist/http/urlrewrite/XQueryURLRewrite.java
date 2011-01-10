@@ -453,6 +453,7 @@ public class XQueryURLRewrite implements Filter {
     		serializerPool.returnObject(sax);
     	}
     	output.flush();
+    	output.close();
     }
 
 	private void flushError(HttpServletResponse response, HttpServletResponse wrappedResponse) throws IOException {
