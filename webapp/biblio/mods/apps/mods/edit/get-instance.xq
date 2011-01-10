@@ -53,10 +53,11 @@ let $paths := $tab-data/path/text()
 
 (: build up a string of prefix:element pairs for doing an eval :)
 let $path-string :=
-string-join(
+string-join((
     for $path in $paths
     return 
-      concat('mods:', $path)
+      concat('mods:', $path),
+    'mods:extension')  
   , ', ')
 
 (: now get the eval string ready for use :)
