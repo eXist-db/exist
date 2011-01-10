@@ -420,7 +420,7 @@ public class XQueryURLRewrite implements Filter {
     	String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
-		if (!((HttpServletResponse) response).containsHeader("Content-Type")){
+		if (!response.containsHeader("Content-Type")){
 			String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 			if (mimeType != null) {
 				int semicolon = mimeType.indexOf(';');
