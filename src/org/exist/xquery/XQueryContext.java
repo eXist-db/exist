@@ -453,6 +453,7 @@ public class XQueryContext implements BinaryValueManager
         this.modules                    = from.modules;
         this.allModules                 = from.allModules;
         this.mappedModules              = from.mappedModules;
+        this.dynamicOptions				= from.dynamicOptions;
     }
 
 
@@ -510,6 +511,10 @@ public class XQueryContext implements BinaryValueManager
         ctx.mappedModules     = new HashMap<String, XmldbURI>( this.mappedModules );
         ctx.staticNamespaces  = new HashMap<String, String>( this.staticNamespaces );
         ctx.staticPrefixes    = new HashMap<String, String>( this.staticPrefixes );
+        
+        if (this.dynamicOptions != null){
+        	ctx.dynamicOptions = new ArrayList<Option>( this.dynamicOptions );
+        }
     }
 
 
