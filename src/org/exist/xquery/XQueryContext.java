@@ -454,6 +454,7 @@ public class XQueryContext implements BinaryValueManager
         this.allModules                 = from.allModules;
         this.mappedModules              = from.mappedModules;
         this.dynamicOptions				= from.dynamicOptions;
+        this.staticOptions				= from.staticOptions;
     }
 
 
@@ -515,6 +516,11 @@ public class XQueryContext implements BinaryValueManager
         if (this.dynamicOptions != null){
         	ctx.dynamicOptions = new ArrayList<Option>( this.dynamicOptions );
         }
+        
+        if (this.staticOptions != null){
+        	ctx.staticOptions = new ArrayList<Option>( this.staticOptions );
+        }
+        
     }
 
 
