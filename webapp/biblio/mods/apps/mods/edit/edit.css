@@ -148,6 +148,15 @@ button {
     -moz-border-radius: .75em .75em 0em 0em;
  }
 
+.tabs .tab-text {
+    margin-top: .25em;
+    margin-bottom: -1em;
+}
+.tabs .top-tab-text {
+    margin-top: .25em;
+    margin-bottom: .25em;
+}
+
 /* this styles just the lower sub-tab row that has labels inside of triggers */
 .tabs tr td xf|trigger xf|label {
     color: gray;
@@ -198,7 +207,7 @@ fieldset .level-3
     font-weight: bold;
     border-style: solid;
     background-color: #eeeeee;
-    border-width: 2px;
+    border-width: 1px;
     padding: .3em 1em .3em 1em;
     width: 15em;
     margin-top: -2.75em; /*to make the fieldset border hit the centre of the box*/
@@ -375,6 +384,8 @@ div.xforms-hint-value
     background-color: #F5F5F5;  
 }
 */
+
+.compact .join {border-width: 1px;}
 
 .compact #fieldset-namePart-author label,
 .compact #fieldset-namePart-editor label,
@@ -892,5 +903,26 @@ eeddcc: tab background
 .access-condition button {
     width: 35ex;
 }
+
+/*extension*/
+
+.extension .xforms-label,
+.extension .join{
+    color: #668899;
+    width: 20em;;
+}
+.extension .join,
+.extension .xforms-repeat-item,
+.extension .xforms-repeat-item-selected,
+.extension fieldset,
+.extension .node-adds, 
+.extension .node-adds-.title 
+    {
+    border-color: #668899;
+}
+.extension button {
+    width: 35ex;
+}
+
 
 </css>

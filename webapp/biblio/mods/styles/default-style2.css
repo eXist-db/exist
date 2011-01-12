@@ -1,11 +1,3 @@
-/*added*/
-.app-name {    
-    text-align: left; 
-    font-size: 520%; 
-    margin-bottom: 4px;
-    color: #5DB0E6;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -15,12 +7,6 @@
     body {
         background-color: white;
     }
-}
-
-.center {
-    margin-left: auto;
-    margin-right: auto;
-    
 }
 
 /* Font size adjustments. Copied from Yahoo YUI */
@@ -54,7 +40,7 @@ a:hover {
 }
 
 a, a:visited {
-    color: #5DB0E6;
+    color: #0000AA;
     font-weight: bold;
     text-decoration: none;
 }
@@ -69,7 +55,7 @@ button, input, select {
 #page-head {
 	position: relative;
     margin: 25px 50px 5px 50px;
-    height: 8em;
+    height: 185px;
 }
 #page-head #navbar {
     margin: 10px 0 0 0;
@@ -130,7 +116,7 @@ button, input, select {
     position: absolute;
     width: 180px;
     left: 50px;
-    top: 135px;
+    top: 215px;
     display: block;
     overflow: hidden;
 }
@@ -313,7 +299,6 @@ button, input, select {
 }
 .chapter {
     background-color: white;
-    font-size: 1.2em;
 }
 .abstract {
     margin-left: 40px;
@@ -351,7 +336,6 @@ h1 {
     padding-left: 5px;
     padding-right: 5px;
     padding-bottom: 5px;
-    padding-top: 5px;
 }
 h2 {
     font-size: 1.5em;
@@ -534,6 +518,14 @@ select.choose {
 .formaltable {
 }
 
+table.center {
+    margin-left:auto; 
+    margin-right:auto;
+    }
+
+.chapter p {
+    font-size: 1.2em;
+}
 .formaltable h1 {
     background-color: inherit;
     color: black;
