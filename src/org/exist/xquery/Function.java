@@ -238,6 +238,7 @@ public abstract class Function extends PathExpr {
 				context,
 				type.getCardinality(),
 				expr, new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(argPosition), mySignature));
+		expr.setLocation(getLine(), getColumn());
 
 		// check return type if both types are not Type.ITEM
 		int returnType = expr.returnsType();
