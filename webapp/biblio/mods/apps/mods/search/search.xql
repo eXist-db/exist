@@ -553,13 +553,14 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 <li>
                                   <input type="radio" name="type" value="{$item/value/text()}"/><span> {$item/label/text()}</span>
                                 </li>
-                        }
+                        }<!--
                             <li>
-                                ---
+                                –––
                             </li>
                             <li>
                                 <input type="radio" name="type" value="default" selected="true"/><span> Default Record</span>
                             </li>
+                            -->
 </ul>
                         
                         <div class="language-label">

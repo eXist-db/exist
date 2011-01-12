@@ -26,7 +26,7 @@ let $show-all := if ($show-all-string = 'true') then true() else false()
 (: check if a host is specified for related item :)
 let $host := request:get-parameter('host', ())
 
-(: if no tab is specified, we default to the title tab :)
+(: if no tab is specified, we default to the compact-a tab :)
 let $tab-id := request:get-parameter('tab-id', 'compact-a')
 
 (: display the label attached to the tab to the user :)
@@ -35,8 +35,11 @@ let $tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label
 
 (: if document type is specified then we will need to use that instance as the template :)
 let $type := request:get-parameter('type', 'default')
+
 let $type-data := concat($style:db-path-to-app, '/code-tables/document-type-codes.xml')
-let $type-label := doc($type-data)//item[value=$type]/label
+let $type-value := request:get-parameter('type', '')
+(: Does not work. :)
+let $type-label := doc($type-data)//item[value = $type-value]/label
 
 (: look for an alternate data collection in the URL, else use the default mods data collection :)
 let $user := request:get-parameter('user', '')
@@ -141,7 +144,7 @@ let $create-new-from-template :=
             update insert
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
                     <e:collection>{$data-collection}</e:collection>
-                    <e:template>{util:document-name($template)}</e:template>
+                    <e:template>{$type}</e:template>
                     <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
                     <e:scriptTypeOfCataloging>{$scriptTypeOfCataloging}</e:scriptTypeOfCataloging>
                     <e:transliterationOfResource>{$transliterationOfResource}</e:transliterationOfResource>                    
@@ -221,9 +224,7 @@ let $model :=
 
 let $content :=
 <div class="content">
-    <!--NB: $type should be passed on with the URL.-->
-    <span class="float-right">Editing record <strong>{$id}</strong> of type <strong>{$type-label}</strong> on the <strong>{$tab-label}</strong> tab</span>
-    
+    <span class="float-right">Editing record of type <strong>{$type-label}</strong> with the title<strong><xf:output value="./mods:titleInfo/mods:title"/></strong> on the <strong>{$tab-label}</strong> tab</span>
     
     {mods:tabs($tab-id, $id, $show-all, $tempCollection)}
     
