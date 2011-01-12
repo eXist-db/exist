@@ -1057,20 +1057,20 @@ public class InteractiveClient {
                 }
                 mgr.shutdown();
                 return true;
-            } else if (args[0].equalsIgnoreCase("help") || args[0].equals("?"))
+            } else if (args[0].equalsIgnoreCase("help") || args[0].equals("?")) {
                 displayHelp();
             
+        	} else if (args[0].equalsIgnoreCase("quit")) {
+                return false;
+                
             //XXX:make it pluggable
-        	else if (havePluggableCommands) {
+        	} else if (havePluggableCommands) {
                 CollectionManagementServiceImpl mgtService = 
                 	(CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
                 
                 mgtService.runCommand(args);
 
             //****************************************************************
-        	} else if (args[0].equalsIgnoreCase("quit")) {
-                return false;
-                
             } else {
                 messageln("unknown command");
                 return true;
