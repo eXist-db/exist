@@ -253,8 +253,7 @@
         <echo message="-------------------------------------------------------"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.memcached.url}" classname="net.spy.memcached.MemcachedClient">
-        </fetch>
+            url="${include.module.memcached.url}" classname="net.spy.memcached.MemcachedClient"/>
     </target>
 
     <!-- 
@@ -278,22 +277,19 @@
     <!--
         Special targets for image module
     -->
-    <target name="prepare-image" if="include.module.image.config">
+    <target name="prepare-image" if="include.module.image.tika">
         <echo message="--------------------------------------------------"/>
         <echo message="Downloading libraries required by the image module"/>
         <echo message="--------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.image.tika.core.url}" classname="org.apache.tika.Tika">
-        </fetch>
+            url="${include.module.image.tika.core.url}" classname="org.apache.tika.Tika"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.image.tika.parsers.url}" classname="org.apache.tika.parser.xml.XMLParser">
-        </fetch>
+            url="${include.module.image.tika.parsers.url}" classname="org.apache.tika.parser.xml.XMLParser"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.image.tika.parsers.deps.drewnoakes.url}" classname="com.drew.metadata.Metadata">
-        </fetch>
+            url="${include.module.image.tika.parsers.deps.drewnoakes.url}" classname="com.drew.metadata.Metadata"/>
 
     </target>
 
@@ -303,7 +299,7 @@
         ========================================
     -->
 
-    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
+    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo,prepare-image">
         <mkdir dir="${classes}"/>
     </target>
 
