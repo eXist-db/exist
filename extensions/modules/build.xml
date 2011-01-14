@@ -189,14 +189,6 @@
               <include name="**/calabash.jar"/>
             </patternset>
         </fetch>
-        
-        <!-- fetch dependency on saxon 9.1 s9api TODO: remove when we move to saxon 9.2 -->
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-            url="${include.module.xmlcalabash.saxon9b.url}" classname="net.sf.saxon.s9api.Processor">
-            <patternset>
-                <include name="saxon9-s9api.jar"/>
-            </patternset>
-        </fetch>
 
     </target>
 
@@ -259,8 +251,10 @@
         <echo message="-------------------------------------------------------"/>
         <echo message="Downloading libraries required by the memcached module"/>
         <echo message="-------------------------------------------------------"/>
-
-        <get src="${include.module.memcached.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+        
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+            url="${include.module.memcached.url}" classname="net.spy.memcached.MemcachedClient">
+        </fetch>
     </target>
 
     <!-- 
@@ -289,9 +283,18 @@
         <echo message="Downloading libraries required by the image module"/>
         <echo message="--------------------------------------------------"/>
 
-        <get src="${include.module.image.tika.core.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
-        <get src="${include.module.image.tika.parsers.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
-        <get src="${include.module.image.tika.parsers.deps.drewnoakes.url}" dest="${top.dir}/${lib.user}" verbose="true"/>
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+            url="${include.module.image.tika.core.url}" classname="org.apache.tika.Tika">
+        </fetch>
+        
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+            url="${include.module.image.tika.parsers.url}" classname="org.apache.tika.parser.xml.XMLParser">
+        </fetch>
+        
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+            url="${include.module.image.tika.parsers.deps.drewnoakes.url}" classname="com.drew.metadata.Metadata">
+        </fetch>
+
     </target>
 
     <!-- 
@@ -370,8 +373,7 @@
     <target name="xar-math" depends="compile,svn.resources">
         <echo message="Creating math.xar example for package manager ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/webapp/repo/packages/math-example/math/math.jar"
-             includes="org/exist/xquery/modules/math/**"
-                >
+             includes="org/exist/xquery/modules/math/**">
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
