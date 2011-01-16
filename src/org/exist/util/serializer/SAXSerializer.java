@@ -54,12 +54,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     private final static int XHTML_WRITER = 1;
     private final static int TEXT_WRITER = 2;
     private final static int JSON_WRITER = 3;
+    private final static int HTML5_WRITER = 4;
     
     private XMLWriter writers[] = {
         new IndentingXMLWriter(),
         new XHTMLWriter(), 
         new TEXTWriter(),
-        new JSONWriter()
+        new JSONWriter(),
+        new HTML5Writer()
     };
 
 
@@ -93,6 +95,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             receiver = writers[TEXT_WRITER];
         else if ("json".equalsIgnoreCase(method))
         	receiver = writers[JSON_WRITER];
+        else if ("html5".equalsIgnoreCase(method))
+        	receiver = writers[HTML5_WRITER];
         else
             receiver = writers[XML_WRITER];
 
