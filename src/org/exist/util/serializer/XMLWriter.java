@@ -367,8 +367,8 @@ public class XMLWriter {
 		if (!declarationWritten)
 			writeDeclaration();
 
-		if (publicId == null && systemId == null)
-			return;
+//		if (publicId == null && systemId == null)
+//			return;
 
 		try {
 			writer.write("<!DOCTYPE ");
@@ -440,6 +440,7 @@ public class XMLWriter {
             return;
         String publicId = outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC);
         String systemId = outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM);
+
         if (publicId != null || systemId != null)
             documentType(rootElement, publicId, systemId);
         doctypeWritten = true;
