@@ -21,11 +21,11 @@
  */
 package org.exist.dom;
 
+import org.exist.interpreter.Context;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
@@ -273,7 +273,7 @@ public class QName implements Comparable<QName> {
      * @return QName
      * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
      */
-    public static QName parse(XQueryContext context, String qname, String defaultNS)
+    public static QName parse(Context context, String qname, String defaultNS)
             throws XPathException {
         String prefix = extractPrefix(qname);
         String namespaceURI;
@@ -298,7 +298,7 @@ public class QName implements Comparable<QName> {
      * @param qname
      * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
      */
-    public static QName parse(XQueryContext context, String qname)
+    public static QName parse(Context context, String qname)
             throws XPathException {
         return parse(context, qname, context.getURIForPrefix(""));
     }
