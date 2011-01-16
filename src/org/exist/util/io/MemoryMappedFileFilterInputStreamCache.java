@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -23,14 +22,16 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     private final FileChannel channel;
     private MappedByteBuffer buf;
     private final long memoryMapSize = DEFAULT_MEMORY_MAP_SIZE;
+    //private final ReadOnlyByteBufferAccessor bufAccessor;
 
     public MemoryMappedFileFilterInputStreamCache() throws IOException {
         this(File.createTempFile("MemoryMappedFileFilterInputStreamCache" + "_" + System.currentTimeMillis(), ".tmp"));
     }
 
     public MemoryMappedFileFilterInputStreamCache(File f) throws FileNotFoundException, IOException {
-        channel = new RandomAccessFile(f, "rw").getChannel();
-        buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
+        this.channel = new RandomAccessFile(f, "rw").getChannel();
+        this.buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
+        //this.bufAccessor = new ReadOnlyByteBufferAccessor();
     }
 
     private long getMemoryMapSize() {
@@ -48,6 +49,8 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
         buf.position(position); //setting the position in the map() call above does not seem to work!
+
+        //bufAccessor.refresh();
     }
 
     @Override
@@ -118,13 +121,5 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     public void invalidate() throws IOException {
         buf.force();
         channel.close();
-    }
-
-    public FileChannel getChannel() {
-        return channel;
-    }
-
-    public ByteBuffer getReadOnlyBuffer() {
-        return buf.asReadOnlyBuffer();
     }
 }

@@ -48,4 +48,14 @@ public class MemoryFilterInputStreamCache implements FilterInputStreamCache {
         cache.close();
         cache = null;
     }
+
+    /**
+     * Updates to the cache are not reflected in the underlying input stream
+     */
+    
+    //TODO refactor this so that updates to the cache are reflected
+    /*@Override
+    public InputStream getIndependentInputStream() {
+        return new ByteArrayInputStream(cache.toByteArray());
+    }*/
 }

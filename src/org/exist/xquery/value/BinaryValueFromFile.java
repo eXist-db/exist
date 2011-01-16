@@ -2,15 +2,20 @@ package org.exist.xquery.value;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import org.exist.util.io.ByteBufferAccessor;
+import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
 
 /**
+ * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
+ * whose source is backed by a File
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
@@ -61,12 +66,23 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
-    public ByteBuffer getReadOnlyBuffer() {
-        return buf.asReadOnlyBuffer();
+    public void close() throws IOException {
+        channel.close();
     }
 
     @Override
-    public void close() throws IOException {
-        channel.close();
+    public InputStream getInputStream() {
+        return new ByteBufferInputStream(new ByteBufferAccessor() {
+
+            private ByteBuffer roBuf;
+
+            @Override
+            public ByteBuffer getBuffer() {
+                if(roBuf == null) {
+                    roBuf = buf.asReadOnlyBuffer();
+                }
+                return roBuf;
+            }
+        });
     }
 }
