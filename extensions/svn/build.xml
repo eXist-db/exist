@@ -15,11 +15,6 @@
         <istrue value="${include.feature.svn}"/>
     </condition>
     
-    <!-- 
-        existdb-contrib fetch task import used for downloading and extracting jar/class from zip
-    -->
-    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
-
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
@@ -53,6 +48,11 @@
         <pathelement path="${test}/classes"/>
     </path>
     
+    <!-- 
+        existdb-contrib fetch task import used for downloading and extracting jar/class from zip
+    -->
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+
     <!-- 
         Special targets for svn feature 
     -->
