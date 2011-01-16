@@ -65,6 +65,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.http.servlets.SessionWrapper;
+import org.exist.interpreter.Context;
 import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -106,7 +107,7 @@ import antlr.collections.AST;
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryContext implements BinaryValueManager
+public class XQueryContext implements BinaryValueManager, Context
 {
     public static final String                         CONFIGURATION_ELEMENT_NAME                       = "xquery";
     public static final String                         CONFIGURATION_MODULES_ELEMENT_NAME               = "builtin-modules";
