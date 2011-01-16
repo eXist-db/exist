@@ -6,6 +6,7 @@ import java.io.*;
 
 public class BinarySource extends AbstractSource {
 
+    //TODO replace this with a streaming approach
     private byte[] data;
     private boolean checkEncoding = false;
     private String encoding = "UTF-8";

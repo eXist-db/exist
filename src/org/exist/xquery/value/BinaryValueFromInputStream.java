@@ -3,13 +3,14 @@ package org.exist.xquery.value;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import org.apache.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.MemoryMappedFileFilterInputStreamCache;
 import org.exist.xquery.XPathException;
 
 /**
+ * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
+ * whose source is backed by an InputStream
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
@@ -17,24 +18,21 @@ public class BinaryValueFromInputStream extends BinaryValue {
 
     private final static Logger LOG = Logger.getLogger(BinaryValueFromInputStream.class);
 
-    private final InputStream is;
+    private final CachingFilterInputStream is;
     private MemoryMappedFileFilterInputStreamCache cache;
 
 
     protected BinaryValueFromInputStream(BinaryValueType binaryValueType, InputStream is) throws XPathException {
         super(binaryValueType);
 
-        if(is.markSupported()) {
-            this.is = is;
-        } else {
-            try {
-                this.cache = new MemoryMappedFileFilterInputStreamCache();
-                this.is = new CachingFilterInputStream(cache, is);
-            } catch(IOException ioe) {
-                throw new XPathException(ioe.getMessage(), ioe);
-            }
+        try {
+            this.cache = new MemoryMappedFileFilterInputStreamCache();
+            this.is = new CachingFilterInputStream(cache, is);
 
             //TODO make sure the cache is shutdown correctly when we are done!
+
+        } catch(IOException ioe) {
+            throw new XPathException(ioe.getMessage(), ioe);
         }
 
         //mark the start of the stream so that we can re-read again as required
@@ -66,12 +64,8 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     @Override
-    public ByteBuffer getReadOnlyBuffer() {
-        if(cache == null) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        } else {
-            return cache.getReadOnlyBuffer();
-        }
+    public InputStream getInputStream() {
+        return new CachingFilterInputStream(is);
     }
 
     @Override

@@ -3,14 +3,17 @@ package org.exist.xquery.value;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
 
 /**
- * BinaryValueFromBinaryString is a special case of BinaryValue
- * where the value is already encoded
+ * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
+ * whose source is backed by a pre-encoded String.
+ *
+ * Note - BinaryValueFromBinaryString is a special case of BinaryValue
+ * where the value is already encoded.
  * 
  * @author Adam Retter <adam@existsolutions.com>
  */
@@ -51,24 +54,35 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public void streamTo(OutputStream os) throws IOException {
         //write
-        byte data[] = value.getBytes();
+        byte data[] = value.getBytes(); //TODO consider a more efficient approach for writting large strings
         os.write(data);
     }
-    
-    
+
     @Override
-    public ByteBuffer getReadOnlyBuffer() {
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    public InputStream getInputStream() {
+
+        //TODO consider a more efficient approach for writting large strings
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
         try {
             streamBinaryTo(baos);
         } catch(IOException ioe) {
             LOG.error("Unable to get read only buffer: " + ioe.getMessage(), ioe);
         }
-        byte data[] = baos.toByteArray();
-        ByteBuffer buf = ByteBuffer.allocate(data.length);
-        buf.put(data);
-        return buf;
+
+        return new InputStream() {
+            int offset = 0;
+            final byte data[] = baos.toByteArray();
+
+            @Override
+            public int read() throws IOException {
+
+                if(offset >= data.length) {
+                    return -1;
+                }
+                return data[offset++];
+            }
+        };
     }
 
     @Override

@@ -26,7 +26,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
@@ -92,9 +91,36 @@ public abstract class BinaryValue extends AtomicValue {
         }
     }
 
-    //TODO need to understand the expense of this
     private int compareTo(BinaryValue otherValue) {
-        return this.getReadOnlyBuffer().compareTo(otherValue.getReadOnlyBuffer());
+
+        InputStream is = getInputStream();
+        InputStream otherIs = otherValue.getInputStream();
+
+        if(is == null && otherIs == null) {
+            return 0;
+        } else if(is == null) {
+            return -1;
+        } else if(otherIs == null) {
+            return 1;
+        } else {
+            int read = -1;
+            int otherRead = -1;
+            while(true) {
+                try {
+                    read = is.read();
+                } catch(IOException ioe) {
+                    return -1;
+                }
+
+                try {
+                    otherRead = otherIs.read();
+                } catch(IOException ioe) {
+                    return 1;
+                }
+
+                return read - otherRead;
+            }
+        }
     }
 
     @Override
@@ -205,21 +231,7 @@ public abstract class BinaryValue extends AtomicValue {
         }
     }
 
-    //TODO the expense of this function needs to be measured
-    public abstract ByteBuffer getReadOnlyBuffer();
-
-    //TODO the expense of the underlying call to getReadOnlyBuffer needs to be established
-    public InputStream getInputStream() {
-        return new InputStream() {
-
-            private final ByteBuffer b = getReadOnlyBuffer();
-
-            @Override
-            public int read() throws IOException {
-                return b.get();
-            }
-        };
-    }
+    public abstract InputStream getInputStream();
 
     public abstract void close() throws IOException;
 }

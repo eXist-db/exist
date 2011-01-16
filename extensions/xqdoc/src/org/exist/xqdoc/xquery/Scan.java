@@ -1,5 +1,6 @@
 package org.exist.xqdoc.xquery;
 
+import java.io.ByteArrayOutputStream;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -67,12 +68,25 @@ public class Scan extends BasicFunction {
         super(context, signature);
     }
 
+    //TODO ideally should be replaced by changing BinarySource to a streaming approach
+    private byte[] binaryValueToByteArray(BinaryValue binaryValue) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        binaryValue.streamBinaryTo(baos);
+        return baos.toByteArray();
+    }
+
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Source source = null;
         String name;
         if (getArgumentCount() == 2) {
-            byte data[] = ((BinaryValue) args[0].itemAt(0)).getReadOnlyBuffer().array();
+            
+            byte data[];
+            try{
+                data = binaryValueToByteArray((BinaryValue)args[0].itemAt(0));
+            } catch(IOException ioe) {
+                throw new XPathException(ioe.getMessage(), ioe);
+            }
             name = args[1].getStringValue();
             source = new BinarySource(data, true);
         } else {

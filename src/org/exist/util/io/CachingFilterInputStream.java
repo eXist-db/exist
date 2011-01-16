@@ -20,13 +20,15 @@ public class CachingFilterInputStream extends FilterInputStream {
     private final static int END_OF_STREAM = -1;
     private final static String INPUTSTREAM_CLOSED = "The underlying InputStream has been closed";
 
+    private final InputStream src;
+    private final FilterInputStreamCache cache;
+
     private boolean srcClosed = false;
     private int srcOffset = 0;
     private int mark = 0;
     private boolean useCache = false;
     private int cacheOffset = 0;
-    private final InputStream src;
-    private final FilterInputStreamCache cache;
+    
 
     /**
      * @param cache The cache implementation
@@ -36,6 +38,21 @@ public class CachingFilterInputStream extends FilterInputStream {
         super(src);
         this.src = src;
         this.cache = cache;
+    }
+
+    /**
+     * Constructor which uses an existing CachingFilterInputStream as its
+     * underlying InputStream
+     *
+     * The position in the stream and any mark is reset to zero
+     */
+    public CachingFilterInputStream(CachingFilterInputStream cfis) {
+        this(cfis.getCache(), cfis);
+        this.srcClosed = cfis.srcClosed;
+        this.srcOffset = 0;
+        this.mark = 0;
+        this.useCache = false;
+        this.cacheOffset = 0;
     }
 
     /**
