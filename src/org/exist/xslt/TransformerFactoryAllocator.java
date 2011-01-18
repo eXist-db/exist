@@ -117,8 +117,8 @@ public class TransformerFactoryAllocator
 							LOG.debug( "Set transformer attribute: " + ", name: " + name + ", value: " + value );
 						}
 					}
-					catch( Exception e ) {
-						LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + e );
+					catch(IllegalArgumentException iae ) {
+                                            LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + iae.getMessage(), iae);
 					}
 				}
 				
@@ -126,7 +126,8 @@ public class TransformerFactoryAllocator
 					factory.setAttribute(PROPERTY_BROKER_POOL, pool);
 				} catch(Exception e) {
 					//some transformers do not support "setAttribute"
-				}
+                                }
+
 				
 			} 
 			catch( ClassNotFoundException cnfe ) {
