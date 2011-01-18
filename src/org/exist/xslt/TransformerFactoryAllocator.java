@@ -118,7 +118,7 @@ public class TransformerFactoryAllocator
 						}
 					}
 					catch(IllegalArgumentException iae ) {
-                                            LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + iae.getMessage(), iae);
+                                            LOG.warn( "Unable to set attribute for TransformerFactory: '" + transformerFactoryClassName + "', name: " + name + ", value: " + value + ", exception: " + iae.getMessage());
 					}
 				}
 				
