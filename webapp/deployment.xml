@@ -429,7 +429,7 @@
                 </step>
                 <step>
                     <para>Create a <filename>lib</filename> directory below the target directory and
-                        copy the following <filename>.jar</filename> files into it:</para>
+                        copy the following <filename>.jar</filename> files from eXist-db into it:</para>
                     <itemizedlist>
                         <listitem>
                             <para>
@@ -438,68 +438,78 @@
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>exist-modules.jar</filename>
+                                <filename>lib/extensions/exist-modules.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>antlr-X.X.X.jar</filename>
+                                <filename>lib/core/antlr-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>commons-pool-X.X.jar</filename>
+                                <filename>lib/core/commons-pool-X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>commons-collections-X.X.jar</filename>
+                                <filename>lib/core/commons-collections-X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>commons-logging-X.X.X.jar</filename>
+                                <filename>lib/core/commons-logging-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>jgroups-all.jar</filename>
+                                <filename>lib/core/jgroups-all.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>log4j-X.X.X.jar</filename>
+                                <filename>lib/core/log4j-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>quartz-X.X.X.jar</filename>
+                                <filename>lib/core/slf4j-api-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>sunxacml.jar</filename>
+                                <filename>lib/core/slf4j-log4j12-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>xmldb.jar</filename>
+                                <filename>lib/core/quartz-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>xmlrpc-client-X.X.X.jar</filename>
+                                <filename>lib/core/sunxacml.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
-                            <para><filename>xmlrpc-common-X.X.X.jar</filename></para>
-                        </listitem>
-                        <listitem>
-                            <para><filename>xmlrpc-server-X.X.X.jar</filename></para>
-                        </listitem>
-                        <listitem>
-                            <para><filename>jta.jar</filename>
+                            <para>
+                                <filename>lib/core/xmldb.jar</filename>
                             </para>
+                        </listitem>
+                        <listitem>
+                            <para><filename>lib/core/xmlrpc-client-X.X.X.jar</filename></para>
+                        </listitem>
+                        <listitem>
+                            <para><filename>lib/core/xmlrpc-common-X.X.X.jar</filename></para>
+                        </listitem>
+                        <listitem>
+                            <para><filename>lib/core/xmlrpc-server-X.X.X.jar</filename></para>
+                        </listitem>
+                        <listitem>
+                            <para><filename>lib/core/jta.jar</filename></para>
+                        </listitem>
+                        <listitem>
+                            <para><filename>lib/core/pkg-repo.jar</filename></para>
                         </listitem>
                     </itemizedlist>
                     <para>If you plan to use extension modules (like the n-gram index), you also
@@ -532,15 +542,14 @@
                         interfaces for SAX and DOM. Some features of eXist will not work properly
                         with a wrong version of Xerces or the resolver jar (schema validation,
                         catalog loading, ...). To ensure that the correct versions are available, we
-                        have included these versions of Xerces and Xalan, plus the standard
+                        have included these versions of Xerces, Xalan and Saxon, plus the standard
                         interfaces used by both of them. You can use Java's endorsed library loading
                         mechanism to ensure that the correct XML support libraries are loaded. <itemizedlist>
                             <listitem>
                                 <para>Create a directory <filename>endorsed</filename></para>
                             </listitem>
                             <listitem>
-                                <para>Copy all jar files from eXist's <filename
-                                        >lib/endorsed</filename> directory into the newly created
+                                <para>Copy all jar files from eXist's <filename>lib/endorsed</filename> directory into the newly created
                                     directory</para>
                             </listitem>
                         </itemizedlist>Specifying the
