@@ -131,7 +131,6 @@
 	<classpathentry kind="lib" path="lib/user/memcached-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/user/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
-	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.1.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/jdom-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/milton-api-1.5.6.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/milton-servlet-1.5.6.jar"/>
@@ -139,5 +138,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.1.jar"/>
+	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
