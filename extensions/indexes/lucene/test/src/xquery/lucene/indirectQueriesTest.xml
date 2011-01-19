@@ -1,0 +1,440 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for differences between in/direct queries on element nodes</testName>
+    <description>
+        <p>These tests test for differences when element nodes are queried directly, or first stored in a variable. Following test situations are included:
+            <ul>
+                <li>a (positively matching) query on an element node</li>
+                <li>a (negatively matching) query on an element node, querying the value of a nested attribute</li>
+                <li>a (negatively matching) query on an element node, querying the value of a non-nested attribute</li>
+            </ul>
+            These tests are repeated for both qname-based and path-based index definitions, with different index types: the old FT index (match-any()), Lucene FT index (ft:query()), and range index (matches()) search functions.            
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <fulltext default="none" attributes="no">
+                        <create qname="p1"/>
+                        <create qname="@att1"/>
+                        <include path="//p2"/>
+                        <include path="//@att2"/>                        
+                    </fulltext>
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+                        <text qname="p1"/>
+                        <text qname="@att1"/>
+                        <text match="//p2"/>
+                        <text match="//@att2"/>                                                
+                    </lucene>
+                    <create qname="p1" type="xs:string"/>
+                    <create qname="@att1" type="xs:string"/>
+                    <create path="//p2" type="xs:string"/>
+                    <create path="//@att2" type="xs:string"/>                    
+                </index>
+            </collection> 
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                <p2 att2="value2">some text inside a path-based indexed element</p2> 
+            </test> 
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <!-- Failing test commented out for now.
+    <test output="xml">
+        <task>[old FT index, qname] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'qname'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </direct>
+                <indirect>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    -->
+    <test output="xml">
+        <task>[old FT index, qname] in/direct hits on element nodes, false match condition on value of nested attribute</task>            
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[old FT index, qname] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>            
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[old FT index, path] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'path'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </direct>
+                <indirect>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[old FT index, path] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[old FT index, path] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
+            let $hits_indirect := $hits[match-any(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, qname] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'qname'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </direct>
+                <indirect>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, qname] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, qname] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, path] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'path'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </direct>
+                <indirect>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, path] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[Lucene FT index, path] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[ft:query(., $query)]
+            let $hits_indirect := $hits[ft:query(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'qname'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </direct>
+                <indirect>
+                    <p1 att1="value1">some text inside a qname-based indexed element</p1> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, qname] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p1
+            let $hits_direct := collection('/db/coll')//p1[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes</task>
+        <code><![CDATA[
+            let $query := 'path'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </direct>
+                <indirect>
+                    <p2 att2="value2">some text inside a path-based indexed element</p2> 
+                </indirect>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes, false match condition on value of nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value2'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[range index, path] in/direct hits on element nodes, false match condition on value of non-nested attribute</task>
+        <code><![CDATA[
+            let $query := 'value1'
+            let $hits := collection('/db/coll')//p2
+            let $hits_direct := collection('/db/coll')//p2[matches(., $query)]
+            let $hits_indirect := $hits[matches(., $query)]
+            return
+            <results>
+              <direct>{$hits_direct}</direct>
+              <indirect>{$hits_indirect}</indirect>
+            </results>
+            ]]></code>
+        <expected>
+            <results>
+                <direct/>
+                <indirect/>
+            </results>
+        </expected>
+    </test>
+</TestSet>

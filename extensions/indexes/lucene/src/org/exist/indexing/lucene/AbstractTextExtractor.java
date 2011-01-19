@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: AbstractTextExtractor.java 12946 2010-10-17 19:36:20Z wolfgang_m $
  */
 
 package org.exist.indexing.lucene;
@@ -36,8 +36,8 @@ public abstract class AbstractTextExtractor implements TextExtractor {
         this.idxConfig = idxConfig;
     }
 
-    public float getBoost() {
-        return config.getBoost();
+    public LuceneIndexConfig getIndexConfig() {
+    	return idxConfig;
     }
 
     public XMLString getText() {

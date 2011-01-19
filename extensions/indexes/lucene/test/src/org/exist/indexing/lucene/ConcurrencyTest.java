@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: ConcurrencyTest.java 12779 2010-09-20 16:17:47Z brihaye $
  */
 
 package org.exist.indexing.lucene;
@@ -85,6 +85,7 @@ public class ConcurrencyTest {
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
+		    //Nothing to do
 		}
 		assertTrue(terminated);
     }
@@ -108,6 +109,7 @@ public class ConcurrencyTest {
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
+		    //Nothing to do
 		}
 		assertTrue(terminated);
     }
@@ -187,7 +189,7 @@ public class ConcurrencyTest {
     public static void initDB() {
         // initialize XML:DB driver
         try {
-            Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);

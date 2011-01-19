@@ -32,7 +32,7 @@ import org.exist.util.FastStringBuffer;
 /**
  * @author wolf
  */
-public class NodePath {
+public class NodePath implements Comparable<NodePath>{
 
     private final static Logger LOG = Logger.getLogger(NodePath.class);
     
@@ -59,13 +59,17 @@ public class NodePath {
     /**
      * 
      */
-    public NodePath(Map namespaces, String path) {
+    public NodePath(Map<String, String> namespaces, String path) {
         init(namespaces, path);
     }
 
-    public NodePath(Map namespaces, String path, boolean includeDescendants) {
+    public NodePath(Map<String, String> namespaces, String path, boolean includeDescendants) {
         this.includeDescendants = includeDescendants;
         init(namespaces, path);
+    }
+    
+    public NodePath(QName qname) {
+    	addComponent(qname);
     }
     
     public void addComponent(QName component) {
@@ -112,6 +116,21 @@ public class NodePath {
         return null;
     }
 
+    public boolean hasWildcard() {
+    	for (int i = 0; i < pos; i++) {
+    		if (components[i] == WILDCARD)
+    			return true;
+    	}
+    	return false;
+    }
+    
+    public boolean match(QName qname) {
+    	if (pos > 0) {
+    		return components[pos - 1].equals(qname);
+    	}
+    	return false;
+    }
+    
     public final boolean match(NodePath other) {
         boolean skip = false;
         int i = 0, j = 0;
@@ -159,7 +178,7 @@ public class NodePath {
         return buf.toString();
     }
     
-    private void addComponent(Map namespaces, String component) {
+    private void addComponent(Map<String, String> namespaces, String component) {
     	boolean isAttribute = false;
     	if (component.startsWith("@")) {
     		isAttribute = true;
@@ -169,7 +188,7 @@ public class NodePath {
         String localName = QName.extractLocalName(component);
         String namespaceURI = "";
         if (prefix != null) {
-	        namespaceURI = (String) namespaces.get(prefix);
+	        namespaceURI = namespaces.get(prefix);
 	        if(namespaceURI == null) {
 	            LOG.error("No namespace URI defined for prefix: " + prefix);
 	            prefix = null;
@@ -182,7 +201,7 @@ public class NodePath {
         addComponent(qn);
     }
     
-    private void init( Map namespaces, String path ) {        
+    private void init( Map<String, String> namespaces, String path ) {        
     	//TODO : compute better length
         FastStringBuffer token = new FastStringBuffer(path.length());
         int pos = 0;
@@ -211,4 +230,35 @@ public class NodePath {
         if (token.length() > 0)
             addComponent(namespaces, token.toString());
     }
+    
+    public boolean equals(Object obj) {
+    	if (obj == null) return false;
+    	
+    	if (obj instanceof NodePath) {
+    		NodePath nodePath = (NodePath) obj;
+    		if (nodePath.pos == pos) {
+                for(int i = 0; i < pos; i++) {
+                	if (!nodePath.components[i].equals(components[i])) {
+                		return false;
+                	}
+                }
+                return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    public int hashCode() {
+    	int h = 0;
+        for(int i = 0; i < pos; i++) {
+        	h = 31*h + components[i].hashCode();
+        }
+        return h;
+    }
+
+	@Override
+	public int compareTo(NodePath o) {
+		return toString().compareTo(o.toString()); //TODO: optimize
+	}
 }

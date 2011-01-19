@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
+ *  $Id: LuceneModule.java 12946 2010-10-17 19:36:20Z wolfgang_m $
  */
 package org.exist.xquery.modules.lucene;
 
@@ -42,6 +42,8 @@ public class LuceneModule extends AbstractInternalModule {
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
         new FunctionDef(Query.signatures[1], Query.class),
+        new FunctionDef(QueryField.signatures[0], QueryField.class),
+        new FunctionDef(QueryField.signatures[1], QueryField.class),
         new FunctionDef(Score.signature, Score.class),
         new FunctionDef(Optimize.signature, Optimize.class)
     };

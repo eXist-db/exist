@@ -5,22 +5,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.modules.lucene.LuceneModule;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 public class Query extends Function implements Optimizable {
 	
@@ -85,6 +90,7 @@ public class Query extends Function implements Optimizable {
     protected int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
     protected boolean optimizeSelf = false;
+    protected boolean optimizeChild = false;
 
     public Query(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -114,33 +120,41 @@ public class Query extends Function implements Optimizable {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
 
-        List steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = (LocationStep) steps.get(0);
-            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.get(0);
+            LocationStep lastStep = steps.get(steps.size() - 1);
             if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
-                    if (!test.isWildcardTest() && test.getName() != null) {
+                    if (test.getName() == null)
+                        contextQName = new QName(null, null, null);
+                    else if (test.isWildcardTest())
+                        contextQName = test.getName();
+                    else
                         contextQName = new QName(test.getName());
-                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            contextQName.setNameType(ElementValue.ATTRIBUTE);
-                        contextStep = firstStep;
-                        axis = outerStep.getAxis();
-                        optimizeSelf = true;
-                    }
+                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    contextStep = firstStep;
+                    axis = outerStep.getAxis();
+                    optimizeSelf = true;
                 }
             } else {
                 NodeTest test = lastStep.getTest();
-                if (!test.isWildcardTest() && test.getName() != null) {
+                if (test.getName() == null)
+                    contextQName = new QName(null, null, null);
+                else if (test.isWildcardTest())
+                    contextQName = test.getName();
+                else
                     contextQName = new QName(test.getName());
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
-                    axis = firstStep.getAxis();
-                    contextStep = lastStep;
-                }
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                axis = firstStep.getAxis();
+                optimizeChild = steps.size() == 1 &&
+                    (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
+                contextStep = lastStep;
             }
         }
     }
@@ -151,6 +165,10 @@ public class Query extends Function implements Optimizable {
 
     public boolean optimizeOnSelf() {
         return optimizeSelf;
+    }
+
+    public boolean optimizeOnChild() {
+        return optimizeChild;
     }
 
     public int getOptimizeAxis() {
@@ -169,7 +187,7 @@ public class Query extends Function implements Optimizable {
                 context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         Item key = getKey(contextSequence, null);
-        List qnames = new ArrayList(1);
+        List<QName> qnames = new ArrayList<QName>(1);
         qnames.add(contextQName);
         Properties options = parseOptions(contextSequence, null);
         try {
@@ -185,6 +203,9 @@ public class Query extends Function implements Optimizable {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.debug("Lucene query took " + (System.currentTimeMillis() - start));
+        if( context.getProfiler().traceFunctions() ) {
+            context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+        }
         return preselectResult;
     }
 
@@ -199,8 +220,9 @@ public class Query extends Function implements Optimizable {
         
         NodeSet result;
         if (preselectResult == null) {
+            long start = System.currentTimeMillis();
             Sequence input = getArgument(0).eval(contextSequence);
-            if (input.isEmpty())
+            if (!(input instanceof VirtualNodeSet) && input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
                 NodeSet inNodes = input.toNodeSet();
@@ -208,9 +230,9 @@ public class Query extends Function implements Optimizable {
                 LuceneIndexWorker index = (LuceneIndexWorker)
                         context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 Item key = getKey(contextSequence, contextItem);
-                List qnames = null;
+                List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList(1);
+                    qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
                 Properties options = parseOptions(contextSequence, contextItem);
@@ -227,6 +249,9 @@ public class Query extends Function implements Optimizable {
                     throw new XPathException(this, e.getMessage());
                 }
             }
+            if( context.getProfiler().traceFunctions() ) {
+                context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+            }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
@@ -234,7 +259,7 @@ public class Query extends Function implements Optimizable {
         return result;
     }
 
-    private Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Item getKey(Sequence contextSequence, Item contextItem) throws XPathException {
         Sequence keySeq = getArgument(1).eval(contextSequence, contextItem);
         Item key = keySeq.itemAt(0);
         if (!(Type.subTypeOf(key.getType(), Type.STRING) || Type.subTypeOf(key.getType(), Type.NODE)))
@@ -257,7 +282,7 @@ public class Query extends Function implements Optimizable {
         return Type.NODE;
     }
 
-    private Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Properties parseOptions(Sequence contextSequence, Item contextItem) throws XPathException {
         if (getArgumentCount() < 3)
             return null;
         Properties options = new Properties();

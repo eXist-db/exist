@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: TextExtractor.java 12946 2010-10-17 19:36:20Z wolfgang_m $
  */
 package org.exist.indexing.lucene;
 
@@ -39,7 +39,7 @@ public interface TextExtractor {
 
     public int characters(XMLString value);
 
-    public float getBoost();
+    public LuceneIndexConfig getIndexConfig();
     
     public XMLString getText();
 }
