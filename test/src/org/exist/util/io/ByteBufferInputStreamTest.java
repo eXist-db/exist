@@ -1,5 +1,7 @@
 package org.exist.util.io;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Random;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -187,6 +189,56 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
+    public void readMultipleBytesInLoop() throws IOException {
+
+        //generate 1KB of test data
+        Random random = new Random();
+        byte testData[] = new byte[1024];
+        random.nextBytes(testData);
+
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte readBuf[] = new byte[56];
+        int read = -1;
+
+        while((read = is.read(readBuf)) > -1) {
+
+            assertLessThanOrEqual(readBuf.length, read);
+
+            baos.write(readBuf, 0, read);
+        }
+
+        assertArrayEquals(testData, baos.toByteArray());
+    }
+
+    @Test
+    public void readMultipleBytesSpecificInLoop() throws IOException {
+
+        //generate 1KB of test data
+        Random random = new Random();
+        byte testData[] = new byte[1024];
+        random.nextBytes(testData);
+
+        final ByteBuffer buf = ByteBuffer.wrap(testData);
+        InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte readBuf[] = new byte[56];
+        int read = -1;
+
+        while((read = is.read(readBuf, 0, readBuf.length)) > -1) {
+
+            assertLessThanOrEqual(readBuf.length, read);
+
+            baos.write(readBuf, 0, read);
+        }
+
+        assertArrayEquals(testData, baos.toByteArray());
+    }
+
+    @Test
     public void markReturnsTrue() {
         final byte testData[] = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
@@ -218,5 +270,11 @@ public class ByteBufferInputStreamTest {
         byte newData[] = new byte[len];
         System.arraycopy(data, offset, newData, 0, len);
         return newData;
+    }
+
+    private static void assertLessThanOrEqual(int expectedMax, int actual) {
+        if(actual > expectedMax) {
+            fail("Expected actual value" + actual + " to be less than or equal to " + expectedMax);
+        }
     }
 }
