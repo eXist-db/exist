@@ -72,4 +72,8 @@ public class StdErr extends Command {
 		
 		return command.getBytes();
 	}
+
+	public String toString() {
+		return "stderr ["+transactionID+"]";
+	}
 }

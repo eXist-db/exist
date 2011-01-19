@@ -64,4 +64,8 @@ public class Run extends AbstractCommandContinuation {
 	public boolean is(int type) {
 		return (type == RUN);
 	}
+	
+	public String toString() {
+		return "run ["+transactionID+"]";
+	}
 }

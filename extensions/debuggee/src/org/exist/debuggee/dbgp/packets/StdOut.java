@@ -72,4 +72,8 @@ public class StdOut extends Command {
 		
 		return command.getBytes();
 	}
+	
+	public String toString() {
+		return "stdout ["+transactionID+"]";
+	}
 }

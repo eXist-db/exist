@@ -75,4 +75,8 @@ public class FeatureSet extends Command {
 		
 		return command.getBytes();
 	}
+	
+	public String toString() {
+		return "feature_set name = '"+name+"' value = '"+value+"' ["+transactionID+"]";
+	}
 }

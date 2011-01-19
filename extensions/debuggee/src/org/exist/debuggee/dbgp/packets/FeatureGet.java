@@ -80,4 +80,8 @@ public class FeatureGet extends Command {
 		
 		return command.getBytes();
 	}
+
+	public String toString() {
+		return "feature_get name = '"+name+"' value = '"+value+"' ["+transactionID+"]";
+	}
 }

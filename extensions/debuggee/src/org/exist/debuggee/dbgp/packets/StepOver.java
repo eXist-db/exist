@@ -64,4 +64,8 @@ public class StepOver extends AbstractCommandContinuation {
 	public boolean is(int type) {
 		return (type == STEP_OVER);
 	}
+
+	public String toString() {
+		return "step_over ["+transactionID+"]";
+	}
 }
