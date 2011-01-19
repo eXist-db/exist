@@ -31,9 +31,17 @@ import org.exist.security.xacml.XACMLSource;
 public class Init extends AbstractCommandContinuation {
 
 	private XACMLSource fileuri;
+	private String idekey = "1";
+	private String idesession = "1";
 	
 	public Init(IoSession session) {
 		super(session, "");
+	}
+
+	public Init(IoSession session, String idesession, String idekey) {
+		super(session, "");
+		this.idekey = idekey;
+		this.idesession = idesession;
 	}
 
 	public void setFileURI(XACMLSource source){
@@ -45,11 +53,13 @@ public class Init extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String init_message = "<init " +
-			"appid=\"7035\" " +
-			"idekey=\"1\" " +
-			"session=\"1\" " +
-			"thread=\"1\" " +
-			"parent=\"1\" " +
+			"xmlns=\"urn:debugger_protocol_v1\" " +
+			"xmlns:xdebug=\"http://xdebug.org/dbgp/xdebug\" " +
+			"appid=\"eXist050705\" " + //keep this as memory of creation
+			"idekey=\""+idekey+"\" " +
+			"session=\""+idesession+"\" " +
+			//"thread=\"1\" " +
+			//"parent=\"1\" " +
 			"language=\"XQuery\" " +
 			"protocol_version=\"1.0\" " +
 			"fileuri=\""+Command.getFileuri(fileuri)+"\"></init>";

@@ -64,4 +64,8 @@ public class Stop extends AbstractCommandContinuation {
 	public boolean is(int type) {
 		return (type == STOP);
 	}
+
+	public String toString() {
+		return "stop ["+transactionID+"]";
+	}
 }

@@ -64,4 +64,8 @@ public class StepOut extends AbstractCommandContinuation {
 	public boolean is(int type) {
 		return (type == STEP_OUT);
 	}
+	
+	public String toString() {
+		return "step_out ["+transactionID+"]";
+	}
 }

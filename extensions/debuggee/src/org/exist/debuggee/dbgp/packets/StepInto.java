@@ -64,4 +64,8 @@ public class StepInto extends AbstractCommandContinuation {
 	public boolean is(int type) {
 		return (type == STEP_INTO);
 	}
+	
+	public String toString() {
+		return "step_into ["+transactionID+"]";
+	}
 }
