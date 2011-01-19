@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.image;
 
 import java.awt.Image;
@@ -47,85 +46,75 @@ import org.exist.xquery.value.Type;
  * 
  * Get's the height of an Image
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-03-12
- * @version 1.1
+ * @author Adam Retter <adam@exist-db.org>
+ * @version 1.2
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
-public class GetHeightFunction extends BasicFunction
-{   
-	private static final Logger logger = Logger.getLogger(GetHeightFunction.class);
-	
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-height", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Gets the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if the image is invalid.",
-			new SequenceType[]
-			{
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
-			},
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the height in pixels"));
+public class GetHeightFunction extends BasicFunction {
 
-	/**
-	 * GetHeightFunction Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
-	public GetHeightFunction(XQueryContext context)
-	{
-		super(context, signature);
+    private static final Logger logger = Logger.getLogger(GetHeightFunction.class);
+    public final static FunctionSignature signature =
+            new FunctionSignature(
+            new QName("get-height", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
+            "Gets the Height of the image passed in, returning an integer of the images Height in pixels or an empty sequence if the image is invalid.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
+            },
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the height in pixels"));
+
+    /**
+     * GetHeightFunction Constructor
+     *
+     * @param context	The Context of the calling XQuery
+     */
+    public GetHeightFunction(XQueryContext context) {
+        super(context, signature);
     }
 
-	/**
-	 * evaluate the call to the xquery get-height() function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-height() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-height() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		//was an image speficifed
-		if (args[0].isEmpty()) {
+    /**
+     * evaluate the call to the xquery get-height() function,
+     * it is really the main entry point of this class
+     *
+     * @param args		arguments from the get-height() function call
+     * @param contextSequence	the Context Sequence to operate on (not used here internally!)
+     * @return		A sequence representing the result of the get-height() function call
+     *
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        //was an image speficifed
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
-		}
-		
+        }
+
         //get the image
         Image image = null;
-        try
-        {
-            image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
+        try {
+            BinaryValue imageData = (BinaryValue) args[0].itemAt(0);
+            image = ImageIO.read(imageData.getInputStream());
+        } catch (IOException ioe) {
+            logger.error("Unable to read image data!", ioe);
+            return Sequence.EMPTY_SEQUENCE;
         }
-        catch(IOException ioe)
-        {
-        	logger.error("Unable to read image data!", ioe);
-        	return Sequence.EMPTY_SEQUENCE;
+
+        if (image == null) {
+            logger.error("Unable to read image data!");
+            return Sequence.EMPTY_SEQUENCE;
         }
-        
-        if(image == null)
-        {
-        	logger.error("Unable to read image data!");
-        	return Sequence.EMPTY_SEQUENCE;
-        }
-        
+
         //Get the Height of the image
         int iHeight = image.getHeight(null);
-        
+
         //did we get the Height of the image?
-        if(iHeight == -1)
-        {
-        	//no, log the error
-        	logger.error("Unable to read image data!");
-        	return Sequence.EMPTY_SEQUENCE; 
+        if (iHeight == -1) {
+            //no, log the error
+            logger.error("Unable to read image data!");
+            return Sequence.EMPTY_SEQUENCE;
+        } else {
+            //return the Height of the image
+            return new IntegerValue(iHeight);
         }
-        else
-        {
-        	//return the Height of the image
-        	return new IntegerValue(iHeight);	
-        }
-	}
+    }
 }

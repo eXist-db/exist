@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.image;
 
 import java.awt.Image;
@@ -47,86 +46,76 @@ import org.exist.xquery.value.Type;
  * 
  * Get's the width of an Image
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @author Loren Cahlander
- * @serial 2006-03-10
- * @version 1.1
+ * @version 1.2
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
-public class GetWidthFunction extends BasicFunction
-{   
-	private static final Logger logger = Logger.getLogger(GetWidthFunction.class);
-	
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Gets the width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",
-			new SequenceType[]
-			{
-				new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
-			},
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the width in pixels"));
+public class GetWidthFunction extends BasicFunction {
 
-	/**
-	 * GetWidthFunction Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
-	public GetWidthFunction(XQueryContext context)
-	{
-		super(context, signature);
+    private static final Logger logger = Logger.getLogger(GetWidthFunction.class);
+    public final static FunctionSignature signature =
+            new FunctionSignature(
+            new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
+            "Gets the width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data")
+            },
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the width in pixels"));
+
+    /**
+     * GetWidthFunction Constructor
+     *
+     * @param context	The Context of the calling XQuery
+     */
+    public GetWidthFunction(XQueryContext context) {
+        super(context, signature);
     }
 
-	/**
-	 * evaluate the call to the xquery get-width() function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-width() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-width() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		//was an image speficifed
-		if (args[0].isEmpty()) {
+    /**
+     * evaluate the call to the xquery get-width() function,
+     * it is really the main entry point of this class
+     *
+     * @param args		arguments from the get-width() function call
+     * @param contextSequence	the Context Sequence to operate on (not used here internally!)
+     * @return		A sequence representing the result of the get-width() function call
+     *
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        //was an image speficifed
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
-		}
-		
-		//get the image
-		Image image = null;
-        try
-        {
-            image = ImageIO.read(((BinaryValue)args[0].itemAt(0)).getInputStream());
         }
-        catch(IOException ioe)
-        {
-        	logger.error("Unable to read image data!", ioe);
-        	return Sequence.EMPTY_SEQUENCE;
+
+        //get the image
+        Image image = null;
+        try {
+            BinaryValue imageData = (BinaryValue) args[0].itemAt(0);
+            image = ImageIO.read(imageData.getInputStream());
+        } catch (IOException ioe) {
+            logger.error("Unable to read image data!", ioe);
+            return Sequence.EMPTY_SEQUENCE;
         }
-        
-        if(image == null)
-        {
-        	logger.error("Unable to read image data!");
-        	return Sequence.EMPTY_SEQUENCE;
+
+        if (image == null) {
+            logger.error("Unable to read image data!");
+            return Sequence.EMPTY_SEQUENCE;
         }
-        
+
         //Get the width of the image
         int iWidth = image.getWidth(null);
-        
+
         //did we get the width of the image?
-        if(iWidth == -1)
-        {
-        	//no, log the error
-        	logger.error("Unable to read image data!");
-        	return Sequence.EMPTY_SEQUENCE; 
+        if (iWidth == -1) {
+            //no, log the error
+            logger.error("Unable to read image data!");
+            return Sequence.EMPTY_SEQUENCE;
+        } else {
+            //return the width of the image
+            return new IntegerValue(iWidth);
         }
-        else
-        {
-        	//return the width of the image
-        	return new IntegerValue(iWidth);	
-        }
-	}
+    }
 }
