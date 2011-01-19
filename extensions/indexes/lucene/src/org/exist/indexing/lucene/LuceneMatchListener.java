@@ -17,11 +17,12 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: LuceneMatchListener.java 12986 2010-10-22 16:06:42Z brihaye $
  */
 package org.exist.indexing.lucene;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
@@ -32,14 +33,15 @@ import org.exist.dom.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -50,9 +52,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private Match match;
 
-    private Map termMap;
+    private Map<String, Query> termMap;
 
-    private Map nodesWithMatch;
+    private Map<NodeId, Offset> nodesWithMatch;
 
     private LuceneIndex index;
 
@@ -86,7 +88,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
 
         getTerms();
-        nodesWithMatch = new TreeMap();
+        nodesWithMatch = new TreeMap<NodeId, Offset>();
         /* Check if an index is defined on an ancestor of the current node.
         * If yes, scan the ancestor to get the offset of the first character
         * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
@@ -105,13 +107,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         if (ancestors != null && !ancestors.isEmpty()) {
-            for (Iterator i = ancestors.iterator(); i.hasNext();) {
-                NodeProxy p = (NodeProxy) i.next();
-                scanMatches(p);
+            for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
+                scanMatches((NodeProxy) i.next());
             }
         }
     }
 
+    @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
         Match nextMatch = match;
         // check if there are any matches in the current element
@@ -127,9 +129,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
         super.startElement(qname, attribs);
     }
 
+    @Override
     public void characters(CharSequence seq) throws SAXException {
         NodeId nodeId = getCurrentNode().getNodeId();
-        Offset offset = (Offset) nodesWithMatch.get(nodeId);
+        Offset offset = nodesWithMatch.get(nodeId);
         if (offset == null)
             super.characters(seq);
         else {
@@ -159,7 +162,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
         // Collect the text content of all descendants of p. Remember the start offsets
         // of the text nodes for later use.
         NodePath path = getPath(p);
-        LuceneIndexConfig idxConf = config.getConfig(path);
+        LuceneIndexConfig idxConf = config.getConfig(path).next();
+        
         TextExtractor extractor = new DefaultTextExtractor();
         extractor.configure(config, idxConf);
         OffsetList offsets = new OffsetList();
@@ -170,17 +174,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
             while (reader.hasNext()) {
                 int ev = reader.next();
                 switch (ev) {
-                    case XMLStreamReader.END_ELEMENT:
+                    case XMLStreamConstants.END_ELEMENT:
                         if (--level < 0)
                             break;
                         textOffset += extractor.endElement(reader.getQName());
                         break;
-                    case XMLStreamReader.START_ELEMENT:
+                    case XMLStreamConstants.START_ELEMENT:
                         ++level;
                         textOffset += extractor.startElement(reader.getQName());
                         break;
-                    case XMLStreamReader.CHARACTERS:
-                        NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                    case XMLStreamConstants.CHARACTERS:
+                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         offsets.add(textOffset, nodeId);
                         textOffset += extractor.characters(reader.getXMLText());
                         break;
@@ -191,15 +195,22 @@ public class LuceneMatchListener extends AbstractMatchListener {
         } catch (XMLStreamException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
-        // Use Lucene's analyzer to tokenize the text and find matching query terms
-        TokenStream tokenStream = index.getDefaultAnalyzer().tokenStream(null, new StringReader(extractor.getText().toString()));
+        
+        // retrieve the Analyzer for the NodeProxy that was used for indexing and querying
+        Analyzer analyzer = idxConf.getAnalyzer();
+        if (analyzer == null) {
+        	// otherwise use system default Lucene analyzer (from conf.xml) to tokenize the text and find matching query terms
+        	analyzer = index.getDefaultAnalyzer();
+        }
+        LOG.debug("Analyzer: " + analyzer + " for path: " + path);
+        TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(extractor.getText().toString()));
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         Token token;
         try {
 
             while ((token = stream.next()) != null) {
                 String text = token.term();
-                Query query = (Query) termMap.get(text);
+                Query query = termMap.get(text);
                 if (query != null) {
                     // phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not single
@@ -233,7 +244,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                     Token nextToken = tokenList.get(i);
                                     int idx = offsets.getIndex(nextToken.startOffset());
                                     NodeId nodeId = offsets.ids[idx];
-                                    Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                                    Offset offset = nodesWithMatch.get(nodeId);
                                     if (offset != null)
                                         if (lastIdx == idx)
                                             offset.setEndOffset(nextToken.endOffset() - offsets.offsets[idx]);
@@ -250,7 +261,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     } else {
                         int idx = offsets.getIndex(token.startOffset());
                         NodeId nodeId = offsets.ids[idx];
-                        Offset offset = (Offset) nodesWithMatch.get(nodeId);
+                        Offset offset = nodesWithMatch.get(nodeId);
                         if (offset != null)
                             offset.add(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]);
@@ -284,8 +295,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * Get all query terms from the original queries.
      */
     private void getTerms() {
-        Set queries = new HashSet();
-        termMap = new TreeMap();
+        Set<Query> queries = new HashSet<Query>();
+        termMap = new TreeMap<String, Query>();
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (nextMatch.getIndexId() == LuceneIndex.ID) {
@@ -295,13 +306,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     IndexReader reader = null;
                     try {
                         reader = index.getReader();
-                        query = query.rewrite(reader);
+                        LuceneUtil.extractTerms(query, termMap, reader);
                     } catch (IOException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
                     } finally {
                         index.releaseReader(reader);
                     }
-                    LuceneUtil.extractTerms(query, termMap);
                 }
             }
             nextMatch = nextMatch.getNextMatch();

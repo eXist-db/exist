@@ -41,8 +41,10 @@ public class LuceneIndex extends AbstractIndex {
     protected int searcherUseCount = 0;
     
     public LuceneIndex() {
+        //Nothing special to do
     }
 
+    @Override
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         if (LOG.isDebugEnabled())
@@ -71,6 +73,7 @@ public class LuceneIndex extends AbstractIndex {
             LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
     }
 
+    @Override
     public void open() throws DatabaseConfigurationException {
         File dir = new File(getDataDir(), "lucene");
         if (LOG.isDebugEnabled())
@@ -93,6 +96,7 @@ public class LuceneIndex extends AbstractIndex {
         }
     }
 
+    @Override
     public void close() throws DBException {
         try {
             if (cachedWriter != null)
@@ -103,9 +107,12 @@ public class LuceneIndex extends AbstractIndex {
         }
     }
 
+    @Override
     public void sync() throws DBException {
+        //Nothing special to do
     }
 
+    @Override
     public void remove() throws DBException {
         try {
             String[] files = directory.list();
@@ -119,10 +126,12 @@ public class LuceneIndex extends AbstractIndex {
         }
     }
 
+    @Override
     public IndexWorker getWorker(DBBroker broker) {
         return new LuceneIndexWorker(this, broker);
     }
 
+    @Override
     public boolean checkIndex(DBBroker broker) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -136,6 +145,7 @@ public class LuceneIndex extends AbstractIndex {
             try {
                 wait();
             } catch (InterruptedException e) {
+                //Nothing special to do
             }
         }
         if (cachedWriter != null) {
@@ -201,6 +211,7 @@ public class LuceneIndex extends AbstractIndex {
             try {
                 wait();
             } catch (InterruptedException e) {
+                //Nothing special to do
             }
         }
         if (cachedWritingReader != null) {
@@ -238,6 +249,7 @@ public class LuceneIndex extends AbstractIndex {
             try {
                 wait();
             } catch (InterruptedException e) {
+                //Nothing special to do
             }
         }
         reopenReaders();
@@ -277,12 +289,12 @@ public class LuceneIndex extends AbstractIndex {
             throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
         searcherUseCount--;
         notifyAll();
-//        try {
-//            cachedSearcher.close();
-//        } catch (IOException e) {
-//            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-//        } finally {
-//            cachedSearcher = null;
-//        }
+        //try {
+            //cachedSearcher.close();
+        //} catch (IOException e) {
+            //LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+        //} finally {
+            //cachedSearcher = null;
+        //}
     }
 }

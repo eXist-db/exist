@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: LuceneMatchListenerTest.java 12494 2010-08-21 12:40:10Z shabanovd $
  */
 package org.exist.indexing.lucene;
 
@@ -338,7 +338,7 @@ public class LuceneMatchListenerTest {
             if (pool != null)
                 pool.release(broker);
         }
-        HashMap m = new HashMap();
+        HashMap<String, String> m = new HashMap<String, String>();
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
         NamespaceContext ctx = new SimpleNamespaceContext(m);
         XMLUnit.setXpathNamespaceContext(ctx);
