@@ -23,6 +23,7 @@ package org.exist.interpreter;
 
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
 public interface Compiled extends IPathExpr {
@@ -32,7 +33,7 @@ public interface Compiled extends IPathExpr {
     /**
      * @return the {@link Context} used to create this query
      */
-    public Context getContext();
+    public XQueryContext getContext();
     
     public void setContext(Context context);
     
