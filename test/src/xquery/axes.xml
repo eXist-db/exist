@@ -6,8 +6,8 @@
         <author>Wolfgang Meier</author>
     </description>
     <setup>
-        <create-collection parent="/db" name="test"/>
-        <store collection="/db/test" name="axes1.xml">
+        <create-collection parent="/db" name="axes-test"/>
+        <store collection="/db/axes-test" name="axes1.xml">
             <test>
                 <line>
                     <word>XPath</word>
@@ -25,7 +25,7 @@
                 </line>
             </test>
         </store>
-        <store collection="/db/test" name="axes2.xml">
+        <store collection="/db/axes-test" name="axes2.xml">
             <test>
                 <a>
                     <b>
@@ -42,13 +42,13 @@
                 </a>
             </test>
         </store>
-        <store collection="/db/test" name="axes3.xml">
+        <store collection="/db/axes-test" name="axes3.xml">
             <test>
                 <c>C5</c>
                 <c>C6</c>
             </test>
         </store>
-        <store collection="/db/test" name="axes4.xml"><![CDATA[
+        <store collection="/db/axes-test" name="axes4.xml"><![CDATA[
             <?foo dummmy-processing-instruction?>
             <!-- Comment -->
             <test>
@@ -83,92 +83,92 @@
         </test>
     </variable>
     <tearDown>
-        <!--remove-collection collection="/db/test"/-->
+        <!--remove-collection collection="/db/axes-test"/-->
     </tearDown>
 	<!-- Following axis tests -->
     <test output="text">
         <task>Simple following axis test</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::word</code>
         <expected>with the following axis</expected>
     </test>
     <test output="text">
         <task>Empty following axis</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Following axis test: element()</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::element())</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::element())</code>
         <expected>5</expected>
     </test>
     <test output="text">
         <task>Following axis test: text()</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::text()</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::text()</code>
         <expected>with the following axis</expected>
     </test>
     <test output="text">
         <task>Following axis test: node()</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::node())</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::node())</code>
         <expected>9</expected>
     </test>
     <test output="text">
         <task>Nested following axis test 1</task>
-        <code>doc("/db/test/axes2.xml")//e/following::c/text()</code>
+        <code>doc("/db/axes-test/axes2.xml")//e/following::c/text()</code>
         <expected>C3 C4</expected>
     </test>
     <test output="text">
         <task>Nested following axis test 2</task>
-        <code>count(doc("/db/test/axes2.xml")//a/following::c)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//a/following::c)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Nested following axis test 3</task>
-        <code>count(doc("/db/test/axes2.xml")//c[. = 'C1']/following::*)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//c[. = 'C1']/following::*)</code>
         <expected>6</expected>
     </test>
     <test output="text">
         <task>Nested following axis test 4</task>
-        <code>count(doc("/db/test/axes2.xml")//a/following::*)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//a/following::*)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Following axis predicate test</task>
-        <code>doc("/db/test/axes2.xml")//e[following::e]</code>
+        <code>doc("/db/axes-test/axes2.xml")//e[following::e]</code>
         <expected>E1</expected>
     </test>
     <test output="text">
         <task>Following axis predicate test</task>
-        <code>doc("/db/test/axes2.xml")//c[following::c]</code>
+        <code>doc("/db/axes-test/axes2.xml")//c[following::c]</code>
         <expected>C1 C2 C3</expected>
     </test>
     <test output="text">
         <task>Following axis predicate test</task>
-        <code>doc("/db/test/axes2.xml")//c[following::c = 'C2']</code>
+        <code>doc("/db/axes-test/axes2.xml")//c[following::c = 'C2']</code>
         <expected>C1</expected>
     </test>
     <test output="text">
         <task>Following axis predicate test 2</task>
-        <code>doc("/db/test/axes2.xml")//c[following::* = 'C2']</code>
+        <code>doc("/db/axes-test/axes2.xml")//c[following::* = 'C2']</code>
         <expected>C1</expected>
     </test>
     <test output="text">
         <task>Following axis with positional predicate test</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[2]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::word[2]</code>
         <expected>the</expected>
     </test>
     <test output="text">
         <task>Following axis with positional predicate test 2</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[2]/text()</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::word[2]/text()</code>
         <expected>the</expected>
     </test>
     <test output="text">
         <task>Following axis with positional predicate test 3</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[last()]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::word[last()]</code>
         <expected>axis</expected>
     </test>
     <test output="text">
         <task>Following axis with positional predicate test 4</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/following::word[position() = 2]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::word[position() = 2]</code>
         <expected>the</expected>
     </test>
 
@@ -180,7 +180,7 @@
     </test>
     <test output="text">
         <task>Empty following axis (in-memory)</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'axis']/following::word)</code>
         <expected>0</expected>
     </test>
     <test output="text">
@@ -216,98 +216,98 @@
     
     <test output="text">
         <task>Simple preceding axis test</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'with']/preceding::word</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'with']/preceding::word</code>
         <expected>XPath developers enjoy working</expected>
     </test>
     <test output="text">
         <task>Simple preceding axis test 2</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'the']/preceding::word</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'the']/preceding::word</code>
         <expected>XPath developers enjoy working with</expected>
     </test>
     <test output="text">
         <task>Empty preceding axis</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'XPath']/preceding::word)</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'XPath']/preceding::word)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Preceding axis test: element()</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::element())</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::element())</code>
         <expected>4</expected>
     </test>
     <test output="text">
         <task>Preceding axis test: text()</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'with']/preceding::text()</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'with']/preceding::text()</code>
         <expected>XPath developers enjoy working</expected>
     </test>
     <test output="text">
         <task>Preceding axis test: node()</task>
-        <code>count(doc("/db/test/axes1.xml")//line/word[. = 'working']/following::node())</code>
+        <code>count(doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following::node())</code>
         <expected>9</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 1</task>
-        <code>doc("/db/test/axes2.xml")//e/preceding::c/text()</code>
+        <code>doc("/db/axes-test/axes2.xml")//e/preceding::c/text()</code>
         <expected>C1 C2</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 2</task>
-        <code>count(doc("/db/test/axes2.xml")//b/preceding::c)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//b/preceding::c)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 3</task>
-        <code>count(doc("/db/test/axes2.xml")//c[. = 'C1']/preceding::*)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//c[. = 'C1']/preceding::*)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 4</task>
-        <code>count(doc("/db/test/axes2.xml")//c[. = 'C2']/preceding::*)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//c[. = 'C2']/preceding::*)</code>
         <expected>2</expected>
     </test>
     <test output="text">
         <task>Nested preceding axis test 5</task>
-        <code>count(doc("/db/test/axes2.xml")//b/preceding::*)</code>
+        <code>count(doc("/db/axes-test/axes2.xml")//b/preceding::*)</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Preceding axis predicate test</task>
-        <code>doc("/db/test/axes2.xml")//e[preceding::e]//text()</code>
+        <code>doc("/db/axes-test/axes2.xml")//e[preceding::e]//text()</code>
         <expected>C3</expected>
     </test>
     <test output="text">
         <task>Preceding axis predicate test</task>
-        <code>doc("/db/test/axes2.xml")//c[preceding::c]</code>
+        <code>doc("/db/axes-test/axes2.xml")//c[preceding::c]</code>
         <expected>C2 C3 C4</expected>
     </test>
     <test output="text">
         <task>Preceding axis predicate test 2</task>
-        <code>doc("/db/test/axes2.xml")//c[preceding::* = 'C3']</code>
+        <code>doc("/db/axes-test/axes2.xml")//c[preceding::* = 'C3']</code>
         <expected>C4</expected>
     </test>
     <test output="text">
         <task>Preceding axis with positional predicate test</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[2]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::word[2]</code>
         <expected>developers</expected>
     </test>
     <test output="text">
         <task>Preceding axis with positional predicate test 2</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[2]/text()</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::word[2]/text()</code>
         <expected>developers</expected>
     </test>
     <test output="text">
         <task>Preceding axis with positional predicate test 3</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[last()]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::word[last()]</code>
         <expected>XPath</expected>
     </test>
     <test output="text">
         <task>Preceding axis with positional predicate test 4</task>
-        <code>doc("/db/test/axes1.xml")//line/word[. = 'working']/preceding::word[position() = 2]</code>
+        <code>doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/preceding::word[position() = 2]</code>
         <expected>developers</expected>
     </test>
     <test output="text">
         <task>FLWOR with at and positional predicate</task>
         <code>
-            let $word := doc("/db/test/axes1.xml")//line/word[. = 'working']
+            let $word := doc("/db/axes-test/axes1.xml")//line/word[. = 'working']
             for $i at $p in (1 to 3) 
             return
                 $word/preceding::word[$p]
@@ -361,42 +361,42 @@
 	<test output="text">
         <task>Following sibling axis 1</task>
         <code>
-			doc("/db/test/axes1.xml")//line/word[. = 'working']/following-sibling::word
+			doc("/db/axes-test/axes1.xml")//line/word[. = 'working']/following-sibling::word
 		</code>
         <expected>with</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 2</task>
         <code>
-			doc("/db/test/axes1.xml")//line[3]/word[1]/following-sibling::word
+			doc("/db/axes-test/axes1.xml")//line[3]/word[1]/following-sibling::word
 		</code>
         <expected>following axis</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 3</task>
         <code>
-			count(doc("/db/test/axes1.xml")//line[1]/following-sibling::word)
+			count(doc("/db/axes-test/axes1.xml")//line[1]/following-sibling::word)
 		</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 4</task>
         <code>
-			count(doc("/db/test/axes1.xml")//line[1]/word[3]/following-sibling::word)
+			count(doc("/db/axes-test/axes1.xml")//line[1]/word[3]/following-sibling::word)
 		</code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 5</task>
         <code>
-			count(doc("/db/test/axes1.xml")//line[1]/following-sibling::line)
+			count(doc("/db/axes-test/axes1.xml")//line[1]/following-sibling::line)
 		</code>
         <expected>2</expected>
     </test>
     <test output="xml">
         <task>Following sibling axis 6</task>
         <code>
-			doc("/db/test/axes1.xml")//line[2]/following-sibling::line
+			doc("/db/axes-test/axes1.xml")//line[2]/following-sibling::line
 		</code>
         <expected>
 			<line>
@@ -409,112 +409,112 @@
     <test output="text">
         <task>Following sibling axis 7</task>
         <code>
-			doc("/db/test/axes2.xml")//b/following-sibling::c
+			doc("/db/axes-test/axes2.xml")//b/following-sibling::c
 		</code>
         <expected>C2 C4</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 8</task>
         <code>
-			doc("/db/test/axes2.xml")//b/following-sibling::c
+			doc("/db/axes-test/axes2.xml")//b/following-sibling::c
 		</code>
         <expected>C2 C4</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 9</task>
         <code>
-			doc("/db/test/axes2.xml")//c[following-sibling::c]
+			doc("/db/axes-test/axes2.xml")//c[following-sibling::c]
 		</code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 10</task>
         <code>
-			doc("/db/test/axes2.xml")//c[following-sibling::c]
+			doc("/db/axes-test/axes2.xml")//c[following-sibling::c]
 		</code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 11</task>
         <code>
-            doc("/db/test/axes2.xml")//e[following-sibling::c]
+            doc("/db/axes-test/axes2.xml")//e[following-sibling::c]
         </code>
         <expected>E1</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 12</task>
         <code>
-            doc("/db/test/axes2.xml")//b/following-sibling::c[2]
+            doc("/db/axes-test/axes2.xml")//b/following-sibling::c[2]
         </code>
         <expected>C4</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 12a</task>
         <code>
-            doc("/db/test/axes2.xml")//b/following-sibling::c[last()]
+            doc("/db/axes-test/axes2.xml")//b/following-sibling::c[last()]
         </code>
         <expected>C4</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 13</task>
         <code>
-            doc("/db/test/axes2.xml")//b/following-sibling::c[1]
+            doc("/db/axes-test/axes2.xml")//b/following-sibling::c[1]
         </code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Following sibling axis 14</task>
         <code>
-            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//b/following-sibling::c[1]
+            (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//b/following-sibling::c[1]
         </code>
         <expected>C2</expected>
     </test>
-    <test output="text">
+    <test output="xml">
         <task>Following sibling axis 15</task>
         <code>
-            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//c[following-sibling::c]
+            (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[following-sibling::c]
         </code>
-        <expected>C2 C5</expected>
+        <expected><c>C2</c><c>C5</c></expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 1</task>
         <code>
-            doc("/db/test/axes1.xml")//line/word[. = 'following']/preceding-sibling::word
+            doc("/db/axes-test/axes1.xml")//line/word[. = 'following']/preceding-sibling::word
         </code>
         <expected>the</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 2</task>
         <code>
-            doc("/db/test/axes1.xml")//line[3]/word[3]/preceding-sibling::word
+            doc("/db/axes-test/axes1.xml")//line[3]/word[3]/preceding-sibling::word
         </code>
         <expected>the following</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 3</task>
         <code>
-            count(doc("/db/test/axes1.xml")//line[3]/preceding-sibling::word)
+            count(doc("/db/axes-test/axes1.xml")//line[3]/preceding-sibling::word)
         </code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 4</task>
         <code>
-            count(doc("/db/test/axes1.xml")//line[1]/word[1]/preceding-sibling::word)
+            count(doc("/db/axes-test/axes1.xml")//line[1]/word[1]/preceding-sibling::word)
         </code>
         <expected>0</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 5</task>
         <code>
-            count(doc("/db/test/axes1.xml")//line[3]/preceding-sibling::line)
+            count(doc("/db/axes-test/axes1.xml")//line[3]/preceding-sibling::line)
         </code>
         <expected>2</expected>
     </test>
     <test output="xml">
         <task>Preceding sibling axis 6</task>
         <code>
-            doc("/db/test/axes1.xml")//line[2]/preceding-sibling::line
+            doc("/db/axes-test/axes1.xml")//line[2]/preceding-sibling::line
         </code>
         <expected>
             <line>
@@ -527,70 +527,70 @@
     <test output="text">
         <task>Preceding sibling axis 7</task>
         <code>
-            doc("/db/test/axes2.xml")//d/preceding-sibling::c
+            doc("/db/axes-test/axes2.xml")//d/preceding-sibling::c
         </code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 8</task>
         <code>
-            doc("/db/test/axes2.xml")//c/preceding-sibling::c
+            doc("/db/axes-test/axes2.xml")//c/preceding-sibling::c
         </code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 9</task>
         <code>
-            doc("/db/test/axes2.xml")//c[preceding-sibling::c]
+            doc("/db/axes-test/axes2.xml")//c[preceding-sibling::c]
         </code>
         <expected>C4</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 11</task>
         <code>
-            doc("/db/test/axes2.xml")//e[preceding-sibling::c]
+            doc("/db/axes-test/axes2.xml")//e[preceding-sibling::c]
         </code>
         <expected>E1</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 12</task>
         <code>
-            doc("/db/test/axes2.xml")//c/preceding-sibling::c[1]
+            doc("/db/axes-test/axes2.xml")//c/preceding-sibling::c[1]
         </code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 13</task>
         <code>
-            doc("/db/test/axes2.xml")//c/preceding-sibling::c[last()]
+            doc("/db/axes-test/axes2.xml")//c/preceding-sibling::c[last()]
         </code>
         <expected>C2</expected>
     </test>
     <test output="text">
         <task>Preceding sibling axis 14</task>
         <code>
-            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//d/preceding-sibling::c[1]
+            (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//d/preceding-sibling::c[1]
         </code>
         <expected>C2</expected>
     </test>
-    <test output="text">
+    <test output="xml">
         <task>Preceding sibling axis 15</task>
         <code>
-            (doc("/db/test/axes2.xml"), doc("/db/test/axes3.xml"))//c[preceding-sibling::c]
+            (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[preceding-sibling::c]
         </code>
-        <expected>C4 C6</expected>
+        <expected><c>C4</c><c>C6</c></expected><!-- is the elements order correct? -->
     </test>
     <test output="text">
         <task>Sibling axis comments and pis 1</task>
         <code>
-            count(doc("/db/test/axes4.xml")/*/preceding::node())
+            count(doc("/db/axes-test/axes4.xml")/*/preceding::node())
         </code>
         <expected>2</expected>
     </test>
     <test output="text">
         <task>Sibling axis comments and pis 2</task>
         <code>
-            doc("/db/test/axes4.xml")/node()[1]/following::text()
+            doc("/db/axes-test/axes4.xml")/node()[1]/following::text()
         </code>
         <expected>A1</expected>
     </test>
