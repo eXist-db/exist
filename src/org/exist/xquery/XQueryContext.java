@@ -84,7 +84,6 @@ import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.*;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
@@ -94,8 +93,7 @@ import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -109,14 +107,11 @@ import antlr.collections.AST;
  */
 public class XQueryContext implements BinaryValueManager, Context
 {
-    public static final String                         CONFIGURATION_ELEMENT_NAME                       = "xquery";
-    public static final String                         CONFIGURATION_MODULES_ELEMENT_NAME               = "builtin-modules";
     public static final String                         ENABLE_QUERY_REWRITING_ATTRIBUTE                 = "enable-query-rewriting";
     public static final String                         XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE             = "backwardCompatible";
     public static final String                         XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE = "raise-error-on-failed-retrieval";
 
     //TODO : move elsewhere ?
-    public static final String                         CONFIGURATION_MODULE_ELEMENT_NAME                = "module";
     public static final String                         BUILT_IN_MODULE_URI_ATTRIBUTE                    = "uri";
     public static final String                         BUILT_IN_MODULE_CLASS_ATTRIBUTE                  = "class";
     public static final String                         BUILT_IN_MODULE_SOURCE_ATTRIBUTE                 = "src";
@@ -129,6 +124,7 @@ public class XQueryContext implements BinaryValueManager, Context
     //TODO : move elsewhere ?
     public static final String                         PROPERTY_BUILT_IN_MODULES                        = "xquery.modules";
     public static final String                         PROPERTY_STATIC_MODULE_MAP                       = "xquery.modules.static";
+    public static final String                         PROPERTY_MODULE_PARAMETERS                       = "xquery.modules.parameters";
 
     private static final String                        JAVA_URI_START                                   = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
@@ -1677,7 +1673,7 @@ public class XQueryContext implements BinaryValueManager, Context
             }
             //instantiateModule( namespaceURI, (Class<Module>)mClass );
             // INOTE: expathrepo
-             module = instantiateModule( namespaceURI, (Class<Module>)mClass );
+             module = instantiateModule( namespaceURI, (Class<Module>)mClass, (Map<String, Map<String, List<? extends Object>>>) broker.getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             //LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
         }
         catch( ClassNotFoundException e ) {
@@ -1687,25 +1683,27 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    protected Module instantiateModule( String namespaceURI, Class<Module> mClass )
-    {
+    protected Module instantiateModule( String namespaceURI, Class<Module> mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
 
         try {
             module = mClass.newInstance();
 
-            if( !module.getNamespaceURI().equals( namespaceURI ) ) {
+            //TODO configure module parameters
+
+
+            if(!module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
                 return( null );
             }
 
-            if( ( getPrefixForURI( module.getNamespaceURI() ) == null ) && ( module.getDefaultPrefix().length() > 0 ) ) {
+            if((getPrefixForURI( module.getNamespaceURI() ) == null) && (module.getDefaultPrefix().length() > 0)) {
                 declareNamespace( module.getDefaultPrefix(), module.getNamespaceURI() );
             }
 
-            modules.put( module.getNamespaceURI(), module );
-            allModules.put( module.getNamespaceURI(), module );
-            return( module );
+            modules.put(module.getNamespaceURI(), module);
+            allModules.put(module.getNamespaceURI(), module);
+            return(module);
         }
         catch( InstantiationException e ) {
             LOG.warn( "error while instantiating module class " + mClass.getName(), e );
@@ -3319,7 +3317,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
                 if( module == null ) {
                     // Module does not exist yet, instantiate
-                    instantiateModule( namespaceURI, moduleClass );
+                    instantiateModule( namespaceURI, moduleClass, (Map<String, Map<String, List<? extends Object>>>)config.getProperty(PROPERTY_MODULE_PARAMETERS));
 
                 } else if( ( getPrefixForURI( module.getNamespaceURI() ) == null )
                            && ( module.getDefaultPrefix().length() > 0 ) ) {
@@ -3414,123 +3412,6 @@ public class XQueryContext implements BinaryValueManager, Context
             LOG.debug( "Setting serialization property from pragma: " + pair[0] + " = " + pair[1] );
             properties.setProperty( pair[0], pair[1] );
         }
-    }
-
-
-    /**
-     * Read list of built-in modules from the configuration. This method will only make sure
-     * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
-     *
-     * @param   xquery            configuration root
-     * @param   modulesClassMap   map containing all classes of modules
-     * @param   modulesSourceMap  map containing all source uris to external resources
-     *
-     * @throws  DatabaseConfigurationException
-     */
-    public static void loadModuleClasses( Element xquery, Map<String, Class<?>> modulesClassMap,
-                        Map<String, String> modulesSourceMap ) throws DatabaseConfigurationException
-    {
-        // add the standard function module
-        modulesClassMap.put( Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class );
-
-        // add other modules specified in configuration
-        NodeList builtins = xquery.getElementsByTagName( CONFIGURATION_MODULES_ELEMENT_NAME );
-
-        // search under <builtin-modules>
-        if( builtins.getLength() > 0 ) {
-            Element  elem    = (Element)builtins.item( 0 );
-            NodeList modules = elem.getElementsByTagName( CONFIGURATION_MODULE_ELEMENT_NAME );
-
-            if( modules.getLength() > 0 ) {
-
-                // iterate over all <module src= uri= class=> entries
-                for( int i = 0; i < modules.getLength(); i++ ) {
-
-                    // Get element.
-                    elem = (Element)modules.item( i );
-
-                    // Get attributes uri class and src
-                    String uri    = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE );
-                    String clazz  = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE );
-                    String source = elem.getAttribute( XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE );
-
-                    // uri attribute is the identifier and is always required
-                    if( uri == null ) {
-                        throw( new DatabaseConfigurationException(
-                                "element 'module' requires an attribute 'uri'" ) );
-                    }
-
-                    // either class or source attribute must be present
-                    if( ( clazz == null ) && ( source == null ) ) {
-                        throw( new DatabaseConfigurationException(
-                                "element 'module' requires either an attribute " + "'class' or 'src'" ) );
-                    }
-
-                    if( source != null ) {
-                        // Store src attribute info
-
-                        modulesSourceMap.put( uri, source );
-
-                        if( LOG.isDebugEnabled() ) {
-                            LOG.debug( "Registered mapping for module '" + uri + "' to '" + source + "'" );
-                        }
-                        
-                    } else {
-                        // source class attribute info
-
-                        // Get class of module
-                        Class<?> moduleClass = lookupModuleClass( uri, clazz );
-
-                        // Store class if thw module class actually exists
-                        if( moduleClass != null ) {
-                            modulesClassMap.put( uri, moduleClass );
-                        }
-
-                        if( LOG.isDebugEnabled() ) {
-                            LOG.debug( "Configured module '" + uri + "' implemented in '" + clazz + "'" );
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     *  Returns the Class object associated with the with the given module class name. All
-     * important exceptions are caught. @see org.exist.xquery.Module
-     *
-     * @param uri   namespace of class. For logging purposes only.
-     * @param clazz the fully qualified name of the desired module class.
-     * @return      the module Class object for the module with the specified name.
-     * @throws      DatabaseConfigurationException if the given module class is not an instance
-     *              of org.exist.xquery.Module
-     */
-    private static Class<?> lookupModuleClass( String uri, String clazz ) throws DatabaseConfigurationException
-    {
-        Class<?> mClass = null;
-        
-        try {
-            mClass = Class.forName( clazz );
-
-            if( !( Module.class.isAssignableFrom( mClass ) ) ) {
-                throw( new DatabaseConfigurationException( "Failed to load module: " + uri
-                        + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
-            }
-
-        } catch( ClassNotFoundException e ) {
-
-            // Note: can't throw an exception here since this would create
-            // problems with test cases and jar dependencies
-            LOG.warn( "Configuration problem: failed to load class for module " + uri
-                    + "; class: " + clazz + "; message: " + e.getMessage() );
-
-        } catch( NoClassDefFoundError e ) {
-            LOG.warn( "Module " + uri + " could not be initialized due to a missing "
-                    + "dependancy (NoClassDefFoundError): " + e.getMessage() );
-        }
-        
-        return mClass;
     }
 
 

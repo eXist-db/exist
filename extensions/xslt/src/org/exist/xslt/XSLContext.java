@@ -21,6 +21,7 @@
  */
 package org.exist.xslt;
 
+import java.util.List;
 import java.util.Map;
 
 import org.exist.interpreter.ContextAtExist;
@@ -75,7 +76,7 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
 
                 if( module == null ) {
                     // Module does not exist yet, instantiate
-                    instantiateModule( namespaceURI, moduleClass );
+                    instantiateModule( namespaceURI, moduleClass, (Map<String, Map<String, List<? extends Object>>>) broker.getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
 
                 } else if( ( getPrefixForURI( module.getNamespaceURI() ) == null )
                            && ( module.getDefaultPrefix().length() > 0 ) ) {
