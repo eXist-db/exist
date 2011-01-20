@@ -21,6 +21,8 @@
  */
 package org.exist.versioning.svn.xquery;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -55,8 +57,8 @@ public class SVNModule extends AbstractInternalModule {
             new FunctionDef(SVNUpdate.signature, SVNUpdate.class)
 	};
 
-	public SVNModule() {
-		super(functions);
+	public SVNModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	public String getNamespaceURI() {
