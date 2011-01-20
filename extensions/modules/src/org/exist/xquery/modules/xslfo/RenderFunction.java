@@ -18,13 +18,13 @@
  *  
  *  $Id$
  */
-
 package org.exist.xquery.modules.xslfo;
-
 
 import java.io.ByteArrayInputStream;
 import java.util.Enumeration;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -63,205 +63,200 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class RenderFunction extends BasicFunction {
-	
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(RenderFunction.class);
-	
-	public final static FunctionSignature signatures[] = {
 
-			new FunctionSignature(
-					new QName("render", XSLFOModule.NAMESPACE_URI,
-							XSLFOModule.PREFIX),
-					"Renders a given XSL-FO document. "
-							+ "Returns an xs:base64binary of the result. "
-							+ "Parameters are specified with the structure: "
-							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-							+ "</parameters>. "
-							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
-					new SequenceType[] {
-							new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
-							new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-							new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform") },
-					new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")),
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(RenderFunction.class);
+    public final static FunctionSignature signatures[] = {
 
-			new FunctionSignature(
-					new QName("render", XSLFOModule.NAMESPACE_URI,
-							XSLFOModule.PREFIX),
-					"Renders a given XSL-FO document. "
-							+ "Returns an xs:base64binary of the result. "
-							+ "Parameters are specified with the structure: "
-							+ "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-							+ "</parameters>. "
-							+ "Recognised rendering parameters are: author, title, keywords and dpi.",
-					new SequenceType[] {
-						new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
-						new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-						new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
-						new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "Apache FOP Configuration file") },
-					new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")) };
+        new FunctionSignature(
+            new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
+            "Renders a given XSL-FO document. "
+            + "Returns an xs:base64binary of the result. "
+            + "Parameters are specified with the structure: "
+            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+            + "</parameters>. "
+            + "Recognised rendering parameters are: author, title, keywords and dpi.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+                new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform")
+            },
+            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+        ),
 
-	/**
-	 * Constructor for RenderFunction, which returns a new instance of this
-	 * class.
-	 * 
-	 * @param context
-	 * @param signature
-	 */
-	public RenderFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+        new FunctionSignature(
+            new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
+            "Renders a given XSL-FO document. "
+            + "Returns an xs:base64binary of the result. "
+            + "Parameters are specified with the structure: "
+            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+            + "</parameters>. "
+            + "Recognised rendering parameters are: author, title, keywords and dpi.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+                new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
+                new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "Apache FOP Configuration file")
+            },
+            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+        )
+    };
 
-	/*
-	 * Actual implementation of the rendering process. When a function in this
-	 * module is called, this method is executed with the given inputs. @param
-	 * Sequence[] args (XSL-FO, mime-type, parameters) @param Sequence
-	 * contextSequence (default sequence)
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-	 *      org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		
-		// gather input XSL-FO document
-		// if no input document (empty), return empty result as we need data to
-		// process
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
-		Item inputNode = args[0].itemAt(0);
+    /**
+     * Constructor for RenderFunction, which returns a new instance of this
+     * class.
+     *
+     * @param context
+     * @param signature
+     */
+    public RenderFunction(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-		// get mime-type
-		String mimeType = args[1].getStringValue();
+    /*
+     * Actual implementation of the rendering process. When a function in this
+     * module is called, this method is executed with the given inputs. @param
+     * Sequence[] args (XSL-FO, mime-type, parameters) @param Sequence
+     * contextSequence (default sequence)
+     *
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
+     *      org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-		// get parameters
-		Properties parameters = new Properties();
-		if (!args[2].isEmpty()) {
-			parameters = ModuleUtils.parseParameters(((NodeValue) args[2]
-					.itemAt(0)).getNode());
+        // gather input XSL-FO document
+        // if no input document (empty), return empty result as we need data to
+        // process
+        if(args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
-		}
+        Item inputNode = args[0].itemAt(0);
 
-		try {
-			// setup a transformer handler
-			TransformerHandler handler = TransformerFactoryAllocator
-					.getTransformerFactory(context.getBroker().getBrokerPool())
-					.newTransformerHandler();
-			Transformer transformer = handler.getTransformer();
+        // get mime-type
+        String mimeType = args[1].getStringValue();
 
-			// set the parameters if any
-			if (parameters.size() > 0) {
-				Enumeration keys = parameters.keys();
-				while (keys.hasMoreElements()) {
-					String name = (String) keys.nextElement();
-					String value = parameters.getProperty(name);
-					transformer.setParameter(name, value);
-				}
-			}
+        // get parameters
+        Properties parameters = new Properties();
+        if(!args[2].isEmpty()) {
+            parameters = ModuleUtils.parseParameters(((NodeValue) args[2].itemAt(0)).getNode());
+        }
 
-			// setup the FopFactory
-			FopFactory fopFactory = FopFactory.newInstance();
-			if (args.length == 4 && args[3] != null && !args[3].isEmpty()) {
-				FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(
-						context.getBroker());
-				Configuration cfg = cfgBuilder.buildFromItem(args[3].itemAt(0));
-				fopFactory.setUserConfig(cfg);
-			}
+        try {
+            // setup a transformer handler
+            TransformerHandler handler = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool()).newTransformerHandler();
+            Transformer transformer = handler.getTransformer();
 
-			// setup the foUserAgent, using given parameters held in the
-			// transformer handler
-			FOUserAgent foUserAgent = setupFOUserAgent(fopFactory
-					.newFOUserAgent(), parameters, transformer);
+            // set the parameters if any
+            if(!parameters.isEmpty()) {
+                Enumeration keys = parameters.keys();
 
-			// create new instance of FOP using the mimetype, the created user
-			// agent, and the output stream
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Fop fop = fopFactory.newFop(mimeType, foUserAgent, baos);
+                for(Entry parameter : parameters.entrySet()) {
+                    String name = (String)parameter.getKey();
+                    String value = (String)parameter.getValue();
+                    transformer.setParameter(name, value);
+                }
+            }
 
-			// Obtain FOP's DefaultHandler
-			DefaultHandler dh = fop.getDefaultHandler();
+            // setup the FopFactory
+            FopFactory fopFactory = FopFactory.newInstance();
+            if(args.length == 4 && args[3] != null && !args[3].isEmpty()) {
+                FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(context.getBroker());
+                Configuration cfg = cfgBuilder.buildFromItem(args[3].itemAt(0));
+                fopFactory.setUserConfig(cfg);
+            }
 
-			// process the XSL-FO
-			dh.startDocument();
-			inputNode.toSAX(context.getBroker(), dh, new Properties());
-			dh.endDocument();
+            // setup the foUserAgent, using given parameters held in the
+            // transformer handler
+            FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters, transformer);
 
-			// return the result
-			return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-		} catch (TransformerException te) {
-			throw new XPathException(this, te.getMessageAndLocation(), te);
-		} catch (SAXException se) {
-			throw new XPathException(this, se.getMessage(), se);
-		}
-	}
+            // create new instance of FOP using the mimetype, the created user
+            // agent, and the output stream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Fop fop = fopFactory.newFop(mimeType, foUserAgent, baos);
 
-	/**
-	 * Setup the UserAgent for FOP, from given parameters *
-	 * 
-	 * @param transformer
-	 *            Created based on the XSLT, so containing any parameters to the
-	 *            XSL-FO specified in the XQuery
-	 * @param parameters
-	 *            any user defined parameters to the XSL-FO process
-	 * @return FOUserAgent The generated FOUserAgent to include any parameters
-	 *         passed in
-	 */
-	private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent,
-			Properties parameters, Transformer transformer)
-			throws TransformerException {
+            // Obtain FOP's DefaultHandler
+            DefaultHandler dh = fop.getDefaultHandler();
 
-		// setup the foUserAgent as per the parameters given
-		foUserAgent.setProducer("eXist with Apache FOP");
+            // process the XSL-FO
+            dh.startDocument();
+            inputNode.toSAX(context.getBroker(), dh, new Properties());
+            dh.endDocument();
 
-		if (transformer.getParameter("FOPauthor") != null)
-			foUserAgent.setAuthor(parameters.getProperty("author"));
+            // return the result
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+        } catch(TransformerException te) {
+            throw new XPathException(this, te.getMessageAndLocation(), te);
+        } catch(SAXException se) {
+            throw new XPathException(this, se.getMessage(), se);
+        }
+    }
 
-		if (transformer.getParameter("FOPtitle") != null)
-			foUserAgent.setTitle(parameters.getProperty("title"));
+    /**
+     * Setup the UserAgent for FOP, from given parameters *
+     *
+     * @param transformer
+     *            Created based on the XSLT, so containing any parameters to the
+     *            XSL-FO specified in the XQuery
+     * @param parameters
+     *            any user defined parameters to the XSL-FO process
+     * @return FOUserAgent The generated FOUserAgent to include any parameters
+     *         passed in
+     */
+    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters, Transformer transformer) throws TransformerException {
 
-		if (transformer.getParameter("FOPkeywords") != null)
-			foUserAgent.setTitle(parameters.getProperty("keywords"));
+        // setup the foUserAgent as per the parameters given
+        foUserAgent.setProducer("eXist with Apache FOP");
 
-		if (transformer.getParameter("FOPdpi") != null) {
-			String dpiStr = (String) transformer.getParameter("dpi");
-			try {
-				foUserAgent.setTargetResolution(Integer.parseInt(dpiStr));
-			} catch (NumberFormatException nfe) {
-				throw new TransformerException(
-						"Cannot parse value of \"dpi\" - " + dpiStr
-								+ " to configure FOUserAgent");
-			}
-		}
+        if(transformer.getParameter("FOPauthor") != null) {
+            foUserAgent.setAuthor(parameters.getProperty("author"));
+        }
 
-		return foUserAgent;
-	}
+        if(transformer.getParameter("FOPtitle") != null) {
+            foUserAgent.setTitle(parameters.getProperty("title"));
+        }
 
-	/**
-	 * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
-	 * integration with Nodes passed in from eXist as Configuration files
-	 */
-	private class FopConfigurationBuilder
-			extends
-			org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
-		DBBroker broker = null;
+        if(transformer.getParameter("FOPkeywords") != null) {
+            foUserAgent.setTitle(parameters.getProperty("keywords"));
+        }
 
-		public FopConfigurationBuilder(DBBroker broker) {
-			super();
-			this.broker = broker;
-		}
+        if(transformer.getParameter("FOPdpi") != null) {
+            String dpiStr = (String) transformer.getParameter("dpi");
+            try {
+                foUserAgent.setTargetResolution(Integer.parseInt(dpiStr));
+            } catch(NumberFormatException nfe) {
+                throw new TransformerException("Cannot parse value of \"dpi\" - " + dpiStr + " to configure FOUserAgent");
+            }
+        }
 
-		@SuppressWarnings("unused")
-		public FopConfigurationBuilder(DBBroker broker,
-				final boolean enableNamespaces) {
-			super(enableNamespaces);
-			this.broker = broker;
-		}
+        return foUserAgent;
+    }
 
-		public Configuration buildFromItem(Item item) throws SAXException {
-			SAXConfigurationHandler handler = getHandler();
-			handler.clear();
-			item.toSAX(broker, handler, new Properties());
-			return handler.getConfiguration();
-		}
-	}
+    /**
+     * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
+     * integration with Nodes passed in from eXist as Configuration files
+     */
+    private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
+
+        DBBroker broker = null;
+
+        public FopConfigurationBuilder(DBBroker broker) {
+            super();
+            this.broker = broker;
+        }
+
+        @SuppressWarnings("unused")
+        public FopConfigurationBuilder(DBBroker broker, final boolean enableNamespaces) {
+            super(enableNamespaces);
+            this.broker = broker;
+        }
+
+        public Configuration buildFromItem(Item item) throws SAXException {
+            SAXConfigurationHandler handler = getHandler();
+            handler.clear();
+            item.toSAX(broker, handler, new Properties());
+            return handler.getConfiguration();
+        }
+    }
 }
