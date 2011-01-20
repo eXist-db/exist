@@ -98,6 +98,8 @@ import org.expath.pkg.repo.PackageException;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -1686,11 +1688,12 @@ public class XQueryContext implements BinaryValueManager, Context
     protected Module instantiateModule( String namespaceURI, Class<Module> mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
 
+
+
         try {
-            module = mClass.newInstance();
 
-            //TODO configure module parameters
-
+            Constructor<Module> cnstr = mClass.getConstructor(Map.class);
+            module = cnstr.newInstance(moduleParameters);
 
             if(!module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
@@ -1703,18 +1706,19 @@ public class XQueryContext implements BinaryValueManager, Context
 
             modules.put(module.getNamespaceURI(), module);
             allModules.put(module.getNamespaceURI(), module);
-            return(module);
+        } catch(InstantiationException ie) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), ie);
+        } catch(IllegalAccessException iae) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), iae);
+        } catch(XPathException xpe) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), xpe);
+        } catch(NoSuchMethodException nsme) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), nsme);
+        } catch(InvocationTargetException ite) {
+            LOG.warn("error while instantiating module class " + mClass.getName(), ite);
         }
-        catch( InstantiationException e ) {
-            LOG.warn( "error while instantiating module class " + mClass.getName(), e );
-        }
-        catch( IllegalAccessException e ) {
-            LOG.warn( "error while instantiating module class " + mClass.getName(), e );
-        }
-        catch( XPathException e ) {
-            LOG.warn( "error while instantiating module class " + mClass.getName(), e );
-        }
-        return( null );
+        
+        return module;
     }
 
 

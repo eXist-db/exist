@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.compression;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -55,8 +57,8 @@ public class CompressionModule extends AbstractInternalModule {
         new FunctionDef(UnTarFunction.signatures[0], UnTarFunction.class)
     };
 
-    public CompressionModule() {
-        super(functions);
+    public CompressionModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     @Override

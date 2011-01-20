@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.session;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
@@ -69,9 +71,9 @@ public class SessionModule extends AbstractInternalModule
 		new FunctionDef( GetExists.signature, GetExists.class )
 	};
 	
-	public SessionModule() throws XPathException 
+	public SessionModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException
 	{
-		super( functions );
+		super(functions,  parameters);
 		// predefined module global variables:
 		declareVariable( SESSION_VAR, null );
 	}

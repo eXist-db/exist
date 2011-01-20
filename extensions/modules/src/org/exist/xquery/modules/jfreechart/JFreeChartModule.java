@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.jfreechart;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -50,8 +52,8 @@ public class JFreeChartModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX);
 
-    public JFreeChartModule() throws XPathException {
-        super(functions);
+    public JFreeChartModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+        super(functions, parameters);
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
     }

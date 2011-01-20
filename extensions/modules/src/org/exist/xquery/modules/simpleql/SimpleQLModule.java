@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.simpleql;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -44,8 +46,8 @@ public class SimpleQLModule extends AbstractInternalModule {
         new FunctionDef(ParseSimpleQL.signature, ParseSimpleQL.class)
     };
     
-    public SimpleQLModule() {
-        super(functions);
+    public SimpleQLModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     public String getNamespaceURI() {

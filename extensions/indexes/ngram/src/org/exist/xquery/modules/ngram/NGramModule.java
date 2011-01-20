@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.ngram;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -47,8 +49,8 @@ public class NGramModule extends AbstractInternalModule {
         new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
     };
 
-    public NGramModule() {
-        super(functions, false);
+    public NGramModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters, false);
     }
 
     @Override
@@ -66,9 +68,8 @@ public class NGramModule extends AbstractInternalModule {
         return "A module for NGram-based indexed searching.";
     }
 
-   @Override
-   public String getReleaseVersion() {
+    @Override
+    public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
 }

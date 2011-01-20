@@ -27,6 +27,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -71,8 +73,8 @@ public class ImageModule extends AbstractInternalModule {
 		
 	};
 	
-	public ImageModule() {
-		super(functions);
+	public ImageModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	public String getNamespaceURI() {

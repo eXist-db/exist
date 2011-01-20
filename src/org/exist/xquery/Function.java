@@ -76,8 +76,15 @@ public abstract class Function extends PathExpr {
 	}
 
 	protected Function(XQueryContext context) {
-		super(context);
+            super(context);
 	}
+
+        /**
+         * Returns the module to which this function belongs
+         */
+        protected Module getParentModule() {
+            return context.getModule(mySignature.getName().getNamespaceURI());
+        }
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#returnsType()

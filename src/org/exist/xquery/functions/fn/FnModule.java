@@ -22,6 +22,8 @@
 package org.exist.xquery.functions.fn;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.Function;
@@ -205,8 +207,8 @@ public class FnModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public FnModule() {
-		super(functions, true);
+        public FnModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+            super(functions, parameters, true);
 	}
 	
 	/* (non-Javadoc)

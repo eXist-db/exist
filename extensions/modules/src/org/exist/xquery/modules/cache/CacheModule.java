@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.cache;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -38,35 +40,39 @@ public class CacheModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cache";
 
-	public final static String PREFIX = "cache";
+    public final static String PREFIX = "cache";
     public final static String INCLUSION_DATE = "2009-03-04";
     public final static String RELEASED_IN_VERSION = "eXist-1.4";
         
-	private final static FunctionDef[] functions = {
-		new FunctionDef(PutFunction.signatures[0], PutFunction.class),
-		new FunctionDef(GetFunction.signatures[0], GetFunction.class),
-		new FunctionDef(CacheFunction.signatures[0], CacheFunction.class),
-		new FunctionDef(ClearFunction.signatures[0], ClearFunction.class),
-		new FunctionDef(ClearFunction.signatures[1], ClearFunction.class),
-		new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class)
-	};
+    private final static FunctionDef[] functions = {
+        new FunctionDef(PutFunction.signatures[0], PutFunction.class),
+        new FunctionDef(GetFunction.signatures[0], GetFunction.class),
+        new FunctionDef(CacheFunction.signatures[0], CacheFunction.class),
+        new FunctionDef(ClearFunction.signatures[0], ClearFunction.class),
+        new FunctionDef(ClearFunction.signatures[1], ClearFunction.class),
+        new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class)
+    };
 
-	public CacheModule() {
-            super(functions);
-	}
+    public CacheModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
+    }
 
-	public String getNamespaceURI() {
-		return NAMESPACE_URI;
-	}
+    @Override
+    public String getNamespaceURI() {
+            return NAMESPACE_URI;
+    }
 
-	public String getDefaultPrefix() {
-		return PREFIX;
-	}
+    @Override
+    public String getDefaultPrefix() {
+            return PREFIX;
+    }
 
-	public String getDescription() {
-		return "A module for accessing a global cache for stored/shared data between sessions";
-	}
+    @Override
+    public String getDescription() {
+            return "A module for accessing a global cache for stored/shared data between sessions";
+    }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }

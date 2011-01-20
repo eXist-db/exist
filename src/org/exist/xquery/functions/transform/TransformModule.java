@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.transform;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -45,8 +47,8 @@ public class TransformModule extends AbstractInternalModule {
         new FunctionDef(Transform.signatures[3], Transform.class)
     };
 	
-	public TransformModule() {
-		super(functions);
+	public TransformModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	/* (non-Javadoc)

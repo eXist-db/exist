@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.mail.Folder;
@@ -92,9 +94,9 @@ public class MailModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public MailModule()
+	public MailModule(Map<String, Map<String, List<? extends Object>>> parameters)
 	{
-		super( functions );
+		super( functions, parameters );
 	}
 	
 

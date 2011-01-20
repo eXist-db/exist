@@ -22,6 +22,8 @@
 package org.exist.xquery.functions.xmldb;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -121,8 +123,8 @@ public class XMLDBModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public XMLDBModule() {
-        super(functions, true);
+    public XMLDBModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters, true);
     }
     
         /* (non-Javadoc)

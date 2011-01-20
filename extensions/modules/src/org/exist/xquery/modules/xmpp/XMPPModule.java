@@ -17,6 +17,8 @@
 package org.exist.xquery.modules.xmpp;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
@@ -67,9 +69,9 @@ public class XMPPModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public XMPPModule()
+	public XMPPModule(Map<String, Map<String, List<? extends Object>>> parameters)
 	{
-		super( functions );
+		super( functions, parameters );
 	}
 	
 

@@ -1,5 +1,7 @@
 package org.exist.xquery.modules.xmlcalabash;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -14,8 +16,8 @@ public class XMLCalabashModule extends AbstractInternalModule {
             new FunctionDef(ProcessFunction.signature, ProcessFunction.class)
         };
 
-    public XMLCalabashModule() {
-        super(functions);
+    public XMLCalabashModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     public String getNamespaceURI() {

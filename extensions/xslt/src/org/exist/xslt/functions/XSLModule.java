@@ -21,6 +21,8 @@
  */
 package org.exist.xslt.functions;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -64,8 +66,8 @@ public class XSLModule extends AbstractInternalModule {
 	/**
 	 * @param functions
 	 */
-	public XSLModule() {
-		super(functions);
+	public XSLModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	/* (non-Javadoc)

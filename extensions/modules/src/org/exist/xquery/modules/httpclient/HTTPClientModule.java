@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -59,9 +61,9 @@ public class HTTPClientModule extends AbstractInternalModule
     };
 	
 
-    public HTTPClientModule()
+    public HTTPClientModule(Map<String, Map<String, List<? extends Object>>> parameters)
     {
-        super( functions );
+        super( functions, parameters );
     }
 	
 

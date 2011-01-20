@@ -7,6 +7,8 @@
  */
 package ro.kuberam.xcrypt;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
@@ -31,8 +33,8 @@ public class XcryptModule extends AbstractInternalModule {
                 new FunctionDef(ValidateSignatureFunction.signature, ValidateSignatureFunction.class)
 	};
 	
-	public XcryptModule() throws XPathException {
-		super(functions);
+	public XcryptModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+		super(functions, parameters);
 	}
 
 	public String getNamespaceURI() {

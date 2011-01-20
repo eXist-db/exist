@@ -32,6 +32,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 
@@ -73,9 +75,9 @@ public class SQLModule extends AbstractInternalModule
     public final static String         CONNECTIONS_CONTEXTVAR         = "_eXist_sql_connections";
     public final static String         PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 
-    public SQLModule()
+    public SQLModule(Map<String, Map<String, List<? extends Object>>> parameters)
     {
-        super( functions );
+        super( functions, parameters );
     }
 
     @Override public String getNamespaceURI()

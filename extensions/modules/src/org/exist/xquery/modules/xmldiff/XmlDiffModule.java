@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
@@ -41,8 +43,8 @@ public class XmlDiffModule extends AbstractInternalModule {
        new FunctionDef(Compare.signature, Compare.class),       
     };
 
-    public XmlDiffModule() throws XPathException {
-        super(functions);        
+    public XmlDiffModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+        super(functions, parameters);
     }
     
         /* (non-Javadoc)

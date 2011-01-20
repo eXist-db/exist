@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.oracle;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -54,8 +56,8 @@ public class OracleModule extends AbstractInternalModule{
         new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class)
     };
 	
-	public OracleModule() {
-        super(functions);
+	public OracleModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
 	@Override

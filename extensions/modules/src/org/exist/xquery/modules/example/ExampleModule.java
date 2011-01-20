@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.modules.example;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -41,8 +43,8 @@ public class ExampleModule extends AbstractInternalModule {
 		new FunctionDef(EchoFunction.signature, EchoFunction.class)
 	};
 	
-	public ExampleModule() {
-		super(functions);
+	public ExampleModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	public String getNamespaceURI() {

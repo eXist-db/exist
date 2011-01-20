@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.sort;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -41,8 +43,8 @@ public class SortModule extends AbstractInternalModule {
         new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
     };
 
-    public SortModule() {
-        super(functions, false);
+    public SortModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters, false);
     }
 
     @Override

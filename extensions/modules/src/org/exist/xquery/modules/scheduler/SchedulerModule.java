@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.scheduler;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -61,9 +63,9 @@ public class SchedulerModule extends AbstractInternalModule
         new FunctionDef( ResumeScheduledJob.signature, ResumeScheduledJob.class )
     };
 
-    public SchedulerModule()
+    public SchedulerModule(Map<String, Map<String, List<? extends Object>>> parameters)
     {
-        super( functions );
+        super( functions, parameters );
     }
 
     public String getNamespaceURI()

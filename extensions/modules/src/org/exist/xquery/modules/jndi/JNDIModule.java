@@ -23,6 +23,8 @@ package org.exist.xquery.modules.jndi;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.naming.Context;
@@ -81,9 +83,9 @@ public class JNDIModule extends AbstractInternalModule
 	private static long 		currentContextID 		= System.currentTimeMillis();
 
 
-	public JNDIModule() 
+	public JNDIModule(Map<String, Map<String, List<? extends Object>>> parameters)
 	{
-		super( functions );
+		super( functions, parameters );
 	}
 
 	public String getNamespaceURI() 
