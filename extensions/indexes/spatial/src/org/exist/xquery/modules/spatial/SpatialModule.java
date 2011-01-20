@@ -24,6 +24,8 @@
  */
 package org.exist.xquery.modules.spatial;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -82,8 +84,8 @@ public class SpatialModule extends AbstractInternalModule {
         new FunctionDef(FunGMLProducers.signatures[11], FunGMLProducers.class)
     };
 
-    public SpatialModule() {
-        super(functions);
+    public SpatialModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     @Override

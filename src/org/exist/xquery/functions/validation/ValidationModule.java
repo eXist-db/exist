@@ -22,6 +22,8 @@
 
 package org.exist.xquery.functions.validation;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -75,8 +77,8 @@ public class ValidationModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);
     
-    public ValidationModule() throws XPathException {
-        super(functions);
+    public ValidationModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+        super(functions, parameters);
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
     }

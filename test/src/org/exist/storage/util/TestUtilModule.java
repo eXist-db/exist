@@ -21,6 +21,8 @@
  */
 package org.exist.storage.util;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -42,8 +44,8 @@ public class TestUtilModule extends AbstractInternalModule {
         new FunctionDef(PauseFunction.signature, PauseFunction.class)
     };
 
-    public TestUtilModule() {
-        super(functions);
+    public TestUtilModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     public String getNamespaceURI() {

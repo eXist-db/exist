@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.text;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.functions.fn.FunMatches;
@@ -72,8 +74,8 @@ public class TextModule extends AbstractInternalModule {
     /**
      * 
      */
-    public TextModule() {
-        super(functions);
+    public TextModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
     
         /* (non-Javadoc)

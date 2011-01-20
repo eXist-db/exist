@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.datetime;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -57,9 +59,9 @@ public class DateTimeModule extends AbstractInternalModule
     };
 
 
-    public DateTimeModule()
+    public DateTimeModule(Map<String, Map<String, List<? extends Object>>> parameters)
     {
-        super(functions);
+        super(functions, parameters);
     }
 
     @Override

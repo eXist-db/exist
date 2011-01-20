@@ -27,6 +27,8 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -61,8 +63,8 @@ public class CounterModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
         new QName("exception-message", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
-	public CounterModule() throws XPathException {
-		super(functions, true);
+	public CounterModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+		super(functions, parameters, true);
 		declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
 	}

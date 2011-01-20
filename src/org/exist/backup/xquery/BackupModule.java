@@ -21,6 +21,8 @@
  */
 package org.exist.backup.xquery;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -44,9 +46,9 @@ public class BackupModule extends AbstractInternalModule
         new FunctionDef( RetrieveBackup.signature, RetrieveBackup.class )
     };
 
-    public BackupModule()
+    public BackupModule(Map<String, Map<String, List<? extends Object>>> parameters)
     {
-        super( functions, true );
+        super( functions, parameters, true );
     }
 
     public String getNamespaceURI()

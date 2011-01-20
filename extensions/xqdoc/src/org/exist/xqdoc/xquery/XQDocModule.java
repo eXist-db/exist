@@ -1,5 +1,7 @@
 package org.exist.xqdoc.xquery;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -16,8 +18,8 @@ public class XQDocModule extends AbstractInternalModule {
         new FunctionDef(Scan.signatures[1], Scan.class)
     };
 
-    public XQDocModule() {
-        super(functions, true);
+    public XQDocModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters, true);
     }
 
     @Override

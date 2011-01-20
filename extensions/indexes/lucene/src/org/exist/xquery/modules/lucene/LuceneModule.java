@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.lucene;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -48,22 +50,26 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Optimize.signature, Optimize.class)
     };
 
-    public LuceneModule() {
-        super(functions, false);
+    public LuceneModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters, false);
     }
 
+    @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
 
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getDescription() {
         return "A module for full text indexed searching based on Lucene.";
     }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }

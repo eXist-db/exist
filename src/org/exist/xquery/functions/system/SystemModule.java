@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.system;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -74,8 +76,8 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class)
     };
 	
-	public SystemModule() {
-		super(functions);
+	public SystemModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super(functions, parameters);
 	}
 
 	public String getNamespaceURI() {

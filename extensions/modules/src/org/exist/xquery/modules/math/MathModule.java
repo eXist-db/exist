@@ -19,6 +19,8 @@
  */
 package org.exist.xquery.modules.math;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -59,8 +61,8 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
     };
     
-    public MathModule() {
-        super(functions);
+    public MathModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
     
     public String getNamespaceURI() {

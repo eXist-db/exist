@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -47,8 +49,8 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class)
     };
 
-    public SecurityManagerModule() {
-        super(functions);
+    public SecurityManagerModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
     }
 
     @Override

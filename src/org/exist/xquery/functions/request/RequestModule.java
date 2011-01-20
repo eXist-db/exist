@@ -22,6 +22,8 @@
 package org.exist.xquery.functions.request;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
@@ -79,8 +81,8 @@ public class RequestModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public RequestModule() throws XPathException {
-		super(functions, true);
+    public RequestModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+		super(functions, parameters, true);
 		// predefined module global variables:
 		declareVariable(REQUEST_VAR, null);
 	}

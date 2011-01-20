@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
@@ -70,9 +72,9 @@ public class FileModule extends AbstractInternalModule
 	};
 	
 	
-	public FileModule() 
+	public FileModule(Map<String, Map<String, List<? extends Object>>> parameters)
 	{
-		super( functions );
+		super( functions, parameters );
 	}
 	
 

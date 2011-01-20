@@ -21,6 +21,8 @@
 
 package org.exist.xquery.modules.xslfo;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -31,31 +33,36 @@ import org.exist.xquery.FunctionDef;
  */
 public class XSLFOModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
-	public final static String PREFIX = "xslfo";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
+    public final static String PREFIX = "xslfo";
     public final static String INCLUSION_DATE = "2007-10-04";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
-	private final static FunctionDef[] functions = {
-			new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
-			new FunctionDef(RenderFunction.signatures[1], RenderFunction.class) };
+    private final static FunctionDef[] functions = {
+        new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
+        new FunctionDef(RenderFunction.signatures[1], RenderFunction.class)
+    };
 
-	public XSLFOModule() {
-		super(functions);
-	}
+    public XSLFOModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        super(functions, parameters);
+    }
 
-	public String getNamespaceURI() {
-		return NAMESPACE_URI;
-	}
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 
-	public String getDefaultPrefix() {
-		return PREFIX;
-	}
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
 
-	public String getDescription() {
-		return "A module for performing XSL-FO transformations";
-	}
+    @Override
+    public String getDescription() {
+        return "A module for performing XSL-FO transformations";
+    }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }

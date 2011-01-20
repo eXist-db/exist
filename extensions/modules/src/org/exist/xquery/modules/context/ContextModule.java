@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.context;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
@@ -49,8 +51,8 @@ public class ContextModule extends AbstractInternalModule {
 		new FunctionDef( GetID.signatures[0], GetID.class )
 	};
 
-	public ContextModule() {
-		super( signatures );
+	public ContextModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+		super( signatures, parameters );
 	}
 
 	public String getNamespaceURI() 

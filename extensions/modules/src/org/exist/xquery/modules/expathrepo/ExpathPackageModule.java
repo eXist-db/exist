@@ -28,6 +28,8 @@ import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Repository;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -55,8 +57,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
         new FunctionDef(RemoveFunction.signature, RemoveFunction.class)
     };
 
-    public ExpathPackageModule() throws XPathException {
-        super(functions);
+    public ExpathPackageModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+        super(functions, parameters);
         _repo = getRepo();
     }
 

@@ -19,6 +19,8 @@
 package org.exist.xquery.modules.memcached;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import net.spy.memcached.MemcachedClient;
 
@@ -66,9 +68,9 @@ public class MemcachedModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public MemcachedModule()
+	public MemcachedModule(Map<String, Map<String, List<? extends Object>>> parameters)
 	{
-		super( functions );
+		super( functions, parameters );
 	}
 	
 
