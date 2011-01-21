@@ -34,6 +34,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -200,7 +201,7 @@ public class Configurator {
         ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
         Set<String> properties = configuration.getProperties();
 
-        if (properties.size() == 0) {
+        if(properties.isEmpty()) {
             //LOG.info("no properties for "+instance.getClass()+" @ "+configuration);
             return configuration;
         }
@@ -313,6 +314,7 @@ public class Configurator {
                         list = new ArrayList<Configurable>(confs.size());
                         field.set(instance, list);
                     }
+                    
                     if (confs != null) {
                         //remove & update
                         for (Iterator<Configurable> iterator = list.iterator() ; iterator.hasNext() ; ) {
@@ -365,7 +367,25 @@ public class Configurator {
                                         }
                                     }
                                 }
-                            } else {
+                            } else { 
+                            	Type genericType = field.getGenericType();
+                            	if (genericType != null) {
+                            		if ("java.util.List<java.lang.String>".equals(genericType.toString())) {
+                                        String value = conf.getValue();
+                                        if (value != null) {
+                                            Method method = searchForAddMethod(instance.getClass(), confName);
+                                            if (method != null) {
+                                                try {
+                                                    method.invoke(instance, value);
+                                                    continue;
+                                                } catch (Exception e) {
+                                                    method = null;
+                                                }
+                                            }
+                                        }
+                            		}
+                            	}
+                            	
                                 //TODO: AddMethod with Configuration argument
                             }
                             String id = conf.getProperty(Configuration.ID);
@@ -391,8 +411,15 @@ public class Configurator {
                                 	} catch (EXistException e) {
                                 		//ignore if database starting-up
 									}
-                                	if (db != null) 
-                                		((Startable) obj).startUp(db.get(null));
+                                	if (db != null) {
+                                		DBBroker broker = null;
+                                		try {
+                                			broker = db.get(null);
+                                			((Startable) obj).startUp(broker);
+                                		} finally {
+                                			db.release(broker);
+                                		}
+                                	}
                                 }
 
                                 list.add( obj );
