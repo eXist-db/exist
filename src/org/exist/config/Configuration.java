@@ -63,6 +63,8 @@ public interface Configuration {
 
 	public String getName();
 
+	public String getValue();
+
 	public ElementAtExist getElement();
 
 	public void checkForUpdates(ElementAtExist document);

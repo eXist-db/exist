@@ -69,6 +69,11 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     @Override
+    public String getValue() {
+        return getElement().getNodeValue();
+    }
+
+    @Override
     public Configuration getConfiguration(String name) {
         if (getLocalName().equals(name)) {
             return this;
