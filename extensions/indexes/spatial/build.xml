@@ -26,22 +26,22 @@
 	    <echo message="------------------------------------------------------"/>
 	    <echo message="Downloading libraries required by the spatial index..."/>
 	    <echo message="------------------------------------------------------"/>
-		<get src="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1-M3/geoapi-nogenerics-2.1-M3.jar" 
-			dest="${lib.dir}/geoapi-nogenerics-2.1-M3.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-api/2.4-M1/gt2-api-2.4-M1.jar" 
-			dest="${lib.dir}/gt2-api-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-epsg-extension/2.4-M3/gt2-epsg-extension-2.4-M3.jar" 
-			dest="${lib.dir}/gt2-epsg-extension-2.4-M3.jar" verbose="true" usetimestamp="true" />	
-	    <get src="http://lists.refractions.net/m2/org/geotools/gt2-epsg-wkt/2.4-M1/gt2-epsg-wkt-2.4-M1.jar" 
-			dest="${lib.dir}/gt2-epsg-wkt-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-main/2.4-M1/gt2-main-2.4-M1.jar"
-			dest="${lib.dir}/gt2-main-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-metadata/2.4-M1/gt2-metadata-2.4-M1.jar" 
-			dest="${lib.dir}/gt2-metadata-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-referencing/2.4-M1/gt2-referencing-2.4-M1.jar" 
-			dest="${lib.dir}/gt2-referencing-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://lists.refractions.net/m2/org/geotools/gt2-xml/2.4-M1/gt2-xml-2.4-M1.jar" 
-			dest="${lib.dir}/gt2-xml-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1.1/geoapi-nogenerics-2.1.1.jar" 
+			dest="${lib.dir}/geoapi-nogenerics-2.1.1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-api/2.4.5/gt2-api-2.4.5.jar" 
+			dest="${lib.dir}/gt2-api-2.4.5.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-epsg-extension/2.4.5/gt2-epsg-extension-2.4.5.jar" 
+			dest="${lib.dir}/gt2-epsg-extension-2.4.5.jar" verbose="true" usetimestamp="true" />	
+	    <get src="http://maven.geotools.fr/repository/org/geotools/gt2-epsg-wkt/2.4.5/gt2-epsg-wkt-2.4.5.jar" 
+			dest="${lib.dir}/gt2-epsg-wkt-2.4.5.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-main/2.4.5/gt2-main-2.4.5.jar"
+			dest="${lib.dir}/gt2-main-2.4.5.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-metadata/2.4.5/gt2-metadata-2.4.5.jar" 
+			dest="${lib.dir}/gt2-metadata-2.4.5.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-referencing/2.4.5/gt2-referencing-2.4.5.jar" 
+			dest="${lib.dir}/gt2-referencing-2.4.5.jar" verbose="true" usetimestamp="true" />
+		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-xml/2.4.5/gt2-xml-2.4.5.jar" 
+			dest="${lib.dir}/gt2-xml-2.4.5.jar" verbose="true" usetimestamp="true" />
 		<!-- hsqldb-1.8.0.7.jar -->
 		<get src="http://maven.geotools.fr/repository/javax/units/jsr108/0.01/jsr108-0.01.jar"
 			dest="${lib.dir}/jsr108-0.01.jar" verbose="true" usetimestamp="true" />
