@@ -100,7 +100,7 @@ declare function local:upload() as element()
      return
        for $file in $files[contains(.,'.xar')]
        let $name := substring-before($file,'.xar')
-       let $package := document(concat($repo-coll,'/',$name,'.xml'))
+       let $package := doc(concat($repo-coll,'/',$name,'.xml'))
        return
         if ($package//repo:type eq 'library') then
 
@@ -145,7 +145,7 @@ declare function local:upload() as element()
      return
        for $file in $files[contains(.,'.xar')]
        let $name := substring-before($file,'.xar')
-       let $package := document(concat($repo-coll,'/',$name,'.xml'))
+       let $package := doc(concat($repo-coll,'/',$name,'.xml'))
        return
         if ($package//repo:type eq 'application') then
         <tr>
