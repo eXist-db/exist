@@ -278,7 +278,7 @@
     <!--
         Special targets for image module
     -->
-    <target name="prepare-image" if="include.module.image.tika">
+    <target name="prepare-image" if="${include.module.image.tika}">
         <echo message="--------------------------------------------------"/>
         <echo message="Downloading libraries required by the image module"/>
         <echo message="--------------------------------------------------"/>
