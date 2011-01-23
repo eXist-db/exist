@@ -1,4 +1,4 @@
-/* Rev. 473
+/* Rev. 478
 
 Copyright (C) 2008-2011 <agenceXML> - Alain COUTHURES
 Contact at : <info@agencexml.com>
@@ -65,12 +65,12 @@ var Core = {
     	return inArray(className, (cn && cn.split(" ")) || []);
     },
     initHover : function(element) {
-        Event.attach(element, "mouseover", function(event) {
-            Core.setClass(Event.getTarget(event), "hover", true);
+        XSLTFormsEvent.attach(element, "mouseover", function(event) {
+            Core.setClass(XSLTFormsEvent.getTarget(event), "hover", true);
         } );
 
-        Event.attach(element, "mouseout", function(event) {
-            Core.setClass(Event.getTarget(event), "hover", false);
+        XSLTFormsEvent.attach(element, "mouseout", function(event) {
+            Core.setClass(XSLTFormsEvent.getTarget(event), "hover", false);
         } );
     },
     getEventPos : function(ev) {
@@ -801,52 +801,52 @@ var Dialog = {
 
 		
 
-var Event = {
+var XSLTFormsEvent = {
     cache :null,
     add_ : function() {
-        if (!Event.cache) {
-            Event.cache = [];
-            Event.attach(window, "unload", Event.flush_);
+        if (!XSLTFormsEvent.cache) {
+            XSLTFormsEvent.cache = [];
+            XSLTFormsEvent.attach(window, "unload", XSLTFormsEvent.flush_);
         }
 
-        Event.cache.push(arguments);
+        XSLTFormsEvent.cache.push(arguments);
     },
     flush_ : function() {
-				if (!Event.cache) return;
-        for (var i = Event.cache.length - 1; i >= 0; i--) {
-            var item = Event.cache[i];
-            Event.detach(item[0], item[1], item[2], item[3]);
+				if (!XSLTFormsEvent.cache) return;
+        for (var i = XSLTFormsEvent.cache.length - 1; i >= 0; i--) {
+            var item = XSLTFormsEvent.cache[i];
+            XSLTFormsEvent.detach(item[0], item[1], item[2], item[3]);
         }
         
-        if (Event.onunload) {
-            Event.onunload();
+        if (XSLTFormsEvent.onunload) {
+            XSLTFormsEvent.onunload();
         }
         
-        Event.onunload = null;
+        XSLTFormsEvent.onunload = null;
     },
     onunload : null
 };
 
 if (Core.isIE) {
-    Event.attach = function(target, name, handler, phase) {
+    XSLTFormsEvent.attach = function(target, name, handler, phase) {
     	var func = function(evt) { handler.call(window.event.srcElement, evt); };
         target.attachEvent("on" + name, func);
         this.add_(target, name, func, phase);
     };
 
-    Event.detach = function(target, name, handler, phase) {
+    XSLTFormsEvent.detach = function(target, name, handler, phase) {
         target.detachEvent("on" + name, handler);
     };
 
-    Event.getTarget = function() {
+    XSLTFormsEvent.getTarget = function() {
         return window.event.srcElement;
     };
     
-    Event.dispatch = function(target, name) {
+    XSLTFormsEvent.dispatch = function(target, name) {
         target.fireEvent("on" + name, document.createEventObject());
     };
 } else {
-    Event.attach = function(target, name, handler, phase) {
+    XSLTFormsEvent.attach = function(target, name, handler, phase) {
         if (target == window && !window.addEventListener) {
             target = document;
         }
@@ -855,7 +855,7 @@ if (Core.isIE) {
         this.add_(target, name, handler, phase);
     };
     
-    Event.detach = function(target, name, handler, phase) {
+    XSLTFormsEvent.detach = function(target, name, handler, phase) {
         if (target == window && !window.addEventListener) {
             target = document;
         }
@@ -863,11 +863,11 @@ if (Core.isIE) {
         target.removeEventListener(name, handler, phase);
     };
 
-    Event.getTarget = function(ev) {
+    XSLTFormsEvent.getTarget = function(ev) {
         return ev.target;
     };
     
-    Event.dispatch = function(target, name) {
+    XSLTFormsEvent.dispatch = function(target, name) {
         var event = document.createEvent("Event");
         event.initEvent(name, true, true);
         target.dispatchEvent(event);
@@ -1040,9 +1040,9 @@ var NumberList = function(parent, className, input, min, max, minlengh) {
 
     for (var i = 0; i < 7; i++) {
         this.createChild(" ", function(event) {
-            list.input.value = Event.getTarget(event).childNodes[0].nodeValue;
+            list.input.value = XSLTFormsEvent.getTarget(event).childNodes[0].nodeValue;
             list.close();
-            Event.dispatch(list.input, "change");
+            XSLTFormsEvent.dispatch(list.input, "change");
         } );
     }
     
@@ -1065,10 +1065,10 @@ NumberList.prototype.createChild = function(content, handler, handler2) {
     Core.initHover(child);
 
     if (handler2) {
-        Event.attach(child, "mousedown", handler);
-        Event.attach(child, "mouseup", handler2);
+        XSLTFormsEvent.attach(child, "mousedown", handler);
+        XSLTFormsEvent.attach(child, "mouseup", handler2);
     } else {
-        Event.attach(child, "click", handler);
+        XSLTFormsEvent.attach(child, "click", handler);
     }
 };
     
@@ -1166,7 +1166,7 @@ function assert(condition, message) {
         }
 
         if (this.callstack) {
-            for (var i in this.callstack) {
+            for (var i = 0, len = this.callstack.length; i < len; i++) {
                 DebugConsole.write("> " + this.callstack[i]);
             }
         }
@@ -1361,7 +1361,7 @@ var xforms = {
 		
 
 	profiling : function() {
-		var s = "XSLTForms Version Id: Rev. 473\n";
+		var s = "XSLTForms Version Id: Rev. 478\n";
 		s += "\nLoading Time: " + this.loadingtime + "ms";
 		s += "\nRefresh Counter: " + this.refreshcount;
 		s += "\nCumulative Refresh Time: " + this.refreshtime + "ms";
@@ -1400,23 +1400,16 @@ var xforms = {
 
 		document.onhelp = new Function("return false;");
 		window.onhelp = new Function("return false;");
-		Event.attach(document, "keydown", function(evt) {
+		XSLTFormsEvent.attach(document, "keydown", function(evt) {
 			if (evt.keyCode == 112) {
 				xforms.profiling();
-				event.stopPropagation();
-				event.preventDefault();
+				evt.stopPropagation();
+				evt.preventDefault();
 				return false;
 			}
 		});
-		Event.attach(document, "keypress", function(evt) {
-			if (evt.keyCode == 112) {
-				event.stopPropagation();
-				event.preventDefault();
-				return false;
-			}
-		});
-		Event.attach(b, "click", function(evt) {
-			var target = Event.getTarget(evt);
+		XSLTFormsEvent.attach(b, "click", function(evt) {
+			var target = XSLTFormsEvent.getTarget(evt);
 			var parent = target;
 			
 			while (parent && parent.nodeType == NodeType.ELEMENT) {
@@ -1445,7 +1438,7 @@ var xforms = {
 			}
 		} );
 
-		Event.onunload = function() {
+		XSLTFormsEvent.onunload = function() {
 			xforms.close();
 		};
 
@@ -1472,12 +1465,12 @@ var xforms = {
 			xforms.body = null;
 			xforms.cont = 0;
 			xforms.dispose(document.documentElement);
-			//Event.flush_();
-	    if (Event.cache) 
+			//XSLTFormsEvent.flush_();
+	    if (XSLTFormsEvent.cache) 
 
-	        for (var i = Event.cache.length - 1; i >= 0; i--) {
-	            var item = Event.cache[i];
-	            Event.detach(item[0], item[1], item[2], item[3]);
+	        for (var i = XSLTFormsEvent.cache.length - 1; i >= 0; i--) {
+	            var item = XSLTFormsEvent.cache[i];
+	            XSLTFormsEvent.detach(item[0], item[1], item[2], item[3]);
 	        }
 
 			Schema.all = {};
@@ -1791,7 +1784,7 @@ var IdManager = {
 			return res;
     },
     clear : function() {
-        for (var i in this.data) {
+        for (var i = 0, len = this.data.length; i < len; i++) {
             this.data[i] = null;
         }
         
@@ -3147,7 +3140,7 @@ XFInsert.prototype.run = function(element, ctx) {
 			parent = nodes[0].nodeType == NodeType.DOCUMENT? nodes[0] : nodes[0].nodeType == NodeType.ATTRIBUTE? nodes[0].ownerDocument ? nodes[0].ownerDocument : nodes[0].selectSingleNode("..") : nodes[0].parentNode;
 	        
 			if (parent.nodeType != NodeType.DOCUMENT && node.nodeType != NodeType.ATTRIBUTE) {
-				res = this.at? Math.round(numberValue(this.at.evaluate(new ExprContext(ctx, 1, nodes)))) - 1: nodes.length - 1;
+				res = this.at? Math.round(numberValue(this.at.evaluate(new ExprContext(ctx, 1, nodes)))) + i - 1: nodes.length - 1;
 				index = isNaN(res)? nodes.length : res + pos;
 			}
 		}
@@ -3184,6 +3177,7 @@ XFInsert.prototype.run = function(element, ctx) {
 				}
 
 				var repeat = nodes.length > 0? Core.getMeta(nodes[0], "repeat") : null;
+				nodes.push(clone);
 
 				if (repeat) {
 					document.getElementById(repeat).xfElement.insertNode(clone, nodeAfter);
@@ -3808,8 +3802,8 @@ XFControl.prototype.initFocus = function(element, principal) {
 		this.focusControl = element;
 	}
 
-	Event.attach(element, "focus", XFControl.focusHandler);
-	Event.attach(element, "blur", XFControl.blurHandler);
+	XSLTFormsEvent.attach(element, "focus", XFControl.focusHandler);
+	XSLTFormsEvent.attach(element, "blur", XFControl.blurHandler);
 };
 
 
@@ -4221,17 +4215,17 @@ XFInput.prototype.changeReadonly = function() {
 
 XFInput.prototype.initEvents = function(input, canActivate) {
 	if (this.inputmode) {
-		Event.attach(input, "keyup", XFInput.keyUpInputMode);
+		XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpInputMode);
 	}
 	if (canActivate) {
 		if (this.incremental) {
-			Event.attach(input, "keyup", XFInput.keyUpIncrementalActivate);
+			XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpIncrementalActivate);
 		} else {
-			Event.attach(input, "keyup", XFInput.keyUpActivate);
+			XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpActivate);
 		}
 	} else {
 		if (this.incremental) {
-			Event.attach(input, "keyup", XFInput.keyUpIncremental);
+			XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpIncremental);
 		}
 	}
 };
@@ -4387,8 +4381,8 @@ function XFItem(id, bindingL, bindingV) {
 	if (element.nodeName.toLowerCase() != "option") {
 		this.input = Core.isXhtml ? element.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "input")[0] : element.getElementsByTagName("input")[0];
 		this.input.name = XFControl.getXFElement(this.element).element.id;
-		Event.attach(this.input, "focus", XFControl.focusHandler);
-		Event.attach(this.input, "blur", XFControl.blurHandler);
+		XSLTFormsEvent.attach(this.input, "focus", XFControl.focusHandler);
+		XSLTFormsEvent.attach(this.input, "blur", XFControl.blurHandler);
 		this.label = Core.isXhtml ? element.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "span")[0] : element.getElementsByTagName("span")[0];
 	}
 }
@@ -5004,7 +4998,7 @@ function XFSelect(id, multiple, full, binding, incremental, clone) {
 		this.select = Core.isXhtml ? this.element.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "select")[0] : this.element.getElementsByTagName("select")[0];
 		this.initFocus(this.select);
 
-		Event.attach(this.select, "change",
+		XSLTFormsEvent.attach(this.select, "change",
 			incremental? XFSelect.incrementalChange : XFSelect.normalChange);
 	}
 }
@@ -5324,7 +5318,7 @@ function Calendar() {
     title.colSpan = 7;
 
     this.selectMonth = Core.createElement("select", title);
-    Event.attach(this.selectMonth, "change", function() {
+    XSLTFormsEvent.attach(this.selectMonth, "change", function() {
         Calendar.INSTANCE.refresh();
     } );
 
@@ -5335,18 +5329,18 @@ function Calendar() {
 
     this.inputYear = Core.createElement("input", title);
     this.inputYear.readOnly = true;
-    Event.attach(this.inputYear, "mouseup", function() {
+    XSLTFormsEvent.attach(this.inputYear, "mouseup", function() {
         var cal = Calendar.INSTANCE;
         cal.yearList.show();
     } );
-    Event.attach(this.inputYear, "change", function() {
+    XSLTFormsEvent.attach(this.inputYear, "change", function() {
         Calendar.INSTANCE.refresh();
     } );
 
     var close = Core.createElement("button", title, "X");
     close.setAttribute("title", "Close");
 
-    Event.attach(close, "click", function() {
+    XSLTFormsEvent.attach(close, "click", function() {
         Calendar.close();
     } );
 
@@ -5361,7 +5355,7 @@ function Calendar() {
     this.tBody = Core.createElement("tbody", this.element);
 
     var handler = function(event) {
-        var value = Event.getTarget(event).childNodes[0].nodeValue;
+        var value = XSLTFormsEvent.getTarget(event).childNodes[0].nodeValue;
         var cal = Calendar.INSTANCE;
 
         if (value != "") {
@@ -5381,7 +5375,7 @@ function Calendar() {
             }
 
 	        Calendar.close();
-    	    Event.dispatch(cal.input, "keyup");
+    	    XSLTFormsEvent.dispatch(cal.input, "keyup");
     	    cal.input.focus();
     	}
     };
@@ -5401,21 +5395,21 @@ function Calendar() {
    	
     this.inputHour = Core.createElement("input", tdFoot);
     this.inputHour.readOnly = true;
-    Event.attach(this.inputHour, "mouseup", function() {
+    XSLTFormsEvent.attach(this.inputHour, "mouseup", function() {
         Calendar.INSTANCE.hourList.show();
     } );
     
     tdFoot.appendChild(document.createTextNode(":"));
     this.inputMin = Core.createElement("input", tdFoot);
     this.inputMin.readOnly = true;
-    Event.attach(this.inputMin, "mouseup", function() {
+    XSLTFormsEvent.attach(this.inputMin, "mouseup", function() {
         Calendar.INSTANCE.minList.show();
     } );
 
     tdFoot.appendChild(document.createTextNode(":"));
     this.inputSec = Core.createElement("input", tdFoot);
     this.inputSec.readOnly = true;
-    Event.attach(this.inputSec, "mouseup", function() {
+    XSLTFormsEvent.attach(this.inputSec, "mouseup", function() {
     	if (Calendar.INSTANCE.type >= Calendar.SECONDS) {
 	        Calendar.INSTANCE.secList.show();
 	    }
@@ -5518,7 +5512,7 @@ Calendar.prototype.createElement = function(parent, className, text, colspan, ha
     }
     
     if (handler) {
-        Event.attach(element, "click", handler);
+        XSLTFormsEvent.attach(element, "click", handler);
         Core.initHover(element);
     }
 
@@ -6095,7 +6089,7 @@ TypeDefs.Default = {
 			return I8N.formatDate(I8N.parse(value, "yyyy-MM-dd"));
 		},
 		"parse" : function(value) {
-			return I8N.format(I8N.parseDate(value), "yyyy-MM-dd");
+			return I8N.format(I8N.parseDate(value), "yyyy-MM-dd", true);
 		}
 	},
 
@@ -6995,14 +6989,14 @@ function Listener(observer, name, phase, handler) {
 		
 
 Listener.prototype.attach = function() {
-    Event.attach(this.observer, this.evtName, this.callback, this.phase == "capture");
+    XSLTFormsEvent.attach(this.observer, this.evtName, this.callback, this.phase == "capture");
 };
 
 
 		
 
 Listener.prototype.detach = function() {
-    Event.detach(this.observer, this.evtName, this.callback, this.phase == "capture");
+    XSLTFormsEvent.detach(this.observer, this.evtName, this.callback, this.phase == "capture");
 };
 
 
@@ -7055,7 +7049,7 @@ XMLEvents = {
 		
 
 XMLEvents.dispatchList = function(list, name) {
-    for (var id in list) {
+    for (var id = 0, len = list.length; id < len; id++) {
         XMLEvents.dispatch(list[id], name);
     }
 };
@@ -7102,7 +7096,7 @@ XMLEvents.dispatch = function(target, name, type, bubbles, cancelable, defaultAc
 				ancestors.unshift(a);
 			}
 
-			for (var i in ancestors) {
+			for (var i = 0, len = ancestors.length; i < len; i++) {
 				var event = document.createEventObject();
 				event.trueName = name;
 				event.phase = "capture";
