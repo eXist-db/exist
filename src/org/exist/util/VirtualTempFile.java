@@ -1,3 +1,22 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2011 The eXist Project
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 package org.exist.util;
 
 import java.io.BufferedInputStream;
@@ -329,14 +348,14 @@ public class VirtualTempFile
 		throws IOException
 	{
 		if(tempFile==null) {
-	        tempFile = File.createTempFile(temp_prefix, temp_postfix);
-	        
-	        tempFile.deleteOnExit();
-	        LOG.debug("Writing to temporary file: " + tempFile.getName());
-	        
-	        strBuffer = new FileOutputStream(tempFile);
-	        strBuffer.write(baBuffer.toByteArray());
-	        os = strBuffer;
+			tempFile = File.createTempFile(temp_prefix, temp_postfix);
+
+			tempFile.deleteOnExit();
+			LOG.debug("Writing to temporary file: " + tempFile.getName());
+
+			strBuffer = new FileOutputStream(tempFile);
+			strBuffer.write(baBuffer.toByteArray());
+			os = strBuffer;
 		}
 	}
 	
@@ -422,6 +441,12 @@ public class VirtualTempFile
 		return result;
 	}
 	
+	/**
+	 * It returns either a byte array or a File
+	 * with the content. The initial threshold rules
+	 * which kind of object you are getting
+	 * @return Either a File or a byte[] object
+	 */
 	public Object getContent()
 	{
 		try {
@@ -435,7 +460,7 @@ public class VirtualTempFile
 	
 	/**
 	 * Method to force materialization as a (temp)file the VirtualTempFile instance
-	 * @return
+	 * @return A (temporal) file with the content
 	 * @throws IOException
 	 */
 	public File toFile()
@@ -452,5 +477,29 @@ public class VirtualTempFile
 		tempFile = null;
 		
 		return retFile;
+	}
+	
+	/**
+	 * Method to materialize the accumulated content in an OutputStream
+	 * @param out The output stream where the content is going to be written
+	 */
+	public void writeToStream(OutputStream out)
+		throws IOException
+	{
+		InputStream result = null;
+		if(tempFile!=null) {
+			byte[] writeBuffer=new byte[65536];
+			InputStream input = new BufferedInputStream(new FileInputStream(tempFile),655360);
+			try {
+				int readBytes;
+				while((readBytes = input.read(writeBuffer,0,writeBuffer.length))!=-1) {
+					out.write(writeBuffer,0,readBytes);
+				}
+			} finally {
+				input.close();
+			}
+		} else if(tempBuffer!=null) {
+			out.write(tempBuffer);
+		}
 	}
 }
