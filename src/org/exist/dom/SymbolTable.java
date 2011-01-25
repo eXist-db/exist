@@ -22,7 +22,10 @@
  */
 package org.exist.dom;
 
+import org.apache.log4j.Logger;
+import org.eclipse.jetty.util.log.Log;
 import org.exist.EXistException;
+import org.exist.management.impl.SanityReport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
@@ -31,11 +34,13 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
+import org.exist.util.sanity.SanityCheck;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 /**
@@ -54,8 +59,15 @@ public class SymbolTable {
 	
     public static final String FILE_NAME = "symbols.dbx";
 
-    public final static short FILE_FORMAT_VERSION_ID = 7;
+    public final static short FILE_FORMAT_VERSION_ID = 8;
+    public final static short LEGACY_FILE_FORMAT_VERSION_ID = 7;
 
+    public final static byte NAME_ID_TYPE = 0;
+    public final static byte NAMESPACE_ID_TYPE = 1;
+    public final static byte MIME_ID_TYPE = 2;
+    
+	private static final Logger LOG = Logger.getLogger(SymbolTable.class);
+    
     public static int LENGTH_LOCAL_NAME = 2; //sizeof short
 	public static int LENGTH_NS_URI = 2; //sizeof short	
 
@@ -63,30 +75,24 @@ public class SymbolTable {
 	protected Object2IntHashMap<String> nameSymbols = new Object2IntHashMap<String>(200);
     
     /** Maps int ids to local node names */
-	protected Int2ObjectHashMap<String> names = new Int2ObjectHashMap<String>(200);
+	protected String[] names = new String[200];
     
     /** Maps namespace URIs to an integer id */
 	protected Object2IntHashMap<String> nsSymbols = new Object2IntHashMap<String>(200);
     
     /** Maps int ids to namespace URIs */
-	protected Int2ObjectHashMap<String> namespaces = new Int2ObjectHashMap<String>(200);
-
-    /**
-     * Contains default prefix-to-namespace mappings. For convenience, eXist tracks
-     * the first prefix-to-namespace mapping it finds in a document. If an undefined prefix
-     * is found in a query, the query engine will first look up the prefix in this table before
-     * throwing an error.
-     */
-	protected Object2IntHashMap<String> defaultMappings = new Object2IntHashMap<String>(200);
-
+	protected String[] namespaces = new String[200];
     /**
      * Temporary name pool to share QName instances during indexing.
      */
 	protected QNamePool namePool = new QNamePool();
 
     protected Object2IntHashMap<String> mimeTypeByName = new Object2IntHashMap<String>(32);
-    protected Int2ObjectHashMap<String> mimeTypeById = new Int2ObjectHashMap<String>(32);
+    protected String[] mimeTypeById = new String[32];
 
+    /** contains the next mime type id to be used */
+    protected short maxMime = 0;
+    
     /** contains the next local name id to be used */
 	protected short max = 0;
     
@@ -98,6 +104,9 @@ public class SymbolTable {
 
     /** the underlying symbols.dbx file */
 	protected File file;
+	
+	protected VariableByteOutputStream outBuffer = new VariableByteOutputStream(512);
+	protected OutputStream outStream = null;
 	
 	public SymbolTable(BrokerPool pool, File dataDir) throws EXistException {
 	    file = new File(dataDir, getFileName());
@@ -144,16 +153,13 @@ public class SymbolTable {
 			return id;
 		id = ++max;
 		nameSymbols.put(element.getLocalName(), id);
-		names.put(id, element.getLocalName());
+		
+		ensureCapacity();
+		names[id] = element.getLocalName();
+
+		write(NAME_ID_TYPE, id, names[id]);
+		
 		changed = true;
-		// remember the prefix=namespace mapping for querying
-		String prefix = element.getPrefix();
-		if (prefix != null
-			&& prefix.length() > 0
-			&& (!defaultMappings.containsKey(prefix))) {
-			final short nsId = getNSSymbol(element.getNamespaceURI());
-			defaultMappings.put(prefix, nsId);
-		}
 		return id;
 	}
 
@@ -163,22 +169,19 @@ public class SymbolTable {
      * @param attr
      */
 	public synchronized short getSymbol(Attr attr) {
-		final String key = '@' + attr.getLocalName();
+		String localName = attr.getLocalName();
+		final String key = '@' + localName;
 		short id = (short) nameSymbols.get(key);
 		if (id != -1)
 			return id;
 		id = ++max;
 		nameSymbols.put(key, id);
-		names.put(id, attr.getLocalName());
+		
+		ensureCapacity();
+		names[id] = localName;
+
+		write(NAME_ID_TYPE, id, localName);
 		changed = true;
-		//		remember the prefix=namespace mapping for querying
-		String prefix = attr.getPrefix();
-		if (prefix != null
-			&& prefix.length() > 0
-			&& (!defaultMappings.containsKey(prefix))) {
-			final short nsId = getNSSymbol(attr.getNamespaceURI());
-			defaultMappings.put(prefix, nsId);
-		}
 		return id;
 	}
 
@@ -196,7 +199,11 @@ public class SymbolTable {
 			return id;
 		id = ++max;
 		nameSymbols.put(name, id);
-		names.put(id, name);
+		
+		ensureCapacity();
+		names[id] = name;
+		
+		write(NAME_ID_TYPE, id, name);
 		changed = true;
 		return id;
 	}
@@ -215,7 +222,12 @@ public class SymbolTable {
 			return id;
 		id = ++nsMax;
 		nsSymbols.put(ns, id);
-		namespaces.put(id, ns);
+		
+		ensureCapacity();
+		namespaces[id] = ns;
+		
+		write(NAMESPACE_ID_TYPE, id, ns);
+		
 		changed = true;
 		return id;
 	}
@@ -228,7 +240,9 @@ public class SymbolTable {
      * @param id
      */
 	public synchronized String getNamespace(short id) {
-		return id == 0 ? "" : namespaces.get(id);
+		if (id <= 0 || id > nsMax)
+			return "";
+		return namespaces[id];
 	}
 
     /**
@@ -247,117 +261,151 @@ public class SymbolTable {
      * @param id
      */
 	public synchronized String getName(short id) {
-		return names.get(id);
-	}
-
-    /**
-     * Returns a namespace URI for the given prefix if there's
-     * a default mapping.
-     * 
-     * @param prefix
-     */
-	public synchronized String getDefaultNamespace(String prefix) {
-		if (defaultMappings.containsKey(prefix))
-			return getNamespace((short)defaultMappings.get(prefix));
-		return null;
-	}
-	
-    /**
-     * Returns a list of default prefixes registered.
-     * 
-     */
-	public synchronized String[] defaultPrefixList() {
-		String[] prefixes = new String[defaultMappings.size()];
-		int i = 0;
-		for (Iterator<String> j = defaultMappings.iterator(); j.hasNext(); i++)
-			prefixes[i] = j.next();
-		return prefixes;
+		if (id <= 0 || id > max)
+			return "";
+		return names[id];
 	}
 
     public synchronized int getMimeTypeId(String mimeType) {
         int id = mimeTypeByName.get(mimeType);
         if (id == -1) {
-            int maxId = 0;
-            for (Iterator<Integer> i = mimeTypeById.iterator(); i.hasNext(); ) {
-                Integer val = i.next();
-                maxId = Math.max(maxId, val.intValue());
-            }
-            id = ++maxId;
+            id = ++maxMime;
+            ensureCapacity();
             mimeTypeByName.put(mimeType, id);
-            mimeTypeById.put(id, mimeType);
+            mimeTypeById[id] = mimeType;
+            
+            write(MIME_ID_TYPE, id, mimeType);
             changed = true;
         }
         return id;
     }
 
     public synchronized String getMimeType(int id) {
-        return mimeTypeById.get(id);
+    	if (id < 0 || id >= maxMime)
+    		return "";
+        return mimeTypeById[id];
     }
 
     /**
-     * Write the symbol table to persistent storage.
+     * Append a new entry to the .dbx file
+     * 
+     * @param type
+     * @param id
+     * @param key
+     */
+    protected void write(byte type, int id, String key) {
+    	outBuffer.clear();
+    	try {
+			writeEntry(type, id, key, outBuffer);
+			if (outStream == null)
+				outStream = new FileOutputStream(this.getFile().getAbsolutePath(), true);
+			outStream.write(outBuffer.toByteArray());
+			outStream.flush();
+		} catch (FileNotFoundException e) {
+			LOG.error("Symbol table: file not found!", e);
+		} catch (IOException e) {
+			LOG.error("Symbol table: caught exception while writing!", e);
+		}
+    }
+    
+    /**
+     * Write the symbol table to persistent storage. Only called when upgrading
+     * a .dbx file from previous versions.
      * 
      * @param ostream
      * @throws IOException
      */
-	public synchronized void write(final VariableByteOutputStream ostream)
+	protected synchronized void writeAll(VariableByteOutputStream os)
 		throws IOException {
-        ostream.writeFixedInt(FILE_FORMAT_VERSION_ID);
-        ostream.writeShort(max);
-		ostream.writeShort(nsMax);
-		ostream.writeInt(nameSymbols.size());
+		os.writeFixedInt(FILE_FORMAT_VERSION_ID);
+		
 		for (Iterator<String> i = nameSymbols.iterator(); i.hasNext();) {
 			final String entry = i.next();
-			ostream.writeUTF(entry);
 			short id = (short) nameSymbols.get(entry);
 			if(id < 0)
-				Thread.dumpStack();
-			ostream.writeShort(id);
+				LOG.error("symbol table: name id for " + entry + " < 0");
+			writeEntry(NAME_ID_TYPE, id, entry, os);
 		}
-		ostream.writeInt(nsSymbols.size());
+
 		for (Iterator<String> i = nsSymbols.iterator(); i.hasNext();) {
 			final String entry = i.next();
-			ostream.writeUTF(entry);
 			short id = (short) nsSymbols.get(entry);
 			if(id < 0)
-				Thread.dumpStack();
-			ostream.writeShort(id);
+				LOG.error("symbol table: namespace id for " + entry + " < 0");
+			writeEntry(NAMESPACE_ID_TYPE, id, entry, os);
 		}
-		ostream.writeInt(defaultMappings.size());
-		String prefix;
-		short nsId;
-		for (Iterator<String> i = defaultMappings.iterator(); i.hasNext();) {
-			prefix = i.next();
-			nsId = (short)defaultMappings.get(prefix);
-			ostream.writeUTF(prefix);
-			ostream.writeShort(nsId);
-		}
-        ostream.writeInt(mimeTypeByName.size());
+
         String mime;
         int mimeId;
         for (Iterator<String> i = mimeTypeByName.iterator(); i.hasNext(); ) {
             mime = i.next();
             mimeId = mimeTypeByName.get(mime);
-            ostream.writeUTF(mime);
-            ostream.writeInt(mimeId);
+            writeEntry(MIME_ID_TYPE, mimeId, mime, os);
         }
         changed = false;
 	}
 
+	protected void writeEntry(byte type, int id, String key, VariableByteOutputStream os) throws IOException {
+		os.writeByte(type);
+		os.writeInt(id);
+		os.writeUTF(key);
+	}
+	
+	/**
+	 * Read the symbol table from disk.
+	 * 
+	 * @param is
+	 * @throws IOException
+	 */
+	protected void read(VariableByteInput is) throws IOException {
+		max = 0;
+		nsMax = 0;
+		maxMime = 0;
+		while (is.available() > 0) {
+			byte type = is.readByte();
+			int id = is.readInt();
+			String key = is.readUTF();
+			switch (type) {
+				case NAME_ID_TYPE:
+					names = ensureCapacity(names, id);
+					if (key.charAt(0) == '@')
+						names[id] = key.substring(1);
+					else
+						names[id] = key;
+					nameSymbols.put(key, id);
+					if (id > max) max = (short) id;
+					break;
+				case NAMESPACE_ID_TYPE:
+					namespaces = ensureCapacity(namespaces, id);
+					namespaces[id] = key;
+					nsSymbols.put(key, id);
+					if (id > nsMax) nsMax = (short) id;
+					break;
+				case MIME_ID_TYPE:
+					mimeTypeById = ensureCapacity(mimeTypeById, id);
+					mimeTypeById[id] = key;
+					mimeTypeByName.put(key, id);
+					if (id > maxMime) maxMime = (short) id;
+					break;
+			}
+		}
+	}
+	
     /**
-     * Read the symbol table.
+     * Legacy method: read a symbol table written by a previous eXist version.
      * 
      * @param istream
      * @throws IOException
      */
-	public synchronized void read(VariableByteInput istream) throws IOException {
-        int magic = istream.readFixedInt();
-        if (magic != FILE_FORMAT_VERSION_ID)
-            throw new IOException("Database file symbols.dbx has a storage format incompatible with this " +
-                "version of eXist. Please do a backup/restore of your data first.");
+	protected void readLegacy(VariableByteInput istream) throws IOException {
         max = istream.readShort();
 		nsMax = istream.readShort();
+		
+		names = new String[(max * 3) / 2];
+		namespaces = new String[(nsMax * 3) / 2];
+
 		int count = istream.readInt();
+		
 		String name;
 		short id;
 		for (int i = 0; i < count; i++) {
@@ -365,33 +413,36 @@ public class SymbolTable {
 			id = istream.readShort();
 			nameSymbols.put(name, id);
 			if (name.charAt(0) == '@')
-				names.put(id, name.substring(1));
+				names[id] = name.substring(1);
 			else
-				names.put(id, name);
+				names[id] = name;
 		}
 		count = istream.readInt();
 		for (int i = 0; i < count; i++) {
 			name = istream.readUTF();
 			id = istream.readShort();
 			nsSymbols.put(name, id);
-			namespaces.put(id, name);
+			namespaces[id] = name;
 		}
+		
+		// default mappings have been removed
+		// read them for backwards compatibility
 		count = istream.readInt();
-		String prefix;
-		short nsId;
 		for (int i = 0; i < count; i++) {
-			prefix = istream.readUTF();
-			nsId = istream.readShort();
-			defaultMappings.put(prefix, nsId);
+			istream.readUTF();
+			istream.readShort();
 		}
-        count = istream.readInt();
+
+		count = istream.readInt();
+		maxMime = (short) count;
+		mimeTypeById = new String[(maxMime * 3) / 2];
         String mime;
         int mimeId;
         for (int i = 0; i < count; i++) {
             mime = istream.readUTF();
             mimeId = istream.readInt();
             mimeTypeByName.put(mime, mimeId);
-            mimeTypeById.put(mimeId, mime);
+            mimeTypeById[mimeId] = mime;
         }
         changed = false;
     }
@@ -401,27 +452,24 @@ public class SymbolTable {
 	}
 	
 	/**
-	 * Save the global symbol table. The global symbol table stores QNames and
-	 * namespace/prefix mappings.
+	 * Save the entire symbol table. Will only be called when initializing an
+	 * empty database or when upgrading an older dbx file.
 	 * 
 	 * @throws EXistException
 	 */
-	public void saveSymbols() throws EXistException {
-		synchronized (this) {
-			try {
-				VariableByteOutputStream os = new VariableByteOutputStream(256);
-				this.write(os);
-				FileOutputStream fos = new FileOutputStream(this.getFile()
-						.getAbsolutePath(), false);
-				fos.write(os.toByteArray());
-				fos.close();
-			} catch (FileNotFoundException e) {
-				throw new EXistException("file not found: "
-						+ this.getFile().getAbsolutePath());
-			} catch (IOException e) {
-				throw new EXistException("io error occurred while creating "
-						+ this.getFile().getAbsolutePath());
-			}
+	protected void saveSymbols() throws EXistException {
+		try {
+			VariableByteOutputStream os = new VariableByteOutputStream(256);
+			writeAll(os);
+			FileOutputStream fos = new FileOutputStream(getFile().getAbsolutePath(), false);
+			fos.write(os.toByteArray());
+			fos.close();
+		} catch (FileNotFoundException e) {
+			throw new EXistException("file not found: "
+					+ this.getFile().getAbsolutePath());
+		} catch (IOException e) {
+			throw new EXistException("io error occurred while creating "
+					+ this.getFile().getAbsolutePath());
 		}
 	}
 
@@ -431,18 +479,29 @@ public class SymbolTable {
 	 * 
 	 * @throws EXistException
 	 */
-	public void loadSymbols() throws EXistException {
+	protected synchronized void loadSymbols() throws EXistException {
 		try {
 			FileInputStream fis = new FileInputStream(this.getFile());
 			VariableByteInput is = new VariableByteInputStream(fis);
-			this.read(is);
+			
+			int magic = is.readFixedInt();
+			if (magic == LEGACY_FILE_FORMAT_VERSION_ID) {
+				LOG.info("Converting legacy symbols.dbx to new format...");
+				readLegacy(is);
+				saveSymbols();
+			} else if (magic != FILE_FORMAT_VERSION_ID)
+				throw new EXistException("Symbol table was created by an older or newer version of eXist" +
+						" (file id: " + magic + "). " +
+						"To avoid damage, the database will stop.");
+			else
+				read(is);
 			fis.close();
 		} catch (FileNotFoundException e) {
 			throw new EXistException("could not read "
 					+ this.getFile().getAbsolutePath());
 		} catch (IOException e) {
 			throw new EXistException("io error occurred while reading "
-					+ this.getFile().getAbsolutePath() + ": " + e.getMessage());
+					+ this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);
 		}
 	}
 
@@ -457,7 +516,37 @@ public class SymbolTable {
 	}
 
 	public void flush() throws EXistException {
-	    if (hasChanged())
-	        saveSymbols();
-	}	
+	}
+	
+	public void close() throws IOException {
+		if (outStream != null)
+			outStream.close();
+	}
+	
+	private void ensureCapacity() {
+		if (max == names.length) {
+			String[] newNames = new String[(max * 3) / 2];
+			System.arraycopy(names, 0, newNames, 0, max);
+			names = newNames;
+		}
+		if (nsMax == namespaces.length) {
+			String[] newNamespaces = new String[(nsMax * 3) / 2];
+			System.arraycopy(namespaces, 0, newNamespaces, 0, nsMax);
+			namespaces = newNamespaces;
+		}
+		if (maxMime == mimeTypeById.length) {
+			String[] newMime = new String[(maxMime * 3) / 2];
+			System.arraycopy(mimeTypeById, 0, newMime, 0, maxMime);
+			mimeTypeById = newMime;
+		}
+	}
+	
+	private String[] ensureCapacity(String[] array, int max) {
+		if (array.length <= max) {
+			String[] newArray = new String[(max * 3) / 2];
+			System.arraycopy(array, 0, newArray, 0, array.length);
+			return newArray;
+		}
+		return array;
+	}
 }
