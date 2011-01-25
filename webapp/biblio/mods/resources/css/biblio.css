@@ -6,47 +6,33 @@ p, td {
     font-style: italic;
 }
 
-a:link, a:visited { color: #5DB0E6; }
-
 .help {
     text-align: left; 
     font-size: 120%; 
-    margin-bottom: -1.2em; /*not beautiful!*/
+    margin-bottom: -1.2em;
 }
 
 .login {    
     text-align: right; 
     font-size: 120%; 
     margin-bottom: 4px;
+    color: #666;
 }
 
-.username { font-weight: bold; }
+.username { 
+    font-weight: bold; 
+}
 
 #page-head {
     height: 14em;
 }
 
-/*Tamboti
-#page-head {
-    height: 8em;
-    margin-bottom: 5px;
-    margin-left: 50px;
-    margin-right: 50px;
-    margin-top: 5px;
-}
-
-#page-head .banner {
-    position: absolute;
-    right: .5em;
+a, 
+a:visited 
+    {
+    font-weight: normal;
+    text-decoration: none;
     }
-#page-head .name {
-    position: absolute;
-    left: .5em;
-    }
-*/
-
-.search-form {
-}
 
 #collection-tree {
     float: left;
@@ -55,25 +41,27 @@ a:link, a:visited { color: #5DB0E6; }
     width: 40px;
     height: 390px;
 }
-#collection-tree-main {
-}
 
 .collection-tree-head {
-    background-color: #CCCCCC;
+    background-color: #CCC;
 }
+
 .collection-tree-toolbar {
     height: 20px;
     list-style: none;
     padding: 8px 0;
     margin: 0;
 }
+
 .collection-tree-toolbar li {
     display: inline;
     float: left;
     margin: 4px 8px 4px 0;
 }
 
-.collection-tree-toolbar img { border: 0; }
+.collection-tree-toolbar img { 
+    border: 0; 
+}
 
 #toggle-collection-tree {
     margin: 8px 4px 8px 4px;
@@ -123,6 +111,7 @@ ul.dynatree-container {
 .search-form td {
     padding: 4px 4px 0 4px;
     text-align: left;
+    color: #666;
 }
 
 td.collection-path {
@@ -159,6 +148,11 @@ table tr.repeat {
     background-color: white;
 }
 
+#filters {
+    margin-top: -3px;
+}
+
+
 #form-submit {
     margin-left: 7em;
     }
@@ -192,18 +186,18 @@ table tr.repeat {
 #results-head {
     margin-bottom: 10px;
     margin-top: 10px;
-    border-bottom: 1px solid #BBBBBB;
+    border-bottom: 1px solid #BBB;
 }
 
 #messages {
-    padding: 10px 8px;
+    padding: 2px 8px 12px 8px;
 }
 
 #result-container {
 }
 
 #results {
-    margin-top: 1em;
+    margin-top: .5em;
 }
 
 .repeat-selected {
@@ -244,7 +238,7 @@ table tr.repeat {
 }
 
 .even {
-    background-color: #E6E6E6;
+    background-color: #EDEDED;
 }
 
 .pagination {
@@ -252,7 +246,7 @@ table tr.repeat {
 
 .pagination-links {
     padding: 0 8px 0 8px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 a {
@@ -271,16 +265,14 @@ a:hover {
     cursor: pointer;
     text-decoration: none;
     line-height:2em;
-    padding: .2em;
+    padding: .5em;
     width:100%;
 }
 
 .pagination-link {
     margin-right: 1em;
     padding: 2px 4px;
-    border: 1px solid #0083CB;
     cursor: pointer;
-    color: #0083CB;
 }
 
 .pagination-back {
@@ -347,7 +339,6 @@ td .biblio-full .host {
     text-align: right;
     padding-right: 1em;
     color: #5DB0E6;
-    1margin: 10em;
     width: 16em;
 }
 
@@ -371,27 +362,20 @@ td .biblio-full .deemph {
     font-weight: normal;
     text-align: left;
     vertical-align: middle;
-    width:40em;
+    width: 40em;
 }
 
 .biblio-full .subrecord {
     font-weight: normal;
     text-align: left;
     vertical-align: middle;
-    width:40em;
+    width: 40em;
 }
 
 .biblio-full .related td {
     margin: 10em;
     line-height:3.4em;
     border-top: 1px solid gray;
-}
-
-.biblio-full .related hr {
-    color: #5DB0E6;
-    background-color: #5DB0E6;
-    height: 1px;
-    border: none; 
 }
 
 .actions-toolbar {
@@ -441,7 +425,7 @@ span.readable .dynatree-title {
 
 #group-members-list {
     background-color: white;
-    border: 1px solid #black;
+    border: 1px solid black;
     color: black;
     height: 8em;
     list-style: none;
