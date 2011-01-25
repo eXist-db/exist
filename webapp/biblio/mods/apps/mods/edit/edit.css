@@ -3,19 +3,40 @@
 
 body
     {
-  /* background-color: #eeeeee !important;/*overrules xsltforms.css*/
+  /*overrules xsltforms.css*/
   background-color: #ffffff !important;
+}
+div.blue {border-color:#3681B3}
+#page-head {
+    height: 16em;
+    margin-bottom: 5px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 5px;
+}
+
+#page-head-left {
+    position: absolute;
+    left: 4.15em;
+}
+
+#page-head-right {
+    position: absolute;
+    right: 4.15em;
+    margin-top: 1.1em;
 }
 
 .span-24, div.span-24 {
+    /*overrules xsltforms.css*/
     width:100% !important;
 }
 
 .container {
-padding-top: 0.5em !important;
-padding-right: 1em !important;
-padding-top: 0.5em !important;
-padding-left: .25em !important;
+    /*overrules xsltforms.css*/
+    padding-top: 0.5em !important;
+    padding-right: 1em !important;
+    padding-top: 0.5em !important;
+    padding-left: .25em !important;
 }
 
 .header {
@@ -39,13 +60,13 @@ td
 .float-right {
     float: right; 
     margin-right: 2px;
+    margin-top: -1em;
 }
 
-#page-head {
-	position: relative;
-    margin: 25px 50px 5px 50px;
-    height: 185px;
-}
+.toggle-button button {
+    margin-top: -2em;
+    }
+
 #page-head #navbar {
     margin: 10px 0 0 0;
     border-top: 1px solid #DEDEDE;
@@ -88,7 +109,7 @@ td
 
 #quicksearch input {
 	color: #666666;
-	background-color: #F6F6F6;
+	background-color: #EDEDED;
 }
 
 @media print {
@@ -106,14 +127,14 @@ td
 
 button { 
     margin: .5em;
-    background-color: #eeeeee;
+    background-color: #EDEDED;
     border-width: 1px;
     border-style: solid;
     border-color: gray;
     padding: .2em;
     vertical-align: middle;
     text-align: center;
-    height: 2em;
+    1height: 2em;
     
     -moz-border-radius: .4em;
     border-bottom-left-radius: 5px 5px;
@@ -134,27 +155,25 @@ button {
     }
 
 /* style every table data as a tab if the table has a class of tabs */
+
+table .tabs {
+    border: 1em solid black
+    }
+
 .tabs tr td 
     {
     color: gray;
     font-size: 12px;
-    background: #eeeeee;
-    border: 0.1em solid gray;	/*outset #BBB would make it look like a button */
-    font-weight: bold;
+    border: 1px solid #BEBEBE;	/*outset #BBB*/
     text-decoration: none;
     text-align: center;
-    padding: 2px 3px;
-    /* round the top corners - works under FireFox */
-    -moz-border-radius: .75em .75em 0em 0em;
+    -moz-border-radius-topleft: 4px;
+    -moz-border-radius-topright: 4px;
+    1height: 1.6em;
  }
 
-.tabs .tab-text {
-    margin-top: .25em;
-    margin-bottom: -1em;
-}
-.tabs .top-tab-text {
-    margin-top: .25em;
-    margin-bottom: .25em;
+.tabs tr td .selected {
+    background: #fff;
 }
 
 /* this styles just the lower sub-tab row that has labels inside of triggers */
@@ -206,7 +225,7 @@ fieldset .level-3
     margin-bottom: .75em;
     font-weight: bold;
     border-style: solid;
-    background-color: #eeeeee;
+    background-color: #EDEDED;
     border-width: 1px;
     padding: .3em 1em .3em 1em;
     width: 15em;
@@ -216,8 +235,14 @@ fieldset .level-3
     text-align: center;    
 }
 
-.join .legend {
-    display: inline;
+
+.join .float .xforms-hint{
+    1float:left;
+}
+
+.join .float .xforms-group .xforms-group-content
+{
+    float:left;
 }
 
 input    {
@@ -254,6 +279,11 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
     margin-right: -5em;    
 }
 
+#fieldset-relatedItem-anthology-name xf|group xf|trigger.multiple,
+#fieldset-relatedItem-anthology-name .join .multiple
+{
+    float:left;
+}
 .text_10 .xforms-value {
     width: 15em;
     }
@@ -292,7 +322,6 @@ span.xforms-hint-icon:after { /*the regular hints*/
 
 span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     background-image:url("x.xxx");
-    display: inline;
 }
 
 .join-button .xforms-control button
@@ -307,6 +336,15 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
 {
     width: 2.5em !important;
 }
+
+.wide {
+    width: 20em;
+}
+
+.extra-wide {
+    width: 30em;
+}
+
 
 .join-button .xforms-control button .xforms-label {
     display: inline;
@@ -327,6 +365,7 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
 
 .node-button .xforms-control button
 {
+    height: 2em;
     width: 2em;
     padding: 0;
     margin: 0 0 0 .25em;
@@ -370,22 +409,10 @@ div.xforms-hint-value
 
 /*compact
 */
-.compact .textarea .xforms-value  {
-    width: 50em; 
-    height: 4em; 
-    margin: 0 0 0 2em;
-    }
-/*
-.compact .xforms-repeat-item .xforms-repeat-item-selected {
-    background-color: white;
-    color: grey !important;
-}
-.compact .xforms-repeat-item  {
-    background-color: #F5F5F5;  
-}
-*/
 
-.compact .join {border-width: 1px;}
+.compact .join {
+    border-width: 1px;
+    }
 
 .compact #fieldset-namePart-author label,
 .compact #fieldset-namePart-editor label,
@@ -406,31 +433,39 @@ div.xforms-hint-value
     margin-left: -10em;
     }
 
-.compact .xforms-label,
-.compact .join
+.stand-alone .xforms-label,
+.stand-alone .join
 {
-    color: #886699;
+    color: #3681B3;
 }
-.compact .join,
-.compact .xforms-repeat-item,
-.compact .xforms-repeat-item-selected,
-.compact fieldset,
-.compact .node-adds, 
-.compact .node-adds-compact 
+.stand-alone 
     {
-    border-color: #886699;
+    border-color: #3681B3;
 }
+
+.related-container .xforms-label,
+.related-container .join
+{
+    color: #3681B3;
+}
+related-container 
+    {
+    border-color: #3681B3;
+}
+
+.contents .xforms-label,
+.contents .join
+{
+    color: #3681B3;
+}
+.contents 
+    {
+    border-color: #3681B3;
+}
+
 .compact button {
     width: 35ex;
     margin-left: 4.25em;
-}
-
-.compact .wide {
-    width: 20em;
-}
-
-.compact .extra-wide {
-    width: 30em;
 }
 
 .compact fieldset .level-2, 
@@ -445,9 +480,20 @@ div.xforms-hint-value
     border: 0;
 }
 
-.compact .xforms-value {
+.compact .textarea .xforms-value  {
+    width: 50em; 
+    height: 4em; 
+    margin: 0 0 0 2em;
+    }
+
+.compact input .xforms-value {
     border: grey 1px solid;
     height: 1.5em;
+    margin: .1em 0 0 2.4em;
+}
+
+#relatedItem-namePart-series-repeat input {
+    1margin-top: 2em;
 }
 
 .compact xf|input {
@@ -470,7 +516,13 @@ div.xforms-hint-value
     margin-bottom: 1em !important;
     }
 
-.compact .level-1,
+.compact .level-1
+    {
+    margin-top: 1em;
+    margin-bottom: 1em;    
+}
+
+
 .compact .level-2,
 .compact .level-3,
 .compact #fieldset-geographic .level-2,
@@ -509,7 +561,7 @@ eeddee: tab background
 .title .xforms-label,
 .title .join
 {
-    color: #886699;
+    color: #3681B3;
 }
 .title .join{
     width: 17em;
@@ -522,7 +574,7 @@ eeddee: tab background
 .title .node-adds, 
 .title .node-adds-title 
     {
-    border-color: #886699;
+    border-color: #3681B3;
 }
 .title button {
     width: 35ex;
@@ -536,7 +588,7 @@ eeeedd: tab background
 
 .name .xforms-label,
 .name .join{
-    color: #669966;
+    color: #3681B3;
 }
 .name .join,
 .name .xforms-repeat-item,
@@ -545,7 +597,7 @@ eeeedd: tab background
 .name .node-adds, 
 .name .node-adds-title 
     {
-    border-color: #669966;
+    border-color: #3681B3;
 }
 .name button {
     width: 35ex;
@@ -558,7 +610,7 @@ ccddee: tab background
 */
 .origin .xforms-label,
 .origin .join{
-    color: #668899;
+    color: #3681B3;
 }
 .origin .join,
 .origin .xforms-repeat-item,
@@ -567,7 +619,7 @@ ccddee: tab background
 .origin .node-adds, 
 .origin .node-adds-title 
     {
-    border-color: #668899;
+    border-color: #3681B3;
 }
 .origin button {
     width: 35ex;
@@ -923,6 +975,5 @@ eeddcc: tab background
 .extension button {
     width: 35ex;
 }
-
 
 </css>

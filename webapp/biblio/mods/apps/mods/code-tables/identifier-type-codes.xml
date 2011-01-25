@@ -30,7 +30,7 @@
             <value>sici</value>
             <label>Serial Item and Contribution Identifier</label>
             </item>
-        --><item><value>sDe dge No.</value><label>sDe dge No.</label></item><item><value>sNar thaṅ No.</value><label>sNar thaṅ No.</label></item>
+        --><item><value>sDe dge Tripitaka No.</value><label>sDe dge Tripitaka No.</label></item><item><value>sNar thang Tripitaka No.</value><label>sNar thang Tripitaka No.</label></item>
         <!-- 
             <item>
             <value>stock number</value>

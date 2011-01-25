@@ -1,0 +1,16 @@
+#page-head {
+    height: 8em;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+#page-head-left {
+    position: absolute;
+    left: 0;
+}
+
+#page-head-right {
+    position: absolute;
+    right: 0;
+    margin-top: 1em;
+}

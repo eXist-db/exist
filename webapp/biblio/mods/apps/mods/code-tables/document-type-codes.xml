@@ -33,7 +33,7 @@
             <value>map</value>
             <classifier>stand-alone</classifier>
         </item>
-        --><item><label>Book</label><value>monograph-latin</value><classifier>stand-alone</classifier></item><item><label>Book with Transliteration</label><value>monograph-transliteration</value><classifier>stand-alone</classifier></item>
+        --><item><label>Book</label><value>monograph-latin</value><classifier>stand-alone</classifier></item><item><label>Book with Transliteration</label><value>monograph-transliteration</value><classifier>stand-alone</classifier></item><item><label>SUEBS Tibetan</label><value>suebs-tibetan</value><classifier>stand-alone</classifier></item>
         <!--
         <item>
             <label>Motion Picture</label>

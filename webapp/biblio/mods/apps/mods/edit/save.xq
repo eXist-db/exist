@@ -315,7 +315,10 @@ let $updates :=
     
 let $copy :=
     if ($action eq 'close') then
-        let $targetCollection := $doc/mods:extension/e:collection
+        (: "$doc/*/e:collection" should in principle be "$doc/mods:extension/e:collection", 
+        but we cannot be sure that there will not be more than one "extension" element 
+        and that "our" extension will be the first. :)
+        let $targetCollection := $doc/*/e:collection
         return
             xmldb:move($data-collection, $targetCollection, $file-to-update)
     else

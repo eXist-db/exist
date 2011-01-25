@@ -34,18 +34,18 @@ let $tab-data := concat($style:db-path-to-app, '/edit/tab-data.xml')
 let $tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label 
 
 (: if document type is specified then we will need to use that instance as the template :)
-let $type := request:get-parameter('type', 'default')
-
 let $type-data := concat($style:db-path-to-app, '/code-tables/document-type-codes.xml')
-let $type-value := request:get-parameter('type', '')
-(: Does not work. :)
+let $type-request := request:get-parameter('type', '')
+(: NB: else with "<xf:output value="./mods:extension/*[2]"/>" does not work. :)
+let $type-value := if ($type-request) then $type-request else doc($type-data)//item[value = <xf:output value="./mods:extension/*[2]"/>]/label
 let $type-label := doc($type-data)//item[value = $type-value]/label
 
 (: look for an alternate data collection in the URL, else use the default mods data collection :)
 let $user := request:get-parameter('user', '')
 
-let $collection := request:get-parameter('collection', '')
+let $destination := <xf:output value="./mods:extension/*[1]"/>
 
+let $collection := request:get-parameter('collection', '')
 let $tempCollection := xf:get-temp-collection()
 
 let $data-collection :=
@@ -74,9 +74,9 @@ let $create-new-from-template :=
       then (
          (: copy the template into data and update it with a new UUID :)
          let $template-path :=
-            if ($type='default')
+            if ($type-value='default')
                then concat($style:db-path-to-app, '/edit/new-instance.xml')
-               else concat($style:db-path-to-app, '/edit/instances/', $type, '.xml')
+               else concat($style:db-path-to-app, '/edit/instances/', $type-value, '.xml')
          let $template := doc($template-path)
          let $new-file-name := concat($id, '.xml')
          (: store it in the right location :)
@@ -95,9 +95,6 @@ let $create-new-from-template :=
          return (
             update value $doc/mods:mods/@ID with $id
             ,
-            (: NB: does not work. :)
-            update delete $doc/mods:language
-            ,
             (: Save language and script of resource. :)
             let $language-insert:=
                 <mods:language>
@@ -110,12 +107,7 @@ let $create-new-from-template :=
                 </mods:language>
             return
             (: NB: does not work. Always inserted into end of document. :)
-            if ($doc/*:typeOfResource)
-            then update insert $language-insert preceding $doc/*:typeOfResource
-            else update insert $language-insert into $doc/mods:mods
-            ,
-            (: NB: does not work. :)
-            update delete $doc/mods:recordInfo
+            update insert $language-insert into $doc/mods:mods
             ,
             (: Save creation date and language and script of cataloguing :)
             let $recordInfo-insert:=
@@ -136,15 +128,13 @@ let $create-new-from-template :=
                 </mods:recordInfo>            
             return
             (: NB: does not work. Always inserted into end of document. :)
-            if ($doc/mods:accessCondition)
-            then update insert $recordInfo-insert preceding $doc/mods:accessCondition
-            else update insert $recordInfo-insert into $doc/mods:mods
+            update insert $recordInfo-insert into $doc/mods:mods
             ,
-            (: Save used template name and script type into a mods:extension element. :)
+            (: Save name of user collection, name of template used, script type and transliteration scheme used into mods:extension. :)
             update insert
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
                     <e:collection>{$data-collection}</e:collection>
-                    <e:template>{$type}</e:template>
+                    <e:template>{$type-value}</e:template>
                     <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
                     <e:scriptTypeOfCataloging>{$scriptTypeOfCataloging}</e:scriptTypeOfCataloging>
                     <e:transliterationOfResource>{$transliterationOfResource}</e:transliterationOfResource>                    
@@ -193,9 +183,10 @@ let $model :=
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="compact-template.xml" id='compact-template' readonly="true"/> 
        
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}" readonly="true"/>
-       
+       <!-- a title should be required, but having this bind will prevent a tab from being saved when clicking on another tab, if the user has not input a title.--> 
+       <!--
        <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>       
-       
+       -->
        <xf:instance xmlns="" id="save-results">
           <data>
              <message>Form loaded OK.</message>
@@ -224,7 +215,12 @@ let $model :=
 
 let $content :=
 <div class="content">
-    <span class="float-right">Editing record of type <strong>{$type-label}</strong> with the title<strong><xf:output value="./mods:titleInfo/mods:title"/></strong> on the <strong>{$tab-label}</strong> tab</span>
+    <span class="float-right">
+    Editing record of type <strong>{$type-label}</strong>,
+    with the title<strong><xf:output value="./mods:titleInfo/mods:title"/></strong>,
+    on the <strong>{$tab-label}</strong> tab,
+    to be saved in<strong>{$destination}</strong>
+    </span>
     
     {mods:tabs($tab-id, $id, $show-all, $tempCollection)}
     
@@ -271,8 +267,10 @@ let $content :=
         </xf:output>
     </div>
     -->
+    <!--
     <a href="get-instance.xq?id={$id}&amp;data={$data-collection}">View XML for the whole MODS record</a> -
     <a href="get-instance.xq?id={$id}&amp;tab-id={$tab-id}&amp;data={$data-collection}">View XML for the current tab</a>
+    -->
 </div>
 
 return style:assemble-form('', attribute {'mods:dummy'} {'dummy'}, $style, $model, $content, false())
