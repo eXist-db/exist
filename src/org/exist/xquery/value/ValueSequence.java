@@ -43,8 +43,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
@@ -392,14 +393,19 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             if(!hasNodes)
             return;
-            Set nodes = new TreeSet();
+            Map<Item, Item> nodes = new TreeMap<Item, Item>();
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
-                    if(!nodes.contains(values[i])) {
+                	Item found = nodes.get(values[i]);
+                    if(found == null) {
                         Item item = values[i];
                         values[j++] = item;
-                        nodes.add(item);
+                        nodes.put(item, item);
+                    } else {
+                    	NodeValue nv = (NodeValue) found;
+                    	if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE)
+                    		((NodeProxy) nv).addMatches((NodeProxy) values[i]);
                     }
                 } else
                     values[j++] = values[i];
