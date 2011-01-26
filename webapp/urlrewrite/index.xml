@@ -15,6 +15,7 @@
             <h1 class="rounded">URL Rewriting Demos</h1>
             
             <ul>
+                <li><a href="protected.xml">Access control</a>: use URL rewriting to control access to a resource from the controller.xql.</li>
                 <li><a href="jquery.xml">Declarative jQuery</a>: an XQuery module which parses an HTML template and generates 
                     jQuery/Javascript code.</li>
                 <li><a href="faulty.xql">Error handling</a>: redirect the user to a landing page if an XQuery error occurs.</li>
