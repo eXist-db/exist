@@ -43,5 +43,11 @@ public class EXistOutputKeys {
     public final static String ADD_EXIST_ID = "add-exist-id";
 
     public final static String XINCLUDE_PATH = "xinclude-path";
+    
+    /**
+     * Applies to JSON serialization only: preserve namespace prefixes in JSON properties
+     * by replacing ":" with "_", so element foo:bar becomes "foo_bar".
+     */
+    public final static String JSON_OUTPUT_NS_PREFIX = "preserve-prefix";
 	
 }

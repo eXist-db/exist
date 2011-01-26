@@ -22,6 +22,7 @@ package org.exist.util.serializer;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.XMLString;
+import org.exist.util.serializer.json.JSONWriter;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -50,11 +51,13 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     private final static int XML_WRITER = 0;
     private final static int XHTML_WRITER = 1;
     private final static int TEXT_WRITER = 2;
+    private final static int JSON_WRITER = 3;
     
     private XMLWriter writers[] = {
-            new IndentingXMLWriter(),
-            new XHTMLWriter(), 
-            new TEXTWriter()
+        new IndentingXMLWriter(),
+        new XHTMLWriter(), 
+        new TEXTWriter(),
+        new JSONWriter()
     };
     
     
@@ -85,6 +88,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             receiver = writers[XHTML_WRITER];
         else if("text".equalsIgnoreCase(method))
             receiver = writers[TEXT_WRITER];
+        else if ("json".equalsIgnoreCase(method))
+        	receiver = writers[JSON_WRITER];
         else
             receiver = writers[XML_WRITER];
         

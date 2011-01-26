@@ -21,13 +21,14 @@ package org.exist.util.serializer;
 
 import java.io.Writer;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.exist.memtree.NodeImpl;
+import org.exist.util.serializer.json.JSONWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -37,161 +38,190 @@ import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.helpers.NamespaceSupport;
 
 public class DOMSerializer {
-	
-	protected XMLWriter receiver;
-	protected NamespaceSupport nsSupport = new NamespaceSupport();
-	protected HashMap namespaceDecls = new HashMap();
-	protected Properties outputProperties;
 
-	public DOMSerializer() {
-		super();
-		this.receiver = new IndentingXMLWriter();
-	}
+	private final static Properties defaultProperties = new Properties();
 
-	public DOMSerializer(Writer writer, Properties outputProperties) {
-		super();
-		this.outputProperties = outputProperties;
-		if (outputProperties == null) {
-			outputProperties = new Properties();
-		}
-		this.receiver = new IndentingXMLWriter(writer);
-		this.receiver.setOutputProperties(outputProperties);
-	}
+    static {
+        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultProperties.setProperty(OutputKeys.INDENT, "false");
+    }
+    
+	private final static int XML_WRITER = 0;
+    private final static int XHTML_WRITER = 1;
+    private final static int TEXT_WRITER = 2;
+    private final static int JSON_WRITER = 3;
+    
+    private XMLWriter writers[] = {
+        new IndentingXMLWriter(),
+        new XHTMLWriter(), 
+        new TEXTWriter(),
+        new JSONWriter()
+    };
+    
+    protected XMLWriter receiver;
+    protected NamespaceSupport nsSupport = new NamespaceSupport();
+    protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
+    protected Properties outputProperties;
 
-	public void setOutputProperties(Properties outputProperties) {
-		this.outputProperties = outputProperties;
-		receiver.setOutputProperties(outputProperties);
-	}
+    public DOMSerializer() {
+        super();
+        this.receiver = writers[XML_WRITER];
+    }
 
-	public void setWriter(Writer writer) {
-		receiver.setWriter(writer);
-	}
-	
-	public void reset() {
-		nsSupport.reset();
-		namespaceDecls.clear();
-	}
-	
-	public void serialize(Node node) throws TransformerException {
-		Node top = node;
-		while (node != null) {
-			startNode(node);
-			Node nextNode = node.getNodeType() == NodeImpl.REFERENCE_NODE ? null : node.getFirstChild();
-			while (nextNode == null) {
-				endNode(node);
-				if (top != null && top.equals(node))
-					break;
-				nextNode = node.getNextSibling();
-				if (nextNode == null) {
-					node = node.getParentNode();
-					if (node == null || (top != null && top.equals(node))) {
-						endNode(node);
-						nextNode = null;
-						break;
-					}
-				}
-			}
-			node = nextNode;
-		}
-	}
+    public DOMSerializer(Writer writer, Properties outputProperties) {
+        super();
+        setOutput(writer, outputProperties);
+    }
 
-	protected void startNode(Node node) throws TransformerException {
-		switch (node.getNodeType()) {
-			case Node.DOCUMENT_NODE :
-			case Node.DOCUMENT_FRAGMENT_NODE :
-				break;
-			case Node.ELEMENT_NODE :
-				namespaceDecls.clear();
-				nsSupport.pushContext();
-				receiver.startElement(node.getNodeName());
-				String uri = node.getNamespaceURI();
-				String prefix = node.getPrefix();
-				if (uri == null)
-					uri = "";
-				if (prefix == null)
-					prefix = "";
-				if (nsSupport.getURI(prefix) == null) {
-					namespaceDecls.put(prefix, uri);
-					nsSupport.declarePrefix(prefix, uri);
-				}
-				// check attributes for required namespace declarations
-				NamedNodeMap attrs = node.getAttributes();
-				Attr nextAttr;
-				String attrName;
-				for (int i = 0; i < attrs.getLength(); i++) {
-					nextAttr = (Attr) attrs.item(i);
-					attrName = nextAttr.getName();
-					if (attrName.equals("xmlns")) {
-						String oldURI = nsSupport.getURI("");
-						uri = nextAttr.getValue();
-						if (oldURI == null || (!oldURI.equals(uri))) {
-							namespaceDecls.put("", uri);
-							nsSupport.declarePrefix("", uri);
-						}
-					} else if (attrName.startsWith("xmlns:")) {
-						prefix = attrName.substring(6);
-						if (nsSupport.getURI(prefix) == null) {
-							uri = nextAttr.getValue();
-							namespaceDecls.put(prefix, uri);
-							nsSupport.declarePrefix(prefix, uri);
-						}
-					} else if (attrName.indexOf(':') > 0) {
-						prefix = nextAttr.getPrefix();
-						uri = nextAttr.getNamespaceURI();
-                        if (prefix == null){
-                            prefix = attrName.split(":")[0];
-                        }
-						if (nsSupport.getURI(prefix) == null) {
-							namespaceDecls.put(prefix, uri);
-							nsSupport.declarePrefix(prefix, uri);
-						}
-					}
-				}
-				// output all namespace declarations
-				Map.Entry nsEntry;
-				for (Iterator i = namespaceDecls.entrySet().iterator(); i.hasNext();) {
-					nsEntry = (Map.Entry) i.next();
-					
-					receiver.namespace(
-						(String) nsEntry.getKey(),
-						(String) nsEntry.getValue());
-				}
-				// output attributes
-				String name;
-				for (int i = 0; i < attrs.getLength(); i++) {
-					nextAttr = (Attr) attrs.item(i);
-					name = nextAttr.getName();
-					if(name.startsWith("xmlns"))
-						continue;
-					receiver.attribute(nextAttr.getName(), nextAttr.getValue());
-				}
-				break;
-			case Node.TEXT_NODE :
-			case Node.CDATA_SECTION_NODE :
-				receiver.characters(((CharacterData) node).getData());
-				break;
-			case Node.ATTRIBUTE_NODE :
-				break;
-			case Node.PROCESSING_INSTRUCTION_NODE :
-				receiver.processingInstruction(
-					((ProcessingInstruction) node).getTarget(),
-					((ProcessingInstruction) node).getData());
-				break;
-			case Node.COMMENT_NODE :
-				receiver.comment(((Comment) node).getData());
-				break;
-			default :
-                //TODO : what kind of defaut here ?!! -pb
-				break;
-		}
-	}
+    public void setOutput(Writer writer, Properties properties) {
+        if (properties == null)
+            outputProperties = defaultProperties;
+        else
+            outputProperties = properties;
+        
+        String method = outputProperties.getProperty("method", "xml");
 
-	protected void endNode(Node node) throws TransformerException {
-		if (node == null)
-			return;
-		if (node.getNodeType() == Node.ELEMENT_NODE) {
-			nsSupport.popContext();
-			receiver.endElement(node.getNodeName());
-		}
-	}
+        if ("xhtml".equalsIgnoreCase(method))
+            receiver = writers[XHTML_WRITER];
+        else if("text".equalsIgnoreCase(method))
+            receiver = writers[TEXT_WRITER];
+        else if ("json".equalsIgnoreCase(method))
+        	receiver = writers[JSON_WRITER];
+        else
+            receiver = writers[XML_WRITER];
+        
+        receiver.setWriter(writer);
+        receiver.setOutputProperties(outputProperties);
+    }
+
+    public void setWriter(Writer writer) {
+        receiver.setWriter(writer);
+    }
+
+    public void reset() {
+        nsSupport.reset();
+        namespaceDecls.clear();
+        for (int i = 0; i < writers.length; i++)
+            writers[i].reset();
+    }
+
+    public void serialize(Node node) throws TransformerException {
+    	receiver.startDocument();
+        Node top = node;
+        while (node != null) {
+            startNode(node);
+            Node nextNode = node.getNodeType() == NodeImpl.REFERENCE_NODE ? null : node.getFirstChild();
+            while (nextNode == null) {
+                endNode(node);
+                if (top != null && top.equals(node))
+                    break;
+                nextNode = node.getNextSibling();
+                if (nextNode == null) {
+                    node = node.getParentNode();
+                    if (node == null || (top != null && top.equals(node))) {
+                        endNode(node);
+                        //nextNode = null;
+                        break;
+                    }
+                }
+            }
+            node = nextNode;
+        }
+        receiver.endDocument();
+    }
+
+    protected void startNode(Node node) throws TransformerException {
+        switch (node.getNodeType()) {
+        case Node.DOCUMENT_NODE :
+        case Node.DOCUMENT_FRAGMENT_NODE :
+            break;
+        case Node.ELEMENT_NODE :
+            namespaceDecls.clear();
+            nsSupport.pushContext();
+            receiver.startElement(node.getNodeName());
+            String uri = node.getNamespaceURI();
+            String prefix = node.getPrefix();
+            if (uri == null)
+                uri = "";
+            if (prefix == null)
+                prefix = "";
+            if (nsSupport.getURI(prefix) == null) {
+                namespaceDecls.put(prefix, uri);
+                nsSupport.declarePrefix(prefix, uri);
+            }
+            // check attributes for required namespace declarations
+            NamedNodeMap attrs = node.getAttributes();
+            Attr nextAttr;
+            String attrName;
+            for (int i = 0; i < attrs.getLength(); i++) {
+                nextAttr = (Attr) attrs.item(i);
+                attrName = nextAttr.getName();
+                if (attrName.equals("xmlns")) {
+                    String oldURI = nsSupport.getURI("");
+                    uri = nextAttr.getValue();
+                    if (oldURI == null || (!oldURI.equals(uri))) {
+                        namespaceDecls.put("", uri);
+                        nsSupport.declarePrefix("", uri);
+                    }
+                } else if (attrName.startsWith("xmlns:")) {
+                    prefix = attrName.substring(6);
+                    if (nsSupport.getURI(prefix) == null) {
+                        uri = nextAttr.getValue();
+                        namespaceDecls.put(prefix, uri);
+                        nsSupport.declarePrefix(prefix, uri);
+                    }
+                } else if (attrName.indexOf(':') > 0) {
+                    prefix = nextAttr.getPrefix();
+                    uri = nextAttr.getNamespaceURI();
+                    if (prefix == null){
+                        prefix = attrName.split(":")[0];
+                    }
+                    if (nsSupport.getURI(prefix) == null) {
+                        namespaceDecls.put(prefix, uri);
+                        nsSupport.declarePrefix(prefix, uri);
+                    }
+                }
+            }
+            // output all namespace declarations
+            for (Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
+                receiver.namespace( nsEntry.getKey(), nsEntry.getValue());
+            }
+            // output attributes
+            String name;
+            for (int i = 0; i < attrs.getLength(); i++) {
+                nextAttr = (Attr) attrs.item(i);
+                name = nextAttr.getName();
+                if(name.startsWith("xmlns"))
+                    continue;
+                receiver.attribute(nextAttr.getName(), nextAttr.getValue());
+            }
+            break;
+        case Node.TEXT_NODE :
+        case Node.CDATA_SECTION_NODE :
+            receiver.characters(((CharacterData) node).getData());
+            break;
+        case Node.ATTRIBUTE_NODE :
+            break;
+        case Node.PROCESSING_INSTRUCTION_NODE :
+            receiver.processingInstruction(
+                ((ProcessingInstruction) node).getTarget(),
+                ((ProcessingInstruction) node).getData());
+            break;
+        case Node.COMMENT_NODE :
+            receiver.comment(((Comment) node).getData());
+            break;
+        default :
+            //TODO : what kind of defaut here ?!! -pb
+            break;
+        }
+    }
+
+    protected void endNode(Node node) throws TransformerException {
+        if (node == null)
+            return;
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            nsSupport.popContext();
+            receiver.endElement(node.getNodeName());
+        }
+    }
 }
