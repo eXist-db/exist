@@ -70,15 +70,18 @@ public class HttpRequestWrapper implements RequestWrapper {
     private String pathInfo = null;
     private String servletPath = null;
 
+    private boolean isMultipartContent=false;
+
     // Use linkedhashmap to preserver order
+    // Object can be a single object, or a List of objects
     private Map<String, Object> params = new LinkedHashMap<String, Object>();
 
     // flag to administer wether multi-part formdata was processed
     private boolean isFormDataParsed = false;
 
     /**
-     * Constructs a wrapper for the given servlet request. multipart/form-data will be parsed
-     * when evailable/
+     * Constructs a wrapper for the given servlet request. multipart/form-data 
+     * will be parsed when available upon indication.
      *
      * @param servletRequest The request as viewed by the servlet
      * @param formEncoding The encoding of the request's forms
@@ -109,10 +112,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         // Get url-encoded parameters (url-ecoded from http GET and POST)
         parseParameters();
 
+        // Determine if request is a multipart
+        isMultipartContent=ServletFileUpload.isMultipartContent(servletRequest);
 
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so
-        if (parseMultipart && ServletFileUpload.isMultipartContent(servletRequest)) {
+        if (parseMultipart && isMultipartContent) {
 
             // Formdata is actually parsed
             isFormDataParsed = true;
@@ -125,10 +130,12 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     }
 
+    @Override
     public Object getAttribute(String name) {
         return servletRequest.getAttribute(name);
     }
 
+    @Override
     public Enumeration getAttributeNames() {
         return servletRequest.getAttributeNames();
     }
@@ -136,6 +143,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * Returns an array of Cookies
      */
+    @Override
     public Cookie[] getCookies() {
         return servletRequest.getCookies();
     }
@@ -278,6 +286,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getInputStream()
      */
+    @Override
     public InputStream getInputStream() throws IOException {
         return servletRequest.getInputStream();
     }
@@ -285,6 +294,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
      */
+    @Override
     public String getCharacterEncoding() {
         return servletRequest.getCharacterEncoding();
     }
@@ -292,6 +302,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getContentLength()
      */
+    @Override
     public long getContentLength() {
         long retval = servletRequest.getContentLength();
         String lenstr = servletRequest.getHeader("Content-Length");
@@ -305,6 +316,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getContentType()
      */
+    @Override
     public String getContentType() {
         return servletRequest.getContentType();
     }
@@ -312,6 +324,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getContextPath()
      */
+    @Override
     public String getContextPath() {
         return servletRequest.getContextPath();
     }
@@ -319,6 +332,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getHeader(String)
      */
+    @Override
     public String getHeader(String arg0) {
         return servletRequest.getHeader(arg0);
     }
@@ -327,6 +341,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
      * @return An enumeration of header names
      */
+    @Override
     public Enumeration getHeaderNames() {
         return servletRequest.getHeaderNames();
     }
@@ -334,6 +349,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
      */
+    @Override
     public Enumeration getHeaders(String arg0) {
         return servletRequest.getHeaders(arg0);
     }
@@ -341,6 +357,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getMethod()
      */
+    @Override
     public String getMethod() {
         return servletRequest.getMethod();
     }
@@ -348,6 +365,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
+    @Override
     public String getParameter(String name) {
 
         // Parameters
@@ -391,6 +409,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
+    @Override
     public File getFileUploadParam(String name) {
         if (!isFormDataParsed) {
             return null;
@@ -412,6 +431,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
+    @Override
     public String getUploadedFileName(String name) {
         if (!isFormDataParsed) {
             return null;
@@ -440,6 +460,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameterNames()
      */
+    @Override
     public Enumeration getParameterNames() {
         return Collections.enumeration(params.keySet());
     }
@@ -447,6 +468,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameterValues(String)
      */
+    @Override
     public String[] getParameterValues(String key) {
 
         // params already retrieved
@@ -526,6 +548,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getPathInfo()
      */
+    @Override
     public String getPathInfo() {
         return pathInfo;
     }
@@ -533,6 +556,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getPathTranslated()
      */
+    @Override
     public String getPathTranslated() {
         return servletRequest.getPathTranslated();
     }
@@ -540,6 +564,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getProtocol()
      */
+    @Override
     public String getProtocol() {
         return servletRequest.getProtocol();
     }
@@ -547,6 +572,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getQueryString()
      */
+    @Override
     public String getQueryString() {
         return servletRequest.getQueryString();
     }
@@ -554,6 +580,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRemoteAddr()
      */
+    @Override
     public String getRemoteAddr() {
         return servletRequest.getRemoteAddr();
     }
@@ -561,6 +588,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRemoteHost()
      */
+    @Override
     public String getRemoteHost() {
         return servletRequest.getRemoteHost();
     }
@@ -568,6 +596,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRemotePort()
      */
+    @Override
     public int getRemotePort() {
         return servletRequest.getRemotePort();
     }
@@ -575,6 +604,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
      */
+    @Override
     public String getRemoteUser() {
         return servletRequest.getRemoteUser();
     }
@@ -582,6 +612,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRequestedSessionId()
      */
+    @Override
     public String getRequestedSessionId() {
         return servletRequest.getRequestedSessionId();
     }
@@ -589,6 +620,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRequestURI()
      */
+    @Override
     public String getRequestURI() {
         return servletRequest.getRequestURI();
     }
@@ -596,6 +628,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getRequestURL()
      */
+    @Override
     public StringBuffer getRequestURL() {
         return servletRequest.getRequestURL();
     }
@@ -603,6 +636,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getScheme()
      */
+    @Override
     public String getScheme() {
         return servletRequest.getScheme();
     }
@@ -610,6 +644,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getServerName()
      */
+    @Override
     public String getServerName() {
         return servletRequest.getServerName();
     }
@@ -617,6 +652,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getServerPort()
      */
+    @Override
     public int getServerPort() {
         return servletRequest.getServerPort();
     }
@@ -624,6 +660,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getServletPath()
      */
+    @Override
     public String getServletPath() {
         return servletPath;
     }
@@ -631,6 +668,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getSession()
      */
+    @Override
     public SessionWrapper getSession() {
         HttpSession session = servletRequest.getSession();
         if (session == null) {
@@ -643,6 +681,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getSession(boolean)
      */
+    @Override
     public SessionWrapper getSession(boolean arg0) {
         HttpSession session = servletRequest.getSession(arg0);
         if (session == null) {
@@ -655,6 +694,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
      */
+    @Override
     public Principal getUserPrincipal() {
         return servletRequest.getUserPrincipal();
     }
@@ -662,6 +702,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
      */
+    @Override
     public boolean isRequestedSessionIdFromCookie() {
         return servletRequest.isRequestedSessionIdFromCookie();
     }
@@ -669,6 +710,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
      */
+    @Override
     public boolean isRequestedSessionIdFromURL() {
         return servletRequest.isRequestedSessionIdFromURL();
     }
@@ -676,6 +718,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
      */
+    @Override
     public boolean isRequestedSessionIdValid() {
         return servletRequest.isRequestedSessionIdValid();
     }
@@ -683,6 +726,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#isSecure()
      */
+    @Override
     public boolean isSecure() {
         return servletRequest.isSecure();
     }
@@ -690,6 +734,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
      */
+    @Override
     public boolean isUserInRole(String arg0) {
         return servletRequest.isUserInRole(arg0);
     }
@@ -697,6 +742,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#removeAttribute(String)
      */
+    @Override
     public void removeAttribute(String arg0) {
         servletRequest.removeAttribute(arg0);
     }
@@ -704,6 +750,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#setAttribute(String, Object)
      */
+    @Override
     public void setAttribute(String arg0, Object arg1) {
         servletRequest.setAttribute(arg0, arg1);
     }
@@ -711,6 +758,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @see javax.servlet.http.HttpServletRequest#setCharacterEncoding(String)
      */
+    @Override
     public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
         servletRequest.setCharacterEncoding(arg0);
     }
@@ -722,5 +770,23 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     public void setServletPath(String arg0) {
         servletPath = arg0;
+    }
+
+    /**
+     *  Indicate if a form is processed.
+     *
+     * @return TRUE if a form is processed else FALSE.
+     */
+    public boolean isFormDataParsed() {
+        return isFormDataParsed;
+    }
+
+    /**
+     *  Indicate if the request is a multi-part formdata request
+     *
+     * @return TRUE if request is multi-part/formdata request, else FALSE.
+     */
+    public boolean isMultipartContent() {
+        return isMultipartContent;
     }
 }
