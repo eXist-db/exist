@@ -2,6 +2,7 @@ package org.exist.indexing.lucene;
 
 import java.util.*;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
@@ -12,6 +13,8 @@ import org.w3c.dom.NodeList;
 
 public class LuceneConfig {
 
+	private final static Logger LOG = Logger.getLogger(LuceneConfig.class);
+	
     private final static String CONFIG_ROOT = "lucene";
     private final static String INDEX_ELEMENT = "text";
     private final static String ANALYZER_ELEMENT = "analyzer";
@@ -155,21 +158,25 @@ public class LuceneConfig {
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
                 	// found an index definition
                     Element elem = (Element) node;
-                    LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers);
-                    // if it is a named index, add it to the namedIndexes map
-                    if (config.getName() != null)
-                        namedIndexes.put(config.getName(), config);
+                    try {
+						LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers);
+						// if it is a named index, add it to the namedIndexes map
+						if (config.getName() != null)
+						    namedIndexes.put(config.getName(), config);
 
-                    // register index either by QName or path
-                    if (config.getNodePath().hasWildcard()) {
-                    	wildcardPaths.add(config);
-                    } else {
-                        LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
-                        if (idxConf == null)
-                            paths.put(config.getNodePath().getLastComponent(), config);
-                        else
-                            idxConf.add(config);
-                    }
+						// register index either by QName or path
+						if (config.getNodePath().hasWildcard()) {
+							wildcardPaths.add(config);
+						} else {
+						    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
+						    if (idxConf == null)
+						        paths.put(config.getNodePath().getLastComponent(), config);
+						    else
+						        idxConf.add(config);
+						}
+					} catch (DatabaseConfigurationException e) {
+						LOG.warn("Invalid lucene configuration element: " + e.getMessage());
+					}
                 } else if (INLINE_ELEMENT.equals(node.getLocalName())) {
                     Element elem = (Element) node;
                     QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
