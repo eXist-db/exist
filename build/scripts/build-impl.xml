@@ -388,7 +388,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -420,6 +420,9 @@
                 <include name="org/**"/>
             </packageset>
             <packageset dir="${build.extensions}/webdav/src">
+                <include name="org/**"/>
+            </packageset>
+            <packageset dir="${build.extensions}/contentextraction/src">
                 <include name="org/**"/>
             </packageset>
             <packageset dir="${build.extensions}/fluent/src">
@@ -623,6 +626,7 @@
         <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/betterform" target="uninstall" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/contentextraction" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -738,6 +742,10 @@
 
     <target name="extension-webdav" depends="jar">
         <ant antfile="build.xml" dir="extensions/webdav" inheritall="false"/>
+    </target>
+
+    <target name="extension-contentextraction" depends="jar">
+        <ant antfile="build.xml" dir="extensions/contentextraction" inheritall="false"/>
     </target>
 
     <target name="cleandocs">
