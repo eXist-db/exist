@@ -259,7 +259,8 @@ public class Configurator {
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPTransformationContext")) {
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPTransformationContext", configuration);
                 } else {
-                    LOG.warn("skip unsupported configuration value type "+field.getType());
+                	value = configuration.getProperty(property);
+                    //LOG.warn("skip unsupported configuration value type "+field.getType());
                 }
 
                 if (value != null && !value.equals( field.get(instance) ) ) {
