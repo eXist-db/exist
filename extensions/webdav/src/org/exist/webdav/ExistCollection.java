@@ -399,7 +399,7 @@ public class ExistCollection extends ExistResource {
             // by ResourceFactory
             collection = broker.openCollection(xmldbUri, Lock.WRITE_LOCK);
             if (collection == null) {
-                LOG.debug("Collection does not exist");              
+                LOG.debug("Collection " + xmldbUri + " does not exist");
                 transact.abort(txn);
                 throw new CollectionDoesNotExistException(xmldbUri + "");
             }

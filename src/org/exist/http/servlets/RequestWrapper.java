@@ -121,4 +121,6 @@ public interface RequestWrapper {
 	public void setAttribute(String arg0, Object arg1);
 	
 	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException;
+
+        public boolean isMultipartContent();
 }
