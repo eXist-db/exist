@@ -58,6 +58,7 @@ public class StdErr extends Command {
 
 	public byte[] responseBytes() {
 		String response = "<response " +
+				namespaces +
 				"command=\"stderr\" " +
 				"success=\"0\" " +
 				"transaction_id=\""+transactionID+"\"/>";

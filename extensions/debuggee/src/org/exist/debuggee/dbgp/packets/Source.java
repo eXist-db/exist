@@ -152,6 +152,7 @@ public class Source extends Command {
     		if (source != null) {
     			try {
     				String head = "<response " +
+    					namespaces +
     					"command=\"source\" " +
                     	"success=\""+getSuccessString()+"\" " +
                     	"transaction_id=\""+transactionID+"\">";

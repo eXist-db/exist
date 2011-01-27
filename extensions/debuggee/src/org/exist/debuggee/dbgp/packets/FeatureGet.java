@@ -53,6 +53,7 @@ public class FeatureGet extends Command {
 	
 	public byte[] responseBytes() {
 		String response = "<response " +
+				namespaces +
 				"command=\"feature_get\" " +
 				"feature=\""+name+"\" " +
 				"supported=\""+getSupportedString()+"\" " +

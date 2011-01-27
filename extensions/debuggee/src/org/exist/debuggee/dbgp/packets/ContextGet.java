@@ -87,6 +87,7 @@ public class ContextGet extends Command {
 
 	public byte[] responseBytes() {
 		String response = "<response " +
+				namespaces +
 				"command=\"context_get\" " +
 				"context=\""+contextID+"\" " +
 				"transaction_id=\""+transactionID+"\"> " +

@@ -67,6 +67,7 @@ public class BreakpointRemove extends Command {
 	public byte[] responseBytes() {
 		if (breakpoint != null) {
 			String responce = "<response " +
+				namespaces +
 				"command=\"breakpoint_remove\" " +
 				"transaction_id=\""+transactionID+"\"/>"; 
 

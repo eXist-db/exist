@@ -46,6 +46,7 @@ public class Status extends Command {
 	public byte[] responseBytes() {
     	if (command != null) {
     		String response = "<response " +
+    			namespaces +
             	"command=\"status\" " +
             	"status=\""+command.getStatus()+"\" " +
             	"reason=\"ok\" " +

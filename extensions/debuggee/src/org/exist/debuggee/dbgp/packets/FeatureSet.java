@@ -50,6 +50,7 @@ public class FeatureSet extends Command {
 	
 	public byte[] responseBytes() {
 		String response = "<response " +
+				namespaces +
 				"command=\"feature_set\" " +
 				"feature=\""+name+"\" " +
 				"success=\""+getStringStatus()+"\" " +

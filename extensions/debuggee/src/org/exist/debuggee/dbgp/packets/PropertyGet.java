@@ -115,7 +115,9 @@ public class PropertyGet extends Command {
 			return errorBytes("property_get");
 		
 		StringBuilder responce = new StringBuilder();
-		responce.append("<response command=\"property_get\" transaction_id=\"");
+		responce.append("<response " +
+				namespaces +
+				"command=\"property_get\" transaction_id=\"");
 		responce.append(transactionID);
 		responce.append("\">");
 		responce.append(getPropertyString(variable, getJoint().getContext()));
