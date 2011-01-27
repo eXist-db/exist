@@ -786,6 +786,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      *
      * @return TRUE if request is multi-part/formdata request, else FALSE.
      */
+    @Override
     public boolean isMultipartContent() {
         return isMultipartContent;
     }
