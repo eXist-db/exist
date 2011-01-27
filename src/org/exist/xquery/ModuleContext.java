@@ -29,6 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -142,9 +143,16 @@ public class ModuleContext extends XQueryContext {
     }
 
     public void updateContext(XQueryContext from) {
-        if (from.hasParent())
+        if (from.hasParent()) {
             // TODO: shouldn't this call setParentContext ? - sokolov
             this.parentContext = ((ModuleContext)from).parentContext;
+        }
+        
+        //workaround for shared context issue, remove after fix 
+        setModule(
+    		ResponseModule.NAMESPACE_URI, 
+    		from.getModule(ResponseModule.NAMESPACE_URI)
+    	);
     }
 
     public XQueryContext copyContext() {
