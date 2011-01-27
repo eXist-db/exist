@@ -64,6 +64,7 @@ public class Eval extends Command {
 			response = errorBytes("eval", Errors.ERR_206, exception.getMessage());
     	} else { 
 			String head = "<response " +
+					namespaces +
 					"command=\"eval\" " +
 					"success=\""+isSuccess()+"\" "+
 					"transaction_id=\""+transactionID+"\">" +

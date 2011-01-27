@@ -54,6 +54,7 @@ public class ContextNames extends Command {
 
 	public byte[] responseBytes() {
 		String response = "<response " +
+			namespaces +
             "command=\"context_names\" " +
             "transaction_id=\""+transactionID+"\">" +
             "   <context name=\"Local\" id=\"0\"/>" +

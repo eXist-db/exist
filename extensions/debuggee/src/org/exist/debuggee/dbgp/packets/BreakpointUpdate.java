@@ -119,6 +119,7 @@ public class BreakpointUpdate extends Command {
 	public byte[] responseBytes() {
 		if (breakpoint != null) {
 			String responce = "<response " +
+				namespaces +
 				"command=\"breakpoint_update\" " +
 				"transaction_id=\""+transactionID+"\"/>"; 
 

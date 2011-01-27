@@ -43,6 +43,7 @@ public class StepOver extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String responce = "<response " +
+				namespaces +
 				"command=\"step_over\" " +
 				"status=\""+getStatus()+"\" " +
 				"reason=\"ok\" " +

@@ -43,6 +43,7 @@ public class StepOut extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String responce = "<response " +
+				namespaces +
 				"command=\"step_out\" " +
 				"status=\""+getStatus()+"\" " +
 				"reason=\"ok\" " +

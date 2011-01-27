@@ -43,6 +43,7 @@ public class Run extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String responce = "<response " +
+				namespaces +
 				"command=\"run\" " +
 				"status=\""+getStatus()+"\" " +
 				"reason=\"ok\" " +

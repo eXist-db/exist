@@ -49,7 +49,9 @@ public class StackGet extends Command {
 	
 	public byte[] responseBytes() {
 		StringBuilder response = new StringBuilder();
-		response.append("<response command=\"stack_get\" transaction_id=\"");
+		response.append("<response " +
+				namespaces +
+				"command=\"stack_get\" transaction_id=\"");
 		response.append(transactionID);
 		response.append("\">\n");
 
@@ -114,4 +116,22 @@ public class StackGet extends Command {
 		return command.getBytes();
 	}
 	
+	public String toString() {
+		
+		StringBuilder response = new StringBuilder();
+		response.append("stack_get ");
+
+		if (stackDepth != null) {
+			int index = stacks.size() - 1 - stackDepth;
+			if (index >=0 && index < stacks.size())
+				response.append(stackToString(index));
+		} else {
+			for (int index = stacks.size()-1; index >= 0; index--)
+				response.append(stackToString(index));
+		}
+		
+		response.append("["+transactionID+"]");
+
+		return response.toString();
+	}
 }

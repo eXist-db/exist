@@ -43,6 +43,7 @@ public class Stop extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String responce = "<response " +
+				namespaces +
 				"command=\"stop\" " +
 				"status=\""+getStatus()+"\" " +
 				"reason=\"ok\" " +

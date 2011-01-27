@@ -58,6 +58,7 @@ public class StdOut extends Command {
 
 	public byte[] responseBytes() {
 		String response = "<response " +
+				namespaces +
 				"command=\"stdout\" " +
 				"success=\"0\" " +
 				"transaction_id=\""+transactionID+"\"/>";

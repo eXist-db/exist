@@ -53,8 +53,7 @@ public class Init extends AbstractCommandContinuation {
 
 	public byte[] responseBytes() {
 		String init_message = "<init " +
-			"xmlns=\"urn:debugger_protocol_v1\" " +
-			"xmlns:xdebug=\"http://xdebug.org/dbgp/xdebug\" " +
+			namespaces +
 			"appid=\"eXist050705\" " + //keep this as memory of creation
 			"idekey=\""+idekey+"\" " +
 			"session=\""+idesession+"\" " +

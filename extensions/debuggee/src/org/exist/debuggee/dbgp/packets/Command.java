@@ -36,6 +36,10 @@ public abstract class Command implements Packet {
 
     private final static Logger LOG = Logger.getLogger(Packet.class);
 
+    protected final static String namespaces = 
+    	"xmlns=\"urn:debugger_protocol_v1\" " +
+    	"xmlns:xdebug=\"http://xdebug.org/dbgp/xdebug\" ";
+    
     protected IoSession session;
 
 	/**
@@ -183,9 +187,11 @@ public abstract class Command implements Packet {
 	}
 
 	public static String getFileuri(XACMLSource fileuri) {
+//		System.out.println("getFileuri dbgp:"+fileuri.getType()+"://"+fileuri.getKey());
 		if (fileuri.getType().toLowerCase().equals("file"))
 			return "file://"+fileuri.getKey();
 		else
 			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
+//		return "http://localhost:8080/eXist/admin/admin.xql";
 	}
 }
