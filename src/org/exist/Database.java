@@ -21,6 +21,8 @@
  */
 package org.exist;
 
+import java.util.Observer;
+
 import org.exist.indexing.IndexManager;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -39,6 +41,8 @@ public interface Database {
 	//TODO: javadocs
 	
 	public String getId(); 
+	
+	public void addObserver(Observer o);
 	
 	/**
 	 * 
