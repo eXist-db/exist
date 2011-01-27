@@ -477,6 +477,8 @@ public class XQueryServlet extends HttpServlet {
             context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
             context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
 
+            //TODO: XDEBUG_SESSION_STOP_NO_EXEC
+            //TODO: XDEBUG_SESSION_STOP
             //if get "start new debug session" request
     		String xdebug = request.getParameter("XDEBUG_SESSION_START");
     		if (xdebug != null) {
@@ -499,6 +501,12 @@ public class XQueryServlet extends HttpServlet {
             			}
         			}
     			}
+    		}
+    		
+    		if (context.requireDebugMode()) {
+    			String idekey = request.getParameter("KEY");
+    			if (idekey != null)
+    				context.declareVariable(Debuggee.IDEKEY,  idekey);
     		}
 
             Sequence resultSequence;
