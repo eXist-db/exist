@@ -280,7 +280,7 @@ declare function indexes:analyze-lucene-indexes($xconf) {
             for $text in $texts
             let $qname := if ($text/@qname) then $text/@qname/string() else ()
             let $match := if ($text/@match) then $text/@match/string() else ()
-            let $id := if ($text/@id) then $text/@id/string() else ()
+            let $analyzer := if ($text/@analyzer) then $text/@analyzer/string() else ()
             let $collection := substring-after(util:collection-name($text), '/db/system/config')
             let $nodeset := if ($qname) then indexes:get-nodeset-from-qname($collection, $qname) else indexes:get-nodeset-from-match($collection, $match)
             return
@@ -289,7 +289,7 @@ declare function indexes:analyze-lucene-indexes($xconf) {
                         {if ($qname) then $qname else $match} 
                         {if ($text/@boost) then concat(' (boost: ', $text/@boost/string(), ')') else ()}
                         {if ($text/cc:ignore) then (<br/>, concat('(ignore: ', string-join(for $ignore in $text/cc:ignore return $ignore/@qname/string(), ', '), ')')) else ()}</td>
-                    <td>{$index-label} {if ($qname) then ' QName' else ' Match'} {if ($id) then concat(' (', $id, ')') else ' (default analyzer)' (: TODO: complete report of default/other Lucene analyzers :)}</td>
+                    <td>{$index-label} {if ($qname) then ' QName' else ' Match'} {if ($analyzer) then concat(' (', $analyzer, ')') else ' (default analyzer)' (: TODO: complete report of default/other Lucene analyzers :)}</td>
                     <td>{count($nodeset)}</td>
                     <td>{
                         if (empty($nodeset)) then ()
