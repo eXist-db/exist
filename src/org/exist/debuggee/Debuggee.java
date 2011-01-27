@@ -34,6 +34,7 @@ public interface Debuggee {
 	public static final String PREFIX = "dbgp";
 
 	public static final QName SESSION = new QName("session", NAMESPACE_URI, PREFIX);
+	public static final QName IDEKEY = new QName("idekey", NAMESPACE_URI, PREFIX);
 	
 	public boolean joint(CompiledXQuery compiledXQuery);
 }
