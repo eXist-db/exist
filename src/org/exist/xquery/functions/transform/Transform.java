@@ -24,6 +24,7 @@ package org.exist.xquery.functions.transform;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
@@ -89,6 +90,7 @@ import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.Receiver;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -375,7 +377,7 @@ public class Transform extends BasicFunction {
                     {
 						//as this is a persistent node (e.g. a stylesheet stored in the db)
 						//set the URI Resolver as a DatabaseResolver
-						factory.setURIResolver(new DatabaseResolver(root.getDocument()));
+						factory.setURIResolver(new EXistURIResolver(root.getDocument().getCollection().getURI().toString()));
 					
 						String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getDocument().getURI();
 						templates = getSource(factory, uri);
@@ -383,11 +385,22 @@ public class Transform extends BasicFunction {
 				}
 				if(templates == null)
 				{
+					if (stylesheetItem instanceof Document) {
+						String uri = ((Document) stylesheetItem).getDocumentURI();
+						uri = uri.substring(0, uri.lastIndexOf('/'));
+						factory.setURIResolver(new EXistURIResolver(uri));
+					}
 					templates = getSource(factory, stylesheetNode);
 				}
 			}
 			else
 			{
+				if (stylesheetItem instanceof Document) {
+					String uri = ((Document) stylesheetItem).getDocumentURI();
+					uri = uri.substring(0, uri.lastIndexOf('/'));
+					factory.setURIResolver(new EXistURIResolver(uri));
+				}
+
 				String stylesheet = stylesheetItem.getStringValue();
 				templates = getSource(factory, stylesheet);
 			}
@@ -531,7 +544,7 @@ public class Transform extends BasicFunction {
 		
 		private Templates getSource(DocumentImpl stylesheet)
 		throws XPathException, TransformerConfigurationException {
-			factory.setURIResolver(new DatabaseResolver(stylesheet));
+			factory.setURIResolver(new EXistURIResolver(stylesheet.getCollection().getURI().toString()));
             TransformErrorListener errorListener = new TransformErrorListener();
             factory.setErrorListener(errorListener);
 			TemplatesHandler handler = factory.newTemplatesHandler();
@@ -582,15 +595,13 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private class DatabaseResolver implements URIResolver {
+	private class EXistURIResolver implements URIResolver {
 		
-		DocumentImpl doc;
 		// Base path
 		String  	basePath;
 		
-		public DatabaseResolver(DocumentImpl myDoc) {
-			this.doc = myDoc;
-			basePath = myDoc.getCollection().getURI().toString();
+		public EXistURIResolver(String docPath) {
+			basePath = docPath;
 			
 			LOG.debug("Database Resolver base path set to " + basePath);
 		}
@@ -598,12 +609,13 @@ public class Transform extends BasicFunction {
 		/** Simplify a path removing any "." and ".." path elements.
 		 * Assumes an absolute path is given.
 		 */
-		public String normalizePath(String path) {
+		private String normalizePath(String path) {
 			if (!path.startsWith("/"))
                 throw new IllegalArgumentException("normalizePath may only be applied to an absolute path; " +
                     "argument was: " + path + "; base: " + basePath);
 
 			String[]	pathComponents = path.substring(1).split("/");
+				
 			int			numPathComponents  = Array.getLength(pathComponents);
 			String[]	simplifiedComponents = new String[numPathComponents];
 			int 		numSimplifiedComponents = 0;
@@ -625,9 +637,8 @@ public class Transform extends BasicFunction {
 				b.append("/").append(simplifiedComponents[x]);
 			}
 			
-			if (path.endsWith("/")) {
+			if (path.endsWith("/"))
 				b.append("/");
-			}
 			
 			return b.toString();
 		}
@@ -657,10 +668,33 @@ public class Transform extends BasicFunction {
 				}
 				path = base.substring(0, base.lastIndexOf("/") + 1) + href;
 			}
-			path = normalizePath(path);
+			LOG.debug("Resolving path " + href + " with base " + base + " to " + path);// + " (URI = " + uri.toASCIIString() + ")");
+
+			if (path.startsWith("/")) {
+				path = normalizePath(path);
+				return databaseSource(path);
+			} else {
+				return urlSource(path);
+			}
+		}
+		
+		private Source urlSource(String path) throws TransformerException {
+			try {
+				URL url = new URL(path);
+				return new StreamSource(url.openStream());
+			
+			} catch (FileNotFoundException e) {
+				throw new TransformerException(e.getMessage(), e);
+			} catch (MalformedURLException e) {
+				throw new TransformerException(e.getMessage(), e);
+			} catch (IOException e) {
+				throw new TransformerException(e.getMessage(), e);
+			}
+		}
+
+		private Source databaseSource(String path) throws TransformerException {
 			XmldbURI uri = XmldbURI.create(path);
 			
-			LOG.debug("Resolving database path " + href + " with base " + base + " to " + path + " (URI = " + uri.toASCIIString() + ")");
 			DocumentImpl xslDoc;
 			try {
 				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(uri);
@@ -674,7 +708,7 @@ public class Transform extends BasicFunction {
 					
 				}
 			}
-			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
+			if(!xslDoc.getPermissions().validate(context.getSubject(), Permission.READ))
 			    throw new TransformerException("Insufficient privileges to read resource " + path);
 
 			DOMSource source = new DOMSource(xslDoc);
