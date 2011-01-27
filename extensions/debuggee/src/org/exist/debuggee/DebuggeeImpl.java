@@ -28,6 +28,9 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -72,9 +75,28 @@ public class DebuggeeImpl implements Debuggee {
 			DebuggeeJointImpl joint = new DebuggeeJointImpl();
 
 			joint.setCompiledScript(compiledXQuery);
-			compiledXQuery.getContext().setDebuggeeJoint(joint);
+			XQueryContext context = compiledXQuery.getContext();
+			context.setDebuggeeJoint(joint);
 			
-			joint.continuation(new Init(session));
+			String idesession = "";
+			if (context.isVarDeclared(Debuggee.SESSION)) {
+				try {
+					Variable var = context.resolveVariable(Debuggee.SESSION);
+					idesession = var.getValue().toString();
+				} catch (XPathException e) {
+				}
+			}
+			
+			String idekey = "";
+			if (context.isVarDeclared(Debuggee.IDEKEY)) {
+				try {
+					Variable var = context.resolveVariable(Debuggee.IDEKEY);
+					idekey = var.getValue().toString();
+				} catch (XPathException e) {
+				}
+			}
+			
+			joint.continuation(new Init(session, idesession, idekey));
 			
 			return true;
 		}

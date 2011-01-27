@@ -268,6 +268,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void reset() {
+		//System.out.println("reset");
 		firstExpression = null;
 		
 		stack = new ArrayList<Expression>();
@@ -282,6 +283,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public synchronized void continuation(CommandContinuation command) {
+		//System.out.println("continuation command = "+command);
 		if (firstExpression == null && !command.is(CommandContinuation.INIT))
 			command.setStatus(STOPPED);
 		
@@ -452,6 +454,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		XQueryContext context = compiledXQuery.getContext().copyContext();
 		context.setDebuggeeJoint(null);
 		context.undeclareGlobalVariable(Debuggee.SESSION);
+		context.undeclareGlobalVariable(Debuggee.IDEKEY);
 		
 		XQuery service = context.getBroker().getXQueryService();
 		CompiledXQuery compiled = service.compile(context, script);
