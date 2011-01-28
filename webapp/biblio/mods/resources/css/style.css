@@ -4,8 +4,6 @@
 
 empty {display: none;}
 
-
-
 body {
    background-color: #DDD;
    font-family: arial, helvetica, verdana, sans-serif;
@@ -21,6 +19,7 @@ body {
     padding-top: 10px;
     padding-bottom: 10px;
     -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
     border-radius: 10px;
 }
 
@@ -68,7 +67,6 @@ img {
 
 .left-nav a {
    line-height: 25px;
-   /* border: solid 1px blue; */
 }
 
 .header-text {
@@ -113,8 +111,6 @@ img {
 .status-75 {background-color: lightblue;}
 .status-100 {background-color: lightgreen;}
 
-
-
 /* all the attributes of each tab, except the background color */
 .tabs xf|trigger, tags a {
     border-left: black solid 1px;
@@ -126,6 +122,7 @@ img {
     padding: 3px;
     /* the following only works under FireFox */
     -moz-border-radius: .5em .5em 0em 0em;
+    -webkit-border-radius: .5em .5em 0em 0em;
     border-radius-topright: .5em;
     border-radius-topleft: .5em;
 }
