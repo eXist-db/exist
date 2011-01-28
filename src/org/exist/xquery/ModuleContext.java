@@ -148,10 +148,21 @@ public class ModuleContext extends XQueryContext {
             this.parentContext = ((ModuleContext)from).parentContext;
         }
         
-        //workaround for shared context issue, remove after fix 
+        //workaround for shared context issue, remove after fix
+        try {
+        	Variable var = from.getRootContext().resolveVariable(ResponseModule.PREFIX + ":response");
+        	if (var != null)
+        		declareVariable(
+					ResponseModule.PREFIX + ":response", 
+					var.getValue()
+				);
+		} catch (Exception e) {
+			//ignore if not set
+		}
+
         setModule(
     		ResponseModule.NAMESPACE_URI, 
-    		from.getModule(ResponseModule.NAMESPACE_URI)
+    		from.getRootContext().getModule(ResponseModule.NAMESPACE_URI)
     	);
     }
 
