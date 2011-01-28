@@ -1,9 +1,0 @@
- <p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-    <p:wrap>
-        <p:with-option name="wrapper" select="'aaaaaaaaaaaaa'"/>   
-        <p:with-option name="match" select="'//c'"/> 
-    </p:wrap>
-
-</p:pipeline>

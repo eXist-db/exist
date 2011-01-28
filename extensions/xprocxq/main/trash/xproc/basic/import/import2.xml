@@ -1,9 +1,0 @@
-<p:declare-step name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc"
-            xmlns:mine="http://www.example.org/test/mine">
-
-<p:import href="file:test/xproc/basic/declare-step/declare-step2.xml"/>
-
-<p:count/>
-    
-</p:declare-step>

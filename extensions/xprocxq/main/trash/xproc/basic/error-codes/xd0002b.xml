@@ -1,8 +1,0 @@
-<p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-<!-- TODO: throwing err:xs0010 not enabled yet //-->
-
-    <p:count name="step1" mynonexistentoption="test"/>
-    
-</p:pipeline>

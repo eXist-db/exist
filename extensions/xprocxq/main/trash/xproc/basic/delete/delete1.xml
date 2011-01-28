@@ -1,8 +1,0 @@
- <p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-<!-- FIXME: only does element names, need to handle quotes for values //-->
-
-   <p:delete name="step1" match="c"/>
-
-</p:pipeline>

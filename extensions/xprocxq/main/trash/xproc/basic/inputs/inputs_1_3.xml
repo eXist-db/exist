@@ -1,8 +1,0 @@
-<p:pipeline name="main"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-      <p:identity>
-        <p:input port="source" select="/test/a/text()"/>
-      </p:identity>
-
-</p:pipeline>

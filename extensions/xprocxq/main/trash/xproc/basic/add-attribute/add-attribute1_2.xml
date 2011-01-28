@@ -1,3 +1,0 @@
-    <p:pipeline name="pipeline" xmlns:p="http://www.w3.org/ns/xproc">
-      <p:add-attribute match="test" attribute-name="foo" attribute-value="bar"/>
-    </p:pipeline>

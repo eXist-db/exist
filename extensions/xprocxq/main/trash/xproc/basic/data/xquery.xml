@@ -1,3 +1,0 @@
-<c:query xmlns:c="http://www.w3.org/ns/xproc-step">declare variable $s:='xquery version "1.0";declare variable $s:="";substring($s,1,44),$s,substring($s,45)';
-substring($s, 1,44),$s,substring($s,45)
-</c:query>

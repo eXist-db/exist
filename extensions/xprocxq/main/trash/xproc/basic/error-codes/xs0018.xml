@@ -1,9 +1,0 @@
-<p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-<!-- reqiures match option to work //-->
-
-   <p:delete name="step1" />
-
-    
-</p:pipeline>

@@ -1,9 +1,0 @@
-<p:pipeline xmlns:p="http://www.w3.org/ns/xproc">
-
-     <p:store>
-      <p:with-option name="href" select="concat('unique-filename-',p:iteration-position(), '.xml')">
-         <p:empty/>
-      </p:with-option>
-    </p:store>
-
-</p:pipeline>

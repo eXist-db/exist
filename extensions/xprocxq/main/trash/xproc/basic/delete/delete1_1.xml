@@ -1,6 +1,0 @@
-<p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-   <p:delete name="step1" match="nonexistentelement"/>
-
-</p:pipeline>
