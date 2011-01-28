@@ -21,14 +21,8 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.ByteArrayInputStream;
-import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
@@ -54,13 +48,12 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xslt.TransformerFactoryAllocator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Craig Goodyer <craiggoodyer@gmail.com>
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  */
 public class RenderFunction extends BasicFunction {
 
@@ -70,14 +63,14 @@ public class RenderFunction extends BasicFunction {
 
         new FunctionSignature(
             new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-            "Renders a given XSL-FO document. "
+            "Renders a given FO document. "
             + "Returns an xs:base64binary of the result. "
             + "Parameters are specified with the structure: "
             + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
             + "</parameters>. "
             + "Recognised rendering parameters are: author, title, keywords and dpi.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
                 new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform")
             },
@@ -86,14 +79,14 @@ public class RenderFunction extends BasicFunction {
 
         new FunctionSignature(
             new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-            "Renders a given XSL-FO document. "
+            "Renders a given FO document. "
             + "Returns an xs:base64binary of the result. "
             + "Parameters are specified with the structure: "
             + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
             + "</parameters>. "
             + "Recognised rendering parameters are: author, title, keywords and dpi.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "XSL-FO document"),
+                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
                 new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
                 new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "Apache FOP Configuration file")
@@ -144,20 +137,6 @@ public class RenderFunction extends BasicFunction {
         }
 
         try {
-            // setup a transformer handler
-            TransformerHandler handler = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool()).newTransformerHandler();
-            Transformer transformer = handler.getTransformer();
-
-            // set the parameters if any
-            if(!parameters.isEmpty()) {
-                Enumeration keys = parameters.keys();
-
-                for(Entry parameter : parameters.entrySet()) {
-                    String name = (String)parameter.getKey();
-                    String value = (String)parameter.getValue();
-                    transformer.setParameter(name, value);
-                }
-            }
 
             // setup the FopFactory
             FopFactory fopFactory = FopFactory.newInstance();
@@ -169,7 +148,7 @@ public class RenderFunction extends BasicFunction {
 
             // setup the foUserAgent, using given parameters held in the
             // transformer handler
-            FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters, transformer);
+            FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
 
             // create new instance of FOP using the mimetype, the created user
             // agent, and the output stream
@@ -186,8 +165,6 @@ public class RenderFunction extends BasicFunction {
 
             // return the result
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-        } catch(TransformerException te) {
-            throw new XPathException(this, te.getMessageAndLocation(), te);
         } catch(SAXException se) {
             throw new XPathException(this, se.getMessage(), se);
         }
@@ -204,32 +181,31 @@ public class RenderFunction extends BasicFunction {
      * @return FOUserAgent The generated FOUserAgent to include any parameters
      *         passed in
      */
-    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters, Transformer transformer) throws TransformerException {
+    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters) {
 
         // setup the foUserAgent as per the parameters given
-        foUserAgent.setProducer("eXist with Apache FOP");
+        foUserAgent.setProducer("eXist-db with Apache FOP");
 
-        if(transformer.getParameter("FOPauthor") != null) {
-            foUserAgent.setAuthor(parameters.getProperty("author"));
-        }
+        for(Entry paramEntry : parameters.entrySet()) {
+            String key = (String)paramEntry.getKey();
+            String value = (String)paramEntry.getValue();
 
-        if(transformer.getParameter("FOPtitle") != null) {
-            foUserAgent.setTitle(parameters.getProperty("title"));
-        }
-
-        if(transformer.getParameter("FOPkeywords") != null) {
-            foUserAgent.setTitle(parameters.getProperty("keywords"));
-        }
-
-        if(transformer.getParameter("FOPdpi") != null) {
-            String dpiStr = (String) transformer.getParameter("dpi");
-            try {
-                foUserAgent.setTargetResolution(Integer.parseInt(dpiStr));
-            } catch(NumberFormatException nfe) {
-                throw new TransformerException("Cannot parse value of \"dpi\" - " + dpiStr + " to configure FOUserAgent");
+            if(key.equals("FOPauthor")) {
+                foUserAgent.setAuthor(value);
+            } else if(key.equals("FOPtitle")) {
+                foUserAgent.setTitle(value);
+            } else if(key.equals("FOPkeywords")) {
+                foUserAgent.setTitle(value);
+            } else if(key.equals("FOPdpi")) {
+                try {
+                    foUserAgent.setTargetResolution(Integer.parseInt(value));
+                } catch(NumberFormatException nfe) {
+                    LOG.warn("Unable to set DPI to: " + value);
+                }
             }
-        }
 
+        }
+        
         return foUserAgent;
     }
 
