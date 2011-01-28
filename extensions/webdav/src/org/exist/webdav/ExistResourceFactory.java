@@ -119,6 +119,11 @@ public class ExistResourceFactory implements ResourceFactory {
                     LOG.debug("ignoring file");
                 return null;
 
+            case NOT_EXISTING:
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Resource does not exist: '" + uri + "'");
+                return null;
+
             default:
                 LOG.error("Unkown resource type for " + uri);
                 return null;
