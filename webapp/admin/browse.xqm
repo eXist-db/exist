@@ -18,7 +18,7 @@ import module namespace date="http://exist-db.org/xquery/admin-interface/date" a
 :)
 declare function browse:main() as element()
 {
-    let $colName := request:get-parameter("collection", "/db") return
+    let $colName := request:get-parameter("collection", "/db")[1] return
         <div class="panel">
             { browse:process-action($colName) }
             <div class="panel-head">Browsing Collection: {xdb:decode-uri(xs:anyURI($colName))}</div>
