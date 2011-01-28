@@ -1,7 +1,0 @@
-<p:declare-step name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-
-    <p:count name="step1" limit="4"/>
-    
-</p:declare-step>

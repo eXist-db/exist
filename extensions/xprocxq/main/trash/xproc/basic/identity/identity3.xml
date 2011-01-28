@@ -1,9 +1,0 @@
- <p:declare-step name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
- 
- <p:store href="saveinput.xml"/>
-  <!-- store has no output, so what happens after a sink like this ? //-->
- 
- <p:identity/> 
-
-</p:declare-step>

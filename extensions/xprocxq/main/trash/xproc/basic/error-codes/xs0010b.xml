@@ -1,8 +1,0 @@
-<p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-    <p:count name="step1">
-        <p:with-option name="somenonexistantoption" select="'1'"/>
-    </p:count>
-    
-</p:pipeline>

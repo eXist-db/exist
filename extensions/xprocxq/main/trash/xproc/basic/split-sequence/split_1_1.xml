@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
-name="pipeline">
-    
-       
-    <p:split-sequence name="introduction" test="not(/introduction)"/>
-
-</p:declare-step>

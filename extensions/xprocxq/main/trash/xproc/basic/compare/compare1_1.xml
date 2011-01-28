@@ -1,7 +1,0 @@
- <p:declare-step name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-                
-<!-- should throw an error //-->
-   <p:compare name="step1"/>
-
-</p:declare-step>

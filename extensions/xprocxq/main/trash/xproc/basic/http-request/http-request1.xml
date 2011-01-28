@@ -1,6 +1,0 @@
- <p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-   <p:http-request name="step1"/>
-
-</p:pipeline>

@@ -1,7 +1,0 @@
-<p:declare-step name="main"
-            xmlns:p="http://www.w3.org/ns/xproc">
-    
-
-    <p:wrap wrapper="mytestwrapperlement" match="/"/>
-
-</p:declare-step>

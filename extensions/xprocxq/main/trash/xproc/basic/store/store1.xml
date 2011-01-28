@@ -1,5 +1,0 @@
-<p:pipeline name="test" xmlns:p="http://www.w3.org/ns/xproc">
-
-     <p:store/>
-
-</p:pipeline>

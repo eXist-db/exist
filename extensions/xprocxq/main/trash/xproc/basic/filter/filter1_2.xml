@@ -1,8 +1,0 @@
- <p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-
-   <p:filter name="step1">
-       <p:with-option name="select" select="'/test/a'"/>
-   </p:filter>
-
-</p:pipeline>

@@ -1,6 +1,0 @@
- <p:pipeline name="pipeline"
-            xmlns:p="http://www.w3.org/ns/xproc">
-<!-- no match //-->
-   <p:filter name="step1" select="/someunknownelement"/>
-
-</p:pipeline>
