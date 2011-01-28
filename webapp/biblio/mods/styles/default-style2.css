@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -9,6 +10,7 @@
     }
 }
 
+.app-name {display: none}
 /* Font size adjustments. Copied from Yahoo YUI */
 body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}
 table {font-size:inherit;font:100%;}
@@ -27,6 +29,7 @@ p, td {
 
 ol, ul {
     margin: 0 15px 1em 40px;
+    font-size: 1.2em;
 }
 
 ul li, ol li {
@@ -36,11 +39,11 @@ ul li, ol li {
 }
 
 a:hover {
-    border-bottom: 1px solid gray;
+    1border-bottom: 1px solid gray;
 }
 
 a, a:visited {
-    color: #0000AA;
+    color: #5DB0E6;
     font-weight: bold;
     text-decoration: none;
 }
@@ -55,8 +58,19 @@ button, input, select {
 #page-head {
 	position: relative;
     margin: 25px 50px 5px 50px;
-    height: 185px;
+    height: 8.75em;
 }
+#page-head-left {
+    position: absolute;
+    left: 0;
+}
+
+#page-head-right {
+    position: absolute;
+    right: 0;
+    margin-top: 1em;
+}
+
 #page-head #navbar {
     margin: 10px 0 0 0;
     border-top: 1px solid #DEDEDE;
@@ -116,7 +130,7 @@ button, input, select {
     position: absolute;
     width: 180px;
     left: 50px;
-    top: 215px;
+    top: 11em;
     display: block;
     overflow: hidden;
 }
@@ -160,6 +174,15 @@ button, input, select {
     right: 50px;
     display: block;
     overflow: hidden;
+}
+
+.publication {
+    color: #3399CC;
+}
+.container {
+    color: #BDA21E;
+}.location{
+    color: #B02B73;
 }
 
 /* a block in the sidebar or the news */
@@ -329,13 +352,14 @@ h1 {
     font-size: 1.5em;
     font-weight: normal;
     color: white;
-    background-color: #0990EE;
+    background-color: #5DB0E6;
     margin-left: 0px;
     margin-bottom: 15px;
     margin-top: 0px;
     padding-left: 5px;
     padding-right: 5px;
     padding-bottom: 5px;
+    padding-top: 5px;
 }
 h2 {
     font-size: 1.5em;
@@ -536,10 +560,10 @@ table.center {
 }
 
 .note {
-    background-color: #fac783;
-    border-left: 2px solid #fac783;
-    border-right: 2px solid #fac783;
-    border-bottom: 2px solid #fac783;
+    background-color: #5DB0E6;
+    border-left: 2px solid #5DB0E6;
+    border-right: 2px solid #5DB0E6;
+    border-bottom: 2px solid #5DB0E6;
 }
 
 .note h1 {
@@ -548,7 +572,7 @@ table.center {
 
 .note .note_content {
     padding: 5px 0;
-    background-color: #fde7ca;
+    background-color: #EDF0FA;
 }
     
 .example {

@@ -1,5 +1,12 @@
 xquery version "1.0";
 
+(: 
+        to change from eXist to Tamboti, 
+        close all eXist-begin and eXist-end, 
+        and open all Tamboti-begin and Tamboti-end.
+        Make corresponding change in /db/org/library/apps/mods/search/index.xml.
+:)
+
 module namespace style = "http://exist-db.org/mods-style";
 
 declare namespace request="http://exist-db.org/xquery/request";
@@ -48,7 +55,14 @@ as element() {
     <html xmlns="http://www.w3.org/1999/xhtml">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-            <title>{ $title }</title>
+            <title>
+            <!--eXist-begin
+                eXist Bibiliographical Demo
+                eXist-end-->
+            <!--Tamboti-begin-->
+                Tamboti Metadata Framework
+            <!--Tamboti-end-->
+            </title>
             { style:css('xhtml') }
             { $style }
         </head>
@@ -154,37 +168,71 @@ as node()+ {
     >{ $dummy-attributes }
         <head>
             
-            <title>{ $title }</title>
+            <title>
+            <!--eXist-begin
+                eXist Bibiliographical Demo - MODS record editor
+                eXist-end-->
+            <!--Tamboti-begin-->
+                Tamboti Metadata Framework - MODS record editor
+            <!--Tamboti-end-->
+            </title>
             <link rel="stylesheet" type="text/css" href="edit.css"/>
+            <!--Tamboti-begin-->
+                <link rel="stylesheet" type="text/css" href="tamboti.css"/>
+            <!--Tamboti-end-->
             { style:css('xforms') }
             { $style }
             { $model }
         </head>
         <body>
-            <div id="page-head">
+        <div id="page-head">
+        
+        <!--Tamboti-begin-->
+        <div id="page-head-left">
+            <a href="/exist/library/">
+                <img 
+                    src="../../../resources/images/tamboti.png" 
+                    title="Tamboti Metadata Framework" 
+                    alt="Tamboti Metadata Framework" 
+                    style="border-style: none;"/>
+            
+            </a>
+        </div>
+        <div id="page-head-right">
+            <a href="http://www.asia-europe.uni-heidelberg.de/en/home.html" target="_blank">
+                <img 
+                    src="../../../resources/images/logovjc.gif" 
+                    title="The Cluster of Excellence &quot;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&quot; at Heidelberg University" 
+                    alt="The Cluster of Excellence &quot;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&quot; at Heidelberg University" 
+                    width="75" 
+                    height="69" 
+                    style="border-style: none"/>
+            </a>
+        </div>
+        <!--Tamboti-end-->
+        <!--eXist-begin
                 <a href="index.xml" style="text-decoration: none">
                     <img src="{$style:site-resources}/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
                 </a>
-                <!--
                 <div id="quicksearch">
                     <form action="" method="GET">
                         <input type="text" size="20" name="q"/>
                         <input type="submit" value="Search"/>
                     </form>
                 </div>
-                -->
                 <div id="navbar">
                     <h1>Open Source Native XML Database</h1>
                 </div>
+            eXist-end-->
             </div>
             <div id="content1col">
             <div class="container">
-                { style:header() }
+                <!--{ style:header() }-->
                 <div class="inner">
                     <h3>{$title}</h3>
                     { $content }
                 </div>
-                { style:footer() }
+                <!--{ style:footer() }-->
             </div>
             </div>
         </body>

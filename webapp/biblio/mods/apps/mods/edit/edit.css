@@ -6,13 +6,21 @@ body
   /*overrules xsltforms.css*/
   background-color: #ffffff !important;
 }
-div.blue {border-color:#3681B3}
+
 #page-head {
     height: 16em;
     margin-bottom: 5px;
     margin-left: 50px;
     margin-right: 50px;
     margin-top: 5px;
+}
+
+#titleInfo-suebs-tibetan-repeat input {
+    1margin-left: 5em;
+}
+#relatedItem-suebs-tibetan-repeat .xforms-repeat-item-selected
+{
+background-color:#F2F5FC;
 }
 
 #page-head-left {
@@ -270,7 +278,13 @@ xf|submit xf|label.xforms-group-label-centered-general { /*buttons outside the f
 }
 
 .xforms-group-content {
-    vertical-align: top;    
+    vertical-align: top;
+    margin-bottom: 0;    
+}
+
+fieldset .level-2 .xforms-group-content,
+fieldset .level-3 .xforms-group-content{
+    margin-bottom: .5em;    
 }
 
 xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not work*/
@@ -285,7 +299,7 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
     float:left;
 }
 .text_10 .xforms-value {
-    width: 15em;
+    width: 10em;
     }
 .text_50 .xforms-value {
     width: 25em;
@@ -329,7 +343,7 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     width: 1.75em !important;
     height: 1.75em;
     padding: 0;
-    margin: 0 0 0 .25em;
+    margin: 0 .5em 0 .5em;
 }
 
 .wide .xforms-control button
@@ -414,8 +428,7 @@ div.xforms-hint-value
     border-width: 1px;
     }
 
-.compact #fieldset-namePart-author label,
-.compact #fieldset-namePart-editor label,
+.compact #fieldset-namePart label,
 .compact #fieldset-place label,
 .compact #fieldset-publisher label,
 .compact #fieldset-dateIssued label,
@@ -424,8 +437,15 @@ div.xforms-hint-value
     margin-left: -1em;
     }
 
-.compact #fieldset-namePart-author input,
-.compact #fieldset-namePart-editor input,
+.compact #fieldset-note select {
+    margin-left: 2.45em;
+}
+.compact #fieldset-role select {
+    margin-left: -1.5em;
+}
+
+
+.compact #fieldset-namePart input,
 .compact #fieldset-relatedItem-periodical-namePart input,
 .compact #fieldset-relatedItem-anthology-namePart input,
 .compact #fieldset-relatedItem-series-namePart input
@@ -516,19 +536,15 @@ related-container
     margin-bottom: 1em !important;
     }
 
-.compact .level-1
+.level-1
     {
     margin-top: 1em;
     margin-bottom: 1em;    
 }
 
 
-.compact .level-2,
-.compact .level-3,
-.compact #fieldset-geographic .level-2,
-.compact #fieldset-temporal .level-2,
-.compact #fieldset-topic .level-2,
-.compact #fieldset-publisher .level-2
+.level-2,
+.level-3
 {
     margin-top: 2em;
     margin-bottom: 2em;    
