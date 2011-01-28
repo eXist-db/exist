@@ -49,13 +49,7 @@
         <mkdir dir="${classes}"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/extensions/contentextraction/lib" 
-            url="${include.feature.contentextraction.core.url}" classname="org.apache.tika.Tika"/>
-        
-        <fetch classpathref="classpath.core" dest="${top.dir}/extensions/contentextraction/lib" 
-            url="${include.feature.contentextraction.parser.url}" classname="org.apache.tika.parser.xml.XMLParser"/>
-        
-        <fetch classpathref="classpath.core" dest="${top.dir}/extensions/contentextraction/lib" 
-            url="${include.feature.contentextraction.metadata.url}" classname="com.drew.metadata.Metadata"/>
+            url="${include.feature.contentextraction.tika.url}" classname="org.apache.tika.Tika"/>
     </target> 
 
     <target name="compile" depends="prepare" if="include.feature.contentextraction.config">
