@@ -45,7 +45,7 @@
     -->
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
-    <target name="prepare">
+    <target name="prepare" if="include.feature.contentextraction.config">
         <mkdir dir="${classes}"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/extensions/contentextraction/lib" 
