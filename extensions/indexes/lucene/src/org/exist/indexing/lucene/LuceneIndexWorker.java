@@ -464,6 +464,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             searcher = index.getSearcher();
             Analyzer analyzer = getAnalyzer(field, null, context.getBroker(), docs);
+            LOG.debug("Using analyzer " + analyzer + " for " + queryString);
             QueryParser parser = new QueryParser(field, analyzer);
             setOptions(options, parser);
             Query query = parser.parse(queryString);
@@ -881,13 +882,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         NodeId nodeId;
         CharSequence text;
         QName qname;
-        Analyzer analyzer;
         LuceneIndexConfig idxConf;
 
         private PendingDoc(NodeId nodeId, QName qname, NodePath path, CharSequence text, LuceneIndexConfig idxConf) {
             this.nodeId = nodeId;
             this.qname = qname;
-            this.analyzer = config.getAnalyzer(path);
             this.text = text;
             this.idxConf = idxConf;
         }
@@ -932,10 +931,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
                     Field.TermVector.YES));
 
-                if (pending.analyzer == null)
+                if (pending.idxConf.getAnalyzer() == null)
                     writer.addDocument(doc);
-                else
-                    writer.addDocument(doc, pending.analyzer);
+                else {
+                    writer.addDocument(doc, pending.idxConf.getAnalyzer());
+                }
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);

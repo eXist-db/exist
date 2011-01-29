@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet xmlns:stats="http://exist-db.org/xquery/profiling">
+    <testName>Lucene indexing tests</testName>
+    <description>
+        <para>Tests for the Lucene extensions</para>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="lucene"/>
+        <store collection="/db/system/config/db/lucene" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Lucene index is configured below -->
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="keyword" class="org.apache.lucene.analysis.KeywordAnalyzer"/>
+                        <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
+                        <text field="line" qname="l"/>
+                        <text qname="l" analyzer="de"/>
+                        <text field="lineno" qname="@n" analyzer="keyword"/>
+                    </lucene>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="lucene"/>
+        <store collection="/db/lucene" name="text.xml">
+                <text>
+                    <body>
+                        <lg>
+                            <l n="l1.1">Habe nun, ach! Philosophie,</l> 
+                            <l n="l1.2">Juristerei und Medizin,</l> 
+                            <l n="l1.3">Und leider auch Theologie</l> 
+                            <l n="l1.4">Durchaus studiert, mit heißem Bemühn.</l> 
+                            <l n="l1.5">Da steh ich nun, ich armer Tor!</l> 
+                            <l n="l1.6">Und bin so klug als wie zuvor;</l> 
+                            <l n="l1.7">Heiße Magister, heiße Doktor gar</l> 
+                            <l n="l1.8">Und ziehe schon an die zehen Jahr</l> 
+                            <l n="l1.9">Herauf, herab und quer und krumm</l> 
+                            <l n="l1.10">Meine Schüler an der Nase herum –</l> 
+                            <l n="l1.11">Und sehe, daß wir nichts wissen können!</l> 
+                            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+                        </lg>
+                    </body>
+                </text>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/lucene"/>
+        <remove-document collection="/db/system/config/db/lucene" name="collection.xconf"/>
+    </tearDown>
+    <test output="xml">
+        <task>German Analyzer: standard search</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'philosophie')]</code>
+        <expected>
+            <l n="l1.1">Habe nun, ach! Philosophie,</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>German Analyzer: stemmed verb</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'studieren')]</code>
+        <expected>
+            <l n="l1.4">Durchaus studiert, mit heißem Bemühn.</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>German Analyzer: plural finds singular</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'herzen')]</code>
+        <expected>
+            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Query field with standard analyzer, no match</task>
+        <code>ft:query-field("line", "herzen")</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>Query field with standard analyzer and without context</task>
+        <code>ft:query-field("line", 'klug')</code>
+        <expected>
+            <l n="l1.6">Und bin so klug als wie zuvor;</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Query field with keyword analyzer, no match</task>
+        <code>ft:query-field("lineno", "10")</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>Query field with keyword analyzer and without context</task>
+        <code><![CDATA[ft:query-field("lineno", "l1.10")/..]]></code>
+        <expected>
+            <l n="l1.10">Meine Schüler an der Nase herum –</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Query field with keyword analyzer and context</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query-field("lineno", "l1.10")]</code>
+        <expected>
+            <l n="l1.10">Meine Schüler an der Nase herum –</l>
+        </expected>
+    </test>
+</TestSet>

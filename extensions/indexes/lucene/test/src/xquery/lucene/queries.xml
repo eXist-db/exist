@@ -881,13 +881,13 @@
 	</test>
 	<test output="xml">
 		<task>Fields: keyword analyzer</task>
-		<code>doc("/db/lucene/text1.xml")/test[ft:query-field("id", "a11")]/id</code>
+		<code>doc("/db/lucene/text1.xml")/test[ft:query-field("id", "A11")]/id</code>
 		<expected><id>A11</id></expected>
 	</test>
 	<test output="xml">
     	<task>Fields: keyword analyzer, XML syntax</task>
     	<code><![CDATA[
-    		let $query := <query><term>a11</term></query>
+    		let $query := <query><term>A11</term></query>
     		return
     			doc("/db/lucene/text1.xml")/test[ft:query-field("id", $query)]/id
     	]]></code>
@@ -895,7 +895,7 @@
 	</test>
 	<test output="xml">
 		<task>Fields: keyword analyzer, no context</task>
-		<code>ft:query-field("id", "a11")</code>
+		<code>ft:query-field("id", "A11")</code>
 		<expected><id>A11</id></expected>
 	</test>
 	<!--test output="xml">
