@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet xmlns:stats="http://exist-db.org/xquery/profiling">
+    <testName>Lucene indexing tests</testName>
+    <description>
+        <para>Tests for the Lucene extensions</para>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="lucene"/>
+        <store collection="/db/system/config/db/lucene" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Lucene index is configured below -->
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <text qname="size"/>
+                        <text qname="p">
+                            <inline qname="b"/>
+                            <ignore qname="note"/>
+                        </text>
+                    </lucene>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="lucene"/>
+        <store collection="/db/lucene" name="text.xml">
+                <root>
+                    <size><width>12</width><height>8</height></size>
+                    <p>This is <b>un</b>clear.</p>
+                    <p>This is a paragraph<note>containing an inline note</note>.</p>
+                </root>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/lucene"/>
+        <remove-document collection="/db/system/config/db/lucene" name="collection.xconf"/>
+    </tearDown>
+    <test output="xml">
+        <task>Default processing</task>
+        <code>doc("/db/lucene/text.xml")//size[ft:query(., '12')]</code>
+        <expected>
+            <size><width>12</width><height>8</height></size>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Inline node</task>
+        <code>doc("/db/lucene/text.xml")//p[ft:query(., 'unclear')]</code>
+        <expected>
+            <p>This is <b>un</b>clear.</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Inline node: no match</task>
+        <code>doc("/db/lucene/text.xml")//p[ft:query(., 'clear')]</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>Ignored node: match outside</task>
+        <code>doc("/db/lucene/text.xml")//p[ft:query(., 'paragraph')]</code>
+        <expected>
+            <p>This is a paragraph<note>containing an inline note</note>.</p>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Ignored node: no match</task>
+        <code>doc("/db/lucene/text.xml")//p[ft:query(., 'inline')]</code>
+        <expected/>
+    </test>
+</TestSet>
