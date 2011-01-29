@@ -1,10 +1,10 @@
 package org.exist.xquery.modules.xslfo;
 
-import com.renderx.xep.FOTarget;
-import com.renderx.xep.FormatterImpl;
-import com.renderx.xep.lib.FormatterException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Properties;
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
  */
 public class RenderHouseXepProcessorAdapter implements ProcessorAdapter {
 
-    private FormatterImpl formatter = null;
+    private Object formatter = null;
 
 
     @Override
@@ -30,24 +30,40 @@ public class RenderHouseXepProcessorAdapter implements ProcessorAdapter {
         }
 
         try {
+
+            Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
+
             if(parameters == null) {
-                formatter = new FormatterImpl(new DOMSource((Node)configFile));
+                Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class);
+                formatter = formatterImplCstr.newInstance(new DOMSource((Node)configFile));
             } else {
-                formatter = new FormatterImpl(new DOMSource((Node)configFile), parameters);
+                Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class, Properties.class);
+                formatter = formatterImplCstr.newInstance(new DOMSource((Node)configFile), parameters);
             }
             String backendType = mimeType.substring(mimeType.indexOf("/")+1).toUpperCase();
-            FOTarget foTarget = new FOTarget(os, backendType);
 
-            return formatter.createContentHandler(null, foTarget);
-        } catch (FormatterException fe) {
-            throw new SAXException(fe.getMessage(), fe);
+            Class foTargetClazz = Class.forName("com.renderx.xep.FOTarget");
+            Constructor foTargetCstr = foTargetClazz.getConstructor(OutputStream.class, String.class);
+            Object foTarget = foTargetCstr.newInstance(os, backendType);
+
+            Method createContentHandlerMethod = formatterImplClazz.getMethod("createContentHandler", String.class, foTargetClazz);
+
+            return (ContentHandler) createContentHandlerMethod.invoke(formatter, null, foTarget);
+        } catch (Exception e) {
+            throw new SAXException(e.getMessage(), e);
         }
     }
 
     @Override
     public void cleanup() {
         if(formatter != null) {
-            formatter.cleanup();
+            try{
+                Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
+                Method cleanupMethod = formatterImplClazz.getMethod("cleanup", new Class[]{});
+                cleanupMethod.invoke(formatter, new Class[]{});
+            } catch(Exception e) {
+                // do nothing
+            }
         }
      }
 }
