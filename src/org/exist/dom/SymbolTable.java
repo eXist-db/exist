@@ -180,7 +180,7 @@ public class SymbolTable {
 		ensureCapacity();
 		names[id] = localName;
 
-		write(NAME_ID_TYPE, id, localName);
+		write(NAME_ID_TYPE, id, key);
 		changed = true;
 		return id;
 	}
