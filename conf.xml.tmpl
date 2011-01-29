@@ -820,16 +820,16 @@
             <module class="org.exist.xquery.modules.simpleql.SimpleQLModule"
                     uri="http://exist-db.org/xquery/simple-ql" />
             <module class="org.exist.xquery.modules.sql.SQLModule"
-                    uri="http://exist-db.org/xquery/sql" />
+                    uri="http://exist-db.org/xquery/sql" /-->
 
-            <module class="org.exist.xquery.modules.xslfo.XSLFOModule"
+            <!-- valid processor adapters are -
+                org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
+                org.exist.xquery.modules.xslfo.RenderHouseXepProcessorAdapter for RenderHouse's XEP
+            -->
+            <!--module class="org.exist.xquery.modules.xslfo.XSLFOModule"
                     uri="http://exist-db.org/xquery/xslfo">
-                <!-- valid processor adapters are -
-                    org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
-                    org.exist.xquery.modules.xslfo.RenderHouseXepProcessorAdapter for RenderHouse's XEP
-                -->
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
-            </module>
+            </module-->
 
             <module class="org.exist.xquery.modules.xmldiff.XmlDiffModule"
                     uri="http://exist-db.org/xquery/xmldiff" />
