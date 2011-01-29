@@ -234,7 +234,7 @@ public class XQueryURLRewrite implements Filter {
                 // check if the request URI is already in the url cache
                 ModelAndView modelView;
                 synchronized (urlCache) {
-                    modelView = urlCache.get(modifiedRequest.getRequestURI());
+                    modelView = urlCache.get(modifiedRequest.getHeader("Host") + modifiedRequest.getRequestURI());
                 }
                 // no: create a new model and view configuration
                 if (modelView == null) {
@@ -329,7 +329,7 @@ public class XQueryURLRewrite implements Filter {
 
                     if (modelView.useCache()) {
                         synchronized (urlCache) {
-                            urlCache.put(request.getRequestURI(), modelView);
+                            urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
                         }
                     }
                 }
