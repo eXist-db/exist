@@ -44,7 +44,7 @@ public class TestUtilModule extends AbstractInternalModule {
         new FunctionDef(PauseFunction.signature, PauseFunction.class)
     };
 
-    public TestUtilModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public TestUtilModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

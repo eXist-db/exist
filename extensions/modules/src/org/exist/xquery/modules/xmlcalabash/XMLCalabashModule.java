@@ -16,7 +16,7 @@ public class XMLCalabashModule extends AbstractInternalModule {
             new FunctionDef(ProcessFunction.signature, ProcessFunction.class)
         };
 
-    public XMLCalabashModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public XMLCalabashModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

@@ -50,7 +50,7 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Optimize.signature, Optimize.class)
     };
 
-    public LuceneModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public LuceneModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);
     }
 

@@ -51,7 +51,7 @@ public class ContextModule extends AbstractInternalModule {
 		new FunctionDef( GetID.signatures[0], GetID.class )
 	};
 
-	public ContextModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public ContextModule(Map<String, List<? extends Object>> parameters) {
 		super( signatures, parameters );
 	}
 

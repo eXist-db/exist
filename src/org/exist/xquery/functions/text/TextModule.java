@@ -74,7 +74,7 @@ public class TextModule extends AbstractInternalModule {
     /**
      * 
      */
-    public TextModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public TextModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
     

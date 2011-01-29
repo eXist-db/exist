@@ -75,7 +75,7 @@ public class SQLModule extends AbstractInternalModule
     public final static String         CONNECTIONS_CONTEXTVAR         = "_eXist_sql_connections";
     public final static String         PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 
-    public SQLModule(Map<String, Map<String, List<? extends Object>>> parameters)
+    public SQLModule(Map<String, List<? extends Object>> parameters)
     {
         super( functions, parameters );
     }

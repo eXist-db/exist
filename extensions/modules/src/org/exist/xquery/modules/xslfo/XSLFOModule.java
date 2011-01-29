@@ -23,6 +23,7 @@ package org.exist.xquery.modules.xslfo;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -32,6 +33,8 @@ import org.exist.xquery.FunctionDef;
  * @author ljo
  */
 public class XSLFOModule extends AbstractInternalModule {
+
+    private static final Logger logger = Logger.getLogger(XSLFOModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
     public final static String PREFIX = "xslfo";
@@ -43,7 +46,7 @@ public class XSLFOModule extends AbstractInternalModule {
         new FunctionDef(RenderFunction.signatures[1], RenderFunction.class)
     };
 
-    public XSLFOModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public XSLFOModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 
@@ -67,4 +70,27 @@ public class XSLFOModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+    private ProcessorAdapter adapter = null;
+    
+    public synchronized ProcessorAdapter getProcessorAdapter() {
+       
+        if(adapter == null) {
+            List<String> processorAdapterParamList = (List<String>)getParameter("processorAdapter");
+            if(!processorAdapterParamList.isEmpty()) {
+                String processorAdapter = processorAdapterParamList.get(0);
+
+                try {
+                    Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>)Class.forName(processorAdapter);
+                    adapter = clazzAdapter.newInstance();
+                } catch (ClassNotFoundException cnfe) {
+                    logger.error("Unable to instantiate FO Processor Adapter:" + cnfe.getMessage(), cnfe);
+                } catch(InstantiationException ie) {
+                    logger.error("Unable to instantiate FO Processor Adapter:" + ie.getMessage(), ie);
+                } catch(IllegalAccessException iae) {
+                    logger.error("Unable to instantiate FO Processor Adapter:" + iae.getMessage(), iae);
+                }
+            }
+        }
+        return adapter;
+    }
 }

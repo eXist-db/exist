@@ -47,7 +47,7 @@ public class TransformModule extends AbstractInternalModule {
         new FunctionDef(Transform.signatures[3], Transform.class)
     };
 	
-	public TransformModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public TransformModule(Map<String, List<? extends Object>> parameters) {
 		super(functions, parameters);
 	}
 

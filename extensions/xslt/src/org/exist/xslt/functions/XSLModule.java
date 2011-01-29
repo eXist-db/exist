@@ -66,7 +66,7 @@ public class XSLModule extends AbstractInternalModule {
 	/**
 	 * @param functions
 	 */
-	public XSLModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public XSLModule(Map<String, List<? extends Object>> parameters) {
 		super(functions, parameters);
 	}
 

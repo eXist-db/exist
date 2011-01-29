@@ -18,7 +18,7 @@ public class XQDocModule extends AbstractInternalModule {
         new FunctionDef(Scan.signatures[1], Scan.class)
     };
 
-    public XQDocModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public XQDocModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, true);
     }
 

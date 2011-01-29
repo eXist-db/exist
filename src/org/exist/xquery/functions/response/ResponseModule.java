@@ -58,7 +58,7 @@ public class ResponseModule extends AbstractInternalModule
         new FunctionDef( GetExists.signature, GetExists.class )
     };
 
-    public ResponseModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException
+    public ResponseModule(Map<String, List<? extends Object>> parameters) throws XPathException
     {
         super(functions, parameters);
 

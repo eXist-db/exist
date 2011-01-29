@@ -76,7 +76,7 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(FunctionAvailable.signature, FunctionAvailable.class)
     };
 	
-	public SystemModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public SystemModule(Map<String, List<? extends Object>> parameters) {
 		super(functions, parameters);
 	}
 

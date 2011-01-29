@@ -49,7 +49,7 @@ public class NGramModule extends AbstractInternalModule {
         new FunctionDef(HighlightMatches.signature, HighlightMatches.class)
     };
 
-    public NGramModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public NGramModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);
     }
 

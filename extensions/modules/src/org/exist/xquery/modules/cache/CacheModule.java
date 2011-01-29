@@ -53,7 +53,7 @@ public class CacheModule extends AbstractInternalModule {
         new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class)
     };
 
-    public CacheModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public CacheModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

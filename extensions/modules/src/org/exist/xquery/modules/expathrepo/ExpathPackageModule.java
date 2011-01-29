@@ -57,7 +57,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
         new FunctionDef(RemoveFunction.signature, RemoveFunction.class)
     };
 
-    public ExpathPackageModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+    public ExpathPackageModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters);
         _repo = getRepo();
     }

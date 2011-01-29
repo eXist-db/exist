@@ -56,7 +56,7 @@ public class OracleModule extends AbstractInternalModule{
         new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class)
     };
 	
-	public OracleModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public OracleModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

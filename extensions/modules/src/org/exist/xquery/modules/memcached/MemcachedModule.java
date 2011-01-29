@@ -68,7 +68,7 @@ public class MemcachedModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public MemcachedModule(Map<String, Map<String, List<? extends Object>>> parameters)
+	public MemcachedModule(Map<String, List<? extends Object>> parameters)
 	{
 		super( functions, parameters );
 	}

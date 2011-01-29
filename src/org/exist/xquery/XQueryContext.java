@@ -1688,12 +1688,11 @@ public class XQueryContext implements BinaryValueManager, Context
     protected Module instantiateModule( String namespaceURI, Class<Module> mClass, Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
 
-
-
         try {
 
             Constructor<Module> cnstr = mClass.getConstructor(Map.class);
-            module = cnstr.newInstance(moduleParameters);
+            
+            module = cnstr.newInstance(moduleParameters.get(namespaceURI));
 
             if(!module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
