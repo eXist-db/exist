@@ -29,28 +29,34 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ReferenceImpl<R, O> implements Reference<R, O> {
+public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>, Configurable {
 
-	R resolver;
-	String name;
+	private R resolver;
+	private String methodName;
+	private String name;
+	private O cached = null;
 	
-	public ReferenceImpl(R resolver, String name) {
+	public ReferenceImpl(R resolver, String methodName, String name) {
 		this.resolver = resolver;
+		this.methodName = methodName;
 		this.name = name;
 	}
 	
-	O cached = null;
-	
+	public ReferenceImpl(R resolver, O cached) {
+		this.resolver = resolver;
+		this.methodName = null;
+		this.name = null;
+		this.cached = cached;
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public O resolve() {
 		if (cached == null) {
-			String methodName = "get"+cached.getClass().getName();
-			methodName = methodName.toLowerCase();
-			
 			Class<? extends Object> clazz = resolver.getClass();
 			
 			for (Method method : clazz.getMethods()) {
-				if (method.getName().toLowerCase().equals(methodName)
+				if (method.getName().equals(methodName)
 						&& method.getParameterTypes().length == 1
 						&& method.getParameterTypes()[0].getName().equals("java.lang.String")
 					)
@@ -71,5 +77,21 @@ public class ReferenceImpl<R, O> implements Reference<R, O> {
 	@Override
 	public R resolver() {
 		return resolver;
+	}
+
+	@Override
+	public boolean isConfigured() {
+		O obj = resolve();
+		if (obj == null) return false;
+		
+		return obj.isConfigured();
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		O obj = resolve();
+		if (obj == null) return null;
+		
+		return obj.getConfiguration();
 	}
 }
