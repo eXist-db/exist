@@ -21,19 +21,12 @@
 package org.exist.xquery.modules.xslfo;
 
 import java.io.ByteArrayInputStream;
-import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
-import org.exist.storage.DBBroker;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -48,8 +41,8 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Craig Goodyer <craiggoodyer@gmail.com>
@@ -89,7 +82,7 @@ public class RenderFunction extends BasicFunction {
                 new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
                 new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
-                new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "Apache FOP Configuration file")
+                new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "FOP Processor Configuration file")
             },
             new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
         )
@@ -136,103 +129,28 @@ public class RenderFunction extends BasicFunction {
             parameters = ModuleUtils.parseParameters(((NodeValue) args[2].itemAt(0)).getNode());
         }
 
+        ProcessorAdapter adapter = null;
         try {
+            adapter = ((XSLFOModule)getParentModule()).getProcessorAdapter();
 
-            // setup the FopFactory
-            FopFactory fopFactory = FopFactory.newInstance();
-            if(args.length == 4 && args[3] != null && !args[3].isEmpty()) {
-                FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(context.getBroker());
-                Configuration cfg = cfgBuilder.buildFromItem(args[3].itemAt(0));
-                fopFactory.setUserConfig(cfg);
-            }
-
-            // setup the foUserAgent, using given parameters held in the
-            // transformer handler
-            FOUserAgent foUserAgent = setupFOUserAgent(fopFactory.newFOUserAgent(), parameters);
-
-            // create new instance of FOP using the mimetype, the created user
-            // agent, and the output stream
+            NodeValue configFile = args.length == 4 ? (NodeValue)args[3].itemAt(0) : null;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Fop fop = fopFactory.newFop(mimeType, foUserAgent, baos);
 
-            // Obtain FOP's DefaultHandler
-            DefaultHandler dh = fop.getDefaultHandler();
+            ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
 
             // process the XSL-FO
-            dh.startDocument();
-            inputNode.toSAX(context.getBroker(), dh, new Properties());
-            dh.endDocument();
+            contentHandler.startDocument();
+            inputNode.toSAX(context.getBroker(), contentHandler, new Properties());
+            contentHandler.endDocument();
 
             // return the result
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
         } catch(SAXException se) {
             throw new XPathException(this, se.getMessage(), se);
-        }
-    }
-
-    /**
-     * Setup the UserAgent for FOP, from given parameters *
-     *
-     * @param transformer
-     *            Created based on the XSLT, so containing any parameters to the
-     *            XSL-FO specified in the XQuery
-     * @param parameters
-     *            any user defined parameters to the XSL-FO process
-     * @return FOUserAgent The generated FOUserAgent to include any parameters
-     *         passed in
-     */
-    private FOUserAgent setupFOUserAgent(FOUserAgent foUserAgent, Properties parameters) {
-
-        // setup the foUserAgent as per the parameters given
-        foUserAgent.setProducer("eXist-db with Apache FOP");
-
-        for(Entry paramEntry : parameters.entrySet()) {
-            String key = (String)paramEntry.getKey();
-            String value = (String)paramEntry.getValue();
-
-            if(key.equals("FOPauthor")) {
-                foUserAgent.setAuthor(value);
-            } else if(key.equals("FOPtitle")) {
-                foUserAgent.setTitle(value);
-            } else if(key.equals("FOPkeywords")) {
-                foUserAgent.setTitle(value);
-            } else if(key.equals("FOPdpi")) {
-                try {
-                    foUserAgent.setTargetResolution(Integer.parseInt(value));
-                } catch(NumberFormatException nfe) {
-                    LOG.warn("Unable to set DPI to: " + value);
-                }
+        } finally {
+            if(adapter != null) {
+                adapter.cleanup();
             }
-
-        }
-        
-        return foUserAgent;
-    }
-
-    /**
-     * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
-     * integration with Nodes passed in from eXist as Configuration files
-     */
-    private class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
-
-        DBBroker broker = null;
-
-        public FopConfigurationBuilder(DBBroker broker) {
-            super();
-            this.broker = broker;
-        }
-
-        @SuppressWarnings("unused")
-        public FopConfigurationBuilder(DBBroker broker, final boolean enableNamespaces) {
-            super(enableNamespaces);
-            this.broker = broker;
-        }
-
-        public Configuration buildFromItem(Item item) throws SAXException {
-            SAXConfigurationHandler handler = getHandler();
-            handler.clear();
-            item.toSAX(broker, handler, new Properties());
-            return handler.getConfiguration();
         }
     }
 }
