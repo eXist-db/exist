@@ -55,15 +55,15 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     protected final FunctionDef[] mFunctions;
     protected final boolean ordered;
-    private final Map<String, Map<String, List<? extends Object>>> parameters;
+    private final Map<String, List<? extends Object>> parameters;
 
     protected final TreeMap<QName, Variable> mGlobalVariables = new TreeMap<QName, Variable>();
 
-    public AbstractInternalModule(FunctionDef[] functions, Map<String, Map<String, List<? extends Object>>> parameters) {
+    public AbstractInternalModule(FunctionDef[] functions, Map<String, List<? extends Object>> parameters) {
         this(functions, parameters, false);
     }
 
-    public AbstractInternalModule(FunctionDef[] functions, Map<String, Map<String, List<? extends Object>>> parameters, boolean functionsOrdered) {
+    public AbstractInternalModule(FunctionDef[] functions, Map<String, List<? extends Object>> parameters, boolean functionsOrdered) {
         this.mFunctions = functions;
         this.ordered = functionsOrdered;
         this.parameters = parameters;
@@ -80,7 +80,7 @@ public abstract class AbstractInternalModule implements InternalModule {
     /**
      * returns a module parameter
      */
-    protected Map<String, List<? extends Object>> getParameter(String paramName) {
+    protected List<? extends Object> getParameter(String paramName) {
         return parameters.get(paramName);
     }
 

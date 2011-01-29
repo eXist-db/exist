@@ -45,7 +45,7 @@ public class PerfTestModule extends AbstractInternalModule {
     };
 
 
-    public PerfTestModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public PerfTestModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

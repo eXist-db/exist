@@ -83,7 +83,7 @@ public class JNDIModule extends AbstractInternalModule
 	private static long 		currentContextID 		= System.currentTimeMillis();
 
 
-	public JNDIModule(Map<String, Map<String, List<? extends Object>>> parameters)
+	public JNDIModule(Map<String, List<? extends Object>> parameters)
 	{
 		super( functions, parameters );
 	}

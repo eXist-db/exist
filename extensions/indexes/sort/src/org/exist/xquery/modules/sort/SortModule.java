@@ -43,7 +43,7 @@ public class SortModule extends AbstractInternalModule {
         new FunctionDef(RemoveIndex.signatures[1], RemoveIndex.class)
     };
 
-    public SortModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public SortModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);
     }
 

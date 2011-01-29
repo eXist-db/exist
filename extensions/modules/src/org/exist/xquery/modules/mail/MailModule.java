@@ -94,7 +94,7 @@ public class MailModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public MailModule(Map<String, Map<String, List<? extends Object>>> parameters)
+	public MailModule(Map<String, List<? extends Object>> parameters)
 	{
 		super( functions, parameters );
 	}

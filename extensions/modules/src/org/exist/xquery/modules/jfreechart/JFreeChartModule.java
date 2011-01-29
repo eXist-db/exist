@@ -52,7 +52,7 @@ public class JFreeChartModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", JFreeChartModule.NAMESPACE_URI, JFreeChartModule.PREFIX);
 
-    public JFreeChartModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+    public JFreeChartModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters);
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);

@@ -49,7 +49,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class)
     };
 
-    public SecurityManagerModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

@@ -72,7 +72,7 @@ public class FileModule extends AbstractInternalModule
 	};
 	
 	
-	public FileModule(Map<String, Map<String, List<? extends Object>>> parameters)
+	public FileModule(Map<String, List<? extends Object>> parameters)
 	{
 		super( functions, parameters );
 	}

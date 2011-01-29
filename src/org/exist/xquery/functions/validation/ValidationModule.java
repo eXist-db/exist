@@ -77,7 +77,7 @@ public class ValidationModule extends AbstractInternalModule {
     public final static QName EXCEPTION_MESSAGE_QNAME =
             new QName("exception-message", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX);
     
-    public ValidationModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+    public ValidationModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters);
         declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);

@@ -207,7 +207,7 @@ public class FnModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-        public FnModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+        public FnModule(Map<String, List<? extends Object>> parameters) {
             super(functions, parameters, true);
 	}
 	

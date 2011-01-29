@@ -72,7 +72,7 @@ public class ImageModule extends AbstractInternalModule {
 		
 	};
 	
-	public ImageModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public ImageModule(Map<String, List<? extends Object>> parameters) {
 		super(functions, parameters);
 	}
 

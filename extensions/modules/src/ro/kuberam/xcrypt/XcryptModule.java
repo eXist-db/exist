@@ -33,7 +33,7 @@ public class XcryptModule extends AbstractInternalModule {
                 new FunctionDef(ValidateSignatureFunction.signature, ValidateSignatureFunction.class)
 	};
 	
-	public XcryptModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+	public XcryptModule(Map<String, List<? extends Object>> parameters) throws XPathException {
 		super(functions, parameters);
 	}
 

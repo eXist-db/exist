@@ -80,7 +80,7 @@ public class RequestModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public RequestModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+    public RequestModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
         // predefined module global variables:
         declareVariable(REQUEST_VAR, null);

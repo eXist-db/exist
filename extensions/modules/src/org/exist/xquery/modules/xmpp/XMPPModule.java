@@ -69,7 +69,7 @@ public class XMPPModule extends AbstractInternalModule
 	private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public XMPPModule(Map<String, Map<String, List<? extends Object>>> parameters)
+	public XMPPModule(Map<String, List<? extends Object>> parameters)
 	{
 		super( functions, parameters );
 	}

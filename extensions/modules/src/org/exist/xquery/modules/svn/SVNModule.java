@@ -47,7 +47,7 @@ public class SVNModule extends AbstractInternalModule {
             new FunctionDef(SVNLatestRevision.signature, SVNLatestRevision.class),
 	};
 
-	public SVNModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+	public SVNModule(Map<String, List<? extends Object>> parameters) {
 		super(functions, parameters);
 	}
 

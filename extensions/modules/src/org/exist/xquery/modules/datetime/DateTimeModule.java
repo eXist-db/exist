@@ -59,7 +59,7 @@ public class DateTimeModule extends AbstractInternalModule
     };
 
 
-    public DateTimeModule(Map<String, Map<String, List<? extends Object>>> parameters)
+    public DateTimeModule(Map<String, List<? extends Object>> parameters)
     {
         super(functions, parameters);
     }

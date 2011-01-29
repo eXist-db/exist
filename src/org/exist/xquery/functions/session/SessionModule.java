@@ -71,7 +71,7 @@ public class SessionModule extends AbstractInternalModule
 		new FunctionDef( GetExists.signature, GetExists.class )
 	};
 	
-	public SessionModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException
+	public SessionModule(Map<String, List<? extends Object>> parameters) throws XPathException
 	{
 		super(functions,  parameters);
 		// predefined module global variables:

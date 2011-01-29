@@ -49,7 +49,7 @@ public class VersioningModule extends AbstractInternalModule {
         new FunctionDef(DiffFunction.signature, DiffFunction.class)
     };
 
-    public VersioningModule(Map<String, Map<String, List<? extends Object>>> parameters) {
+    public VersioningModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 

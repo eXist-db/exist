@@ -27,7 +27,7 @@ public class ContentExtractionModule extends AbstractInternalModule {
 //    public final static QName EXCEPTION_MESSAGE_QNAME =
 //            new QName("exception-message", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX);
 
-    public ContentExtractionModule(Map<String, Map<String, List<? extends Object>>> parameters) throws XPathException {
+    public ContentExtractionModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
 //        declareVariable(EXCEPTION_QNAME, null);
 //        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
