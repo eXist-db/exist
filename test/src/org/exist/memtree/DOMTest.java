@@ -15,10 +15,15 @@ import junit.framework.TestCase;
 
 import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
+import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * @author wolf
@@ -77,21 +82,91 @@ public class DOMTest extends TestCase {
 	}
 
 	public void testGetChildNodes2() {
-		MemTreeBuilder builder = new MemTreeBuilder();
-		builder.startDocument();
-		builder.startElement(new QName("top", null, null), null);
-		builder.startElement(new QName("child1", null, null), null);
-		builder.endElement();
-		builder.startElement(new QName("child2", null, null), null);
-		builder.endElement();
-		builder.endElement();
-		builder.endDocument();
-		DocumentImpl doc = builder.getDocument();
+                MemTreeBuilder builder = new MemTreeBuilder();
+                builder.startDocument();
+                builder.startElement(new QName("top", null, null), null);
+                builder.startElement(new QName("child1", null, null), null);
+                builder.endElement();
+                builder.startElement(new QName("child2", null, null), null);
+                builder.endElement();
+                builder.endElement();
+                builder.endDocument();
+                DocumentImpl doc = builder.getDocument();
 		Node top = doc.getFirstChild();
 		assertEquals(Node.ELEMENT_NODE, top.getNodeType());
 		assertEquals("top", top.getNodeName());
 		assertEquals(2, top.getChildNodes().getLength());
 	}
+
+        @Test
+        public void testGetElementsByTagName() {
+                MemTreeBuilder builder = new MemTreeBuilder();
+		builder.startDocument();
+		builder.startElement(new QName("xquery", null, null), null);
+		builder.startElement(new QName("builtin-modules", null, null), null);
+
+                AttributesImpl attrs = new AttributesImpl();
+                attrs.addAttribute(null, "class", "class", "string", "org.exist.xquery.functions.util.UtilModule");
+                attrs.addAttribute(null, "uri", "uri", "string", "http://exist-db.org/xquery/util");
+                builder.startElement(new QName("module", null, null), attrs);
+		builder.endElement();
+
+                attrs = new AttributesImpl();
+                attrs.addAttribute(null, "class", "class", "string", "org.exist.xquery.functions.request.RequestModule");
+                attrs.addAttribute(null, "uri", "uri", "string", "http://exist-db.org/xquery/request");
+                builder.startElement(new QName("module", null, null), attrs);
+
+                attrs = new AttributesImpl();
+                attrs.addAttribute(null, "name", "name", "string", "stream");
+                attrs.addAttribute(null, "value", "value", "string", "true");
+                builder.startElement(new QName("parameter", null, null), attrs);
+                builder.endElement();
+
+		builder.endElement();
+
+                attrs = new AttributesImpl();
+                attrs.addAttribute(null, "class", "class", "string", "org.exist.xquery.functions.util.ResponseModule");
+                attrs.addAttribute(null, "uri", "uri", "string", "http://exist-db.org/xquery/response");
+                builder.startElement(new QName("module", null, null), attrs);
+		builder.endElement();
+
+                attrs = new AttributesImpl();
+                attrs.addAttribute(null, "class", "class", "string", "org.exist.xquery.functions.util.SessionModule");
+                attrs.addAttribute(null, "uri", "uri", "string", "http://exist-db.org/xquery/session");
+                builder.startElement(new QName("module", null, null), attrs);
+		builder.endElement();
+
+                builder.endElement();
+		builder.endElement();
+		builder.endDocument();
+
+                DocumentImpl doc = builder.getDocument();
+
+                Node nXQuery = doc.getFirstChild();
+                assertTrue(nXQuery.getNodeType() == Node.ELEMENT_NODE);
+                assertTrue(nXQuery.getLocalName().equals("xquery"));
+
+                Node nBuiltinModules = nXQuery.getFirstChild();
+                assertTrue(nBuiltinModules.getNodeType() == Node.ELEMENT_NODE);
+                assertTrue(nBuiltinModules.getLocalName().equals("builtin-modules"));
+
+                NodeList nlModules = nBuiltinModules.getChildNodes();
+                for(int i = 0; i < nlModules.getLength(); i++) {
+                    Node nModule = nlModules.item(i);
+
+                    assertTrue(nModule.getNodeType() == Node.ELEMENT_NODE);
+                    assertTrue(nModule.getLocalName().equals("module"));
+
+                    Element eModule = (Element)nModule;
+                    NodeList nlParameter = eModule.getElementsByTagName("parameter");
+                    
+                    if(eModule.getAttribute("class").equals("org.exist.xquery.functions.request.RequestModule")) {
+                        assertEquals(1, nlParameter.getLength());
+                    } else {
+                        assertEquals(0, nlParameter.getLength());
+                    }
+                }
+        }
 
 	public void print(Node node) {
 		while (node != null) {
