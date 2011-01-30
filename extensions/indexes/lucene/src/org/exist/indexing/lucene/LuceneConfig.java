@@ -71,7 +71,7 @@ public class LuceneConfig {
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         while (idxConf != null) {
-            if (idxConf.getNodePath().match(qname))
+            if (!idxConf.isNamed() && idxConf.getNodePath().match(qname))
                 break;
             idxConf = idxConf.getNext();
         }
@@ -88,7 +88,7 @@ public class LuceneConfig {
             throw new RuntimeException();
         LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
         while (idxConf != null) {
-            if (idxConf.getNodePath().match(nodePath))
+            if (!idxConf.isNamed() && idxConf.match(nodePath))
                 break;
             idxConf = idxConf.getNext();
         }
@@ -116,6 +116,10 @@ public class LuceneConfig {
         return analyzers.getDefaultAnalyzer();
     }
 
+    public Analyzer getAnalyzerById(String id) {
+    	return analyzers.getAnalyzerById(id);
+    }
+    
     public boolean isInlineNode(QName qname) {
         return inlineNodes != null && inlineNodes.contains(qname);
     }
