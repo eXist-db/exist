@@ -214,12 +214,12 @@ public class LuceneConfig {
             }
         }
 
-        @Override
+        //@Override
         public boolean hasNext() {
             return (nextConfig != null);
         }
 
-        @Override
+        //@Override
         public LuceneIndexConfig next() {
             if (nextConfig == null)
                 return null;
@@ -233,7 +233,7 @@ public class LuceneConfig {
             return currentConfig;
         }
 
-        @Override
+        //@Override
         public void remove() {
             //Nothing to do
         }

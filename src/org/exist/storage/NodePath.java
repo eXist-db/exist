@@ -257,7 +257,7 @@ public class NodePath implements Comparable<NodePath>{
         return h;
     }
 
-	@Override
+	//s@Override
 	public int compareTo(NodePath o) {
 		return toString().compareTo(o.toString()); //TODO: optimize
 	}
