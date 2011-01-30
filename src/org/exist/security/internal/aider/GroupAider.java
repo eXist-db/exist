@@ -21,7 +21,8 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.config.Configuration;
 import org.exist.security.Account;
@@ -40,7 +41,7 @@ public class GroupAider implements Group {
 	private String name;
 	private int id;
 	
-	private Set<Account> membersManagers;
+	private List<Account> managers = new ArrayList<Account>();
 	
 	public GroupAider(int id) {
 		this(id, null, null);
@@ -100,15 +101,46 @@ public class GroupAider implements Group {
     }
 
     @Override
-    public boolean isMembersManager(Account account) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean isManager(Account account) {
+        for(Account manager : managers) {
+            if(manager.getName().equals(account.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void addManager(Account account) throws PermissionDeniedException {
+        if(!managers.contains(account)) {
+            managers.add(account);
+        }
+    }
+
+    @Override
+    public void addManagers(List<Account> managers) throws PermissionDeniedException {
+    	for (Account manager : managers) {
+    		addManager(manager);
+    	}
+    }
+
+    @Override
+    public List<Account> getManagers() throws PermissionDeniedException {
+        return managers;
+    }
+
+    @Override
+    public void removeManager(Account account) throws PermissionDeniedException {
+        for(Account manager : managers) {
+            if(manager.getName().equals(account.getName())) {
+                managers.remove(manager);
+                break;
+            }
+        }
     }
 
     @Override
     public Realm getRealm() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-
-
 }

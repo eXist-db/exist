@@ -215,6 +215,22 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
+    public synchronized <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException {
+        if(group == null){
+            return false;
+        }
+
+        if(group.getRealmId() == null) {
+            throw new ConfigurationException("Group must have realm id.");
+        }
+
+        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
+
+        return registeredRealm.updateGroup(invokingUser, group);
+    }
+
+
+    @Override
 	public synchronized void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
 
         Group group = getGroup(invokingUser, name);
@@ -251,6 +267,10 @@ public class SecurityManagerImpl implements SecurityManager {
 
         registeredRealm.deleteAccount(invokingUser, account);
     }
+
+	public Account getAccount(String name) {
+		return getAccount(null, name);
+	}
 
     @Override
 	public synchronized Account getAccount(Subject invokingUser, String name) {
@@ -347,8 +367,8 @@ public class SecurityManagerImpl implements SecurityManager {
 		
 		for (Realm realm : realms) {
 			
-			if (LOG.isDebugEnabled())
-				LOG.debug("authenticating '"+username+"' with realm '"+realm.getId()+"'...");
+			//if (LOG.isDebugEnabled())
+			//	LOG.debug("authenticating '"+username+"' with realm '"+realm.getId()+"'...");
 			
 			try {
 				return realm.authenticate(username, credentials);
@@ -372,12 +392,12 @@ public class SecurityManagerImpl implements SecurityManager {
 	
 	@Override
 	public Subject getSystemSubject() {
-		return new SubjectImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, "");
+		return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
 	}
 	
 	@Override
 	public Subject getGuestSubject() {
-		return new SubjectImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, "");
+		return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
 	}
 	
 	@Override

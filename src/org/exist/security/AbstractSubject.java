@@ -60,7 +60,7 @@ public abstract class AbstractSubject implements Subject {
 	 * @see org.exist.security.User#remGroup(java.lang.String)
 	 */
 	@Override
-	public void remGroup(String group) {
+	public void remGroup(String group) throws PermissionDeniedException {
 		account.remGroup(group);
 	}
 

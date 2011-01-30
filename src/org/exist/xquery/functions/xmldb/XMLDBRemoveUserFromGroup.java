@@ -25,9 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
-import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.security.SecurityManager;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,6 +41,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
@@ -73,54 +72,37 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        if(context.getUser().getUsername().equals("guest")) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be an authenticated user to call this function.");
-            logger.error("Invalid user", xPathException);
+        if(context.getSubject().getName().equals("guest")) {
+            XPathException xPathException = 
+            	new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' must be an authenticated user to call this function.");
+            logger.error("Invalid account", xPathException);
             throw xPathException;
         }
 
         String userName = args[0].getStringValue();
         String groupName = args[1].getStringValue();
 
-
-        if(groupName.equals("dba") && !context.getUser().hasDbaRole()) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to remove users from the DBA group.");
-            logger.error("Invalid user", xPathException);
-            throw xPathException;
-        }
-
-        if(!context.getUser().hasGroup(groupName)) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a memeber of '" + groupName + "' to remove users from the '" + groupName + "' group.");
-            logger.error("Invalid user", xPathException);
-            throw xPathException;
-        }
-
         logger.info("Attempting to remove user '" + userName + "' from group '" + groupName + "'");
 
-        Subject currentSubject = context.getSubject();
         try {
-
-            //elevate privs
-            context.getBroker().setSubject(context.getBroker().getBrokerPool().getSecurityManager().getSystemSubject());
 
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Group group = sm.getGroup(context.getBroker().getUser(), groupName);
-
-            Account account = sm.getAccount(context.getBroker().getUser(), userName);
+            Account account = sm.getAccount(null, userName);
 
             account.remGroup(groupName);
-            sm.updateAccount(context.getBroker().getUser(), account);
+            sm.updateAccount(null, account);
 
             return BooleanValue.TRUE;
 
         } catch(PermissionDeniedException pde) {
-            logger.error("Failed to remove user '" + userName + "' from group '" + groupName + "'", pde);
+			throw new XPathException(this, 
+					"Permission denied, calling account '" + context.getSubject().getName()
+					+ "' do not authorize to call this function.");
         } catch(EXistException exe) {
             logger.error("Failed to remove user '" + userName + "' from group '" + groupName + "'", exe);
         } finally {
-            context.getBroker().setSubject(currentSubject);
-        }
+       }
 
         return BooleanValue.FALSE;
     }

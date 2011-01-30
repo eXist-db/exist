@@ -372,13 +372,13 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
+        // TODO we dont support writting to LDAP
         return false;
     }
 
     @Override
-    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
+    public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
+        // TODO we dont support writting to LDAP
         return false;
     }
 

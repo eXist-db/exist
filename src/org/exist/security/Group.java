@@ -21,8 +21,18 @@
  */
 package org.exist.security;
 
+import java.util.List;
+
 public interface Group extends Principal {
 
-    boolean isMembersManager(Account account);
+    public boolean isManager(Account account);
+
+    public void addManager(Account account) throws PermissionDeniedException;
+
+    public void addManagers(List<Account> managers) throws PermissionDeniedException;
+
+    public List<Account> getManagers() throws PermissionDeniedException;
+
+    public void removeManager(Account account) throws PermissionDeniedException;
 
 }

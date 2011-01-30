@@ -39,10 +39,6 @@ import org.exist.xmldb.XmldbURI;
  * There's only one SecurityManager for each database instance, which
  * may be obtained by {@link BrokerPool#getSecurityManager()}.
  * 
- * Users and groups are stored in the system collection, in document
- * users.xml. While it is possible to edit this file by hand, it
- * may lead to unexpected results, since SecurityManager reads 
- * users.xml only during database startup and shutdown.
  */
 public interface SecurityManager extends Configurable {
 
@@ -80,6 +76,8 @@ public interface SecurityManager extends Configurable {
    <A extends Account> void deleteAccount(Subject invokingUser, A user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+
+   <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    Account getAccount(Subject invokingUser, String name);
 

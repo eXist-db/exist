@@ -23,6 +23,7 @@ package org.exist.security.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.security.AbstractAccount;
@@ -64,7 +65,7 @@ public class RealmImpl extends AbstractRealm {
     protected final GroupImpl GROUP_DBA;
     protected final GroupImpl GROUP_GUEST;
 
-    protected final AccountImpl ACCOUNT_UNKNOW;
+    protected final AccountImpl ACCOUNT_UNKNOWN;
     protected final GroupImpl GROUP_UNKNOWN;
 
     protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
@@ -73,7 +74,7 @@ public class RealmImpl extends AbstractRealm {
 
         //Build-in accounts
         GROUP_UNKNOWN = new GroupImpl(this, -1, "");
-    	ACCOUNT_UNKNOW = new AccountImpl(this, -1, "", (String)null, GROUP_UNKNOWN);
+    	ACCOUNT_UNKNOWN = new AccountImpl(this, -1, "", (String)null, GROUP_UNKNOWN);
 
     	//DBA group & account
     	GROUP_DBA = new GroupImpl(this, 1, SecurityManager.DBA_GROUP);
@@ -98,7 +99,7 @@ public class RealmImpl extends AbstractRealm {
     	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
     	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
-    	
+
     	sm.lastUserId = 3;
     	sm.lastGroupId = 3;
     }
@@ -160,12 +161,6 @@ public class RealmImpl extends AbstractRealm {
 	}
 
     @Override
-	public synchronized boolean updateGroup(Group group) throws PermissionDeniedException {
-		//nothing to do: the name or id can't be changed
-		return false;
-	}
-
-    @Override
 	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
 		if(group == null)
 			return false;
@@ -219,6 +214,11 @@ public class RealmImpl extends AbstractRealm {
 					AuthenticationException.ACCOUNT_NOT_FOUND,
 					"Acount '" + accountName + "' not found");
 			
+		if ("SYSTEM".equals(accountName)) 
+			throw new AuthenticationException(
+					AuthenticationException.ACCOUNT_NOT_FOUND,
+					"Acount '" + accountName + "' can not be used");
+
 		Subject newUser = new SubjectImpl((AccountImpl) user, credentials);
 			
 		if (newUser.isAuthenticated()) {

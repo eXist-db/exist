@@ -80,20 +80,20 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
 
-        public boolean checkCredentials(Object credentials) {
-            return _cred == null ? false : _cred.check(credentials);
-        }
+    public boolean checkCredentials(Object credentials) {
+        return _cred == null ? false : _cred.check(credentials);
+    }
 
         @Override
 	public Group addGroup(String name) throws PermissionDeniedException {
-            Group group = getRealm().getGroup(null, name);
+        Group group = getRealm().getGroup(null, name);
 
-            //if we cant find the group in our own realm, try the default realm
-            if(group == null) {
-                Realm internalRealm = getRealm().getSecurityManager().getRealm(RealmImpl.ID);
-                group = internalRealm.getGroup(null, name);
-            }
-            return addGroup(group);
+        //if we cant find the group in our own realm, try the default realm
+        if(group == null) {
+            Realm internalRealm = getRealm().getSecurityManager().getRealm(RealmImpl.ID);
+            group = internalRealm.getGroup(null, name);
+        }
+        return addGroup(group);
 	}
 
 	//this method used by Configurator
@@ -105,19 +105,56 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		
 		return addGroup(name);
 	}
+
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException {
+
+        if(group == null){
+            return null;
+        }
+
+        Account user = getDatabase().getSubject();
+        //TODO change once membersManbager is implemented correctly
+        if(!((user != null && user.hasDbaRole()) || group.isManager(user))){
+        //if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
+            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
+        }
+
+        if(!groups.contains(group)) {
+            groups.add(group);
+
+            if(SecurityManager.DBA_GROUP.equals(name)) {
+                hasDbaRole = true;
+            }
+        }
+
+        return group;
+    }
 	
     @Override
-	public final void remGroup(String name) {
-		for (Group group : groups) {
-			if (group.getName().equals(name)) {
-				groups.remove(group);
-				break;
-			}
-		}
+    public final void remGroup(String name) throws PermissionDeniedException {
 
-		if (SecurityManager.DBA_GROUP.equals(name))
-			hasDbaRole = false;
-	}
+
+        for (Group group : groups) {
+            if (group.getName().equals(name)) {
+
+                Account user = getDatabase().getSubject();
+                //TODO change once membersManbager is implemented correctly
+                if(!((user != null && user.hasDbaRole()) || group.isManager(user))){
+                //if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
+                    throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
+                }
+
+                //remove from the group
+                groups.remove(group);
+                break;
+            }
+        }
+
+        if(SecurityManager.DBA_GROUP.equals(name)){
+                hasDbaRole = false;
+        }
+    }
 
     @Override
 	public final void setGroups(String[] groups) {
@@ -143,12 +180,14 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
 	public final boolean hasGroup(String name) {
-		if (groups == null)
+		if (groups == null) {
 			return false;
+                }
 		
 		for (Group group : groups) {
-			if (group.getName().equals(name))
+                    if (group.getName().equals(name)) {
 				return true;
+                    }
 		}
 		
 		return false;
@@ -252,33 +291,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
     public boolean isEnabled() {
     	return enabled;
-    }
-
-    @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
-
-        if(group == null){
-            return null;
-        }
-
-        Account user = getDatabase().getSubject();
-
-
-        //TODO change once membersManbager is implemented correctly
-        //if(!((user != null && user.hasDbaRole()) || group.isMembersManager(user))){
-        if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
-            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
-        }
-
-        if(!groups.contains(group)) {
-            groups.add(group);
-
-            if(SecurityManager.DBA_GROUP.equals(name)) {
-                hasDbaRole = true;
-            }
-        }
-
-        return group;
     }
 
     @Override

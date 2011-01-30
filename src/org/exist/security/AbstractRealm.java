@@ -24,6 +24,7 @@ package org.exist.security;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.exist.Database;
@@ -279,11 +280,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
 		return collectionRealm;
 	}
 
-    private Group _addGroup(String name) throws ConfigurationException {
+    private Group _addGroup(String name, List<Account> managers) throws ConfigurationException {
             if (groupsByName.containsKey(name))
                     throw new IllegalArgumentException("Group "+name+" exist.");
 
-            Group group = new GroupImpl(this, sm.getNextGroupId(), name);
+            Group group = new GroupImpl(this, sm.getNextGroupId(), name, managers);
 //            Group group = instantiateGroup(this, getSecurityManager().getNextGroupId(), name);
             getSecurityManager().addGroup(group.getId(), group);
             groupsByName.put(name, group);
@@ -291,23 +292,23 @@ public abstract class AbstractRealm implements Realm, Configurable {
             return group;
     }
 
-    private Group _addGroup(int id, String name) throws ConfigurationException {
+    private Group _addGroup(int id, String name, List<Account> managers) throws ConfigurationException {
         if (groupsByName.containsKey(name))
                 throw new IllegalArgumentException("Group "+name+" exist.");
 
         if (getSecurityManager().hasGroup(id))
                 throw new IllegalArgumentException("Group id "+id+" allready used.");
 
-        Group group = new GroupImpl(this, id, name);
-//      G group = instantiateGroup(this, id, name);
+        Group group = new GroupImpl(this, id, name, managers);
+//      G group = instantiateGroup(this, id, name, managers);
         getSecurityManager().addGroup(id, group);
         groupsByName.put(name, group);
 
         return group;
     }
 
-    public synchronized Group addGroup(String name) throws PermissionDeniedException, EXistException {
-        Group created_group = _addGroup(name);
+    public synchronized Group addGroup(String name, List<Account> managers) throws PermissionDeniedException, EXistException {
+        Group created_group = _addGroup(name, managers);
 
         ((AbstractPrincipal)created_group).save();
 
@@ -316,7 +317,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-        return addGroup(group.getName());
+        return addGroup(group.getName(), group.getManagers());
     }
 
     @Override
@@ -357,13 +358,10 @@ public abstract class AbstractRealm implements Realm, Configurable {
             //check: remove account from group
             groups = updatingAccount.getGroups();
             for (int i = 0; i < groups.length; i++) {
-                    if (!(account.hasGroup(groups[i]))) {
-                                    if ( !user.hasDbaRole() )
-                                            throw new PermissionDeniedException(
-                                                    "not allowed to change group memberships");
 
-                                    updatingAccount.remGroup(groups[i]);
-                            }
+                if(!(account.hasGroup(groups[i]))) {
+                        updatingAccount.remGroup(groups[i]);
+                }
             }
 
             updatingAccount.setPassword(account.getPassword());
@@ -372,7 +370,50 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
             return true;
         } finally {
-            getDatabase().release(broker);
+            if(broker != null) {
+                getDatabase().release(broker);
+            }
+        }
+    }
+
+    @Override
+    public synchronized boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
+
+        DBBroker broker = null;
+        try {
+            broker = getDatabase().get(null);
+            Account user = broker.getUser();
+
+            if(!(group.isManager(user) || user.hasDbaRole()) ) {
+                throw new PermissionDeniedException(" you are not allowed to change '" + group.getName() + "' group");
+            }
+
+            Group updatingGroup = getGroup(invokingUser, group.getName());
+            if(updatingGroup == null) {
+                throw new PermissionDeniedException("group " + group.getName() + " does not exist");
+            }
+
+            //check: add account to group
+            for(Account manager : group.getManagers()) {
+                if(!updatingGroup.isManager(manager)) {
+                    updatingGroup.addManager(manager);
+                }
+            }
+
+            //check: remove account from group
+            for(Account manager : updatingGroup.getManagers()){
+                if(!group.isManager(manager)) {
+                    updatingGroup.removeManager(manager);
+                }
+            }
+
+            group.save();
+
+           return true;
+        } finally {
+            if(broker != null) {
+                getDatabase().release(broker);
+            }
         }
     }
 

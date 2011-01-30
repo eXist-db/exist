@@ -18,7 +18,7 @@ public class LDAPGroupImpl extends AbstractGroup {
     }
 
     public LDAPGroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        super(realm, id, name);
+        super(realm, id, name, null);
     }
 
     LDAPGroupImpl(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {

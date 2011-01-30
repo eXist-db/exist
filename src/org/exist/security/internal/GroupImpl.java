@@ -21,8 +21,11 @@
  */
 package org.exist.security.internal;
 
+import java.util.List;
+
 import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractGroup;
+import org.exist.security.Account;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
@@ -34,16 +37,22 @@ public class GroupImpl extends AbstractGroup {
         super(realm, configuration);
     }
 
-    public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
-        super(realm, id, name);
-    }
-
     GroupImpl(AbstractRealm realm, Configuration configuration, boolean removed) throws ConfigurationException {
         super(realm, configuration);
         this.removed = removed;
     }
 
+    public GroupImpl(AbstractRealm realm, int id, String name) throws ConfigurationException {
+        this(realm, id, name, null);
+    }
+
+    public GroupImpl(AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
+        super(realm, id, name, managers);
+    }
+
     GroupImpl(AbstractRealm realm, String name) throws ConfigurationException {
         super(realm, name);
     }
+
+    
 }
