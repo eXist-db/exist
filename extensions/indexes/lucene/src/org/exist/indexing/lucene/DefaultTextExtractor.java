@@ -27,28 +27,37 @@ import org.exist.util.XMLString;
 public class DefaultTextExtractor extends AbstractTextExtractor {
 
     private int stack = 0;
-
+    private boolean addSpaceBeforeNext = false;
+    
     public int startElement(QName name) {
         if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack++;
-        else if (!(config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)))) {
+        else if (!isInlineNode(name)) {
             buffer.append(' ');
             return 1;
         }
         return 0;
     }
 
+	private boolean isInlineNode(QName name) {
+		return (config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)));
+	}
+
     public int endElement(QName name) {
         if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack--;
-        else if (!(config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)))) {
-            buffer.append(' ');
+        else if (!isInlineNode(name)) {
+        	addSpaceBeforeNext = true;
             return 1;
         }
         return 0;
     }
 
     public int characters(XMLString text) {
+    	if (addSpaceBeforeNext) {
+    		buffer.append(' ');
+    		addSpaceBeforeNext = false;
+    	}
         if (stack == 0) {
             buffer.append(text);
             return text.length();
