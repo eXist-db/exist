@@ -156,16 +156,14 @@ public class VirtualTempFile
 	}
 	
 	/**
-	 * The prefix string used when the temp file is going to be created
-	 * @return
+	 * The prefix string used when the temp file is going to be created.
 	 */
 	public String getTempPrefix() {
 		return temp_prefix;
 	}
 	
 	/**
-	 * The postfix string used when the temp file is going to be created
-	 * @return
+	 * The postfix string used when the temp file is going to be createds
 	 */
 	public String getTempPostfix() {
 		return temp_postfix;
@@ -369,7 +367,7 @@ public class VirtualTempFile
 	
 	/**
 	 * An easy way to obtain an InputStream
-	 * @return
+         * s
 	 * @throws IOException
 	 */
 	public InputStream getByteStream()
@@ -400,7 +398,7 @@ public class VirtualTempFile
 	
 	/**
 	 * Method to force materialization as a (temp)file the VirtualTempFile instance
-	 * @return
+	 * 
 	 * @throws IOException
 	 */
 	public File toFile()
