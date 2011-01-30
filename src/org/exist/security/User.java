@@ -21,8 +21,6 @@
  */
 package org.exist.security;
 
-import java.util.Set;
-
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -53,7 +51,7 @@ public interface User extends Principal {
 	 *
 	 *@param  group  The feature to be removed to the Group attribute
 	 */
-	public void remGroup(String group);
+	public void remGroup(String group) throws PermissionDeniedException;
 
 	/**
 	 *  Get all groups this user belongs to

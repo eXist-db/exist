@@ -89,7 +89,7 @@ public class OpenIDRealm extends AbstractRealm {
 	}
 
 	@Override
-	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
 		return false;
 	}
 

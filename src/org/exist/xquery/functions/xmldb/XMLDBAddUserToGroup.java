@@ -27,7 +27,6 @@ import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -43,6 +42,7 @@ import org.exist.security.SecurityManager;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class XMLDBAddUserToGroup extends BasicFunction {
 
@@ -73,8 +73,9 @@ public class XMLDBAddUserToGroup extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        if(context.getUser().getUsername().equals("guest")) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be an authenticated user to call this function.");
+        if(context.getSubject().getName().equals("guest")) {
+            XPathException xPathException = 
+            	new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' must be an authenticated account to call this function.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
@@ -82,46 +83,27 @@ public class XMLDBAddUserToGroup extends BasicFunction {
         String userName = args[0].getStringValue();
         String groupName = args[1].getStringValue();
 
-
-        if(groupName.equals("dba") && !context.getUser().hasDbaRole()) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to add users to the DBA group.");
-            logger.error("Invalid user", xPathException);
-            throw xPathException;
-        }
-
-        if(!context.getUser().hasGroup(groupName)) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a memeber of '" + groupName + "' to add users to the '" + groupName + "' group.");
-            logger.error("Invalid user", xPathException);
-            throw xPathException;
-        }
-
         logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
 
-        Subject currentSubject = context.getSubject();
         try {
-
-            //elevate privs
-            context.getBroker().setSubject(context.getBroker().getBrokerPool().getSecurityManager().getSystemSubject());
 
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Group group = sm.getGroup(context.getBroker().getUser(), groupName);
+            Group group = sm.getGroup(context.getBroker().getSubject(), groupName);
 
-            Account account = sm.getAccount(context.getBroker().getUser(), userName);
+            Account account = sm.getAccount(context.getBroker().getSubject(), userName);
             if(account != null) {
                 account.addGroup(group);
-                sm.updateAccount(context.getBroker().getUser(), account);
+                sm.updateAccount(context.getBroker().getSubject(), account);
 
                 return BooleanValue.TRUE;
             } else {
                 logger.warn("Could not find account for username '" + userName + "' in call to xmldb:add-user-to-group");
             }
         } catch(PermissionDeniedException pde) {
-            logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", pde);
+        	throw new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' don not authorize to call this function.");
         } catch(EXistException exe) {
             logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", exe);
-        } finally {
-            context.getBroker().setSubject(currentSubject);
         }
 
         return BooleanValue.FALSE;

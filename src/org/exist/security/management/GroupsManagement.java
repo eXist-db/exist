@@ -40,7 +40,7 @@ public interface GroupsManagement {
 	public boolean hasGroup(Group group);
 	public boolean hasGroup(String name);
 
-	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 

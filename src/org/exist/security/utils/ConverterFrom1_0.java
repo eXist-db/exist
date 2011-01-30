@@ -120,7 +120,7 @@ public class ConverterFrom1_0 {
 							group = createGroup((Element) node);
 
 							if (realm.hasGroup(group.getName())) {
-								realm.updateGroup(group);
+								realm.updateGroup(invokingUser, group);
 							} else {
 								realm.addGroup(group);
 							}

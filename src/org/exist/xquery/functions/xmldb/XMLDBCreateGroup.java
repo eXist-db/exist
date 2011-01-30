@@ -21,13 +21,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
-import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -49,112 +46,97 @@ import org.exist.xquery.value.Type;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class XMLDBCreateGroup extends BasicFunction {
-	
-    protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Create a new user group. $group is the group name. The current user will be the groups manager.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
-            },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
-            "Use xmldb:create-group($group, $group-manager-username) instead."
-        ),
+	protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
 
-        new FunctionSignature(
-            new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Create a new user group, with an initial member. $group is the group name, $group-manager-username is the groups manager.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name"),
-                new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE, "The name of the user(s) who will be the groups manager")
-            },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")),
-    };
-	
-    /**
-     * @param context
-     */
-    public XMLDBCreateGroup(XQueryContext context, FunctionSignature signature) {
-        super(context, signature);
-    }
+	public final static FunctionSignature signatures[] = {
+			new FunctionSignature(new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+					"Create a new user group. $group is the group name. The current user will be the groups manager.",
+					new SequenceType[] { new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name") },
+					new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
+					"Use xmldb:create-group($group, $group-manager-username) instead."),
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
-     *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    @Override
-    public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
+			new FunctionSignature(
+					new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+					"Create a new user group, with an initial member. $group is the group name, $group-manager-username are the groups managers in addition to the current user.",
+					new SequenceType[] {
+							new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name"),
+							new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE,
+									"The name of the user(s) who will be the groups manager") }, new FunctionReturnSequenceType(Type.BOOLEAN,
+							Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")), };
 
-        String groupName = args[0].getStringValue();
+	/**
+	 * @param context
+	 */
+	public XMLDBCreateGroup(XQueryContext context, FunctionSignature signature) {
+		super(context, signature);
+	}
 
-        if(context.getUser().getUsername().equals("guest") || groupName.equals("dba")) {
-            XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be an authenticated user to call this function.");
-            logger.error("Invalid user", xPathException);
-            throw xPathException;
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+	 * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 */
+	@Override
+	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        logger.info("Attempting to create group " + groupName);
+		String groupName = args[0].getStringValue();
 
-        Group group = new GroupAider(groupName);
+		if (context.getSubject().getName().equals("guest") || groupName.equals("dba")) {
+			XPathException xPathException = 
+				new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName()
+					+ "' must be an authenticated account to call this function.");
+			logger.error("Invalid user", xPathException);
+			throw xPathException;
+		}
 
-        DBBroker broker = context.getBroker();
-        Subject currentUser = broker.getUser();
+		logger.info("Attempting to create group " + groupName);
 
-	try {
+		Group group = new GroupAider(groupName);
 
-            SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+		DBBroker broker = context.getBroker();
+		Subject currentUser = broker.getSubject();
 
-            List<Account> groupManagerAccounts = new ArrayList<Account>();
-            if(args.length == 2) {
-                //find the group managers, this makes sure they all exist first!
-                for(SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
-                    String groupManager = i.nextItem().getStringValue();
+		try {
 
-                    Account groupManagerAccount = sm.getAccount(broker.getUser(), groupManager);
-                    if(groupManagerAccount == null) {
-                        logger.error("Could not find the user: " + groupManager);
-                        return BooleanValue.FALSE;
-                    }
-                    groupManagerAccounts.add(groupManagerAccount);
-                }
-            } else {
-                //no group manager specified, so use the current user
-                groupManagerAccounts.add(currentUser);
-            }
+			SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 
-            //TODO remove this once the security implementation supports group managers
-            //elevate to system user, so we can add groups to the user
-            Subject systemUser = sm.authenticate(SecurityManager.SYSTEM, "");
-            broker.setUser(systemUser);
+			// add the current user as a group manager
+			group.addManager(currentUser);
 
-            //create the group
-            group = sm.addGroup(group);
+			if (args.length == 2) {
+				// add the additional group managers, this also makes sure they
+				// all exist first!
+				for (SequenceIterator i = args[1].iterate(); i.hasNext();) {
+					String groupManager = i.nextItem().getStringValue();
 
-            //add the managers to the group
-            for(Account groupManagerAccount : groupManagerAccounts) {
-                groupManagerAccount.addGroup(group);
-                sm.updateAccount(broker.getUser(), groupManagerAccount);
-            }
+					Account groupManagerAccount = sm.getAccount(null, groupManager);
+					if (groupManagerAccount == null) {
+						logger.error("Could not find the user: " + groupManager);
+						// throw exception is better -shabanovd
+						return BooleanValue.FALSE;
+					}
+					group.addManager(groupManagerAccount);
+				}
+			}
 
-            return BooleanValue.TRUE;
+			// create the group
+			group = sm.addGroup(group);
 
-	} catch (PermissionDeniedException pde) {
-	    logger.error("Failed to create group: " + group, pde);
-        } catch (EXistException exe) {
-            logger.error("Failed to create group: " + group, exe);
-        } catch(AuthenticationException ae) {
-            logger.error("Failed to create group: " + group, ae);
-        } finally {
-            //restore the original user
-            broker.setUser(currentUser);
-        }
-        
-        return BooleanValue.FALSE;
-    }
+			return BooleanValue.TRUE;
+
+		} catch (PermissionDeniedException pde) {
+			throw new XPathException(this, 
+					"Permission denied, calling account '" + context.getSubject().getName()
+					+ "' do not authorize to call this function.");
+		} catch (EXistException exe) {
+			logger.error("Failed to create group: " + group, exe);
+		}
+
+		return BooleanValue.FALSE;
+	}
 }

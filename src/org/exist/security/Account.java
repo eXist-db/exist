@@ -57,7 +57,7 @@ public interface Account extends Principal, User {
 	 *@param  group  The feature to be removed to the Group attribute
 	 */
     @Override
-	public void remGroup(String group);
+	public void remGroup(String group) throws PermissionDeniedException;
 
 	/**
 	 *  Get all groups this user belongs to

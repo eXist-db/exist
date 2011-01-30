@@ -22,24 +22,34 @@
 
 package org.exist.security;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
+import org.exist.config.Reference;
+import org.exist.config.ReferenceImpl;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.GroupImpl;
 
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
-    @ConfigurationFieldAsElement("members-manager")
-    private Set<Account> membersManagers = new HashSet<Account>();
+    @ConfigurationFieldAsElement("manager")
+    @ConfigurationReferenceBy("name")
+    private List<Reference<SecurityManager, Account>> managers = 
+    	new ArrayList<Reference<SecurityManager, Account>>();
 
-    public AbstractGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
+    public AbstractGroup(AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
         super(realm, realm.collectionGroups, id, name);
+        
+        if (managers != null)
+	    	for (Account manager : managers) {
+	    		_addManager(manager);
+	    	}
     }
 
     public AbstractGroup(AbstractRealm realm, String name) throws ConfigurationException {
@@ -70,12 +80,98 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         buf.append(name);
         buf.append("\" id=\"");
         buf.append(Integer.toString(id));
-        buf.append("\"/>");
+        buf.append("\">");
+        for(Account manager : getManagers()) {
+            buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
+        }
+        buf.append("</group>");
         return buf.toString();
     }
 
     @Override
-    public boolean isMembersManager(Account account) {
-        return membersManagers.contains(account);
+    public boolean isManager(Account account) {
+    	for (Reference<SecurityManager, Account> manager : managers) {
+    		if (manager.resolve().equals(account.getName()))
+    			return true;
+    	}
+    	return false;
+    }
+
+    private void _addManager(Account account) {
+        if(!managers.contains(account.getName())) {
+            managers.add(
+        		new ReferenceImpl<SecurityManager, Account>(
+    				getRealm().getSecurityManager(),
+    				account
+        		)
+        	);
+        }
+    }
+
+    @Override
+    public void addManager(Account manager) throws PermissionDeniedException {
+    	Subject subject = getDatabase().getSubject();
+        if(!(isManager(subject) || subject.hasDbaRole())) {
+            throw new PermissionDeniedException("Only existing managers or DBA's may add a new manager to a group");
+        }
+        
+        _addManager(manager);
+    }
+
+    @Override
+    public void addManagers(List<Account> managers) throws PermissionDeniedException {
+    	if (managers != null)
+	    	for (Account manager : managers) {
+	    		addManager(manager);
+	    	}
+    }
+    
+    public void addManager(String name) throws PermissionDeniedException {
+    	Subject user = getDatabase().getSubject();
+        if(!isManager(user) && !user.hasDbaRole()) {
+            throw new PermissionDeniedException("Only existing managers or DBA's may add a new manager to a group");
+        }
+        
+        for(Reference<SecurityManager, Account> ref : managers) {
+            if(ref.resolve().getName().equals(name)) {
+                return;
+            }
+        }
+
+        managers.add(
+    		new ReferenceImpl<SecurityManager, Account>(
+				getRealm().getSecurityManager(),
+				"getAccount",
+				name
+    		)
+    	);
+    }
+
+    @Override
+    public List<Account> getManagers() {
+    	
+    	List<Account> list = new ArrayList<Account>(managers.size());
+    	
+    	for (Reference<SecurityManager, Account> ref : managers) {
+    		list.add(ref.resolve());
+    	}
+        
+    	return list;
+    }
+
+    @Override
+    public void removeManager(Account account) throws PermissionDeniedException {
+
+        Account user = getDatabase().getSubject();
+        if(!isManager(user) && !user.hasDbaRole()) {
+            throw new PermissionDeniedException("Only existing managers or DBA's may remove another manager from a group");
+        }
+
+        for(Reference<SecurityManager, Account> ref : managers) {
+            if(ref.resolve().getName().equals(account.getName())) {
+                managers.remove(ref);
+                break;
+            }
+        }
     }
 }

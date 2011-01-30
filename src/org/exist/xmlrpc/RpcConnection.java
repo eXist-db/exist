@@ -3783,10 +3783,7 @@ public class RpcConnection implements RpcAPI {
 
     	for (String g : groups) {
     		if (g.equals(rgroup)) {
-    			if(!manager.hasAdminPrivileges(user))
-    				throw new PermissionDeniedException(
-                    	"User is not allowed to remove groups");
-    			u.remGroup(g);
+                    u.remGroup(g);
     		}
     	}
     	manager.addAccount(u);
