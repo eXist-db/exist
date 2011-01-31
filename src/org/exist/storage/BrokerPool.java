@@ -1262,7 +1262,20 @@ public class BrokerPool extends Observable implements Database {
 		return false;
     }
 
-    //Seems dangerous and redundant as you myst acquire a broker yourself first, just use broker.getUser()
+    /*
+     * Seems dangerous and redundant as you must acquire a broker yourself first, just use broker.getUser()
+     * 
+     * yes, you have to authenticate before any action
+     * try {
+     * 	broker = db.authenticate(...);
+     * 
+     * 	...actions...
+     * 
+     *  broker = db.getBroker();
+     * } finally {
+     *  db.release();
+     * }
+     */
     public Subject getSubject() {
 		synchronized(this) {
 			//Try to get an active broker
