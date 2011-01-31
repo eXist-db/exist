@@ -575,6 +575,8 @@ public class Configurator {
             return field.get(instance).toString();
         } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
             return Boolean.valueOf(field.get(instance).toString()).toString();
+        } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
+        	return field.get(instance).toString();
         }
 
         return null;
@@ -843,35 +845,49 @@ public class Configurator {
         if (data == null || data.length() == 0) {
             return null;
         }
+        FullXmldbURI fullURI = null;
+        
         BrokerPool pool = broker.getBrokerPool();
         TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn txn = null;
         LOG.info("STORING CONFIGURATION collection = "+collection.getURI()+" document = "+uri);
         Subject currentUser = broker.getSubject();
         try {
             broker.setUser(pool.getSecurityManager().getSystemSubject());
-            //String data = buf.toString();
+            
+            txn = transact.beginTransaction();
             txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
+            
             IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             doc.setPermissions(0770);
-            FullXmldbURI fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
+            
+            fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
+
             saving.add(fullURI);
             collection.store(txn, broker, info, data, false);
             broker.saveCollection(txn, doc.getCollection());
             transact.commit(txn);
+            txn = null;
+            
             saving.remove(fullURI);
+
+            broker.flush();
+            broker.sync(Sync.MAJOR_SYNC);
+            return collection.getDocument(broker, uri.lastSegment());
         } catch (Exception e) {
-            transact.abort(txn);
-            e.printStackTrace();
+        	if (txn != null)
+        		transact.abort(txn);
+            
+        	if (fullURI != null)
+            	saving.remove(fullURI);
+            
+        	LOG.error(e);
             throw new IOException(e);
         } finally {
             broker.setUser(currentUser);
         }
-        broker.flush();
-        broker.sync(Sync.MAJOR_SYNC);
-        return collection.getDocument(broker, uri.lastSegment());
     }
 
     public static synchronized void clear(Database db) {

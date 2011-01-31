@@ -335,8 +335,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         try {
-            broker = getDatabase().get(null);
-            Account user = broker.getUser();
+        	Account user = getDatabase().getSubject();
 
             if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
                             throw new PermissionDeniedException(
@@ -365,6 +364,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             }
 
             updatingAccount.setPassword(account.getPassword());
+            updatingAccount.setHome(account.getHome());
 
             ((AbstractPrincipal)updatingAccount).save();
 
