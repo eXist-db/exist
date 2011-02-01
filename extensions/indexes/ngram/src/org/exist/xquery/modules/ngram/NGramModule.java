@@ -42,6 +42,7 @@ public class NGramModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = {
+    	new FunctionDef(AddMatch.signature, AddMatch.class),
         new FunctionDef(NGramSearch.signatures[0], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[1], NGramSearch.class),
         new FunctionDef(NGramSearch.signatures[2], NGramSearch.class),
