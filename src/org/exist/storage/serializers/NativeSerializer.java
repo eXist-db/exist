@@ -248,9 +248,14 @@ public class NativeSerializer extends Serializer {
                     receiver.endElement(ATTRIB_ELEMENT);
                 }
                 else {
-                    LOG.warn("Error SENR0001: attribute '" + node.getQName() + "' has no parent element. " +
-                        "While serializing document " + doc.getURI());
-                    throw new SAXException("Error SENR0001: attribute '" + node.getQName() + "' has no parent element");
+                	if (this.outputProperties.getProperty("output-method") != null &&
+                			this.outputProperties.getProperty("output-method").equals("text")) {
+                		receiver.characters(node.getNodeValue());                	
+                	} else {
+                		LOG.warn("Error SENR0001: attribute '" + node.getQName() + "' has no parent element. " +
+                				"While serializing document " + doc.getURI());
+                		throw new SAXException("Error SENR0001: attribute '" + node.getQName() + "' has no parent element");
+                	}
                 }
             } else
         		receiver.attribute(node.getQName(), cdata);

@@ -3446,7 +3446,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void registerBinaryValueInstance(BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
-             binaryValueInstances = new ArrayList();
+             binaryValueInstances = new ArrayList<BinaryValue>();
         }
         binaryValueInstances.add(binaryValue);
     }
