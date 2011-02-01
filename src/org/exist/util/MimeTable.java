@@ -180,6 +180,19 @@ public class MimeTable {
         return type.getType() == MimeType.XML;
     }
     
+    /**
+     * Determine if the passed mime type is text, i.e. may require a charset
+     * declaration.
+     * 
+     * @param mimeType
+     * @return
+     */
+    public boolean isTextContent(String mimeType) {
+    	MimeType mime = getContentType(mimeType);
+    	return mimeType.startsWith("text/") || mimeType.endsWith("xquery") ||
+    		mime.isXMLType();
+    }
+    
     private String getExtension(String fileName) {
         File f = new File(fileName);
         fileName = f.getName();

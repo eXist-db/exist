@@ -53,6 +53,7 @@ import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.MimeTable;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -294,14 +295,14 @@ public class XQueryServlet extends HttpServlet {
         }
         
         
-        if (request.getCharacterEncoding() == null)
-            try {
-                request.setCharacterEncoding(formEncoding);
-            } catch (IllegalStateException e) {
-            }
+//        if (request.getCharacterEncoding() == null)
+//            try {
+//                request.setCharacterEncoding(formEncoding);
+//            } catch (IllegalStateException e) {
+//            }
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-        response.setContentType(contentType + "; charset=" + formEncoding);
+//        response.setContentType(contentType + "; charset=" + formEncoding);
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
 
@@ -416,25 +417,6 @@ public class XQueryServlet extends HttpServlet {
             }
         }
         
-        
-        //-------------------------------
-        // Added by Igor Abade (igoravl@cosespseguros.com.br)
-        // Date: Aug/06/2004
-        //-------------------------------
-        
-        String contentType = this.contentType;
-        try {
-            contentType = getServletContext().getMimeType(path);
-            if (contentType == null)
-                contentType = this.contentType;
-        } catch (Throwable e) {
-            contentType = this.contentType;
-        } finally {
-            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
-                contentType += "; charset=" + formEncoding;
-            response.setContentType(contentType );
-        }
-        
         //-------------------------------
         
 //        URI baseUri;
@@ -519,8 +501,25 @@ public class XQueryServlet extends HttpServlet {
             String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
             if (mediaType != null) {
                 if (!response.isCommitted())
-                    response.setContentType(mediaType + "; charset=" + formEncoding);
+                	if (MimeTable.getInstance().isTextContent(mediaType))
+                		response.setContentType(mediaType + "; charset=" + formEncoding);
+                	else
+                		response.setContentType(mediaType);
+            } else {
+	            String contentType = this.contentType;
+	            try {
+	                contentType = getServletContext().getMimeType(path);
+	                if (contentType == null)
+	                    contentType = this.contentType;
+	            } catch (Throwable e) {
+	                contentType = this.contentType;
+	            } finally {
+	                if (MimeTable.getInstance().isTextContent(contentType))
+	                    contentType += "; charset=" + formEncoding;
+	                response.setContentType(contentType );
+	            }
             }
+            
             if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
                 request.setAttribute(requestAttr, resultSequence);
             } else {
