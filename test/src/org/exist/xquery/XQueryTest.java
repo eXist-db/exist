@@ -57,6 +57,7 @@ public class XQueryTest extends XMLTestCase {
 
     private static final String NUMBERS_XML = "numbers.xml";
     private static final String BOWLING_XML = "bowling.xml";
+    private static final String attributesSERIALIZATION = "attributes_serialization.xml";
     private static final String MODULE1_NAME = "module1.xqm";
     private static final String MODULE2_NAME = "module2.xqm";
     private static final String MODULE3_NAME = "module3.xqm";
@@ -123,6 +124,12 @@ public class XQueryTest extends XMLTestCase {
             "<frame/>" +
             "</game>" +
             "</series>";
+    private final static String attributes =
+        "<blob>" +
+        "<test att='a' />" +
+        "<test att='b' />" +
+        "<test att='c' />" +
+        "</blob>";
     private static String attributeXML;
     private static int stringSize = 512;
     private static int nbElem = 1;
@@ -3297,7 +3304,7 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
         }
@@ -3333,7 +3340,7 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
         }
@@ -3342,7 +3349,7 @@ public class XQueryTest extends XMLTestCase {
     // http://sourceforge.net/support/tracker.php?aid=1807014
     public void testWrongAddNamespace_1807014() {
         try {
-    Collection testCollection = getTestCollection();
+        	Collection testCollection = getTestCollection();
             Resource doc = testCollection.createResource("a.xqy", "BinaryResource");
             doc.setContent("module namespace a = \"http://www.a.com\"; "
                             +"declare function a:selectionList() as element(ul) { "
@@ -3389,7 +3396,7 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
         }
@@ -3431,7 +3438,7 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(0).getContent().toString(), "<Result>6</Result>");
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
         }
@@ -3464,7 +3471,7 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(1).getContent().toString(), "<category uid=\"1\">Fruit</category>");
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
         }
@@ -3494,9 +3501,32 @@ public class XQueryTest extends XMLTestCase {
                     result.getResource(1).getContent().toString(), "<two><z> zzz </z></two>");
 
         } catch (XMLDBException ex) {
-            // should not yield into exceptio
+            // should not yield into exception
             ex.printStackTrace();
             fail(ex.toString());
+        }
+    }
+
+    public void testAttributesSerialization() {
+        ResourceSet result;
+        String query;
+        try {
+            XPathQueryService service =
+                    storeXMLStringAndGetQueryService(attributesSERIALIZATION, attributes);
+            
+            query = "//@* \n";
+            try {
+            	result = service.query(query);
+            } catch (Exception e) {
+            	Exception ee = e;
+            	//SENR0001 : OK            	
+            }
+            query = "declare option output-xml=text; \n"
+            	+ "//@* \n";
+            result = service.query(query);
+            assertEquals("XQuery: " + query, 3, result.getSize());
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
         }
     }
 
