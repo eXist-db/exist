@@ -3518,10 +3518,10 @@ public class XQueryTest extends XMLTestCase {
             try {
             	result = service.query(query);
             } catch (Exception e) {
-            	Exception ee = e;
-            	//SENR0001 : OK            	
+            	//SENR0001 : OK
+            	System.out.println(e.getMessage());
             }
-            query = "declare option output-xml=text; \n"
+            query = "declare option exist:serialize 'method=text'; \n"
             	+ "//@* \n";
             result = service.query(query);
             assertEquals("XQuery: " + query, 3, result.getSize());
