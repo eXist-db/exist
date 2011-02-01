@@ -182,12 +182,6 @@ public class XQueryURLRewrite implements Filter {
         long start = System.currentTimeMillis();
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        if (request.getCharacterEncoding() == null) {
-            try {
-                request.setCharacterEncoding("UTF-8");
-            } catch (IllegalStateException e) {
-            }
-        }
 
         if (LOG.isTraceEnabled())
             LOG.trace(request.getRequestURI());
@@ -1301,7 +1295,7 @@ public class XQueryURLRewrite implements Filter {
                 super.setContentLength(i);
         }
 
-        @Override
+		@Override
         public void flushBuffer() throws IOException {
             if (!cache)
                 super.flushBuffer(); 
