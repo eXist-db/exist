@@ -16,32 +16,28 @@ public class LuceneIndexConfig {
     private final static String N_INLINE = "inline";
     private final static String N_IGNORE = "ignore";
 
-    private final static String ANALYZER_ID_ATTR = "analyzer";
     private static final String QNAME_ATTR = "qname";
     private static final String MATCH_ATTR = "match";
-    private final static String BOOST_ATTRIB = "boost";
 
     private final static String IGNORE_ELEMENT = "ignore";
     private final static String INLINE_ELEMENT = "inline";
 	private static final String FIELD_ATTR = "field";
+	private static final String TYPE_ATTR = "type";
 
     private String name = null;
-    
-    private String analyzerId = null;
-    // save Analyzer for later use in LuceneMatchListener
-    private Analyzer analyzer = null;
 
     private NodePath path = null;
 
     private boolean isQNameIndex = false;
-    
-    private float boost = -1;
 
     private Map<QName, String> specialNodes = null;
 
     private LuceneIndexConfig nextConfig = null;
     
-    public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
+    private FieldType type = null;
+    
+    public LuceneIndexConfig(Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
+    			Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
             path = new NodePath(qname);
@@ -56,27 +52,13 @@ public class LuceneIndexConfig {
         String name = config.getAttribute(FIELD_ATTR);
         if (name != null && name.length() > 0)
         	setName(name);
-        String id = config.getAttribute(ANALYZER_ID_ATTR);
-    	// save Analyzer for later use in LuceneMatchListener
-        if (id != null && id.length() > 0) {
-        	analyzer = analyzers.getAnalyzerById(id);
-            if (analyzer == null)
-                throw new DatabaseConfigurationException("No analyzer configured for id " + id);
-            analyzerId = id;
-        } else {
-        	analyzer = analyzers.getDefaultAnalyzer();
-        }
         
-        
-        String boostAttr = config.getAttribute(BOOST_ATTRIB);
-        if (boostAttr != null && boostAttr.length() > 0) {
-            try {
-                boost = Float.parseFloat(boostAttr);
-            } catch (NumberFormatException e) {
-                throw new DatabaseConfigurationException("Invalid value for attribute 'boost'. Expected float, " +
-                        "got: " + boostAttr);
-            }
-        }
+        String fieldType = config.getAttribute(TYPE_ATTR);
+        if (fieldType != null && fieldType.length() > 0)
+        	type = fieldTypes.get(fieldType);        
+        if (type == null)
+        	type = new FieldType(config, analyzers);
+
         parse(config, namespaces);
     }
 
@@ -106,11 +88,11 @@ public class LuceneIndexConfig {
 
     // return saved Analyzer for use in LuceneMatchListener
     public Analyzer getAnalyzer() {
-        return analyzer;
+        return type.getAnalyzer();
     }
 
     public String getAnalyzerId() {
-        return analyzerId;
+        return type.getAnalyzerId();
     }
 
     public QName getQName() {
@@ -122,7 +104,7 @@ public class LuceneIndexConfig {
     }
 
     public float getBoost() {
-        return boost;
+        return type.getBoost();
     }
 
     public void setName(String name) {

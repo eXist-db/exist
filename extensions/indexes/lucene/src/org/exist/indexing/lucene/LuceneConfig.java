@@ -18,6 +18,7 @@ public class LuceneConfig {
     private final static String CONFIG_ROOT = "lucene";
     private final static String INDEX_ELEMENT = "text";
     private final static String ANALYZER_ELEMENT = "analyzer";
+    protected final static String FIELD_TYPE_ELEMENT = "fieldType";
     private static final String INLINE_ELEMENT = "inline";
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
@@ -25,6 +26,8 @@ public class LuceneConfig {
     private Map<QName, LuceneIndexConfig> paths = new TreeMap<QName, LuceneIndexConfig>();
     private List<LuceneIndexConfig> wildcardPaths = new ArrayList<LuceneIndexConfig>();
     private Map<String, LuceneIndexConfig> namedIndexes = new TreeMap<String, LuceneIndexConfig>();
+    
+    private Map<String, FieldType> fieldTypes = new HashMap<String, FieldType>();
     
     private Set<QName> inlineNodes = null;
     private Set<QName> ignoreNodes = null;
@@ -145,25 +148,28 @@ public class LuceneConfig {
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
-                if (CONFIG_ROOT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
-                    if (elem.hasAttribute(BOOST_ATTRIB)) {
-                        String value = elem.getAttribute(BOOST_ATTRIB);
-                        try {
-                            boost = Float.parseFloat(value);
-                        } catch (NumberFormatException e) {
-                            throw new DatabaseConfigurationException("Invalid value for 'boost' attribute in " +
-                                "lucene index config: float expected, got " + value);
-                        }
-                    }
-                    parseConfig(node.getChildNodes(), namespaces);
-                } else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
-                    analyzers.addAnalyzer((Element) node);
-                } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-                	// found an index definition
-                    Element elem = (Element) node;
-                    try {
-						LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers);
+                try {
+					if (CONFIG_ROOT.equals(node.getLocalName())) {
+					    Element elem = (Element) node;
+					    if (elem.hasAttribute(BOOST_ATTRIB)) {
+					        String value = elem.getAttribute(BOOST_ATTRIB);
+					        try {
+					            boost = Float.parseFloat(value);
+					        } catch (NumberFormatException e) {
+					            throw new DatabaseConfigurationException("Invalid value for 'boost' attribute in " +
+					                "lucene index config: float expected, got " + value);
+					        }
+					    }
+					    parseConfig(node.getChildNodes(), namespaces);
+					} else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
+					    analyzers.addAnalyzer((Element) node);
+					} else if (FIELD_TYPE_ELEMENT.equals(node.getLocalName())) {
+						FieldType type = new FieldType((Element) node, analyzers);
+						fieldTypes.put(type.getId(), type);
+					} else if (INDEX_ELEMENT.equals(node.getLocalName())) {
+						// found an index definition
+					    Element elem = (Element) node;
+						LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
 						// if it is a named index, add it to the namedIndexes map
 						if (config.getName() != null)
 						    namedIndexes.put(config.getName(), config);
@@ -178,22 +184,22 @@ public class LuceneConfig {
 						    else
 						        idxConf.add(config);
 						}
-					} catch (DatabaseConfigurationException e) {
-						LOG.warn("Invalid lucene configuration element: " + e.getMessage());
+					} else if (INLINE_ELEMENT.equals(node.getLocalName())) {
+					    Element elem = (Element) node;
+					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+					    if (inlineNodes == null)
+					        inlineNodes = new TreeSet<QName>();
+					    inlineNodes.add(qname);
+					} else if (IGNORE_ELEMENT.equals(node.getLocalName())) {
+					    Element elem = (Element) node;
+					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+					    if (ignoreNodes == null)
+					        ignoreNodes = new TreeSet<QName>();
+					    ignoreNodes.add(qname);
 					}
-                } else if (INLINE_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
-                    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-                    if (inlineNodes == null)
-                        inlineNodes = new TreeSet<QName>();
-                    inlineNodes.add(qname);
-                } else if (IGNORE_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
-                    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-                    if (ignoreNodes == null)
-                        ignoreNodes = new TreeSet<QName>();
-                    ignoreNodes.add(qname);
-                }
+                } catch (DatabaseConfigurationException e) {
+					LOG.warn("Invalid lucene configuration element: " + e.getMessage());
+				}
             }
         }
     }
