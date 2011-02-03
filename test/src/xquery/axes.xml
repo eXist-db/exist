@@ -579,6 +579,7 @@
             (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[preceding-sibling::c]
         </code>
         <expected><c>C4</c><c>C6</c></expected><!-- is the elements order correct? -->
+        <!-- The order is correct: C4 from axes2.xml & C6 from axes3.xml (shabanovd) -->
     </test>
     <test output="text">
         <task>Sibling axis comments and pis 1</task>
