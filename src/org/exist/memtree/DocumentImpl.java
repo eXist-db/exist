@@ -1551,25 +1551,26 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public String getBaseURI() {
-    	String baseURI = getDocumentElement().getAttributeNS( Namespaces.XML_NS, "base" );
-    	if( baseURI != null ) {
-    		return baseURI; 
-        } else {
-        	String docURI = getDocumentURI();
-        	if (docURI != null)
-        		return docURI;
-        	else {
-        		if( context.isBaseURIDeclared() ) {
-        			try {
-        				return context.getBaseURI().getStringValue();
-        			} catch( Exception e ) {
-        				//System.out.println( "memtree/DocumentImpl::getBaseURI() exception catched: " );
-        			}
-        		}
-        		return XmldbURI.EMPTY_URI.toString();
-        	}
-        }
-
+    	Element el = getDocumentElement();
+    	if (el != null) {
+    		String baseURI = getDocumentElement().getAttributeNS( Namespaces.XML_NS, "base" );
+    		if( baseURI != null )
+    			return baseURI;
+    	}
+    	
+    	String docURI = getDocumentURI();
+    	if (docURI != null)
+    		return docURI;
+    	else {
+    		if( context.isBaseURIDeclared() ) {
+    			try {
+    				return context.getBaseURI().getStringValue();
+    			} catch( Exception e ) {
+    				//System.out.println( "memtree/DocumentImpl::getBaseURI() exception catched: " );
+    			}
+    		}
+    		return XmldbURI.EMPTY_URI.toString();
+    	}
     }
 
     @Override

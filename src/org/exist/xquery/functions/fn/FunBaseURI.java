@@ -150,7 +150,7 @@ public class FunBaseURI extends BasicFunction {
                         logger.error(e.getMessage());
                         throw new XPathException(this, e.getMessage(), e);
                     }
-                    if (!"".equals(relativeURI.toString())) {
+                    if (!(("".equals(relativeURI.toString()) || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
                         if (relativeURI.isAbsolute()) {
                             result = new AnyURIValue(relativeURI);
                         } else {
