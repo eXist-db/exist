@@ -21,10 +21,13 @@
  */
 package org.exist.debugger.xquery;
 
+import java.io.IOException;
+
 import org.apache.mina.core.session.IoSession;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
+import org.exist.debugger.Utils;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
@@ -32,7 +35,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -59,7 +61,7 @@ public class ContextGet extends BasicFunction {
 				) 
 			}, 
 			new FunctionReturnSequenceType(
-				Type.STRING, 
+				Type.NODE, 
 				Cardinality.EXACTLY_ONE, 
 				""
 			)
@@ -84,9 +86,11 @@ public class ContextGet extends BasicFunction {
 			
 			//XXX: make sure it executed
 			
-			return new StringValue( new String( command.responseBytes() ) );
+			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 			
 		} catch (EXistException e) {
+			throw new XPathException(this, "", e);
+		} catch (IOException e) {
 			throw new XPathException(this, "", e);
 		}
 	}
