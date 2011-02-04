@@ -23,6 +23,7 @@ package org.exist;
 
 import java.util.Observer;
 
+import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -103,4 +104,10 @@ public interface Database {
 	 */
 	public DBBroker get(Subject subject) throws EXistException;   
 	public void release(DBBroker broker);
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Debuggee getDebuggee();
 }

@@ -268,7 +268,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public void reset() {
-		//System.out.println("reset");
+		System.out.println("reset");
 		firstExpression = null;
 		
 		stack = new ArrayList<Expression>();
@@ -320,11 +320,11 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	
 	public synchronized List<Expression> stackGet() {
 		//wait, script didn't started
-		while (stack.size() == 0)
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+//		while (stack.size() == 0 && command == null)
+//			try {
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {
+//			}
 		
 		return stack;
 	}

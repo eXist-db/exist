@@ -64,6 +64,7 @@ public class ProtocolHandler extends IoHandlerAdapter {
 	@Override
 	public void messageReceived(IoSession session, Object message) {
 //		session.write(message);
+		System.out.println("messageReceived message = "+message);
 	}
 	
 	public void exceptionCaught(IoSession session, Throwable cause) {

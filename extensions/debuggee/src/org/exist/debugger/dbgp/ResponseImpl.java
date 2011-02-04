@@ -64,6 +64,8 @@ public class ResponseImpl implements Response {
 			reader.setContentHandler(adapter);
 			reader.parse(src);
 			parsedResponse = (Element) adapter.getDocument().getFirstChild();
+			
+			System.out.println("ResponseImpl parsedResponse = "+parsedResponse);
 		} catch (ParserConfigurationException e) {
 		} catch (SAXException e) {
 		} catch (IOException e) {

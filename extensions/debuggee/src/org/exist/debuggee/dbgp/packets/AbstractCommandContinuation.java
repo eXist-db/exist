@@ -67,7 +67,8 @@ public abstract class AbstractCommandContinuation extends Command implements Com
 	}
 	
 	public void disconnect() {
-		session.close(true);
+		if (!session.isClosing())
+			session.close(true);
 	}
 
 	List<ResponseListener> listeners = new ArrayList<ResponseListener>();
