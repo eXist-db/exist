@@ -36,6 +36,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
 import java.util.HashMap;
@@ -570,6 +571,13 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		// maybe TODO - new DOM interfaces - Java 5.0
 		
 	}
+
+	@Override
+    public void setTextContent( String textContent ) throws DOMException
+    {
+        int nodeNr = document.addNode( Node.TEXT_NODE, (short)( document.getTreeLevel( nodeNumber ) + 1 ), null );
+        document.addChars( nodeNr, textContent.toCharArray(), 0, textContent.length() );
+    }
 	
 	public String toString() {
     		StringBuilder result = new StringBuilder();
@@ -599,4 +607,19 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
         	result.append("} ");        
         	return result.toString();
 	}
+
+	@Override
+    public String getNodeValue() throws DOMException {
+        StringBuilder result = new StringBuilder();
+        for( int i = 0; i < this.getChildCount(); i++ ) {
+            Node child = getChildNodes().item( i );
+            if( child instanceof Text ) {
+                if( i > 0 ) {
+                    result.append( " " );
+                }
+                result.append( ( (Text)child ).getData() );
+            }
+        }
+        return( result.toString() );
+    }
 }
