@@ -49,6 +49,8 @@ public class RequestDecoder extends CumulativeProtocolDecoder {
 					
 					command.exec();
 					
+					System.out.println("doDecode command = "+command);
+					
 					if (!(command instanceof CommandContinuation)) {
 						out.write(command);
 					}

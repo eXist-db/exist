@@ -21,15 +21,27 @@
  */
 package org.exist.debuggee;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
+import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.debuggee.dbgp.packets.Init;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
 /**
@@ -58,7 +70,9 @@ public class DebuggeeImpl implements Debuggee {
     	SET_GET_FEATURES.put("max_depth", "1");
     }
     
-    DebuggeeConnectionTCP connection = null; 
+    private DebuggeeConnectionTCP connection = null;
+    
+    private Map<String, Session> sessions = new HashMap<String, Session>();
     
 	public DebuggeeImpl() {
 		connection = new DebuggeeConnectionTCP();
@@ -101,5 +115,81 @@ public class DebuggeeImpl implements Debuggee {
 			return true;
 		}
 		
+	}
+
+	@Override
+	public String start(String uri) {
+		Database db = null;
+		DBBroker broker = null;
+		
+		try {
+			db = BrokerPool.getInstance();
+			
+			broker = db.get(null);
+			
+	        // Try to find the XQuery
+	        Source source = SourceFactory.getSource(broker, "", uri, true);
+	
+	        if (source == null) return null;
+	
+	        XQuery xquery = broker.getXQueryService();
+			
+	        XQueryContext queryContext = xquery.newContext(AccessContext.REST);
+	
+			// Find correct script load path
+			queryContext.setModuleLoadPath(XmldbURI.create(uri).removeLastSegment().toString());
+	
+			CompiledXQuery compiled;
+			try {
+				compiled = xquery.compile(queryContext, source);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+	        
+			String sessionId = String.valueOf(queryContext.hashCode());
+			
+			//link debugger session & script
+			DebuggeeJointImpl joint = new DebuggeeJointImpl();
+			SessionImpl session = new SessionImpl();
+
+			joint.setCompiledScript(compiled);
+			queryContext.setDebuggeeJoint(joint);
+			joint.continuation(new Init(session, sessionId, "eXist"));
+
+			ScriptRunner runner = new ScriptRunner(session, compiled);
+			runner.start();
+
+			//queryContext.declareVariable(Debuggee.SESSION, sessionId);
+			
+			//XXX: make sure that it started up
+			sessions.put(sessionId, session);
+			
+			return sessionId;
+
+		} catch (EXistException e) {
+			e.printStackTrace();
+			return null;
+		} catch (XPathException e) {
+			e.printStackTrace();
+			return null;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (PermissionDeniedException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			if (db != null)
+				db.release(broker);
+		}
+	}
+
+	@Override
+	public Session getSession(String id) {
+		return sessions.get(id);
 	}
 }

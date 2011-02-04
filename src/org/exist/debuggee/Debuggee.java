@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -31,10 +31,14 @@ import org.exist.xquery.CompiledXQuery;
 public interface Debuggee {
 
 	public static final String NAMESPACE_URI = "http://www.xdebug.org/";
-	public static final String PREFIX = "dbgp";
+	public static final String PREFIX = "DBGp";
 
 	public static final QName SESSION = new QName("session", NAMESPACE_URI, PREFIX);
 	public static final QName IDEKEY = new QName("idekey", NAMESPACE_URI, PREFIX);
 	
 	public boolean joint(CompiledXQuery compiledXQuery);
+
+	public String start(String uri);
+
+	public Session getSession(String id);
 }
