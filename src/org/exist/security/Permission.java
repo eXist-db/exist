@@ -78,8 +78,8 @@ public interface Permission {
      *
      * @param  group  The group id
      */
-    @Deprecated
     public void setGroup(int id);
+    @Deprecated
     public void setGroup(Subject invokingUser, int id);
 
     /**
@@ -87,8 +87,8 @@ public interface Permission {
      *
      * @param  group  The group value
      */
-    @Deprecated
     public void setGroup(Group group);
+    @Deprecated
     public void setGroup(Subject invokingUser, Group group);
 
     /**
@@ -96,8 +96,8 @@ public interface Permission {
      *
      * @param  name The group's name
      */
-    @Deprecated
     public void setGroup(String name);
+    @Deprecated
     public void setGroup(Subject invokingUser, String name);
 
     /**
@@ -112,8 +112,8 @@ public interface Permission {
      *
      * @param  user  The new owner id
      */
-    @Deprecated
     public void setOwner(int id);
+    @Deprecated
     public void setOwner(Subject invokingUser, int id);
 
     /**
@@ -121,8 +121,8 @@ public interface Permission {
      *
      * @param  user  The new owner value
      */
-    @Deprecated
     public void setOwner(Account user);
+    @Deprecated
     public void setOwner(Subject invokingUser, Account user);
 
     /**
@@ -130,8 +130,8 @@ public interface Permission {
      *
      * @param  user  The new owner value
      */
-    @Deprecated
     public void setOwner(String user);
+    @Deprecated
     public void setOwner(Subject invokingUser, String user);
 
     /**
