@@ -111,7 +111,6 @@
                 <xs:element name="indexer">
                     <xs:complexType>
                         <xs:sequence>
-
                             <xs:element name="modules">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -127,8 +126,7 @@
                                                   type="xs:integer" default="10000"/>
                                                 <xs:attribute name="flushAfter" type="xs:integer"
                                                   default="300"/>
-                                                <xs:attribute name="n" type="xs:integer" default="3"
-                                                />
+                                                <xs:attribute name="n" type="xs:integer" default="3"/>
                                                 <xs:attribute name="buffer" type="xs:integer" default="32"/>
                                             </xs:complexType>
                                         </xs:element>
@@ -321,6 +319,14 @@
                                     <xs:sequence>
                                         <xs:element name="module" maxOccurs="unbounded">
                                             <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="name" type="xs:string"/>
+                                                            <xs:attribute name="value" type="xs:string"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
                                                 <xs:attribute name="class" type="xs:string"/>
                                                 <xs:attribute name="uri" type="xs:anyURI"/>
                                                 <xs:attribute name="src" type="xs:string"/>
