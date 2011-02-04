@@ -40,6 +40,7 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeProxy;
@@ -1550,16 +1551,25 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public String getBaseURI() {
-        if( context.isBaseURIDeclared() ) {
-            try {
-                return( context.getBaseURI() + "" );
-            }
-            catch( Exception e ) {
-                System.out.println( "memtree/DocumentImpl::getBaseURI() exception catched: " );
-            }
+    	String baseURI = getDocumentElement().getAttributeNS( Namespaces.XML_NS, "base" );
+    	if( baseURI != null ) {
+    		return baseURI; 
+        } else {
+        	String docURI = getDocumentURI();
+        	if (docURI != null)
+        		return docURI;
+        	else {
+        		if( context.isBaseURIDeclared() ) {
+        			try {
+        				return context.getBaseURI().getStringValue();
+        			} catch( Exception e ) {
+        				//System.out.println( "memtree/DocumentImpl::getBaseURI() exception catched: " );
+        			}
+        		}
+        		return XmldbURI.EMPTY_URI.toString();
+        	}
         }
-        return( XmldbURI.EMPTY_URI.toString() );
-        //return XmldbURI.ROOT_COLLECTION_URI.toString();
+
     }
 
     @Override
