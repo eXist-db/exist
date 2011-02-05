@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -48,7 +48,7 @@ public interface Configuration {
 
 	public String getProperty(String property);
 
-	public Map getPropertyMap(String property);
+	public Map<String, String> getPropertyMap(String property);
 
 	public Integer getPropertyInteger(String property);
 	public Long getPropertyLong(String property);

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2010 The eXist Project
+ *  Copyright (C) 2008-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
@@ -122,7 +121,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     @Override
-    public Map getPropertyMap(String name) {
+    public Map<String, String> getPropertyMap(String name) {
         if(hasAttribute(name)) {
             return null;
         }
