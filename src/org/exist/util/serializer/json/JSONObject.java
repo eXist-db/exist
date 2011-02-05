@@ -1,14 +1,21 @@
 package org.exist.util.serializer.json;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 
 public class JSONObject extends JSONNode {
 	
 	private JSONNode firstChild = null;
+	private boolean asSimpleValue = false;
 	
 	public JSONObject(String name) {
 		super(Type.OBJECT_TYPE, name);
+	}
+	
+	public JSONObject(String name, boolean asSimpleValue) {
+		super(Type.OBJECT_TYPE, name);
+		this.asSimpleValue = asSimpleValue;
 	}
 	
 	public void addObject(JSONNode node) {
@@ -54,7 +61,7 @@ public class JSONObject extends JSONNode {
 	}
 	
 	public void serialize(Writer writer, boolean isRoot) throws IOException {
-		if (!isRoot) {
+		if (!(isRoot || asSimpleValue)) {
 			writer.write('"');
 			writer.write(getName());
 			writer.write("\" : ");
@@ -82,7 +89,8 @@ public class JSONObject extends JSONNode {
 			firstChild.serialize(writer, false);
 		else {
 			// complex object
-			writer.write("{ ");
+			if (!asSimpleValue)
+				writer.write("{ ");
 			boolean allowText = false;
 			JSONNode next = firstChild;
 			while (next != null) {
@@ -103,7 +111,21 @@ public class JSONObject extends JSONNode {
 				if (next != null)
 					writer.write(", ");
 			}
-			writer.write("} ");
+			if (!asSimpleValue)
+				writer.write("} ");
 		}
 	}
+
+	@Override
+	public String toString() {
+		StringWriter writer = new StringWriter();
+		try {
+			serialize(writer, false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return writer.toString();
+	}
+	
+	
 }

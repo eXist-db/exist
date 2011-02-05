@@ -26,6 +26,8 @@ import org.exist.util.serializer.XMLWriter;
  *	<li>An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</li>
  *	<li>An element with a single text child becomes a property with the value of the text child, i.e.
  *      &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}<li>
+ *  <li>An element with name "json:value" is serialized as a simple value, not an object, i.e.
+ *  	&lt;json:value&gt;value&lt;/json:value&gt; just becomes "value".</li>
  * </ul>
  * 
  * Namespace prefixes will be dropped from element and attribute names by default. If the serialization
@@ -90,24 +92,27 @@ public class JSONWriter extends XMLWriter {
 	}
 
 	@Override
-	public void startElement(String qname) throws TransformerException {
-		if (useNSPrefix)
-			qname = qname.replace(':', '_');
+	public void startElement(String qname) throws TransformerException { 
+		if (qname.equals("json:value"))
+			processStartElement(qname, true);
+		else if (useNSPrefix)
+			processStartElement(qname.replace(':', '_'), false);
 		else
-			qname = QName.extractLocalName(qname);
-		processStartElement(qname);
+			processStartElement(QName.extractLocalName(qname), false);
 	}
 
 	@Override
 	public void startElement(QName qname) throws TransformerException {
-		if (useNSPrefix)
-			processStartElement(qname.getPrefix() + '_' + qname.getLocalName());
+		if (JASON_NS.equals(qname.getNamespaceURI()) && "value".equals(qname.getLocalName()))
+			processStartElement(qname.getLocalName(), true);
+		else if (useNSPrefix)
+			processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
 		else
-			processStartElement(qname.getLocalName());
+			processStartElement(qname.getLocalName(), false);
 	}
 
-	private void processStartElement(String localName) {
-		JSONObject obj = new JSONObject(localName);
+	private void processStartElement(String localName, boolean simpleValue) {
+		JSONObject obj = new JSONObject(localName, simpleValue);
 		if (root == null)
 			root = obj;
 		else {
