@@ -93,6 +93,8 @@ public class Restore extends DefaultHandler
     private RestoreListener         listener;
     private List<String>			 errors = new ArrayList<String>();
     
+    private boolean                 skipSecurityV1   = false;
+    
     /**
      * Constructor for Restore.
      *
@@ -156,6 +158,8 @@ public class Restore extends DefaultHandler
 
             if( sysbd != null ) {
                 stack.push( sysbd );
+                
+                skipSecurityV1 = (sysbd.getChildBackupDescriptor( "security" ) != null);
             }
 
             contents = null;
@@ -403,6 +407,11 @@ public class Restore extends DefaultHandler
                         //triggers should NOT be disabled, because it do used by the system tasks (like security manager)
                         //UNDERSTAND: split triggers: user & system
                         //current.setTriggersEnabled(false);
+                        
+                        if (skipSecurityV1 && ("/db/system/users.xml".equals( current.getPathURI().append(docUri).toString() ))) {
+                        	listener.warn("skip resource '" + name + "'\nfrom file '" + contents.getSymbolicPath( name, false ) +"'.");
+                        	return;
+                        }
                         
                         Resource res = current.createResource( docUri.toString(), type );
 
