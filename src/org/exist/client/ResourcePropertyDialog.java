@@ -198,7 +198,7 @@ public class ResourcePropertyDialog extends JDialog {
 			ol.addElement(users[i].getName());
 		}
 		owners = new JComboBox(ol);
-		owners.setSelectedItem(permissions.getOwner());
+		owners.setSelectedItem(permissions.getOwner().getName());
 		c.gridx = 1;
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
@@ -221,7 +221,7 @@ public class ResourcePropertyDialog extends JDialog {
 		for (int i = 0; i < allGroups.length; i++)
 			gl.addElement(allGroups[i]);
 		groups = new JComboBox(gl);
-		groups.setSelectedItem(permissions.getOwnerGroup());
+		groups.setSelectedItem(permissions.getOwnerGroup().getName());
 		c.gridx = 1;
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.EAST;
