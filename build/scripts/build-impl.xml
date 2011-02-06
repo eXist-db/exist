@@ -398,12 +398,11 @@
     <!-- ================================================================== -->
     <target depends="prepare" name="javadocs" description="Create javadoc">
         <mkdir dir="${build.src}"/>
-        <antcall target="copy-xapi"/>
 
         <!--delete dir="webapp/api"/>
         <mkdir dir="webapp/api"/-->
         <echo message="Generating Javadocs ..."/>
-        <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
+
         <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="512M"
             source="1.5">
@@ -418,6 +417,7 @@
                 <path refid="classpath.jetty"/>
                 <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
             </classpath>
+            <link href="http://xmldb.exist-db.org/javadoc/"/>
             <link href="http://java.sun.com/javase/6/docs/api/"/>
             <link href="http://java.sun.com/javaee/5/docs/api/"/>
             <link href="http://commons.apache.org/codec/apidocs"/>
@@ -449,17 +449,6 @@
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
 
         <delete dir="${build.src}"/>
-    </target>
-
-    <target name="copy-xapi" if="has.xmldb.src">
-        <echo message="Copying XML:DB API sources ..."/>
-        <copy todir="${build.src}">
-            <fileset dir="${xmldb.src}">
-                <include name="org/xmldb/api/base/**"/>
-                <include name="org/xmldb/api/modules/**"/>
-                <include name="org/xmldb/api/*.java"/>
-            </fileset>
-        </copy>
     </target>
 
     <!-- ================================================================== -->
