@@ -54,7 +54,7 @@ import org.w3c.dom.NodeList;
  * @serial 2008-12-02
  * @version 1.0
  * 
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class JNDIModule extends AbstractInternalModule 
 {

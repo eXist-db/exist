@@ -35,9 +35,8 @@ public final class GZIPInputSource extends EXistInputSource {
 	}
 	
 	/**
-	 * Constructor which calls {@link #getFile()}
-	 * @param gzipFile
-	 * The file passed to {@link #getFile()}
+	 * Constructor which with gzip-file
+	 * @param gzipFile The gzip file.
 	 */
 	public GZIPInputSource(File gzipFile) {
 		super();

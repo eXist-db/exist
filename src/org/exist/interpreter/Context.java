@@ -294,9 +294,7 @@ public interface Context {
 	/**
 	 * Should loaded documents be locked?
 	 *
-	 * <p>see #setLockDocumentsOnLoad(boolean)</p>
-	 *
-	 * @return  
+	 * <p>see #setLockDocumentsOnLoad(boolean)</p>  
 	 */
 	public boolean lockDocumentsOnLoad();
 
@@ -318,18 +316,14 @@ public interface Context {
 	public void reset(boolean keepGlobals);
 
 	/**
-	 * Returns true if whitespace between constructed element nodes should be stripped by default.
-	 *
-	 * @return  
+	 * Returns true if whitespace between constructed element nodes should be stripped by default. 
 	 */
 	public boolean stripWhitespace();
 
 	public void setStripWhitespace(boolean strip);
 
 	/**
-	 * Returns true if namespaces for constructed element and document nodes should be preserved on copy by default.
-	 *
-	 * @return  
+	 * Returns true if namespaces for constructed element and document nodes should be preserved on copy by default. 
 	 */
 	public boolean preserveNamespaces();
 
@@ -341,9 +335,7 @@ public interface Context {
 	public void setPreserveNamespaces(final boolean preserve);
 
 	/**
-	 * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default.
-	 *
-	 * @return  
+	 * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default. 
 	 */
 	public boolean inheritNamespaces();
 
@@ -355,9 +347,7 @@ public interface Context {
 	public void setInheritNamespaces(final boolean inherit);
 
 	/**
-	 * Returns true if order empty is set to gretest, otherwise false for order empty is least.
-	 *
-	 * @return  
+	 * Returns true if order empty is set to gretest, otherwise false for order empty is least. 
 	 */
 	public boolean orderEmptyGreatest();
 
@@ -398,9 +388,7 @@ public interface Context {
 	public void setModule(String namespaceURI, Module module);
 
 	/**
-	 * For compiled expressions: check if the source of any module imported by the current query has changed since compilation.
-	 *
-	 * @return  
+	 * For compiled expressions: check if the source of any module imported by the current query has changed since compilation. 
 	 */
 	public boolean checkModulesValid();
 
@@ -412,9 +400,7 @@ public interface Context {
 	 * namespace URI has to be equal to the namespace URI declared by the module class. Otherwise, the module is not loaded.
 	 *
 	 * @param   namespaceURI
-	 * @param   moduleClass
-	 *
-	 * @return  
+	 * @param   moduleClass 
 	 */
 	public Module loadBuiltInModule(String namespaceURI, String moduleClass);
 
@@ -455,8 +441,6 @@ public interface Context {
 	 *
 	 * @param   var
 	 *
-	 * @return  
-	 *
 	 * @throws  XPathException
 	 */
 	public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException;
@@ -466,7 +450,7 @@ public interface Context {
 	 *
 	 * @param   var
 	 *
-	 * @return  
+	 * @return  variable
 	 *
 	 * @throws  XPathException
 	 */
@@ -534,9 +518,7 @@ public interface Context {
 	/**
 	 * XPath 1.0 backwards compatibility turned on?
 	 *
-	 * <p>In XPath 1.0 compatible mode, additional conversions will be applied to values if a numeric value is expected.</p>
-	 *
-	 * @return  
+	 * <p>In XPath 1.0 compatible mode, additional conversions will be applied to values if a numeric value is expected.</p>  
 	 */
 	public boolean isBackwardsCompatible();
 
@@ -736,9 +718,7 @@ public interface Context {
 	 * Check if the specified function signature is found in the current function called stack. If yes, the function might be tail recursive and needs
 	 * to be optimized.
 	 *
-	 * @param   signature
-	 *
-	 * @return  
+	 * @param   signature 
 	 */
 	public boolean tailRecursiveCall(FunctionSignature signature);
 
@@ -818,8 +798,6 @@ public interface Context {
 	 * Store the supplied data to a temporary document fragment.
 	 *
 	 * @param   doc
-	 *
-	 * @return  
 	 *
 	 * @throws  XPathException
 	 */

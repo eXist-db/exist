@@ -37,7 +37,7 @@ import org.exist.xquery.FunctionDef;
  * @author   Andrzej Taramina <andrzej@chaeron.com>
  * @author   ljo
  * @version  1.3
- * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  * @serial   2010-03-10
  */
 public class SchedulerModule extends AbstractInternalModule

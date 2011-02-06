@@ -35,7 +35,7 @@ public interface Account extends Principal, User {
 	/**
 	 * Add the user to a group
 	 *
-	 * @param  group  The feature to be added to the Group attribute
+	 * @param  name  The feature to be added to the Group attribute
 	 * @throws PermissionDeniedException 
 	 */
     @Override

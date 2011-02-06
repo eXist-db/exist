@@ -256,7 +256,7 @@ public class Marshaller {
     /**
      * Creates an Item from a streamed representation
      * @param parser Parser to read xml elements from
-     * @return
+     * @return item
      * @throws XMLStreamException
      */
     public static Item streamToDOM(int rootType, XMLStreamReader parser) throws XMLStreamException {
@@ -304,7 +304,7 @@ public class Marshaller {
     /**
      * Creates an Item from a streamed representation
      * @param reader
-     * @return
+     * @return item
      * @throws XMLStreamException
      */
     public static Item streamToDOM(Reader reader, XQItemType type) throws XMLStreamException, XQException {
@@ -321,7 +321,7 @@ public class Marshaller {
     /**
      * Creates a node from a string representation
      * @param content
-     * @return
+     * @return node
      * @throws XMLStreamException
      */
     public static Node streamToNode(String content) throws XMLStreamException {
@@ -334,7 +334,7 @@ public class Marshaller {
     /**
      * Creates a node from a streamed representation
      * @param reader
-     * @return
+     * @return item
      * @throws XMLStreamException
      */
     public static Node streamToNode(Reader reader) throws XMLStreamException {

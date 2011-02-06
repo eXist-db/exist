@@ -158,7 +158,7 @@ public class JMXtoXML {
 	 * "locking", "processes", "sanity", "all".
 	 * 
 	 * @param categories
-	 * @return
+	 * @return report
 	 * @throws TransformerException
 	 */
 	public String generateReport(String categories[]) throws TransformerException {
@@ -180,7 +180,8 @@ public class JMXtoXML {
 	 * 
 	 * @param instance the name of the database instance (default instance is "exist")
 	 * @param timeout a timeout in milliseconds
-	 * @return
+	 * @return Response time in msec, less than 0 in case of an error on server
+     * or PING_TIMEOUT when server does not respond in time
 	 */
 	public long ping(String instance, long timeout) {
 		ping = SanityReport.PING_WAITING;
@@ -230,7 +231,7 @@ public class JMXtoXML {
 	 * 
 	 * @param errcode an optional error description
 	 * @param categories
-	 * @return
+	 * @return xml report
 	 * @throws TransformerException
 	 */
 	public Element generateXMLReport(String errcode, String categories[]) {

@@ -33,7 +33,7 @@ import org.exist.xquery.FunctionDef;
  *
  * @author Adam Retter <adam@existsolutions.com>
  *
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class SecurityManagerModule extends AbstractInternalModule {
 

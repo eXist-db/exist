@@ -268,7 +268,7 @@ public interface UserManagementService extends Service {
     /**
      *  Delete a user from the database
      *
-     *@param  user                User
+     *@param  account                User
      *@exception  XMLDBException
      */
     public void removeAccount( Account account ) throws XMLDBException;

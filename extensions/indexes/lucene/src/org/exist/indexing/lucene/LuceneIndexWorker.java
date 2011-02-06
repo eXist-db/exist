@@ -950,7 +950,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Optimize the Lucene index by merging all segments into a single one. This
      * may take a while and write operations will be blocked during the optimize.
      *
-     * @see http://lucene.apache.org/java/3_0_1/api/all/org/apache/lucene/index/IndexWriter.html#optimize()
+     * @see org.apache.lucene.index.IndexWriter#optimize()
      */
     public void optimize() {
         IndexWriter writer = null;

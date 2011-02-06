@@ -76,7 +76,7 @@ public interface Permission {
     /**
      * Set the owner group by group id
      *
-     * @param  group  The group id
+     * @param  id  The group id
      */
     public void setGroup(int id);
     @Deprecated
@@ -110,7 +110,7 @@ public interface Permission {
     /**
      * Set the owner passed as account id
      *
-     * @param  user  The new owner id
+     * @param  id  The new owner id
      */
     public void setOwner(int id);
     @Deprecated

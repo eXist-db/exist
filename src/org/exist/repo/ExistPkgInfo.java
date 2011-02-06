@@ -21,7 +21,7 @@ import org.expath.pkg.repo.PackageInfo;
  * TODO: To be moved into eXist code base...
  *
  * @author Florent Georges
- * @date   2010-09-21
+ * @since   2010-09-21
  */
 public class ExistPkgInfo
         extends PackageInfo

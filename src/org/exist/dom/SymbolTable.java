@@ -312,7 +312,7 @@ public class SymbolTable {
      * Write the symbol table to persistent storage. Only called when upgrading
      * a .dbx file from previous versions.
      * 
-     * @param ostream
+     * @param os outputstream
      * @throws IOException
      */
 	protected synchronized void writeAll(VariableByteOutputStream os)

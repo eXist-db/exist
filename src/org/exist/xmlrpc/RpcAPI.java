@@ -55,7 +55,7 @@ public interface RpcAPI {
 	/**
 	 * Return the database version.
 	 * 
-	 * @return
+	 * @return database version
 	 */
     public String getVersion();
 

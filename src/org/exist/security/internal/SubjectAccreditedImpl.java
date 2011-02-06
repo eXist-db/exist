@@ -35,7 +35,7 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	/**
 	 * 
 	 * @param account
-	 * @param letterOfCredit: the object the prove authentication
+	 * @param letterOfCredit the object the prove authentication
 	 */
 	public SubjectAccreditedImpl(AbstractAccount account, Object letterOfCredit) {
 		super(account);

@@ -409,7 +409,7 @@
         <mkdir dir="webapp/api"/-->
         <echo message="Generating Javadocs ..."/>
         <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
-        <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
+        <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="webapp/api"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
@@ -466,6 +466,9 @@
             <link href="http://download.eclipse.org/jetty/stable-7/apidocs/"/> 
             <link href="http://milton.ettrema.com/reference/milton-api/apidocs/"/> 
             <link href="http://milton.ettrema.com/reference/milton-servlet/apidocs/"/> 
+            <link href="http://www.oxygenxml.com/apidoc/saxon-9.2/"/>
+            <link href="http://cocoon.apache.org/2.1/apidocs/"/>
+            <link href="http://lucene.apache.org/java/2_9_4/api/all/"/>
         </javadoc>
 
         <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>

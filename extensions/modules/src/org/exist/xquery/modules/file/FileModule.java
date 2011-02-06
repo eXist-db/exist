@@ -38,7 +38,7 @@ import org.exist.xquery.XQueryContext;
  * @serial 2008-03-06
  * @version 1.0
  *
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class FileModule extends AbstractInternalModule
 {

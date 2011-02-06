@@ -40,7 +40,7 @@ public interface CollectionTrigger extends Trigger {
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
      * @param collection the {@link Collection} which fired this event.
-     * @param newName optional: if event is a {@link Trigger#RENAME_COLLECTION_EVENT},
+     * @param newCollection optional: if event is a {@link Trigger#RENAME_COLLECTION_EVENT},
      *  this parameter contains the new name of the collection. It is null otherwise.
      * @throws TriggerException throwing a TriggerException will abort the current action.
      */
