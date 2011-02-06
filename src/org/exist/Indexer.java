@@ -462,25 +462,25 @@ public class Indexer extends Observable implements ContentHandler,
         this.locator = locator;
     }
 
-    /**
-     * set SAX parser feature. This method will catch (and ignore) exceptions if
-     * the used parser does not support a feature.
-     * 
-     *@param factory
-     *@param feature
-     *@param value
-     */
-    //private void setFeature(SAXParserFactory factory, String feature, boolean value) {
-        //try {
-            //factory.setFeature(feature, value);
-        //} catch (SAXNotRecognizedException e) {
-            //LOG.warn(e);
-        //} catch (SAXNotSupportedException snse) {
-            //LOG.warn(snse);
-        //} catch (ParserConfigurationException pce) {
-            //LOG.warn(pce);
-        //}
-    //}
+//    /**
+//     * set SAX parser feature. This method will catch (and ignore) exceptions if
+//     * the used parser does not support a feature.
+//     *
+//     *@param factory
+//     *@param feature
+//     *@param value
+//     */
+//    //private void setFeature(SAXParserFactory factory, String feature, boolean value) {
+//        //try {
+//            //factory.setFeature(feature, value);
+//        //} catch (SAXNotRecognizedException e) {
+//            //LOG.warn(e);
+//        //} catch (SAXNotSupportedException snse) {
+//            //LOG.warn(snse);
+//        //} catch (ParserConfigurationException pce) {
+//            //LOG.warn(pce);
+//        //}
+//    //}
 
     public void startCDATA() {
         if (!stack.isEmpty()) {

@@ -13,9 +13,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
 import org.expath.pkg.repo.DescriptorExtension;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
@@ -26,10 +28,9 @@ import org.expath.pkg.repo.XMLStreamHelper;
  * TODO: To be moved into eXist code base...
  *
  * @author Florent Georges
- * @date   2010-09-21
+ * @since   2010-09-21
  */
-public class ExistPkgExtension
-        extends DescriptorExtension
+public class ExistPkgExtension extends DescriptorExtension
 {
     public ExistPkgExtension()
     {

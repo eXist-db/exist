@@ -46,7 +46,7 @@ import java.util.Map.Entry;
  * @author   Adam Retter <adam@exist-db.org>
  * @author   ljo
  * @version  1.2
- * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  * @serial   2010-03-18
  */
 

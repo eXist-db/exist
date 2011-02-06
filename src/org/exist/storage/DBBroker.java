@@ -163,7 +163,7 @@ public abstract class DBBroker extends Observable {
     /**
      * Set the subject that is currently using this DBBroker object.
      *
-     * @param user
+     * @param subject
      */
     //TODO: this should be done in connection with authenticate (SecurityManager)
     public void setSubject(Subject subject) {

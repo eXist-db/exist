@@ -176,7 +176,7 @@ public class VirtualTempFile
 	
 	/**
 	 * The prefix string used when the temp file is going to be created
-	 * @return
+	 * @return prefix string
 	 */
 	public String getTempPrefix() {
 		return temp_prefix;
@@ -184,7 +184,7 @@ public class VirtualTempFile
 	
 	/**
 	 * The postfix string used when the temp file is going to be created
-	 * @return
+	 * @return  postfix string
 	 */
 	public String getTempPostfix() {
 		return temp_postfix;

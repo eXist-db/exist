@@ -129,10 +129,9 @@ public class AccountImpl extends AbstractAccount {
     /**
      * Create a new user with name and password
      *
-     * @param user
-     *            Description of the Parameter
+     * @param realm
+     * @param name
      * @param password
-     *            Description of the Parameter
      * @throws ConfigurationException
      */
     public AccountImpl(AbstractRealm realm, int id, String name, String password) throws ConfigurationException {
@@ -164,18 +163,15 @@ public class AccountImpl extends AbstractAccount {
         super(realm, -1, name);
     }
 
-    /**
-     * Create a new user with name, password and primary group
-     *
-     *@param user
-     *            Description of the Parameter
-     *@param password
-     *            Description of the Parameter
-     *@param primaryGroup
-     *            Description of the Parameter
-     * @throws ConfigurationException
-     * @throws PermissionDeniedException
-     */
+//    /**
+//     * Create a new user with name, password and primary group
+//     *
+//     * @param name
+//     * @param password
+//     * @param primaryGroup
+//     * @throws ConfigurationException
+//     * @throws PermissionDeniedException
+//     */
 //	public AccountImpl(AbstractRealm realm, int id, String name, String password, String primaryGroup) throws ConfigurationException {
 //		this(realm, id, name, password);
 //		addGroup(primaryGroup);

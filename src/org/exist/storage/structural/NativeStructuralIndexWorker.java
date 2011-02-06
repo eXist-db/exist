@@ -56,7 +56,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * @param docs
      * @param qname
      * @param selector
-     * @return
+     * @return nodeset
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         final Lock lock = index.btree.getLock();

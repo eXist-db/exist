@@ -127,7 +127,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	 * If not, it is created with two default users: admin and guest.
 	 *  
 	 * @param pool
-	 * @param sysBroker
+	 * @param broker
 	 */
     @Override
     public void attach(BrokerPool pool, DBBroker broker) throws EXistException {

@@ -154,7 +154,7 @@ public class UnixStylePermission implements Permission {
 	/**
      *  Set the owner group
      *
-     *@param  group  The new group value
+     *@param  groupName  The new group value
      */
     @Override
     public void setGroup(Subject invokingUser, String groupName ) {
@@ -181,7 +181,7 @@ public class UnixStylePermission implements Permission {
     /**
      *  Set the owner passed as User object
      *
-     *@param  user  The new owner value
+     *@param  account  The new owner value
      */
     @Override
     public void setOwner(Subject invokingUser, Account account ) {

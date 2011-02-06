@@ -51,7 +51,7 @@ public interface FilterInputStreamCache {
      * @param off The offset to read from
      * @return The byte read from the offset
      *
-     * @Throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is invalidated.
+     * @throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is invalidated.
      */
     public byte get(int off) throws IOException;
 
@@ -63,7 +63,7 @@ public interface FilterInputStreamCache {
      * @param off The offset in the buffer b at which to start writing
      * @param len The length of data to copy
      *
-     * @Throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is invalidated.
+     * @throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is invalidated.
      */
     public void copyTo(int cacheOffset, byte b[], int off, int len) throws IOException;
 
@@ -72,7 +72,7 @@ public interface FilterInputStreamCache {
      *
      * Destroys the cache and releases any underlying resources
      *
-     * @Throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is already invalidated.
+     * @throws IOException if an I/O error occurs. In particular, an IOException may be thrown if cache is already invalidated.
      */
     public void invalidate() throws IOException;
 }

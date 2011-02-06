@@ -47,25 +47,25 @@ public interface Database {
 	
 	/**
 	 * 
-	 * @return
+	 * @return SecurityManager
 	 */
 	public SecurityManager getSecurityManager();
 
 	/**
 	 * 
-	 * @return
+	 * @return IndexManager
 	 */
 	public IndexManager getIndexManager();
 
 	/**
 	 * 
-	 * @return
+	 * @return TransactionManager
 	 */
 	public TransactionManager getTransactionManager();
 
 	/**
 	 * 
-	 * @return
+	 * @return CacheManager
 	 */
 	public CacheManager getCacheManager();
 
@@ -76,7 +76,7 @@ public interface Database {
 
 	/**
 	 * 
-	 * @return
+	 * @return Subject
 	 */
 	public Subject getSubject();
 
@@ -107,7 +107,7 @@ public interface Database {
 	
 	/**
 	 * 
-	 * @return
+	 * @return Debuggee
 	 */
 	public Debuggee getDebuggee();
 }

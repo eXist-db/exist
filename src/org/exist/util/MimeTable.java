@@ -185,7 +185,7 @@ public class MimeTable {
      * declaration.
      * 
      * @param mimeType
-     * @return
+     * @return TRUE if mimetype is for text content else FALSE
      */
     public boolean isTextContent(String mimeType) {
     	MimeType mime = getContentType(mimeType);

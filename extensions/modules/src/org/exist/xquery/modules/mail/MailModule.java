@@ -53,7 +53,7 @@ import javax.mail.Store;
  * @serial 2010-03-19
  * @version 1.4
  *
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class MailModule extends AbstractInternalModule
 { 

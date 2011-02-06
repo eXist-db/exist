@@ -1252,9 +1252,7 @@ public class XQueryContext implements BinaryValueManager, Context
     /**
      * Should loaded documents be locked?
      *
-     * <p>see #setLockDocumentsOnLoad(boolean)</p>
-     *
-     * @return  
+     * <p>see #setLockDocumentsOnLoad(boolean)</p> 
      */
     public boolean lockDocumentsOnLoad()
     {
@@ -1431,9 +1429,7 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
     /**
-     * Returns true if whitespace between constructed element nodes should be stripped by default.
-     *
-     * @return  
+     * Returns true if whitespace between constructed element nodes should be stripped by default. 
      */
     public boolean stripWhitespace()
     {
@@ -1449,8 +1445,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
     /**
      * Returns true if namespaces for constructed element and document nodes should be preserved on copy by default.
-     *
-     * @return  
      */
     public boolean preserveNamespaces()
     {
@@ -1470,9 +1464,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
 
     /**
-     * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default.
-     *
-     * @return  
+     * Returns true if namespaces for constructed element and document nodes
+     * should be inherited on copy by default.
      */
     public boolean inheritNamespaces()
     {
@@ -1492,9 +1485,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
 
     /**
-     * Returns true if order empty is set to gretest, otherwise false for order empty is least.
-     *
-     * @return  
+     * Returns true if order empty is set to greatest, otherwise false for order empty is least.
      */
     public boolean orderEmptyGreatest()
     {
@@ -1596,9 +1587,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
 
     /**
-     * For compiled expressions: check if the source of any module imported by the current query has changed since compilation.
-     *
-     * @return  
+     * For compiled expressions: check if the source of any module imported by the current
+     * query has changed since compilation.
      */
     public boolean checkModulesValid()
     {
@@ -1645,7 +1635,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * @param   namespaceURI
      * @param   moduleClass
      *
-     * @return  
+     * @return   Module
      */
     public Module loadBuiltInModule( String namespaceURI, String moduleClass )
     {
@@ -1817,7 +1807,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @param   var
      *
-     * @return  
+     * @return   LocalVariable
      *
      * @throws  XPathException
      */
@@ -1839,7 +1829,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @param   var
      *
-     * @return  
+     * @return  Variable
      *
      * @throws  XPathException
      */
@@ -2077,8 +2067,6 @@ public class XQueryContext implements BinaryValueManager, Context
      * XPath 1.0 backwards compatibility turned on?
      *
      * <p>In XPath 1.0 compatible mode, additional conversions will be applied to values if a numeric value is expected.</p>
-     *
-     * @return  
      */
     public boolean isBackwardsCompatible()
     {
@@ -2593,9 +2581,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * Check if the specified function signature is found in the current function called stack. If yes, the function might be tail recursive and needs
      * to be optimized.
      *
-     * @param   signature
-     *
-     * @return  
+     * @param   signature 
      */
     public boolean tailRecursiveCall( FunctionSignature signature )
     {
@@ -3105,7 +3091,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @param   doc
      *
-     * @return  
+     * @return  TemporaryDoc fragment
      *
      * @throws  XPathException
      */

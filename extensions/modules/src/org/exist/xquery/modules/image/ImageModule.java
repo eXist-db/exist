@@ -50,7 +50,7 @@ import org.exist.xquery.value.Base64BinaryValueType;
  * @serial 2006-03-10
  * @version 1.0
  *
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class ImageModule extends AbstractInternalModule {
 /*

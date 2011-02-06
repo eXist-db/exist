@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.TreeMap;
 
-/** base class for {@link org.exist.storage.NativeElementIndex} */
+/** base class for {@link org.exist.storage.structural.NativeStructuralIndex} */
 public abstract class ElementIndex extends Observable {
 
     protected static Logger LOG = Logger.getLogger(ElementIndex.class.getName());
