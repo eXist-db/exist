@@ -117,7 +117,7 @@ public class Transform extends BasicFunction {
             "\"exist:stop-on-error\". If set to value \"yes\", eXist will generate an XQuery error " +
             "if the XSL processor reports a warning or error.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
 				},
@@ -141,7 +141,7 @@ public class Transform extends BasicFunction {
             "(if there are xincludes in the document). A relative path will be relative to the current " +
             "module load path.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
                 new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
@@ -153,7 +153,7 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
             },
@@ -165,7 +165,7 @@ public class Transform extends BasicFunction {
             "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
             "It should thus be the last statement in the XQuery.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_ONE, "The source-document (node tree)"),
+				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
                 new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
@@ -198,7 +198,7 @@ public class Transform extends BasicFunction {
 		if(args[0].isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-		Item inputNode = args[0].itemAt(0);
+		Sequence inputNode = args[0];
 		Item stylesheetItem = args[1].itemAt(0);
 		
 		Node options = null;
@@ -264,7 +264,7 @@ public class Transform extends BasicFunction {
                         xipath = context.getModuleLoadPath();
                     serializer.getXIncludeFilter().setModuleLoadPath(xipath);
                 }
-    			serializer.toSAX((NodeValue)inputNode);
+    			serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false);
     		} catch (Exception e) {
     			throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
     		}
@@ -334,7 +334,7 @@ public class Transform extends BasicFunction {
                         receiver = xinclude;
                     }
                     serializer.setReceiver(receiver);
-                    serializer.toSAX((NodeValue)inputNode);
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false);
                 } catch (Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
