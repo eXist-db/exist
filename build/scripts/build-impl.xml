@@ -421,9 +421,9 @@
             <packageset dir="${build.extensions}/webdav/src">
                 <include name="org/**"/>
             </packageset>
-            <packageset dir="${build.extensions}/contentextraction/src">
+            <!--packageset dir="${build.extensions}/contentextraction/src">
                 <include name="org/**"/>
-            </packageset>
+            </packageset-->
             <packageset dir="${build.extensions}/fluent/src">
                 <include name="org/**"/>
             </packageset>
