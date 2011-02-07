@@ -65,7 +65,7 @@ import org.exist.storage.DBBroker;
  * </table>
  * 
  * The document-related events are handled by the sub-interface {@link org.exist.collections.triggers.DocumentTrigger},
- * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTriggerBinary}.
+ * collection-related events are handled by {@link org.exist.collections.triggers.CollectionTrigger}.
  * 
  * The collection configuration file looks as follows:
  * 
