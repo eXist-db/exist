@@ -586,7 +586,16 @@
     <xsl:template match="script">
         <script>
             <xsl:copy-of select="@*"/>
-			<xsl:apply-templates/>
+            <xsl:choose>
+                <xsl:when test="text()">
+                    <xsl:comment>
+                        <xsl:apply-templates/>
+                    </xsl:comment>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates/>
+                </xsl:otherwise>
+            </xsl:choose>
 		</script>
     </xsl:template>
     <xsl:template match="link">
