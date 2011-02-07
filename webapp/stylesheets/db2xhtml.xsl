@@ -27,6 +27,9 @@
                 <link rel="icon" href="{$pathToWebapp}resources/exist_icon_16x16.png"
                     type="image/png"/>
                 <meta http-equiv="Content-Type" content="charset=utf-8"/>
+                
+                <xsl:apply-templates select="(bookinfo|articleinfo)/script"/>
+                
                 <script language="Javascript" type="text/javascript" src="styles/curvycorners.js"/>
                 <xsl:variable name="styleref" select="(bookinfo|articleinfo)/style/@href"/>
                 <xsl:choose>
@@ -52,8 +55,7 @@
                 </xsl:if>
                 
                 <xsl:apply-templates select="(bookinfo|articleinfo)/style"/>
-                <xsl:copy-of select="(bookinfo|articleinfo)/link"/>
-                <xsl:copy-of select="(bookinfo|articleinfo)/script"/>
+                <xsl:apply-templates select="(bookinfo|articleinfo)/link"/>
 
                 <xsl:apply-templates select="(bookinfo|articleinfo)/xf:*"/>
             </head>
@@ -357,17 +359,17 @@
                     <xsl:when test="graphic/@fileref">
                         <img src="{$pathToWebapp}{graphic/@fileref}"
                             title="eXist-db: Open Source Native XML Database"
-                            style="border-style: none;text-decoration: none"/>
+                            style="border-style: none;text-decoration: none" alt="Logo"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <img src="{$pathToWebapp}logo.jpg"
                             title="eXist-db: Open Source Native XML Database"
-                            style="border-style: none;text-decoration: none"/>
+                            style="border-style: none;text-decoration: none" alt="Logo"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
             <div id="quicksearch">
-                <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
+                <form action="{../sidebar:sidebar/sidebar:search/@href}" method="get">
                     <input type="text" size="20" name="q"/>
                     <input type="submit" value="Search"/>
                 </form>
@@ -581,6 +583,18 @@
 			<xsl:apply-templates/>
 		</style>
     </xsl:template>
+    <xsl:template match="script">
+        <script>
+            <xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</script>
+    </xsl:template>
+    <xsl:template match="link">
+        <script>
+            <xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</script>
+    </xsl:template>
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
         <xsl:variable name="return" select="'&#xA;'"/>
@@ -650,11 +664,19 @@
         </span>
     </xsl:template>
     <xsl:include href="xmlsource.xsl"/>
-    <xsl:template match="@*|node()" priority="-1">
+    
+    <!-- ensures that elements are correctly copied into the xhtml target namespace ADDED: 7/02/2011 by Adam Retter -->
+    <xsl:template match="node()[self::*]" priority="-1">
+        <xsl:element name="{local-name()}">
+            <xsl:apply-templates select="@*|node()"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="@*|node()" priority="-2">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>
     </xsl:template>
+    
 
     <!-- ADDED: May 10, 2006 by Spencer Rose -->
     <xsl:template match="procedure">
@@ -692,6 +714,9 @@
                 <xsl:apply-templates select="*[not(self::title)] | @*"/>
             </table>
         </div>
+    </xsl:template>
+    <xsl:template match="tgroup">
+        <xsl:apply-templates/>
     </xsl:template>
     <xsl:template match="row">
         <tr>
