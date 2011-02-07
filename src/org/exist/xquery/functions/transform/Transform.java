@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -650,21 +652,29 @@ public class Transform extends BasicFunction {
 			
 			if (href.isEmpty()) {
 				path = base;
-			} else
-            //TODO : use dedicated function in XmldbURI
-			if (href.startsWith("/"))
-				path = href;
-			else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
-				path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-			else if (base == null || base.length() == 0) {
-				path = basePath + "/" + href;
-			}
-			else {
-				// Maybe base never contains this prefix?  Check to be sure.
-				if (base.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
-					base = base.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+			} else {
+				URI hrefURI = null;
+				try {
+					hrefURI = new URI(href);
+				} catch (URISyntaxException e) {
 				}
-				path = base.substring(0, base.lastIndexOf("/") + 1) + href;
+				if (hrefURI != null && hrefURI.isAbsolute())
+					path = href;
+				else {
+					if (href.startsWith("/"))
+						path = href;
+					else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX))
+						path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+					else if (base == null || base.length() == 0) {
+						path = basePath + "/" + href;
+					} else {
+						// Maybe base never contains this prefix?  Check to be sure.
+						if (base.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+							base = base.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
+						}
+						path = base.substring(0, base.lastIndexOf("/") + 1) + href;
+					}
+				}
 			}
 			LOG.debug("Resolving path " + href + " with base " + base + " to " + path);// + " (URI = " + uri.toASCIIString() + ")");
 
