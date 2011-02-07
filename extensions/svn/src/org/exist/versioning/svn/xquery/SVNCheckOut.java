@@ -48,16 +48,31 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
  */
 public class SVNCheckOut extends BasicFunction {
 
-	public final static FunctionSignature signature =
+    protected static final FunctionParameterSequenceType SVN_URI_ARGUMENT = new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The subversion repository URI from which the list should be retrieved");
+    protected static final FunctionParameterSequenceType DB_URI_ARGUMENT = new FunctionParameterSequenceType("destination-path", Type.STRING, Cardinality.EXACTLY_ONE, "A local path where the working copy will be fetched into.");
+
+	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("checkout", SVNModule.NAMESPACE_URI, SVNModule.PREFIX), "Checks out a working copy from a repository. Like 'svn checkout URL[@REV] PATH (-r..)' command.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The subversion repository URI from which the list should be retrieved"),
-                new FunctionParameterSequenceType("destination-path", Type.STRING, Cardinality.EXACTLY_ONE, "A local path where the working copy will be fetched into.")
+				SVN_URI_ARGUMENT,
+				DB_URI_ARGUMENT
             },
-            new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "value of the revision actually checked out from the repository"));
+            new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "value of the revision actually checked out from the repository")
+		),
+		new FunctionSignature(
+				new QName("checkout", SVNModule.NAMESPACE_URI, SVNModule.PREFIX), "Checks out a working copy from a repository. Like 'svn checkout URL[@REV] PATH (-r..)' command.",
+				new SequenceType[] {
+					SVN_URI_ARGUMENT,
+					DB_URI_ARGUMENT,
+	                new FunctionParameterSequenceType("login", Type.STRING, Cardinality.EXACTLY_ONE, "Login to authenticate on svn server."),
+	                new FunctionParameterSequenceType("passwrod", Type.STRING, Cardinality.EXACTLY_ONE, "Passord to authenticate on svn server.")
+	            },
+	            new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "value of the revision actually checked out from the repository")
+			)
+	};
 
-	public SVNCheckOut(XQueryContext context) {
+	public SVNCheckOut(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
