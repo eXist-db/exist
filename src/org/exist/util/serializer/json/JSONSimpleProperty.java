@@ -16,7 +16,7 @@ public class JSONSimpleProperty extends JSONNode {
 
 	public JSONSimpleProperty(String name, String value) {
 		super(Type.SIMPLE_PROPERTY_TYPE, name);
-		this.value = value;
+		this.value = JSONValue.escape(value);
 	}
 
 	@Override
