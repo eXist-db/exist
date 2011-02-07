@@ -2,7 +2,7 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sidebar="http://exist-db.org/NS/sidebar"
     xmlns:xf="http://www.w3.org/2002/xforms" version="1.0">
 
-    <xsl:output method="xhtml" media-type="application/xml" omit-xml-declaration="yes"/>
+    <xsl:output method="xhtml" media-type="text/html" omit-xml-declaration="yes"/>
 
     <xsl:param name="xslt.table-of-contents" select="'yes'"/>
     <xsl:param name="xslt.syntax-highlight" select="'yes'"/>
