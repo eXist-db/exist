@@ -84,13 +84,13 @@ public class JSONObject extends JSONNode {
 		if (firstChild == null)
 			// an empty node gets a null value
 			writer.write("null");
-		else if (firstChild.getNext() == null && firstChild.getType() == Type.VALUE_TYPE)
+		else if (firstChild.getNext() == null && 
+				(firstChild.getType() == Type.VALUE_TYPE || asSimpleValue)) 
 			// if there's only one child and if it is text, it is serialized as simple value
 			firstChild.serialize(writer, false);
 		else {
 			// complex object
-			if (!asSimpleValue)
-				writer.write("{ ");
+			writer.write("{ ");
 			boolean allowText = false;
 			JSONNode next = firstChild;
 			while (next != null) {
@@ -111,8 +111,7 @@ public class JSONObject extends JSONNode {
 				if (next != null)
 					writer.write(", ");
 			}
-			if (!asSimpleValue)
-				writer.write("} ");
+			writer.write("} ");
 		}
 	}
 
