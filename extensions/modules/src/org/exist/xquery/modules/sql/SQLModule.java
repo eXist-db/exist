@@ -154,13 +154,13 @@ public class SQLModule extends AbstractInternalModule {
                 try {
                     // close the connection
                     con.close();
-
-                    // remove it from the connections map
-                    connections.remove(conID);
                 } catch(SQLException se) {
                     LOG.debug("Unable to close JDBC connection", se);
                 }
             }
+
+            //empty the map
+            connections.clear();
 
             // update the context
             xqueryContext.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR,
