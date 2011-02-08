@@ -247,13 +247,11 @@ public class SQLModule extends AbstractInternalModule {
                     stmt.getStmt().close();
                 } catch(SQLException se) {
                     LOG.debug("Unable to close JDBC PreparedStatement", se);
-                } finally {
-
-                    // remove it from the connections map
-                    preparedStatements.remove(conID);
-                    stmt = null;
                 }
             }
+
+            //empty the map
+            preparedStatements.clear();
 
             // update the context
             xqueryContext.setXQueryContextVar(SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
