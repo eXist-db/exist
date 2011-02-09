@@ -33,7 +33,7 @@ declare function nameutil:normalize-name($name as xs:string) as xs:string {
     Extract a name string from the given mods:name element.
     Chinese and Japanese names are handled differently here.
 :)
-declare function nameutil:format-name($name as element(mods:name)) as xs:string {
+declare function nameutil:format-name($name as element(mods:name)) as xs:string* {
 	if ($name/@type = 'corporate') then
         $name/mods:namePart[@lang]/string()
 	else

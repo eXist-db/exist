@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<code-table>
-    <code-table-name>object-property-code</code-table-name>
-    <description>text that describes the code table</description>
-    <status>draft</status>
-    <items>
-        <item>
-            <label>(none selected)</label>
-            <value/>
-        </item>
-        <item>
-            <label>English Language Label</label>
-            <value>code lowercase with dash only</value>
-        </item>
-    </items>
-</code-table>
+<code-table><code-table-name>object-property-code</code-table-name><description>text that describes the code table</description><status>draft</status><items><item><label>(none selected)</label><value/></item><item><label>English Language Label</label><value>code lowercase with dash only</value></item></items></code-table>

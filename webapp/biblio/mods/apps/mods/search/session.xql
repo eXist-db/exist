@@ -23,15 +23,17 @@ declare option exist:serialize "media-type=application/xhtml+xml";
 
 declare variable $bs:USER := security:get-user-credential-from-session()[1];
 
+(: Not used. :)
 declare function mods:remove-empty-attributes($element as element()) as element() {
 element { node-name($element)}
-{ $element/@*[string-length(.) eq 0],
+{ $element/@*[string-length(.) ne 0],
 for $child in $element/node( )
 return 
     if ($child instance of element())
     then mods:remove-empty-attributes($child)
     else $child }
 };
+
 declare function bs:collection-is-writable($collection as xs:string) {
     if ($collection eq $sharing:groups-collection) then
         false()
@@ -112,7 +114,7 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                         }
                                     </div>
                                     {
-                                        let $clean := mods:remove-empty-attributes($item)
+                                        let $clean := $item
                                         let $clean := clean:cleanup($item)
                                         return
                                             mods:format-full(string($currentPos), $clean, $item) 

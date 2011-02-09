@@ -225,6 +225,7 @@ as node()+ {
                 </div>
             eXist-end-->
             </div>
+            <div class="help"><a href="../docs/index.xml" style="text-decoration: none" target="_blank">Help</a></div>
             <div id="content1col">
             <div class="container">
                 <!--{ style:header() }-->
