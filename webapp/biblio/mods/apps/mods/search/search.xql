@@ -561,7 +561,7 @@ declare function biblio:process-templates($query as element()?, $hitCount as xs:
                                 <input type="radio" name="type" value="default" selected="true"/><span> Default Record</span>
                             </li>
                             -->
-</ul>
+                        </ul>
                         
                         <div class="language-label">
                             <label for="languageOfResource">Resource Language: </label>

@@ -250,9 +250,9 @@ table tr.repeat {
 }
 
 a {
-color: black;
-text-decoration: none;
-font-weight: normal;
+    color: #222;
+    text-decoration: none;
+    font-weight: normal;
     
 }
 a:hover {
@@ -326,12 +326,17 @@ a:hover {
     width: 80%;
 }
 
+td .biblio-full {
+    color: #333;
+}
+
 td .biblio-full .label {
-    font-weight: bold;
+    1font-weight: bold;
     text-align: right;
     padding-right: 1em;
     vertical-align: middle;
     width: 16em;
+    color: #5DB0E6;
 }
 
 td .biblio-full .host {

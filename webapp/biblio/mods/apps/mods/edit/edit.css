@@ -1,6 +1,16 @@
 <css>
 @namespace xf url(http://www.w3.org/2002/xforms);
 
+.help {
+    font-size: 130%; 
+    margin-left: 3.25em;
+    margin-top: -.45em;
+}
+
+.help a {
+    color: #5DB0E6;
+}
+
 body
     {
   /*overrules xsltforms.css*/
@@ -15,28 +25,26 @@ body
     margin-top: 5px;
 }
 
-#titleInfo-suebs-tibetan-repeat input {
-    1margin-left: 5em;
-}
-#relatedItem-suebs-tibetan-repeat .xforms-repeat-item-selected
+.level-1 .xforms-repeat-item-selected
 {
-background-color:#F2F5FC;
+    background-color:#F2F5FC;
 }
 
 #page-head-left {
     position: absolute;
+    margin-top: .45em;
     left: 4.15em;
 }
 
 #page-head-right {
     position: absolute;
     right: 4.15em;
-    margin-top: 1.1em;
+    margin-top: 1.5em;
 }
 
 .span-24, div.span-24 {
     /*overrules xsltforms.css*/
-    width:100% !important;
+    width: 100% !important;
 }
 
 .container {
@@ -45,6 +53,11 @@ background-color:#F2F5FC;
     padding-right: 1em !important;
     padding-top: 0.5em !important;
     padding-left: .25em !important;
+    margin-top: -2em !important;
+    border-color: gray !important;/*overrules xsltforms.css*/
+    margin-bottom: 1em !important;/*overrules xsltforms.css*/
+    width: 1150px !important;/*overrules xsltforms.css*/
+
 }
 
 .header {
@@ -70,10 +83,6 @@ td
     margin-right: 2px;
     margin-top: -1em;
 }
-
-.toggle-button button {
-    margin-top: -2em;
-    }
 
 #page-head #navbar {
     margin: 10px 0 0 0;
@@ -141,9 +150,7 @@ button {
     border-color: gray;
     padding: .2em;
     vertical-align: middle;
-    text-align: center;
-    1height: 2em;
-    
+    text-align: center;    
     -moz-border-radius: .4em;
     border-bottom-left-radius: 5px 5px;
     border-bottom-right-radius: 5px 5px;
@@ -151,15 +158,33 @@ button {
     border-top-right-radius: 5px 5px;
     }
 
+.compact button,
+.title button,
+.name button,
+.origin button,
+.physical-description button,
+.target-audience button,
+.language button,
+.type button,
+.genre button,
+.subject button,
+.classification button,
+.abstract button,
+.table-of-contents button,
+.note button,
+.related button,
+.identifier button,
+.record-info button,
+.access-condition button,
+.location button,
+.extension button,
+{
+    width: 20em;
+}
+
 .xforms-group-label-centered { 
     padding: .5em 1em .5em 1em !important;
     width: 15em !important;
-    }
-
-.container {
-    border-color: gray !important;/*overrules xsltforms.css*/
-    margin-bottom: 1em !important;/*overrules xsltforms.css*/
-    width: 1050px !important;/*overrules xsltforms.css*/
     }
 
 /* style every table data as a tab if the table has a class of tabs */
@@ -177,7 +202,6 @@ table .tabs {
     text-align: center;
     -moz-border-radius-topleft: 4px;
     -moz-border-radius-topright: 4px;
-    1height: 1.6em;
  }
 
 .tabs tr td .selected {
@@ -221,7 +245,6 @@ fieldset,
     margin-bottom: .1em;
     }
 
-
 fieldset .level-2,
 fieldset .level-3
     {
@@ -237,16 +260,21 @@ fieldset .level-3
     border-width: 1px;
     padding: .3em 1em .3em 1em;
     width: 15em;
+    height: 1.5em;
     margin-top: -2.75em; /*to make the fieldset border hit the centre of the box*/
     margin-left: 1.55em;
     margin-bottom: .75em;
     text-align: center;    
 }
 
-
-.join .float .xforms-hint{
-    1float:left;
+.wide {
+    width: 20em !important;
 }
+
+.extra-wide {
+    width: 25em !important;
+}
+
 
 .join .float .xforms-group .xforms-group-content
 {
@@ -298,6 +326,7 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
 {
     float:left;
 }
+
 .text_10 .xforms-value {
     width: 10em;
     }
@@ -316,13 +345,13 @@ xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not
     padding: .2em;
     }
 
-div.join span.xforms-hint { /*the fieldset hints*/
+div.join span.xforms-hint { /*the hard-coded fieldset hints*/
     margin-left: 1px;
     vertical-align: top;
     font-style: normal;
     font-weight: normal;
     color: #cccccc;
-    cursor: help;
+    cursor: help;    
 }
 
 span.xforms-hint-icon:after { /*the regular hints*/
@@ -351,15 +380,6 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     width: 2.5em !important;
 }
 
-.wide {
-    width: 20em;
-}
-
-.extra-wide {
-    width: 30em;
-}
-
-
 .join-button .xforms-control button .xforms-label {
     display: inline;
     width: 1em;
@@ -367,7 +387,6 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     padding: 0;
     margin: 0;
 }
-
 
 .title-button   {
     margin: .5em;
@@ -377,8 +396,7 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     margin-left: .5em;
 }
 
-.node-button .xforms-control button
-{
+.node-button .xforms-control button {
     height: 2em;
     width: 2em;
     padding: 0;
@@ -400,7 +418,10 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     margin-top: -.5em;
 }
 
-.node-adds {margin-top: 2.25em;}
+.node-adds {
+    margin-top: 2.25em;
+}
+
 div.xforms-help-value, 
 div.xforms-alert-value, 
 div.xforms-hint-value 
@@ -411,22 +432,30 @@ div.xforms-hint-value
 	background-color: white;
 	position: absolute;
 	border: gray 1px solid; 
-	width: 30em;
+	width: 40em;
 	margin: 1em;
 	padding: 1em 1em 0 1em;
-	z-index:1;
+	z-index: 1;
 }
+ 
+.compact div.xforms-hint-value 
+ {
+    width: 70em;
+}
+
+div.xforms-hint-value strong 
+ {
+    color: #3681B3;
+}
+div.xforms-hint-value p 
+ {
+    margin-bottom: .5em;
+}
+
 
 .xforms-value {
     padding-left: .25em;
 }
-
-/*compact
-*/
-
-.compact .join {
-    border-width: 1px;
-    }
 
 .compact #fieldset-namePart label,
 .compact #fieldset-place label,
@@ -453,38 +482,27 @@ div.xforms-hint-value
     margin-left: -10em;
     }
 
-.stand-alone .xforms-label,
-.stand-alone .join
+fieldset,
+.xforms-repeat-item,
+.xforms-repeat-item-selected
 {
-    color: #3681B3;
-}
-.stand-alone 
-    {
-    border-color: #3681B3;
+    border-color: #CCC;
 }
 
-.related-container .xforms-label,
-.related-container .join
+.node-adds, 
+.node-adds-title, 
+.xforms-label,
+.join
 {
     color: #3681B3;
-}
-related-container 
-    {
-    border-color: #3681B3;
 }
 
-.contents .xforms-label,
-.contents .join
-{
-    color: #3681B3;
-}
-.contents 
+body 
     {
     border-color: #3681B3;
 }
 
 .compact button {
-    width: 35ex;
     margin-left: 4.25em;
 }
 
@@ -510,10 +528,6 @@ related-container
     border: grey 1px solid;
     height: 1.5em;
     margin: .1em 0 0 2.4em;
-}
-
-#relatedItem-namePart-series-repeat input {
-    1margin-top: 2em;
 }
 
 .compact xf|input {
@@ -542,7 +556,6 @@ related-container
     margin-bottom: 1em;    
 }
 
-
 .level-2,
 .level-3
 {
@@ -567,429 +580,20 @@ related-container
     margin-bottom: 0;
 }
 
-/*title
-
-886699: title label text, title label border, field label text, selected border, outermost box 
-bbaabb: unselected border (not used)
-eeddee: tab background
-*/
-
-.title .xforms-label,
-.title .join
-{
-    color: #3681B3;
-}
-.title .join{
-    width: 17em;
-}
-
-.title .join,
-.title .xforms-repeat-item,
-.title .xforms-repeat-item-selected,
-.title fieldset,
-.title .node-adds, 
-.title .node-adds-title 
-    {
-    border-color: #3681B3;
-}
-.title button {
-    width: 35ex;
-}
-
-/*name
-669966: title label text, title label border, field label text, selected border, outermost box
-88aa88: unselected border
-eeeedd: tab background
-*/
-
-.name .xforms-label,
-.name .join{
-    color: #3681B3;
-}
-.name .join,
-.name .xforms-repeat-item,
-.name .xforms-repeat-item-selected,
-.name fieldset,
-.name .node-adds, 
-.name .node-adds-title 
-    {
-    border-color: #3681B3;
-}
-.name button {
-    width: 35ex;
-}
-
-/*origin
-668899: title label text, title label border, field label text, selected border, outermost box
-88aabb: unselected border
-ccddee: tab background
-*/
-.origin .xforms-label,
-.origin .join{
-    color: #3681B3;
-}
-.origin .join,
-.origin .xforms-repeat-item,
-.origin .xforms-repeat-item-selected,
-.origin fieldset,
-.origin .node-adds, 
-.origin .node-adds-title 
-    {
-    border-color: #3681B3;
-}
-.origin button {
-    width: 35ex;
-}
-
-
-/*part
-aa8866: title label text, title label border, field label text, selected border, outermost box 
-ccaa88: unselected border
-eeddcc: tab background
-*/
-
-.part .xforms-label,
-.part .join{
-    color: #aa8866;
-}
-.part .join,
-.part .xforms-repeat-item,
-.part .xforms-repeat-item-selected,
-.part fieldset,
-.part .node-adds, 
-.part .node-adds-title 
-    {
-    border-color: #aa8866;
-}
-.part button {
-    width: 35ex;
-}
-
-/*physical-description*/
-
-.physical-description .xforms-label,
-.physical-description .join{
-    color: #996688;
-}
-.physical-description .join,
-.physical-description .xforms-repeat-item,
-.physical-description .xforms-repeat-item-selected,
-.physical-description fieldset,
-.physical-description .node-adds, 
-.physical-description .node-adds-title 
-    {
-    border-color: #996688;
-}
-.physical-description button {
-    width: 35ex;
-}
-/*special*/
 .physical-description .node-adds {
     margin-bottom: 2.5em;
 }
-/*target-audience*/
 
-.target-audience .xforms-label,
-.target-audience .join{
-    color: #aa6666;
-}
-.target-audience .join,
-.target-audience .xforms-repeat-item,
-.target-audience .xforms-repeat-item-selected,
-.target-audience fieldset,
-.target-audience .node-adds, 
-.target-audience .node-adds-title 
-    {
-    border-color: #aa6666;
-}
-.target-audience button {
-    width: 35ex;
-}
-
-/*language*/
-
-.language .xforms-label,
-.language .join{
-    color: #886699;
-}
-.language .join,
-.language .xforms-repeat-item,
-.language .xforms-repeat-item-selected,
-.language fieldset,
-.language .node-adds, 
-.language .node-adds-title 
-    {
-    border-color: #886699;
-}
-.language button {
-    width: 35ex;
-}
-
-/*type*/
-
-.type .xforms-label,
-.type .join{
-    color: #669966;
-}
-.type .join,
-.type .xforms-repeat-item,
-.type .xforms-repeat-item-selected,
-.type fieldset,
-.type .node-adds, 
-.type .node-adds-title 
-    {
-    border-color: #669966;
-}
-.type button {
-    width: 35ex;
-}
-    
-/*genre*/
-
-.genre .xforms-label,
-.genre .join{
-    color: #668899;
-}
-.genre .join,
-.genre .xforms-repeat-item,
-.genre .xforms-repeat-item-selected,
-.genre fieldset,
-.genre .node-adds, 
-.genre .node-adds-title 
-    {
-    border-color: #668899;
-}
-.genre button {
-    width: 35ex;
-}
-
-/*subject*/
-
-.subject .xforms-label,
-.subject .join{
-    color: #996688;
-}
-.subject .join,
-.subject .xforms-repeat-item,
-.subject .xforms-repeat-item-selected,
-.subject fieldset,
-.subject .node-adds, 
-.subject .node-adds-title 
-    {
-    border-color: #996688;
-}
-.subject button {
-    width: 35ex;
-}
-
-/*classification*/
-
-.classification .xforms-label,
-.classification .join{
-    color: #aa8866;
-}
-.classification .join,
-.classification .xforms-repeat-item,
-.classification .xforms-repeat-item-selected,
-.classification fieldset,
-.classification .node-adds, 
-.classification .node-adds-title 
-    {
-    border-color: #aa8866;
-}
-.classification button {
-    width: 35ex;
-}
-
-/*abstract*/
-
-.abstract .xforms-label,
-.abstract .join{
-    color: #886699;
-}
-.abstract .join,
-.abstract .xforms-repeat-item,
-.abstract .xforms-repeat-item-selected,
-.abstract fieldset,
-.abstract .node-adds, 
-.abstract .node-adds-title 
-    {
-    border-color: #886699;
-}
-.abstract button {
-    width: 35ex;
-}
-
-/*table-of-contents*/
-
-.table-of-contents .xforms-label,
-.table-of-contents .join{
-    color: #669966;
-}
-.table-of-contents .join,
-.table-of-contents .xforms-repeat-item,
-.table-of-contents .xforms-repeat-item-selected,
-.table-of-contents fieldset,
-.table-of-contents .node-adds, 
-.table-of-contents .node-adds-title 
-    {
-    border-color: #669966;
-}
-.table-of-contents button {
-    width: 35ex;
-}
-/*special*/
 .table-of-contents .textarea .xforms-value {
     height: 10em;
 }
 
-/*note*/
-
-.note .xforms-label,
-.note .join{
-    color: #668899;
-}
-.note .join,
-.note .xforms-repeat-item,
-.note .xforms-repeat-item-selected,
-.note fieldset,
-.note .node-adds, 
-.note .node-adds-title 
-    {
-    border-color: #668899;
-}
-.note button {
-    width: 35ex;
-}
-/*special*/
 .note .textarea .xforms-value {
     height: 10em;
 }
 
-/*related*/
-
-.related .xforms-label,
-.related .join{
-    color: #aa8866;
-}
-.related .join,
-.related .xforms-repeat-item,
-.related .xforms-repeat-item-selected,
-.related fieldset,
-.related .node-adds, 
-.related .node-adds-title 
-    {
-    border-color: #aa8866;
-}
-.related button {
-    width: 35ex;
-}
-
-
-/*identifier*/
-
-.identifier .xforms-label,
-.identifier .join{
-    color: #886699;
-}
-.identifier .join,
-.identifier .xforms-repeat-item,
-.identifier .xforms-repeat-item-selected,
-.identifier fieldset,
-.identifier .node-adds, 
-.identifier .node-adds-title 
-    {
-    border-color: #886699;
-}
-.identifier button {
-    width: 35ex;
-}
-/*special*/
 .identifier .textarea .xforms-value {
     height: 10em;
-}
-
-/*record-info*/
-
-.record-info .xforms-label,
-.record-info .join{
-    color: #669966;
-}
-.record-info .join,
-.record-info .xforms-repeat-item,
-.record-info .xforms-repeat-item-selected,
-.record-info fieldset,
-.record-info .node-adds, 
-.record-info .node-adds-title 
-    {
-    border-color: #669966;
-}
-.record-info button {
-    width: 35ex;
-}
-/*special*/
-.record-info .join {
-    width: 25em;
-}
-
-
-/*location*/
-
-.location .xforms-label,
-.location .join{
-    color: #668899;
-    width: 20em;;
-}
-.location .join,
-.location .xforms-repeat-item,
-.location .xforms-repeat-item-selected,
-.location fieldset,
-.location .node-adds, 
-.location .node-adds-.title 
-    {
-    border-color: #668899;
-}
-.location button {
-    width: 35ex;
-}
-
-/*access-condition*/
-
-.access-condition .xforms-label,
-.access-condition .join{
-    color: #aa8866;
-}
-.access-condition .join,
-.access-condition .xforms-repeat-item,
-.access-condition .xforms-repeat-item-selected,
-.access-condition fieldset,
-.access-condition .node-adds, 
-.access-condition .node-adds-.title 
-    {
-    border-color: #aa8866;
-}
-.access-condition button {
-    width: 35ex;
-}
-
-/*extension*/
-
-.extension .xforms-label,
-.extension .join{
-    color: #668899;
-    width: 20em;;
-}
-.extension .join,
-.extension .xforms-repeat-item,
-.extension .xforms-repeat-item-selected,
-.extension fieldset,
-.extension .node-adds, 
-.extension .node-adds-.title 
-    {
-    border-color: #668899;
-}
-.extension button {
-    width: 35ex;
 }
 
 </css>

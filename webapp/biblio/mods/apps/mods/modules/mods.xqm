@@ -54,60 +54,86 @@ let $visible-categories :=
 
 (: note that in the submission below the show-level progresses from 1 to 2 to 3 to 1 through the URL. :)
 
+let $show-level-1-subtab := $tabs-data[show-level = 1][1]/tab-id
+let $show-level-2-subtab := $tabs-data[show-level = 2][1]/tab-id
+let $show-level-3-subtab := $tabs-data[show-level = 3][1]/tab-id
+let $show-level-4-subtab := $tabs-data[show-level = 4][1]/tab-id
+
 return
 <div class="tabs">
-    
-    <xf:trigger class="link">
+    <xf:trigger class="toggle-button">
         <xf:label class="xforms-group-label-centered-general">
             {
             (: set the label for the next show-level. :)
             if ($show-level = 1)
-            then 'Show Full Tab Set Part 1'
+            then 'Show Citation Forms'
             else 
                 if ($show-level = 2)
-                then 'Show Full Tabs Set Part 2'
-                else 'Show Basic Input Forms'
+                then 'Show Content Description Forms'
+                else
+                    if ($show-level = 3)
+                    then 'Show Remaining Forms'
+                    else 'Show Basic Input Forms'
             }
-        </xf:label><br/>
+        </xf:label>
         <xf:action ev:event="DOMActivate">
             <xf:send submission="save-submission"></xf:send>
-            <!--When clicking on the show-level button, circle the show-level values through 1, 2, and 3. -->
-            <xf:load resource="edit.xq?tab-id={$tab-id}&amp;id={$id}&amp;show-level={
+            <!--When clicking on the show-level button, circle the show-level values through 1, 2, and 3, and select the first sub-tab for each show-level. -->
+            <xf:load resource="edit.xq?tab-id={
+            if ($show-level = 1)
+                then $show-level-2-subtab
+                else 
+                    if ($show-level = 2)
+                    then $show-level-3-subtab
+                    else
+                        if ($show-level = 3)
+                        then $show-level-4-subtab
+                        else $show-level-1-subtab
+            }&amp;id={$id}&amp;show-level={
                 if ($show-level = 1)
                 then 2
                 else 
                     if ($show-level = 2)
                     then 3
-                    else 1
+                    else 
+                        if ($show-level = 3)
+                        then 4
+                        else 1
                 }&amp;type={$type}&amp;collection={$data-collection}" show="replace">
             </xf:load>
         </xf:action>
     </xf:trigger>
     
     <table class="tabs">
-        <tr>{
+        <tr>
+            {
             for $category in $visible-categories
-            let $cat-count := count( $tabs-data[category/text() = $category] )
-            let $cat-def-count := count( $tabs-data[category/text() = $category and show-level = $show-level] )
-            let $colspan := $cat-def-count
+            let $category-count := count($tabs-data[category/text() = $category])
+            let $colspan := count($tabs-data[category/text() = $category and show-level = $show-level])
             return
-            if ( $cat-count > 0)
+            if ($category-count > 0)
             then
-            <td class="tab" style="text-align: center;">
-                {attribute {'colspan'} {$colspan} }
-                <div class="top-tab-text">{$category}</div>
+            <td style="{if ($tabs-data[category = $category]/tab-id = $tab-id) then "background:white" else "background:#EDEDED"}">
+                {attribute{'colspan'}{$colspan}}
+                <span class="tab-text">{$category}</span>
             </td>
             else ()
-            }</tr>
-        
-        <tr>{
-            for $tab in $tabs-data
+            }
+            </tr>            
+            {
+            <tr>
+            <td style="height:.1em;border:0;margin:0" colspan="{count($tabs-data[show-level = $show-level])}"> 
+            </td>
+            </tr>
+            }
+            
+            <tr>
+            {
+            for $tab in $tabs-data[show-level = $show-level]
             return
-            if ($tab/show-level = $show-level)
-            then
-            <td style="background-color:{$tab/color/text()};">
-                <xf:trigger appearance="minimal" class="{$tab/tab-id/text()} {if ($tab-id = $tab/tab-id/text()) then 'selected="selected"' else()}">
-                    <xf:label><div class="tab-text">{$tab/label/text()}</div></xf:label>
+            <td style="{if ($tab-id = $tab/tab-id/text()) then "background:white;border-bottom-color:white;color:#3681B3;" else "background:#EDEDED"}">
+                <xf:trigger appearance="minimal">
+                    <xf:label><div class="label" style="{if ($tab-id = $tab/tab-id/text()) then "color:#3681B3;font-weight:bold;" else "color:gray"}">{$tab/label/text()}</div></xf:label>
                     <xf:action ev:event="DOMActivate">
                         <xf:send submission="save-submission"/>
                         <!--When clicking on the sub-tabs, keep the show-level the same. -->
@@ -115,8 +141,9 @@ return
                     </xf:action>
                 </xf:trigger>
             </td>
-            else ()
-            }</tr>
+            }
+            </tr>
+        
     </table>
 </div>
 };
