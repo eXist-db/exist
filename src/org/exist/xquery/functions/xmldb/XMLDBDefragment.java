@@ -58,8 +58,10 @@ public class XMLDBDefragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the document.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The sequence of nodes from the documents to defragment"),
-			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE, "The minimum number of fragmented pages required before defragmenting")
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE,
+                    "The sequence of nodes from the documents to defragment"),
+			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE,
+                    "The minimum number of fragmented pages required before defragmenting")
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY)),
             new FunctionSignature(
@@ -71,7 +73,8 @@ public class XMLDBDefragment extends BasicFunction {
                     "references to this document will become invalid, in particular, variables pointing to " +
                     "some nodes in the document.",
                     new SequenceType[] {
-			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE, "The sequence of nodes from the documents to defragment"),
+			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE,
+                    "The sequence of nodes from the documents to defragment"),
                     },
                     new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
@@ -84,11 +87,21 @@ public class XMLDBDefragment extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
+        // Get nodes
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
+
         try {
-            Modification.checkFragmentation(context, docs, splitCount);
+            if (args.length > 1) {
+                // Use supplied parameter
+                int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
+                Modification.checkFragmentation(context, docs, splitCount);
+
+            } else {
+                // Use conf.xml configured value or -1 if not existent
+                Modification.checkFragmentation(context, docs);
+            }
+            
         } catch (EXistException e) {
             logger.error("An error occurred while defragmenting documents: " + e.getMessage());
             throw new XPathException("An error occurred while defragmenting documents: " + e.getMessage(), e);
