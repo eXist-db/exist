@@ -14,6 +14,7 @@ public class JSONValue extends JSONNode {
 	public JSONValue(String content) {
 		super(Type.VALUE_TYPE, NAME_VALUE);
 		this.content = escape(content);
+		System.out.println("CONTENT: " + this.content);
 	}
 
 	public JSONValue() {
@@ -53,28 +54,23 @@ public class JSONValue extends JSONNode {
 	}
 	
 	protected static String escape(String str) {
-		StringBuilder builder = null;
+		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < str.length(); i++) {
 			char ch = str.charAt(i);
 			switch (ch) {
 			case '\n':
-				builder = copy(str, builder, i);
 				builder.append("\\n");
 				break;
+			case '\r':
+				break;
 			case '"':
-				builder = copy(str, builder, i);
 				builder.append("\\\"");
+				break;
+			default:
+				builder.append(ch);
 				break;
 			}
 		}
-		return builder == null ? str : builder.toString();
-	}
-
-	private static StringBuilder copy(String str, StringBuilder builder, int i) {
-		if (builder == null) {
-			builder = new StringBuilder(str.length());
-			builder.append(str.substring(0, i));
-		}
-		return builder;
+		return builder.toString();
 	}
 }
