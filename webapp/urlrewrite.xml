@@ -238,7 +238,8 @@ return
                     >/db/www/admin/</filename> (if there is one) or will directly resolve to
                     <filename>/db/www/admin/admin.xql</filename>. In this case, all relative or
                 absolute URIs within the controller will be resolved against the database, not the
-                file system.</para>
+                file system. However, there's a possibility to escape this path interpretation, described
+                <ulink url="#EXTERNAL_RESOURCES">below</ulink>.</para>
         </section>
         <section>
             <title>MVC and Pipelines</title>
@@ -443,6 +444,15 @@ return
                                         "XSLTServlet".</para>
                                 </listitem>
                             </varlistentry>
+                            <varlistentry>
+                                <term>absolute</term>
+                                <listitem>
+                                    <para>To be used in combination with <option>url</option>. If
+                                        set to "yes", the url will be interpreted as an absolute
+                                        path within the current servlet context. See <ulink url="#EXTERNAL_RESOURCES">below</ulink> for an
+                                        example.</para>
+                                </listitem>
+                            </varlistentry>
                         </variablelist>
                     </listitem>
                 </varlistentry>
@@ -505,6 +515,40 @@ return
                     </listitem>
                 </varlistentry>
             </variablelist>
+        </section>
+        <section id="EXTERNAL_RESOURCES">
+            <title>Accessing resources not stored in the database</title>
+            <para>If your controller.xql is stored in a database collection, all relative or
+                absolute URIs within the controller will be resolved against the database, not the
+                file system. This can be a problem if you need to acess common resources, which
+                should be shared with other applications residing on the file system or in the
+                database.</para>
+            <para>The <sgmltag>forward</sgmltag> directive accepts an optional attribute
+                    <option>absolute="yes|no"</option> to handle this. If one sets
+                    <option>absolute="yes"</option>, an absolute path (starting with a /) specified
+                in the <option>url</option> attribute will be resolved relative to the current
+                servlet context, NOT the controller context.</para>
+            <para>For example, to forward all requests starting with a path
+                    <filename>/libs/</filename> to a directory within the
+                    <filename>webapp</filename> folder of eXist, you can use the following
+                snippet:</para>
+            <example>
+                <title>Mapping all requests starting with /libs/ to a directory</title>
+                <programlisting language="xquery"><![CDATA[
+if (starts-with($exist:path, "/libs/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="/{substring-after($exist:path, '/libs/')}" absolute="yes"/>
+    </dispatch>]]></programlisting>
+            </example>
+            
+            <para>This simply removes the /libs/ prefix and sets absolute="yes", so the path will be
+                resolved relative to the main context of the servlet engine, usually /exist/. In your HTML, you can now
+                write:</para>
+            
+            <synopsis language="xml"><![CDATA[<script type="text/javascript" src="/libs/scripts/jquery/jquery-1.4.2.min.js"></script>]]></synopsis>
+            
+            <para>This will locate the jquery file in <filename>webapp/scripts/jquery/...</filename>, even if the rest of your
+                application is stored in the db and not on the file system.</para>
         </section>
         <section>
             <title>Special Attributes Accepted by eXist Servlets</title>

@@ -336,7 +336,10 @@ public class XQueryURLRewrite implements Filter {
                     modelView.setModel(new PassThrough(modifiedRequest));
 
                 if (staticRewrite != null) {
-                    staticRewrite.rewriteRequest(modifiedRequest);
+                	if (modelView.getModel().doResolve())
+                		staticRewrite.rewriteRequest(modifiedRequest);
+                	else
+                		modelView.getModel().setAbsolutePath(modifiedRequest);
                 }
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse, filterChain);
 
