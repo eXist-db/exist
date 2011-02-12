@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -23,9 +23,6 @@ package org.exist.security.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractPrincipal;
@@ -171,11 +168,11 @@ public class RealmImpl extends AbstractRealm {
 		DBBroker broker = null;
 		try {
 			broker = getDatabase().get(null);
-			Account user = broker.getUser();
+			Subject subject = broker.getSubject();
 			
-			if ( ! ( user.hasDbaRole() ) )
+			if ( ! ( subject.hasDbaRole() ) )
 					throw new PermissionDeniedException(
-						" you ["+user.getName()+"] are not allowed to delete '"+remove_group.getName()+"' group");
+						" you ["+subject.getName()+"] are not allowed to delete '"+remove_group.getName()+"' group");
 
 			remove_group.setRemoved(true);
 			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
