@@ -32,10 +32,13 @@ import org.w3c.dom.TypeInfo;
 import org.exist.Namespaces;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.NamedNodeMapImpl;
+import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
+import org.exist.xquery.NameTest;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -328,15 +331,13 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     public NodeList getElementsByTagName( String name ) {
         NodeListImpl nl       = new NodeListImpl();
         int          nextNode = nodeNumber;
-        while( ++nextNode < document.size ) {
+        int treeLevel = document.treeLevel[nodeNumber];
+        while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
             if( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) {
                 QName qn = document.nodeName[nextNode];
                 if( qn.getStringValue().equals( name ) ) {
                     nl.add( document.getNode( nextNode ) );
                 }
-            }
-            if( document.next[nextNode] <= nodeNumber ) {
-                break;
             }
         }
         return( nl );
