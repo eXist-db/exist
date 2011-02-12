@@ -109,7 +109,23 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
 		)
 	let $output := if ($test/@trace eq 'yes') then system:trace() else $queryOutput
     let $expanded :=
-		if ($output instance of node()) then
+        if ($output instance of element(error)) then
+            $output
+        else if ($test/@serialize) then
+            let $options := $test/@serialize
+            let $serialized :=
+                util:catch("*",
+                    for $x in $output
+                    return
+                        util:serialize($x, $options),
+                    <error>Serialization error: {$util:exception-message}</error>
+                )
+            return
+                if ($serialized instance of element(error)) then
+                    $serialized
+                else
+                    normalize-space(string-join($serialized, ' '))
+		else if ($output instance of node()) then
         	util:expand($output, $serialize-options)        	
 		else
 			$output
@@ -118,10 +134,18 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
             data($test/expected)
         else $test/expected/node()
     let $OK :=
-        if ($test/xpath) then
+        if ($test/error) then
+            $expanded instance of element(error) and contains($expanded, $test/error)
+        else if ($test/xpath) then
             t:test(t:xpath($output, $test/xpath))
         else if ($test/@output eq 'text') then
-            normalize-space(string-join(for $x in $output return string($x),' ')) eq normalize-space($expected)
+            let $asString :=
+                if ($test/@serialize) then
+                    $expanded
+                else
+                    normalize-space(string-join(for $x in $output return string($x),' '))
+            return
+                $asString eq normalize-space($expected)
         else
             let $xn := t:normalize($expanded)
             let $en := t:normalize($expected)
