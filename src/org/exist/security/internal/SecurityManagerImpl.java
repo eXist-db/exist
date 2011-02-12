@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -40,6 +40,7 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationFieldClassMask;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
@@ -105,6 +106,7 @@ public class SecurityManagerImpl implements SecurityManager {
     private RealmImpl defaultRealm;
     
     @ConfigurationFieldAsElement("realm")
+    @ConfigurationFieldClassMask("org.exist.security.realm.%1$s.%2$sRealm")
     private List<Realm> realms = new ArrayList<Realm>();
     
     private Collection collection = null;
