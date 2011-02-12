@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -48,8 +48,8 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	// initial state
 	private Subject subject;
 	private CallbackHandler callbackHandler;
-	private Map<String, ?> sharedState;
-	private Map<String, ?> options;
+//	private Map<String, ?> sharedState;
+//	private Map<String, ?> options;
 
 	// configurable option
 	private boolean debug = false;
@@ -86,8 +86,8 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 
 		this.subject = subject;
 		this.callbackHandler = callbackHandler;
-		this.sharedState = sharedState;
-		this.options = options;
+//		this.sharedState = sharedState;
+//		this.options = options;
 
 		// initialize any configured options
 		debug = "true".equalsIgnoreCase((String) options.get("debug"));
