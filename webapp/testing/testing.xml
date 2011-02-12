@@ -16,20 +16,22 @@
         <title>Testing</title>
 
         <abstract>
-            <para>Including a set of tests along with code is good practice (and a requirement when committing new code to eXist).
-                eXist provides developers several ways to test code, be it Java, XSLT or even XQuery itself.</para>
-       </abstract>
+            <para>Including a set of tests along with code is good practice (and a requirement when
+                committing new code to eXist). eXist provides developers several ways to test code,
+                be it Java, XSLT or even XQuery itself.</para>
+        </abstract>
 
         <section>
             <title>XQuery Testing</title>
-            <para>eXist has its own built in approach to developing non-regression XQuery tests, using its built in XQuery library for testing
-            executed via Java or XQuery itself. This library is enabled via conf.xml</para>
+            <para>eXist has its own built in approach to developing non-regression XQuery tests,
+                using its built in XQuery library for testing executed via Java or XQuery itself.
+                This library is enabled via conf.xml</para>
 
             <section>
                 <title>Using eXist XQuery Unit Test</title>
 
-                <para>The following example shows how to import the unit test suite, define TestSet element
-                using the t:run-testSet() function.</para>
+                <para>The following example shows how to import the unit test suite, define TestSet
+                    element using the t:run-testSet() function.</para>
 
                 <example>
                     <title>Example XQuery Test example</title>
@@ -67,44 +69,49 @@ let $test := <TestSet>
 return
     t:run-testSet($test)
     ]]></programlisting>
-        </example>
+                </example>
 
-                <para><a href="examples/unit-test-example.xql" target="_example">run unit-test-example.xql</a></para>
-                
-                <para>
-                     A <b>TestSet</b> defines the tests you would like to run, which uses the following elements:
+                <para><a href="examples/unit-test-example.xql" target="_example">run
+                        unit-test-example.xql</a></para>
+            </section>
 
-                    <variablelist>
+            <section>
+                <title>TestSet Schema</title>
+
+                <para> A <b>TestSet</b> defines the tests you would like to run, which uses the
+                    following elements: <variablelist>
                         <varlistentry>
                             <term>setup</term>
                             <listitem>
-                                <para>create collections and store xml data for use with testing.</para>
+                                <para>create collections and store xml data for use with
+                                    testing.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>tearDown</term>
                             <listitem>
-                                <para>create collections and store xml data for use with testing.</para>
+                                <para>create collections and store xml data for use with
+                                    testing.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>imports</term>
                             <listitem>
-                                <para>May contain import statements or namespace declarations which will be added to the prolog
-                                of each test query, e.g.</para>
-                                
+                                <para>May contain import statements or namespace declarations which
+                                    will be added to the prolog of each test query, e.g.</para>
+
                                 <synopsis language="xquery">import module namespace sort="http://exist-db.org/xquery/sort";</synopsis>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>functions</term>
                             <listitem>
-                                <para>A list of function declarations which will be added to the prolog
-                                of each test query. This way you can avoid pasting the same shared code into
-                                every query.</para>
+                                <para>A list of function declarations which will be added to the
+                                    prolog of each test query. This way you can avoid pasting the
+                                    same shared code into every query.</para>
                             </listitem>
                         </varlistentry>
-                        
+
                         <varlistentry>
                             <term>test</term>
                             <listitem>
@@ -114,10 +121,146 @@ return
                     </variablelist>
                 </para>
 
-                <para>Running the example will output the following</para>
+                <para>A test definition may have the following attributes:</para>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>output</term>
+                        <listitem>
+                            <para>Either "text" or "xml". This defines how the output will be
+                                compared with the expected result.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>serialize</term>
+                        <listitem>
+                            <para>If present, the attribute indicates that the test output should be
+                                serialized using eXist's serializer and compared as a string. The
+                                attribute value specifies serialization options. For example, if you
+                                want to test serialization to JSON, you would pass
+                                    <option>serialize="method=json"</option>.</para>
+
+                            <example>
+                                <title>Example test using <option>serialize</option></title>
+                                <programlisting>
+                                    <markup>
+<![CDATA[<test output="text" serialize="method=json">
+    <task>Simple serialization test</task>
+    <code>
+        <root>
+            <object>
+                <prop1>PROP1</prop1>
+                <prop2>PROP2</prop2>
+            </object>
+        </root>
+    </code>
+    <expected>
+        { "object" : { "prop1" : "PROP1", "prop2" : "PROP2" } }
+    </expected>
+</test>]]></markup>
+                                </programlisting>
+                            </example>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>trace</term>
+                        <listitem>
+                            <para>If set to "yes", the test runner will gather index use and
+                                optimization information while running the query, and returns it as
+                                result. The returned XML will be the same as the one returned by the
+                                    <ulink url="/functions/system/trace">system:trace</ulink>
+                                function.</para>
+                            <para>The purpose of this option is to see if indexes are used as
+                                expected.</para>
+                            <example>
+                                <title>Using the <option>trace</option> option</title>
+                                <programlisting>
+                                    <markup>
+<![CDATA[<test output="xml" trace="yes">
+        <task>Greater than on xs:string</task>
+        <code>doc("/db/test/text1.xml")//b[. > "1"]</code>
+        <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
+            //prof:index[@type = 'range'][@optimization = 2]
+        </xpath>
+    </test>]]></markup>
+                                </programlisting>
+                            </example>
+                        </listitem>
+                    </varlistentry>
+
+                </variablelist>
+                <para>The following elements should/may be present inside a
+                    <sgmltag>test</sgmltag>:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>task</term>
+                        <listitem>
+                            <para>A short description of the test. This should be unique in order to
+                                quickly locate failing tests in the source.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>code</term>
+                        <listitem>
+                            <para>Contains the actual XQuery code to be tested. Please note that XML
+                                inside the XQuery code has to be escaped, so it's best to enclose
+                                the entire XQuery in a CDATA section.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>expected</term>
+                        <listitem>
+                            <para>Defines the expected result of the query. How results are compared
+                                depends on the <option>output</option> attribute of the
+                                    <sgmltag>test</sgmltag> element. If it is "text", expected will
+                                be interpreted as a string with leading and trailing whitespace
+                                stripped. "xml" means the expected and actual results are compared
+                                as XML node trees.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>xpath</term>
+                        <listitem>
+                            <para>Defines an XPath (or XQuery) expression which will be applied to
+                                the query output. The result is interpreted as follows:</para>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>if the returned value is of type xs:boolean, the test
+                                        passed if it evaluates to true().</para>
+                                </listitem>
+                                <listitem>
+                                    <para>for any other sequence returned, the test passed if the
+                                        sequence is not empty or failed otherwise.</para>
+                                </listitem>
+                            </itemizedlist>
+                            <para>The variable $output can be used to refer to the query result
+                                within the XPath. If the XPath expression starts with an absolute
+                                path step (i.e. / or //), $output will be prepended
+                                automatically.</para>
+
+                            <example>
+                                <title>Example test using <sgmltag>xpath</sgmltag></title>
+                                <programlisting>
+                                    <markup>
+                                    <![CDATA[
+<test>
+    <task>Simple XInclude</task>
+    <code>util:expand(doc("/db/test/test1.xml"))</code>
+    <xpath>//para[. = 'Included paragraph']</xpath>
+</test>]]></markup>
+                                </programlisting>
+                            </example>
+
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
+
+            <section>
+                <title>Running the example from section 1.1 will output the following</title>
 
                 <example>
-                <title>Example XQuery Test Output</title>
+                    <title>Example XQuery Test Output</title>
                     <programlisting>
                     <markup><![CDATA[
 <TestSet>
@@ -130,24 +273,28 @@ return
 </TestSet>
  ]]></markup>
             </programlisting>
-        </example>
-                <para>Each <b>test</b> element contains a @pass attribute that will indicate success or failure of the tests.</para>
+                </example>
+                <para>Each <b>test</b> element contains a @pass attribute that will indicate success
+                    or failure of the tests.</para>
             </section>
-            
+
             <section>
-                <title>Integrate eXist XQuery Unit Testing for eXist core Testing</title>
-                <para>When developing functionality that is intended to be part of the eXist distribution (or required
-                    extensions) it is recommended to use eXist's own built in XQuery testing suite which has been developed
-                    to integrate closely with JUnit and eXist own build tools.</para>
+                <title>Integrate eXist XQuery Unit Testing for eXist core testing</title>
+                <para>When developing functionality that is intended to be part of the eXist
+                    distribution (or required extensions) it is recommended to use eXist's own built
+                    in XQuery testing suite which has been developed to integrate closely with JUnit
+                    and eXist own build tools.</para>
 
-                <para>Existing tests can be viewed in the source code under test/src/xquery which tests XQuery code. A test is made up of
-                a declarative description which defines how to setup, teardown and perform the test itself ... roughly equivelant to JUNIT
-                style testing.</para>
+                <para>Existing tests can be viewed in the source code under <filename>test/src/xquery</filename> which
+                    tests XQuery code. A test is made up of a declarative description which defines
+                    how to setup, teardown and perform the test itself ... roughly equivelant to
+                    JUNIT style testing.</para>
 
-                <para>The following example uses the test/src/xquery/util tests which for the moment just tests the util:eval instruction.</para>
-            <example>
-            <title>Example XQuery Test definition</title>
-                <programlisting>
+                <para>The following example uses the test/src/xquery/util tests which for the moment
+                    just tests the util:eval instruction.</para>
+                <example>
+                    <title>Example XQuery Test definition</title>
+                    <programlisting>
                 <markup><![CDATA[
 
 <TestSet>
@@ -169,14 +316,15 @@ return
     </test>
 </TestSet>]]>                </markup>
                 </programlisting>
-            </example>
+                </example>
 
-                <para>The next step is to provide a small JUNIT test file, like the one below, then this test becomes part of the eXist test suite.</para>
+                <para>The next step is to provide a small JUNIT test file, like the one below, then
+                    this test becomes part of the eXist test suite.</para>
 
                 <example>
-                <title>Example XQuery Test definition</title>
-                    <programlisting>
-                    <markup><![CDATA[
+                    <title>Example XQuery Test definition</title>
+                    <programlisting language="java">
+<![CDATA[
 package xquery.util;
 
 import xquery.TestRunner;
@@ -188,28 +336,55 @@ public class UtilTests extends TestRunner {
         return "test/src/xquery/util";
     }
 }
-                ]]>                </markup>
-                                </programlisting>
-                            </example>
-                 <para>You need to make sure that this Java file is located in the same directory as the test and that its getDirectory()
-                     method returns the path to this directory</para>
+]]></programlisting>
+                </example>
+                <para>You need to make sure that this Java file is located in the same directory as
+                    the test and that its getDirectory() method returns the path to this
+                    directory</para>
             </section>
 
+            <section>
+                <title>Running single test files on the command line</title>
+                
+                <para>While developing a test, you probably don't want to run the entire test suite every time you make
+                a change. We have thus included a simple command-line runner, which can be used to run a single
+                test file located in a specified directory. For example, to run the file <filename>test/src/xquery/json.xml</filename>,
+                call</para>
+                
+                <synopsis>bin/run.sh xquery.TestRunnerMain test/src/xquery/json.xml</synopsis>
+                
+                <para>Please note that - just like the junit test suite does - <classname>TestRunnerMain</classname> will 
+                    launch its own embedded database instance. You thus need to stop any other running database before launching
+                    the test.</para>
+                    
+            </section>
+            
         </section>
 
         <section>
-              <title>Other</title>
+            <title>Other</title>
             <section>
-                  <title>Functional Testing with XProc</title>
+                <title>Functional Testing with XProc</title>
                 <para>TBA</para>
             </section>
 
             <section>
-                  <title>Testing Resources</title>
+                <title>Testing Resources</title>
                 <ul>
-                    <li><a href="http://code.google.com/p/xspec/" target="_resource">XSpec - Unit Testing Suite for XSLT &amp; XQuery</a></li>
-                    <li><a href="http://www.xmlprague.cz/sessions.html#test_xslt_with_xspec" target="_resource">Jeni Tennison 'Testing XSLT with XSpec' - XML Prague 2009 paper</a></li>
-                    <li><a href="http://www.xmlprague.cz/sessions.html#testing_xslt" target="_resource">Tony Graham 'Testing XSLT' - XML Prague 2009 paper</a></li>
+                    <li>
+                        <a href="http://code.google.com/p/xspec/" target="_resource">XSpec - Unit
+                            Testing Suite for XSLT &amp; XQuery</a>
+                    </li>
+                    <li>
+                        <a href="http://www.xmlprague.cz/sessions.html#test_xslt_with_xspec"
+                            target="_resource">Jeni Tennison 'Testing XSLT with XSpec' - XML Prague
+                            2009 paper</a>
+                    </li>
+                    <li>
+                        <a href="http://www.xmlprague.cz/sessions.html#testing_xslt"
+                            target="_resource">Tony Graham 'Testing XSLT' - XML Prague 2009
+                            paper</a>
+                    </li>
                 </ul>
             </section>
         </section>
