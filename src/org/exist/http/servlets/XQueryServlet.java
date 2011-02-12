@@ -116,12 +116,14 @@ public class XQueryServlet extends HttpServlet {
     public static final String ATTR_XQUERY_URL = "xquery.url";
     public static final String ATTR_XQUERY_REPORT_ERRORS = "xquery.report-errors";
     public static final String ATTR_XQUERY_ATTRIBUTE = "xquery.attribute";
+    public static final String ATTR_MODULE_LOAD_PATH = "xquery.module-load-path";
 
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
     public final static String DEFAULT_ENCODING = "UTF-8";
     public final static String DEFAULT_CONTENT_TYPE = "text/html";
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+
 
     private Subject defaultUser = null;
     private XmldbURI collectionURI = null;
@@ -310,7 +312,13 @@ public class XQueryServlet extends HttpServlet {
         int p = requestPath.lastIndexOf("/");
         if(p != Constants.STRING_NOT_FOUND)
             requestPath = requestPath.substring(0, p);
-        String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
+        
+        String moduleLoadPath;
+        Object loadPathAttrib = request.getAttribute(ATTR_MODULE_LOAD_PATH);
+        if (loadPathAttrib != null)
+        	moduleLoadPath = getValue(loadPathAttrib);
+        else
+        	moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
 
         Subject user = defaultUser;
 

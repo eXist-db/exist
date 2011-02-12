@@ -537,6 +537,24 @@ return
                         </listitem>
                     </varlistentry>
                     <varlistentry>
+                        <term>xquery.module-load-path</term>
+                        <listitem>
+                            <para>The path which will be used for locating modules. This is only
+                                relevant in combination with <option>xquery.source</option> and
+                                tells the XQuery engine where to look for modules imported by the
+                                query. For example, if you stored required modules into the database
+                                collection <filename>/db/test</filename>, you can set
+                                    <option>xquery.module-load-path</option> to
+                                "xmldb:exist:///db/test". If the query contains an
+                                expression:</para>
+                            <synopsis language="xquery">import module namespace test="http://exist-db.org/test" at "test.xql";</synopsis>
+                            <para>the XQuery engine will try to find the module
+                                    <filename>test.xql</filename> in the filesystem by default,
+                                which is not what you want. Setting
+                                    <option>xquery.module-load-path</option> fixes this.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
                         <term>xquery.report-errors</term>
                         <listitem>
                             <para>If set to "yes", an error in the XQuery will not result in an HTTP
