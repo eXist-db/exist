@@ -21,7 +21,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : \"adam\"} ", writer.toString());
+        assertEquals("{ \"hello\" : \"adam\" }", writer.toString());
         //TODO remove trailing space
     }
 
@@ -38,7 +38,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : 1} ", writer.toString());
+        assertEquals("{ \"hello\" : 1 }", writer.toString());
         //TODO remove trailing space
     }
 
@@ -58,7 +58,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : [\"adam\", \"wolfgang\"]} ", writer.toString());
+        assertEquals("{ \"hello\" : [\"adam\", \"wolfgang\"] }", writer.toString());
         //TODO remove trailing space
     }
 
@@ -82,7 +82,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : [1, 2]} ", writer.toString());
+        assertEquals("{ \"hello\" : [1, 2] }", writer.toString());
         //TODO remove trailing space
     }
 
@@ -99,7 +99,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : [\"adam\"]} ", writer.toString());
+        assertEquals("{ \"hello\" : [\"adam\"] }", writer.toString());
         //TODO remove trailing space
     }
 
@@ -121,42 +121,7 @@ public class JSONObjectTest {
         StringWriter writer = new StringWriter();
         root.serialize(writer, true);
 
-        assertEquals("{ \"hello\" : [\"adam\", \"wolfgang\"]} ", writer.toString());
+        assertEquals("{ \"hello\" : [\"adam\", \"wolfgang\"] }", writer.toString());
         //TODO remove trailing space
     }
-
-
-    @Test
-    public void nestedArray() throws IOException {
-
-        //expected result
-        /*
-            [ { label: "Foo", data: [ [1, 2], [3, 4] ] },
-            { label: "Bar", data: [ [5, 6], [7, 8] ] } ]
-        */
-
-        JSONObject root = new JSONObject("root");
-        root.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
-
-        JSONObject container = new JSONObject("value", true);
-        JSONObject label = new JSONObject("label");
-        label.addObject(new JSONValue("Foo"));
-        container.addObject(label);
-        root.addObject(container);
-
-        JSONObject container2 = new JSONObject("value", true);
-        label = new JSONObject("label");
-        label.addObject(new JSONValue("Bar"));
-        container2.addObject(label);
-        root.addObject(container2);
-
-        
-
-        StringWriter writer = new StringWriter();
-        root.serialize(writer, true);
-
-        assertEquals("{ \"hello\" : [\"adam\", \"wolfgang\"]} ", writer.toString());
-        //TODO remove trailing space
-    }
-
 }
