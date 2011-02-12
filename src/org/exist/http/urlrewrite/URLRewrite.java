@@ -54,9 +54,12 @@ public abstract class URLRewrite {
     protected Map<String, String> attributes = null;
     protected Map<String, List<String>> parameters = null;
     protected Map<String, String> headers = null;
-
+    protected boolean absolute = false;
+    
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
+        if (config != null && config.hasAttribute("absolute"))
+        	absolute = config.getAttribute("absolute").equals("yes");
         // Check for add-parameter elements etc.
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
@@ -87,7 +90,15 @@ public abstract class URLRewrite {
         // do nothing by default
     }
 
-    /**
+    protected void setAbsolutePath(XQueryURLRewrite.RequestWrapper request) {
+    	request.setPaths(target, null);
+    }
+    
+    protected boolean doResolve() {
+		return !absolute;
+	}
+
+	/**
      * Resolve the target of this rewrite rule against the current request context.
      *
      * @return the new target path excluding context path

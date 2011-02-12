@@ -21,6 +21,7 @@
  */
 package org.exist.http.urlrewrite;
 
+import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.w3c.dom.Element;
 
 import javax.servlet.RequestDispatcher;
@@ -47,7 +48,14 @@ public class PathForward extends Forward {
         }
     }
 
+    
     @Override
+	protected void setAbsolutePath(RequestWrapper request) {
+		request.setPaths(target, servletName);
+	}
+
+
+	@Override
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
         if (servletName != null)
             return filterConfig.getServletContext().getNamedDispatcher(servletName);
