@@ -6,8 +6,12 @@ import java.io.Writer;
 
 public class JSONObject extends JSONNode {
 	
-	private JSONNode firstChild = null;
+	protected JSONNode firstChild = null;
 	private boolean asSimpleValue = false;
+	
+	public JSONObject() {
+		super(Type.OBJECT_TYPE, ANONYMOUS_OBJECT);
+	}
 	
 	public JSONObject(String name) {
 		super(Type.OBJECT_TYPE, name);
@@ -17,7 +21,7 @@ public class JSONObject extends JSONNode {
 		super(Type.OBJECT_TYPE, name);
 		this.asSimpleValue = asSimpleValue;
 	}
-	
+
 	public void addObject(JSONNode node) {
 		JSONNode childNode = findChild(node.getName());
 		if (childNode == null) {
@@ -61,7 +65,7 @@ public class JSONObject extends JSONNode {
 	}
 	
 	public void serialize(Writer writer, boolean isRoot) throws IOException {
-		if (!(isRoot || asSimpleValue)) {
+		if (!isRoot && isNamed()) {
 			writer.write('"');
 			writer.write(getName());
 			writer.write("\" : ");
@@ -85,14 +89,19 @@ public class JSONObject extends JSONNode {
 			// an empty node gets a null value
 			writer.write("null");
 		else if (firstChild.getNext() == null && 
-				(firstChild.getType() == Type.VALUE_TYPE || asSimpleValue)) 
+					(
+						firstChild.getType() == Type.VALUE_TYPE ||
+						(firstChild.isArray() && !firstChild.isNamed())
+					)
+				)
 			// if there's only one child and if it is text, it is serialized as simple value
 			firstChild.serialize(writer, false);
 		else {
 			// complex object
 			writer.write("{ ");
-			boolean allowText = false;
+			
 			JSONNode next = firstChild;
+			boolean allowText = false;
 			while (next != null) {
 				if (next.getType() == Type.VALUE_TYPE) {
 					// if an element has attributes and text content, the text
@@ -111,7 +120,8 @@ public class JSONObject extends JSONNode {
 				if (next != null)
 					writer.write(", ");
 			}
-			writer.write("} ");
+			
+			writer.write(" }");
 		}
 	}
 

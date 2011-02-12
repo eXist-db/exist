@@ -3,33 +3,52 @@ package org.exist.util.serializer.json;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.exist.util.serializer.json.JSONNode.SerializationType;
+
 public class JSONValue extends JSONNode {
 	
 	public final static String NAME_VALUE = "#text";
 	
-	private String content;
+	private String content = null;
 	
 	public JSONValue(String content) {
 		super(Type.VALUE_TYPE, NAME_VALUE);
 		this.content = escape(content);
 	}
 
+	public JSONValue() {
+		super(Type.VALUE_TYPE, NAME_VALUE);
+	}
+
+	public void addContent(String str) {
+		if (content == null)
+			content = str;
+		else
+			content += str;
+	}
+	
 	@Override
 	public void serialize(Writer writer, boolean isRoot) throws IOException {
-		serializeContent(writer);		
+		if (getNextOfSame() != null) {
+			writer.write("[");
+			JSONNode next = this;
+			while (next != null) {
+				next.serializeContent(writer);
+				next = next.getNextOfSame();
+				if (next != null)
+					writer.write(", ");
+			}
+			writer.write("]");
+		} else
+			serializeContent(writer);		
 	}
 
 	@Override
 	public void serializeContent(Writer writer) throws IOException {
-		if (getSerializationType() == SerializationType.AS_STRING)
+		if (getSerializationType() != SerializationType.AS_LITERAL)
 			writer.write('"');
-		JSONNode next = this;
-		while (next != null) {
-			
-			writer.write(content);
-			next = next.getNextOfSame();
-		}
-		if (getSerializationType() == SerializationType.AS_STRING)
+		writer.write(content);
+		if (getSerializationType() != SerializationType.AS_LITERAL)
 			writer.write('"');
 	}
 	
