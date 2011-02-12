@@ -36,6 +36,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.dom.QName;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -194,6 +195,7 @@ public class Serialize extends BasicFunction {
     {
         // serialize the node set
         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try
         {
             String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
