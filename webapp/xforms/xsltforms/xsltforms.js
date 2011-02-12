@@ -1,4 +1,4 @@
-/* Rev. 478
+/* Rev. 480
 
 Copyright (C) 2008-2011 <agenceXML> - Alain COUTHURES
 Contact at : <info@agencexml.com>
@@ -1225,7 +1225,7 @@ function getValue(node, format, serialize) {
 		value = node.firstChild.nodeValue;
 	}
 	******************/
-	var value = node.text ? node.text : node.textContent;
+	var value = node.text != undefined ? node.text : node.textContent;
 
 	if (value && format) {
 		var schtyp = Schema.getType(Core.getType(node) || "xsd_:string");
@@ -1361,7 +1361,7 @@ var xforms = {
 		
 
 	profiling : function() {
-		var s = "XSLTForms Version Id: Rev. 478\n";
+		var s = "XSLTForms Version Id: Rev. 480\n";
 		s += "\nLoading Time: " + this.loadingtime + "ms";
 		s += "\nRefresh Counter: " + this.refreshcount;
 		s += "\nCumulative Refresh Time: " + this.refreshtime + "ms";
@@ -1595,6 +1595,11 @@ var xforms = {
 			|| element.id == "console" || element.hasXFElement == false) { return; }
 		var xf = element.xfElement;
 		var hasXFElement = !!xf;
+		
+		if (element.getAttribute("mixedrepeat") == "true") {
+			ctx = element.node || ctx;
+			selected = element.selected;
+		}
 
 		//if (!ctx) { alert("xforms.build " + element.id + " no ctx"); }
 		
@@ -2580,7 +2585,8 @@ XFSubmission.prototype.submit = function() {
 							xforms.refresh();
 						}
 			
-						XMLEvents.dispatch(subm, "xforms-submit-done");
+						subm.requesteventlog(evcontext, req);
+						XMLEvents.dispatch(subm, "xforms-submit-done", null, null, null, null, evcontext);
 						xforms.closeAction();
 						
 						if (subm.replace == "all") {
@@ -2734,21 +2740,47 @@ XFSubmission.SOAP_ = "application/soap+xml";
 
 		
 
+XFSubmission.prototype.requesteventlog = function(evcontext, req) {
+	evcontext["response-status-code"] = req.status;
+	evcontext["response-reason-phrase"] = req.statusText;
+	var rheads = req.getAllResponseHeaders().replace(/\r/, "");
+	var rheaderselts = "";
+	if (rheads) {
+		rheads = rheads.split("\n");
+		for (var i = 0, len = rheads.length; i < len; i++) {
+			var colon = rheads[i].indexOf(":");
+			if (colon != -1) {
+				var name = rheads[i].substring(0, colon).replace(/^\s+|\s+$/, "");
+				var value = rheads[i].substring(colon+1).replace(/^\s+|\s+$/, "");
+				rheaderselts += "<header><name>"+Core.escape(name)+"</name><value>"+Core.escape(value)+"</value></header>";
+			}
+		}
+	}
+	evcontext.rheadsdoc = Core.createXMLDocument("<data>"+rheaderselts+"</data>");
+	if (evcontext.rheadsdoc.documentElement.firstChild) {
+		var rh = evcontext.rheadsdoc.documentElement.firstChild;
+		evcontext["response-headers"] = [rh];
+		while (rh.nextSibling) {
+			rh = rh.nextSibling;
+			evcontext["response-headers"].push(rh);
+		}
+	}
+	if (req.responseXML) {
+		evcontext["response-body"] = Core.createXMLDocument(req.responseText);
+	} else {
+		evcontext["response-body"] = req.responseText;
+	}
+};
+
+		
+
 XFSubmission.prototype.issueSubmitException_ = function(evcontext, req, ex) {
 	if (ex) {
 		evcontext["message"] = ex.message || ex;
 		evcontext["stack-trace"] = ex.stack;
 	}
 	if (req) {
-		evcontext["response-status-code"] = req.status;
-		evcontext["response-reason-phrase"] = req.statusText;
-		var rheads = req.getAllResponseHeaders();
-		if (rheads) {
-			// TODO: Parse headers into nodes.
-			evcontext["response-headers"] = rheads;
-		}
-		// TODO: Should it use the 'req.responseXML' function if parsing succeeded?
-		evcontext["response-body"] = req.responseText;
+		this.requesteventlog(evcontext, req);
 	}
 	XMLEvents.dispatch(this, "xforms-submit-error", null, null, null, null, evcontext);
 };
@@ -7141,6 +7173,12 @@ XMLEvents.dispatch = function(target, name, type, bubbles, cancelable, defaultAc
 	} catch (e) {
 		alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
 	} finally {
+		if (XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1].rheadsdoc) {
+			XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1].rheadsdoc = null;
+		}
+		if (XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1]["response-body"]) {
+			XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1]["response-body"] = null;
+		}
 		XMLEvents.EventContexts.pop();
 	}
 };
