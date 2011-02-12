@@ -1,0 +1,224 @@
+<TestSet xmlns:json="http://json.org/">
+    <testName>JSON test</testName>
+    <description>
+        <p>Testing JSON serialization</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+    </tearDown>
+    <test output="text" serialize="method=json">
+        <task>Simple serialization test</task>
+        <code><![CDATA[
+            <root>
+                <object>
+                    <prop1>PROP1</prop1>
+                    <prop2>PROP2</prop2>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "prop1" : "PROP1", "prop2" : "PROP2" } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Attribute serialization test</task>
+        <code><![CDATA[
+            <root>
+                <object attr1="a1" attr2="a2">
+                    <prop1>PROP1</prop1>
+                    <prop2>PROP2</prop2>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "attr1" : "a1", "attr2" : "a2", "prop1" : "PROP1", "prop2" : "PROP2" } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Multiple children with same name: serialize as array</task>
+        <code><![CDATA[
+            <root>
+                <object attr1="a1" attr2="a2">
+                    <prop>PROP1</prop>
+                    <prop>PROP2</prop>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[{ "object" : { "attr1" : "a1", "attr2" : "a2", "prop" : ["PROP1", "PROP2"] } }]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Empty element: serialize as null</task>
+        <code><![CDATA[
+            <root>
+                <object attr1="a1" attr2="a2">
+                    <prop/>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "attr1" : "a1", "attr2" : "a2", "prop" : null } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Attributes plus text content: serialize as #text</task>
+        <code><![CDATA[
+            <root>
+                <object attr1="a1" attr2="a2">text</object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "attr1" : "a1", "attr2" : "a2", "#text" : "text" } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Nested element serialization</task>
+        <code><![CDATA[
+            <root>
+                <object>
+                    <address>
+                        <street>a street</street>
+                        <city>a city</city>
+                    </address>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "address" : { "street" : "a street", "city" : "a city" } } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Nested elements of same name</task>
+        <code><![CDATA[
+            <root>
+                <object>
+                    <address>
+                        <street>a street</street>
+                        <city>a city</city>
+                    </address>
+                    <address>
+                        <street>another street</street>
+                        <city>another city</city>
+                    </address>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "address" : [{ "street" : "a street", "city" : "a city" }, { "street" : "another street", "city" : "another city" }] } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Enforce array for single child</task>
+        <code><![CDATA[
+            <root xmlns:json="http://json.org/">
+                <object>
+                    <prop json:array="true">PROP1</prop>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "prop" : ["PROP1"] } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Enforce array for multiple children</task>
+        <code><![CDATA[
+            <root xmlns:json="http://json.org/">
+                <object>
+                    <prop json:array="true">PROP1</prop>
+                    <prop json:array="true">PROP2</prop>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : { "prop" : ["PROP1", "PROP2"] } }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Nested json:value</task>
+        <code><![CDATA[
+            <root xmlns:json="http://json.org/">
+                <object>
+                    <json:value>PROP1</json:value>
+                    <json:value>PROP2</json:value>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : ["PROP1", "PROP2"] }
+        ]]></expected>
+    </test>
+    <!-- The following should not be allowed as it generates invalid json -->
+    <!--test output="text" serialize="method=json">
+        <task>Serialization error: json:value cannot be child of json:value</task>
+        <code><![CDATA[
+            <root xmlns:json="http://json.org/">
+                <json:value>
+                    <json:value>PROP1</json:value>
+                    <json:value>PROP2</json:value>
+                </json:value>
+            </root>
+        ]]></code>
+        <error>json:value cannot be a child of another json:value</error>
+    </test-->
+    <test output="text" serialize="method=json">
+        <task>Enforce nested array of values</task>
+        <code><![CDATA[
+            <root xmlns:json="http://json.org/">
+                <object>
+                    <json:value json:array="true">
+                        <json:value json:array="true">PROP1</json:value>
+                    </json:value>
+                </object>
+            </root>
+        ]]></code>
+        <expected><![CDATA[
+            { "object" : [["PROP1"]] }
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Enforce nested array of values without object wrapper</task>
+        <code><![CDATA[
+            <json:value json:array="true" xmlns:json="http://json.org">
+                <json:value>PROP1</json:value>
+                <json:value>PROP2</json:value>
+            </json:value>
+        ]]></code>
+        <expected><![CDATA[
+            [["PROP1", "PROP2"]]
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Array of objects</task>
+        <code><![CDATA[
+            <json:object xmlns:json="http://json.org">
+                <json:value>
+                    <first>Max</first>
+                    <last>Müller</last>
+                </json:value>
+                <json:value>
+                    <first>Heinz</first>
+                    <last>Müller</last>
+                </json:value>
+            </json:object>
+        ]]></code>
+        <expected><![CDATA[
+            [{ "first" : "Max", "last" : "Müller" }, { "first" : "Heinz", "last" : "Müller" }]
+        ]]></expected>
+    </test>
+    <test output="text" serialize="method=json">
+        <task>Array of objects</task>
+        <code><![CDATA[
+            <json:value xmlns:json="http://json.org">
+                <json:value><prop1>PROP1</prop1></json:value>
+                <json:value><prop2>PROP2</prop2></json:value>
+            </json:value>
+        ]]></code>
+        <expected><![CDATA[
+            [{ "prop1" : "PROP1" }, { "prop2" : "PROP2" }]
+        ]]></expected>
+    </test>
+ </TestSet>
