@@ -48,7 +48,7 @@ public class JSONWriter extends XMLWriter {
 	
 	public final static String JASON_NS = "http://www.json.org";
 	
-	protected JSONObject root;
+	protected JSONNode root;
 	
 	protected Stack<JSONObject> stack = new Stack<JSONObject>();
 
@@ -92,9 +92,9 @@ public class JSONWriter extends XMLWriter {
 	}
 
 	@Override
-	public void startElement(String qname) throws TransformerException { 
+	public void startElement(String qname) throws TransformerException {
 		if (qname.equals("json:value"))
-			processStartElement(qname, true);
+			processStartValue();
 		else if (useNSPrefix)
 			processStartElement(qname.replace(':', '_'), false);
 		else
@@ -104,7 +104,7 @@ public class JSONWriter extends XMLWriter {
 	@Override
 	public void startElement(QName qname) throws TransformerException {
 		if (JASON_NS.equals(qname.getNamespaceURI()) && "value".equals(qname.getLocalName()))
-			processStartElement(qname.getLocalName(), true);
+			processStartValue();
 		else if (useNSPrefix)
 			processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
 		else
@@ -112,14 +112,28 @@ public class JSONWriter extends XMLWriter {
 	}
 
 	private void processStartElement(String localName, boolean simpleValue) {
-		JSONObject obj = new JSONObject(localName, simpleValue);
-		if (root == null)
+		JSONObject obj = new JSONObject(localName);
+		if (root == null) {
 			root = obj;
-		else {
+			stack.push(obj);
+		} else {
 			JSONObject parent = stack.peek();
 			parent.addObject(obj);
+			stack.push(obj);
 		}
-		stack.push(obj);
+	}
+	
+	private void processStartValue() throws TransformerException {
+		// a json:value is stored as an unnamed object
+		JSONObject obj = new JSONObject();
+		if (root == null) {
+			root = obj;
+			stack.push(obj);
+		} else {
+			JSONObject parent = stack.peek();
+			parent.addObject(obj);
+			stack.push(obj);
+		}
 	}
 	
 	@Override
@@ -194,5 +208,4 @@ public class JSONWriter extends XMLWriter {
 			throws TransformerException {
 		// skip
 	}
-	
 }
