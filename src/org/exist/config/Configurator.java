@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -58,6 +59,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationFieldClassMask;
 import org.exist.config.annotation.ConfigurationFieldSettings;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.dom.DocumentAtExist;
@@ -122,6 +124,14 @@ public class Configurator {
         }
 
         return fields;
+    }
+
+    protected static <T extends Annotation> T getAnnotation(Field field, Class<T> annotation) {
+
+        if (field.isAnnotationPresent(annotation))
+            return field.getAnnotation(annotation);
+
+        return null;
     }
 
     public static Method searchForSetMethod(Class<?> clazz, Field field) {
@@ -239,6 +249,7 @@ public class Configurator {
                     value = configuration.getPropertyBoolean(property);
                 } else if(typeName.equals("java.util.Map")) {
                     value = configuration.getPropertyMap(property);
+                    //TODO: skip, it will be processed as structure
                 } else if (typeName.equals("java.util.List")) {
                     //skip, it will be processed as structure
                     //TODO what about simple generic types?
@@ -246,6 +257,7 @@ public class Configurator {
                     value = org.exist.xmldb.XmldbURI.create(
                             configuration.getProperty(property)
                     );
+                //TODO: remove, use methods instead
                 } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
                     value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
@@ -389,13 +401,28 @@ public class Configurator {
                             	
                                 //TODO: AddMethod with Configuration argument
                             }
-                            String id = conf.getProperty(Configuration.ID);
-                            if (id == null) {
-                                LOG.warn("Subconfiguration must have id ["+conf.getName()+"], skip instance creation.");
+                            
+                            ConfigurationFieldClassMask annotation = getAnnotation(field, ConfigurationFieldClassMask.class);
+                            if (annotation == null) {
+                                LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation ["+conf.getName()+"], skip instance creation.");
                                 continue;
                             }
+                            
+                            String id = conf.getProperty(Configuration.ID);
 
-                            String clazzName = "org.exist.security.realm."+id.toLowerCase()+"."+id+"Realm";
+                            Object[] objs;
+                            if (id == null) { 
+                            	objs = new Object[] {"", ""};
+                                //LOG.warn("Subconfiguration don't have 'id' property ["+conf.getName()+"], skip instance creation.");
+                            } else
+                            	objs = new Object[] {id.toLowerCase(), id};
+                            
+                            String clazzName = 
+                            	String.format(
+                        			annotation.value(), 
+                        			objs
+                            	);
+                            //String clazzName = "org.exist.security.realm."+id.toLowerCase()+"."+id+"Realm";
                             //org.exist.security.realm.openid.OpenIDRealm
                             Class<?> clazz;
                             try {
@@ -431,7 +458,7 @@ public class Configurator {
                                 LOG.error("Security exception on class ["+clazzName+"] creation, skip instance creation.");
                                 continue;
                             } catch (NoSuchMethodException e) {
-                                LOG.error("Class ["+clazzName+"] constructor not found, skip instance creation.");
+                                LOG.error("Class ["+clazzName+"] constructor (with Configuration) not found, skip instance creation.");
                                 continue;
                             } catch (InstantiationException e) {
                                 LOG.error("Instantiation exception on class ["+clazzName+"] creation, skip instance creation.");

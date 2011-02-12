@@ -49,6 +49,10 @@ public class ConfigurableTest {
 			"valueBoolean=\"false\" " +
 			">" +
 			"<valueInteger>5</valueInteger> " +
+			
+			"<spice name='black pepper'/>" +
+			"<spice name='berbere'/>" +
+			
 			"</instance>";
 	String config2 = "<config xmlns='http://exist-db.org/Configuration' valueString=\"b\"><instance valueString=\"a\" valueInteger=\"5\"></instance></config>";
 	
@@ -69,6 +73,11 @@ public class ConfigurableTest {
         assertTrue(object.someboolean);
 
         assertFalse(object.someBoolean);
+        
+        assertEquals(2, object.spices.size());
+        
+        assertEquals("black pepper", object.spices.get(0).name);
+        assertEquals("berbere", object.spices.get(1).name);
 	}
 
 	@Test
