@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2010 The eXist Project
+ *  Copyright (C) 2009-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,9 +21,12 @@
  */
 package org.exist.config;
 
+import java.util.List;
+
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationFieldClassMask;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -50,10 +53,22 @@ public class ConfigurableObject implements Configurable {
 	@ConfigurationFieldAsAttribute("valueBoolean")
 	protected Boolean someBoolean = true;
 
+	@ConfigurationFieldAsElement("spice")
+	@ConfigurationFieldClassMask("org.exist.config.Spice")
+	protected List<Spice> spices = null;
+
 	private Configuration configuration;
 	
 	public ConfigurableObject(Configuration config) {
 		configuration = Configurator.configure(this, config);
+	}
+	
+	public List<Spice> getSpices() {
+		return spices;
+	}
+	
+	public void addSpice(String name) {
+		spices.add(new Spice(name));
 	}
 
 	/* (non-Javadoc)
