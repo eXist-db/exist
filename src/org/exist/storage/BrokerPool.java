@@ -54,6 +54,7 @@ import org.exist.indexing.IndexManager;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
+import org.exist.plugin.PluginsManagerImpl;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -489,7 +490,13 @@ public class BrokerPool extends Observable implements Database {
 	/**
      * The security manager of the database instance. 
      */
-    private SecurityManager securityManager = null;	
+    private SecurityManager securityManager = null;
+    
+    /**
+     * The plugin manager.
+     */
+    private PluginsManagerImpl pluginManager = null;
+
     
     /**
      * The global notification service used to subscribe
@@ -888,6 +895,10 @@ public class BrokerPool extends Observable implements Database {
 
         sync(broker, Sync.MAJOR_SYNC);
         
+        	//require to allow access by BrokerPool.getInstance();  
+        	instances.put(instanceName, this);
+        	//create the plugin manager
+        	pluginManager = new PluginsManagerImpl(this, broker);
 		} finally {
 			release(broker);
 		}
