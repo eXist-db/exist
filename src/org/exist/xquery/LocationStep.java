@@ -878,6 +878,10 @@ public class LocationStep extends Step {
 			NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
 			try {
 				for (NodeProxy current : contextSet) {
+					//ignore document elements to avoid NPE at getXMLStreamReader
+					if (NodeId.ROOT_NODE.equals(current.getNodeId()))
+						continue;
+					
 					NodeProxy parent = new NodeProxy(current.getDocument(),
 							current.getNodeId().getParentId());
 					StreamFilter filter;
