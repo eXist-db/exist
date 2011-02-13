@@ -1335,6 +1335,10 @@ public class DOMFile extends BTree implements Lockable {
 	        long parentPointer = KEY_NOT_FOUND;
 	        do {
 	            id = id.getParentId();
+	            if (id == null) {
+	                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+	                throw new BTreeException("node " + node.getNodeId() + " not found.");
+	            }
 	            if (id == NodeId.DOCUMENT_NODE) {
 	                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
 	                throw new BTreeException("node " + node.getNodeId() + " not found.");
