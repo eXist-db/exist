@@ -14,7 +14,6 @@ public class JSONValue extends JSONNode {
 	public JSONValue(String content) {
 		super(Type.VALUE_TYPE, NAME_VALUE);
 		this.content = escape(content);
-		System.out.println("CONTENT: " + this.content);
 	}
 
 	public JSONValue() {
