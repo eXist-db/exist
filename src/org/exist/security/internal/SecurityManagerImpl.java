@@ -165,7 +165,10 @@ public class SecurityManagerImpl implements SecurityManager {
 			if (collection == null) {
 				txn = transaction.beginTransaction();
 				collection = broker.getOrCreateCollection(txn, SECURITY_COLLETION_URI);
-				if (collection == null) return; //throw error???
+				if (collection == null) return;
+					//if db corrupted it can lead to unrunnable issue
+					//throw new ConfigurationException("Collection '/db/system/security' can't be created.");
+
 				collection.setPermissions(0770);
 				broker.saveCollection(txn, collection);
 
