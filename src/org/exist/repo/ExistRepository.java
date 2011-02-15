@@ -10,94 +10,163 @@
 package org.exist.repo;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.exist.xquery.InternalModule;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.xml.transform.stream.StreamSource;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.expath.pkg.repo.FileSystemStorage;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.URISpace;
 
 /**
- * TODO: ...
+ * A repository as viewed by eXist.
  *
  * @author Florent Georges
- * @since   2010-09-22
+ * @since  2010-09-22
  */
 public class ExistRepository
 {
-    public ExistRepository(File root)
+    public ExistRepository(FileSystemStorage storage)
             throws PackageException
     {
-        this(new Repository(root));
+        myParent = new Repository(storage);
+        myParent.registerExtension(new ExistPkgExtension());
     }
 
-    public ExistRepository(Repository parent)
-            throws PackageException
+    public Repository getParentRepo()
     {
-        myParent = parent;
-        parent.registerExtension(new ExistPkgExtension());
+        return myParent;
     }
 
     public Module resolveJavaModule(String namespace, XQueryContext ctxt)
             throws XPathException
     {
-        for ( Package pkg : myParent.listPackages() ) {
+        // the URI
+        URI uri;
+        try {
+            uri = new URI(namespace);
+        }
+        catch ( URISyntaxException ex ) {
+            throw new XPathException("Invalid URI: " + namespace, ex);
+        }
+        for ( Packages pp : myParent.listPackages() ) {
+            Package pkg = pp.latest();
             ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if ( info != null ) {
-                String clazz = info.getJava(namespace);
+                String clazz = info.getJava(uri);
                 if ( clazz != null ) {
-                    try {
-                        Class c = Class.forName(clazz);
-                        InternalModule im = (InternalModule) c.newInstance();
-                        String im_ns = im.getNamespaceURI();
-                        if ( ! im_ns.equals(namespace) ) {
-                            throw new XPathException("The namespace in the Java module does not match the namespace in the package descriptor: " + namespace + " - " + im_ns);
-                        }
-                        return ctxt.loadBuiltInModule(namespace, clazz);
-                    }
-                    catch ( ClassNotFoundException ex ) {
-                        throw new XPathException("Cannot find module from expath repository, but it should be there.", ex);
-                    }
-                    catch ( InstantiationException ex ) {
-                        throw new XPathException("Problem instantiating module from expath repository.", ex);
-                    }
-                    catch ( IllegalAccessException ex ) {
-                        throw new XPathException("Cannot access expath repository directory", ex);
-                    }
-                    catch ( ClassCastException ex ) {
-                        throw new XPathException("Problem casting module from expath repository.", ex);
-                    }
+                    return getModule(clazz, namespace, ctxt);
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Load a module instance from its class name.  Check the namespace is consistent.
+     */
+    private Module getModule(String name, String namespace, XQueryContext ctxt)
+            throws XPathException
+    {
+        try {
+            Class clazz = Class.forName(name);
+            Module module = instantiateModule(clazz);
+            String ns = module.getNamespaceURI();
+            if ( ! ns.equals(namespace) ) {
+                throw new XPathException("The namespace in the Java module does not match the namespace in the package descriptor: " + namespace + " - " + ns);
+            }
+            return ctxt.loadBuiltInModule(namespace, name);
+        }
+        catch ( ClassNotFoundException ex ) {
+            throw new XPathException("Cannot find module from expath repository, but it should be there", ex);
+        }
+        catch ( InstantiationException ex ) {
+            throw new XPathException("Problem instantiating module from expath repository", ex);
+        }
+        catch ( IllegalAccessException ex ) {
+            throw new XPathException("Cannot access expath repository directory", ex);
+        }
+        catch ( InvocationTargetException ex ) {
+            throw new XPathException("The module ctor threw an exception", ex);
+        }
+        catch ( ClassCastException ex ) {
+            throw new XPathException("Problem casting module from expath repository", ex);
+        }
+        catch ( IllegalArgumentException ex ) {
+            throw new XPathException("Illegal argument passed to the module ctor", ex);
+        }
+    }
+
+    /**
+     * Try to instantiate the class using the ctor with a Map parameter, or the default ctor.
+     */
+    private Module instantiateModule(Class clazz)
+            throws XPathException
+                 , InstantiationException
+                 , IllegalAccessException
+                 , InvocationTargetException
+    {
+        try {
+            Constructor ctor = clazz.getConstructor(Map.class);
+            return (Module) ctor.newInstance(EMPTY_MAP);
+        }
+        catch ( NoSuchMethodException ex ) {
+            try {
+                Constructor ctor = clazz.getConstructor();
+                return (Module) ctor.newInstance();
+            }
+            catch ( NoSuchMethodException exx ) {
+                throw new XPathException("Cannot find suitable constructor for module from expath repository", exx);
+            }
+        }
+    }
+
     public File resolveXQueryModule(String namespace)
             throws XPathException
     {
-        for ( Package pkg : myParent.listPackages() ) {
+        // the URI
+        URI uri;
+        try {
+            uri = new URI(namespace);
+        }
+        catch ( URISyntaxException ex ) {
+            throw new XPathException("Invalid URI: " + namespace, ex);
+        }
+        for ( Packages pp : myParent.listPackages() ) {
+            Package pkg = pp.latest();
+            // FIXME: Rely on having a filesystem storage, that's probably a bad design!
+            FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
             ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if ( info != null ) {
-                File f = info.getXQuery(namespace);
+                String f = info.getXQuery(uri);
                 if ( f != null ) {
-                    return f;
+                    return resolver.resolveComponentAsFile(f);
                 }
             }
-            // TODO: Should we really build URI objects?  Shouldn't the EXPath
-            // repository use plain strings instead?
+            String sysid = null; // declared here to be used in catch
             try {
-                File f = pkg.resolveFile(new URI(namespace), URISpace.XQUERY);
-                if ( f != null ) {
-                    return f;
+                StreamSource src = pkg.resolve(namespace, URISpace.XQUERY);
+                if ( src != null ) {
+                    sysid = src.getSystemId();
+                    return new File(new URI(sysid));
                 }
             }
             catch ( URISyntaxException ex ) {
-                throw new XPathException("Namespace URI is not correct URI", ex);
+                throw new XPathException("Error parsing the URI of the query library: " + sysid, ex);
+            }
+            catch ( PackageException ex ) {
+                throw new XPathException("Error resolving the query library: " + namespace, ex);
             }
         }
         return null;
@@ -105,6 +174,8 @@ public class ExistRepository
 
     /** The wrapped EXPath repository. */
     private Repository myParent;
+    /** An empty map for constructors expecting a parameter map. */
+    private static final Map<String, List<Object>> EMPTY_MAP = new HashMap<String, List<Object>>();
 }
 
 

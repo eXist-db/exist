@@ -24,10 +24,7 @@ package org.exist.xquery.modules.expathrepo;
 import org.apache.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.XPathException;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +46,6 @@ public class ExpathPackageModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2010-07-27";
     public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
-    public static Repository _repo = null;
-
     private final static FunctionDef[] functions = {
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signature, InstallFunction.class),
@@ -59,7 +54,6 @@ public class ExpathPackageModule extends AbstractInternalModule {
 
     public ExpathPackageModule(Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters);
-        _repo = getRepo();
     }
 
     @Override
@@ -79,34 +73,4 @@ public class ExpathPackageModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
-
-    private static synchronized Repository getRepo()
-            throws XPathException
-    {
-
-        if ( _repo == null ) {
-            try {
-                String existHome = System.getProperty("exist.home");
-                if (existHome != null){
-                    new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();    
-                    _repo = new Repository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
-
-                }else{
-                    new File( System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                    _repo = new Repository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
-                }
-
-            }
-            catch ( PackageException ex ) {
-                throw new XPathException("Problem creating expath repository", ex);
-            }
-        }
-
-        return _repo;
-    }
-
-
-    
-
 }

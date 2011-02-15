@@ -2,6 +2,7 @@ package org.exist.xquery.modules.expathrepo;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.repo.ExistRepository;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -12,8 +13,6 @@ import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.UserInteractionStrategy;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
-
-import java.io.File;
 
 
 /**
@@ -50,7 +49,9 @@ public class RemoveFunction extends BasicFunction {
                 System.err.println("Package name required");
             }
             else {
-                ExpathPackageModule._repo.removePackage(pkg, force, interact);
+                ExistRepository repo = getContext().getRepository();
+                Repository parent_repo = repo.getParentRepo();
+                parent_repo.removePackage(pkg, force, interact);
             }
         } catch (PackageException ex ) {
             return removed;

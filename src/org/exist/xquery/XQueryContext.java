@@ -93,6 +93,7 @@ import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.FileSystemStorage;
 
 
 import antlr.RecognitionException;
@@ -316,18 +317,24 @@ public class XQueryContext implements BinaryValueManager, Context
     // TODO: expath repo manageer, may change
     private static ExistRepository _repo = null;
 
-    private static synchronized ExistRepository getRepo()
+    public synchronized ExistRepository getRepository()
             throws XPathException
     {
         if ( _repo == null ) {
             try {
                 String existHome = System.getProperty("exist.home");
                 if (existHome != null){
-                    new File( existHome + "/webapp/WEB-INF/expathrepo").mkdir();
-                    _repo = new ExistRepository(new File( existHome + "/webapp/WEB-INF/expathrepo"));
+                    File repo_dir = new File(existHome + "/webapp/WEB-INF/expathrepo");
+                    // ensure the dir exists
+                    repo_dir.mkdir();
+                    FileSystemStorage storage = new FileSystemStorage(repo_dir);
+                    _repo = new ExistRepository(storage);
                 }else{
-                    new File(  System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                    _repo = new ExistRepository(new File( System.getProperty("java.io.tmpdir") + "/expathrepo"));
+                    File repo_dir = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
+                    // ensure the dir exists
+                    repo_dir.mkdir();
+                    FileSystemStorage storage = new FileSystemStorage(repo_dir);
+                    _repo = new ExistRepository(storage);
                 }
             }
             catch ( PackageException ex ) {
@@ -342,7 +349,7 @@ public class XQueryContext implements BinaryValueManager, Context
             throws XPathException
     {
         // the repo and its eXist handler
-        ExistRepository repo = getRepo();
+        ExistRepository repo = getRepository();
         // try an internal module
         Module mod = repo.resolveJavaModule(namespace, this);
         if ( mod != null ) {
@@ -1252,7 +1259,7 @@ public class XQueryContext implements BinaryValueManager, Context
     /**
      * Should loaded documents be locked?
      *
-     * <p>see #setLockDocumentsOnLoad(boolean)</p> 
+     * <p>see #setLockDocumentsOnLoad(boolean)</p>
      */
     public boolean lockDocumentsOnLoad()
     {
@@ -1429,7 +1436,7 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
     /**
-     * Returns true if whitespace between constructed element nodes should be stripped by default. 
+     * Returns true if whitespace between constructed element nodes should be stripped by default.
      */
     public boolean stripWhitespace()
     {
@@ -2581,7 +2588,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * Check if the specified function signature is found in the current function called stack. If yes, the function might be tail recursive and needs
      * to be optimized.
      *
-     * @param   signature 
+     * @param   signature
      */
     public boolean tailRecursiveCall( FunctionSignature signature )
     {

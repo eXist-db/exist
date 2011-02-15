@@ -170,7 +170,7 @@ declare function repomanager:activate() as element()
             <ul>
                 <li>activated package: {$name}</li>
                 {
-                    repo:install(concat('http://',$hostname,':',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar'))
+                    repo:install(concat('http://localhost:',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar'))
                 }
             </ul>
                 <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
@@ -273,7 +273,7 @@ declare function repomanager:main() as element() {
 
             let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
             let $package := $meta//package:package
-            let $pkg-name := $package/package:module/@name
+            let $pkg-name := $package/string(@name)
             let $repo := $meta//repo:meta
 
             let $installed := exists($repos[. eq $pkg-name])
@@ -282,7 +282,7 @@ declare function repomanager:main() as element() {
                 <td/>
                 <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
                 {$repo//repo:type}</td>
-                <td>{$repo//repo:description}</td>
+                <td>{ ( $repo//repo:description, $package/string(package:title) )[1]}</td>
 
                 <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
                 <td> 
@@ -296,7 +296,7 @@ declare function repomanager:main() as element() {
                 {
                 if($installed) then
 
-                    ( <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}">deactivate</a>,
+                    ( <a href="?panel=repo&amp;action=deactivate&amp;name={$pkg-name}">deactivate</a>,
                       if ($repo//repo:type eq 'application') then 
                         ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$package-name}">deploy</a> )
                      else
