@@ -12,25 +12,27 @@ package org.exist.repo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
+import javax.xml.transform.stream.StreamSource;
 import org.expath.pkg.repo.DescriptorExtension;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.XMLStreamHelper;
+import org.expath.pkg.repo.parser.XMLStreamHelper;
 
 /**
- * TODO: To be moved into eXist code base...
+ * Handle the exist.xml descriptor in an EXPath package.
  *
  * @author Florent Georges
- * @since   2010-09-21
+ * @since  2010-09-21
  */
-public class ExistPkgExtension extends DescriptorExtension
+public class ExistPkgExtension
+        extends DescriptorExtension
 {
     public ExistPkgExtension()
     {
@@ -46,30 +48,31 @@ public class ExistPkgExtension extends DescriptorExtension
         try {
             parser.next();
             while ( parser.getEventType() == XMLStreamConstants.START_ELEMENT ) {
-                if ( Repository.PKG_NS.equals(parser.getNamespaceURI()) ) {
+                if ( EXIST_PKG_NS.equals(parser.getNamespaceURI()) ) {
                     handleElement(parser, pkg, info);
                 }
                 else {
-                    // ignore elements not in the EXPath Pkg namespace
+                    // ignore elements not in the eXist Pkg namespace
                     // TODO: FIXME: Actually ignore (pass it.)
                     throw new PackageException("TODO: Ignore elements in other namespace");
                 }
                 parser.next();
             }
-            // position to </exist>
+            // position to </package>
             parser.next();
         }
         catch ( XMLStreamException ex ) {
-            throw new PackageException("Error reading the package descriptor", ex);
+            throw new PackageException("Error reading the exist descriptor", ex);
         }
-        pkg.addInfo("exist", info);
+        pkg.addInfo(getName(), info);
         // if the package has never been installed, install it now
         // TODO: This is not an ideal solution, but this should work in most of
         // the cases, and does not need xrepo to depend on any processor-specific
         // stuff.  We need to find a proper way to make that at the real install
         // phase though (during the "xrepo install").
         if ( ! info.getJars().isEmpty() ) {
-            if ( ! new File(pkg.getRootDir(), ".exist/classpath.txt").exists() ) {
+            StreamSource classpath = pkg.getResolver().resolveResource(".saxon/classpath.txt");
+            if ( classpath == null ) {
                 setupPackage(pkg, info);
             }
         }
@@ -81,7 +84,7 @@ public class ExistPkgExtension extends DescriptorExtension
         String local = parser.getLocalName();
         if ( "jar".equals(local) ) {
             String jar = myXSHelper.getElementValue(parser);
-            info.addJar(new File(pkg.getModuleDir(), jar));
+            info.addJar(jar);
         }
         else if ( "java".equals(local) ) {
             handleJava(parser, info);
@@ -104,7 +107,12 @@ public class ExistPkgExtension extends DescriptorExtension
         String clazz = myXSHelper.getElementValue(parser);
         // position to </java>
         parser.next();
-        info.addJava(href, clazz);
+        try {
+            info.addJava(new URI(href), clazz);
+        }
+        catch ( URISyntaxException ex ) {
+            throw new PackageException("Invalid URI: " + href, ex);
+        }
     }
 
     private void handleXQuery(XMLStreamReader parser, Package pkg, ExistPkgInfo info)
@@ -119,7 +127,12 @@ public class ExistPkgExtension extends DescriptorExtension
         String file = myXSHelper.getElementValue(parser);
         // position to </xquery>
         parser.next();
-        info.addXQuery(href, new File(pkg.getModuleDir(), file));
+        try {
+            info.addXQuery(new URI(href), file);
+        }
+        catch ( URISyntaxException ex ) {
+            throw new PackageException("Invalid URI: " + href, ex);
+        }
     }
 
     // TODO: Must not be here (in the parsing class).  See the comment at the
@@ -127,27 +140,38 @@ public class ExistPkgExtension extends DescriptorExtension
     private void setupPackage(Package pkg, ExistPkgInfo info)
             throws PackageException
     {
-        // create [pkg_dir]/.exist/classpath.txt
-        File exist = new File(pkg.getRootDir(), ".exist/");
+        // TODO: FIXME: Bad, BAD design!  But will be resolved naturally by moving the
+        // install code within the storage class (because we are writing on disk)...
+        FileSystemResolver res = (FileSystemResolver) pkg.getResolver();
+        File classpath = res.resolveResourceAsFile(".exist/classpath.txt");
+
+        // create [pkg_dir]/.exist/classpath.txt if not already
+        File exist = classpath.getParentFile();
         if ( ! exist.exists() && ! exist.mkdir() ) {
             throw new PackageException("Impossible to create directory: " + exist);
         }
-        File target = new File(exist, "classpath.txt");
-        Set<File> jars = info.getJars();
+        Set<String> jars = info.getJars();
         try {
-            FileWriter out = new FileWriter(target);
-            for ( File jar : jars ) {
-                out.write(jar.getCanonicalPath());
+            FileWriter out = new FileWriter(classpath);
+            for ( String jar : jars ) {
+                StreamSource jar_src = res.resolveComponent(jar);
+                if ( jar_src == null ) {
+                    String msg = "Inconsistent package descriptor, the JAR file is not in the package: ";
+                    throw new PackageException(msg + jar);
+                }
+                URI uri = URI.create(jar_src.getSystemId());
+                File file = new File(uri);
+                out.write(file.getCanonicalPath());
                 out.write("\n");
             }
             out.close();
         }
         catch ( IOException ex ) {
-            throw new PackageException("Error writing the eXist classpath file: " + target, ex);
+            throw new PackageException("Error writing the eXist classpath file: " + classpath, ex);
         }
     }
 
-    public static final String EXIST_PKG_NS = "http://exist.org/ns/expath-pkg";
+    public static final String EXIST_PKG_NS = "http://exist-db.org/ns/expath-pkg";
     private XMLStreamHelper myXSHelper = new XMLStreamHelper(EXIST_PKG_NS);
 }
 

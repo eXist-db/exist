@@ -13,9 +13,9 @@ import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.UserInteractionStrategy;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.exist.repo.ExistRepository;
 
 
 /**
@@ -53,7 +53,9 @@ public class InstallFunction extends BasicFunction {
                 System.err.println("Package name required");
             }
             else {
-                ExpathPackageModule._repo.installPackage(uri,force,interact);
+                ExistRepository repo = getContext().getRepository();
+                Repository parent_repo = repo.getParentRepo();
+                parent_repo.installPackage(uri,force,interact);
             }
             removed = BooleanValue.TRUE;
         } catch (PackageException ex ) {

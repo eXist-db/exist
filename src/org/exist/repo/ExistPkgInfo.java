@@ -9,19 +9,22 @@
 
 package org.exist.repo;
 
-import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.transform.stream.StreamSource;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.PackageInfo;
+import org.expath.pkg.repo.URISpace;
 
 /**
- * TODO: To be moved into eXist code base...
+ * The extended package info, dedicated to eXist.
  *
  * @author Florent Georges
- * @since   2010-09-21
+ * @since  2010-09-21
  */
 public class ExistPkgInfo
         extends PackageInfo
@@ -31,31 +34,37 @@ public class ExistPkgInfo
         super("exist", pkg);
     }
 
-    // TODO: resolve(), etc...
+    @Override
+    public StreamSource resolve(String href, URISpace space)
+            throws PackageException
+    {
+        // TODO: Really?  Probably to refactor in accordance with ExistRepository...
+        return null;
+    }
 
-    public Set<File> getJars() {
+    public Set<String> getJars() {
         return myJars;
     }
-    public String getJava(String namespace) {
+    public String getJava(URI namespace) {
         return myJava.get(namespace);
     }
-    public File getXQuery(String namespace) {
+    public String getXQuery(URI namespace) {
         return myXquery.get(namespace);
     }
 
-    public void addJar(File jar) {
+    public void addJar(String jar) {
         myJars.add(jar);
     }
-    public void addJava(String uri, String fun) {
+    public void addJava(URI uri, String fun) {
         myJava.put(uri, fun);
     }
-    public void addXQuery(String uri, File file) {
+    public void addXQuery(URI uri, String file) {
         myXquery.put(uri, file);
     }
 
-    private Set<File>        myJars = new HashSet<File>();
-    private Map<String, String> myJava = new HashMap<String, String>();
-    private Map<String, File>   myXquery = new HashMap<String, File>();
+    private Set<String>      myJars = new HashSet<String>();
+    private Map<URI, String> myJava = new HashMap<URI, String>();
+    private Map<URI, String> myXquery = new HashMap<URI, String>();
 }
 
 

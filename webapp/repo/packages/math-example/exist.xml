@@ -1,0 +1,10 @@
+<package xmlns="http://exist-db.org/ns/expath-pkg">
+
+   <jar>math.jar</jar>
+
+   <java>
+      <namespace>http://exist-db.org/xquery/math</namespace>
+      <class>org.exist.xquery.modules.math.MathModule</class>
+   </java>
+
+</package>
