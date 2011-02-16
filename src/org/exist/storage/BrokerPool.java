@@ -847,6 +847,8 @@ public class BrokerPool extends Observable implements Database {
             LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
         
+        initialiseTriggersForSystemCollections(broker);
+        
         //wake-up the security manager
         securityManager.attach(this, broker);
 
@@ -967,7 +969,7 @@ public class BrokerPool extends Observable implements Database {
      * @param sysCollectionUri XmldbURI of the collection to create
      * @param permissions The permissions to set on the created collection
      */
-    private Collection initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
+    private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
         Collection collection = sysBroker.getCollection(sysCollectionUri);
         if (collection == null) {
             TransactionManager transact = getTransactionManager();
@@ -988,8 +990,6 @@ public class BrokerPool extends Observable implements Database {
                 throw new EXistException(msg, e);
             }
         }
-        
-        return collection;
     }
 
     /**
@@ -1004,11 +1004,15 @@ public class BrokerPool extends Observable implements Database {
         //create /db/system
         initialiseSystemCollection(broker, XmldbURI.SYSTEM_COLLECTION_URI, 0770);
         //create /db/etc
-        Collection collection = initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, 0774);
+        initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, 0774);
+    }
+
+    private void initialiseTriggersForSystemCollections(DBBroker broker) throws EXistException {
+        Collection collection = broker.getCollection(XmldbURI.ETC_COLLECTION_URI);
 
         //initialize configurations watcher trigger
         if (collection != null) {
-        	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+        	CollectionConfigurationManager manager = getConfigurationManager();
         	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
         	try {
 				collConf.registerTrigger(broker, 
