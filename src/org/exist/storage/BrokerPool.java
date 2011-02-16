@@ -961,25 +961,23 @@ public class BrokerPool extends Observable implements Database {
     }*/
 
      /**
-     * Initialise system collections, if it doesnt exist yet
+     * Initialise system collections, if it doesn't exist yet
      *
      * @param sysBroker The system broker from before the brokerpool is populated
      * @param sysCollectionUri XmldbURI of the collection to create
-     * @param permissions The persmissions to set on the created collection
+     * @param permissions The permissions to set on the created collection
      */
-    private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
-        //create /db/system
-        Collection sysCollection = sysBroker.getCollection(sysCollectionUri);
-        if (sysCollection == null)
-        {
+    private Collection initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
+        Collection collection = sysBroker.getCollection(sysCollectionUri);
+        if (collection == null) {
             TransactionManager transact = getTransactionManager();
             Txn txn = transact.beginTransaction();
             try {
-                sysCollection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
-                if (sysCollection == null)
+                collection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
+                if (collection == null)
                     throw new IOException("Could not create system collection: " + sysCollectionUri);
-                sysCollection.setPermissions(permissions);
-                sysBroker.saveCollection(txn, sysCollection);
+                collection.setPermissions(permissions);
+                sysBroker.saveCollection(txn, collection);
 
                 transact.commit(txn);
             } catch (Exception e) {
@@ -990,19 +988,36 @@ public class BrokerPool extends Observable implements Database {
                 throw new EXistException(msg, e);
             }
         }
+        
+        return collection;
     }
 
     /**
-     * Initialise required system collections, if they dont exist yet
+     * Initialize required system collections, if they don't exist yet
      *
      * @param sysBroker - The system broker from before the brokerpool is populated
      *
      * @throws EXistException If a system collection cannot be created
      */
-    private void initialiseSystemCollections(DBBroker sysBroker) throws EXistException
+    private void initialiseSystemCollections(DBBroker broker) throws EXistException
     {
         //create /db/system
-        initialiseSystemCollection(sysBroker, XmldbURI.SYSTEM_COLLECTION_URI, 0770);
+        initialiseSystemCollection(broker, XmldbURI.SYSTEM_COLLECTION_URI, 0770);
+        //create /db/etc
+        Collection collection = initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, 0774);
+
+        //initialize configurations watcher trigger
+        if (collection != null) {
+        	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+        	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+        	try {
+				collConf.registerTrigger(broker, 
+						"store,update,remove", 
+						"org.exist.config.ConfigurationDocumentTrigger", null);
+			} catch (CollectionConfigurationException e) {
+				//LOG.error("Configuration changers watcher could not the initialized.", e);
+			}
+        }
     }
 
     public long getReservedMem() {
