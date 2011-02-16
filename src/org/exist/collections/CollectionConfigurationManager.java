@@ -60,7 +60,8 @@ import java.util.Map;
 public class CollectionConfigurationManager {
 
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
-	
+
+	@Deprecated //use XmldbURI.CONFIG_COLLECTION, remove after 1.6
     public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
     public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 

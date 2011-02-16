@@ -65,20 +65,37 @@ public class XmldbURI implements Comparable<Object>, Serializable
 
     public static final String    EMBEDDED_SERVER_URI_PREFIX   = XMLDB_URI_PREFIX + DEFAULT_INSTANCE_NAME + "://";
 
-    public final static XmldbURI  ROOT_COLLECTION_URI          = create( DBBroker.ROOT_COLLECTION );
+	/** 'db' collection name */
+	public final static String ROOT_COLLECTION_NAME = "db";
+	/** '/db' collection name */
+	public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
+	/** 'system' collection name */
+	public final static String SYSTEM_COLLECTION_NAME = "system";
+	/** '/db/system' collection name */
+	public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/" + SYSTEM_COLLECTION_NAME;
+	/** 'temp' collection name */
+	public final static String TEMP_COLLECTION_NAME = "temp";
+	/** '/db/system/temp' collection name */
+	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
+	/** '/db/system/config' collection name */
+    public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
 
-    public final static XmldbURI  RELATIVE_ROOT_COLLECTION_URI = create( DBBroker.ROOT_COLLECTION_NAME );
+	public final static XmldbURI  ROOT_COLLECTION_URI          = create( ROOT_COLLECTION );
 
-    public final static XmldbURI  SYSTEM_COLLECTION_URI        = create( DBBroker.SYSTEM_COLLECTION );
+    public final static XmldbURI  RELATIVE_ROOT_COLLECTION_URI = create( ROOT_COLLECTION_NAME );
 
-    public final static XmldbURI  CONFIG_COLLECTION_URI        = create( CollectionConfigurationManager.CONFIG_COLLECTION );
+    public final static XmldbURI  SYSTEM_COLLECTION_URI        = create( SYSTEM_COLLECTION );
+    /** /db/etc */
+    public final static XmldbURI  ETC_COLLECTION_URI           = ROOT_COLLECTION_URI.append("/etc");
+
+    public final static XmldbURI  CONFIG_COLLECTION_URI        = create( CONFIG_COLLECTION );
 
     //TODO : create using resolve()
-    public final static XmldbURI  ROOT_COLLECTION_CONFIG_URI   = create( CollectionConfigurationManager.CONFIG_COLLECTION + "/" + DBBroker.ROOT_COLLECTION_NAME );
+    public final static XmldbURI  ROOT_COLLECTION_CONFIG_URI   = create( CONFIG_COLLECTION + "/" + ROOT_COLLECTION_NAME );
 
-    public final static XmldbURI  METADATA_COLLECTION_URI      = create( DBBroker.SYSTEM_COLLECTION + "/metadata" );
+    public final static XmldbURI  METADATA_COLLECTION_URI      = create( SYSTEM_COLLECTION + "/metadata" );
 
-    public final static XmldbURI  TEMP_COLLECTION_URI          = create( DBBroker.TEMP_COLLECTION );
+    public final static XmldbURI  TEMP_COLLECTION_URI          = create( TEMP_COLLECTION );
 
     public final static XmldbURI  EMPTY_URI                    = createInternal( "" );
 
