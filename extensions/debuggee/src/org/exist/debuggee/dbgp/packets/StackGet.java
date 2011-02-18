@@ -49,6 +49,7 @@ public class StackGet extends Command {
 	
 	public byte[] responseBytes() {
 		StringBuilder response = new StringBuilder();
+		response.append(xml_declaration);
 		response.append("<response " +
 				namespaces +
 				"command=\"stack_get\" transaction_id=\"");

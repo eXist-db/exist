@@ -45,12 +45,13 @@ public class Error extends Command {
 	}
 
 	public byte[] responseBytes() {
-		String responce = "<response " +
-					namespaces +
-					"command=\""+name+"\" " +
-					"transaction_id=\""+transactionID+"\">" +
-				"<error code=\"999\"><message>Unknown error</message></error>" +
-			"</response>";
+		String responce = xml_declaration + 
+		"<response " +
+				namespaces +
+				"command=\""+name+"\" " +
+				"transaction_id=\""+transactionID+"\">" +
+			"<error code=\"999\"><message>Unknown error</message></error>" +
+		"</response>";
 
 		return responce.getBytes();
 	}

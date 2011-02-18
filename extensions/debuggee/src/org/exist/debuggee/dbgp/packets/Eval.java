@@ -63,14 +63,16 @@ public class Eval extends Command {
 		if (exception != null) {
 			response = errorBytes("eval", Errors.ERR_206, exception.getMessage());
     	} else { 
-			String head = "<response " +
+			String head = xml_declaration + 
+				"<response " +
 					namespaces +
 					"command=\"eval\" " +
 					"success=\""+isSuccess()+"\" "+
 					"transaction_id=\""+transactionID+"\">" +
-						"<property>";
-			String tail = "</property>" +
-					"</response>";
+					"<property>";
+			String tail = 
+					"</property>" +
+				"</response>";
 	
 			Base64Encoder enc = new Base64Encoder();
 			enc.translate(result.getBytes());

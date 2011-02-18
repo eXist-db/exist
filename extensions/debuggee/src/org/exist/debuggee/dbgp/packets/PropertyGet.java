@@ -115,6 +115,7 @@ public class PropertyGet extends Command {
 			return errorBytes("property_get");
 		
 		StringBuilder responce = new StringBuilder();
+		responce.append(xml_declaration);
 		responce.append("<response " +
 				namespaces +
 				"command=\"property_get\" transaction_id=\"");

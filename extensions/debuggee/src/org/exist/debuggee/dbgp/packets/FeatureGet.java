@@ -52,14 +52,15 @@ public class FeatureGet extends Command {
 	}
 	
 	public byte[] responseBytes() {
-		String response = "<response " +
+		String response = xml_declaration +
+			"<response " +
 				namespaces +
 				"command=\"feature_get\" " +
 				"feature=\""+name+"\" " +
 				"supported=\""+getSupportedString()+"\" " +
 				"transaction_id=\""+transactionID+"\">" +
 				value +
-				"</response>";
+			"</response>";
 
 		return response.getBytes();
 	}

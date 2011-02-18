@@ -40,6 +40,9 @@ public abstract class Command implements Packet {
     	"xmlns=\"urn:debugger_protocol_v1\" " +
     	"xmlns:xdebug=\"http://xdebug.org/dbgp/xdebug\" ";
     
+    protected final static String xml_declaration = 
+    	"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
+
     protected IoSession session;
 
 	/**
@@ -191,7 +194,7 @@ public abstract class Command implements Packet {
 		if (fileuri.getType().toLowerCase().equals("file"))
 			return "file://"+fileuri.getKey();
 		else
-			return "dbgp:"+fileuri.getType()+"://"+fileuri.getKey();
+			return "dbgp://"+fileuri.getType().toLowerCase()+fileuri.getKey();
 //		return "http://localhost:8080/eXist/admin/admin.xql";
 	}
 }
