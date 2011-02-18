@@ -65,7 +65,8 @@ public class BreakpointGet extends Command {
 
 	public byte[] responseBytes() {
 		if (breakpoint != null) {
-			String responce = "<response " +
+			String responce = xml_declaration +
+			"<response " +
 				namespaces +
 				"command=\"breakpoint_get\" " +
 				"transaction_id=\""+transactionID+"\">" + 

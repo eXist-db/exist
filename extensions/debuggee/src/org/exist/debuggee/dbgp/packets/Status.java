@@ -45,7 +45,8 @@ public class Status extends Command {
 
 	public byte[] responseBytes() {
     	if (command != null) {
-    		String response = "<response " +
+    		String response = xml_declaration + 
+			"<response " +
     			namespaces +
             	"command=\"status\" " +
             	"status=\""+command.getStatus()+"\" " +

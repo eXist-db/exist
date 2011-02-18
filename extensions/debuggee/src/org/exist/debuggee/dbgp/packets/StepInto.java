@@ -42,7 +42,8 @@ public class StepInto extends AbstractCommandContinuation {
 	}
 
 	public synchronized byte[] responseBytes() {
-		String responce = "<response " +
+		String responce = xml_declaration + 
+			"<response " +
 				namespaces +
 				"command=\"step_into\" " +
 				"status=\""+getStatus()+"\" " +

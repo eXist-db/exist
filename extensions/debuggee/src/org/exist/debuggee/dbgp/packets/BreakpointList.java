@@ -52,7 +52,8 @@ public class BreakpointList extends Command {
 
 	public byte[] responseBytes() {
 		if (breakpoints != null) {
-			StringBuilder responce = new StringBuilder(); 
+			StringBuilder responce = new StringBuilder();
+			responce.append(xml_declaration);
 			responce.append("<response " +
 					namespaces +
 					"command=\"breakpoint_list\" transaction_id=\"");

@@ -95,8 +95,8 @@ public class Source extends Command {
     	InputStream is = null;
         try {
         	
-        	if (fileURI.toLowerCase().startsWith("dbgp:database")) {
-        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(16) , "UTF-8" ) );
+        	if (fileURI.toLowerCase().startsWith("dbgp://")) {
+        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 
         		DBBroker broker = getJoint().getContext().getBroker();
     			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
@@ -151,12 +151,14 @@ public class Source extends Command {
     	} else if (response == null) {
     		if (source != null) {
     			try {
-    				String head = "<response " +
-    					namespaces +
-    					"command=\"source\" " +
-                    	"success=\""+getSuccessString()+"\" " +
-                    	"transaction_id=\""+transactionID+"\">";
-    				String tail = "</response>";
+    				String head = xml_declaration + 
+    					"<response " +
+	    					namespaces +
+	    					"command=\"source\" " +
+	                    	"success=\""+getSuccessString()+"\" " +
+	                    	"transaction_id=\""+transactionID+"\">";
+    				String tail = 
+    					"</response>";
 
     				Base64Encoder enc = new Base64Encoder();
     				enc.translate(source);
@@ -200,4 +202,20 @@ public class Source extends Command {
     public void setFileURI(String fileURI) {
     	this.fileURI = fileURI;
     }
+    
+	public String toString() {
+		
+		StringBuilder response = new StringBuilder();
+		response.append("source ");
+
+		if (fileURI != null) {
+			response.append("fileURI = '");
+			response.append(fileURI);
+			response.append("' ");
+		}
+		
+		response.append("["+transactionID+"]");
+
+		return response.toString();
+	}
 }

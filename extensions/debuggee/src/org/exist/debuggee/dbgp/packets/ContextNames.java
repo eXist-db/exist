@@ -53,7 +53,8 @@ public class ContextNames extends Command {
     }
 
 	public byte[] responseBytes() {
-		String response = "<response " +
+		String response = xml_declaration + 
+		"<response " +
 			namespaces +
             "command=\"context_names\" " +
             "transaction_id=\""+transactionID+"\">" +

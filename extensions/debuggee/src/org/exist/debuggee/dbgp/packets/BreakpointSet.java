@@ -101,7 +101,8 @@ public class BreakpointSet extends Command implements Breakpoint {
 
 	public byte[] responseBytes() {
 		if (status == 1) {
-			String responce = "<response " +
+			String responce = xml_declaration + 
+			"<response " +
 				namespaces +
 				"command=\"breakpoint_set\" " +
 				"state=\""+getStateString()+"\" " +

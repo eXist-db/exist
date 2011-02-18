@@ -52,7 +52,8 @@ public class Init extends AbstractCommandContinuation {
 	}
 
 	public byte[] responseBytes() {
-		String init_message = "<init " +
+		String init_message = xml_declaration +
+			"<init " +
 			namespaces +
 			"appid=\"eXist050705\" " + //keep this as memory of creation
 			"idekey=\""+idekey+"\" " +
@@ -61,7 +62,12 @@ public class Init extends AbstractCommandContinuation {
 			//"parent=\"1\" " +
 			"language=\"XQuery\" " +
 			"protocol_version=\"1.0\" " +
-			"fileuri=\""+Command.getFileuri(fileuri)+"\"></init>";
+			"fileuri=\""+Command.getFileuri(fileuri)+"\">" +
+//			"<engine version=\"1.0.1\"><![CDATA[eXist Xdebug]]></engine>" +
+//			"<author><![CDATA[Dmitriy Shabanov]]></author>" +
+//			"<url><![CDATA[http://exist-db.org]]></url>" +
+//			"<copyright><![CDATA[Copyright (c) 2009-2011 by eXist-db]]></copyright>" +
+			"</init>";
 
 		return init_message.getBytes();
 	}

@@ -57,7 +57,8 @@ public class StdErr extends Command {
     }
 
 	public byte[] responseBytes() {
-		String response = "<response " +
+		String response = xml_declaration + 
+			"<response " +
 				namespaces +
 				"command=\"stderr\" " +
 				"success=\"0\" " +
