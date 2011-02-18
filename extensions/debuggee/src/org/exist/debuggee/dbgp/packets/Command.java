@@ -41,7 +41,7 @@ public abstract class Command implements Packet {
     	"xmlns:xdebug=\"http://xdebug.org/dbgp/xdebug\" ";
     
     protected final static String xml_declaration = 
-    	"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
+    	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     protected IoSession session;
 

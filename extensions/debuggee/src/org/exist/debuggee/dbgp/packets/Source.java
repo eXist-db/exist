@@ -156,9 +156,10 @@ public class Source extends Command {
 	    					namespaces +
 	    					"command=\"source\" " +
 	                    	"success=\""+getSuccessString()+"\" " +
-	                    	"transaction_id=\""+transactionID+"\">";
+                			"encoding=\"base64\" " +
+	                    	"transaction_id=\""+transactionID+"\"><![CDATA[";
     				String tail = 
-    					"</response>";
+    					"]]></response>";
 
     				Base64Encoder enc = new Base64Encoder();
     				enc.translate(source);
