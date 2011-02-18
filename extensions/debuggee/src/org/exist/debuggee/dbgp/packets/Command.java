@@ -95,13 +95,14 @@ public abstract class Command implements Packet {
 	}
 
 	public byte[] errorBytes(String commandName, int errorCode, String errorMessage) {
-		String response = "<response " +
+		String response = xml_declaration +
+			"<response " +
 				"command=\""+commandName+"\" " +
 				"transaction_id=\""+transactionID+"\">" +
-					"<error code=\""+String.valueOf(errorCode)+"\">"+
+				"<error code=\""+String.valueOf(errorCode)+"\">"+
 					"<message>"+errorMessage+"</message>"+
-					"</error>"+
-					"</response>";
+				"</error>"+
+			"</response>";
 
 		return response.getBytes();
 	}

@@ -354,11 +354,17 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	}
 
 	public Variable getVariable(String name) {
+		if (name == null) 
+			return null;
+		
 		if (stack.size() == 0)
 			return null;
 			
 		Expression expr = stack.get(0);
 		try {
+			if (name.startsWith("$"))
+				return expr.getContext().resolveVariable(name.substring(1));
+			
 			return expr.getContext().resolveVariable(name);
 		} catch (XPathException e) {
 			return null;
