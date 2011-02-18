@@ -220,4 +220,31 @@ public class PropertyGet extends Command {
 
 		return command.getBytes();
 	}
+	
+	public String toString() {
+		
+		StringBuilder response = new StringBuilder();
+		response.append("property_get ");
+
+		addAsString(response, "stackDepth", stackDepth);
+		addAsString(response, "contextID", contextID);
+		addAsString(response, "nameLong", nameLong);
+		addAsString(response, "maxDataSize", maxDataSize);
+		addAsString(response, "dataPage", dataPage);
+		addAsString(response, "propertyKey", propertyKey);
+		addAsString(response, "propertyAddress", propertyAddress);
+		
+		response.append("["+transactionID+"]");
+
+		return response.toString();
+	}
+	
+	private void addAsString(StringBuilder response, String name, Object value) {
+		if (value != null) {
+			response.append(name);
+			response.append(" = '");
+			response.append(value);
+			response.append("' ");
+		}
+	}
 }
