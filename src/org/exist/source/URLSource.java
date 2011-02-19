@@ -79,7 +79,7 @@ public class URLSource extends AbstractSource {
 	 * @see org.exist.source.Source#getKey()
 	 */
 	public Object getKey() {
-		return url.toString();
+		return url;
 	}
 
 	/* (non-Javadoc)
