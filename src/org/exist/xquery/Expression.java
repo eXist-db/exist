@@ -76,6 +76,11 @@ public interface Expression {
     public final static int NON_STREAMABLE = 512;
 
     /**
+     * Indicates that sequence .
+     */
+    public final static int UNORDERED = 1024;
+
+    /**
      * Indicates that no context id is supplied to an expression.
      */
     public final static int NO_CONTEXT_ID = -1;
