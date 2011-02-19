@@ -22,8 +22,10 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -59,6 +61,13 @@ public class FunUnordered extends Function {
         super(context, signature);
     }
     
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        newContextInfo.addFlag(UNORDERED);
+        super.analyze(newContextInfo);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
