@@ -101,6 +101,11 @@ public class XmldbURI implements Comparable<Object>, Serializable
 
     public static final XmldbURI  EMBEDDED_SERVER_URI          = XmldbURI.create( EMBEDDED_SERVER_URI_PREFIX + EMBEDDED_SERVER_AUTHORITY );
 
+    /** 'xmldb:exist///db' */
+    public static final String LOCAL_DB = EMBEDDED_SERVER_URI_PREFIX + ROOT_COLLECTION;
+    /** 'xmldb:exist///db' XmldbURI */
+    public static final XmldbURI LOCAL_DB_URI = XmldbURI.create( EMBEDDED_SERVER_URI_PREFIX + ROOT_COLLECTION );
+
     //TODO : deprecate when we split at root collection
     public final static String    API_XMLRPC                   = "xmlrpc";
     public final static String    API_WEBDAV                   = "webdav";
