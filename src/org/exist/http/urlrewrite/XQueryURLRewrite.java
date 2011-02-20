@@ -1229,6 +1229,7 @@ public class XQueryURLRewrite implements Filter {
         protected CachingServletOutputStream sos = null;
         protected PrintWriter writer = null;
         protected int status = HttpServletResponse.SC_OK;
+        protected String contentType = null;
         protected boolean cache;
 
         public CachingResponseWrapper(HttpServletResponse servletResponse, boolean cache) {
@@ -1264,7 +1265,20 @@ public class XQueryURLRewrite implements Filter {
             return sos != null ? sos.getData() : null;
         }
 
-        public int getStatus() {
+        @Override
+		public void setContentType(String type) {
+        	if (cache)
+        		this.contentType = type;
+        	else
+        		super.setContentType(type);
+		}
+        
+		@Override
+		public String getContentType() {
+			return contentType != null ? contentType : super.getContentType();
+		}
+
+		public int getStatus() {
             return status;
         }
         
