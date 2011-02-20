@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -142,6 +143,7 @@ public class DocTest {
         }
     }
 
+    @Ignore
     @Test
     public void testURLRewriter() throws XPathException, HttpException, IOException {
 
