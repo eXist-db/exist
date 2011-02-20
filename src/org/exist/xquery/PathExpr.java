@@ -58,6 +58,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected boolean inPredicate = false;
 
+    protected boolean unordered = false;
+
     protected Expression parent;
 
     public PathExpr(XQueryContext context) {

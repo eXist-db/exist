@@ -77,6 +77,7 @@ public class FunSubSequence extends Function {
         checkArguments();
         // call analyze for each argument
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
     	contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
 
@@ -134,10 +135,13 @@ public class FunSubSequence extends Function {
             	--start;
                         
             Sequence tmp;
-            if (seq instanceof NodeSet)
+            if (seq instanceof NodeSet) {
                 tmp = new ExtArrayNodeSet();
-            else
+                ((ExtArrayNodeSet)tmp).keepUnOrdered(unordered);
+            } else {
                 tmp = new ValueSequence();
+                ((ValueSequence)tmp).keepUnOrdered(unordered);
+            }
             
             Item item;
             SequenceIterator iterator = seq.iterate();
