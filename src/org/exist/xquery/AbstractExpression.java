@@ -39,6 +39,12 @@ public abstract class AbstractExpression implements Expression {
      */
     protected int contextId = Expression.NO_CONTEXT_ID;
 
+    /**
+     * The purpose of ordered and unordered flag is to set the ordering mode in 
+     * the static context to ordered or unordered for a certain region in a query. 
+     */
+    protected boolean unordered = false;
+
     public AbstractExpression(XQueryContext context) {
         this.context = context;
         this.expressionId = context.nextExpressionId();
