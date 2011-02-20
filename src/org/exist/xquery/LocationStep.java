@@ -212,6 +212,7 @@ public class LocationStep extends Step {
 				&& (pred.getExecutionMode() != Predicate.NODE || !contextSequence
 						.isPersistentSet())) {
 			result = new ValueSequence();
+			((ValueSequence)result).keepUnOrdered(unordered);
 			if (contextSequence.isPersistentSet()) {
 				NodeSet contextSet = contextSequence.toNodeSet();
 				outerSequence = contextSet.getParents(-1);
@@ -263,6 +264,8 @@ public class LocationStep extends Step {
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		this.parent = contextInfo.getParent();
+
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
 		parentDeps = parent.getDependencies();
 		if ((contextInfo.getFlags() & IN_UPDATE) > 0)
