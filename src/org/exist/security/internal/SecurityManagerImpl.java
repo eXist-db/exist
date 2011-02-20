@@ -98,7 +98,10 @@ public class SecurityManagerImpl implements SecurityManager {
 	@ConfigurationFieldAsAttribute("version")
 	private String version = "2.0";
 
-//	@ConfigurationField("enableXACML")
+    @ConfigurationFieldAsElement("Authentication-Entry-Point")
+    public final static String authenticationEntryPoint = "/authentication/login";
+    
+	//@ConfigurationField("enableXACML")
 	private Boolean enableXACML = false;
 
 	private ExistPDP pdp;
@@ -752,5 +755,10 @@ public class SecurityManagerImpl implements SecurityManager {
 			}
 			
 		}
+	}
+
+	@Override
+	public String getAuthenticationEntryPoint() {
+		return authenticationEntryPoint;
 	}
 }
