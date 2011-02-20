@@ -48,6 +48,14 @@ public interface Sequence {
 	public final static Sequence EMPTY_SEQUENCE = new EmptySequence();
 	
 	/**
+	 * The purpose of ordered and unordered flag is to set the ordering mode 
+	 * in the static context to ordered or unordered for a certain region in a query. 
+	 * 
+	 * @param flag
+	 */
+//	public void keepUnOrdered(boolean flag);
+	
+	/**
 	 * Add an item to the current sequence. An {@link XPathException} may be thrown
 	 * if the item's type is incompatible with this type of sequence (e.g. if the sequence
 	 * is a node set).

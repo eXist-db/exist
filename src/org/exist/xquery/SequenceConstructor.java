@@ -35,8 +35,6 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class SequenceConstructor extends PathExpr {
 	
-    protected boolean unordered = false;
-
 	/**
 	 * @param context
 	 */

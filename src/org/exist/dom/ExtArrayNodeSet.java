@@ -77,6 +77,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
     private boolean isSorted = false;
 
+    private boolean keepUnOrdered = false;
+    
     private boolean hasOne = false;
 
     protected int lastDoc = -1;
@@ -127,6 +129,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         Arrays.fill(documentIds, 0);
     }
 
+    public void keepUnOrdered(boolean flag) {
+    	keepUnOrdered = flag;
+    }
+    
     /**
      * The method <code>getPart</code>
      *
@@ -580,7 +586,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param mergeContexts a <code>boolean</code> value
      */
     public void sort(boolean mergeContexts) {
-        if (isSorted)
+        if (isSorted || keepUnOrdered)
             return;
 
         if (hasOne) {
