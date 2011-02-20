@@ -35,6 +35,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class SequenceConstructor extends PathExpr {
 	
+    protected boolean unordered = false;
+
 	/**
 	 * @param context
 	 */
@@ -45,6 +47,7 @@ public class SequenceConstructor extends PathExpr {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
 
         int staticType = Type.ANY_TYPE;
@@ -75,6 +78,7 @@ public class SequenceConstructor extends PathExpr {
         }
         
         ValueSequence result = new ValueSequence();
+        result.keepUnOrdered(unordered);
         for(Expression step : steps) {
             context.pushDocumentContext();
             try {

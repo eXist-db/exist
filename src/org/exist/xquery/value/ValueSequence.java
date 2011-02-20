@@ -46,10 +46,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
+ * 
  * @author wolf
  */
 public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
@@ -76,6 +76,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private boolean enforceOrder = false;
     
+    private boolean keepUnOrdered = false;
+
     private Variable holderVar = null;
 
     private int state = 0;
@@ -103,6 +105,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		values = new Item[otherSequence.getItemCount()];
 		addAll(otherSequence);
         this.enforceOrder = ordered;
+    }
+    
+    public void keepUnOrdered(boolean flag) {
+    	keepUnOrdered = flag;
     }
 	
 	public void clear() {
@@ -344,6 +350,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public void sortInDocumentOrder() {
         if (size == UNSET_SIZE)
             return;
+        if (keepUnOrdered) {
+            removeDuplicateNodes();
+        	return;
+        }
         if (!enforceOrder || isOrdered)
             return;
         inMemNodeSet = inMemNodeSet || isInMemorySet();
