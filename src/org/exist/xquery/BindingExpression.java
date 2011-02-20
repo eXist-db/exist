@@ -141,8 +141,9 @@ public abstract class BindingExpression extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	analyze(contextInfo, orderSpecs, groupSpecs); 
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
+    	analyze(contextInfo, orderSpecs, groupSpecs); 
     }
     
 

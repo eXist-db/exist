@@ -253,8 +253,10 @@ public class ForExpr extends BindingExpression {
 			if(resultSequence == null) {
 				if(orderSpecs != null && !fastOrderBy)
 					resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
-				else
+				else {
 					resultSequence = new ValueSequence();
+					((ValueSequence)resultSequence).keepUnOrdered(unordered);
+				}
 			}
 			
 			Sequence val = null;
