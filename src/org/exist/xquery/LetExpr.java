@@ -201,8 +201,10 @@ public class LetExpr extends BindingExpression {
 
                 if(groupedSequence==null){
                     if(returnExpr instanceof BindingExpression) {
-                      if (resultSequence == null)
+                      if (resultSequence == null) {
                           resultSequence = new ValueSequence();
+                          ((ValueSequence)resultSequence).keepUnOrdered(unordered);
+                      }
                       ((BindingExpression)returnExpr).eval(null, null, resultSequence,null);
                     } else {
                         in = returnExpr.eval(null);
@@ -218,8 +220,10 @@ public class LetExpr extends BindingExpression {
                     Else, add item to groupedSequence and don't evaluate here !
                     */
                     if(returnExpr instanceof BindingExpression) {
-                        if (resultSequence == null)
+                        if (resultSequence == null) {
                             resultSequence = new ValueSequence();
+        					((ValueSequence)resultSequence).keepUnOrdered(unordered);
+                        }
                         ((BindingExpression)returnExpr).eval(null, null, resultSequence,groupedSequence);
                     }
                     else{
