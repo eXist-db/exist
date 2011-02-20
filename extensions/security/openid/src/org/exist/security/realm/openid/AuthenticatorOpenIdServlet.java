@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2010 The eXist Project
+ *  Copyright (C) 2009-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -61,6 +61,8 @@ import org.openid4java.message.sreg.SRegResponse;
 import org.openid4java.util.*;
 
 /**
+ * OpenId authenticator servlet.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
@@ -115,10 +117,10 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			if (identifier != null) {
 				this.authRequest(identifier, req, resp);
 			} else {
-
-//				this.getServletContext().getRequestDispatcher("/openid/login.xql")
-//						.forward(req, resp);
-				resp.sendRedirect("openid/login.xql");
+				//this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
+				resp.sendRedirect(
+					OpenIDRealm.instance.getSecurityManager().getAuthenticationEntryPoint()
+				);
 			}
 		}
 	}
@@ -127,17 +129,17 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			throws ServletException, IOException {
 		Account principal = this.verifyResponse(req);
 		
-		System.out.println(principal);
+		//System.out.println(principal);
         
 		String returnURL = req.getParameter("exist_return");
 
         if (principal == null) {
-//			this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
+			//this.getServletContext().getRequestDispatcher("/openid/login.xql").forward(req, resp);
 			resp.sendRedirect(returnURL);
 		} else {
 	        HttpSession session = req.getSession(true);
 
-//			((XQueryURLRewrite.RequestWrapper)req).setUserPrincipal(principal);
+			//((XQueryURLRewrite.RequestWrapper)req).setUserPrincipal(principal);
 
 			Subject subject = new Subject();
 			

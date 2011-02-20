@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -23,7 +23,6 @@ package org.exist.security.realm.openid;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
@@ -38,14 +37,14 @@ import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
 
 /**
+ * OpenID realm.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 @ConfigurationClass("realm") //TODO: id = OpenID
 public class OpenIDRealm extends AbstractRealm {
 
-    private final static Logger LOG = Logger.getLogger(OpenIDRealm.class);
-    
     public static OpenIDRealm instance = null;
     
     @ConfigurationFieldAsAttribute("id")
@@ -53,7 +52,7 @@ public class OpenIDRealm extends AbstractRealm {
 
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
-
+    
     public OpenIDRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
 		
@@ -97,5 +96,4 @@ public class OpenIDRealm extends AbstractRealm {
 	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
 		return false;
 	}
-
 }
