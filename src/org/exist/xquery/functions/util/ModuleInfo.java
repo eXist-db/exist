@@ -27,8 +27,11 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.source.Source;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
@@ -41,6 +44,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
 
 /**
  * @author wolf
@@ -104,6 +108,31 @@ public class ModuleInfo extends BasicFunction {
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"));
 	
+	public final static FunctionSignature moduleInfoSig =
+		new FunctionSignature(
+			new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns an XML fragment providing additional information about the module identified by the " +
+			"namespace URI.",
+			null,
+			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
+					"the description of the active function module identified by the namespace URI"));
+	
+	public final static FunctionSignature moduleInfoWithURISig =
+		new FunctionSignature(
+			new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Returns an XML fragment providing additional information about the module identified by the " +
+			"namespace URI.",
+			new SequenceType[] { NAMESPACE_URI_PARAMETER },
+			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
+					"the description of the active function module identified by the namespace URI"));
+	
+	private static final QName MODULE_QNAME = new QName("module");
+	private static final QName MODULE_URI_ATTR = new QName("uri");
+	private static final QName MODULE_PREFIX_ATTR = new QName("prefix");
+	private static final QName MODULE_SOURCE_ATTR = new QName("source");
+	private static final QName MODULE_DESC_QNAME = new QName("description");
+	private static final QName MODULES_QNAME = new QName("modules");
+	
 	/**
 	 * @param context
 	 * @param signature
@@ -159,6 +188,27 @@ public class ModuleInfo extends BasicFunction {
 			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
 			moduleMap.remove(namespace);
 			return Sequence.EMPTY_SEQUENCE;
+		} else if ("get-module-info".equals(getSignature().getName().getLocalName())) {
+			context.pushDocumentContext();
+			
+			try {
+				MemTreeBuilder builder = context.getDocumentBuilder();
+				builder.startElement(MODULES_QNAME, null);
+				
+				if (getArgumentCount() == 1) {
+					Module module = context.getModule(args[0].getStringValue());
+					if (module != null)
+						outputModule(builder, module);
+				} else {
+					for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
+						Module module = i.next();
+						outputModule(builder, module);
+					}
+				}
+				return builder.getDocument().getNode(1);
+			} finally {
+				context.popDocumentContext();
+			}
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
 			for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
@@ -167,6 +217,23 @@ public class ModuleInfo extends BasicFunction {
 			}
 			return resultSeq;
 		}
+	}
+
+	private void outputModule(MemTreeBuilder builder, Module module) {
+		builder.startElement(MODULE_QNAME, null);
+		
+		builder.addAttribute(MODULE_URI_ATTR, module.getNamespaceURI());
+		builder.addAttribute(MODULE_PREFIX_ATTR, module.getDefaultPrefix());
+		if (!module.isInternalModule()) {
+			Source source = ((ExternalModule)module).getSource();
+			if (source != null)
+				builder.addAttribute(MODULE_SOURCE_ATTR, source.getKey().toString());
+		}
+		builder.startElement(MODULE_DESC_QNAME, null);
+		builder.characters(module.getDescription());
+		builder.endElement(); // <description>
+		
+		builder.endElement(); // <module>
 	}
 
 }
