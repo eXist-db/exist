@@ -503,6 +503,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getAttributes(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectAttributes(test, nodes);
@@ -513,6 +514,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getDescendantAttributes(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectDescendantAttributes(test, nodes);
@@ -523,6 +525,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getChildren(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectChildren(test, nodes);
@@ -533,6 +536,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getChildrenForParent(NodeImpl parent) {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             if (node.getNodeId().isChildOf(parent.getNodeId()))
@@ -544,6 +548,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectDescendants(includeSelf, test, nodes);
@@ -554,6 +559,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getAncestors(boolean includeSelf, NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectAncestors(includeSelf, test, nodes);
@@ -564,6 +570,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getParents(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             NodeImpl parent = (NodeImpl) node.selectParentNode();
@@ -576,6 +583,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getSelf(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
@@ -588,6 +596,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getPrecedingSiblings(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectPrecedingSiblings(test, nodes);
@@ -598,6 +607,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getPreceding(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectPreceding(test, nodes, position);
@@ -608,6 +618,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getFollowingSiblings(NodeTest test) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectFollowingSiblings(test, nodes);
@@ -618,6 +629,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence getFollowing(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             node.selectFollowing(test, nodes, position);
@@ -628,6 +640,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence selectDescendants(MemoryNodeSet descendants) {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             for (int j = 0; j < descendants.size(); j++) {
@@ -642,6 +655,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public Sequence selectChildren(MemoryNodeSet children) {
         sortInDocumentOrder();
         ValueSequence nodes = new ValueSequence(true);
+        nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
             NodeImpl node = (NodeImpl) values[i];
             for (int j = 0; j < children.size(); j++) {
