@@ -137,6 +137,10 @@ public class XPathException extends Exception {
         return column;
     }
 
+    public ErrorCode getCode() {
+    	return errorCode;
+    }
+    
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if(callStack == null) {
             callStack = new ArrayList<FunctionStackElement>();
