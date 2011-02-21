@@ -486,6 +486,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         ctx.declaredFunctions        = new TreeMap<FunctionId, UserDefinedFunction>( this.declaredFunctions );
         ctx.globalVariables          = new TreeMap<QName, Variable>( this.globalVariables );
+        ctx.attributes               = new HashMap<String, Object>( this.attributes );
 
         // make imported modules available in the new context
         ctx.modules                  = new HashMap<String, Module>();
@@ -1429,6 +1430,8 @@ public class XQueryContext implements BinaryValueManager, Context
         //may generate different values for the vars based on the
         //content of the db
         XQueryContextVars.clear();
+        
+        attributes.clear();
 
         clearUpdateListeners();
 
