@@ -258,7 +258,7 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
 	return
         <tr>
             <td><input type="checkbox" name="resource" value="{$colName}/{$child}"/></td>
-            <td><a target="_new" href="{$restUri}/{xdb:encode-uri($colName)}/{browse:get-child-resource-name( $child )}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
+            <td><a target="_new" href="{$restUri}/{xdb:encode-uri(concat($colName, '/', $child))}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($colName, $child))}</td>
             <td>{xdb:get-owner($colName, $child)}</td>
             <td>{xdb:get-group($colName, $child)}</td>
@@ -266,7 +266,7 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
             <td>{date:format-dateTime(xdb:last-modified($colName, $child))}</td>
             <td>{fn:ceiling(xdb:size($colName, $child) div 1024)}</td>
 			<td>
-				<a href="?panel=revisions&amp;resource={$colName}/{$child}">
+				<a href="?panel=revisions&amp;resource={xdb:encode-uri(concat($colName, '/', $child))}">
 				{browse:last-revision($colName, $child)//v:properties/v:revision/string()}
 				</a>
 			</td>

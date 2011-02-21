@@ -1,5 +1,7 @@
 module namespace rev="http://exist-db.org/xquery/admin-interface/revisions";
 
+declare namespace xdb="http://exist-db.org/xquery/xmldb";
+
 import module namespace v="http://exist-db.org/versioning";
 import module namespace date="http://exist-db.org/xquery/admin-interface/date" at "dates.xqm";
 
@@ -8,7 +10,7 @@ declare function rev:main() as element()
 	let $resource := request:get-parameter("resource", ())
 	return
 		<div class="panel">
-			<div class="panel-head">Revisions for resource {$resource}</div>
+			<div class="panel-head">Revisions for resource {xdb:decode-uri(xs:anyURI($resource))}</div>
 			<table cellspacing="0" cellpadding="5" class="browse revisions">
 				<tr>
 					<th>Revision</th>
@@ -32,19 +34,19 @@ declare function rev:display-revisions($resource as xs:string) {
 			<td>{$version/v:properties/v:user/text()}</td>
 			<td>
 				<a target="_new" 
-					href="versions.xql?action=restore&amp;resource={$resource}&amp;rev={$rev}">
+					href="versions.xql?action=restore&amp;resource={xdb:encode-uri(xs:anyURI($resource))}&amp;rev={$rev}">
 					Restore
 				</a>
 			</td>
 			<td>
-				<a href="versions.xql?action=diff&amp;resource={$resource}&amp;rev={$rev}" 
-				    onclick="return displayDiff('R{$rev}','{$resource}','{$rev}')">
+				<a href="versions.xql?action=diff&amp;resource={xdb:encode-uri(xs:anyURI($resource))}&amp;rev={$rev}" 
+				    onclick="return displayDiff('R{$rev}','{xdb:encode-uri(xs:anyURI($resource))}','{$rev}')">
 				Diff
 				</a>
 			</td>
 			<td>
 			    <a target="_new"
-			        href="versions.xql?action=annotate&amp;resource={$resource}&amp;rev={$rev}">
+			        href="versions.xql?action=annotate&amp;resource={xdb:encode-uri(xs:anyURI($resource))}&amp;rev={$rev}">
 			    Annotate
 			    </a>
 		    </td>
