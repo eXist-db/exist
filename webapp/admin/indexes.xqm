@@ -152,11 +152,22 @@ declare function indexes:show-index-keys() {
         else if ($indexes:index eq 'range-index') then
             if (util:index-type($indexes:node-set) eq 'xs:string') then 
                 util:index-keys($indexes:node-set, $indexes:start-value, $indexes:callback, $indexes:max-number-returned)
-            else (: if (util:index-type($indexes:node-set) eq 'xs:integer') then :)
-                let $start-value := if ($indexes:start-value castable as xs:integer) then xs:integer($indexes:start-value) else 0
-                return
-                    util:index-keys($indexes:node-set, $start-value, $indexes:callback, $indexes:max-number-returned)
-            (: TODO: add more conditionals for xs:double etc.?  or is there a better solution:)
+            else 
+                let $start-value := 
+                    if (util:index-type($indexes:node-set) eq 'xs:double') then 
+                        if ($indexes:start-value castable as xs:double) then xs:double($indexes:start-value) else xs:double(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:float') then 
+                        if ($indexes:start-value castable as xs:float) then xs:float($indexes:start-value) else xs:float(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:boolean') then 
+                        if ($indexes:start-value castable as xs:boolean) then xs:boolean($indexes:start-value) else xs:boolean(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:dateTime') then 
+                        if ($indexes:start-value castable as xs:dateTime) then xs:dateTime($indexes:start-value) else xs:dateTime('0001-01-01T00:00:00-00:00')                  
+                    else if (util:index-type($indexes:node-set) eq 'xs:date') then 
+                        if ($indexes:start-value castable as xs:date) then xs:date($indexes:start-value) else xs:date('0001-01-01')                  
+                    else 
+                        if ($indexes:start-value castable as xs:integer) then xs:integer($indexes:start-value) 
+                    else 0
+                return util:index-keys($indexes:node-set, $start-value, $indexes:callback, $indexes:max-number-returned)
         (: all other indexes need to specify the index in the 5th parameter of util:index-keys() :)
         else
             if ($indexes:show-keys-by eq 'node') then
@@ -495,7 +506,7 @@ declare function indexes:get-nodeset-from-match($collection as xs:string, $match
                         indexes:get-namespace-decaration-from-node-name($node-name, $collection)
                 , ' ')
             ,
-            'collection("', $collection, '")', $match, if (contains($match, '@')) then '/string()' else ()
+            'collection("', $collection, '")', $match, if (contains($match, '@')) then () else ()
         )
     return
         util:eval($nodeset-expression) 
