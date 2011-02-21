@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2011 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -34,12 +34,14 @@ public class VariableImpl implements Variable {
 	
 	private String name;
 	private String value;
+	private String type;
 	
 	private NodeList complex_value = null;
 	
-	public VariableImpl(String name, String value) {
+	public VariableImpl(String name, String value, String type) {
 		this.name = name;
 		this.value = value;
+		this.type = type;
 	}
 
 	public VariableImpl(Node node) {
@@ -50,6 +52,8 @@ public class VariableImpl implements Variable {
 			
 			if (attr.getNodeName().equals("name")) {
 				name = attr.getNodeValue();
+			} else if (attr.getNodeName().equals("type")) {
+				type = attr.getNodeValue();
 			}
 		}
 		
@@ -77,6 +81,14 @@ public class VariableImpl implements Variable {
 		//TODO: xml?
 		return complex_value.toString();
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.debugger.model.Variable#getType()
+	 */
+	public String getType() {
+		return type;
+	}
+
 
 	public String toString() {
 		return ""+getName()+" = "+getValue();
