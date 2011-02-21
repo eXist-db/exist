@@ -266,7 +266,7 @@ declare function browse:display-child-resources($colName as xs:string) as elemen
             <td>{date:format-dateTime(xdb:last-modified($colName, $child))}</td>
             <td>{fn:ceiling(xdb:size($colName, $child) div 1024)}</td>
 			<td>
-				<a href="?panel=revisions&amp;resource={$colName}/{$child}">
+				<a href="?panel=revisions&amp;resource={xdb:encode-uri(concat($colName, '/', $child))}">
 				{browse:last-revision($colName, $child)//v:properties/v:revision/string()}
 				</a>
 			</td>
