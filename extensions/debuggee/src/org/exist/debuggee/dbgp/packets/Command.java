@@ -21,6 +21,9 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
+import java.io.File;
+import java.net.MalformedURLException;
+
 import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.DebuggeeJoint;
@@ -192,9 +195,13 @@ public abstract class Command implements Packet {
 
 	public static String getFileuri(XACMLSource fileuri) {
 //		System.out.println("getFileuri dbgp:"+fileuri.getType()+"://"+fileuri.getKey());
-		if (fileuri.getType().toLowerCase().equals("file"))
-			return "file://"+fileuri.getKey();
-		else
+		if (fileuri.getType().toLowerCase().equals("file")) {
+			try {
+				return new File(fileuri.getKey()).toURI().toURL().toString();
+			} catch (MalformedURLException e) {
+				return "dbgp://"+fileuri.getType().toLowerCase()+"/"+fileuri.getKey();
+			}
+		} else
 			return "dbgp://"+fileuri.getType().toLowerCase()+fileuri.getKey();
 //		return "http://localhost:8080/eXist/admin/admin.xql";
 	}
