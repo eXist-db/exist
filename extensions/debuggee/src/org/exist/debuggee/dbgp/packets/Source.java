@@ -36,6 +36,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -96,18 +98,23 @@ public class Source extends Command {
         try {
         	
         	if (fileURI.toLowerCase().startsWith("dbgp://")) {
-        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
-
-        		DBBroker broker = getJoint().getContext().getBroker();
-    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-
-    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-    				is = broker.getBinaryResource((BinaryDocument) resource);
-    			} else {
-    				//TODO: xml source???
-    				return;
-    			}
-
+        		String uri = fileURI.substring(7);
+        		if (uri.toLowerCase().startsWith("file/")) {
+        			uri = fileURI.substring(5);
+        			is = new FileInputStream(new File(uri));
+        		} else {
+	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
+	
+	        		DBBroker broker = getJoint().getContext().getBroker();
+	    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+	
+	    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+	    				is = broker.getBinaryResource((BinaryDocument) resource);
+	    			} else {
+	    				//TODO: xml source???
+	    				return;
+	    			}
+        		}
         	} else {
         		URL url = new URL(fileURI);
         		URLConnection conn = url.openConnection();
