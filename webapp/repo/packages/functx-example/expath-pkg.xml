@@ -12,7 +12,7 @@
    </xslt>
    <xquery>
       <namespace>http://www.functx.com</namespace>
-      <file>functx.xq</file>
+      <file>functx.xql</file>
    </xquery>
 
 </package>
