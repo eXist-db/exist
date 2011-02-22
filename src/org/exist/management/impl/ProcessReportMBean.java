@@ -30,4 +30,6 @@ public interface ProcessReportMBean {
     public TabularData getRunningJobs();
 
     public TabularData getRunningQueries();
+
+    public TabularData getRecentQueryHistory();
 }
