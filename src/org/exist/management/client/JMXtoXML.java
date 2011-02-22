@@ -75,9 +75,14 @@ public class JMXtoXML {
 	private final static Logger LOG = Logger.getLogger(JMXtoXML.class);
 	
 	private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<String, ObjectName[]>();
+
 	static {
 		try {
+                        final ObjectName onMemory = new ObjectName("java.lang:type=Memory");
+                        final ObjectName onRuntime = new ObjectName("java.lang:type=Runtime");
+
 			CATEGORIES.put("memory", new ObjectName[] { new ObjectName("java.lang:type=Memory") });
+                        CATEGORIES.put("runtime", new ObjectName[] { new ObjectName("java.lang:type=Runtime") });
 			CATEGORIES.put("instances", new ObjectName[] { new ObjectName("org.exist.management.*:type=Database") });
 			CATEGORIES.put("disk", new ObjectName[] { new ObjectName("org.exist.management.*:type=DiskUsage") });
 			CATEGORIES.put("system", new ObjectName[] { new ObjectName("org.exist.management:type=SystemInfo") });
@@ -89,7 +94,7 @@ public class JMXtoXML {
 			CATEGORIES.put("locking", new ObjectName[] { new ObjectName("org.exist.management:type=LockManager") });
 			CATEGORIES.put("processes", new ObjectName[] { new ObjectName("org.exist.management.*:type=ProcessReport") });
 			CATEGORIES.put("sanity", new ObjectName[] { new ObjectName("org.exist.management.*.tasks:type=SanityReport") });
-			CATEGORIES.put("all", new ObjectName[] { new ObjectName("org.exist.*:*") });
+			CATEGORIES.put("all", new ObjectName[] { new ObjectName("org.exist.*:*"), onMemory, onRuntime });
 		} catch (MalformedObjectNameException e) {
 			LOG.warn("Error in initialization: " + e.getMessage(), e);
 		} catch (NullPointerException e) {
