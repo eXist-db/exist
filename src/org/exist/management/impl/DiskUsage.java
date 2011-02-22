@@ -74,7 +74,7 @@ public class DiskUsage implements DiskUsageMBean {
         return getSpace(dir, "getTotalSpace");
     }
 
-    public long getDataDirectoryFreeDiskSpace() {
+    public long getDataDirectoryFreeSpace() {
         File dir = new File(getDataDirectory());
         return getSpace(dir, "getUsableSpace");
     }
