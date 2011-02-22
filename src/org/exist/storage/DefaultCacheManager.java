@@ -156,6 +156,7 @@ public class DefaultCacheManager implements CacheManager
         registerMBean();
     }
 
+    @Override
     public void registerCache( Cache cache )
     {
         currentPageCount += cache.getBuffers();
@@ -165,6 +166,7 @@ public class DefaultCacheManager implements CacheManager
     }
 
 
+    @Override
     public void deregisterCache( Cache cache )
     {
         Cache next;
@@ -181,6 +183,7 @@ public class DefaultCacheManager implements CacheManager
     }
 
 
+    @Override
     public int requestMem( Cache cache )
     {
         if( currentPageCount >= totalPageCount ) {
@@ -242,6 +245,7 @@ public class DefaultCacheManager implements CacheManager
      *
      * <p>If shrinked, the cache will be reset to the default initial cache size.</p>
      */
+    @Override
     public void checkCaches()
     {
         int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
@@ -272,6 +276,7 @@ public class DefaultCacheManager implements CacheManager
     }
 
 
+    @Override
     public void checkDistribution()
     {
         if( lastRequest == null ) {
@@ -300,29 +305,37 @@ public class DefaultCacheManager implements CacheManager
     }
 
 
+    /**
+     * @return Maximum size of all Caches in pages
+     */
+    @Override
     public long getMaxTotal()
     {
         return( totalPageCount );
     }
 
-
+    /**
+     * @return Current size of all Caches in pages
+     */
+    @Override
     public long getCurrentSize()
     {
         return( currentPageCount );
     }
 
-
-    public long getSizeInBytes()
-    {
-        return( currentPageCount * pageSize );
-    }
-
-
+    /**
+     * @return Maximum size of a single Cache in bytes
+     */
+    @Override
     public long getMaxSingle()
     {
         return( maxCacheSize );
     }
 
+    public long getSizeInBytes()
+    {
+        return( currentPageCount * pageSize );
+    }
 
     public long getTotalMem()
     {
