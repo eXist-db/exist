@@ -51,9 +51,9 @@ public class RandomFunction extends BasicFunction
         
         new FunctionSignature(
                 new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                "Returns a random number between 0 and $max",
+                "Returns a random number between 0 (inclusive) and $max (exclusive), that is, a number greater than or equal to 0 but less than $max",
                 new SequenceType[] {
-    					new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "The maximum value for the random number.")
+    					new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "A number to be used as the exclusive maximum value for the random number; the return value will be less than this number.")
     			},
                 new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "a random number between 0 and $max"))
     };
