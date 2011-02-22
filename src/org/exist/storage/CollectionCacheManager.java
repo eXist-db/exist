@@ -43,31 +43,42 @@ public class CollectionCacheManager implements CacheManager {
 
     public CollectionCacheManager(BrokerPool pool, CollectionCache cache) {
         int cacheSize;
-        if ((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0)
+        
+        if((cacheSize = pool.getConfiguration().getInteger(PROPERTY_CACHE_SIZE)) < 0){
             cacheSize = DEFAULT_CACHE_SIZE;
+        }
+
         this.maxCacheSize = cacheSize * 1024 * 1024;
-        if (LOG.isDebugEnabled())
+        
+        if(LOG.isDebugEnabled()){
             LOG.debug("collection collectionCache will be using " + this.maxCacheSize + " bytes max.");
+        }
+
         this.collectionCache = cache;
         this.collectionCache.setCacheManager(this);
+
         registerMBean(pool.getId());
     }
 
+    @Override
     public void registerCache(Cache cache) {
     }
 
+    @Override
     public void deregisterCache(Cache cache) {
         this.collectionCache = null;
     }
 
+    @Override
     public int requestMem(Cache cache) {
         int realSize = collectionCache.getRealSize();
         if (realSize < maxCacheSize) {
             synchronized (this) {
                 int newCacheSize = (int)(collectionCache.getBuffers() * collectionCache.getGrowthFactor());
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Growing cache " + collectionCache.getFileName() + " (a " + collectionCache.getClass().getName() +
                         ") from " + collectionCache.getBuffers() + " to " + newCacheSize + ". Current memory usage = " + realSize);
+                }
                 collectionCache.resize(newCacheSize);
                 return newCacheSize;
             }
@@ -76,20 +87,34 @@ public class CollectionCacheManager implements CacheManager {
         return -1;
     }
 
+    @Override
     public void checkCaches() {
     }
 
+    @Override
     public void checkDistribution() {
     }
 
+    /**
+     * @return Maximum size of all Caches in bytes
+     */
+    @Override
     public long getMaxTotal() {
         return maxCacheSize;
     }
 
+    /**
+     * @return Maximum size of a single Cache in bytes
+     */
+    @Override
     public long getMaxSingle() {
         return maxCacheSize;
     }
 
+    /**
+     * @return Current size of all Caches in bytes
+     */
+    @Override
     public long getCurrentSize() {
         return collectionCache.getRealSize();
     }
