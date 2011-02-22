@@ -61,15 +61,24 @@ public interface CacheManager {
 
     /**
      * Called from the global minor sync event to check if a smaller
-     * cache wants to be resized. If a huge cache is availabe, the method
+     * cache wants to be resized. If a huge cache is available, the method
      * might decide to shrink this cache by a certain amount to make
      * room for the smaller cache to grow.
      */
     void checkDistribution();
 
+    /**
+     * @return Maximum size of all Caches (unit of measurement is implementation defined)
+     */
     long getMaxTotal();
 
+    /**
+     * @return Maximum size of a single Cache in bytes (unit of measurement is implementation defined)
+     */
     long getMaxSingle();
 
+    /**
+     * @return Current size of all Caches in bytes (unit of measurement is implementation defined)
+     */
     long getCurrentSize();
 }
