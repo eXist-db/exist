@@ -24,6 +24,7 @@ package org.exist.management.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,7 +117,8 @@ public class JMXtoXML {
 	public static final long PING_TIMEOUT = -99;
 
 	
-	private MBeanServerConnection connection;
+	private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
+        private MBeanServerConnection connection;
     private JMXServiceURL url;
     
     private long ping = -1;
@@ -266,30 +268,40 @@ public class JMXtoXML {
 		return (Element) builder.getDocument().getNode(1);
 	}
 	
-	private void queryMBeans(MemTreeBuilder builder, ObjectName query) 
-		throws IOException, InstanceNotFoundException, IntrospectionException, ReflectionException, 
+	private void queryMBeans(MemTreeBuilder builder, ObjectName query)
+		throws IOException, InstanceNotFoundException, IntrospectionException, ReflectionException,
 			SAXException, AttributeNotFoundException, MBeanException, MalformedObjectNameException, NullPointerException {
-		
-		Set<ObjectName> beans = connection.queryNames(query, null);
+
+                MBeanServerConnection conn = connection;
+		Set<ObjectName> beans = conn.queryNames(query, null);
+
+                //if the query is not found in the eXist specific MBeans server, then attempt to query the platform for it
+                if(beans.isEmpty()) {
+                    beans = platformConnection.queryNames(query, null);
+                    conn = platformConnection;
+                } //TODO examine JUnit source code as alternative method
+
+
+
 		for (ObjectName name : beans) {
-			MBeanInfo info = connection.getMBeanInfo(name);
-			
+			MBeanInfo info = conn.getMBeanInfo(name);
+
 			String className = info.getClassName();
 			int p = className.lastIndexOf('.');
 			if (p > -1 && p + 1 < className.length())
 				className = className.substring(p + 1);
-			
+
 			QName qname = new QName(className, JMX_NAMESPACE, JMX_PREFIX);
 			builder.startElement(qname, null);
 			builder.addAttribute(new QName("name"), name.toString());
-			
+
 			MBeanAttributeInfo[] beanAttribs = info.getAttributes();
 			for (int i = 0; i < beanAttribs.length; i++) {
 				if (beanAttribs[i].isReadable()) {
 					try {
 						QName attrQName = new QName(beanAttribs[i].getName(), JMX_NAMESPACE, JMX_PREFIX);
-						Object attrib = connection.getAttribute(name, beanAttribs[i].getName());
-						
+						Object attrib = conn.getAttribute(name, beanAttribs[i].getName());
+
 						builder.startElement(attrQName, null);
 						serializeObject(builder, attrib);
 						builder.endElement();
