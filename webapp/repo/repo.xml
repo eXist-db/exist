@@ -272,6 +272,70 @@ drwxr-xr-x         0  23-Aug-2010  19:14:30  myapp/lib/
         After installing this .xar file via the Package Repository admin pane and restarting eXist, you can activate the application. 
         Activating it will copy the <filename class="directory">myapp</filename> directory from the .xar to a collection of the same name inside of the database, <filename class="directory">/db/myapp</filename>.   
         </para>
+            <para>For more complex scenarios, <filename>repo.xml</filename> provides additional
+                features to specify the target collection or run pre-/post-install scripts. The
+                    <filename>mobile-function-doc</filename> package provides an example:</para>
+        
+        <example>
+            <title>Complex example using a post-install script</title>
+            <programlisting>
+<markup><![CDATA[<meta xmlns="http://exist-db.org/xquery/repo">
+  <author>Wolfgang Meier</author>
+  <website>http://exist-db.org</website>
+  <license>GNU-LGPL</license>
+  <copyright>true</copyright>
+  <description>Mobile Function Documentation (based on jQuery Mobile)</description>
+  <type>application</type>
+  <target>/db</target>
+  <permissions user="guest" group="guest" mode="0444"/>
+  <status>stable</status>
+  <finish>post-install.xql</finish>
+</meta>]]></markup></programlisting>
+        </example>
+        
+        <para>The important elements of a <filename>repo.xml</filename> are described below:</para>
+        
+        <variablelist>
+            <varlistentry>
+                <term>target</term>
+                <listitem>
+                    <para>Specifies the collection where the contents of the package will be stored to. Top-level files in the package will end up
+                    in this collection, resources in sub directories will go into sub collections.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>permissions</term>
+                <listitem>
+                    <para>The permissions to use when uploading package contents. All resources and collections will be owned by the specified
+                    user and permissions will be changed to those given in <option>mode</option>. If the user does not exist, the deploy function 
+                    will try to create it, using the password specified in attribute <option>password</option>.</para>
+                    <para>For more control over permissions, use a post-install XQuery script.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>prepare</term>
+                <listitem>
+                    <para>Points to an XQuery script inside the root of the package archive, which will be executed before and package data is 
+                    uploaded to the database. Use this script to create users or upload index configurations.</para>
+                    <para>The file system path to the current package directory and eXist's home directory are passed to the script as external 
+                    variables:</para>
+                    
+                    <synopsis language="xquery">declare variable $home external;
+declare variable $dir external;</synopsis>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>finish</term>
+                <listitem>
+                    <para>Like <sgmltag>prepare</sgmltag>, this element should point to an XQuery script, which will be executed <emphasis>after</emphasis>
+                    all data has been uploaded to the database.</para>
+                    <para>For example, the <filename>mobile-function-doc</filename> package uses a post-install script to parse eXist docs and 
+                        index them.</para>
+                </listitem>
+            </varlistentry>
+            
+        </variablelist>
+        
     </section>
 
      <section>
@@ -344,7 +408,13 @@ repo:remove('functx-1.0')
 </para>
  </section>
 
-    </section>
+<section>
+    <title>repo:deploy( $packageName )</title>
+    
+    <para>Deploy the application package into the database, using the configuration specified in <filename>repo.xml</filename> (see above).</para>
+</section>
+         
+     </section>
 
     <section>
         <title>Public Repository</title>
