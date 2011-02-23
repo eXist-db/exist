@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
+import org.exist.Namespaces;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.SAXAdapter;
@@ -36,6 +37,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
@@ -45,6 +47,8 @@ import org.exist.source.URLSource;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -192,5 +196,34 @@ public class DocUtils {
 			}
 		}	 	  
 		return document;
+	}
+	
+	/**
+	 * Utility function to parse an input stream into an in-memory DOM document.
+	 * 
+	 * @param context
+	 * @param istream
+	 * @return
+	 * @throws XPathException
+	 */
+	public static org.exist.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {
+		// we use eXist's in-memory DOM implementation
+        XMLReader reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+        InputSource src = new InputSource(istream);
+        SAXAdapter adapter = new SAXAdapter(context);
+        reader.setContentHandler(adapter);
+        try {
+			reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+			reader.parse(src);
+		} catch (SAXNotRecognizedException e) {
+			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+		} catch (SAXNotSupportedException e) {
+			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+		} catch (SAXException e) {
+			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+		}
+        return (org.exist.memtree.DocumentImpl) adapter.getDocument();
 	}
 }
