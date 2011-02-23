@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.QName;
@@ -22,7 +21,6 @@ import org.exist.memtree.InMemoryNodeSet;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.repo.ExistRepository;
-import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -31,9 +29,7 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -50,19 +46,15 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.DocUtils;
-import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.FileSystemStorage;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Packages;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class Deploy extends BasicFunction {
@@ -75,7 +67,7 @@ public class Deploy extends BasicFunction {
 			"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
 			"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
 			"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
-			new SequenceType[] { new FunctionParameterSequenceType("pkgAbbrev", Type.STRING, Cardinality.EXACTLY_ONE, "abbreviated package name")},
+			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
 					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."));
 	
@@ -99,7 +91,7 @@ public class Deploy extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		String xarName = args[0].getStringValue();
+		String pkgName = args[0].getStringValue();
 		
 		try {
 			File packageDir = null;
@@ -107,13 +99,13 @@ public class Deploy extends BasicFunction {
 			ExistRepository repo = context.getRepository();
 			for (Packages pp : repo.getParentRepo().listPackages()) {
 				Package pkg = pp.latest();
-				if (pkg.getAbbrev().equals(xarName)) {
+				if (pkg.getName().equals(pkgName)) {
 					FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
 					packageDir = resolver.resolveResourceAsFile(".");
 				}
 			}
             if (packageDir == null)
-            	throw new XPathException(this, "Package " + xarName + " not found");
+            	throw new XPathException(this, "Package " + pkgName + " not found");
 			
 			// find and parse the repo.xml descriptor
 			File repoFile = new File(packageDir, "repo.xml");
