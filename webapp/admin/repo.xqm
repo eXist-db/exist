@@ -76,7 +76,7 @@ return
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
                 }
             </ul>
-                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
+                <span><i>Important: installed XQuery library mappings will not become visible until eXist is restarted.</i></span>
     </div>
 };
 
@@ -107,55 +107,14 @@ declare function repomanager:upload() as element()
 declare function repomanager:deploy() as element()
 {
     let $name := request:get-parameter("name", ())
-     return
-
+    return
         <div class="process">
             <h3>Actions:</h3>
             <ul>
                 <li>deployed application: {$name}</li>
-                {
-                    let $xar := util:binary-doc(concat($repomanager:coll,'/',$name,'.xar'))                
-                    let $application := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data-deploy"), 4), ())
-                    let $repo := $application//repo:meta
-                    (: let $createrootcoll := xmldb:create-collection() :)
-                    return
-                        <ul>
-                        {
-                        for $entry in $application
-                        return
-                         <li>
-                         {if ($entry/type eq 'folder') then
-                            let $p := $entry/path/segment/node()
-                            let $l := $entry/path/segment[last()]/node()
-                            let $p1 := string-join($p,'/')
-                            let $colpath := concat('/db/',$p1)
-                            return
-                                 ('folder created: ',xmldb:create-collection(substring-before($colpath,$l), $l))
-                         else
-                            let $p := $entry/path/segment/node()
-                            let $l := $entry/path/segment[last()]/node()
-                            let $p1 := string-join($p,'/')
-                            let $colpath := concat('/db/',$p1,'/')
-                            return
-                                if ($entry/name eq 'repo.xml' or $entry/name eq 'expath-pkg.xml')then
-                                 ('repo meta file ignored: ', $entry/name)
-                                else if (ends-with($entry/name,'.xml') or contains($entry/name,'.htm')) then
-                                 ('file created: ',
-                                    xmldb:store($colpath, $entry/name/node(), $entry/data/node())
-                                 )
-                                else
-                                 ('file created: ',
-                                    xmldb:store($colpath, $entry/name/node(), util:base64-decode($entry/data/text()))
-                                 )
-
-                        }
-                        </li>
-                        }
-                        </ul>
-                }
+                { repo:deploy($name) }
             </ul>
-                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
-    </div>
+        </div>
 };
 
 declare function repomanager:activate() as element()
@@ -251,7 +210,7 @@ declare function repomanager:main() as element() {
     return
         <div class="panel">
         <h1>Package Repository</h1>
-        <form method="POST" enctype="multipart/form-data">
+        <form action="?panel=repo" method="POST" enctype="multipart/form-data">
         { repomanager:process-action() }
         <table cellspacing="0" cellpadding="5" class="browse">
             <tr>
