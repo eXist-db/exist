@@ -34,13 +34,15 @@
   
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
-
+  
   <!-- 
     ++ Default configuration: main web application is served from the
     ++ webapp directory. 
   -->
   <root pattern="/library" path="xmldb:exist:///db/org/library"/>
 
+  <root pattern="/apps" path="xmldb:exist:///db"/>
+  
   <!-- 
     ++ To redirect requests based on the server name (i.e. www.example.com)
   	++ to a specific collection within the database, comment out the following
