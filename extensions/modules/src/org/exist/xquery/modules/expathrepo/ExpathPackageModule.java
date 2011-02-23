@@ -47,6 +47,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
     private final static FunctionDef[] functions = {
+    	new FunctionDef(Deploy.signature, Deploy.class),
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signature, InstallFunction.class),
         new FunctionDef(RemoveFunction.signature, RemoveFunction.class)
