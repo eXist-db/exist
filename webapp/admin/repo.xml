@@ -1,0 +1,11 @@
+<meta xmlns="http://exist-db.org/xquery/repo">
+  <author>eXist Project</author>
+  <website>http://exist-db.org</website>
+  <license>GNU-LGPL</license>
+  <copyright>true</copyright>
+  <description>eXist Admin Web Application</description>
+  <type>application</type>
+  <target>/db/admin</target>
+  <permissions user="guest" group="guest" mode="0444"/>
+  <status>stable</status>
+</meta>
