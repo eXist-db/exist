@@ -57,7 +57,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.expath.pkg.repo.FileSystemStorage;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Packages;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -72,7 +75,7 @@ public class Deploy extends BasicFunction {
 			"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
 			"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
 			"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
-			new SequenceType[] { new FunctionParameterSequenceType("package", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
+			new SequenceType[] { new FunctionParameterSequenceType("pkgAbbrev", Type.STRING, Cardinality.EXACTLY_ONE, "abbreviated package name")},
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
 					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."));
 	
@@ -99,15 +102,16 @@ public class Deploy extends BasicFunction {
 		String xarName = args[0].getStringValue();
 		
 		try {
-			File existHome = context.getBroker().getConfiguration().getExistHome();
-			File repo_dir = new File(existHome, "webapp/WEB-INF/expathrepo");
 			File packageDir = null;
-            FileSystemStorage storage = new FileSystemStorage(repo_dir);
-            for (String dir: storage.listPackageDirectories()) {
-            	if (dir.equals(xarName)) {
-            		packageDir = new File(repo_dir, dir);
-            	}
-            }
+			
+			ExistRepository repo = context.getRepository();
+			for (Packages pp : repo.getParentRepo().listPackages()) {
+				Package pkg = pp.latest();
+				if (pkg.getAbbrev().equals(xarName)) {
+					FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
+					packageDir = resolver.resolveResourceAsFile(".");
+				}
+			}
             if (packageDir == null)
             	throw new XPathException(this, "Package " + xarName + " not found");
 			
@@ -172,8 +176,6 @@ public class Deploy extends BasicFunction {
 			}
 		} catch (IOException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
-		} catch (PackageException e) {
-			throw new XPathException(this, ErrorCodes.FOER0000, "Caught package exception while deploying expath archive");
 		}
 	}
 

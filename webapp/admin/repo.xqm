@@ -233,6 +233,7 @@ declare function repomanager:main() as element() {
             let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
             let $package := $meta//package:package
             let $pkg-name := $package/string(@name)
+            let $pkg-abbrev := $package/string(@abbrev)
             let $repo := $meta//repo:meta
 
             let $installed := exists($repos[. eq $pkg-name])
@@ -257,7 +258,7 @@ declare function repomanager:main() as element() {
 
                     ( <a href="?panel=repo&amp;action=deactivate&amp;name={$pkg-name}">deactivate</a>,
                       if ($repo//repo:type eq 'application') then 
-                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$package-name}">deploy</a> )
+                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$pkg-abbrev}">deploy</a> )
                      else
                         ()
                      )
