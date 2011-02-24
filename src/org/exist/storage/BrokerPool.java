@@ -25,10 +25,8 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,7 +61,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
@@ -396,12 +393,12 @@ public class BrokerPool extends Observable {
 	/**
 	 * The number of inactive brokers for the database instance 
 	 */	
-	private Stack inactiveBrokers = new Stack();
+	private Stack<DBBroker> inactiveBrokers = new Stack();
 	
 	/**
 	 * The number of active brokers for the database instance 
 	 */	
-	private Map activeBrokers = new HashMap();
+	private Map<Thread, DBBroker> activeBrokers = new HashMap<Thread, DBBroker>();
 		
 	/**
      * The configuration object for the database instance
@@ -776,7 +773,7 @@ public class BrokerPool extends Observable {
 		createBroker();
 		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
-		DBBroker broker = (DBBroker) inactiveBrokers.peek();
+		DBBroker broker = inactiveBrokers.peek();
         
         if (broker.isReadOnly()) {
             transactionManager.setEnabled(false);
@@ -1003,8 +1000,8 @@ public class BrokerPool extends Observable {
 		return activeBrokers.size();
 	}
 
-    public Map getActiveBrokers() {
-        return new HashMap(activeBrokers);
+    public Map<Thread, DBBroker> getActiveBrokers() {
+        return new HashMap<Thread, DBBroker>(activeBrokers);
     }
 
     /**
@@ -1220,7 +1217,7 @@ public class BrokerPool extends Observable {
 
 		synchronized(this) {
 			//Try to get an active broker
-			DBBroker broker = (DBBroker)activeBrokers.get(Thread.currentThread());
+			DBBroker broker = activeBrokers.get(Thread.currentThread());
 			//Use it...
 			//TOUNDERSTAND (pb) : why not pop a broker from the inactive ones rather than maintaining reference counters ?
 	        // WM: a thread may call this more than once in the sequence of operations, i.e. calls to get/release can
@@ -1262,7 +1259,7 @@ public class BrokerPool extends Observable {
 						}
 					}
 			}
-			broker = (DBBroker) inactiveBrokers.pop();
+			broker = inactiveBrokers.pop();
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
@@ -1300,8 +1297,8 @@ public class BrokerPool extends Observable {
 			
 	        //Broker is no more used : inactivate it
 		
-            for (int i = 0; i < inactiveBrokers.size(); i++) {
-                if (broker == inactiveBrokers.get(i)) {
+            for (DBBroker inactiveBroker : inactiveBrokers) {
+                if (broker == inactiveBroker) {
                     LOG.error("Broker is already in the inactive list!!!");
                     return;
                 }
@@ -1310,7 +1307,7 @@ public class BrokerPool extends Observable {
 	        if (activeBrokers.remove(Thread.currentThread())==null) {
 	             LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
 	             // Cleanup the state of activeBrokers
-	             for (Object t : activeBrokers.keySet()) {
+	             for (Thread t : activeBrokers.keySet()) {
 	                if (activeBrokers.get(t)==broker) {
 	                     activeBrokers.remove(t);
 	                     break;
@@ -1319,7 +1316,7 @@ public class BrokerPool extends Observable {
 	         }
 			inactiveBrokers.push(broker);
 			//If the database is now idle, do some useful stuff
-			if(activeBrokers.size() == 0) {
+			if(activeBrokers.isEmpty()) {
 				//TODO : use a "clean" dedicated method (we have some below) ?
 				if (syncRequired) {
 					//Note that the broker is not yet really inactive ;-)
@@ -1341,7 +1338,7 @@ public class BrokerPool extends Observable {
             throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
         serviceModeUser = user;
         synchronized (this) {
-            if (activeBrokers.size() != 0) {
+            if (!activeBrokers.isEmpty()) {
                 while(!inServiceMode) {
                     try {
                         wait();
@@ -1351,7 +1348,7 @@ public class BrokerPool extends Observable {
             }
         }
         inServiceMode = true;
-        DBBroker broker = (DBBroker) inactiveBrokers.peek();
+        DBBroker broker = inactiveBrokers.peek();
         checkpoint = true;
         sync(broker, Sync.MAJOR_SYNC);
         checkpoint = false;
@@ -1460,7 +1457,7 @@ public class BrokerPool extends Observable {
                 // No other brokers are running at this time, so there's no risk.
 				//TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
-				DBBroker broker = (DBBroker) inactiveBrokers.pop();
+				DBBroker broker = inactiveBrokers.pop();
 				//Do the synchonization job
 				sync(broker, syncEvent);
             inactiveBrokers.push(broker);
@@ -1554,9 +1551,9 @@ public class BrokerPool extends Observable {
                 boolean hangingThreads = false;
                 long waitStart = System.currentTimeMillis();
                 //Are there active brokers ?
-                if (activeBrokers.size() > 0) {
+                if (!activeBrokers.isEmpty()) {
                     LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
-                    while (activeBrokers.size() > 0) {
+                    while (!activeBrokers.isEmpty()) {
                         try {
                             //Wait until they become inactive...
                             this.wait(1000);
@@ -1593,7 +1590,7 @@ public class BrokerPool extends Observable {
                     //TODO : this broker is *not* marked as active and may be reused by another process !
                     //TODO : use get() then release the broker ?
                     // WM: deadlock risk if not all brokers returned properly.
-                    broker = (DBBroker)inactiveBrokers.peek();
+                    broker = inactiveBrokers.peek();
 
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all
