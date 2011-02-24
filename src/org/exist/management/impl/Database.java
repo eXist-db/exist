@@ -36,7 +36,7 @@ public class Database implements DatabaseMBean {
     };
     private static String[] indexNames = { "owner" };
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
     public Database(BrokerPool pool) {
         this.pool = pool;
