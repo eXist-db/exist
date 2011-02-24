@@ -15,11 +15,15 @@
 	<!--forward pattern="/webdav/" servlet="WebDAVServlet"/-->
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
+
     <!-- Apache SOAP interface -->
     <forward pattern="/axis-servlet/AxisServlet" servlet="AxisServlet"/>
     <forward pattern=".*\.jws" servlet="AxisServlet"/>
     <forward pattern="/services" servlet="AxisServlet"/>
     <forward pattern="/axis-servlet/AdminServlet" servlet="AdminServlet"/>
+
+    <!-- The JMX status servlet used to monitor the db -->
+    <forward pattern="/status" servlet="JMXServlet"/>
     
     <!-- 
         ++ Default configuration: main web application is served from the

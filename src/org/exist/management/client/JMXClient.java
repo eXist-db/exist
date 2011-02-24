@@ -63,7 +63,7 @@ public class JMXClient {
     public void connect(String address,int port) throws IOException {
         JMXServiceURL url =
                 new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
-        Map env = new HashMap();
+        Map<String, String[]> env = new HashMap<String, String[]>();
         String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
 
@@ -107,7 +107,7 @@ public class JMXClient {
             TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
             if (table.size() > 0)
                 echo("\nCurrently active threads:");
-            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
                 echo(String.format("\t%20s: %3d", data.get("owner"), data.get("referenceCount")));
             }
@@ -124,11 +124,11 @@ public class JMXClient {
             Object values[] = getValues(attrs);
             echo(String.format("\nCACHE [%8d pages max. / %8d pages allocated]", values[0], values[1]));
 
-            Set beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
+            Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
             cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
             echo(String.format("%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
-            for (Iterator i = beans.iterator(); i.hasNext();) {
-                name = (ObjectName) i.next();
+            for (Iterator<ObjectName> i = beans.iterator(); i.hasNext();) {
+                name = i.next();
                 attrs = connection.getAttributes(name, cols);
                 values = getValues(attrs);
                 echo(String.format("%10s %20s %,10d %,10d %,10d %,10d", values[0], values[1], values[2], values[3], values[4], values[5]));
@@ -151,7 +151,7 @@ public class JMXClient {
         echo("-----------------------------------------------");
         try {
             TabularData table = (TabularData) connection.getAttribute(new ObjectName("org.exist.management:type=LockManager"), "WaitingThreads");
-            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
                 echo("Thread " + data.get("waitingThread"));
                 echo(String.format("%20s: %s", "Lock type", data.get("lockType")));
@@ -198,7 +198,7 @@ public class JMXClient {
 
             TabularData table = (TabularData)
                     connection.getAttribute(name, "Errors");
-            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
                 echo(String.format("%22s: %s", "Error code", data.get("errcode")));
                 echo(String.format("%22s: %s", "Description", data.get("description")));
@@ -228,7 +228,7 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningJobs");
             String[] cols = new String[] { "ID", "Action", "Info" };
             echo(String.format("%15s %30s %30s", cols[0], cols[1], cols[2]));
-            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
                 echo(String.format("%15s %30s %30s", data.get("id"), data.get("action"), data.get("info")));
             }
@@ -239,7 +239,7 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningQueries");
             cols = new String[] { "ID", "Type", "Key", "Terminating" };
             echo(String.format("%10s %10s %30s %s", cols[0], cols[1], cols[2], cols[3]));
-            for (Iterator i = table.values().iterator(); i.hasNext(); ) {
+            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
                 CompositeData data = (CompositeData) i.next();
                 echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
             }
@@ -318,7 +318,8 @@ public class JMXClient {
     private final static int MODE_STATS = 0;
     private final static int MODE_LOCKS = 1;
     
-    public static void main(String[] args) {
+    @SuppressWarnings("unchecked")
+	public static void main(String[] args) {
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
             System.err.println( "ERROR: " + optParser.getErrorString());
@@ -326,9 +327,7 @@ public class JMXClient {
         }
         String dbInstance = "exist";
         long waitTime = 0;
-        List opt = optParser.getArguments();
-        int size = opt.size();
-        CLOption option;
+        List<CLOption> opts = optParser.getArguments();
         int mode = -1;
         int port = 1099;
         String address = "localhost";
@@ -336,8 +335,7 @@ public class JMXClient {
         boolean displayInstance = false;
         boolean displayReport = false;
         boolean jobReport = false;
-        for(int i = 0; i < size; i++) {
-            option = (CLOption)opt.get(i);
+        for(CLOption option : opts) {
             switch(option.getId()) {
                 case HELP_OPT :
                     System.out.println(CLUtil.describeOptions(OPTIONS).toString());

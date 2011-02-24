@@ -34,6 +34,8 @@ public interface SystemInfoMBean
     public String getExistBuild();
     
     public String getSvnRevision();
+
+    public String getOperatingSystem();
     
     public String getDefaultLocale();
     

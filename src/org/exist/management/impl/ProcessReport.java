@@ -36,6 +36,7 @@ import javax.management.openmbean.TabularType;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.CompositeDataSupport;
+import org.exist.storage.ProcessMonitor.QueryHistory;
 
 public class ProcessReport implements ProcessReportMBean {
 
@@ -43,21 +44,31 @@ public class ProcessReport implements ProcessReportMBean {
 
     private static String[] pItemNames = { "id", "action", "info" };
     private static String[] pItemDescriptions = {
-            "Process ID",
-            "Description of the current action",
-            "Additional info provided by thread"
+        "Process ID",
+        "Description of the current action",
+        "Additional info provided by thread"
     };
     private static String[] pIndexNames = { "id" };
 
 
     private static String[] qItemNames = { "id", "sourceType", "sourceKey", "terminating" };
     private static String[] qItemDescriptions = {
-            "XQuery ID",
-            "Type of the query source",
-            "Description of the source",
-            "Is query terminating?"
+        "XQuery ID",
+        "Type of the query source",
+        "Description of the source",
+        "Is query terminating?"
     };
     private static String[] qIndexNames = { "id" };
+
+    private static String[] qhItemNames = { "sourceKey", "recentInvocationCount", "mostRecentExecutionTime", "mostRecentExecutionDuration" };
+    private static String[] qhItemDescriptions = {
+        "Description of the source",
+        "Recent invocation count",
+        "Most recent query invocation start time",
+        "Most recent query invocation duration",
+    };
+    private static String[] qhIndexNames = { "sourceKey" };
+    
 
     private ProcessMonitor processMonitor;
 
@@ -68,8 +79,9 @@ public class ProcessReport implements ProcessReportMBean {
         scheduler = pool.getScheduler();
     }
 
+    @Override
     public TabularData getScheduledJobs() {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("scheduledJobs", "Lists currently scheduled jobs in eXist",
@@ -89,8 +101,9 @@ public class ProcessReport implements ProcessReportMBean {
         return null;
     }
 
+    @Override
     public TabularData getRunningJobs() {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningJobs", "Lists currently running jobs in eXist",
@@ -110,19 +123,41 @@ public class ProcessReport implements ProcessReportMBean {
         return null;
     }
 
+    @Override
     public TabularData getRunningQueries() {
-        OpenType[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
+        OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningQueries", "Lists currently running XQueries",
                     qItemNames, qItemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("jobList", "List of currently running XQueries", infoType, qIndexNames);
+            TabularType tabularType = new TabularType("queryList", "List of currently running XQueries", infoType, qIndexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
             XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
             for (int i = 0; i < watchdogs.length; i++) {
                 Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getSourceType(),
                         watchdogs[i].getContext().getSourceKey(), Boolean.valueOf(watchdogs[i].isTerminating()) };
                 data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
+            }
+            return data;
+        } catch (OpenDataException e) {
+            LOG.warn(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public TabularData getRecentQueryHistory() {
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG };
+        CompositeType infoType;
+        try {
+            infoType = new CompositeType("recentQueryHistory", "Lists recently completed XQueries", qhItemNames, qhItemDescriptions, itemTypes);
+
+            TabularType tabularType = new TabularType("queryList", "List of recently completed XQueries", infoType, qhIndexNames);
+            TabularDataSupport data = new TabularDataSupport(tabularType);
+            QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
+            for(QueryHistory queryHistory : queryHistories) {
+                Object[] itemValues = { queryHistory.getSource(), queryHistory.getInvocationCount(), queryHistory.getMostRecentExecutionTime(), queryHistory.getMostRecentExecutionDuration()};
+                data.put(new CompositeDataSupport(infoType, qhItemNames, itemValues));
             }
             return data;
         } catch (OpenDataException e) {
