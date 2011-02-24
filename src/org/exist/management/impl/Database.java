@@ -25,7 +25,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 import javax.management.openmbean.*;
-import java.util.Iterator;
 import java.util.Map;
 
 public class Database implements DatabaseMBean {
@@ -37,39 +36,43 @@ public class Database implements DatabaseMBean {
     };
     private static String[] indexNames = { "owner" };
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
     public Database(BrokerPool pool) {
         this.pool = pool;
     }
 
+    @Override
     public String getInstanceId() {
         return pool.getId();
     }
 
+    @Override
     public int getMaxBrokers() {
         return pool.getMax();
     }
 
+    @Override
     public int getAvailableBrokers() {
         return pool.available();
     }
 
+    @Override
     public int getActiveBrokers() {
         return pool.active();
     }
 
+    @Override
     public TabularData getActiveBrokersMap() {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
         try {
             CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
                     itemNames, itemDescriptions, itemTypes);
             TabularType tabularType = new TabularType("activeBrokers", "Lists all threads currently using a broker instance", infoType, indexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (Iterator i = pool.getActiveBrokers().entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) i.next();
-                Thread thread = (Thread) entry.getKey();
-                DBBroker broker = (DBBroker) entry.getValue();
+            for (Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
+                Thread thread = entry.getKey();
+                DBBroker broker = entry.getValue();
                 Object[] itemValues = { thread.getName(), broker.getReferenceCount() };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
@@ -80,15 +83,28 @@ public class Database implements DatabaseMBean {
         }
     }
 
+    @Override
     public long getReservedMem() {
         return pool.getReservedMem();
     }
 
+    @Override
     public long getCacheMem() {
         return pool.getCacheManager().getTotalMem();
     }
 
+    @Override
     public long getCollectionCacheMem() {
         return pool.getCollectionCacheMgr().getMaxTotal();
+    }
+
+    @Override
+    public long getUptime() {
+        return System.currentTimeMillis() - pool.getStartupTime().getTimeInMillis();
+    }
+
+    @Override
+    public String getExistHome() {
+        return pool.getConfiguration().getExistHome().getAbsolutePath();
     }
 }

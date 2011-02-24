@@ -37,7 +37,8 @@ import org.exist.util.Configuration;
  */
 public class DiskUsage implements DiskUsageMBean {
 
-    private BrokerPool pool;
+    @SuppressWarnings("unused")
+	private BrokerPool pool;
     private Configuration config;
 
     public DiskUsage(BrokerPool pool) {
@@ -47,7 +48,7 @@ public class DiskUsage implements DiskUsageMBean {
 
     private long getSpace(File dir, String method) {
         try {
-            Class cls = dir.getClass();
+            Class<?> cls = dir.getClass();
             Method m = cls.getMethod(method, new Class[0]);
             Long a = (Long) m.invoke(dir, new Object[0]);
             return a;
@@ -73,7 +74,7 @@ public class DiskUsage implements DiskUsageMBean {
         return getSpace(dir, "getTotalSpace");
     }
 
-    public long getDataDirectoryFreeDiskSpace() {
+    public long getDataDirectoryFreeSpace() {
         File dir = new File(getDataDirectory());
         return getSpace(dir, "getUsableSpace");
     }

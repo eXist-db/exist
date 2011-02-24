@@ -37,7 +37,6 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -49,7 +48,7 @@ public class JMXAgent implements Agent {
 
     private final static Logger LOG = Logger.getLogger(JMXAgent.class);
 
-    private static Agent agent = null;
+    private static volatile Agent agent = null;
 
     public static Agent getInstance() {
         if (agent == null)
@@ -58,16 +57,16 @@ public class JMXAgent implements Agent {
     }
 
     private MBeanServer server;
-    private Map registeredMBeans = new HashMap();
-    private Map beanInstances = new HashMap();
+    private Map<String, Stack<ObjectName>> registeredMBeans = new HashMap<String, Stack<ObjectName>>();
+    private Map<ObjectName, Object> beanInstances = new HashMap<ObjectName, Object>();
     
     public JMXAgent() {
         if (LOG.isDebugEnabled())
             LOG.debug("Creating the JMX MBeanServer.");
 
-        ArrayList servers = MBeanServerFactory.findMBeanServer(null);
+        ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers.size() > 0)
-            server = (MBeanServer) servers.get(0);
+            server = servers.get(0);
         else
             server = MBeanServerFactory.createMBeanServer();
 
@@ -117,7 +116,7 @@ public class JMXAgent implements Agent {
 
     public synchronized void closeDBInstance(BrokerPool instance) {
         try {
-            Stack stack = (Stack) registeredMBeans.get(instance.getId());
+            Stack<ObjectName> stack = registeredMBeans.get(instance.getId());
             while (!stack.isEmpty()) {
                 ObjectName on = (ObjectName) stack.pop();
                 LOG.debug("deregistering JMX MBean: " + on);
@@ -136,9 +135,9 @@ public class JMXAgent implements Agent {
             ObjectName on = new ObjectName(name);
             addMBean(on, mbean);
             if (dbInstance != null) {
-                Stack stack = (Stack) registeredMBeans.get(dbInstance);
+                Stack<ObjectName> stack = registeredMBeans.get(dbInstance);
                 if (stack == null) {
-                    stack = new Stack();
+                    stack = new Stack<ObjectName>();
                     registeredMBeans.put(dbInstance, stack);
                 }
                 stack.push(on);

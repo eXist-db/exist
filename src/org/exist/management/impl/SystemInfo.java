@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.exist.storage.BrokerPool;
 
 /**
  * Class SystemInfo
@@ -39,7 +40,6 @@ public class SystemInfo implements SystemInfoMBean {
     private Properties sysProperties = new Properties();
 
     public SystemInfo() {
-
         try {
             sysProperties.load(SystemInfo.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
         } catch (IOException e) {
@@ -47,26 +47,33 @@ public class SystemInfo implements SystemInfoMBean {
         }
     }
 
+    @Override
     public String getExistVersion() {
         return sysProperties.getProperty("product-version","unknown");
     }
 
+    @Override
     public String getExistBuild() {
         return sysProperties.getProperty("product-build","unknown");
     }
 
+    @Override
     public String getSvnRevision() {
         return sysProperties.getProperty("svn-revision","unknown");
     }
 
+    @Override
     public String getDefaultLocale() {
         return Locale.getDefault().toString();
     }
 
+    @Override
     public String getDefaultEncoding() {
         return new InputStreamReader(System.in).getEncoding();
     }
 
+    @Override
+    public String getOperatingSystem() {
+         return System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
+    }
 }
-
-

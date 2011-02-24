@@ -26,7 +26,6 @@ import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.LockInfo;
 
 import javax.management.openmbean.*;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -39,7 +38,7 @@ import java.util.Map;
 public class LockManager implements LockManagerMBean {
 
     public TabularData getWaitingThreads() {
-        Map map = DeadlockDetection.getWaitingThreads();
+        Map<String, LockInfo> map = DeadlockDetection.getWaitingThreads();
         try {
             return lockMapToComposite(map);
         } catch (OpenDataException e) {
@@ -60,16 +59,15 @@ public class LockManager implements LockManagerMBean {
     };
     private static String[] indexNames = { "waitingThread" };
 
-    private TabularData lockMapToComposite(Map map) throws OpenDataException {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType(1, SimpleType.STRING),
-                new ArrayType(1, SimpleType.STRING), new ArrayType(1, SimpleType.STRING) };
+    private TabularData lockMapToComposite(Map<String, LockInfo> map) throws OpenDataException {
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType<Object>(1, SimpleType.STRING),
+                new ArrayType<Object>(1, SimpleType.STRING), new ArrayType<Object>(1, SimpleType.STRING) };
         CompositeType lockType = new CompositeType("lockInfo", "Provides information on a thread waiting for a lock",
                 itemNames, itemDescriptions, itemTypes);
         TabularType tabularType = new TabularType("waitingThreads", "Lists all threads waiting for a lock", lockType, indexNames);
         TabularDataSupport data = new TabularDataSupport(tabularType);
-        for (Iterator i = map.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) i.next();
-            LockInfo info = (LockInfo) entry.getValue();
+        for (Map.Entry<String, LockInfo> entry : map.entrySet()) {
+            LockInfo info = entry.getValue();
             Object[] itemValues = {entry.getKey(), info.getLockType(), info.getLockMode(), info.getId(), info.getOwners(), info.getWaitingForRead(),
                     info.getWaitingForWrite()};
             data.put(new CompositeDataSupport(lockType, itemNames, itemValues));

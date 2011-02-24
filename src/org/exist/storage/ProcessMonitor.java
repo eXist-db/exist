@@ -29,7 +29,9 @@ import org.exist.xquery.util.ExpressionDumper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -56,9 +58,12 @@ public class ProcessMonitor {
     public final static String ACTION_MOVE_COLLECTION = "move collection";
     public final static String ACTION_BACKUP = "backup";
 
-	private final static Logger LOG = Logger.getLogger(ProcessMonitor.class);
+    private final static Logger LOG = Logger.getLogger(ProcessMonitor.class);
+
+    private final static int MAX_QUERY_HISTORY = 16; //The maximum number of queries to record history for
 	
-	private Set runningQueries = new HashSet();
+    private final Set<XQueryWatchDog> runningQueries = new HashSet<XQueryWatchDog>();
+    private final Map<String, QueryHistory> queryHistories = new FixedSizeLinkedHashMap<String, QueryHistory>(MAX_QUERY_HISTORY);
 
     private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
 
@@ -112,10 +117,91 @@ public class ProcessMonitor {
         }
     }
 	
-	public void queryCompleted(XQueryWatchDog watchdog) {
+    public void queryCompleted(XQueryWatchDog watchdog) {
         synchronized (runningQueries) {
             runningQueries.remove(watchdog);
         }
+
+        String sourceKey = watchdog.getContext().getSourceKey();
+        synchronized(queryHistories) {
+            QueryHistory qh = queryHistories.get(sourceKey);
+            if(qh == null) {
+                qh = new QueryHistory(sourceKey);
+            }
+
+            qh.setMostRecentExecutionTime(watchdog.getStartTime());
+            qh.setMostRecentExecutionDuration(System.currentTimeMillis() - watchdog.getStartTime());
+            qh.incrementInvocationCount();
+
+            queryHistories.put(sourceKey, qh);
+        }
+    }
+
+    /**
+     * Linked HashMap that has a fixed size
+     *
+     * Oldest items are removed when new items are added
+     * if the max size is exceeded
+     */
+    public class FixedSizeLinkedHashMap<K,V> extends LinkedHashMap<K,V> {
+
+        private final int maxSize;
+
+        public FixedSizeLinkedHashMap(int maxSize) {
+            super(maxSize);
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Entry<K, V> entry) {
+            return size() >= maxSize;
+        }
+     }
+
+
+    public class QueryHistory {
+
+        private final String source;
+        private long mostRecentExecutionTime;
+        private long mostRecentExecutionDuration;
+        private int invocationCount = 0;
+
+        public QueryHistory(String source) {
+            this.source = source;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        public void incrementInvocationCount() {
+            invocationCount++;
+        }
+
+        public int getInvocationCount() {
+            return invocationCount;
+        }
+
+        public long getMostRecentExecutionTime() {
+            return mostRecentExecutionTime;
+        }
+
+        public void setMostRecentExecutionTime(long mostRecentExecutionTime) {
+            this.mostRecentExecutionTime = mostRecentExecutionTime;
+        }
+
+        public long getMostRecentExecutionDuration() {
+            return mostRecentExecutionDuration;
+        }
+
+        public void setMostRecentExecutionDuration(long mostRecentExecutionDuration) {
+            this.mostRecentExecutionDuration = mostRecentExecutionDuration;
+        }
+    }
+
+    public QueryHistory[] getRecentQueryHistory() {
+        QueryHistory result[] = new QueryHistory[queryHistories.size()];
+        return (QueryHistory[])queryHistories.values().toArray(result);
     }
 	
 	public void killAll(long waitTime) {

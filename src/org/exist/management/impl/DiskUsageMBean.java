@@ -31,7 +31,7 @@ public interface DiskUsageMBean
 {
     public String getDataDirectory();
     
-    public long getDataDirectoryFreeDiskSpace();
+    public long getDataDirectoryFreeSpace();
     
     public long getDataDirectoryTotalSpace();
     

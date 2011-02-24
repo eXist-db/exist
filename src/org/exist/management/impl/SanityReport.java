@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-10 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@
  */
 package org.exist.management.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +44,17 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ErrorReport;
 import org.exist.management.TaskStatus;
+import org.exist.security.SecurityManager;
+import org.exist.security.xacml.AccessContext;
+import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ConsistencyCheckTask;
+import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
+import org.exist.storage.XQueryPool;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
@@ -54,11 +63,16 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";
 
+    public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
+    
+    public final static int PING_WAITING = -1;
+    public final static int PING_ERROR = -2;
+    
     private static String[] itemNames = { "errcode", "description" };
     private static String[] itemDescriptions = { "Error code", "Description of the error" };
     private static String[] indexNames = { "errcode" };
 
-    private static List NO_ERRORS = new LinkedList();
+    private static List<ErrorReport> NO_ERRORS = new LinkedList<ErrorReport>();
 
     private int seqNum = 0;
 
@@ -70,14 +84,16 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private String lastActionInfo = "nothing done";
 
+    private long lastPingRespTime = 0;
+    
     private String output = "";
 
-    private TaskStatus taskstatus = new TaskStatus(TaskStatus.NEVER_RUN);
+    private TaskStatus taskstatus = new TaskStatus(TaskStatus.Status.NEVER_RUN);
 
-    private List errors = NO_ERRORS;
+    private List<ErrorReport> errors = NO_ERRORS;
 
     private BrokerPool pool;
-
+    
     public SanityReport(BrokerPool pool) {
         this.pool = pool;
     }
@@ -110,16 +126,19 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return lastActionInfo;
     }
 
+    public long getPingTime() {
+    	return lastPingRespTime;
+    }
+    
     public TabularData getErrors() {
-        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
                     itemDescriptions, itemTypes);
             TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (int i = 0; i < errors.size(); i++) {
-                ErrorReport error = (ErrorReport) errors.get(i);
+            for (ErrorReport error : errors) {
                 Object[] itemValues = { error.getErrcodeString(), error.getMessage() };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
@@ -138,8 +157,15 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             task.configure(pool.getConfiguration(), properties);
             pool.triggerSystemTask(task);
         } catch (EXistException existException) {
-            taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
-            taskstatus.setReason(existException.toString());
+            taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
+
+            List<ErrorReport> errors = new ArrayList<ErrorReport>();
+            errors.add(
+            		new ErrorReport(
+            				ErrorReport.CONFIGURATION_FAILD, 
+            				existException.getMessage(), existException));
+
+            taskstatus.setReason(errors);
             changeStatus(taskstatus);
             taskstatus.setStatusChangeTime();
             taskstatus.setReason(existException.toString());
@@ -147,6 +173,51 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         }
     }
 
+    public long ping(boolean checkQueryEngine) {
+    	long start = System.currentTimeMillis();
+    	lastPingRespTime = -1;
+    	lastActionInfo = "Ping";
+    	
+    	taskstatus.setStatus(TaskStatus.Status.PING_WAIT);
+    	
+    	DBBroker broker = null;
+    	try {
+    		// try to acquire a broker. If the db is deadlocked or not responsive,
+    		// this will block forever.
+    		broker = pool.get(pool.getSecurityManager().getUser(SecurityManager.GUEST_USER));
+    		
+    		if (checkQueryEngine) {
+    			XQuery xquery = broker.getXQueryService();
+    			XQueryPool xqPool = xquery.getXQueryPool();
+    			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
+    			if (compiled == null) {
+    				XQueryContext context = xquery.newContext(AccessContext.TEST);
+    				compiled = xquery.compile(context, TEST_XQUERY);
+    			}
+				try {
+					xquery.execute(compiled, null);
+				} finally {
+					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
+				}
+    		}
+    	} catch (Exception e) {
+			lastPingRespTime = -2;
+			taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
+			taskstatus.setStatusChangeTime();
+			taskstatus.setReason(e.getMessage());
+			changeStatus(taskstatus);
+		} finally {
+    		pool.release(broker);
+    		
+    		lastPingRespTime = System.currentTimeMillis() - start;
+    		taskstatus.setStatus(TaskStatus.Status.PING_OK);
+			taskstatus.setStatusChangeTime();
+			taskstatus.setReason("ping response time: " + lastPingRespTime);
+			changeStatus(taskstatus);
+    	}
+		return lastPingRespTime;
+    }
+    
     private Properties parseParameter(String output, String backup, String incremental) {
         Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");
@@ -164,14 +235,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return properties;
     }
 
-    protected void updateErrors(List errorList) {
+    protected void updateErrors(List<ErrorReport> errorList) {
         try {
             if (errorList == null || errorList.isEmpty()) {
-                taskstatus.setStatus(TaskStatus.STOPPED_OK);
+                taskstatus.setStatus(TaskStatus.Status.STOPPED_OK);
                 this.errors = NO_ERRORS;
             } else {
                 this.errors = errorList;
-                taskstatus.setStatus(TaskStatus.STOPPED_ERROR);
+                taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
             }
         } catch (Exception e) {
             // ignore
@@ -182,21 +253,21 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     protected void changeStatus(TaskStatus status) {
         status.setStatusChangeTime();
         switch (status.getStatus()) {
-        case TaskStatus.INIT:
-            actualCheckStart = status.getStatusChangeTime();
-            break;
-        case TaskStatus.STOPPED_ERROR:
-        case TaskStatus.STOPPED_OK:
-            lastCheckStart = actualCheckStart;
-            actualCheckStart = null;
-            lastCheckEnd = status.getStatusChangeTime();
-            if (status.getReason() != null) {
-                this.errors = (List) status.getReason();
-            }
-            lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
-            break;
-        default:
-            break;
+            case INIT:
+                actualCheckStart = status.getStatusChangeTime();
+                break;
+            case STOPPED_ERROR:
+            case STOPPED_OK:
+                lastCheckStart = actualCheckStart;
+                actualCheckStart = null;
+                lastCheckEnd = status.getStatusChangeTime();
+                if (status.getReason() != null) {
+                    this.errors = (List<ErrorReport>) status.getReason();
+                }
+                lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
+                break;
+            default:
+                break;
         }
         TaskStatus oldState = taskstatus;
         try {

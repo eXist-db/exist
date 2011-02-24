@@ -41,4 +41,7 @@ public interface DatabaseMBean {
 
     TabularData getActiveBrokersMap();
 
+    public long getUptime();
+
+    public String getExistHome();
 }
