@@ -6,11 +6,11 @@
 	<property name="user.default.password" value="editor"/>
 	<property name="user.default.group" value="biblio.users"/>
 	
-	<property name="server.dir" value="../.."/>
+	<property name="server.dir" value="../../../.."/>
 	<property name="mods.dir" value="mods"/>
 	<property name="samples.dir" value="${server.dir}/samples"/>
-	<property name="scripts.dir" value="../scripts"/>
-	<property name="styles.dir" value="../styles"/>
+	<property name="scripts.dir" value="../../../scripts"/>
+	<property name="styles.dir" value="../../../styles"/>
 	
 	<path id="classpath.core">
 		<fileset dir="${server.dir}/lib/core">
@@ -138,7 +138,7 @@
 	</target>
 
 	<target name="xar">
-		<zip destfile="../repo/packages/library-1.0.xar">
+		<zip destfile="../library-1.0.xar">
 			<zipfileset dir="./mods" prefix="library" excludes=".svn"/>
 			<zipfileset dir="." includes="expath-pkg.xml,repo.xml,pre-install.xql"/>
 		</zip>
