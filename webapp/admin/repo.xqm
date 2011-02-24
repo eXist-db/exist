@@ -13,31 +13,6 @@ declare variable $repomanager:repo-uri := if (request:get-parameter("repository-
             else
               "http://demo.exist-db.org/exist/repo/public/all/";
 
-
-declare function local:entry-data-deploy($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
-{
-
-	<entry>
-		{
-		if ($path eq tokenize($path, "/")[last()]) then
-		  (<name>{tokenize($path, "/")[last()]}</name>,
-           <path>{$path}</path>)		  
-		else
-		  (<name>{tokenize($path, "/")[last()]}</name>,
-		  <path>{
-		  let $segments := tokenize($path,"/")[not(position() eq last())]
-		  for $segment in $segments
-		  return
-
-		    <segment>{$segment}</segment>
-
-		  }</path>)
-		}
-		<type>{$type}</type>
-		<data>{$data}</data>
-	</entry>
-};
-
 declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
 {
 
@@ -149,7 +124,7 @@ declare function repomanager:deactivate() as element()
                     repo:remove($name)
                 }
             </ul>
-                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
+                <span><i>Important: Installed XQuery libraries written in Java only become visible after a restart of eXist-db.</i></span>
     </div>
 };
 
@@ -212,68 +187,71 @@ declare function repomanager:main() as element() {
         <h1>Package Repository</h1>
         <form action="?panel=repo" method="POST" enctype="multipart/form-data">
         { repomanager:process-action() }
-        <table cellspacing="0" cellpadding="5" class="browse">
-            <tr>
-                <th/>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Date Installed</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-         {
-         let $files := if (collection($repomanager:coll)) then collection($repomanager:coll)/util:document-name(.) else ()
-         let $repos := repo:list()
+        {
+         let $files := if (collection($repomanager:coll)) then collection($repomanager:coll)/util:document-name(.)[contains(.,'.xar')] else ()
          return
-
-            for $file in $files[contains(.,'.xar')]
-            let $package-name := substring-before($file,'.xar')
-            let $xar := util:binary-doc(concat($repomanager:coll,'/',$file))
-
-            let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
-            let $package := $meta//package:package
-            let $pkg-name := $package/string(@name)
-            let $pkg-abbrev := $package/string(@abbrev)
-            let $repo := $meta//repo:meta
-
-            let $installed := exists($repos[. eq $pkg-name])
-            return
-             <tr>
-                <td/>
-                <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
-                {$repo//repo:type}</td>
-                <td>{ ( $repo//repo:description, $package/string(package:title) )[1]}</td>
-
-                <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
-                <td> 
-                {if ($installed) then
-                    <span style="color:#00FF00">Active</span>
-                else
-                    <span style="color:#FF2400">Inactive</span>
-                }
-                </td>
-                <td>
-                {
-                if($installed) then
-
-                    ( <a href="?panel=repo&amp;action=deactivate&amp;name={$pkg-name}">deactivate</a>,
-                      if ($repo//repo:type eq 'application') then 
-                        ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$pkg-name}">deploy</a> )
-                     else
-                        ()
-                     )
-                 else
-                 ( <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">activate</a>,' | ',
-                 <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">remove</a>
-                 )
-                }
-
-                </td>
-             </tr>
-            }
+            if (exists($files)) then
+                <table cellspacing="0" cellpadding="5" class="browse">
+                    <tr>
+                        <th/>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Date Installed</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    {
+                    let $repos := repo:list()
+                       for $file in $files
+                       let $package-name := substring-before($file,'.xar')
+                       let $xar := util:binary-doc(concat($repomanager:coll,'/',$file))
+           
+                       let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
+                       let $package := $meta//package:package
+                       let $pkg-name := $package/string(@name)
+                       let $pkg-abbrev := $package/string(@abbrev)
+                       let $repo := $meta//repo:meta
+           
+                       let $installed := exists($repos[. eq $pkg-name])
+                       return
+                        <tr>
+                           <td/>
+                           <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
+                           {$repo//repo:type}</td>
+                           <td>{ ( $repo//repo:description, $package/string(package:title) )[1]}</td>
+           
+                           <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
+                           <td> 
+                           {if ($installed) then
+                               <span style="color:#00FF00">Active</span>
+                           else
+                               <span style="color:#FF2400">Inactive</span>
+                           }
+                           </td>
+                           <td>
+                           {
+                           if($installed) then
+           
+                               ( <a href="?panel=repo&amp;action=deactivate&amp;name={$pkg-name}">deactivate</a>,
+                                 if ($repo//repo:type eq 'application') then 
+                                   ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$pkg-name}">deploy</a> )
+                                else
+                                   ()
+                                )
+                            else
+                            ( <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">activate</a>,' | ',
+                            <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">remove</a>
+                            )
+                           }
+           
+                           </td>
+                        </tr>
+                   }
                 </table>
-
-                <span><i>Important: You must restart eXistdb to pick up any changes in repository.</i></span>
+            else
+                ()
+        }
+                <span><i>Important: Installed XQuery libraries written in Java only become visible after a restart of eXist-db.</i></span>
                 <br/><br/>
                 <table>
                     <tr>
