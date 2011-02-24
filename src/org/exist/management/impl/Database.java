@@ -97,4 +97,14 @@ public class Database implements DatabaseMBean {
     public long getCollectionCacheMem() {
         return pool.getCollectionCacheMgr().getMaxTotal();
     }
+
+    @Override
+    public long getUptime() {
+        return System.currentTimeMillis() - pool.getStartupTime().getTimeInMillis();
+    }
+
+    @Override
+    public String getExistHome() {
+        return pool.getConfiguration().getExistHome().getAbsolutePath();
+    }
 }
