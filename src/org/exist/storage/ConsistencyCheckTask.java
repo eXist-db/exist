@@ -45,8 +45,6 @@ import org.exist.xquery.TerminatedException;
 
 public class ConsistencyCheckTask implements SystemTask {
 
-    private static final Logger LOG = Logger.getLogger(ConsistencyCheckTask.class);
-
     private String exportDir;
     private boolean createBackup = false;
     private boolean paused = false;
@@ -64,7 +62,7 @@ public class ConsistencyCheckTask implements SystemTask {
     public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
     public final static String MAX_PROP_NAME = "max";
 
-
+    private final static LoggingCallback logCallback = new LoggingCallback();
     
     public void configure(Configuration config, Properties properties) throws EXistException {
         
@@ -150,7 +148,7 @@ public class ConsistencyCheckTask implements SystemTask {
                     LOG.debug("Starting backup...");
                 }
 
-                SystemExport sysexport = new SystemExport(broker, null, monitor, false);
+                SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
@@ -204,6 +202,22 @@ public class ConsistencyCheckTask implements SystemTask {
         }
     }
 
+    private static class LoggingCallback implements SystemExport.StatusCallback {
+
+		public void startCollection(String path) throws TerminatedException {
+						
+		}
+
+		public void startDocument(String name, int current, int count)
+				throws TerminatedException {			
+		}
+
+		public void error(String message, Throwable exception) {
+			LOG.error(message, exception);			
+		}
+    	
+    }
+    
     private class CheckCallback implements ConsistencyCheck.ProgressCallback, SystemExport.StatusCallback {
 
         private PrintWriter log;
@@ -256,5 +270,5 @@ public class ConsistencyCheckTask implements SystemTask {
             exception.printStackTrace(log);
             log.flush();
         }
-    }
+    } 
 }
