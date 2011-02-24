@@ -125,6 +125,7 @@ h2 {
 }
 
 .browse {
+    width: 100%;
     padding-bottom: 4px;
     border-bottom: 1px solid black;
 }
