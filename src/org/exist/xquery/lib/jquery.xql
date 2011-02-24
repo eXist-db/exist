@@ -403,8 +403,8 @@ declare function jquery:accordion($config as element(jquery:ajax-accordion)) as 
                     else ()
             }
             $('#{$id}').accordion({{
-                autoHeight: true,
-                fillSpace: false,
+                autoHeight: { if ($config/@autoHeight eq "true") then "true" else "false" },
+                fillSpace: { if ($config/@fillSpace eq "true") then "true" else "false" },
                 collapsible: true,
                 active: { if ($config/@active eq "true") then "true" else "false" },
                 change: function (event, ui) {{

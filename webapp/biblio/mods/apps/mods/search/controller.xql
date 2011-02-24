@@ -28,6 +28,7 @@ if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<redirect url="index.xml"/>
 	</dispatch>
+    
 (:  Main page: index.xml is a template, which is passed through
     search.xql and the db2xhtml stylesheet. search.xql will run
     the actual search and expand the index.xml template.
@@ -64,14 +65,22 @@ else if ($exist:resource eq 'retrieve') then
 		<forward url="{$exist:controller}/session.xql">
 		</forward>
 	</dispatch>
+
+(: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
+else if (starts-with($exist:path, "/libs/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="/{substring-after($exist:path, 'libs/')}" absolute="yes"/>
+    </dispatch>
+
+(:
 else if (matches($exist:path, '(scripts/|styles/)')) then
     let $newPath := replace($exist:path, '^.*((styles/|scripts/).*)$', '/$1')
-    let $log := util:log("DEBUG", ("NEW PATH: ", $newPath))
     return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<forward url="{$newPath}"/>
     		<cache-control cache="yes"/>
     	</dispatch>
+:)
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
