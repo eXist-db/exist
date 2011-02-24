@@ -159,6 +159,12 @@
                 <listitem>
                     <para>Instance ID: <xsl:value-of select="jmx:InstanceId"/></para>
                 </listitem>
+                <listitem>
+                    <para>eXist Home: <xsl:value-of select="jmx:ExistHome"/></para>
+                </listitem>
+                <listitem>
+                    <para>Uptime: <xsl:value-of select="xs:dayTimeDuration(concat('PT',  xs:integer(jmx:Uptime div 1000), 'S'))"/></para>
+                </listitem>
             </itemizedlist>
             <para>
                 <xsl:call-template name="flot-chart">
