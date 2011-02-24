@@ -59,6 +59,7 @@ public class InstallFunction extends BasicFunction {
             }
             removed = BooleanValue.TRUE;
         } catch (PackageException ex ) {
+        	logger.debug(ex.getMessage(), ex);
             return removed;
             // /TODO: _repo.removePackage seems to throw PackageException
             //throw new XPathException("Problem installing package " + pkg + " in expath repository, check that eXist-db has access permissions to expath repository file directory  ", ex);
