@@ -49,7 +49,7 @@ public class SystemTaskManager {
                 }
 
             } catch (Exception e) {
-                LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
+                SystemTask.LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
                 
             } finally {
                 if (oldUser != null) {
@@ -61,11 +61,11 @@ public class SystemTaskManager {
     }
 
     private void runSystemTask(SystemTask task, DBBroker broker) throws EXistException {
-        if (LOG.isDebugEnabled())
-            LOG.debug("Running system maintenance task: " + task.getClass().getName());
+        if (SystemTask.LOG.isDebugEnabled())
+            SystemTask.LOG.debug("Running system maintenance task: " + task.getClass().getName());
         task.execute(broker);
-        if (LOG.isDebugEnabled())
-            LOG.debug("System task completed.");
+        if (SystemTask.LOG.isDebugEnabled())
+            SystemTask.LOG.debug("System task completed.");
     }
 
     public void initialize() {

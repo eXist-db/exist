@@ -24,6 +24,7 @@ package org.exist.storage;
 
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
 
@@ -47,6 +48,8 @@ import org.exist.util.Configuration;
  */
 public interface SystemTask {
 
+	final static Logger LOG = Logger.getLogger(SystemTask.class);
+	
     void configure(Configuration config, Properties properties) throws EXistException;
     
 	/**

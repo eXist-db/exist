@@ -202,6 +202,11 @@
         <appender-ref ref="exist.scheduler"/>
     </category>
 
+	<category name="org.exist.storage.SystemTask" additivity="false">
+		<priority value="debug"/>
+		<appender-ref ref="exist.scheduler"/>
+	</category>
+
     <!-- betterFORM extension -->
     <category name="de.betterform" additivity="false">
         <priority value="warn"/>
