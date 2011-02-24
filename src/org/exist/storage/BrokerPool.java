@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -529,6 +530,9 @@ public class BrokerPool extends Observable {
 
     private User serviceModeUser = null;
     private boolean inServiceMode = false;
+
+    //the time that the database was started
+    private final Calendar startupTime = Calendar.getInstance();
 
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
@@ -1672,6 +1676,10 @@ public class BrokerPool extends Observable {
     	}
     	
     	return debuggee;
+    }
+
+    public Calendar getStartupTime() {
+        return startupTime;
     }
     
 }
