@@ -558,7 +558,7 @@ public class BrokerPool extends Observable implements Database {
     private boolean inServiceMode = false;
 
     //the time that the database was started
-    private final Calendar startupTime;
+    private final Calendar startupTime = Calendar.getInstance();
 
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
@@ -570,8 +570,6 @@ public class BrokerPool extends Observable implements Database {
 	//TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
 	private BrokerPool(String instanceName, int minBrokers, int maxBrokers, Configuration conf)
             throws EXistException, DatabaseConfigurationException {
-
-            startupTime = Calendar.getInstance();
 
             Integer anInteger;
 		Long aLong;
