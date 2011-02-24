@@ -154,7 +154,7 @@ declare function style:assemble-form(
 as node()+ {
     util:declare-option('exist:serialize', 'method=xhtml media-type=text/xml indent=yes process-xsl-pi=no')
     ,
-    processing-instruction xml-stylesheet {concat('type="text/xsl" href="', request:get-context-path(), '/rest', '/db/xforms/xsltforms/xsltforms.xsl"')}
+    processing-instruction xml-stylesheet {concat('type="text/xsl" href="', request:get-context-path(), '/xforms/xsltforms/xsltforms.xsl"')}
     ,
     if ($debug) then 
         processing-instruction xsltforms-options {'debug="yes"'}

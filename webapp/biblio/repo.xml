@@ -1,0 +1,16 @@
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <author>Jens Ostergaard Petersen</author>
+    <author>Wolfgang Meier</author>
+    <author>Adam Retter</author>
+    <author>Dulip Withanage</author>
+    <website>http://exist-db.org</website>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <description>Bibliographic Database</description>
+    <type>application</type>
+    <target>/db/org</target>
+    <permissions user="editor" password="editor"
+		group="biblio.users" mode="0444"/>
+    <status>stable</status>
+    <prepare>pre-install.xql</prepare>
+</meta>
