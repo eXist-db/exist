@@ -61,7 +61,7 @@ public class Deploy extends BasicFunction {
 
 	protected static final Logger logger = Logger.getLogger(Deploy.class);
 	
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
@@ -69,7 +69,16 @@ public class Deploy extends BasicFunction {
 			"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
 			new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
-					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."));
+					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+		new FunctionSignature(
+				new QName("undeploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+				"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
+				"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
+				"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
+				new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
+				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
+						"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."))
+	};
 	
 	private final static QName SETUP_ELEMENT = new QName("setup", ExpathPackageModule.NAMESPACE_URI);
 	private static final QName PRE_SETUP_ELEMENT = new QName("prepare", ExpathPackageModule.NAMESPACE_URI);
@@ -79,12 +88,14 @@ public class Deploy extends BasicFunction {
 
 	private static final QName STATUS_ELEMENT = new QName("status", ExpathPackageModule.NAMESPACE_URI);
 
+	private static final QName CLEANUP_ELEMENT = new QName("cleanup", ExpathPackageModule.NAMESPACE_URI);
+
 	private String user = null;
 	private String password = null;
 	private String group = null;
 	private int perms = -1;
 	
-	public Deploy(XQueryContext context) {
+	public Deploy(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -112,59 +123,67 @@ public class Deploy extends BasicFunction {
 			if (!repoFile.canRead())
 				return Sequence.EMPTY_SEQUENCE;
 			DocumentImpl repoXML = DocUtils.parse(context, new FileInputStream(repoFile));
-			
-			// if there's a <setup> element, run the query it points to
-			ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
-			if (setup != null) {
-				runQuery(packageDir, setup.getStringValue());
+	
+			if (isCalledAs("undeploy")) {
+				ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
+				if (cleanup != null) {
+					runQuery(packageDir, cleanup.getStringValue());
+				}
 				return statusReport(null);
 			} else {
-				// otherwise copy all child directories to the target collection
-				XmldbURI targetCollection = XmldbURI.ROOT_COLLECTION_URI;
-				
-				ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
-				if (target != null) {
-					// determine target collection
-					try {
-						targetCollection = XmldbURI.create(target.getStringValue());
-					} catch (Exception e) {
-						throw new XPathException(this, "Bad collection URI for <target> element: " +
-								target.getStringValue());
+				// if there's a <setup> element, run the query it points to
+				ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
+				if (setup != null) {
+					runQuery(packageDir, setup.getStringValue());
+					return statusReport(null);
+				} else {
+					// otherwise copy all child directories to the target collection
+					XmldbURI targetCollection = XmldbURI.ROOT_COLLECTION_URI;
+
+					ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
+					if (target != null) {
+						// determine target collection
+						try {
+							targetCollection = XmldbURI.create(target.getStringValue());
+						} catch (Exception e) {
+							throw new XPathException(this, "Bad collection URI for <target> element: " +
+									target.getStringValue());
+						}
 					}
-				}
-				
-				ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
-				if (permissions != null) {
-					// get user, group and default permissions
-					user = permissions.getAttribute("user");
-					group = permissions.getAttribute("group");
-					password = permissions.getAttribute("password");
-					String mode = permissions.getAttribute("mode");
-					try {
-						perms = Integer.parseInt(mode, 8);
-					} catch (NumberFormatException e) {
-						throw new XPathException(this, "Bad format for mode attribute in <permissions>: " + mode);
+
+					ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
+					if (permissions != null) {
+						// get user, group and default permissions
+						user = permissions.getAttribute("user");
+						group = permissions.getAttribute("group");
+						password = permissions.getAttribute("password");
+						String mode = permissions.getAttribute("mode");
+						try {
+							perms = Integer.parseInt(mode, 8);
+						} catch (NumberFormatException e) {
+							throw new XPathException(this, "Bad format for mode attribute in <permissions>: " + mode);
+						}
 					}
+
+					// run the pre-setup query if present
+					ElementImpl preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
+					if (preSetup != null)
+						runQuery(packageDir, preSetup.getStringValue());
+
+					// any required users and group should have been created by the pre-setup query.
+					// check for invalid users now.
+					checkUserSettings();
+
+					// install
+					scanDirectory(packageDir, targetCollection);
+
+					// run the post-setup query if present
+					ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
+					if (postSetup != null)
+						runQuery(packageDir, postSetup.getStringValue());
+
+					return statusReport(targetCollection.toString());
 				}
-				
-				// run the pre-setup query if present
-				ElementImpl preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
-				if (preSetup != null)
-					runQuery(packageDir, preSetup.getStringValue());
-				
-				// any required users and group should have been created by the pre-setup query.
-				// check for invalid users now.
-				checkUserSettings();
-				
-				// install
-				scanDirectory(packageDir, targetCollection);
-				
-				// run the post-setup query if present
-				ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
-				if (postSetup != null)
-					runQuery(packageDir, postSetup.getStringValue());
-				
-				return statusReport(targetCollection.toString());
 			}
 		} catch (IOException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
