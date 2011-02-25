@@ -9,4 +9,5 @@
   <permissions user="guest" group="guest" mode="0444"/>
   <status>stable</status>
   <finish>post-install.xql</finish>
+  <cleanup>uninstall.xql</cleanup>
 </meta>
