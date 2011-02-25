@@ -25,7 +25,7 @@ declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data 
 
 declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
 {
-	true()
+	$path = ("repo.xml", "expath-pkg.xml")
 };
 
 declare function repomanager:publicrepo() as element()
@@ -75,53 +75,50 @@ declare function repomanager:upload() as element()
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
                 }
             </ul>
-                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
-};
-
-declare function repomanager:deploy() as element()
-{
-    let $name := request:get-parameter("name", ())
-    return
-        <div class="process">
-            <h3>Actions:</h3>
-            <ul>
-                <li>deployed application: {$name}</li>
-                { repo:deploy($name) }
-            </ul>
-        </div>
 };
 
 declare function repomanager:activate() as element()
 {
-    let $name := request:get-parameter("name", ()),
-    $hostname := request:get-hostname(),            (:  pkg-repo.jar needs http or file scheme :)
-    $port := request:get-server-port()
+    let $name := request:get-parameter("name", ())
+    let $package := request:get-parameter("package", ())
+    let $type := request:get-parameter("type", ())
+    let $hostname := request:get-hostname()            (:  pkg-repo.jar needs http or file scheme :)
+    let $port := request:get-server-port()
      return
 
         <div class="process">
             <h3>Actions:</h3>
             <ul>
-                <li>activated package: {$name}</li>
+                <li>Installed package: {$name}</li>
                 {
-                    repo:install(concat('http://localhost:',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar'))
+                    repo:install(concat('http://localhost:',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar')),
+                    if ($type eq "application") then
+                        repo:deploy($package)
+                    else
+                        ()
                 }
             </ul>
-                <span><i>Important: You must restart eXistdb to pick up any changes to the repository.</i></span>
     </div>
 };
 
 declare function repomanager:deactivate() as element()
 {
     let $name := request:get-parameter("name", ())
+    let $package := request:get-parameter("package", ())
+    let $type := request:get-parameter("type", ())
      return
 
         <div class="process">
             <h3>Actions:</h3>
             <ul>
-                <li>deactivated package: {$name}</li>
+                <li>Uninstalled package: {$name}</li>
                 {
-                    repo:remove($name)
+                    if ($type eq "application") then
+                        repo:undeploy($package)
+                    else
+                        (),
+                    repo:remove($package)
                 }
             </ul>
                 <span><i>Important: Installed XQuery libraries written in Java only become visible after a restart of eXist-db.</i></span>
@@ -162,10 +159,6 @@ declare function repomanager:process-action() as element()*
             (
                 repomanager:upload()
             )
-            else if($action eq "deploy") then
-            (
-                repomanager:deploy()
-            )
             else if($action eq "Download from Public Repository") then
             (
                 repomanager:publicrepo()
@@ -201,7 +194,7 @@ declare function repomanager:main() as element() {
                         <th>Action</th>
                     </tr>
                     {
-                    let $repos := repo:list()
+                        let $repos := repo:list()
                        for $file in $files
                        let $package-name := substring-before($file,'.xar')
                        let $xar := util:binary-doc(concat($repomanager:coll,'/',$file))
@@ -211,36 +204,32 @@ declare function repomanager:main() as element() {
                        let $pkg-name := $package/string(@name)
                        let $pkg-abbrev := $package/string(@abbrev)
                        let $repo := $meta//repo:meta
+                       let $type := $repo//repo:type/string()
            
                        let $installed := exists($repos[. eq $pkg-name])
                        return
                         <tr>
                            <td/>
                            <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
-                           {$repo//repo:type}</td>
+                           {$type}</td>
                            <td>{ ( $repo//repo:description, $package/string(package:title) )[1]}</td>
            
                            <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
                            <td> 
                            {if ($installed) then
-                               <span style="color:#00FF00">Active</span>
+                               <span style="color:#00FF00">Installed</span>
                            else
-                               <span style="color:#FF2400">Inactive</span>
+                               <span style="color:#FF2400">Not Installed</span>
                            }
                            </td>
                            <td>
                            {
-                           if($installed) then
-           
-                               ( <a href="?panel=repo&amp;action=deactivate&amp;name={$pkg-name}">deactivate</a>,
-                                 if ($repo//repo:type eq 'application') then 
-                                   ( ' | ',<a href="?panel=repo&amp;action=deploy&amp;name={$pkg-name}">deploy</a> )
-                                else
-                                   ()
-                                )
-                            else
-                            ( <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">activate</a>,' | ',
-                            <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">remove</a>
+                            if($installed) then
+                                <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}&amp;package={$pkg-name}&amp;type={$type}">Uninstall</a>
+                            else (
+                                <a href="?panel=repo&amp;action=activate&amp;name={$package-name}&amp;package={$pkg-name}&amp;type={$type}">Install</a>,
+                                <span> | </span>,
+                                <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">Remove</a>
                             )
                            }
            
