@@ -58,7 +58,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
