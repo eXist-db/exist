@@ -22,7 +22,6 @@
 package org.exist.http;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,7 +65,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.XMLUtil;
-import org.exist.http.servlets.EXistServlet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
@@ -142,11 +140,9 @@ public class RESTServer {
 	static {
 		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
 		defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-		defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE
-				.getName());
+		defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
 		defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
-		defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES,
-				"elements");
+		defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
 		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 	}
 
@@ -322,19 +318,16 @@ public class RESTServer {
 			source = option.equals("yes");
 		}
 		if ((option = request.getParameter("_session")) != null) {
-			outputProperties
-					.setProperty(Serializer.PROPERTY_SESSION_ID, option);
+			outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, option);
 		}
 		String stylesheet;
 		if ((stylesheet = request.getParameter("_xsl")) != null) {
 			if (stylesheet.equals("no")) {
-				outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
-						"no");
+				outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 				outputProperties.remove(EXistOutputKeys.STYLESHEET);
 				stylesheet = null;
 			} else {
-				outputProperties.setProperty(EXistOutputKeys.STYLESHEET,
-						stylesheet);
+				outputProperties.setProperty(EXistOutputKeys.STYLESHEET, stylesheet);
 			}
 		} else {
 			outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
@@ -385,8 +378,7 @@ public class RESTServer {
 				// no document: check if path points to a collection
 				Collection collection = broker.getCollection(pathUri);
 				if (collection != null) {
-					if (saveMode || !collection.getPermissions().validate(broker.getUser(),
-							Permission.READ))
+					if (saveMode || !collection.getPermissions().validate(broker.getSubject(), Permission.READ))
 						throw new PermissionDeniedException(
 								"Not allowed to read collection");
 					// return a listing of the collection contents
@@ -516,8 +508,7 @@ public class RESTServer {
 
 			if(resource != null)
 			{
-				if (!resource.getPermissions().validate(broker.getUser(),
-						Permission.READ)) {
+				if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 					throw new PermissionDeniedException(
 							"Permission to read resource " + path + " denied");
 				}
@@ -543,8 +534,7 @@ public class RESTServer {
 					return;
 				}
 
-				if(!col.getPermissions().validate(broker.getUser(), Permission.READ))
-				{
+				if(!col.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 					throw new PermissionDeniedException(
 							"Permission to read resource " + path + " denied");
 				}
@@ -1499,8 +1489,7 @@ public class RESTServer {
 			throws BadRequestException, PermissionDeniedException, IOException {
 
 		// Do we have permission to read the resource
-		if (!resource.getPermissions().validate(broker.getUser(),
-				Permission.READ)) {
+		if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 			throw new PermissionDeniedException("Not allowed to read resource");
 		}
 
@@ -1547,8 +1536,8 @@ public class RESTServer {
 
 			// Serialize the document
 			try {
-				sax = (SAXSerializer) SerializerPool.getInstance()
-						.borrowObject(SAXSerializer.class);
+				sax = (SAXSerializer) 
+					SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
 				// use a stylesheet if specified in query parameters
 				if (stylesheet != null) {
@@ -1558,8 +1547,7 @@ public class RESTServer {
                 serializer.prepareStylesheets(resource);
 
 				if (asMimeType != null) { // was a mime-type specified?
-					response.setContentType(asMimeType + "; charset="
-							+ encoding);
+					response.setContentType(asMimeType + "; charset=" + encoding);
 				} else {
 					if (serializer.isStylesheetApplied()
 							|| serializer.hasXSLPi(resource) != null) {
@@ -1567,24 +1555,20 @@ public class RESTServer {
 						if (!useDynamicContentType || asMimeType == null)
 							asMimeType = MimeType.HTML_TYPE.getName();
 						LOG.debug("media-type: " + asMimeType);
-						response.setContentType(asMimeType + "; charset="
-								+ encoding);
+						response.setContentType(asMimeType + "; charset=" + encoding);
 					} else {
 						asMimeType = resource.getMetadata().getMimeType();
-						response.setContentType(asMimeType + "; charset="
-								+ encoding);
+						response.setContentType(asMimeType + "; charset=" + encoding);
 					}
 				}
 				if (asMimeType.equals(MimeType.HTML_TYPE.getName())) {
 					outputProperties.setProperty("method", "xhtml");
-					outputProperties.setProperty("media-type", "text/html; charset="
-									+ encoding);
+					outputProperties.setProperty("media-type", "text/html; charset=" + encoding);
 					outputProperties.setProperty("ident", "yes");
 					outputProperties.setProperty("omit-xml-declaration", "no");
 				}
 
-				OutputStreamWriter writer = new OutputStreamWriter(response
-						.getOutputStream(), encoding);
+				OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), encoding);
 				sax.setOutput(writer, outputProperties);
 				serializer.setSAXHandlers(sax, sax);
 
@@ -1625,11 +1609,9 @@ public class RESTServer {
 
         response.setStatus(httpStatusCode);
 
-		response.setContentType(MimeType.HTML_TYPE.getName() + "; charset="
-				+ encoding);
+		response.setContentType(MimeType.HTML_TYPE.getName() + "; charset=" + encoding);
 
-		OutputStreamWriter writer = new OutputStreamWriter(response
-				.getOutputStream(), encoding);
+		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), encoding);
 		writer.write(QUERY_ERROR_HEAD);
 		writer.write("<p class=\"path\"><span class=\"high\">Path</span>: ");
 		writer.write("<a href=\"");
@@ -1727,8 +1709,7 @@ public class RESTServer {
 			String encoding, DBBroker broker, Collection collection)
 			throws IOException {
 
-		response.setContentType(MimeType.XML_TYPE.getName() + "; charset="
-				+ encoding);
+		response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
         response.addDateHeader("Last-Modified", collection.getCreationTime());
 		response.addDateHeader("Created", collection.getCreationTime());
 
@@ -1738,8 +1719,8 @@ public class RESTServer {
 		SAXSerializer serializer = null;
 
 		try {
-			serializer = (SAXSerializer) SerializerPool.getInstance()
-					.borrowObject(SAXSerializer.class);
+			serializer = (SAXSerializer) 
+				SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
 			serializer.setOutput(writer, defaultProperties);
 			AttributesImpl attrs = new AttributesImpl();
@@ -1753,14 +1734,14 @@ public class RESTServer {
 					.toString());
 			// add an attribute for the creation date as an xs:dateTime
 			try {
-				DateTimeValue dtCreated = new DateTimeValue(new Date(collection
-						.getCreationTime()));
-				attrs.addAttribute("", "created", "created", "CDATA", dtCreated
-						.getStringValue());
+				DateTimeValue dtCreated = 
+					new DateTimeValue(new Date(collection.getCreationTime()));
+				attrs.addAttribute("", "created", "created", "CDATA", 
+					dtCreated.getStringValue());
 			} catch (XPathException e) {
 				// fallback to long value
-				attrs.addAttribute("", "created", "created", "CDATA", String
-						.valueOf(collection.getCreationTime()));
+				attrs.addAttribute("", "created", "created", "CDATA", 
+					String.valueOf(collection.getCreationTime()));
 			}
 
 			addPermissionAttributes(attrs, collection.getPermissions());
@@ -1773,48 +1754,39 @@ public class RESTServer {
 				Collection childCollection = broker.getCollection(collection
 						.getURI().append(child));
 				if (childCollection != null
-						&& childCollection.getPermissions().validate(
-								broker.getUser(), Permission.READ)) {
+						&& childCollection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 					attrs.clear();
-					attrs.addAttribute("", "name", "name", "CDATA", child
-							.toString());
+					attrs.addAttribute("", "name", "name", "CDATA", child.toString());
 
 					// add an attribute for the creation date as an xs:dateTime
 					try {
-						DateTimeValue dtCreated = new DateTimeValue(new Date(
-								childCollection.getCreationTime()));
-						attrs.addAttribute("", "created", "created", "CDATA",
-								dtCreated.getStringValue());
+						DateTimeValue dtCreated = 
+							new DateTimeValue(new Date(childCollection.getCreationTime()));
+						attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
 					} catch (XPathException e) {
 						// fallback to long value
 						attrs.addAttribute("", "created", "created", "CDATA",
-								String.valueOf(childCollection
-										.getCreationTime()));
+								String.valueOf(childCollection.getCreationTime()));
 					}
 
-					addPermissionAttributes(attrs, childCollection
-							.getPermissions());
-					serializer.startElement(Namespaces.EXIST_NS, "collection",
-							"exist:collection", attrs);
-					serializer.endElement(Namespaces.EXIST_NS, "collection",
-							"exist:collection");
+					addPermissionAttributes(attrs, childCollection.getPermissions());
+					serializer.startElement(Namespaces.EXIST_NS, "collection", "exist:collection", attrs);
+					serializer.endElement(Namespaces.EXIST_NS, "collection", "exist:collection");
 				}
 			}
 
 			for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
 				DocumentImpl doc = i.next();
-				if (doc.getPermissions().validate(broker.getUser(),
-						Permission.READ)) {
+				if (doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 					XmldbURI resource = doc.getFileURI();
 					DocumentMetadata metadata = doc.getMetadata();
 					attrs.clear();
-					attrs.addAttribute("", "name", "name", "CDATA", resource
-							.toString());
+					attrs.addAttribute("", "name", "name", "CDATA", resource.toString());
 
 					// add an attribute for the creation date as an xs:dateTime
 					try {
-						DateTimeValue dtCreated = new DateTimeValue(new Date(
-								metadata.getCreated()));
+						DateTimeValue dtCreated = 
+							new DateTimeValue(new Date(metadata.getCreated()));
 						attrs.addAttribute("", "created", "created", "CDATA",
 								dtCreated.getStringValue());
 					} catch (XPathException e) {
@@ -1829,27 +1801,21 @@ public class RESTServer {
 						DateTimeValue dtLastModified = new DateTimeValue(
 								new Date(metadata.getLastModified()));
 						attrs.addAttribute("", "last-mofified",
-								"last-modified", "CDATA", dtLastModified
-										.getStringValue());
+							"last-modified", "CDATA", dtLastModified.getStringValue());
 					} catch (XPathException e) {
 						// fallback to long value
 						attrs.addAttribute("", "last-modified",
-								"last-modified", "CDATA", String
-										.valueOf(metadata.getLastModified()));
+							"last-modified", "CDATA", String.valueOf(metadata.getLastModified()));
 					}
 
 					addPermissionAttributes(attrs, doc.getPermissions());
-					serializer.startElement(Namespaces.EXIST_NS, "resource",
-							"exist:resource", attrs);
-					serializer.endElement(Namespaces.EXIST_NS, "resource",
-							"exist:resource");
+					serializer.startElement(Namespaces.EXIST_NS, "resource", "exist:resource", attrs);
+					serializer.endElement(Namespaces.EXIST_NS, "resource", "exist:resource");
 				}
 			}
 
-			serializer.endElement(Namespaces.EXIST_NS, "collection",
-					"exist:collection");
-			serializer
-					.endElement(Namespaces.EXIST_NS, "result", "exist:result");
+			serializer.endElement(Namespaces.EXIST_NS, "collection", "exist:collection");
+			serializer.endElement(Namespaces.EXIST_NS, "result", "exist:result");
 
 			serializer.endDocument();
 
@@ -1870,8 +1836,7 @@ public class RESTServer {
 	protected void addPermissionAttributes(AttributesImpl attrs, Permission perm) {
 		attrs.addAttribute("", "owner", "owner", "CDATA", perm.getOwner().getName());
 		attrs.addAttribute("", "group", "group", "CDATA", perm.getOwnerGroup().getName());
-		attrs.addAttribute("", "permissions", "permissions", "CDATA", perm
-				.toString());
+		attrs.addAttribute("", "permissions", "permissions", "CDATA", perm.toString());
 	}
 
 	protected void writeResults(HttpServletResponse response, DBBroker broker,
@@ -1957,7 +1922,6 @@ public class RESTServer {
 	    return true;
 	else
 	    return false;
-
     }
 
     /**
@@ -1978,6 +1942,4 @@ public class RESTServer {
 		writer.write("</xpath:exception>");
 		return writer.toString();
 	}
-
-
 }
