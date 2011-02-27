@@ -17,7 +17,7 @@ declare namespace xproc="http://xproc.net/xproc";
 declare function setup:main() as element()
 {
     <div class="panel">
-        <div class="panel-head">Examples Setup</div>
+        <div class="panel-head">Install Examples</div>
         {
 let $action := request:get-parameter("action", ()) return
 		if($action) then
@@ -288,16 +288,15 @@ declare function setup:select() as element()
 		XML data not included with the distribution which can be downloaded by selecting
 		the checkboxes below.</p>
 
-		<input type="checkbox" name="local" checked="true"/>
-		eXist-db shipped files<br/>
+		<input type="checkbox" name="local" checked="true"/>eXist-db shipped files<br/>
         
         <input type="checkbox" name="xmlad"/>
         <a href="http://sourceforge.net/projects/xmlad/">The XML Acronym Demystifier</a>
-        (approx. 384K)<br/>
+        (approx. 384K, download from internet)<br/>
         
         <input type="checkbox" name="mondial"/>
-        <a href="http://dbis.informatik.uni-goettingen.de/Mondial/" checked="true">The Mondial Database (Europe)</a>
-        (approx. 410K)
+        <a href="http://dbis.informatik.uni-goettingen.de/Mondial/">The Mondial Database (Europe)</a>
+        (approx. 410K, download from internet)
         
         <p><input type="submit" name="action" value="Import Files"/>
         <input type="submit" name="action" value="Skip"/></p>
