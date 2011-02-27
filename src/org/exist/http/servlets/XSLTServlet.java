@@ -30,7 +30,6 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.Account;
 import org.exist.security.internal.AccountImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
