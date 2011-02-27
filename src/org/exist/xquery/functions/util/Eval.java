@@ -428,6 +428,7 @@ public class Eval extends BasicFunction {
 
             Sequence sequence = xqueryService.execute(compiled, exprContext, false);
             ValueSequence newSeq = new ValueSequence();
+            newSeq.keepUnOrdered(unordered);
             boolean hasSupplements = false;
             for (int i = 0;  i < sequence.getItemCount(); i++) {
                 //if (sequence.itemAt(i) instanceof StringValue) {
