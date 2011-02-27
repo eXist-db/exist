@@ -91,6 +91,10 @@ public class XPathException extends Exception {
         this.message = message;
     }
 
+    public XPathException(Expression expr, Throwable cause) {
+        this(expr.getLine(), expr.getColumn(), cause.getMessage(), cause);
+    }
+
     /**
      * Use constructor with errorCode and errorVal
      */
