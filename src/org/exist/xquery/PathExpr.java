@@ -132,6 +132,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         this.parent = contextInfo.getParent();
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
         
         for (int i = 0; i < steps.size(); i++) {
@@ -221,6 +222,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 		currentContext != null && !currentContext.isEmpty())) {
                       
                     Sequence exprResult = new ValueSequence(Type.subTypeOf(expr.returnsType(), Type.NODE));
+                    ((ValueSequence)exprResult).keepUnOrdered(unordered);
                     
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();
