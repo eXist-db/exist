@@ -224,23 +224,50 @@ return (
                     {
                         let $link := session:encode-url(request:get-uri())
                         return
+                        <div>
+                            <ul>
+                                <li>Browse
+                                    <ul>
+                                        <li><a href="{$link}?panel=browse">Collections</a></li>
+                                        <li><a href="{$link}?panel=indexes">Indexes</a></li>
+                                    </ul>
+                                </li>
+                                <li>Install
+                                    <ul>
+                                        <li><a href="{$link}?panel=fundocs">Documentation</a></li>
+                                        <li><a href="{$link}?panel=setup">Examples</a></li>
+                                        <!--li><a href="{$link}?panel=install">Tools</a></li-->
+                                    </ul>
+                                </li>
+                               
+																<li>System
+                                    <ul>
+																			<li><a href="{$link}?panel=shutdown">Shutdown</a></li>
+																			<li><a href="{$link}?panel=status">Status</a></li>																		
+																		</ul>
+																</li>
+                                
+                                <li>Tooling
+                                    <ul>
+                                        <li><a href="{$link}?panel=backup">Backups</a></li>
+                                        <li><a href="{$link}?panel=repo">Package Repository</a></li>
+                                        <li><a href="{$link}?panel=trace">Query Profiling</a></li>
+                                        <li><a href="{$link}?panel=users">User Management</a></li>
+                                    </ul>
+                                </li>
+                                
+                                <li>View
+                                    <ul>
+                                        <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
+                                        <li><a href="{$link}?panel=xqueries">Running Jobs</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
                             <ul>
                                 <li><a href="..">Home</a></li>
-                                <li><a href="{$link}?panel=status">System Status</a></li>
-                                <li><a href="{$link}?panel=browse">Browse Collections</a></li>
-                                <li><a href="{$link}?panel=indexes">Browse Indexes</a></li>
-                                <li><a href="{$link}?panel=users">User Management</a></li>
-                                <li><a href="{$link}?panel=grammar">View Grammar cache</a></li>
-                                <li><a href="{$link}?panel=xqueries">View Running Jobs</a></li>
-                                <li><a href="{$link}?panel=fundocs">Install Documentation</a></li>
-                                <li><a href="{$link}?panel=setup">Install Examples</a></li>
-                                <li><a href="{$link}?panel=install">Install Tools</a></li>
-                                <li><a href="{$link}?panel=backup">Backups</a></li>
-                                <li><a href="{$link}?panel=trace">Query Profiling</a></li>
-                                <li><a href="{$link}?panel=repo">Package Repository</a></li>
-                                <li><a href="{$link}?panel=shutdown">Shutdown</a></li>
                                 <li><a href="{$link}?logout=yes">Logout</a></li>
                             </ul>
+                            </div>
                     }
                     <div class="userinfo">
                         Logged in as: {xdb:get-current-user()}
