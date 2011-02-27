@@ -200,7 +200,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
-                    throw new XPathException(this, "XPTY0019: left operand of '/' must be a node. Got '" + 
+                    throw new XPathException(this, ErrorCodes.XPTY0019, "left operand of '/' must be a node. Got '" + 
                             Type.getTypeName(result.getItemType()) + Cardinality.toString(result.getCardinality()) + "'");                    
                 }
 
@@ -265,7 +265,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 //                !(expr instanceof LetExpr) &&
 //                !(expr instanceof EnclosedExpr) &&
                 !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
-                throw new XPathException(this, "XPTY0018: Cannot mix nodes and atomic values in the result of a path expression.");
+                throw new XPathException(this, ErrorCodes.XPTY0018, "Cannot mix nodes and atomic values in the result of a path expression.");
             }
         }
         

@@ -83,11 +83,11 @@ public class CastExpression extends AbstractExpression {
         }
 		//Should be handled by the parser
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
-			throw new XPathException(this, "err:XPST0080: cannot cast to " +
+			throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " +
 					Type.getTypeName(requiredType));
         }
         if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
-			throw new XPathException(this, "err:XPST0051: cannot cast to " +
+			throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " +
 					Type.getTypeName(requiredType));
         }
 
@@ -102,7 +102,7 @@ public class CastExpression extends AbstractExpression {
             Item item = seq.itemAt(0);
 
             if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ATOMIC))
-				throw new XPathException(this, "err:XPTY0004: cardinality error: sequence with more than one item is not allowed here");
+				throw new XPathException(this, ErrorCodes.XPTY0004, "cardinality error: sequence with more than one item is not allowed here");
             try {
                 // casting to QName needs special treatment
                 if(requiredType == Type.QNAME) {

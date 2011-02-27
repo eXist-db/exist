@@ -101,7 +101,7 @@ public class EnclosedExpr extends PathExpr {
 						buf.setLength(0);
 					}
                     if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
-                        throw new XPathException(this, "XQTY0024: An attribute may not appear after " +
+                        throw new XPathException(this, ErrorCodes.XQTY0024, "An attribute may not appear after " +
                             "another child node.");
                     next.copyTo(context.getBroker(), receiver);
                     allowAttribs = next.getType() == Type.ATTRIBUTE;
@@ -113,7 +113,7 @@ public class EnclosedExpr extends PathExpr {
 				receiver.characters(buf);
 		} catch (SAXException e) {
 		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
-            throw new XPathException(this, e.getMessage());
+            throw new XPathException(this, e);
 			//throw new XPathException(getASTNode(),
 			//	"Encountered SAX exception while serializing enclosed expression: "
 			//		+ ExpressionDumper.dump(this));

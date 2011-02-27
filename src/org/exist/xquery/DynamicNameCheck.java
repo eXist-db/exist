@@ -94,7 +94,7 @@ public class DynamicNameCheck extends AbstractExpression {
 
                 return seq;
             } catch(IllegalArgumentException iae) {
-                throw new XPathException(expression, iae.getMessage(), iae);
+                throw new XPathException(expression, iae);
             }
 	}
 

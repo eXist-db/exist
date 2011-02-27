@@ -899,9 +899,9 @@ public class LocationStep extends Step {
 					reader.filter(filter);
 				}
 			} catch (IOException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			} catch (XMLStreamException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			}
 			return result;
 		} else {
@@ -1035,9 +1035,9 @@ public class LocationStep extends Step {
 				}
 				return result;
 			} catch (XMLStreamException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			} catch (IOException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			}
 		} else {
 			// TODO : no test on preloaded data ?
@@ -1131,9 +1131,9 @@ public class LocationStep extends Step {
 				}
 				return result;
 			} catch (XMLStreamException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			} catch (IOException e) {
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			}
 		} else {
 			// TODO : no test on preloaded data ?

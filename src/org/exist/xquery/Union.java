@@ -55,15 +55,15 @@ public class Union extends CombiningExpression {
             result = Sequence.EMPTY_SEQUENCE;
         } else if(rval.isEmpty()) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
-                throw new XPathException(this, "err:XPTY0004 : union operand is not a node sequence");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
             result = lval;
         } else if(lval.isEmpty()) {
             if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
-                throw new XPathException(this, "err:XPTY0004 : union operand is not a node sequence");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
             result = rval;            
         } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(this, "err:XPTY0004 : union operand is not a node sequence");            
+                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");            
             if (lval.isPersistentSet() && rval.isPersistentSet()) {        
                 result = lval.toNodeSet().union(rval.toNodeSet());
             } else {
