@@ -96,10 +96,10 @@ public class CastableExpression extends AbstractExpression {
         }
         
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION))
-            throw new XPathException(this, "err:XPST0080: cannot convert to " + Type.getTypeName(requiredType));
+            throw new XPathException(this, ErrorCodes.XPST0080, "cannot convert to " + Type.getTypeName(requiredType));
 
         if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED)
-            throw new XPathException(this, "err:XPST0051: cannot convert to " + Type.getTypeName(requiredType));
+            throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert to " + Type.getTypeName(requiredType));
 
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413

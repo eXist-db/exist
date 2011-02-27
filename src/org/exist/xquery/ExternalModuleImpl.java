@@ -162,7 +162,7 @@ public class ExternalModuleImpl implements ExternalModule {
     
 	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException {
         if (!qname.getNamespaceURI().equals(getNamespaceURI()))
-            throw new XPathException(decl, "err:XQST0048: It is a static error if a function " +
+            throw new XPathException(decl, ErrorCodes.XQST0048, "It is a static error if a function " +
                 "or variable declared in a library module is not in the target namespace of the library module.");
 		mGlobalVariables.put(qname, decl);
 	}

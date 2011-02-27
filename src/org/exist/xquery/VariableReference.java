@@ -58,9 +58,9 @@ public class VariableReference extends AbstractExpression {
             return;
         }
         if (var == null)
-            throw new XPathException(this, "XPDY0002 : variable '$" + qname + "' is not set.");
+            throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
         if (!var.isInitialized())
-            throw new XPathException(this, "XQST0054: variable declaration of '$" + qname + "' cannot " +
+            throw new XPathException(this, ErrorCodes.XQST0054, "variable declaration of '$" + qname + "' cannot " +
             "be executed because of a circularity.");
         contextInfo.setStaticReturnType(var.getStaticType());
     }
@@ -80,10 +80,10 @@ public class VariableReference extends AbstractExpression {
         
 		Variable var = getVariable();
         if (var == null)
-            throw new XPathException(this, "XPDY0002 : variable '$" + qname + "' is not set.");
+            throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
         Sequence seq = var.getValue();
 		if (seq == null)
-			throw new XPathException(this, "XPDY0002 : undefined value for variable '$" + qname + "'");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "undefined value for variable '$" + qname + "'");
         Sequence result = seq;
         
         if (context.getProfiler().isEnabled()) 

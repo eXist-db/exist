@@ -128,7 +128,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 				else actualCardinality = Cardinality.ONE;
 				
 				if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
-					throw new XPathException(this, "err:XPTY0004: Invalid cardinality for parameter $" + varName +  
+					throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +  
  						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
  						", got " + currentArguments[j].getItemCount());
 			}
