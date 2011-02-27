@@ -303,12 +303,12 @@ public class ModuleContext extends XQueryContext {
     	return(parentContext.getXQueryContextVar(name));
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.xquery.XQueryContext#getBroker()
-     */
-    public DBBroker getBroker() {
-        return parentContext.getBroker();
-    }
+//    /* (non-Javadoc)
+//     * @see org.exist.xquery.XQueryContext#getBroker()
+//     */
+//    public DBBroker getBroker() {
+//        return parentContext.getBroker();
+//    }
     
     /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getDocumentBuilder()
