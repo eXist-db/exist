@@ -165,6 +165,7 @@ public class ErrorCodes {
     public static ErrorCode FORX0004 = new ErrorCode("FORX0004", "Invalid replacement string.");
     public static ErrorCode FOTY0012 = new ErrorCode("FOTY0012", "Argument node does not have a typed value.");
 
+    public static ErrorCode EXIST001 = new ErrorCode("EXIST001", "");
 
     public static class ErrorCode {
 
