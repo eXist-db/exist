@@ -3,6 +3,7 @@ package org.exist.source;
 import java.io.*;
 import java.util.Map;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
@@ -42,8 +43,7 @@ public class StringSourceWithMapKey extends AbstractSource {
     public String getContent() throws IOException {return map.get("<query>");}
 
 	@Override
-	public boolean validate(Subject subject, int perm) {
+	public void validate(Subject subject, int perm) throws PermissionDeniedException {
 		// TODO protected?
-		return true;
 	}
 }

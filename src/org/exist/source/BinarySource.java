@@ -1,5 +1,6 @@
 package org.exist.source;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
@@ -57,8 +58,7 @@ public class BinarySource extends AbstractSource {
     }
 
 	@Override
-	public boolean validate(Subject subject, int perm) {
+	public void validate(Subject subject, int perm) throws PermissionDeniedException {
 		// TODO protected?
-		return true;
 	}
 }
