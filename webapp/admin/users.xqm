@@ -10,6 +10,7 @@ declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
+declare namespace config="http://exist-db.org/Configuration";
 
 declare function users:main() as element()
 {
@@ -57,7 +58,7 @@ declare function users:process() as element()*
 declare function users:remove-user() as element()*
 {
     let $uid := request:get-parameter("uid", ()),
-    $name := doc("/db/system/users.xml")//user[@uid = $uid]/@name cast as xs:string return
+    $name := collection("/db/system/security/exist/accounts")/config:account[util:collection-name(.) ne '/db/system/security/exist/accounts/removed'][@id = $uid]/config:name return
         
         if($name eq xdb:get-current-user()) then
         (
@@ -163,13 +164,13 @@ declare function users:display() as element()
                 <th>Home</th>
             </tr>
             {
-                for $user in doc("/db/system/users.xml")//users/user
-                    let $name := xs:string($user/@name),
-                    $groups := string-join($user/group, ", "),
-                    $home := if($user/@home) then xs:string($user/@home) else "not set"
+                for $user in collection("/db/system/security/exist/accounts")/config:account[util:collection-name(.) ne '/db/system/security/exist/accounts/removed']
+                    let $name := $user/config:name/text(),
+                    $groups := string-join($user/config:group/@name, ", "),
+                    $home := if ($user/config:home ne "") then $user/config:home/text() else "not set" 
                 order by $name return
                     <tr>
-                        <td><input type="radio" name="uid" value="{$user/@uid}"/></td>
+                        <td><input type="radio" name="uid" value="{$user/@id}"/></td>
                         <td>{$name}</td>
                         <td>{$groups}</td>
                         <td>{$home}</td>
@@ -188,12 +189,12 @@ declare function users:display() as element()
         {
                 let $action := request:get-parameter("action", ""),
                 $uid := request:get-parameter("uid", "") return
-                    if($action eq "Edit") then
+                    if ($action eq "Edit") then
                     (
-                        let $user := doc("/db/system/users.xml")//users/user[@uid = $uid] return
-                            users:edit-user(xs:integer($uid), $user/@name, string-join($user/group, ", "), $user/@home)
+                        let $user := collection("/db/system/security/exist/accounts")/config:account[util:collection-name(.) ne '/db/system/security/exist/accounts/removed'][@id = $uid] return
+                            users:edit-user(xs:integer($uid), xs:string($user/config:name), string-join($user/config:group/@name, ", "), xs:string($user/config:home))
                     )
-                    else if($action eq "New User") then
+                    else if ($action eq "New User") then
                     (
                         users:edit-user(-1, "", "", ())
                     )else()
@@ -230,7 +231,7 @@ declare function users:edit-user($uid as xs:integer, $name as xs:string, $groups
             <td>Groups:</td>
             <td><input type="text" name="groups" value="{$groups}"/></td>
             <td class="help">A comma-separated list of groups.
-            Note: non-existing groups will be created automatically.</td>
+            Note: non-existing groups will be created automatically.</td> <!-- TODO This doesn't seem to be true - non-existing groups are not being created -->
         </tr>
         <tr>
             <td>Password:</td>
@@ -250,7 +251,8 @@ declare function users:edit-user($uid as xs:integer, $name as xs:string, $groups
             <td>Home Collection:</td>
             <td><input type="text" name="home" value="{$home}"/></td>
             <td class="help">Optional: assign a home collection, e.g. /db/home/me.
-            The user will be the owner of this collection.</td>
+            The user will be the owner of this collection.
+            Note: non-existing collections will be created automatically.</td>
         </tr>
         <tr>
         {
