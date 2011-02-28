@@ -599,10 +599,10 @@
 		</script>
     </xsl:template>
     <xsl:template match="link">
-        <script>
+        <link>
             <xsl:copy-of select="@*"/>
 			<xsl:apply-templates/>
-		</script>
+		</link>
     </xsl:template>
     <xsl:template name="returns2br">
         <xsl:param name="string"/>
