@@ -1189,16 +1189,12 @@ public class RpcConnection implements RpcAPI {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            DocumentImpl doc = (DocumentImpl)broker.getXMLResource(docUri);
+            DocumentImpl doc = broker.getResource(docUri, Permission.READ);
             if (doc == null) {
                 transact.abort(transaction);
                 throw new EXistException("document " + docUri + " not found");
             }
             //TODO : register a lock (which one ?) within the transaction ?
-            if(!doc.getPermissions().validate(user, Permission.READ)) {
-                transact.abort(transaction);
-                throw new PermissionDeniedException("Insufficient privileges to read resource");
-            }
             MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(doc);
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);

@@ -346,15 +346,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             broker = pool.get(session.getUser());
 // TODO check XML/Binary resource
 //            DocumentImpl doc = (DocumentImpl)broker.getDocument(documentName);
-            DocumentImpl doc = (DocumentImpl)broker.getXMLResource(documentName);
+            DocumentImpl doc = broker.getXMLResource(documentName, Permission.READ);
             if (doc == null) {
                 transact.abort(transaction);
                 throw new RemoteException(
                         "document " + documentName + " not found");
-            }
-            if(!doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-                transact.abort(transaction);
-                throw new RemoteException("Not allowed to read resource");
             }
             MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(doc);

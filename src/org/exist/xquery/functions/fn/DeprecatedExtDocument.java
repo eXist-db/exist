@@ -147,17 +147,15 @@ public class DeprecatedExtDocument extends Function {
 	                    if(nextUri.numSegments()==1) {                     
 	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
 	                    }
-						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
+						DocumentImpl doc = context.getBroker().getXMLResource(nextUri, Permission.READ);
 						if(doc != null) {
-						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-							    throw new XPathException(this, "Insufficient privileges to read resource " + next);
 							docs.add(doc);
 						}
 			        } catch (XPathException e) { //From AnyURIValue constructor
                         e.setLocation(line, column);
 			            throw e;
 			        } catch (PermissionDeniedException e) {
-						throw new XPathException(this, "Permission denied: unable to load document " + next);
+						throw new XPathException(this, "Permission denied: Insufficient privileges to read resource " + next);
 					}
 				}
 				cachedArgs = args;

@@ -171,11 +171,10 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             broker = pool.get(session.getUser());
 // TODO check XML/Binary resource
 // DocumentImpl document = (DocumentImpl) broker.getDocument(name);
-            DocumentImpl document = (DocumentImpl) broker.getXMLResource(name);
+            DocumentImpl document = broker.getResource(name, Permission.READ);
             if (document == null)
                 throw new RemoteException("resource " + name + " not found");
-            if(!document.getPermissions().validate(broker.getUser(), Permission.READ))
-                throw new PermissionDeniedException("Not allowed to read resource");
+
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             serializer.setProperties(outputProperties);
