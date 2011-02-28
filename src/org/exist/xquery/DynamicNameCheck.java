@@ -115,7 +115,7 @@ public class DynamicNameCheck extends AbstractExpression {
             return "{''}:" + node.getNodeName();
 
         } else {
-            return prefix + ":" + node.getNodeName();
+            return prefix + ":" + node.getLocalName();
         }
     }
 
