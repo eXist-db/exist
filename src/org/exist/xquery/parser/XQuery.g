@@ -160,6 +160,7 @@ imaginaryTokenDefinitions
 	COMP_DOC_CONSTRUCTOR
 	PRAGMA
 	GTEQ
+	SEQUENCE
 	;
 
 // === XPointer ===
@@ -462,8 +463,13 @@ atomicType throws XPathException
 queryBody throws XPathException: expr ;
 
 expr throws XPathException
+{ boolean isSequence = false; }
 :
-    exprSingle ( COMMA^ exprSingle )*
+  exprSingle ( COMMA! exprSingle { isSequence = true; })*
+  {
+    if (isSequence) 
+      #expr = #(#[SEQUENCE, "sequence"], #expr); 
+  }
 	;
 
 exprSingle throws XPathException
