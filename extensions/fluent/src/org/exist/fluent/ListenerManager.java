@@ -399,7 +399,7 @@ public class ListenerManager {
 			INSTANCE.fire(key, (DocumentImpl)null, (org.exist.collections.Collection)null, true);
 		}
 		@Override
-		public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) { //throws TriggerException {
 			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_CREATE);
 			INSTANCE.fire(key, document, null, true);
 		}
@@ -409,7 +409,7 @@ public class ListenerManager {
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
-		public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) { //throws TriggerException {
 			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_UPDATE);
 			INSTANCE.fire(key, document, null, true);
 			
@@ -420,7 +420,7 @@ public class ListenerManager {
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
-		public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) { //throws TriggerException {
 			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_CREATE);
 			INSTANCE.fire(key, document, null, true);
 		}
@@ -430,7 +430,7 @@ public class ListenerManager {
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
-		public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) { //throws TriggerException {
 			EventKey key = new EventKey(document.getURI().toString(), Trigger.AFTER_RENAME);
 			INSTANCE.fire(key, document, null, true);
 		}
@@ -440,7 +440,7 @@ public class ListenerManager {
 			INSTANCE.fire(key, document, null, true);
 		}
 		@Override
-		public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+		public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) { //throws TriggerException {
 			EventKey key = new EventKey(uri.toString(), Trigger.AFTER_REMOVE);
 			INSTANCE.fire(key, null, null, true);
 		}

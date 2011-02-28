@@ -243,7 +243,12 @@ public class Deploy extends BasicFunction {
 		ctx.declareVariable("dir", tempDir.getAbsolutePath());
 		File home = context.getBroker().getConfiguration().getExistHome();
 		ctx.declareVariable("home", home.getAbsolutePath());
-		CompiledXQuery compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
+		CompiledXQuery compiled;
+		try {
+			compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
+		} catch (PermissionDeniedException e) {
+			throw new XPathException(this, e);
+		}
 		Sequence setupResult = xqs.execute(compiled, null);
 		return setupResult;
 	}

@@ -21,6 +21,7 @@
  */
 package org.exist.versioning;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
@@ -76,7 +77,7 @@ public class VersioningHelper {
     
     private final static StringSource GET_BASE_REV_FOR_KEY_SOURCE = new StringSource(GET_BASE_REV_FOR_KEY);
     
-    public static long getCurrentRevision(DBBroker broker, XmldbURI docPath) throws XPathException, IOException {
+    public static long getCurrentRevision(DBBroker broker, XmldbURI docPath) throws XPathException, IOException, PermissionDeniedException {
         String docName = docPath.lastSegment().toString();
         XmldbURI collectionPath = docPath.removeLastSegment();
         XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);
@@ -103,7 +104,7 @@ public class VersioningHelper {
         }
     }
 
-    public static boolean newerRevisionExists(DBBroker broker, XmldbURI docPath, long baseRev, String key) throws XPathException, IOException {
+    public static boolean newerRevisionExists(DBBroker broker, XmldbURI docPath, long baseRev, String key) throws XPathException, IOException, PermissionDeniedException {
         String docName = docPath.lastSegment().toString();
         XmldbURI collectionPath = docPath.removeLastSegment();
         XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);
@@ -129,7 +130,7 @@ public class VersioningHelper {
         }
     }
 
-    public static long getBaseRevision(DBBroker broker, XmldbURI docPath, long baseRev, String sessionKey) throws XPathException, IOException {
+    public static long getBaseRevision(DBBroker broker, XmldbURI docPath, long baseRev, String sessionKey) throws XPathException, IOException, PermissionDeniedException {
         String docName = docPath.lastSegment().toString();
         XmldbURI collectionPath = docPath.removeLastSegment();
         XmldbURI path = VersioningTrigger.VERSIONS_COLLECTION.append(collectionPath);

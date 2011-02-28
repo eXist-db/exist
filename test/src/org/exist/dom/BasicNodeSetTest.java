@@ -25,6 +25,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -388,7 +389,7 @@ public class BasicNodeSetTest extends TestCase {
 	}
 	
 	private Sequence executeQuery(DBBroker broker, String query, int expected,
-			String expectedResult) throws XPathException, SAXException {
+			String expectedResult) throws XPathException, SAXException, PermissionDeniedException {
 		XQuery xquery = broker.getXQueryService();
 		assertNotNull(xquery);
 		Sequence seq = xquery.execute(query, null, AccessContext.TEST);

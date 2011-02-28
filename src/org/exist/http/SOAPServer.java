@@ -175,8 +175,9 @@ public class SOAPServer
      * @param response	The HttpServletResponse for the XQWS
      * 
      * @return The compiled XQuery
+     * @throws PermissionDeniedException 
      */
-    private CompiledXQuery compileXQuery(DBBroker broker, Source xqSource, XmldbURI[] staticallyKnownDocuments, XmldbURI xqwsCollectionUri, HttpServletRequest request, HttpServletResponse response) throws XPathException
+    private CompiledXQuery compileXQuery(DBBroker broker, Source xqSource, XmldbURI[] staticallyKnownDocuments, XmldbURI xqwsCollectionUri, HttpServletRequest request, HttpServletResponse response) throws XPathException, PermissionDeniedException
     {
     	//Get the xquery service
         XQuery xquery = broker.getXQueryService();
@@ -235,8 +236,9 @@ public class SOAPServer
      * @param response The Http Servlet Response
      * 
      * @return The compiled XQuery
+     * @throws PermissionDeniedException 
      */
-    private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, Node xqwsSOAPFunction, XQWSDescription xqwsDescription, HttpServletRequest request, HttpServletResponse response) throws XPathException
+    private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, Node xqwsSOAPFunction, XQWSDescription xqwsDescription, HttpServletRequest request, HttpServletResponse response) throws XPathException, PermissionDeniedException
     {	
     	StringBuffer query = new StringBuffer();
     	query.append("xquery version \"1.0\";" + SEPERATOR);
@@ -1384,8 +1386,9 @@ public class SOAPServer
          * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
          * 
          * @return The compiled XQuery
+         * @throws PermissionDeniedException 
          */
-        private CompiledXQuery XQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
+        private CompiledXQuery XQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException, PermissionDeniedException
         {
             //Create a simple XQuery wrapper to access the module
             String query = "xquery version \"1.0\";" + SEPERATOR;

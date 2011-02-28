@@ -625,7 +625,7 @@ public class XQueryURLRewrite implements Filter {
 
     private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
                               URLRewrite staticRewrite, Properties outputProperties)
-        throws ServletException, XPathException {
+        throws ServletException, XPathException, PermissionDeniedException {
         // Try to find the XQuery
         SourceInfo sourceInfo;
         String moduleLoadPath = config.getServletContext().getRealPath(".");

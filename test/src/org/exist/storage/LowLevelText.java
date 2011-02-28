@@ -2,6 +2,7 @@ package org.exist.storage;
 
 import junit.framework.TestCase;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.util.Configuration;
@@ -98,9 +99,13 @@ public class LowLevelText extends TestCase {
 	}
 	
 	private void callAndTestBorrowCompiledXQuery(StringSource stringSourceArg) {
-		CompiledXQuery compiledXQuery = pool.borrowCompiledXQuery(broker,
-				stringSourceArg);
-		System.out.println("compiledXQuery: " + compiledXQuery);
+		CompiledXQuery compiledXQuery = null;
+		try {
+			compiledXQuery = pool.borrowCompiledXQuery(broker, stringSourceArg);
+			System.out.println("compiledXQuery: " + compiledXQuery);
+		} catch (PermissionDeniedException e) {
+			e.printStackTrace();
+		}
 		assertNotNull(
 				"borrowCompiledXQuery should retrieve something for this stringSource",
 				compiledXQuery);

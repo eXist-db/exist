@@ -25,6 +25,7 @@ package org.exist.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
@@ -200,7 +201,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} catch (IOException e) {
 			    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-            } finally {
+            } catch (PermissionDeniedException e) {
+			    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+			} finally {
 				brokerPool.release(broker);
 			}
 			LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
@@ -234,7 +237,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch (IllegalArgumentException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
+        } catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} finally {
             brokerPool.release(broker);
         }
     }

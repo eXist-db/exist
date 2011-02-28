@@ -250,7 +250,7 @@ public class RESTServer {
 
 		int howmany = 10;
 		int start = 1;
-                boolean typed = false;
+        boolean typed = false;
 		boolean wrap = true;
 		boolean source = false;
 		boolean cache = false;
@@ -264,7 +264,7 @@ public class RESTServer {
 				query = request.getParameter("_query");
 			}
 		}
-				String _var = request.getParameter("_variables");
+		String _var = request.getParameter("_variables");
 		List /*<Namespace>*/ namespaces = null;
 		NodeImpl variables = null;
 		try {
@@ -298,11 +298,9 @@ public class RESTServer {
 						"Parameter _start should be an int");
 			}
 		}
-                String p_typed = request.getParameter("_typed");
-		if (p_typed != null) {
-			if (p_typed.toLowerCase().equals("yes"))
+		if ((option = request.getParameter("_typed")) != null) {
+			if (option.toLowerCase().equals("yes"))
 				typed = true;
-
 		}
 		if ((option = request.getParameter("_wrap")) != null) {
 			wrap = option.equals("yes");
@@ -343,8 +341,7 @@ public class RESTServer {
 		String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
 
 		if (query != null) {
-			// query parameter specified, search method does all the rest of the
-			// work
+			// query parameter specified, search method does all the rest of the work
 			try {
 				search(broker, query, path, namespaces, variables, howmany, start, typed, outputProperties,
 						wrap, cache, request, response);
@@ -1336,11 +1333,12 @@ public class RESTServer {
 
 	/**
 	 * Directly execute an XQuery stored as a binary document in the database.
+	 * @throws PermissionDeniedException 
 	 */
 	private void executeXQuery(DBBroker broker, DocumentImpl resource,
 			HttpServletRequest request, HttpServletResponse response,
 			Properties outputProperties, String servletPath, String pathInfo)
-			throws XPathException, BadRequestException {
+			throws XPathException, BadRequestException, PermissionDeniedException {
 
 		Source source = new DBSource(broker, (BinaryDocument) resource, true);
 		XQuery xquery = broker.getXQueryService();
@@ -1417,11 +1415,12 @@ public class RESTServer {
 
 	/**
 	 * Directly execute an XProc stored as a XML document in the database.
+	 * @throws PermissionDeniedException 
 	 */
 	private void executeXProc(DBBroker broker, DocumentImpl resource,
 			HttpServletRequest request, HttpServletResponse response,
 			Properties outputProperties, String servletPath, String pathInfo)
-			throws XPathException, BadRequestException {
+			throws XPathException, BadRequestException, PermissionDeniedException {
 		URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
