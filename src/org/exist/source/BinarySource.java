@@ -1,5 +1,6 @@
 package org.exist.source;
 
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 import java.io.*;
@@ -54,4 +55,10 @@ public class BinarySource extends AbstractSource {
             }
         }
     }
+
+	@Override
+	public boolean validate(Subject subject, int perm) {
+		// TODO protected?
+		return true;
+	}
 }

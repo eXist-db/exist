@@ -32,6 +32,7 @@ import java.net.URLConnection;
 import java.net.HttpURLConnection;
 
 import org.apache.log4j.Logger;
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 /**
@@ -171,5 +172,11 @@ public class URLSource extends AbstractSource {
 		if (url == null)
 			return "[not set]";
 		return url.toString();
+	}
+
+	@Override
+	public boolean validate(Subject subject, int perm) {
+		// TODO protected?
+		return true;
 	}
 }
