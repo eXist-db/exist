@@ -380,6 +380,8 @@ public abstract class DBBroker extends Observable {
      * PermissionDeniedException;
      */
 
+    public abstract Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
+    
     /**
      * Return the document stored at the specified path. The path should be
      * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
@@ -387,8 +389,7 @@ public abstract class DBBroker extends Observable {
      * @return the document or null if no document could be found at the
      *         specified location.
      */
-    public abstract Document getXMLResource(XmldbURI docURI)
-        throws PermissionDeniedException;
+    public abstract DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
 
     /**
      * deprecated Use XmldbURI instead!

@@ -1714,6 +1714,10 @@ public class NativeBroker extends DBBroker {
        }
     }
 
+    public Document getXMLResource(XmldbURI fileName) throws PermissionDeniedException {
+    	return getResource(fileName, Permission.READ);
+    }
+
     /**
      *  get a document by its file name. The document's file name is used to
      *  identify a document.
@@ -1724,7 +1728,7 @@ public class NativeBroker extends DBBroker {
      *@exception  PermissionDeniedException 
      */
     @Override
-    public Document getXMLResource(XmldbURI fileName) throws PermissionDeniedException {
+    public DocumentImpl getResource(XmldbURI fileName, int accessType) throws PermissionDeniedException {
         fileName = prepend(fileName.toCollectionPathURI());
         //TODO : resolve URIs !!!
         XmldbURI collUri = fileName.removeLastSegment();
@@ -1734,8 +1738,9 @@ public class NativeBroker extends DBBroker {
             LOG.debug("collection '" + collUri + "' not found!");
             return null;
         }
-        if (!collection.getPermissions().validate(getUser(), Permission.READ))
+        if (!collection.getPermissions().validate(getSubject(), Permission.READ))
             throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "'");
+        
         DocumentImpl doc = collection.getDocument(this, docUri);
         if (doc == null) {
             LOG.debug("document '" + fileName + "' not found!");
@@ -1749,9 +1754,9 @@ public class NativeBroker extends DBBroker {
               LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
            }
        }
-       //if (!doc.getPermissions().validate(getUser(), Permission.READ))
-           //throw new PermissionDeniedException("not allowed to read document");
-        return doc;
+       if (!doc.getPermissions().validate(getSubject(), accessType))
+    		   throw new PermissionDeniedException("not allowed to read document '"+fileName+"'");
+       return doc;
     }
 
     @Override
@@ -1769,7 +1774,7 @@ public class NativeBroker extends DBBroker {
             return null;
         }
         try {
-           if (!collection.getPermissions().validate(getUser(), Permission.READ))
+           if (!collection.getPermissions().validate(getSubject(), Permission.READ))
                throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "'");
             DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
             if (doc == null) {
