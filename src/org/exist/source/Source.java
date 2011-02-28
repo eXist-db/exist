@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.InputStream;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
@@ -107,6 +108,6 @@ public interface Source {
      * @param  perm The requested permissions
      * @return true if subject has the requested permissions
      */
-    public boolean validate(Subject subject, int perm);	
+    public void validate(Subject subject, int perm) throws PermissionDeniedException;	
 
 }

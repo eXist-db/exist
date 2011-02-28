@@ -152,7 +152,9 @@ public class DBSource extends AbstractSource {
     }
 
 	@Override
-	public boolean validate(Subject subject, int perm) {
-		return doc.getPermissions().validate(subject, perm);
+	public void validate(Subject subject, int perm) throws PermissionDeniedException {
+		if (!doc.getPermissions().validate(subject, perm)) {
+			throw new PermissionDeniedException(subject, doc.getURI().toString(), perm);
+		}
 	}
 }
