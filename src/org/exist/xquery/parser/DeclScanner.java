@@ -146,6 +146,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"COMP_DOC_CONSTRUCTOR",
 		"PRAGMA",
 		"GTEQ",
+		"SEQUENCE",
 		"\"xpointer\"",
 		"opening parenthesis '('",
 		"closing parenthesis ')'",
