@@ -31,6 +31,7 @@ public interface Permission {
 	public final static int READ = 4;
 	public final static int WRITE = 2;
 	public final static int UPDATE = 1;
+	public final static int EXECUTE = 1;
 	
 	public final static String USER_STRING = "user";
     public final static String GROUP_STRING = "group";
