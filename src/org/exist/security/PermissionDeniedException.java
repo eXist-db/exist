@@ -42,5 +42,23 @@ public class PermissionDeniedException extends Exception {
     public PermissionDeniedException( String message ) {
         super( message );
     }
+    
+    public PermissionDeniedException( Subject subject, String location, int perm ) {
+    	super( "Subject '"+subject.getName()+"' don't have "+getPermissionAsString(perm)+" access to resource '"+location+"'." );
+    }
+    
+    private static String getPermissionAsString(int perm) {
+    	if (perm == Permission.READ)
+    		return "'read'";
+    	
+    	if (perm == Permission.WRITE)
+    		return "'write'";
+    	
+    	if (perm == Permission.UPDATE)
+    		return "'update/execute'";
+    	
+    	return "";
+    }
+    
 }
 
