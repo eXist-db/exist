@@ -309,6 +309,8 @@ public class Deploy extends BasicFunction {
 				continue;
 			if (!file.isDirectory()) {
 				MimeType mime = mimeTab.getContentTypeFor(file.getName());
+				if (mime == null)
+					mime = MimeType.BINARY_TYPE;
 				XmldbURI name = XmldbURI.create(file.getName());
 				
 				Txn txn = mgr.beginTransaction();	
