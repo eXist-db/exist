@@ -139,14 +139,12 @@ public class XMLDBDocument extends Function {
 			if(nextUri.numSegments()==1) {                     
 			    nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
 			}
-			DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
+			DocumentImpl doc = context.getBroker().getResource(nextUri, Permission.READ);
 			if(doc == null) { 
 			    if (context.isRaiseErrorOnFailedRetrieval()) {
 				throw new XPathException(this, "FODC0002: can not access '" + nextUri + "'");
 			    }						
 			}else {
-			    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
-				throw new XPathException(this, "Insufficient privileges to read resource " + next);
 			    mdocs.add(doc);
 			}
 		    } catch (XPathException e) { //From AnyURIValue constructor

@@ -407,13 +407,12 @@ public abstract class Serializer implements XMLReader {
 		try {
 			// try to load document from eXist
 			//TODO: this systemId came from exist, so should be an unchecked create, right?
-			DocumentImpl doc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(systemId));
+			DocumentImpl doc = broker.getResource(XmldbURI.create(systemId), Permission.READ);
 			if (doc == null)
 				throw new SAXException("document " + systemId + " not found in database");
 			else
 				LOG.debug("serializing " + doc.getFileURI());
-			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
-				throw new PermissionDeniedException("Not allowed to read resource");
+
 			toSAX(doc);
 		} catch (PermissionDeniedException e) {
 			throw new SAXException("permission denied");
@@ -735,15 +734,12 @@ public abstract class Serializer implements XMLReader {
             // load stylesheet from eXist
             DocumentImpl xsl = null;
             try {
-                xsl = (DocumentImpl) broker.getXMLResource(stylesheetUri);
+                xsl = broker.getResource(stylesheetUri, Permission.READ);
             } catch (PermissionDeniedException e) {
                 throw new TransformerConfigurationException("permission denied to read " + stylesheetUri);
             }
             if (xsl == null) {
                 throw new TransformerConfigurationException("stylesheet not found: " + stylesheetUri);
-            }
-            if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
-                throw new TransformerConfigurationException("permission denied to read " + stylesheetUri);
             }
 
             //TODO: use xmldbURI

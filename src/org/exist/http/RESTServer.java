@@ -810,15 +810,9 @@ public class RESTServer {
 						collection.allDocs(broker, docs, true, true);
 
 					} else {
-						DocumentImpl xupdateDoc = (DocumentImpl) broker.getXMLResource(pathUri);
+						DocumentImpl xupdateDoc = broker.getResource(pathUri, Permission.READ);
 
 						if (xupdateDoc != null) {
-							if (!xupdateDoc.getPermissions().validate(
-									broker.getUser(), Permission.READ)) {
-								transact.abort(transaction);
-								throw new PermissionDeniedException(
-										"Not allowed to read collection");
-							}
 							docs.add(xupdateDoc);
 
 						} else
@@ -1107,7 +1101,7 @@ public class RESTServer {
 				broker.removeCollection(txn, collection);
 				response.setStatus(HttpServletResponse.SC_OK);
 			} else {
-				DocumentImpl doc = (DocumentImpl) broker.getXMLResource(path);
+				DocumentImpl doc = (DocumentImpl) broker.getResource(path, Permission.WRITE);
 				if (doc == null) {
 					transact.abort(txn);
 					throw new NotFoundException(

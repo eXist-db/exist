@@ -319,9 +319,8 @@ public class XIncludeFilter implements Receiver {
             // retrieve the document
             doc = null;
             try {
-                doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-                if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
-                    throw new ResourceError("Permission denied to read xincluded resource");
+                doc = serializer.broker.getResource(docUri, Permission.READ);
+
             } catch (PermissionDeniedException e) {
                 LOG.warn("permission denied", e);
                 throw new ResourceError("Permission denied to read xincluded resource", e);
