@@ -62,8 +62,14 @@ let $log := util:log("DEBUG", concat("URL Info: $external-path-to-app:       ", 
 :)
 
 return
+    (: redirect requests of ~/mobiledocs to ~/mobiledocs/ :)
+    if ($exist:path eq '') then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="{$external-path-to-app}"/>
+            <cache-control cache="no"/>
+        </dispatch>
     (: make sure the global css, js and image files are resolved :)
-    if (matches($exist:path, '((styles|scripts|resources)/|logo.jpg)')) then
+    else if (matches($exist:path, '((styles|scripts|resources)/|logo.jpg)')) then
         let $newPath := replace($exist:path, '^.*(((styles|scripts|resources)/|logo).*)$', '/$1')
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
