@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.CompiledXQuery;
@@ -96,7 +97,11 @@ public class FunLang extends Function {
 
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		super.analyze(contextInfo);
-		query = context.getBroker().getXQueryService().compile(context, queryString);		
+		try {
+			query = context.getBroker().getXQueryService().compile(context, queryString);
+		} catch (PermissionDeniedException e) {
+			throw new XPathException(this, e);
+		}		
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

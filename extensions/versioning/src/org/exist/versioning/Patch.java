@@ -30,6 +30,7 @@ import org.exist.dom.StoredNode;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NewArrayNodeSet;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -342,9 +343,14 @@ public class Patch {
         insertedNodes = new TreeMap<NodeId, ElementImpl>();
         appendedNodes = new TreeMap<NodeId, ElementImpl>();
         XQuery service = broker.getXQueryService();
-        Sequence changes = service.execute("declare namespace v=\"http://exist-db.org/versioning\";" +
-                "doc('" + doc.getURI().toString() + "')/v:version/v:diff/*",
-                Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+        Sequence changes;
+		try {
+			changes = service.execute("declare namespace v=\"http://exist-db.org/versioning\";" +
+			        "doc('" + doc.getURI().toString() + "')/v:version/v:diff/*",
+			        Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+		} catch (PermissionDeniedException e) {
+			throw new XPathException(e);
+		}
         for (SequenceIterator i = changes.iterate(); i.hasNext(); ) {
             NodeProxy p = (NodeProxy) i.nextItem();
             Element child = (Element) p.getNode();

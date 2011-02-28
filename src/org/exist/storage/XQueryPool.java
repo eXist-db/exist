@@ -28,6 +28,8 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.hashtable.Object2ObjectHashMap;
@@ -194,10 +196,14 @@ public class XQueryPool extends Object2ObjectHashMap {
 			return query;
 	}
 
-	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
+	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) throws PermissionDeniedException {
 		CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
 		if (query == null)
 			return null;
+		
+		//check execution permission
+		source.validate(broker.getSubject(), Permission.EXECUTE);
+		
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
 		XQueryContext context = query.getContext();

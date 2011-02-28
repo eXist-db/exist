@@ -7,6 +7,7 @@ import java.util.regex.*;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.*;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
 import org.exist.storage.*;
@@ -336,6 +337,8 @@ public class QueryService implements Cloneable {
 			throw new DatabaseException("unexpected exception", e);
 		} catch (LockException e) {
 			throw new DatabaseException("deadlock", e);
+		} catch (PermissionDeniedException e) {
+			throw new DatabaseException("permission denied", e);
 		} finally {
 			db.releaseBroker(broker);
 			STATS.update(query, t1, t2, t3, t4, System.currentTimeMillis());
@@ -555,6 +558,8 @@ public class QueryService implements Cloneable {
 			throw new DatabaseException("failed to compile query", e);
 		} catch (IOException e) {
 			throw new DatabaseException("unexpected exception", e);
+		} catch (PermissionDeniedException e) {
+			throw new DatabaseException("permission denied", e);
 		} finally {
 			db.releaseBroker(broker);
 			STATS.update(query, t1, t2, t3, 0, System.currentTimeMillis());

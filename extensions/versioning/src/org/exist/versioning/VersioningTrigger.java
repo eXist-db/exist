@@ -546,7 +546,9 @@ public class VersioningTrigger extends FilteringTrigger {
                     LOG.warn("Internal error in VersioningTrigger: " + e.getMessage(), e);
                 } catch (NumberFormatException e) {
                     LOG.warn("Illegal revision number in VersioningTrigger: " + documentRev);
-                }
+                } catch (PermissionDeniedException e) {
+                    LOG.warn("Internal error in VersioningTrigger: " + e.getMessage(), e);
+				}
             }
         }
         

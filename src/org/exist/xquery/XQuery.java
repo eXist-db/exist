@@ -27,6 +27,7 @@ import antlr.collections.AST;
 import com.sun.xacml.ctx.RequestCtx;
 import org.apache.log4j.Logger;
 import org.exist.debuggee.Debuggee;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
@@ -74,7 +75,7 @@ public class XQuery {
     }
     
     public CompiledXQuery compile(XQueryContext context, String expression) 
-    throws XPathException {
+    throws XPathException, PermissionDeniedException {
     	Source source = new StringSource(expression);
     	try {
     		return compile(context, source);
@@ -85,14 +86,17 @@ public class XQuery {
     }
     
     public CompiledXQuery compile(XQueryContext context, Source source) 
-    throws XPathException, IOException {
+    throws XPathException, IOException, PermissionDeniedException {
         return compile(context, source, false);
     }
     
     public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
-    throws XPathException, IOException {
+    throws XPathException, IOException, PermissionDeniedException {
 
-        context.setSource(XACMLSource.getInstance(source));
+		//check execution permission
+		source.validate(broker.getSubject(), Permission.EXECUTE);
+
+		context.setSource(XACMLSource.getInstance(source));
 		
         Reader reader;
         
@@ -255,7 +259,7 @@ public class XQuery {
         }
     }
 
-	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException {
+	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException, PermissionDeniedException {
 		XQueryContext context = new XQueryContext(broker, accessCtx);
 		CompiledXQuery compiled = compile(context, expression);
 		return execute(compiled, null);

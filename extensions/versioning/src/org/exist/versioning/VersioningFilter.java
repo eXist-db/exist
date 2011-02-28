@@ -4,6 +4,7 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.DocumentImpl;
 import org.exist.util.serializer.AttrList;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.serializers.CustomMatchListener;
 import org.exist.xquery.XPathException;
 import org.exist.xmldb.XmldbURI;
@@ -45,7 +46,9 @@ public class VersioningFilter extends CustomMatchListener {
                             LOG.error("Exception while retrieving versioning info: " + e.getMessage(), e);
                         } catch (IOException e) {
                             LOG.error("Exception while retrieving versioning info: " + e.getMessage(), e);
-                        }
+                        } catch (PermissionDeniedException e) {
+                            LOG.error("Exception while retrieving versioning info: " + e.getMessage(), e);
+						}
                     }
                 }
             }

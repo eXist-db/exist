@@ -20,7 +20,6 @@ import org.xml.sax.SAXException;
 import org.xqdoc.conversion.XQDocException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -165,7 +164,11 @@ public class Scan extends BasicFunction {
         if (normalizeXQuery == null) {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
             XQueryContext xc = xquery.newContext(AccessContext.INITIALIZE);
-            normalizeXQuery = xquery.compile(xc, source);
+            try {
+				normalizeXQuery = xquery.compile(xc, source);
+			} catch (PermissionDeniedException e) {
+				throw new XPathException(this, e);
+			}
         }
         normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
         return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);

@@ -447,8 +447,10 @@ public class Eval extends BasicFunction {
             return sequence;
 
         } catch(IOException ioe) {
-            throw new XPathException(this, ioe.getMessage(), ioe);
-        } finally {
+            throw new XPathException(this, ioe);
+        } catch (PermissionDeniedException e) {
+            throw new XPathException(this, e);
+		} finally {
             if(compiled != null) {
                 if(cache) {
                     pool.returnCompiledXQuery(querySource, compiled);
@@ -498,7 +500,7 @@ public class Eval extends BasicFunction {
                         sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                 }
             } catch(URISyntaxException e) {
-                throw new XPathException(this, e.getMessage(), e);
+                throw new XPathException(this, e);
             }
         } else {
             // No. Load from file or URL

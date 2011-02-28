@@ -235,7 +235,7 @@ public class XIncludeFilter implements Receiver {
                     if (LOG.isDebugEnabled())
                         LOG.debug(resourceError.getMessage(), resourceError);
                     error = resourceError;
-                }
+				}
             } else if (qname.getLocalName().equals(XI_FALLBACK)) {
                 inFallback = true;
             }
@@ -479,7 +479,10 @@ public class XIncludeFilter implements Receiver {
             } catch (XPathException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
-            }
+            } catch (PermissionDeniedException e) {
+                LOG.warn("xpointer error", e);
+                throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+			}
         }
         // restore settings
         document = prevDoc;

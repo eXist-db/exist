@@ -36,6 +36,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -45,7 +46,6 @@ import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionCall;
@@ -332,7 +332,11 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    }
+	    } catch (PermissionDeniedException e) {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
+		}
 
         //execute the XQuery
         try {
@@ -417,7 +421,10 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	    } catch(IOException e) {
 	    	//Should never be reached
         	LOG.error(e);
-	    }
+	    } catch (PermissionDeniedException e) {
+        	//Should never be reached
+        	LOG.error(e);
+		}
 
 	    //execute the XQuery
         try {
@@ -484,7 +491,11 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    }
+	    } catch (PermissionDeniedException e) {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
+		}
 	}
 	
 	private void execute(boolean isBefore, DBBroker broker, Txn transaction, QName functionName, XmldbURI ... urls) throws TriggerException {

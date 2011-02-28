@@ -93,7 +93,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
             // Must be a collection
             Collection collection = broker.getCollection(pathUri);
             if (collection != null) {
-               if (!collection.getPermissions().validate(broker.getUser(), Permission.READ)) {
+               if (!collection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
                   throw new PermissionDeniedException("Not allowed to read collection");
                }
                DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
@@ -119,7 +119,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
             }
          } else {
             //Do we have permission to read the resource
-            if (!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
+            if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
                throw new PermissionDeniedException("Not allowed to read resource");
             }
             
@@ -168,7 +168,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
    }
    
    public void getEntryById(DBBroker broker,String path,String id,OutgoingMessage response)
-   throws EXistException,BadRequestException
+   throws EXistException,BadRequestException, PermissionDeniedException
 {
    XQuery xquery = broker.getXQueryService();
    CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,entryByIdSource);
@@ -228,7 +228,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 }
 
    public void getFeed(DBBroker broker,String path,OutgoingMessage response)
-   throws EXistException,BadRequestException
+   throws EXistException,BadRequestException, PermissionDeniedException
 {
    XQuery xquery = broker.getXQueryService();
    CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,getFeedSource);

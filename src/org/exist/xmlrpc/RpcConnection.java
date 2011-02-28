@@ -357,8 +357,9 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>CompiledXQuery</code> value
      * @exception XPathException if an error occurs
      * @exception IOException if an error occurs
+     * @throws PermissionDeniedException 
      */
-    private CompiledXQuery compile(DBBroker broker, Source source, HashMap<String, Object> parameters) throws XPathException, IOException {
+    private CompiledXQuery compile(DBBroker broker, Source source, HashMap<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
