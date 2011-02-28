@@ -34,273 +34,281 @@ import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.exist.xquery.*;
 
 /**
- * Global pool for pre-compiled XQuery expressions. Expressions are
- * stored and retrieved from the pool by comparing the {@link org.exist.source.Source}
- * objects from which they were created. For each XQuery, a maximum of 
- * {@link #MAX_STACK_SIZE} compiled expressions are kept in the pool.
- * An XQuery expression will be removed from the pool if it has not been
- * used for a pre-defined timeout. These settings can be configured in conf.xml.
+ * Global pool for pre-compiled XQuery expressions. Expressions are stored and
+ * retrieved from the pool by comparing the {@link org.exist.source.Source}
+ * objects from which they were created. For each XQuery, a maximum of
+ * {@link #MAX_STACK_SIZE} compiled expressions are kept in the pool. An XQuery
+ * expression will be removed from the pool if it has not been used for a
+ * pre-defined timeout. These settings can be configured in conf.xml.
  * 
  * @author wolf
  */
 @ConfigurationClass("query-pool")
 public class XQueryPool extends Object2ObjectHashMap {
 
-    public final static int MAX_POOL_SIZE = 128;
-    
-    public final static int MAX_STACK_SIZE = 5;
+	public final static int MAX_POOL_SIZE = 128;
 
-    public final static long TIMEOUT = 120000L;
+	public final static int MAX_STACK_SIZE = 5;
 
-    public final static long TIMEOUT_CHECK_INTERVAL = 30000L;
+	public final static long TIMEOUT = 120000L;
 
-    private final static Logger LOG = Logger.getLogger(XQueryPool.class);
+	public final static long TIMEOUT_CHECK_INTERVAL = 30000L;
 
-    private long lastTimeOutCheck;
+	private final static Logger LOG = Logger.getLogger(XQueryPool.class);
+
+	private long lastTimeOutCheck;
 
 	@ConfigurationFieldAsAttribute("size")
-    private int maxPoolSize;
-    
-    @ConfigurationFieldAsAttribute("max-stack-size")
-    private int maxStackSize;
+	private int maxPoolSize;
 
-    @ConfigurationFieldAsAttribute("timeout")
-    private long timeout;
+	@ConfigurationFieldAsAttribute("max-stack-size")
+	private int maxStackSize;
 
-    @ConfigurationFieldAsAttribute("timeout-check-interval")
-    private long timeoutCheckInterval;
-    
-    public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
-    public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
-    public static final String POOL_SIZE_ATTTRIBUTE = "size";
-    public static final String TIMEOUT_ATTRIBUTE = "timeout";
-    public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
-    
-    public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
-    public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
-    public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
-    public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = 
-    	"db-connection.query-pool.timeout-check-interval";
+	@ConfigurationFieldAsAttribute("timeout")
+	private long timeout;
 
-    /**
-     * @param conf
-     */
-    public XQueryPool(Configuration conf) {
-        super(27);
-        lastTimeOutCheck = System.currentTimeMillis();
+	@ConfigurationFieldAsAttribute("timeout-check-interval")
+	private long timeoutCheckInterval;
 
-        Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
-        Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
-        Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
-        Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
-        NumberFormat nf = NumberFormat.getNumberInstance();
+	public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
+	public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
+	public static final String POOL_SIZE_ATTTRIBUTE = "size";
+	public static final String TIMEOUT_ATTRIBUTE = "timeout";
+	public static final String TIMEOUT_CHECK_INTERVAL_ATTRIBUTE = "timeout-check-interval";
 
-        if (maxPoolSz != null)
-        	maxPoolSize = maxPoolSz.intValue();
-        else
-        	maxPoolSize = MAX_POOL_SIZE;
-        
-        if (maxStSz != null)
-            maxStackSize = maxStSz.intValue();
-        else
-            maxStackSize = MAX_STACK_SIZE;
+	public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
+	public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
+	public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
+	public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = "db-connection.query-pool.timeout-check-interval";
 
-        if (t != null)
-            timeout = t.longValue();
-        else
-            timeout = TIMEOUT;
+	/**
+	 * @param conf
+	 */
+	public XQueryPool(Configuration conf) {
+		super(27);
+		lastTimeOutCheck = System.currentTimeMillis();
 
-        //TODO : check that it is inferior to t
-        if (tci != null)
-            timeoutCheckInterval = tci.longValue();
-        else
-            timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
+		Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
+		Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
+		Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
+		Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
+		NumberFormat nf = NumberFormat.getNumberInstance();
 
-        LOG.info("QueryPool: size = " + nf.format(maxPoolSize) + "; maxStackSize = " + nf.format(maxStackSize) + 
-        		"; timeout = " + nf.format(timeout) + 
-        		"; timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
+		if (maxPoolSz != null)
+			maxPoolSize = maxPoolSz.intValue();
+		else
+			maxPoolSize = MAX_POOL_SIZE;
 
-    }
+		if (maxStSz != null)
+			maxStackSize = maxStSz.intValue();
+		else
+			maxStackSize = MAX_STACK_SIZE;
 
-    public void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
-//   	 returnModules(xquery.getContext(), null);
-   	 returnObject(source, xquery);
-    }
-    
-    private void returnModules(XQueryContext context, ExternalModule self) {
-   	 for (Iterator<Module> it = context.getRootModules(); it.hasNext(); ) {
-   		 Module module = (Module) it.next();
-   		 if (module != self && !module.isInternalModule()) {
-   			 ExternalModule extModule = (ExternalModule) module;
-//             ((ModuleContext)extModule.getContext()).setParentContext(null);
-   			 // Don't return recursively, since all modules are listed in the top-level context
-   			 returnObject(extModule.getSource(), extModule);
-   		 }
-   	 }
-    }
-    
-    private synchronized void returnObject(Source source, Object o) {
-   	 if (size() >= maxPoolSize) timeoutCheck();
-        if (size() < maxPoolSize) {
-            Stack stack = (Stack) get(source);
-            if (stack == null) {
-                stack = new Stack();
-                source.setCacheTimestamp(System.currentTimeMillis());
-                put(source, stack);
-            }
-            if (stack.size() < maxStackSize) {
-                for (int i = 0; i < stack.size(); i++) {
-                    if (stack.get(i) == o)
-                        // query already in pool. may happen for modules.
-                        // don't add it a second time.
-                        return;
-                }
-                stack.push(o);
-            }
-        }
-    }
-    
-    private synchronized Object borrowObject(DBBroker broker, Source source) {
-       int idx = getIndex(source);
-       if (idx < 0) {
-       	return null;
-       }
-       Source key = (Source) keys[idx];
-       int validity = key.isValid(broker);
-       if (validity == Source.UNKNOWN)
-           validity = key.isValid(source);
-       if (validity == Source.INVALID || validity == Source.UNKNOWN) {
-           keys[idx] = REMOVED;
-           values[idx] = null;
-           LOG.debug(source.getKey() + " is invalid");
-           return null;
-       }
-       Stack stack = (Stack) values[idx];
-       if (stack == null || stack.isEmpty()) return null;
-        // now check if the compiled expression is valid
-        // it might become invalid if an imported module has changed.
-        CompiledXQuery query = (CompiledXQuery) stack.pop();
-        XQueryContext context = query.getContext();
-        context.setBroker(broker);
-        if (!query.isValid()) {
-            // the compiled query is no longer valid: one of the imported
-            // modules may have changed
-            remove(key);
-            return null;
-        } else
-            return query;
-    }
+		if (t != null)
+			timeout = t.longValue();
+		else
+			timeout = TIMEOUT;
 
-    public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
-   	 CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
-   	 if (query == null) return null;
-      // now check if the compiled expression is valid
-      // it might become invalid if an imported module has changed.
-      XQueryContext context = query.getContext();
-      context.setBroker(broker);
-        return query;
-//      if (!borrowModules(broker, context)) {
-//          // the compiled query is no longer valid: one of the imported
-//          // modules may have changed
-//          remove(source);
-//          return null;
-//      } else {
-//      	if (query instanceof PathExpr) try {
-//      		// This is necessary because eXist performs whole-expression analysis, so a function
-//      		// can only be analyzed as part of the expression it's called from.  It might be better
-//      		// to make module functions more stand-alone, so they only need to be analyzed
-//      		// once.
-//      		context.analyzeAndOptimizeIfModulesChanged((PathExpr) query);
-//      	} catch (XPathException e) {
-//      		remove(source);
-//      		return null;
-//      	}
-//          return query;
-//      }
-    }
-    
-    private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
-        Map<String,Module> borrowedModules = new TreeMap<String,Module>();
-        for (Iterator<Module> it = context.getAllModules(); it.hasNext(); ) {
-            Module module = it.next();
-            if (module == null || !module.isInternalModule()) {
-                ExternalModule extModule = (ExternalModule) module;
-                ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
-                if (borrowedModule == null) {
-                    for (Iterator<Module> it2 = borrowedModules.values().iterator(); it2.hasNext(); ) {
-                        ExternalModule moduleToReturn = (ExternalModule) it2.next();
-                        returnObject(moduleToReturn.getSource(), moduleToReturn);
-                    }
-                    return false;
-                }
-                borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
-            }
-        }
-        for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String moduleNamespace = (String) entry.getKey();
-            ExternalModule module = (ExternalModule) entry.getValue();
-            // Modules that don't appear in the root context will be set in context.allModules by
-            // calling setModule below on the module that does import them directly.
-            if (context.getModule(moduleNamespace) != null) {
-                context.setModule(moduleNamespace, module);
-            }
-            List<String> importedModuleNamespaceUris = new ArrayList<String>();
-            for (Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext(); ) {
-                Module nestedModule = it2.next();
-                 if (!nestedModule.isInternalModule()) {
-                    importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
-                }
-            }
-            for (Iterator<String> it2 = importedModuleNamespaceUris.iterator(); it2.hasNext(); ) {
-                String namespaceUri = (String) it2.next();
-                Module imported = (Module) borrowedModules.get(namespaceUri);
-                module.getContext().setModule(namespaceUri, imported);
-            }
-        }
-        return true;
-    }
-    
-    public synchronized ExternalModule borrowModule(DBBroker broker, Source source, XQueryContext rootContext) {
-        ExternalModule module = (ExternalModule) borrowObject(broker, source);
-        if (module == null) return null;
-        XQueryContext context = module.getContext();
-        context.setBroker(broker);
-        if (!module.moduleIsValid(broker)) {
-            LOG.debug("Module with URI " + module.getNamespaceURI() +
-                    " has changed and needs to be reloaded");
-            remove(source);
-            return null;
-        } else {
-            // check all modules imported by the borrowed module and update them
-            if (!borrowModules(broker, context)) {
-                return null;
-            }
-            ((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
-            try {
-                module.analyzeGlobalVars();
-            } catch (XPathException e) {
-                LOG.warn(e.getMessage(), e);
-            }
-            return module;
-        }
-    }
-    
-    private void timeoutCheck() {
-        final long currentTime = System.currentTimeMillis();
-        
-        if (timeoutCheckInterval < 0L)
-            return; 
-        
-        if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
-            return;
+		// TODO : check that it is inferior to t
+		if (tci != null)
+			timeoutCheckInterval = tci.longValue();
+		else
+			timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
 
-        for (Iterator i = iterator(); i.hasNext();) {
-            Source next = (Source) i.next();
-            if (currentTime - next.getCacheTimestamp() > timeout) {
-                remove(next);
-            }
-        }
-    }
+		LOG.info("QueryPool: " +
+			"size = " + nf.format(maxPoolSize) + "; " +
+			"maxStackSize = " + nf.format(maxStackSize) + "; " +
+			"timeout = " + nf.format(timeout) + "; " +
+			"timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
+	}
+
+	public void returnCompiledXQuery(Source source, CompiledXQuery xquery) {
+		// returnModules(xquery.getContext(), null);
+		returnObject(source, xquery);
+	}
+
+	private void returnModules(XQueryContext context, ExternalModule self) {
+		for (Iterator<Module> it = context.getRootModules(); it.hasNext();) {
+			Module module = (Module) it.next();
+			if (module != self && !module.isInternalModule()) {
+				ExternalModule extModule = (ExternalModule) module;
+				// ((ModuleContext)extModule.getContext()).setParentContext(null);
+				// Don't return recursively, since all modules are listed in the
+				// top-level context
+				returnObject(extModule.getSource(), extModule);
+			}
+		}
+	}
+
+	private synchronized void returnObject(Source source, Object o) {
+		if (size() >= maxPoolSize)
+			timeoutCheck();
+		if (size() < maxPoolSize) {
+			Stack stack = (Stack) get(source);
+			if (stack == null) {
+				stack = new Stack();
+				source.setCacheTimestamp(System.currentTimeMillis());
+				put(source, stack);
+			}
+			if (stack.size() < maxStackSize) {
+				for (int i = 0; i < stack.size(); i++) {
+					if (stack.get(i) == o)
+						// query already in pool. may happen for modules.
+						// don't add it a second time.
+						return;
+				}
+				stack.push(o);
+			}
+		}
+	}
+
+	private synchronized Object borrowObject(DBBroker broker, Source source) {
+		int idx = getIndex(source);
+		if (idx < 0) {
+			return null;
+		}
+		Source key = (Source) keys[idx];
+		int validity = key.isValid(broker);
+		if (validity == Source.UNKNOWN)
+			validity = key.isValid(source);
+		if (validity == Source.INVALID || validity == Source.UNKNOWN) {
+			keys[idx] = REMOVED;
+			values[idx] = null;
+			LOG.debug(source.getKey() + " is invalid");
+			return null;
+		}
+		Stack stack = (Stack) values[idx];
+		if (stack == null || stack.isEmpty())
+			return null;
+		// now check if the compiled expression is valid
+		// it might become invalid if an imported module has changed.
+		CompiledXQuery query = (CompiledXQuery) stack.pop();
+		XQueryContext context = query.getContext();
+		context.setBroker(broker);
+		if (!query.isValid()) {
+			// the compiled query is no longer valid: one of the imported
+			// modules may have changed
+			remove(key);
+			return null;
+		} else
+			return query;
+	}
+
+	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) {
+		CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
+		if (query == null)
+			return null;
+		// now check if the compiled expression is valid
+		// it might become invalid if an imported module has changed.
+		XQueryContext context = query.getContext();
+		context.setBroker(broker);
+		return query;
+		// if (!borrowModules(broker, context)) {
+		// // the compiled query is no longer valid: one of the imported
+		// // modules may have changed
+		// remove(source);
+		// return null;
+		// } else {
+		// if (query instanceof PathExpr) try {
+		// // This is necessary because eXist performs whole-expression
+		// analysis, so a function
+		// // can only be analyzed as part of the expression it's called from.
+		// It might be better
+		// // to make module functions more stand-alone, so they only need to be
+		// analyzed
+		// // once.
+		// context.analyzeAndOptimizeIfModulesChanged((PathExpr) query);
+		// } catch (XPathException e) {
+		// remove(source);
+		// return null;
+		// }
+		// return query;
+		// }
+	}
+
+	private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
+		Map<String, Module> borrowedModules = new TreeMap<String, Module>();
+		for (Iterator<Module> it = context.getAllModules(); it.hasNext();) {
+			Module module = it.next();
+			if (module == null || !module.isInternalModule()) {
+				ExternalModule extModule = (ExternalModule) module;
+				ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
+				if (borrowedModule == null) {
+					for (Iterator<Module> it2 = borrowedModules.values().iterator(); it2.hasNext();) {
+						ExternalModule moduleToReturn = (ExternalModule) it2.next();
+						returnObject(moduleToReturn.getSource(), moduleToReturn);
+					}
+					return false;
+				}
+				borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
+			}
+		}
+		for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext();) {
+			Map.Entry entry = (Map.Entry) it.next();
+			String moduleNamespace = (String) entry.getKey();
+			ExternalModule module = (ExternalModule) entry.getValue();
+			// Modules that don't appear in the root context will be set in
+			// context.allModules by
+			// calling setModule below on the module that does import them
+			// directly.
+			if (context.getModule(moduleNamespace) != null) {
+				context.setModule(moduleNamespace, module);
+			}
+			List<String> importedModuleNamespaceUris = new ArrayList<String>();
+			for (Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext();) {
+				Module nestedModule = it2.next();
+				if (!nestedModule.isInternalModule()) {
+					importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
+				}
+			}
+			for (Iterator<String> it2 = importedModuleNamespaceUris.iterator(); it2.hasNext();) {
+				String namespaceUri = (String) it2.next();
+				Module imported = (Module) borrowedModules.get(namespaceUri);
+				module.getContext().setModule(namespaceUri, imported);
+			}
+		}
+		return true;
+	}
+
+	public synchronized ExternalModule borrowModule(DBBroker broker, Source source, XQueryContext rootContext) {
+		ExternalModule module = (ExternalModule) borrowObject(broker, source);
+		if (module == null)
+			return null;
+		XQueryContext context = module.getContext();
+		context.setBroker(broker);
+		if (!module.moduleIsValid(broker)) {
+			LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+			remove(source);
+			return null;
+		} else {
+			// check all modules imported by the borrowed module and update them
+			if (!borrowModules(broker, context)) {
+				return null;
+			}
+			((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
+			try {
+				module.analyzeGlobalVars();
+			} catch (XPathException e) {
+				LOG.warn(e.getMessage(), e);
+			}
+			return module;
+		}
+	}
+
+	private void timeoutCheck() {
+		final long currentTime = System.currentTimeMillis();
+
+		if (timeoutCheckInterval < 0L)
+			return;
+
+		if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
+			return;
+
+		for (Iterator i = iterator(); i.hasNext();) {
+			Source next = (Source) i.next();
+			if (currentTime - next.getCacheTimestamp() > timeout) {
+				remove(next);
+			}
+		}
+	}
 }
-
