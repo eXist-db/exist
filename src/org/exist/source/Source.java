@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.InputStream;
 
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 
@@ -98,4 +99,14 @@ public interface Source {
     public void setCacheTimestamp(long timestamp);
     
     public long getCacheTimestamp();
+    
+    /**
+     * Check: has subject requested permissions for this resource?
+     *
+     * @param  subject The subject
+     * @param  perm The requested permissions
+     * @return true if subject has the requested permissions
+     */
+    public boolean validate(Subject subject, int perm);	
+
 }

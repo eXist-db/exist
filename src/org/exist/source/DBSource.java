@@ -31,6 +31,7 @@ import java.io.Reader;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
@@ -149,4 +150,9 @@ public class DBSource extends AbstractSource {
     public String toString() {
     	return doc.getDocumentURI();
     }
+
+	@Override
+	public boolean validate(Subject subject, int perm) {
+		return doc.getPermissions().validate(subject, perm);
+	}
 }

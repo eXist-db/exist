@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 
@@ -86,4 +87,9 @@ public class StringSource extends AbstractSource {
         return data;
     }
 
+	@Override
+	public boolean validate(Subject subject, int perm) {
+		// TODO protected?
+		return true;
+	}
 }

@@ -24,6 +24,7 @@ package org.exist.source;
 
 import java.io.*;
 
+import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 
@@ -128,4 +129,10 @@ public class FileSource extends AbstractSource {
     public String toString() {
     	return filePath;
     }
+
+	@Override
+	public boolean validate(Subject subject, int perm) {
+		// TODO protected?
+		return true;
+	}
 }
