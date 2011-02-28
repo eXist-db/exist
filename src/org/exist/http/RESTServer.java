@@ -172,17 +172,17 @@ public class RESTServer {
 	private String containerEncoding;
 	private boolean useDynamicContentType;
 
-	private boolean saveMode = false;
+	private boolean safeMode = false;
 	
 	private SessionManager sessionManager;
 
 	// Constructor
 	public RESTServer(BrokerPool pool, String formEncoding,
-			String containerEncoding, boolean useDynamicContentType, boolean saveMode) {
+			String containerEncoding, boolean useDynamicContentType, boolean safeMode) {
 		this.formEncoding = formEncoding;
 		this.containerEncoding = containerEncoding;
 		this.useDynamicContentType = useDynamicContentType;
-		this.saveMode = saveMode;
+		this.safeMode = safeMode;
 		this.sessionManager = new SessionManager(pool);
 	}
 
@@ -258,7 +258,7 @@ public class RESTServer {
 				defaultOutputKeysProperties);
 
 		String query = null;
-		if (!saveMode) {
+		if (!safeMode) {
 			request.getParameter("_xpath");
 			if (query == null) {
 				query = request.getParameter("_query");
@@ -314,7 +314,7 @@ public class RESTServer {
 		if ((option = request.getParameter("_indent")) != null) {
 			outputProperties.setProperty(OutputKeys.INDENT, option);
 		}
-		if ((option = request.getParameter("_source")) != null && !saveMode) {
+		if ((option = request.getParameter("_source")) != null && !safeMode) {
 			source = option.equals("yes");
 		}
 		if ((option = request.getParameter("_session")) != null) {
@@ -378,7 +378,7 @@ public class RESTServer {
 				// no document: check if path points to a collection
 				Collection collection = broker.getCollection(pathUri);
 				if (collection != null) {
-					if (saveMode || !collection.getPermissions().validate(broker.getSubject(), Permission.READ))
+					if (safeMode || !collection.getPermissions().validate(broker.getSubject(), Permission.READ))
 						throw new PermissionDeniedException(
 								"Not allowed to read collection");
 					// return a listing of the collection contents
