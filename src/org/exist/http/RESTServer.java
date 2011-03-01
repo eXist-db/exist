@@ -1038,10 +1038,10 @@ public class RESTServer {
 			if (mime == null)
 				mime = MimeType.BINARY_TYPE;
 
+			if (transaction == null) transaction = transact.beginTransaction();
+
 			if (mime.isXMLType()) {
 				InputSource vtfis = new VirtualTempFileInputSource(vtempFile,charset);
-				
-				if (transaction == null) transaction = transact.beginTransaction();
 				
 				IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, vtfis);
 				info.getDocument().getMetadata().setMimeType(contentType);
@@ -1361,10 +1361,12 @@ public class RESTServer {
 		}
 
 		// TODO: don't hardcode this?
-		context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(
+		context.setModuleLoadPath(
+			XmldbURI.EMBEDDED_SERVER_URI.append(
 				resource.getCollection().getURI()).toString());
-		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
-				.getCollection().getURI() });
+		
+		context.setStaticallyKnownDocuments(
+				new XmldbURI[] { resource.getCollection().getURI() });
         
 		HttpRequestWrapper reqw = declareVariables(context, null, request, response);
 		reqw.setServletPath(servletPath);
@@ -1378,7 +1380,7 @@ public class RESTServer {
 			}
 		}
 
-		DebuggeeFactory.checkForDebugRequest(request, compiled);
+		DebuggeeFactory.checkForDebugRequest(request, context);
 
 		boolean wrap = outputProperties.getProperty("_wrap") != null
                     && outputProperties.getProperty("_wrap").equals("yes");
@@ -1388,8 +1390,8 @@ public class RESTServer {
 			writeResults(response, broker, result, -1, 1, false, outputProperties, wrap);
             
 		} finally {
-                    context.cleanupBinaryValueInstances();
-                    pool.returnCompiledXQuery(source, compiled);
+            context.cleanupBinaryValueInstances();
+            pool.returnCompiledXQuery(source, compiled);
 		}
 	}
 
@@ -1401,6 +1403,7 @@ public class RESTServer {
 			HttpServletRequest request, HttpServletResponse response,
 			Properties outputProperties, String servletPath, String pathInfo)
 			throws XPathException, BadRequestException, PermissionDeniedException {
+		
 		URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
 		XQuery xquery = broker.getXQueryService();
 		XQueryPool pool = xquery.getXQueryPool();
@@ -1430,10 +1433,13 @@ public class RESTServer {
         context.declareVariable("options",  options == null ? "<options/>" : options);
 
 		// TODO: don't hardcode this?
-		context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(
+		context.setModuleLoadPath(
+			XmldbURI.EMBEDDED_SERVER_URI.append(
 				resource.getCollection().getURI()).toString());
-		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
-				.getCollection().getURI() });
+		
+		context.setStaticallyKnownDocuments(
+				new XmldbURI[] { resource.getCollection().getURI() });
+		
 		HttpRequestWrapper reqw = declareVariables(context, null, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);
