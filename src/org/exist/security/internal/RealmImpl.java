@@ -65,6 +65,9 @@ public class RealmImpl extends AbstractRealm {
     protected final AccountImpl ACCOUNT_UNKNOWN;
     protected final GroupImpl GROUP_UNKNOWN;
 
+    //@ConfigurationFieldAsElement("allow-guest-authentication")
+    public boolean allowGuestAuthentication = true;
+
     protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
 
     	super(sm, config);
@@ -96,6 +99,9 @@ public class RealmImpl extends AbstractRealm {
     	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
     	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
+    	
+		//XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
+    	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);
 
     	sm.lastUserId = 3;
     	sm.lastGroupId = 3;
@@ -211,7 +217,7 @@ public class RealmImpl extends AbstractRealm {
 					AuthenticationException.ACCOUNT_NOT_FOUND,
 					"Acount '" + accountName + "' not found.");
 			
-		if ("SYSTEM".equals(accountName) || "guest".equals(accountName)) 
+		if ("SYSTEM".equals(accountName) || (!allowGuestAuthentication && "guest".equals(accountName))) 
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,
 					"Acount '" + accountName + "' can not be used.");
