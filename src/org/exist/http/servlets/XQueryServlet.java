@@ -32,7 +32,6 @@ import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,6 +42,8 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.security.AuthenticationException;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.AccessContext;
@@ -68,7 +69,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
-import org.exist.debuggee.Debuggee;
+import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.XMLUtil;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -411,7 +412,15 @@ public class XQueryServlet extends HttpServlet {
                 //check are we allowed to show the xquery source - descriptor.xml
 //                System.out.println("path="+path);
                 if(descriptor.allowSource(path)) {
-                    //Show the source of the XQuery
+                	
+                	try {
+						source.validate(user, Permission.READ);
+					} catch (PermissionDeniedException e) {
+	                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
+	                   return;
+					}
+                    
+					//Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
                     response.setContentType("text/plain; charset=" + formEncoding);
                     output.write(source.getContent());
@@ -467,37 +476,7 @@ public class XQueryServlet extends HttpServlet {
             context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
             context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
 
-            //TODO: XDEBUG_SESSION_STOP_NO_EXEC
-            //TODO: XDEBUG_SESSION_STOP
-            //if get "start new debug session" request
-    		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-    		if (xdebug != null) {
-    			context.declareVariable(Debuggee.SESSION,  xdebug);
-    		} else {
-    			//if have session
-    			xdebug = request.getParameter("XDEBUG_SESSION");
-    			if (xdebug != null) {
-    				context.declareVariable(Debuggee.SESSION,  xdebug);
-    			} else {
-    				//looking for session in cookies (FF XDebug Helper add-ons)
-        			Cookie[] cookies = request.getCookies();
-        			if (cookies != null) {
-            			for (int i = 0; i < cookies.length; i++) {
-            				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
-            					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-            					context.declareVariable(Debuggee.SESSION, cookies[i].getValue());
-                				break;
-            				}
-            			}
-        			}
-    			}
-    		}
-    		
-    		if (context.requireDebugMode()) {
-    			String idekey = request.getParameter("KEY");
-    			if (idekey != null)
-    				context.declareVariable(Debuggee.IDEKEY,  idekey);
-    		}
+            DebuggeeFactory.checkForDebugRequest(request, context);
 
             Sequence resultSequence;
             try {
@@ -626,31 +605,4 @@ public class XQueryServlet extends HttpServlet {
         out.print("</div></body></html>");
         out.flush();
     }
-    
-    // -jmvanel : never used locally
-    
-//	private static final class CachedQuery {
-//
-//		long lastModified;
-//		String sourcePath;
-//		CompiledExpression expression;
-//
-//		public CachedQuery(File sourceFile, CompiledExpression expression) {
-//			this.sourcePath = sourceFile.getAbsolutePath();
-//			this.lastModified = sourceFile.lastModified();
-//			this.expression = expression;
-//		}
-//
-//		public boolean isValid() {
-//			File f = new File(sourcePath);
-//			if(f.lastModified() > lastModified)
-//				return false;
-//			return true;
-//		}
-//
-//		public CompiledExpression getExpression() {
-//			return expression;
-//		}
-//	}
-    
 }

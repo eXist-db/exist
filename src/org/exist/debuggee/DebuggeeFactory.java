@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -61,30 +62,38 @@ public class DebuggeeFactory {
         return instance;
     }
     
-    public static void checkForDebugRequest(HttpServletRequest request, CompiledXQuery compiled) throws XPathException {
+    public static void checkForDebugRequest(HttpServletRequest request, XQueryContext context) throws XPathException {
+        //TODO: XDEBUG_SESSION_STOP_NO_EXEC
+        //TODO: XDEBUG_SESSION_STOP
+
+        //if get "start new debug session" request
 		String xdebug = request.getParameter("XDEBUG_SESSION_START");
-        
 		if (xdebug != null) {
-			compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
-            
+			context.declareVariable(Debuggee.SESSION,  xdebug);
 		} else {
 			//if have session
 			xdebug = request.getParameter("XDEBUG_SESSION");
 			if (xdebug != null) {
-				compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
+				context.declareVariable(Debuggee.SESSION,  xdebug);
 			} else {
 				//looking for session in cookies (FF XDebug Helper add-ons as example)
     			Cookie[] cookies = request.getCookies();
     			if (cookies != null) {
         			for (int i = 0; i < cookies.length; i++) {
         				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
-        					compiled.getContext().declareVariable(Debuggee.SESSION, cookies[i].getValue());
+        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
+        					context.declareVariable(Debuggee.SESSION, cookies[i].getValue());
             				break;
         				}
         			}
     			}
 			}
 		}
+		
+		if (context.requireDebugMode()) {
+			String idekey = request.getParameter("KEY");
+			if (idekey != null)
+				context.declareVariable(Debuggee.IDEKEY,  idekey);
+		}
     }
-
 }
