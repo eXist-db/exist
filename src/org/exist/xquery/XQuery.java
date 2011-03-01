@@ -267,7 +267,7 @@ public class XQuery {
 		return execute(compiled, null);
     }
 	
-	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException {
+	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
 		XQueryContext context = new XQueryContext(broker, accessCtx);
 		CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
 		return execute(compiled, null);
