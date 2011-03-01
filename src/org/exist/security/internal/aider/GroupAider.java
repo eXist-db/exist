@@ -32,8 +32,9 @@ import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 
 /**
+ * Group details.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
 public class GroupAider implements Group {
 
