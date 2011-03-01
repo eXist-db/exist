@@ -37,8 +37,9 @@ import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
 /**
+ * Account details.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
  */
 public class UserAider implements Account {
 

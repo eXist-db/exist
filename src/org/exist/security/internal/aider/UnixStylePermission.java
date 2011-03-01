@@ -30,6 +30,11 @@ import org.exist.security.Account;
 import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
 
+/**
+ * Unix style permission details.
+ * 
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ */
 public class UnixStylePermission implements Permission {
 
     //owner, default to DBA
