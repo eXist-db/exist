@@ -1909,11 +1909,9 @@ public class RESTServer {
 	 * @param path
 	 * @param e
 	 */
-	private String formatXPathException(String query, String path,
-			XPathException e) {
+	private String formatXPathException(String query, String path, XPathException e) {
 		StringWriter writer = new StringWriter();
-		writer
-				.write("<xpath:exception xmlns:xpath=\"http://exist-db.org/xpath\">");
+		writer.write("<xpath:exception xmlns:xpath=\"http://exist-db.org/xpath\">");
 		writer.write("<xpath:path>" + path + "</xpath:path>");
 		writer.write("<xpath:message>" + e.getMessage() + "</xpath:message>");
 		if (query != null) {

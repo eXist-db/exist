@@ -41,6 +41,7 @@ import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.w3c.dom.Document;
@@ -59,10 +60,9 @@ public class RESTServiceTest extends TestCase {
 
     private final static String SERVER_URI = "http://localhost:8088";
 
-    private final static String COLLECTION_URI = SERVER_URI + DBBroker.ROOT_COLLECTION + "/test";
+    private final static String COLLECTION_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test";
 
-    private final static String RESOURCE_URI = SERVER_URI + DBBroker.ROOT_COLLECTION
-            + "/test/test.xml";
+    private final static String RESOURCE_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test/test.xml";
     
     private final static String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"
