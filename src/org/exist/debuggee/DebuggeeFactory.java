@@ -21,7 +21,12 @@
  */
 package org.exist.debuggee;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -55,4 +60,31 @@ public class DebuggeeFactory {
         }
         return instance;
     }
+    
+    public static void checkForDebugRequest(HttpServletRequest request, CompiledXQuery compiled) throws XPathException {
+		String xdebug = request.getParameter("XDEBUG_SESSION_START");
+        
+		if (xdebug != null) {
+			compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
+            
+		} else {
+			//if have session
+			xdebug = request.getParameter("XDEBUG_SESSION");
+			if (xdebug != null) {
+				compiled.getContext().declareVariable(Debuggee.SESSION, xdebug);
+			} else {
+				//looking for session in cookies (FF XDebug Helper add-ons as example)
+    			Cookie[] cookies = request.getCookies();
+    			if (cookies != null) {
+        			for (int i = 0; i < cookies.length; i++) {
+        				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
+        					compiled.getContext().declareVariable(Debuggee.SESSION, cookies[i].getValue());
+            				break;
+        				}
+        			}
+    			}
+			}
+		}
+    }
+
 }
