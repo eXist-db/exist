@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2007 The eXist Project
+ * Copyright (C) 2000-2010 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -146,7 +146,10 @@ imaginaryTokenDefinitions
 	MODULE 
 	ORDER_BY 
     GROUP_BY 
-	POSITIONAL_VAR 
+	POSITIONAL_VAR
+	CATCH_ERROR_CODE
+	CATCH_ERROR_DESC
+	CATCH_ERROR_VAL 
 	MODULE_DECL 
 	MODULE_IMPORT
 	SCHEMA_IMPORT
@@ -475,8 +478,10 @@ expr throws XPathException
 exprSingle throws XPathException
 :
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
+	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
+	| ( "switch" LPAREN ) => switchExpr
 	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
 	| orExpr
@@ -520,6 +525,51 @@ deleteExpr throws XPathException
 renameExpr throws XPathException
 :
 	"rename" exprSingle "as"! exprSingle
+	;
+
+// === try/catch ===
+tryCatchExpr throws XPathException
+:
+	"try"^ LCURLY! tryTargetExpr RCURLY!
+    (catchClause)+
+	;
+
+tryTargetExpr throws XPathException
+:
+	expr
+	;
+
+catchClause throws XPathException
+:
+	"catch"^ catchErrorList (catchVars)? LCURLY! expr RCURLY!
+	;
+
+catchErrorList throws XPathException
+:
+	nameTest (UNION! nameTest)*
+	;
+
+catchVars throws XPathException
+:
+	LPAREN! catchErrorCode (COMMA! catchErrorDesc (COMMA! catchErrorVal)?)? RPAREN!
+	;
+
+catchErrorCode
+{ String varName; }
+:	DOLLAR! varName=qName
+	{ #catchErrorCode= #[CATCH_ERROR_CODE, varName]; }
+	;
+
+catchErrorDesc
+{ String varName; }
+:	DOLLAR! varName=qName
+	{ #catchErrorDesc= #[CATCH_ERROR_DESC, varName]; }
+	;
+
+catchErrorVal
+{ String varName; }
+:	DOLLAR! varName=qName
+	{ #catchErrorVal= #[CATCH_ERROR_VAL, varName]; }
 	;
 
 // === FLOWER ===
@@ -639,6 +689,19 @@ quantifiedInVarBinding throws XPathException
 	;
 
 // === Branching ===
+
+switchExpr throws XPathException
+:
+	"switch"^ LPAREN! expr RPAREN!
+	( switchCaseClause )+
+	"default" "return"! exprSingle
+	;
+
+switchCaseClause throws XPathException
+:
+    ( "case" exprSingle )+
+	caseReturn
+	;
 
 typeswitchExpr throws XPathException
 { String varName; }:
@@ -1502,6 +1565,10 @@ reservedKeywords returns [String name]
 	"in" { name = "in"; }
 	|
 	"let" { name= "let"; }
+	|
+	"try" { name="try"; }
+	|
+	"catch" { name="catch"; }
 	|
 	"default" { name= "default"; }
 	|

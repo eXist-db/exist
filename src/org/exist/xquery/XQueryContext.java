@@ -313,6 +313,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
+    private int                                        xqueryVersion                 = 10;
+
 
     // TODO: expath repo manageer, may change
     private static ExistRepository _repo = null;
@@ -3460,6 +3462,15 @@ public class XQueryContext implements BinaryValueManager, Context
             binaryValueInstances.clear();
         }
     }
+    
+    public void setXQueryVersion(int version) {
+        xqueryVersion=version;
+    }
+
+    public int getXQueryVersion(){
+        return xqueryVersion;
+    }
+
 
 
     // ====================================================================================

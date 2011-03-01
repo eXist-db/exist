@@ -34,6 +34,12 @@ public class DeclScanner extends antlr.LLkParser       implements DeclScannerTok
 	public String getEncoding() {
 		return encoding;
 	}
+	
+	private String version = null;
+	
+	public String getVersion() {
+		return  version;
+	}
 
 protected DeclScanner(TokenBuffer tokenBuf, int k) {
   super(tokenBuf,k);
@@ -90,6 +96,7 @@ public DeclScanner(ParserSharedInputState state) {
 		}
 		}
 		
+				version = v.getText();
 				throw new XPathException("Processing stopped");
 			
 	}
@@ -133,6 +140,9 @@ public DeclScanner(ParserSharedInputState state) {
 		"ORDER_BY",
 		"GROUP_BY",
 		"POSITIONAL_VAR",
+		"CATCH_ERROR_CODE",
+		"CATCH_ERROR_DESC",
+		"CATCH_ERROR_VAL",
 		"MODULE_DECL",
 		"MODULE_IMPORT",
 		"SCHEMA_IMPORT",
@@ -199,9 +209,11 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"item\"",
 		"\"for\"",
 		"\"let\"",
+		"\"try\"",
 		"\"some\"",
 		"\"every\"",
 		"\"if\"",
+		"\"switch\"",
 		"\"typeswitch\"",
 		"\"update\"",
 		"\"replace\"",
@@ -213,6 +225,8 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"into\"",
 		"\"preceding\"",
 		"\"following\"",
+		"\"catch\"",
+		"union",
 		"\"where\"",
 		"\"return\"",
 		"\"in\"",
@@ -256,7 +270,6 @@ public DeclScanner(ParserSharedInputState state) {
 		"PRAGMA_START",
 		"pragma expression",
 		"\"union\"",
-		"union",
 		"\"intersect\"",
 		"\"except\"",
 		"single slash '/'",

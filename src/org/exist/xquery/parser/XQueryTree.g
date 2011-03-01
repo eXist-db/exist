@@ -1,6 +1,6 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2000-2007 The eXist Project
+ * Exist Open Source Native XML Database
+ * Copyright (C) 2000-2011 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -188,8 +188,13 @@ throws PermissionDeniedException, EXistException, XPathException
         #(
             v:VERSION_DECL
             {
-                if (!v.getText().equals("1.0"))
-                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0");
+                if (v.getText().equals("3.0")) {
+                    context.setXQueryVersion(30);
+                } else if (v.getText().equals("1.0")) {
+                    context.setXQueryVersion(10);
+                } else {
+                    throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0 or 3.0");
+                }
             }
             ( enc:STRING_LITERAL )?
             {
@@ -661,6 +666,36 @@ throws XPathException
 	;
 
 /**
+ * catchErrorList in try-catch.
+ */
+catchErrorList [List catchErrors]
+throws XPathException
+:
+    catchError [catchErrors] ( catchError [catchErrors] )*
+	;
+
+/**
+ * Single catchError.
+ */
+catchError [List catchErrors]
+throws XPathException
+:
+	(
+		#(wc:WILDCARD
+		{
+			catchErrors.add(wc.toString());
+		}
+        )
+        |
+        #(qn:QNAME
+        {
+			catchErrors.add(qn.toString());
+		}   
+        )
+	)
+	;
+
+/**
  * A sequence type declaration.
  */
 sequenceType [SequenceType type]
@@ -986,6 +1021,68 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	//try/catch expression
+	#(
+		astTry:"try"
+		{
+			PathExpr tryTargetExpr = new PathExpr(context);
+		}
+		step=expr [tryTargetExpr]
+        {
+  	    	TryCatchExpression cond = new TryCatchExpression(context, tryTargetExpr);
+			cond.setASTNode(astTry);
+            path.add(cond);
+        }
+        (
+			{
+				List<String> catchErrorList = new ArrayList<String>(2);
+                List<QName> catchVars = new ArrayList<QName>(3);
+				PathExpr catchExpr = new PathExpr(context);
+			}
+			#(
+				astCatch:"catch"
+                (catchErrorList [catchErrorList])
+                (
+                    {
+				        QName qncode = null;
+				        QName qndesc = null;
+				        QName qnval = null;
+			        }
+                    code:CATCH_ERROR_CODE
+					{
+                        qncode = QName.parse(staticContext, code.getText());
+                        catchVars.add(qncode);
+                    }     
+                    (
+                        desc:CATCH_ERROR_DESC
+                        {
+                            qndesc = QName.parse(staticContext, desc.getText());
+                            catchVars.add(qndesc);
+                        }
+
+                        (
+                            val:CATCH_ERROR_VAL
+                            {
+                                qnval = QName.parse(staticContext, val.getText());
+                                catchVars.add(qnval);
+                            }
+
+                        )?
+                    )?
+                )?
+                step= expr [catchExpr]
+				{ 
+                  catchExpr.setASTNode(astCatch);
+                  cond.addCatchClause(catchErrorList, catchVars, catchExpr);
+                }
+			)
+		)+
+
+		{
+			step = cond;
+		}
+	)
+	|
 	// FLWOR expressions: let and for
 	#(
 		r:"return"
@@ -1239,6 +1336,48 @@ throws PermissionDeniedException, EXistException, XPathException
 			step = new TreatAsExpression(context, expr, type); 
 			path.add(step);
 		}
+	)
+	|
+	// switch
+	#(
+		switchAST:"switch"
+		{
+			PathExpr operand = new PathExpr(context);
+		}
+		step=expr [operand]
+		{ 
+			SwitchExpression switchExpr = new SwitchExpression(context, operand);
+            switchExpr.setASTNode(switchAST);
+			path.add(switchExpr); 
+		}
+		(
+			{
+				List caseOperands = new ArrayList<Expression>(2);
+				PathExpr returnExpr = new PathExpr(context);
+			}
+             ((
+               { PathExpr caseOperand = new PathExpr(context); }
+				"case"
+		        expr [caseOperand]
+				{ caseOperands.add(caseOperand); }
+             )+
+             #(
+                "return"
+		        step= expr [returnExpr]
+				{ switchExpr.addCase(caseOperands, returnExpr); }
+             ))
+        )+
+        (
+			"default"
+			{ 
+				PathExpr returnExpr = new PathExpr(context);
+			}
+			step=expr [returnExpr]
+			{
+				switchExpr.setDefault(returnExpr);
+			}
+		)
+		{ step = switchExpr; }
 	)
 	|
 	// typeswitch

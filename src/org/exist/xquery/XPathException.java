@@ -109,6 +109,16 @@ public class XPathException extends Exception {
         this.errorVal = errorVal;
     }
 
+    // DWES : not sure?
+    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
+        this.errorCode = errorCode;
+
+        if(errorDesc==null){
+            errorCode.toString();
+        }
+        this.errorVal = errorVal;
+    }
+
     public XPathException(int line, int column, String message, Throwable cause) {
         super(cause);
         this.message = message;
@@ -258,5 +268,15 @@ public class XPathException extends Exception {
             buf.append(column).append(":").append(file).append(']');
             return buf.toString();
         }
+    }
+
+    /** Get xquery errorcode */
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    /** Get xquery error value */
+    public Sequence getErrorVal() {
+        return errorVal;
     }
 }

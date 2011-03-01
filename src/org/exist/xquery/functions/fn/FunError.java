@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
+
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -32,6 +33,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
@@ -39,8 +41,10 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class FunError extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(FunError.class);
-	public final static FunctionSignature signature[] = {
+
+    protected static final Logger logger = Logger.getLogger(FunError.class);
+    
+    	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("error", Function.BUILTIN_FUNCTION_NS),
 			"Indicates that an irrecoverable error has occurred. The "
@@ -75,39 +79,57 @@ public class FunError extends BasicFunction {
 			},
 			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
 	};
-	
-	public FunError(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
 
-        public final static ErrorCode DEFAULT_ERROR = ErrorCodes.FOER0000;
+    public FunError(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+    public final static ErrorCode DEFAULT_ERROR = ErrorCodes.FOER0000;
 
-        @Override
-	public int returnsType() {
-		return Type.EMPTY;
-	}
+    @Override
+    public int returnsType() {
+        return Type.EMPTY;
+    }
 
-        @Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-            ErrorCode errorCode = DEFAULT_ERROR;
-            String errorDesc = "An error has been raised by the query";
-            Sequence errorVal = Sequence.EMPTY_SEQUENCE;
-            if (args.length > 0) {
-                if(args.length > 1) {
-                    errorDesc = args[1].getStringValue();
-                }
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-                if(!args[0].isEmpty()) {
-                     QName errorQName = ((QNameValue) args[0].itemAt(0)).getQName();
-                     errorCode = new ErrorCode(errorQName, errorDesc);
-                }
+        // Define default values
+        ErrorCode errorCode = DEFAULT_ERROR;
+        String errorDesc = "An error has been raised by the query";
+        Sequence errorVal = Sequence.EMPTY_SEQUENCE;
 
-                if(args.length == 3) {
-                    errorVal = args[2];
-                }
+        // Enter if one or more parameters are supplied
+        if (args.length > 0) {
+
+            // If there are 2 arguments or more supplied
+            // use 2nd argument for error description
+            if (args.length > 1) {
+                errorDesc = args[1].getStringValue();
             }
 
-            logger.error(errorDesc + ": " + errorCode.toString());
-            throw new XPathException(this, errorCode, errorDesc, errorVal);
-	}
+            // If first argument is not empty, get qname from argument
+            // and construct error code
+            if (!args[0].isEmpty()) {
+                QName errorQName = ((QNameValue) args[0].itemAt(0)).getQName();
+
+//                 Set prefix if present
+                String prefix = errorQName.getPrefix();
+                if(prefix==null){
+                    String ns = errorQName.getNamespaceURI();
+                    prefix = getContext().getPrefixForURI(ns);
+                    errorQName.setPrefix(prefix);
+                }
+
+                errorCode = new ErrorCode(errorQName, errorDesc);
+            }
+
+            // If there is a third argument, us it.
+            if (args.length == 3) {
+                errorVal = args[2];
+            }
+        }
+
+        logger.error(errorDesc + ": " + errorCode.toString());
+        throw new XPathException(this, errorCode, errorDesc, errorVal);
+    }
 }
