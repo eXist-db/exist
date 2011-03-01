@@ -161,4 +161,9 @@ public class DebuggableExpression implements Expression {
 	public Expression simplify() {
 		return this;
 	}
+
+	@Override
+	public Expression getParent() {
+		return null;
+	}
 }
