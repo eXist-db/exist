@@ -70,7 +70,7 @@ public class OpAnd extends LogicalOp {
     			//<test>{() and ()}</test> has to return <test>false</test>    			
     			if (getParent() instanceof EnclosedExpr ||
     				//First, the intermediate PathExpr
-    				((PathExpr)getParent()).getParent() == null) {
+    				(getParent() != null && getParent().getParent() == null)) {
     				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
     			}
     		} else {

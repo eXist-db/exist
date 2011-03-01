@@ -185,4 +185,14 @@ public abstract class AbstractExpression implements Expression {
     public boolean allowMixNodesInReturn() {
         return false;
     }
+
+	@Override
+	public Expression simplify() {
+		return this;
+	}
+	
+	@Override
+	public Expression getParent() {
+		return null;
+	}
 }

@@ -68,9 +68,9 @@ public class OpOr extends LogicalOp {
 			//<test>{() or ()}</test> should return <test>false</test>			
 			if (getParent() instanceof EnclosedExpr ||
 				//First, the intermediate PathExpr
-				((PathExpr)getParent()).getParent() == null) {					
+				(getParent() != null && getParent().getParent() == null)) {					
 				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-			}		
+			}
         } else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
 			if (ls)

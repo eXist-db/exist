@@ -1186,7 +1186,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     /**
      * Possibly switch operands to simplify execution.
      */
-    protected void simplify()
+    protected void simplifyOperands()
     {
         //Prefer nodes at the left hand
         if( ( !Type.subTypeOf( getLeft().returnsType(), Type.NODE ) ) && Type.subTypeOf( getRight().returnsType(), Type.NODE ) ) {

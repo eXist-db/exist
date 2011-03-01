@@ -79,4 +79,8 @@ public abstract class BinaryOp extends PathExpr {
      */
     public abstract Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException;
+    
+    public Expression simplify() {
+    	return this;
+    }
 }

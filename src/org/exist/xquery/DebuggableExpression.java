@@ -37,9 +37,9 @@ public class DebuggableExpression implements Expression {
     protected int column = -1;
     
     public DebuggableExpression(Expression expression) {
-        this.expression = expression;
-        this.line = expression.getLine();
-        this.column = expression.getColumn();
+        this.expression = expression.simplify();
+        this.line = this.expression.getLine();
+        this.column = this.expression.getColumn();
     }
 
     public int getExpressionId() {
@@ -155,5 +155,10 @@ public class DebuggableExpression implements Expression {
 	@Override
 	public String toString() {
 		return expression.toString();
+	}
+
+	@Override
+	public Expression simplify() {
+		return this;
 	}
 }

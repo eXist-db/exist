@@ -165,4 +165,7 @@ public class RangeExpression extends PathExpr {
         return Type.INTEGER;
     }    
 	
+    public Expression simplify() {
+    	return this;
+    }
 }

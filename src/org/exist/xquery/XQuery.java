@@ -32,6 +32,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.XACMLSource;
+import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
@@ -43,6 +44,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -262,6 +264,12 @@ public class XQuery {
 	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException, PermissionDeniedException {
 		XQueryContext context = new XQueryContext(broker, accessCtx);
 		CompiledXQuery compiled = compile(context, expression);
+		return execute(compiled, null);
+    }
+	
+	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException {
+		XQueryContext context = new XQueryContext(broker, accessCtx);
+		CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
 		return execute(compiled, null);
     }
 }
