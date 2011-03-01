@@ -34,7 +34,6 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.internal.SubjectImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 
@@ -239,8 +238,8 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	public boolean equals(Object obj) {
 		AbstractAccount other;
 		
-		if (obj instanceof SubjectImpl) {
-			other = ((SubjectImpl) obj).account;
+		if (obj instanceof AbstractSubject) {
+			other = ((AbstractSubject) obj).account;
 			
 		} else if (obj instanceof AbstractAccount) {
 			other = (AbstractAccount) obj;
