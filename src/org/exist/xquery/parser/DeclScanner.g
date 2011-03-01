@@ -25,6 +25,12 @@ options {
 	public String getEncoding() {
 		return encoding;
 	}
+	
+	private String version = null;
+	
+	public String getVersion() {
+		return  version;
+	}
 }
 
 versionDecl throws XPathException
@@ -37,6 +43,7 @@ versionDecl throws XPathException
 		}
 	)?
 	{
+		version = v.getText();
 		throw new XPathException("Processing stopped");
 	}
 	;

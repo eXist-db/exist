@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2004-2009 The eXist Project
+ * Copyright (C) 2004-2011 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -126,7 +126,7 @@ public class FunDeepEqual extends CollatingFunction {
         return result;
 	}
 	
-	private boolean deepEquals(Item a, Item b, Collator collator) {
+	public static boolean deepEquals(Item a, Item b, Collator collator) {
 		try {
 			final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
 			final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
@@ -194,14 +194,14 @@ public class FunDeepEqual extends CollatingFunction {
 		}
 	}
 	
-	private boolean compareElements(Node a, Node b) {
+	private static boolean compareElements(Node a, Node b) {
 		return
 			compareNames(a, b)
 			&& compareAttributes(a, b)
 			&& compareContents(a, b);
 	}
 	
-	private boolean compareContents(Node a, Node b) {
+	private static boolean compareContents(Node a, Node b) {
 		a = findNextTextOrElementNode(a.getFirstChild());
 		b = findNextTextOrElementNode(b.getFirstChild());
 		while (!(a == null || b == null)) {
@@ -233,7 +233,7 @@ public class FunDeepEqual extends CollatingFunction {
 		return a == b;		// both null
 	}
 	
-	private Node findNextTextOrElementNode(Node n) {
+	private static Node findNextTextOrElementNode(Node n) {
 		for(;;) {
 			if (n == null) return null;
 			int nodeType = getEffectiveNodeType(n);
@@ -242,7 +242,7 @@ public class FunDeepEqual extends CollatingFunction {
 		}
 	}
 	
-	private int getEffectiveNodeType(Node n) {
+	private static int getEffectiveNodeType(Node n) {
 		int nodeType = n.getNodeType();
 		if (nodeType == NodeImpl.REFERENCE_NODE) {
 			nodeType = ((ReferenceNode) n).getReference().getNode().getNodeType();
@@ -250,7 +250,7 @@ public class FunDeepEqual extends CollatingFunction {
 		return nodeType;
 	}
 	
-	private boolean compareAttributes(Node a, Node b) {
+	private static boolean compareAttributes(Node a, Node b) {
 		NamedNodeMap nnma = a.getAttributes(), nnmb = b.getAttributes();
 		if (getAttrCount(nnma) != getAttrCount(nnmb)) return false;
         for (int i=0; i<nnma.getLength(); i++) {
@@ -270,7 +270,7 @@ public class FunDeepEqual extends CollatingFunction {
      * @param nnm
      * @return
      */
-    private int getAttrCount(NamedNodeMap nnm) {
+    private static int getAttrCount(NamedNodeMap nnm) {
         int count = 0;
         for (int i=0; i<nnm.getLength(); i++) {
             Node n = nnm.item(i);
@@ -280,14 +280,14 @@ public class FunDeepEqual extends CollatingFunction {
         return count;
     }
 
-    private boolean compareNames(Node a, Node b) {
+    private static boolean compareNames(Node a, Node b) {
 		if (a.getLocalName() != null || b.getLocalName() != null) {
 			return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) && safeEquals(a.getLocalName(), b.getLocalName());
 		}
 		return safeEquals(a.getNodeName(), b.getNodeName());
 	}
 	
-	private boolean safeEquals(Object a, Object b) {
+	private static boolean safeEquals(Object a, Object b) {
 		return a == null ? b == null : a.equals(b);
 	}
 

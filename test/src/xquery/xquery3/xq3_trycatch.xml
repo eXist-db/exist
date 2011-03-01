@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 try-catch</testName>
+    <description>
+        <p>Test xquery3 try-catch functionality</p>
+        <author>Dannes Wessels</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xquery3"/>
+        <store collection="/db/xquery3" name="product-err.xml"><![CDATA[
+            <products>
+              <product>
+                <name>broiler</name>
+                <category>kitchen</category>
+                <price>100</price>
+                <cost>"70"</cost>
+              </product>
+              <product>
+                <name>toaster</name>
+                <category>kitchen</category>
+                <price>30</price>
+                <cost>10</cost>
+              </product>
+              <product>
+                <name>blender</name>
+                <category>kitchen</category>
+                <price>50</price>
+                <cost>25</cost>
+              </product>
+              <product>
+                <name>socks</name>
+                <category>clothes</category>
+                <price>5</price>
+                <cost>2</cost>
+              </product>
+              <product>
+                <name>shirt</name>
+                <category>clothes</category>
+                <price>10</price>
+                <cost>3</cost>
+              </product>
+            </products>
+        ]]>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xquery3"/>
+    </tearDown>
+
+    <!-- derived from w3c: http://www.w3.org/TR/xquery-30-use-cases/#try-catch-use-cases -->
+
+
+    <test output="text">
+        <task>Usecases Q1</task>
+        <code><![CDATA[
+xquery version '3.0'; 
+try {
+    <result>{
+        for $product in fn:doc("product-err.xml")//product
+        return
+            <product>{$product/name}
+            <margin>{$product/price - $product/cost}</margin>
+            </product>
+    }</result>
+} catch * {
+     "An error occured, please ask your consultant for help."
+}]]>
+        </code>
+        <expected>An error occured, please ask your consultant for help.</expected>
+    </test>
+  
+
+    <test output="text">
+        <task>Usecases Q2</task>
+        <code><![CDATA[
+xquery version '3.0';
+<result>{
+    for $product in fn:doc("product-err.xml")//product
+    return
+         try {
+            <product>{$product/name}
+              <margin>{$product/price div $product/cost}</margin>
+            </product>
+        } catch * ($errcode) {
+            <product>{
+                ($product/name, "Error:", $errcode)
+            }</product>
+        }
+}</result>
+        ]]>
+        </code>
+        <expected>
+            <result>
+                <product>
+                    <name>broiler</name>Error: err:FORG0001</product>
+                <product>
+                    <name>toaster</name>
+                    <margin>3</margin>
+                </product>
+                <product>
+                    <name>blender</name>
+                    <margin>2</margin>
+                </product>
+                <product>
+                    <name>socks</name>
+                    <margin>2.5</margin>
+                </product>
+                <product>
+                    <name>shirt</name>
+                    <margin>3.3333333333333335</margin>
+                </product>
+            </result>
+        </expected>
+    </test>
+
+   
+
+    <test output="text">
+        <task>Usecases Q3</task>
+        <code><![CDATA[
+xquery version '3.0';
+declare namespace foo='http://foo.com';
+declare function local:fib-recur($n as xs:integer) as xs:integer? {
+    if ($n <0) then ()
+    else if ($n > 100) then
+        fn:error(fn:QName('http://foo.com', 'ValueToBig'), 'Value too big')
+    else if ($n = 0)  then 0
+    else if ($n=1)   then 1
+    else local:fib-recur($n - 1)  + local:fib-recur($n - 2)
+};
+
+<result>{
+    for $x in (3,1,1030,5)
+    return
+        try{
+        <fib input="{$x}">{local:fib-recur($x)}</fib>
+        }catch foo:ValueToBig {
+          <fib input="{$x}">Number to big</fib>
+        }
+}</result>
+]]>
+        </code>
+        <expected>
+            <result>
+                <fib input="3">2</fib>
+                <fib input="1">1</fib>
+                <fib input="1030">Number to big</fib>
+                <fib input="5">5</fib>
+            </result>
+        </expected>
+    </test>
+    <!-- -->
+
+    <!-- the following tests are derived from http://www.w3.org/TR/xquery-30/#id-try-catch -->
+
+    <test output="text">
+        <task>A try/catch expression without a CatchErrorList catches
+        any error
+        </task>
+        <code><![CDATA[
+xquery version '3.0';
+let $x := "a b c"
+return
+try {
+    $x cast as xs:integer
+}
+catch * {
+    0
+}
+]]>
+        </code>
+        <expected>0</expected>
+    </test>
+
+    <test output="text">
+        <task>The CatchErrorList in this try/catch expression specifies
+        that only err:FORG0001 is caught
+        </task>
+        <code><![CDATA[
+        xquery version '3.0';
+        let $x := "a b c"
+        return
+try {
+    $x cast as xs:integer
+}
+catch err:FORG0001 {
+    0
+}
+]]>
+        </code>
+        <expected>0</expected>
+    </test>
+
+    <test output="text">
+        <task>The CatchErrorList in this try/catch expression specifies
+        that errors err:FORG0001 and err:XPTY0004 are caught
+        </task>
+        <code><![CDATA[
+        xquery version '3.0';
+        let $x := "a b c"
+        return
+try {
+    $x cast as xs:integer
+}
+catch err:FORG0001 | err:XPTY0004 {
+    0
+}
+]]>
+        </code>
+        <expected>0</expected>
+    </test>
+<!--
+    <test output="text">
+        <task>This try/catch expression shows how to bind variables to
+        the error code, error description, and error value. Since the
+        CatchErrorList is a wildcard, it catches any error:
+        </task>
+        <code><![CDATA[
+try {
+    fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'))
+}
+catch * ($errcode, $errdesc, $errval) {
+    $errcode, $errdesc
+}
+]]>
+        </code>
+        <expected>err:FOER0000</expected>
+    </test>
+ 
+    <test output="text">
+        <task>Errors raised by using the result of a try/catch expression
+        are not caught, since they are outside the scope of the try expression.
+        </task>
+        <code><![CDATA[
+declare function local:thrice($x as xs:integer) as xs:integer
+{
+    3*$x
+};
+
+local:thrice(try { "oops" } catch * { 3 } )
+]]>
+        </code>
+        <expected>a</expected>
+    </test>
+
+  -->
+
+</TestSet>
