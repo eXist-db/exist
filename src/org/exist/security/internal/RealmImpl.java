@@ -205,22 +205,28 @@ public class RealmImpl extends AbstractRealm {
 
 	@Override
 	public synchronized Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
-		Account user = getAccount(null, accountName);
-		if (user == null)
+		Account account = getAccount(null, accountName);
+		if (account == null)
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Acount '" + accountName + "' not found");
+					"Acount '" + accountName + "' not found.");
 			
-		if ("SYSTEM".equals(accountName)) 
+		if ("SYSTEM".equals(accountName) || "guest".equals(accountName)) 
 			throw new AuthenticationException(
 					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Acount '" + accountName + "' can not be used");
+					"Acount '" + accountName + "' can not be used.");
+		
+		if (!account.isEnabled()) {
+			throw new AuthenticationException(
+					AuthenticationException.ACCOUNT_LOCKED,
+					"Acount '" + accountName + "' is dissabled.");
+		}
 
-		Subject newUser = new SubjectImpl((AccountImpl) user, credentials);
+		Subject subject = new SubjectImpl((AccountImpl) account, credentials);
 			
-		if (newUser.isAuthenticated()) {
-			return newUser;
-                }
+		if (subject.isAuthenticated()) {
+			return subject;
+        }
 
 		throw new AuthenticationException(
 				AuthenticationException.WRONG_PASSWORD,
