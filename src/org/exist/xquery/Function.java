@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -195,7 +196,10 @@ public abstract class Function extends PathExpr {
 					+ ", got "
 					+ arguments.size()
 					+ ')');
-        steps = arguments;
+        steps = new ArrayList<Expression>(arguments.size());
+        for (int i = 0; i < arguments.size(); i++) {
+        	steps.add(arguments.get(i).simplify());
+        }
         argumentsChecked = false;
 	}
 
@@ -445,5 +449,9 @@ public abstract class Function extends PathExpr {
     
     public void accept(ExpressionVisitor visitor) {
         visitor.visitBuiltinFunction(this);
+    }
+    
+    public Expression simplify() {
+    	return this;
     }
 }

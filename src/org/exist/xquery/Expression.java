@@ -175,6 +175,8 @@ public interface Expression {
      */
     public int getDependencies();
 
+    public Expression simplify();
+    
     /**
      * Called to inform an expression that it should reset to its initial state.
      *
@@ -226,4 +228,6 @@ public interface Expression {
     public Boolean match(Sequence contextSequence, Item item) throws XPathException;
 
     public boolean allowMixNodesInReturn();
+    
+    public Expression getParent();
 }

@@ -53,7 +53,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	}
 	
 	public void setFunctionBody(Expression body) {
-		this.body = body;
+		this.body = body.simplify();
 	}
 
     public Expression getFunctionBody() {

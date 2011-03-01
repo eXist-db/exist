@@ -789,4 +789,9 @@ public class Predicate extends PathExpr {
 	public String toString() {
 		return "[" + super.toString() + "]";
 	}
+	
+	@Override
+	public Expression simplify() {
+		return this;
+	}
 }

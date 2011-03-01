@@ -152,4 +152,10 @@ public class EnclosedExpr extends PathExpr {
 	public boolean allowMixNodesInReturn() {
 		return true;
 	}
+	
+	@Override
+	public Expression simplify() {
+		return this;
+	}
+	
 }

@@ -301,6 +301,9 @@ public class LetExpr extends BindingExpression {
         	if (context.getProfiler().isEnabled())
                 context.getProfiler().end(this, "", resultSequence);
             
+        	if (resultSequence == null)
+        		return Sequence.EMPTY_SEQUENCE;
+        	
             actualReturnType = resultSequence.getItemType();
             
     		return resultSequence;

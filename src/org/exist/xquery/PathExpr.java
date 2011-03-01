@@ -486,4 +486,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 	public void setContext(XQueryContext context) {
 		this.context = context;
 	}
+
+	public Expression simplify() {
+		if (steps.size() == 1) {
+			return steps.get(0).simplify();
+		}
+		return this;
+	}
 }

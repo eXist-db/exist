@@ -88,4 +88,9 @@ public class UnaryExpr extends PathExpr {
     	else
     		return("to be implemented");      
     }
+    
+    @Override
+    public Expression simplify() {
+    	return this;
+    }
 }

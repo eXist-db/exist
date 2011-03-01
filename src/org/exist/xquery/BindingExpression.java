@@ -94,7 +94,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	}
 
 	public void setInputSequence(Expression sequence) {
-		this.inputSequence = sequence;
+		this.inputSequence = sequence.simplify();
 	}
 
     public Expression getInputSequence() {
@@ -102,7 +102,7 @@ public abstract class BindingExpression extends AbstractExpression {
     }
     
     public void setReturnExpression(Expression expr) {
-		this.returnExpr = expr;
+		this.returnExpr = expr.simplify();
 	}
 
     public Expression getReturnExpression() {
@@ -110,7 +110,7 @@ public abstract class BindingExpression extends AbstractExpression {
     }
 
     public void setWhereExpression(Expression expr) {
-		this.whereExpr = expr;
+		this.whereExpr = expr.simplify();
 	}
 
     public Expression getWhereExpression() {

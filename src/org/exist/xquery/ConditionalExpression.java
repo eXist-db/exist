@@ -44,9 +44,9 @@ public class ConditionalExpression extends AbstractExpression {
     public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
 		Expression elseExpr) {
 		super(context);
-		this.testExpr = testExpr;
-		this.thenExpr = thenExpr;
-		this.elseExpr = elseExpr;
+		this.testExpr = testExpr.simplify();
+		this.thenExpr = thenExpr.simplify();
+		this.elseExpr = elseExpr.simplify();
 	}
 
     /* (non-Javadoc)
