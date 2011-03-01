@@ -529,8 +529,8 @@ public class Configurator {
         }
     }
     
-    private static Boolean implementsInterface(Class object, Class interf){
-        for (Class c : object.getInterfaces()) {
+    private static Boolean implementsInterface(Class<?> object, Class<?> interf){
+        for (Class<?> c : object.getInterfaces()) {
             if (c.equals(interf)) {
                 return true;
             }
@@ -546,7 +546,7 @@ public class Configurator {
         }
         
         ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
-        ConfigurationAnnotatedField annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
+        ConfigurationAnnotatedField<?> annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
         if(annotatedField == null) {
             return; //UNDERSTAND: throw exception
         }
@@ -560,10 +560,6 @@ public class Configurator {
         String value;
         try {
             value = extractFieldValue(field, instance);
-            if(value == null) {
-                LOG.warn("Reference field '"+referenceBy+"' for class '"+clazz+"' is NULL");
-                return;
-            }
         } catch (IllegalArgumentException e) {
             LOG.warn(e);
             return;
@@ -573,9 +569,16 @@ public class Configurator {
         }
 
         QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
-        serializer.startElement(qnConfig, null);
-        serializer.attribute(new QName(referenceBy, null), value);
-        serializer.endElement(qnConfig);
+        if(value == null) {
+        	String comment = "<"+qnConfig+" "+referenceBy+"=''/>";
+        	char[] ch = comment.toCharArray();
+        	serializer.characters(new char[] {'\n'}, 0, 1);
+        	serializer.comment(ch, 0, ch.length);
+        } else {
+        	serializer.startElement(qnConfig, null);
+        	serializer.attribute(new QName(referenceBy, null), value);
+        	serializer.endElement(qnConfig);
+        }
     }
 
     private static String extractFieldValue(Field field, Configurable instance) throws IllegalArgumentException, IllegalAccessException {
@@ -634,6 +637,7 @@ public class Configurator {
                     final Field field = attr.getField();
                     field.setAccessible(true);
 
+                    //XXX: artifact? remove?
                     //skip elements
                     if(field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
                         continue;
@@ -655,21 +659,34 @@ public class Configurator {
                     final Field field = element.getField();
                     field.setAccessible(true);
                 
+                    //XXX: artifact? remove?
                     //skip attributes
                     if(!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
                         continue;
                     }
 
-                    //skip null values
-                    if(field.get(instance) == null) {
-                        continue;
-                    }
-                    
                     String referenceBy = null;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
                         referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
                     }
 
+                    //skip null values
+                    if(field.get(instance) == null) {
+                    	String tagName = element.getAnnotation().value();
+                    	String comment = "<"+tagName;
+                    	
+                    	if (referenceBy != null)
+                    		comment += " "+referenceBy+"=\"\"/>";
+                    	else
+                    		comment += "></"+tagName+">";
+                    	
+                    	char[] ch = comment.toCharArray();
+                    	serializer.characters(new char[] {'\n'}, 0, 1);
+                    	serializer.comment(ch, 0, ch.length);
+
+                        continue;
+                    }
+                    
                     String value = null;
                     String typeName = field.getType().getName();
                     if(typeName.equals("java.util.List")) {
@@ -708,6 +725,18 @@ public class Configurator {
                         } else {
                             serializer.characters(value);
                         }
+                    } else {
+                    	String tagName = element.getAnnotation().value();
+                    	String comment = "<"+tagName;
+                    	
+                    	if (referenceBy != null)
+                    		comment += " "+referenceBy+"=\"\"/>";
+                    	else
+                    		comment += "></"+tagName+">";
+                    	
+                    	char[] ch = comment.toCharArray();
+                    	serializer.characters(new char[] {'\n'}, 0, 1);
+                    	serializer.comment(ch, 0, ch.length);
                     }
                 }
 
