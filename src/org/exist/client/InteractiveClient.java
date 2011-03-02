@@ -2152,7 +2152,7 @@ public class InteractiveClient {
                     } else {
                         if (cOpt.optionOutputFile != null) {
                         	((ExtendedResource)res).getContentIntoAFile(new File(cOpt.optionOutputFile));
-                        	((ExtendedResource)res).freeLocalResources();
+                        	((EXistResource)res).freeResources();
                         } else {
                         	((ExtendedResource)res).getContentIntoAStream(System.out);
                         	System.out.println();

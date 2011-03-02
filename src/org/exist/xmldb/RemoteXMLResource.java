@@ -326,7 +326,7 @@ public class RemoteXMLResource
     public ContentHandler setContentAsSAX()
     	throws XMLDBException
     {
-    	freeLocalResources();
+    	freeResources();
     	content = null;
     	return new InternalXMLSerializer();
     }

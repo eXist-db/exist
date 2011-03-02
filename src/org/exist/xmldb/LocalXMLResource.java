@@ -423,6 +423,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		root = null;
 		return new InternalXMLSerializer();
 	}
+        
+        @Override
+        public void freeResources() throws XMLDBException {
+            //dO nothing
+            //TODO consider unifying closeDocument() code into freeResources()
+        }
 
 	private class InternalXMLSerializer extends SAXSerializer {
 
