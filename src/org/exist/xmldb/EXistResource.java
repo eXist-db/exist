@@ -48,11 +48,13 @@ public interface EXistResource {
 	
 	void setLexicalHandler(LexicalHandler handler);
     
-    void setMimeType(String mime);
+        void setMimeType(String mime);
 
-    String getMimeType() throws XMLDBException;
+        String getMimeType() throws XMLDBException;
     
-    DocumentType getDocType() throws XMLDBException;
+        DocumentType getDocType() throws XMLDBException;
     
-    void setDocType(DocumentType doctype)  throws XMLDBException;
+        void setDocType(DocumentType doctype)  throws XMLDBException;
+        
+        void freeResources() throws XMLDBException;
 }

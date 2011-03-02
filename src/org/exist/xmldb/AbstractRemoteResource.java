@@ -27,14 +27,11 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 import org.exist.util.VirtualTempFile;
-import org.exist.xquery.value.StringValue;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-
-import javax.xml.transform.OutputKeys;
 
 public abstract class AbstractRemoteResource
 	implements EXistResource, ExtendedResource, Resource
@@ -63,14 +60,16 @@ public abstract class AbstractRemoteResource
 		}
 	}
     
+        @Override
 	protected void finalize()
 		throws Throwable
 	{
-		freeLocalResources();
+		freeResources();
 		super.finalize();
 	}
 	
-	public void freeLocalResources() {
+	@Override
+        public void freeResources() {
 		vfile = null;
 		inputSource = null;
 		if(contentVFile!=null) {
@@ -185,7 +184,7 @@ public abstract class AbstractRemoteResource
 	protected boolean setContentInternal(Object value)
 		throws XMLDBException
 	{
-		freeLocalResources();
+		freeResources();
 		boolean wasSet=false;
 		if(value instanceof VirtualTempFile) {
 		    vfile = (VirtualTempFile)value;
