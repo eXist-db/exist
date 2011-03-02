@@ -248,7 +248,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		}
 	}
 	
-	public void freeLocalResources()
+        @Override
+	public void freeResources()
 	{
 		if(!isExternal && file!=null) {
 			file=null;

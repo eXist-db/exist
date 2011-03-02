@@ -62,10 +62,4 @@ public interface ExtendedResource
 	 * Do NOT confuse with set content.
 	 */
 	public void getContentIntoAStream(OutputStream os)  throws XMLDBException;
-	
-	/**
-	 * It erases the internal reference to any file set with getContentIntoAFile,
-	 * either explicitly or implicitly using, for instance, getStreamContent.
-	 */
-	public void freeLocalResources();
 }

@@ -64,26 +64,51 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
 import javax.xml.transform.OutputKeys;
+import org.exist.xmldb.EXistResource;
 
 public class RetrieveExample {
-    protected static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the name of the resource to read from the collection
+     */
     public static void main(String args[]) throws Exception {
-        String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
         
         // initialize database driver
         Class cl = Class.forName(driver);
         Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-
-        // get the collection
-        Collection col = DatabaseManager.getCollection(URI + args[0]);
-        col.setProperty(OutputKeys.INDENT, "no");
-        XMLResource res = (XMLResource)col.getResource(args[1]);
-        if(res == null)
-            System.out.println("document not found!");
-        else
-            System.out.println(res.getContent());   }
+        
+        Collection col = null;
+        XMLResource res = null;
+        try {    
+            // get the collection
+            col = DatabaseManager.getCollection(URI + args[0]);
+            col.setProperty(OutputKeys.INDENT, "no");
+            res = (XMLResource)col.getResource(args[1]);
+            
+            if(res == null) {
+                System.out.println("document not found!");
+            } else {
+                System.out.println(res.getContent());
+            }
+        } finally {
+            //dont forget to clean up!
+            
+            if(res != null) {
+                try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+            
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+        }
+    }
 }
         ]]></programlisting>
             </example>
@@ -139,32 +164,55 @@ public class RetrieveExample {
             <para>The following is an example of using the XML:DB API to execute a database query:</para>
 
             <example>
-                <title>Querying the Database (XML:DB API)</title>
+                <title>Querying the Database with XPath(XML:DB API)</title>
                 
-                <programlisting format="linespecific" language="java"><![CDATA[import org.xmldb.api.base.*;
+                <programlisting format="linespecific" language="java"><![CDATA[
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
+import org.exist.xmldb.EXistResource;
 
-public class QueryExample {
+public class XPathExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the XPath expression to execute
+     */
     public static void main(String args[]) throws Exception {
-        String driver = "org.exist.xmldb.DatabaseImpl";
-        Class cl = Class.forName(driver);			
-        Database database = (Database)cl.newInstance();
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         
-        Collection col = 
-            DatabaseManager.getCollection(
-                "xmldb:exist://localhost:8080/exist/xmlrpc/db"
-            );
-        XPathQueryService service =
-            (XPathQueryService) col.getService("XPathQueryService", "1.0");
-        service.setProperty("indent", "yes");
-                
-        ResourceSet result = service.query(args[0]);
-        ResourceIterator i = result.getIterator();
-        while(i.hasMoreResources()) {
-            Resource r = i.nextResource();
-            System.out.println((String)r.getContent());
+        Collection col = null;
+        try { 
+            col = DatabaseManager.getCollection(URI + args[0]);
+            XPathQueryService xpqs = (XPathQueryService)col.getService("XPathQueryService", "1.0");
+            xpqs.setProperty("indent", "yes");
+
+            ResourceSet result = xpqs.query(args[1]);
+            ResourceIterator i = result.getIterator();
+            Resource res = null;
+            while(i.hasMoreResources()) {
+                try {
+                    res = i.nextResource();
+                    System.out.println(res.getContent());
+                } finally {
+                    //dont forget to cleanup resources
+                    try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+                }
+            }
+        } finally {
+            //dont forget to cleanup
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
         }
     }
 }
@@ -185,31 +233,54 @@ public class QueryExample {
             <example>
                 <title>Compiling a Query (XML:DB API)</title>
                 
-                <programlisting format="linespecific" language="java"><![CDATA[import org.xmldb.api.base.*;
+                <programlisting format="linespecific" language="java"><![CDATA[
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import org.xmldb.api.*;
-import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.EXistResource;
 
-public class QueryExample {
+public class XQueryExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the XQuery to execute
+     */
     public static void main(String args[]) throws Exception {
-        String driver = "org.exist.xmldb.DatabaseImpl";
-        Class cl = Class.forName(driver);			
-        Database database = (Database)cl.newInstance();
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         
-        Collection col = 
-            DatabaseManager.getCollection("xmldb:exist:///db");
-        XQueryService service =
-            (XQueryService) col.getService("XQueryService", "1.0");
-        service.setProperty("indent", "yes");
+        Collection col = null;
+        try { 
+            col = DatabaseManager.getCollection(URI + args[0]);
+            XQueryService xqs = (XQueryService) col.getService("XQueryService", "1.0");
+            xqs.setProperty("indent", "yes");
         
-        CompiledExpression compiled = service.compile(args[0]);
-        ResourceSet result = service.execute(compiled);
-        ResourceIterator i = result.getIterator();
-        while(i.hasMoreResources()) {
-            Resource r = i.nextResource();
-            System.out.println((String)r.getContent());
+            CompiledExpression compiled = xqs.compile(args[1]);
+            ResourceSet result = xqs.execute(compiled);
+            ResourceIterator i = result.getIterator();
+            Resource res = null;
+            while(i.hasMoreResources()) {
+                try {
+                    res = i.nextResource();
+                    System.out.println(res.getContent());
+                } finally {
+                    //dont forget to cleanup resources
+                    try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+                }
+            }
+        } finally {
+            //dont forget to cleanup
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
         }
     }
 }
@@ -233,49 +304,105 @@ public class QueryExample {
             <example>
                 <title>Adding a File (XML:DB API)</title>
                 
-                <programlisting format="linespecific" language="java"><![CDATA[public class StoreExample {
-    public final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+                <programlisting format="linespecific" language="java"><![CDATA[
+import java.io.File;
+import org.exist.xmldb.EXistResource;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
+import org.xmldb.api.*;
 
+public class StoreExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the name of the file to read and store in the collection
+     */
     public static void main(String args[]) throws Exception {
+       
         if(args.length < 2) {
             System.out.println("usage: StoreExample collection-path document");
             System.exit(1);
         }
 
-        String collection = args[0], file = args[1];
-
-        // initialize driver
-        String driver = "org.exist.xmldb.DatabaseImpl";
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
         Class cl = Class.forName(driver);
-        Database database = (Database)cl.newInstance();
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
-        // try to get collection
-        Collection col =
-            DatabaseManager.getCollection(URI + collection);
-        if(col == null) {
-            // collection does not exist: get root collection and create
-            // for simplicity, we assume that the new collection is a
-            // direct child of the root collection, e.g. /db/test.
-            // the example will fail otherwise.
-            Collection root = DatabaseManager.getCollection(URI + "/db");
-            CollectionManagementService mgtService = (CollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
-            col = mgtService.createCollection(collection.substring("/db".length()));
+        Collection col = null;
+        XMLResource res = null;
+        try { 
+            col = getOrCreateCollection(args[0]);
+            
+            // create new XMLResource; an id will be assigned to the new resource
+            res = (XMLResource)col.createResource(null, "XMLResource");
+            File f = new File(args[1]);
+            if(!f.canRead()) {
+                System.out.println("cannot read file " + args[1]);
+                return;
+            }
+            
+            res.setContent(f);
+            System.out.print("storing document " + res.getId() + "...");
+            col.storeResource(res);
+            System.out.println("ok.");
+        } finally {
+            //dont forget to cleanup
+            if(res != null) {
+                try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+            
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
         }
-        // create new XMLResource; an id will be assigned to the new resource
-        XMLResource document = (XMLResource)col.createResource(null, "XMLResource");
-        File f = new File(file);
-        if(!f.canRead()) {
-            System.out.println("cannot read file " + file);
-            return;
-        }
-        document.setContent(f);
-        System.out.print("storing document " + document.getId() + "...");
-        col.storeResource(document);
-        System.out.println("ok.");
     }
-}]]></programlisting>
+    
+    private static Collection getOrCreateCollection(String collectionUri) throws XMLDBException {
+        return getOrCreateCollection(collectionUri, 0);
+    }
+    
+    private static Collection getOrCreateCollection(String collectionUri, int pathSegmentOffset) throws XMLDBException {
+        
+        Collection col = DatabaseManager.getCollection(URI + collectionUri);
+        if(col == null) {
+            if(collectionUri.startsWith("/")) {
+                collectionUri = collectionUri.substring(1);
+            }
+
+            String pathSegments[] = collectionUri.split("/");
+            if(pathSegments.length > 0) {
+
+                StringBuilder path = new StringBuilder();
+                for(int i = 0; i <= pathSegmentOffset; i++) {
+                    path.append("/" + pathSegments[i]);
+                }
+
+                Collection start = DatabaseManager.getCollection(URI + path);
+                if(start == null) {
+                    //collection does not exist, so create
+                    String parentPath = path.substring(0, path.lastIndexOf("/"));
+                    Collection parent = DatabaseManager.getCollection(URI + parentPath);
+                    CollectionManagementService mgt = (CollectionManagementService) parent.getService("CollectionManagementService", "1.0");
+                    col = mgt.createCollection(pathSegments[pathSegmentOffset]);
+                    col.close();
+                    parent.close();
+                } else {
+                    start.close();
+                }
+            }
+            return getOrCreateCollection(collectionUri, ++pathSegmentOffset);
+        } else {
+            return col;
+        }
+    }
+}
+]]></programlisting>
             </example>
             <para>Please note that the <classname>XMLResource.setContent()</classname> method takes
                 a Java object as its parameter. The eXist driver checks if the object is a File.

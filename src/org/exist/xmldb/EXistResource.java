@@ -38,15 +38,15 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface EXistResource {
 
-	Date getCreationTime() throws XMLDBException;
-	
-	Date getLastModificationTime() throws XMLDBException;
-	
-	Permission getPermissions() throws XMLDBException;
-	
-	long getContentLength() throws XMLDBException;
-	
-	void setLexicalHandler(LexicalHandler handler);
+    Date getCreationTime() throws XMLDBException;
+
+    Date getLastModificationTime() throws XMLDBException;
+
+    Permission getPermissions() throws XMLDBException;
+
+    long getContentLength() throws XMLDBException;
+
+    void setLexicalHandler(LexicalHandler handler);
     
     void setMimeType(String mime);
 
@@ -54,5 +54,7 @@ public interface EXistResource {
     
     DocumentType getDocType() throws XMLDBException;
     
-    void setDocType(DocumentType doctype)  throws XMLDBException;
+    void setDocType(DocumentType doctype) throws XMLDBException;
+    
+    void freeResources() throws XMLDBException;
 }

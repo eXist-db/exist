@@ -59,14 +59,16 @@ public abstract class AbstractRemoteResource
 		}
 	}
     
+        @Override
 	protected void finalize()
 		throws Throwable
 	{
-		freeLocalResources();
+		freeResources();
 		super.finalize();
 	}
 	
-	public void freeLocalResources() {
+        @Override
+	public void freeResources() {
 		vfile = null;
 		inputSource = null;
 		if(contentVFile!=null) {
@@ -181,7 +183,7 @@ public abstract class AbstractRemoteResource
 	protected boolean setContentInternal(Object value)
 		throws XMLDBException
 	{
-		freeLocalResources();
+		freeResources();
 		boolean wasSet=false;
 		if(value instanceof VirtualTempFile) {
 		    vfile = (VirtualTempFile)value;
