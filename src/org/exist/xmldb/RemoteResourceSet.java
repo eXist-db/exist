@@ -85,7 +85,7 @@ public class RemoteResourceSet implements ResourceSet {
     		VirtualTempFile vtmpfile=null;
 		try {
 			vtmpfile = new VirtualTempFile();
-			vtmpfile.setTempPrefix("eXistARR");
+			vtmpfile.setTempPrefix("eXistRRS");
 			vtmpfile.setTempPostfix(".xml");
 			
 			Map<?,?> table = (Map<?,?>) collection.getClient().execute("retrieveAllFirstChunk", params);
