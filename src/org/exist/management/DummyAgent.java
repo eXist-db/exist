@@ -30,27 +30,27 @@ import org.exist.util.DatabaseConfigurationException;
  */
 public class DummyAgent implements Agent {
 
-    @Override
+    // @Override
     public void initDBInstance(BrokerPool instance) {
         // do nothing
     }
 
-    @Override
+    // @Override
     public void closeDBInstance(BrokerPool instance) {
         // nothing to do
     }
 
-    @Override
+    // @Override
     public void addMBean(String dbInstance, String name, Object mbean) throws DatabaseConfigurationException {
         // just do nothing
     }
 
-    @Override
+    // @Override
     public void changeStatus(BrokerPool instance, TaskStatus actualStatus) {
         // nothing to do
     }
 
-    @Override
+    // @Override
     public void updateStatus(BrokerPool instance, int percentage) {
         // nothing to do
     }

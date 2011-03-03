@@ -15,17 +15,17 @@ public class CacheManager implements CacheManagerMBean {
         this.manager = manager;
     }
 
-    @Override
+    // @Override
     public long getMaxTotal() {
         return manager.getMaxTotal();
     }
 
-    @Override
+    // @Override
     public long getMaxSingle() {
         return manager.getMaxSingle();
     }
 
-    @Override
+    // @Override
     public long getCurrentSize() {
         return manager.getCurrentSize();
     }

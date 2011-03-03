@@ -257,7 +257,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		}
 	}
 	
-        @Override
+    //@Override
 	public void freeResources() throws XMLDBException
 	{
 		if(!isExternal && file!=null) {
