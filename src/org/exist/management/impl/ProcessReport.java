@@ -81,7 +81,7 @@ public class ProcessReport implements ProcessReportMBean {
 
     // @Override
     public TabularData getScheduledJobs() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("scheduledJobs", "Lists currently scheduled jobs in eXist",
@@ -103,7 +103,7 @@ public class ProcessReport implements ProcessReportMBean {
 
     // @Override
     public TabularData getRunningJobs() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningJobs", "Lists currently running jobs in eXist",
@@ -125,7 +125,7 @@ public class ProcessReport implements ProcessReportMBean {
 
     // @Override
     public TabularData getRunningQueries() {
-        OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
+        OpenType[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningQueries", "Lists currently running XQueries",
@@ -147,7 +147,7 @@ public class ProcessReport implements ProcessReportMBean {
 
     // @Override
     public TabularData getRecentQueryHistory() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG };
         CompositeType infoType;
         try {
             infoType = new CompositeType("recentQueryHistory", "Lists recently completed XQueries", qhItemNames, qhItemDescriptions, itemTypes);

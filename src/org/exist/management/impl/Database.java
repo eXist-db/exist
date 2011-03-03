@@ -64,7 +64,7 @@ public class Database implements DatabaseMBean {
 
     // @Override
     public TabularData getActiveBrokersMap() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
         try {
             CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
                     itemNames, itemDescriptions, itemTypes);
