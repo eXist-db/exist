@@ -60,8 +60,8 @@ public class LockManager implements LockManagerMBean {
     private static String[] indexNames = { "waitingThread" };
 
     private TabularData lockMapToComposite(Map<String, LockInfo> map) throws OpenDataException {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType<Object>(1, SimpleType.STRING),
-                new ArrayType<Object>(1, SimpleType.STRING), new ArrayType<Object>(1, SimpleType.STRING) };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType(1, SimpleType.STRING),
+                new ArrayType(1, SimpleType.STRING), new ArrayType(1, SimpleType.STRING) };
         CompositeType lockType = new CompositeType("lockInfo", "Provides information on a thread waiting for a lock",
                 itemNames, itemDescriptions, itemTypes);
         TabularType tabularType = new TabularType("waitingThreads", "Lists all threads waiting for a lock", lockType, indexNames);

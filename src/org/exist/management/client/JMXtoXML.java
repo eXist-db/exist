@@ -340,7 +340,8 @@ public class JMXtoXML {
 
 	private void serialize(MemTreeBuilder builder, CompositeData data) throws SAXException {
 		CompositeType type = data.getCompositeType();
-		for (String key : type.keySet()) {
+		for (Object tmp : type.keySet()) {
+			String key = (String) tmp;
 			QName qname = new QName(key, JMX_NAMESPACE, JMX_PREFIX);
 			builder.startElement(qname, null);
 			serializeObject(builder, data.get(key));
@@ -353,9 +354,10 @@ public class JMXtoXML {
 		for (Object rowObj : data.values()) {
 			CompositeData row = (CompositeData) rowObj;
 			builder.startElement(ROW_ELEMENT, null);
-			for (String key : rowType.keySet()) {
-				Object columnData = row.get(key.toString());
-				QName columnQName = new QName(key.toString(), JMX_NAMESPACE, JMX_PREFIX);
+			for (Object tmp : rowType.keySet()) {
+				String key = (String) tmp;
+				Object columnData = row.get(key);
+				QName columnQName = new QName(key, JMX_NAMESPACE, JMX_PREFIX);
 				builder.startElement(columnQName, null);
 				serializeObject(builder, columnData);
 				builder.endElement();

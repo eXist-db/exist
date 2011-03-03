@@ -131,7 +131,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
     
     public TabularData getErrors() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
+        OpenType[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
