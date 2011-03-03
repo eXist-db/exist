@@ -60,7 +60,7 @@ public abstract class AbstractRemoteResource
 		}
 	}
     
-        @Override
+        // @Override
 	protected void finalize()
 		throws Throwable
 	{
@@ -68,7 +68,7 @@ public abstract class AbstractRemoteResource
 		super.finalize();
 	}
 	
-	@Override
+	// @Override
         public void freeResources() {
 		vfile = null;
 		inputSource = null;

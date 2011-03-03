@@ -47,32 +47,32 @@ public class SystemInfo implements SystemInfoMBean {
         }
     }
 
-    @Override
+    // @Override
     public String getExistVersion() {
         return sysProperties.getProperty("product-version","unknown");
     }
 
-    @Override
+    // @Override
     public String getExistBuild() {
         return sysProperties.getProperty("product-build","unknown");
     }
 
-    @Override
+    // @Override
     public String getSvnRevision() {
         return sysProperties.getProperty("svn-revision","unknown");
     }
 
-    @Override
+    // @Override
     public String getDefaultLocale() {
         return Locale.getDefault().toString();
     }
 
-    @Override
+    // @Override
     public String getDefaultEncoding() {
         return new InputStreamReader(System.in).getEncoding();
     }
 
-    @Override
+    // @Override
     public String getOperatingSystem() {
          return System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
     }

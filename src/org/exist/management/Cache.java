@@ -29,32 +29,32 @@ public class Cache implements CacheMBean {
         this.cache = cache;
     }
 
-    @Override
+    // @Override
     public String getType() {
         return cache.getType();
     }
 
-    @Override
+    // @Override
     public int getSize() {
         return cache.getBuffers();
     }
 
-    @Override
+    // @Override
     public int getUsed() {
         return cache.getUsedBuffers();
     }
 
-    @Override
+    // @Override
     public int getHits() {
         return cache.getHits();
     }
 
-    @Override
+    // @Override
     public int getFails() {
         return cache.getFails();
     }
 
-    @Override
+    // @Override
     public String getFileName() {
         return cache.getFileName();
     }
