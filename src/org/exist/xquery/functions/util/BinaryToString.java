@@ -116,7 +116,7 @@ public class BinaryToString extends BasicFunction {
             binary.streamBinaryTo(os);
             return new StringValue(new String(os.toByteArray(), encoding));
         } catch(IOException ioe) {
-            throw new XPathException(this, ioe.getMessage(), ioe);
+            throw new XPathException(this, ioe);
         } finally {
             try {
                 os.close();

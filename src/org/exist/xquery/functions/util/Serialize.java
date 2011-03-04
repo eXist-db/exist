@@ -36,7 +36,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.dom.QName;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;

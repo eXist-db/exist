@@ -233,24 +233,26 @@ public class Eval extends BasicFunction {
 
         @Override
         public Sequence call() throws XPathException {
+        	
+        	BrokerPool db = null;
             DBBroker broker = null;
+            
+            try {
+				db = BrokerPool.getInstance();
+			} catch (EXistException e) {
+                throw new XPathException("Unable to get new broker: " + e.getMessage(), e);
+			}
+            
             try {
                 final XQueryContext context = callersContext.copyContext(); //make a copy
-                broker = BrokerPool.getInstance().get(callersContext.getUser()); //get a new broker
+                broker = db.get(callersContext.getSubject()); //get a new broker
                 context.setBroker(broker);
 
                 return doEval(context, contextSequence, args);
             } catch(EXistException ex) {
                 throw new XPathException("Unable to get new broker: " + ex.getMessage(), ex);
-            }
-            finally {
-                if(broker != null) {
-                    try {
-                        BrokerPool.getInstance().release(broker); //release the broker
-                    } catch(EXistException ex) {
-                        LOG.error(ex.getMessage(), ex);
-                    }
-                }
+            } finally {
+            	db.release(broker); //release the broker
             }
         }
 
@@ -619,13 +621,13 @@ public class Eval extends BasicFunction {
             isr.close();
             return (NodeImpl) adapter.getDocument();
 		} catch (MalformedURLException e) {
-			throw new XPathException(this, e.getMessage());
+			throw new XPathException(this, e);
 		} catch (IOException e) {
-			throw new XPathException(this, e.getMessage());
+			throw new XPathException(this, e);
 		} catch (SAXException e) {
-            throw new XPathException(this, e.getMessage());
+            throw new XPathException(this, e);
         } catch (ParserConfigurationException e) {
-            throw new XPathException(this, e.getMessage());
+            throw new XPathException(this, e);
         }
     }
 }

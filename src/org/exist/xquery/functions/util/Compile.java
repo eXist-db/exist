@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.util;
 
 import java.io.StringReader;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -33,11 +32,8 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.ErrorCodes.ErrorCode;
-import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
 import org.exist.xquery.PathExpr;
-import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
@@ -50,7 +46,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.xml.sax.helpers.AttributesImpl;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
