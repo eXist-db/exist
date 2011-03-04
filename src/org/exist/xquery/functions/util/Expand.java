@@ -113,7 +113,7 @@ public class Expand extends BasicFunction {
             }
             return result;
         } catch (SAXException e) {
-            throw new XPathException(this, e.getMessage());
+            throw new XPathException(this, e);
         } finally {
             context.popDocumentContext();
         }

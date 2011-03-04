@@ -44,7 +44,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.DOMException;
 
 /**
  * @author wolf
@@ -168,8 +167,8 @@ public class ModuleInfo extends BasicFunction {
 			String uri = args[0].getStringValue();
 			return new BooleanValue(((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
 		} else if ("map-module".equals(getSignature().getName().getLocalName())) {
-			if (!context.getUser().hasDbaRole()) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			if (!context.getSubject().hasDbaRole()) {
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			}			
@@ -179,8 +178,8 @@ public class ModuleInfo extends BasicFunction {
 			moduleMap.put(namespace, location);
 			return Sequence.EMPTY_SEQUENCE;
 		} else if ("unmap-module".equals(getSignature().getName().getLocalName())) {
-			if (!context.getUser().hasDbaRole()) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			if (!context.getSubject().hasDbaRole()) {
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			}			
