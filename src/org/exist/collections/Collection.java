@@ -147,7 +147,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public void setPath(XmldbURI path) {
         path = path.toCollectionPathURI();
         //TODO : see if the URI resolves against DBBroker.TEMP_COLLECTION
-        isTempCollection = path.getRawCollectionPath().equals(DBBroker.TEMP_COLLECTION);
+        isTempCollection = path.getRawCollectionPath().equals(XmldbURI.TEMP_COLLECTION);
         this.path=path;
     }
 
@@ -164,16 +164,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
-            Account user = broker.getUser();
+            Account user = broker.getSubject();
             child.setCreationTime(System.currentTimeMillis());
-            child.permissions.setOwner(broker.getUser(), user);
+            child.permissions.setOwner(broker.getSubject(), user);
             CollectionConfiguration config = getConfiguration(broker);
             String group = user.getPrimaryGroup();
             if (config != null){
                 group = config.getDefCollGroup(user);
                 child.permissions.setPermissions(config.getDefCollPermissions());
             }
-            child.permissions.setGroup(broker.getUser(), group);
+            child.permissions.setGroup(broker.getSubject(), group);
         }
     }
 
@@ -304,7 +304,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                     boolean checkPermissions, LockedDocumentMap protectedDocs) {
-        if (permissions.validate(broker.getUser(), Permission.READ)) {
+        if (permissions.validate(broker.getSubject(), Permission.READ)) {
             List<XmldbURI> subColls = null;
             try {
                 // acquire a lock on the collection
@@ -334,7 +334,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
 
     public DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap, int lockType) throws LockException {
-        if (permissions.validate(broker.getUser(), Permission.READ)) {
+        if (permissions.validate(broker.getSubject(), Permission.READ)) {
             List<XmldbURI> subColls = null;
             XmldbURI uris[] = null;
             try {
@@ -721,13 +721,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
         if (secman == null) {
             //TODO : load default permissions ? -pb
-            permissions.setOwner(broker.getUser(), SecurityManager.DBA_USER);
-            permissions.setGroup(broker.getUser(), SecurityManager.DBA_GROUP);
+            permissions.setOwner(broker.getSubject(), SecurityManager.DBA_USER);
+            permissions.setGroup(broker.getSubject(), SecurityManager.DBA_GROUP);
         } else {
-            permissions.setOwner(broker.getUser(), secman.getAccount(uid));
+            permissions.setOwner(broker.getSubject(), secman.getAccount(uid));
             Group group = secman.getGroup(gid);
             if (group != null)
-                permissions.setGroup(broker.getUser(), group.getName());
+                permissions.setGroup(broker.getSubject(), group.getName());
         }
         ///TODO : why this mask ? -pb
         permissions.setPermissions(perm);// & 0777);
@@ -772,10 +772,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 return; //TODO should throw an exception!!! Otherwise we dont know if the document was removed
             
             doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
-            if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+            if (!getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException(
-                    "Write access to collection denied; account = " + broker.getUser().getName());
-            if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+                    "Write access to collection denied; account = " + broker.getSubject().getName());
+            if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("Permission to remove document denied");
             
             DocumentTrigger trigger = null;
@@ -817,10 +817,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if(doc.isLockedForWrite())
                 throw new PermissionDeniedException("Document " + doc.getFileURI() +
                     " is locked for write");
-            if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+            if (!getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException(
-                    "write access to collection denied; user=" + broker.getUser().getName());
-            if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+                    "write access to collection denied; account=" + broker.getSubject().getName());
+            if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
             removeBinaryResource(transaction, broker, doc);
         } finally {
@@ -841,10 +841,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if(doc.isLockedForWrite())
                 throw new PermissionDeniedException("Document " + doc.getFileURI() +
                     " is locked for write");
-            if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+            if (!getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException(
-                    "write access to collection denied; user=" + broker.getUser().getName());
-            if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+                    "write access to collection denied; account=" + broker.getSubject().getName());
+            if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
 
             DocumentTrigger trigger = getDocumentTrigger(broker);
@@ -1302,9 +1302,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
-        	Account user = broker.getUser();
+        	Account user = broker.getSubject();
             metadata.setCreated(System.currentTimeMillis());
-            document.getPermissions().setOwner(broker.getUser(), user);
+            document.getPermissions().setOwner(broker.getSubject(), user);
             String group; 
             CollectionConfiguration config = getConfiguration(broker);
             if (config != null) {
@@ -1313,7 +1313,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             } else {
                 group = user.getPrimaryGroup();
             }
-            document.getPermissions().setGroup(broker.getUser(), group);
+            document.getPermissions().setGroup(broker.getSubject(), group);
         }
         document.setMetadata(metadata);
     }
@@ -1331,22 +1331,22 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             LOG.debug("Found old doc " + oldDoc.getDocId());
             // check if the document is locked by another user
             Account lockUser = oldDoc.getUserLock();
-            if(lockUser != null && !lockUser.equals(broker.getUser()))
+            if(lockUser != null && !lockUser.equals(broker.getSubject()))
                 throw new PermissionDeniedException(
                         "The document is locked by user " +
                         lockUser.getName());
             // do we have permissions for update?
-            if (!oldDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+            if (!oldDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
                 throw new PermissionDeniedException("Document exists and update is not allowed");
             // do we have write permissions?
-            if (!(getPermissions().validate(broker.getUser(), Permission.UPDATE) ||
-                    getPermissions().validate(broker.getUser(), Permission.WRITE)))
+            if (!(getPermissions().validate(broker.getSubject(), Permission.UPDATE) ||
+                    getPermissions().validate(broker.getSubject(), Permission.WRITE)))
                 throw new PermissionDeniedException(
                     "Document exists and update is not allowed for the collection");
             
-        } else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+        } else if (!getPermissions().validate(broker.getSubject(), Permission.WRITE))
             throw new PermissionDeniedException(
-                    "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
+                    "User '" + broker.getSubject().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
 
     private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
