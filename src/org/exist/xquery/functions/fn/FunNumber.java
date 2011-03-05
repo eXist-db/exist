@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -109,22 +110,33 @@ public class FunNumber extends Function {
         Sequence arg = null;
         
         if(getSignature().getArgumentCount() == 1) {
+            //value is from $arg
             arg = getArgument(0).eval(contextSequence);
-        } else {
-            arg = contextSequence;
-        }
-
-        if(arg == null) {
-            throw new XPathException(this, "XPDY0002: Undefined context item");
-        }
-
-        if(arg.isEmpty()) {
-            result = DoubleValue.NaN;
-        } else {
-            try {
-                result = arg.convertTo(Type.DOUBLE);
-            } catch(XPathException e) {
+            
+            if(arg.isEmpty()) {
                 result = DoubleValue.NaN;
+            } else {
+                try {
+                    result = arg.convertTo(Type.DOUBLE);
+                } catch(XPathException e) {
+                    result = DoubleValue.NaN;
+                }
+            }
+        } else {
+            //value is from $context
+            if(contextSequence == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+            }
+            arg = contextSequence;
+            
+            if(arg.isEmpty()) {
+                result = Sequence.EMPTY_SEQUENCE;
+            } else {
+                try {
+                    result = arg.convertTo(Type.DOUBLE);
+                } catch(XPathException e) {
+                    result = DoubleValue.NaN;
+                }
             }
         }
         
