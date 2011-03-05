@@ -51,7 +51,7 @@ import org.exist.xquery.value.Type;
  * 
  * Scale's an Image
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @author Loren Cahlander
  * @serial 2007-01-16
  * @version 1.0

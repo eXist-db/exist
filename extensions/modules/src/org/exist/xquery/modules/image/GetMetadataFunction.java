@@ -56,7 +56,7 @@ import org.xml.sax.SAXException;
  * 
  * Get's the metadata of an Image
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @author Loren Cahlander
  * @serial 2007-02-27
  * @version 1.0
