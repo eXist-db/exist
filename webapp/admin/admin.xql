@@ -111,7 +111,7 @@ declare function admin:panel() as element()
 declare function admin:panel-header() {
     let $panel := request:get-parameter("panel", "status")[1]
     return
-        if ($panel eq "install") then
+        if ($panel[1] eq "install") then
             install:header()
         else
             <xf:model xmlns:xf="http://www.w3.org/2002/xforms">
