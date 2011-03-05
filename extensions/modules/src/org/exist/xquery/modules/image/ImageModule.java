@@ -58,7 +58,8 @@ public class ImageModule extends AbstractInternalModule {
         new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
         new FunctionDef(GetMetadataFunction.signatures[0], GetMetadataFunction.class),
         new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
-        new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
+        new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class),
+        new FunctionDef(CropFunction.signature, CropFunction.class)
     };
 	
     public ImageModule(Map<String, List<? extends Object>> parameters) {
