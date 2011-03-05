@@ -1,6 +1,6 @@
 /*
  *  eXist Image Module Extension
- *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
+ *  Copyright (C) 2006-09 Adam Retter <adam.retter@exist-db.org>
  *  www.adamretter.co.uk
  *  
  *  This program is free software; you can redistribute it and/or
@@ -25,18 +25,11 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
-import org.exist.util.Base64Decoder;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Base64BinaryValueType;
 
 
 /**
@@ -53,90 +46,88 @@ import org.exist.xquery.value.Base64BinaryValueType;
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
 public class ImageModule extends AbstractInternalModule {
-/*
- * TODO: metadata extraction from images, especially JPEG's
- */
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/image";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/image";
 	
-	public final static String PREFIX = "image";
+    public final static String PREFIX = "image";
     public final static String INCLUSION_DATE = "2006-03-13";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
-	private final static FunctionDef[] functions = {
-		new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
-		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
-		new FunctionDef(GetMetadataFunction.signatures[0], GetMetadataFunction.class),
-		new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
-		new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
-		
-	};
+    private final static FunctionDef[] functions = {
+        new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
+        new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
+        new FunctionDef(GetMetadataFunction.signatures[0], GetMetadataFunction.class),
+        new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
+        new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
+    };
 	
-	public ImageModule(Map<String, List<? extends Object>> parameters) {
-		super(functions, parameters);
-	}
+    public ImageModule(Map<String, List<? extends Object>> parameters) {
+        super(functions, parameters);
+    }
 
-	public String getNamespaceURI() {
-		return NAMESPACE_URI;
-	}
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 
-	public String getDefaultPrefix() {
-		return PREFIX;
-	}
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
 
-	public String getDescription() {
-		return "A module for performing operations on Images stored in the eXist db";
-	}
+    @Override
+    public String getDescription() {
+        return "A module for performing operations on Images stored in the eXist db";
+    }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
 	
-	/**
-	 * @author Rafael Troilo (rtroilo@gmail.com)
-	 */
-	protected static BufferedImage createThumb(Image image, int height, int width)
-	{
-		int thumbWidth = 0;
-		int thumbHeight = 0;
-		double scaleFactor = 0.0;
-		BufferedImage thumbImage = null;
-		Graphics2D graphics2D = null;
+    /**
+     * @author Rafael Troilo <rtroilo@gmail.com>
+     */
+    protected static BufferedImage createThumb(Image image, int height, int width) {
+        int thumbWidth = 0;
+        int thumbHeight = 0;
+        double scaleFactor = 0.0;
+        BufferedImage thumbImage = null;
+        Graphics2D graphics2D = null;
 
-		int imageHeight = image.getHeight(null);
-		int imageWidth = image.getWidth(null);
+        int imageHeight = image.getHeight(null);
+        int imageWidth = image.getWidth(null);
 
-		if (imageHeight >= imageWidth) {
-			scaleFactor = (double) height / (double) imageHeight;
-			thumbWidth = (int) (imageWidth * scaleFactor);
-			thumbHeight = height;
-			if (thumbWidth > width) { // thumbwidth is greater than
-				// maxThumbWidth, so we have to scale
-				// again
-				scaleFactor = (double) width / (double) thumbWidth;
-				thumbHeight = (int) (thumbHeight * scaleFactor);
-				thumbWidth = width;
-			}
-		} else {
-			scaleFactor = (double) width / (double) imageWidth;
-			thumbHeight = (int) (imageHeight * scaleFactor);
-			thumbWidth = width;
-			if (thumbHeight > height) { // thumbHeight is greater than
-				// maxThumbHeight, so we have to scale
-				// again
-				scaleFactor = (double) height / (double) thumbHeight;
-				thumbWidth = (int) (thumbWidth * scaleFactor);
-				thumbHeight = height;
-			}
-		}
+        if(imageHeight >= imageWidth) {
+            scaleFactor = (double)height / (double)imageHeight;
+            thumbWidth = (int)(imageWidth * scaleFactor);
+            thumbHeight = height;
+            if(thumbWidth > width) { // thumbwidth is greater than
+                // maxThumbWidth, so we have to scale
+                // again
+                scaleFactor = (double)width / (double)thumbWidth;
+                thumbHeight = (int)(thumbHeight * scaleFactor);
+                thumbWidth = width;
+            }
+        } else {
+            scaleFactor = (double)width / (double)imageWidth;
+            thumbHeight = (int)(imageHeight * scaleFactor);
+            thumbWidth = width;
+            if(thumbHeight > height) { // thumbHeight is greater than
+                // maxThumbHeight, so we have to scale
+                // again
+                scaleFactor = (double)height / (double)thumbHeight;
+                thumbWidth = (int)(thumbWidth * scaleFactor);
+                thumbHeight = height;
+            }
+        }
 
-		thumbImage = new BufferedImage(thumbWidth, thumbHeight,
-				BufferedImage.TYPE_INT_RGB);
-		graphics2D = thumbImage.createGraphics();
-		graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
-		graphics2D.dispose();
-		return thumbImage;
-	}
+        thumbImage = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
+        graphics2D = thumbImage.createGraphics();
+        graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
+        graphics2D.dispose();
+        
+        return thumbImage;
+    }
 }
