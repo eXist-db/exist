@@ -846,7 +846,7 @@
             </informaltable>
         </section>
 
-        <section>
+        <section id="conf.xml">
             <title>eXist Configuration: Editing conf.xml</title>
             <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be
                 divided into four sections with the following elements:</para>
