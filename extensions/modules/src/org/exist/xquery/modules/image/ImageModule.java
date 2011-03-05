@@ -45,7 +45,7 @@ import org.exist.xquery.value.Base64BinaryValueType;
  * An extension module for the eXist Native XML Database that allows operations
  * on images stored in the eXist database.
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @author ljo
  * @serial 2006-03-10
  * @version 1.0
