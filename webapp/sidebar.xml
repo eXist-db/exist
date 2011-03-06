@@ -25,16 +25,19 @@
             <link href="quickstart.xml">Quick Start</link>
         </item>
         <item>
-            <link href="xquery/functions.xql">Function Library</link>
+            <link href="http://atomic.exist-db.org/">eXist Developer's Blog</link>
         </item>
         <item>
             <link href="extensions.xml">Extension Modules</link>
         </item>
         <item>
-            <link href="documentation.xml">Main Documentation</link>
+            <link href="facts.xml">Feature Sheet</link>
         </item>
         <item>
-            <link href="facts.xml">Feature Sheet</link>
+            <link href="xquery/functions.xql">Function Library</link>
+        </item>
+        <item>
+            <link href="documentation.xml">Main Documentation</link>
         </item>
 		<item>
 			<link href="http://en.wikibooks.org/wiki/XQuery">XQuery Wikibook</link>
@@ -42,49 +45,40 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="sandbox/sandbox.xql" target="_sandbox">XQuery Sandbox</link>
-        </item>
-        <item>
-            <link href="xquery/acronyms.xql">XML Acronyms</link>
+            <link href="examples.xml">All Examples</link>
         </item>
         <item>
             <link href="library/apps/mods/search/">Bibliographic Demo</link>
         </item>
         <item>
-            <link href="examples.xml">All Examples</link>
+            <link href="xquery/acronyms.xql">XML Acronyms</link>
+        </item>
+        <item>
+            <link href="sandbox/sandbox.xql" target="_sandbox">XQuery Sandbox</link>
         </item>
     </group>
     <group name="Community">
         <item>
-            <link href="index.xml#mailing">Mailing List/IRC</link>
+            <link href="index.xml#community">Chatbox/IRC</link>
+            <link href="index.xml#community">Mailing Lists</link>
+            <link href="index.xml#community">Social Media</link>
         </item>
-        <!--item>
-            <link href="apps/applications.xml">Powered By eXist</link>
-        </item-->
-        <!--item>
-            <link href="http://wiki.exist-db.org/space/ThirdPartyTools">
-                Third Party Tools
-            </link>
-        </item-->
     </group>
     <group name="Development">
         <item>
-            <link href="api/index.html">Javadocs</link>
+            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
         </item>
         <item>
         	<link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
+            <link href="api/index.html">Javadocs</link>
         </item>
         <item>
             <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
-        </item>
-        <item>
-            <link href="gsoc/2008/summer.xml">Google Summer of Code</link>
         </item>
     </group>
     <group name="Administration">
