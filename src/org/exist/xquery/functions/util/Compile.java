@@ -115,7 +115,9 @@ public class Compile extends BasicFunction {
 		ErrorCodes.ErrorCode code = null;
 		int line = -1, column = -1;
 		
-		XQueryContext pContext = new XQueryContext(context.getBroker(), AccessContext.VALIDATION_INTERNAL);
+		XQueryContext pContext = 
+			new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.VALIDATION_INTERNAL);
+		
 		if (getArgumentCount() == 2 && args[1].hasOne()) {
 			pContext.setModuleLoadPath(args[1].getStringValue());
 		}

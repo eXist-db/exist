@@ -104,7 +104,7 @@ public class XSLTS_case extends TestCase {
 //				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 //				
 //				context = xquery.newContext(AccessContext.TEST);
-				context = new XSLContext(broker);
+				context = new XSLContext(pool);
 //		        
 //			} catch (Exception e) {
 //				Assert.fail(e.getMessage());

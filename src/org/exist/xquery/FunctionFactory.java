@@ -317,7 +317,7 @@ public class FunctionFactory {
     private static JavaCall javaFunctionBinding(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
 
         //Only allow java binding if specified in config file <xquery enable-java-binding="yes">
-        String javabinding = (String) context.broker.getConfiguration().getProperty(PROPERTY_ENABLE_JAVA_BINDING);
+        String javabinding = (String) context.getBroker().getConfiguration().getProperty(PROPERTY_ENABLE_JAVA_BINDING);
 
         if(javabinding == null || !javabinding.equals("yes")) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
@@ -393,7 +393,7 @@ public class FunctionFactory {
             }
         }
 
-        if(((Boolean) context.broker.getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue() && def.getSignature().isDeprecated()) {
+        if(((Boolean) context.getBroker().getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue() && def.getSignature().isDeprecated()) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
 

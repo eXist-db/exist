@@ -24,9 +24,9 @@ package org.exist.xslt;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.Database;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.security.xacml.AccessContext;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
@@ -46,8 +46,8 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
 
 	private XSLStylesheet xslStylesheet;
 
-    public XSLContext(DBBroker broker) {
-    	super(broker, AccessContext.XSLT);
+    public XSLContext(Database db) {
+    	super(db, AccessContext.XSLT);
 
     	init();
     }
@@ -58,7 +58,7 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
         loadDefaultNS();
         
 
-        Configuration config = broker.getConfiguration();
+        Configuration config = getBroker().getConfiguration();
         // Get map of built-in modules
         Map<String, Class<Module>> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
 
@@ -76,7 +76,9 @@ public class XSLContext extends XQueryContext implements ContextAtExist {
 
                 if( module == null ) {
                     // Module does not exist yet, instantiate
-                    instantiateModule( namespaceURI, moduleClass, (Map<String, Map<String, List<? extends Object>>>) broker.getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+                    instantiateModule( namespaceURI, moduleClass, 
+                    		(Map<String, Map<String, List<? extends Object>>>) 
+                    		getBroker().getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
 
                 } else if( ( getPrefixForURI( module.getNamespaceURI() ) == null )
                            && ( module.getDefaultPrefix().length() > 0 ) ) {

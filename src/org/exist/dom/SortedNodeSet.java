@@ -72,7 +72,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            XQueryContext context = new XQueryContext(broker, accessCtx);
+            XQueryContext context = new XQueryContext(pool, accessCtx);
             XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
             XQueryParser parser = new XQueryParser(lexer);
             XQueryTreeParser treeParser = new XQueryTreeParser(context);

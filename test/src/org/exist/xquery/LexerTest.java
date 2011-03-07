@@ -101,7 +101,7 @@ public class LexerTest extends TestCase {
 
 			try {
 	            // parse the query into the internal syntax tree
-				XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+				XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 				XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
 				XQueryParser xparser = new XQueryParser(lexer);
 				XQueryTreeParser treeParser = new XQueryTreeParser(context);

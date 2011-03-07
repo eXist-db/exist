@@ -1316,7 +1316,15 @@ public class BrokerPool extends Observable implements Database {
 		return securityManager.getGuestSubject();
     }
 
-	public DBBroker getBroker() throws EXistException {
+	public DBBroker getActiveBroker() { //throws EXistException {
+		synchronized(this) {
+			//Try to get an active broker
+			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			return broker;
+		}
+	}
+
+    public DBBroker getBroker() throws EXistException {
 		return get(null);
 	}
 

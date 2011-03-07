@@ -476,7 +476,6 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	//reset & prepare for execution
         	compiledQuery.reset();
 
-            context.setBroker(broker);
         	context.getWatchDog().reset();
 
             //do any preparation before execution

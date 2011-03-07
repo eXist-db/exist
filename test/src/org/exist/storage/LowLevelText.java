@@ -44,7 +44,7 @@ public class LowLevelText extends TestCase {
 		stringSource = new StringSource(TEST_XQUERY_SOURCE);
 
 		XQuery xquery = broker.getXQueryService();
-		XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+		XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 		preCompiledXQuery = xquery.compile(context, stringSource);
 		System.out.println("pre-compiled XQuery: " + preCompiledXQuery);
 	}

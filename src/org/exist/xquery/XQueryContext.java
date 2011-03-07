@@ -48,6 +48,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -136,7 +137,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private static final String                        TEMP_STORE_ERROR                                 = "Error occurred while storing temporary data";
     public static final String                         XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR            = "_eXist_xquery_update_error";
-    public static final String                         HTTP_SESSIONVAR_XMLDB_USER                       = "_eXist_xmldb_user";
+    public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
 
     // Static namespace/prefix mappings
     protected HashMap<String, String>                  staticNamespaces                                 = new HashMap<String, String>();
@@ -225,9 +226,6 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     protected MutableDocumentSet                       modifiedDocuments             = null;
 
-    /** The main database broker object providing access to storage and indexes. Every XQuery has its own DBBroker object. */
-    protected DBBroker                                 broker;
-
     /** A general-purpose map to set attributes in the current query context. */
     protected Map<String, Object>                      attributes                    = new HashMap<String, Object>();
 
@@ -290,7 +288,7 @@ public class XQueryContext implements BinaryValueManager, Context
     private LockedDocumentMap                          protectedDocuments            = null;
 
     /** The profiler instance used by this context. */
-    private Profiler                                   profiler;
+    protected Profiler                                 profiler;
 
     //For holding XQuery Context variables for general storage in the XQuery Context
     HashMap<String, Object>                            XQueryContextVars             = new HashMap<String, Object>();
@@ -314,6 +312,8 @@ public class XQueryContext implements BinaryValueManager, Context
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
     private int                                        xqueryVersion                 = 10;
+    
+    protected Database db;
 
 
     // TODO: expath repo manageer, may change
@@ -382,19 +382,19 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    public XQueryContext( DBBroker broker, AccessContext accessCtx )
+    public XQueryContext( Database db, AccessContext accessCtx )
     {
         this( accessCtx );
-        this.broker = broker;
-        loadDefaults( broker.getConfiguration() );
-        this.profiler = new Profiler( broker.getBrokerPool() );
+        this.db = db;
+        loadDefaults( db.getConfiguration() );
+        this.profiler = new Profiler( db );
     }
 
 
     public XQueryContext( XQueryContext copyFrom )
     {
         this( copyFrom.getAccessContext() );
-        this.broker = copyFrom.broker;
+        this.db = copyFrom.db;
         loadDefaultNS();
         Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
 
@@ -463,6 +463,7 @@ public class XQueryContext implements BinaryValueManager, Context
         this.mappedModules              = from.mappedModules;
         this.dynamicOptions				= from.dynamicOptions;
         this.staticOptions				= from.staticOptions;
+        this.db							= from.db;
     }
 
 
@@ -540,11 +541,11 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         //if there is an existing user in the current http session
         //then set the DBBroker user
-    	Subject user = getUserFromHttpSession();
-
-        if( user != null ) {
-            broker.setUser( user );
-        }
+    	
+    	//Subject user = getUserFromHttpSession();
+        //if( user != null ) {
+        //    broker.setUser( user );
+        //}
 
         //Reset current context position
         setContextSequencePosition( 0, null );
@@ -1192,7 +1193,7 @@ public class XQueryContext implements BinaryValueManager, Context
         if( staticDocumentPaths == null ) {
 
             // no path defined: return all documents in the db
-            broker.getAllXMLResources( ndocs );
+            getBroker().getAllXMLResources( ndocs );
         } else {
             DocumentImpl doc;
             Collection   collection;
@@ -1200,16 +1201,16 @@ public class XQueryContext implements BinaryValueManager, Context
             for( int i = 0; i < staticDocumentPaths.length; i++ ) {
 
                 try {
-                    collection = broker.getCollection( staticDocumentPaths[i] );
+                    collection = getBroker().getCollection( staticDocumentPaths[i] );
 
                     if( collection != null ) {
-                        collection.allDocs( broker, ndocs, true, true );
+                        collection.allDocs( getBroker(), ndocs, true, true );
                     } else {
-                        doc = broker.getXMLResource( staticDocumentPaths[i], Lock.READ_LOCK );
+                        doc = getBroker().getXMLResource( staticDocumentPaths[i], Lock.READ_LOCK );
 
                         if( doc != null ) {
 
-                            if( doc.getPermissions().validate( broker.getUser(), Permission.READ ) ) {
+                            if( doc.getPermissions().validate( getBroker().getSubject(), Permission.READ ) ) {
                                 ndocs.add( doc );
                             }
                             doc.getUpdateLock().release( Lock.READ_LOCK );
@@ -1677,7 +1678,7 @@ public class XQueryContext implements BinaryValueManager, Context
             }
             //instantiateModule( namespaceURI, (Class<Module>)mClass );
             // INOTE: expathrepo
-             module = instantiateModule( namespaceURI, (Class<Module>)mClass, (Map<String, Map<String, List<? extends Object>>>) broker.getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+             module = instantiateModule( namespaceURI, (Class<Module>)mClass, (Map<String, Map<String, List<? extends Object>>>) getBroker().getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             //LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
         }
         catch( ClassNotFoundException e ) {
@@ -1730,7 +1731,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public ExistPDP getPDP()
     {
-        return( broker.getBrokerPool().getSecurityManager().getPDP() );
+        return( getBroker().getBrokerPool().getSecurityManager().getPDP() );
     }
 
 
@@ -2099,17 +2100,9 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @return  DBBroker instance
      */
-    public DBBroker getBroker()
-    {
-        return( broker );
+    public DBBroker getBroker() {
+    	return db.getActiveBroker();
     }
-
-
-    public void setBroker( DBBroker broker )
-    {
-        this.broker = broker;
-    }
-
 
     /**
      * Get the user which executes the current query.
@@ -2674,7 +2667,7 @@ public class XQueryContext implements BinaryValueManager, Context
                         DocumentImpl sourceDoc = null;
 
                         try {
-                            sourceDoc = broker.getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
+                            sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
 
                             if( sourceDoc == null ) {
                                 throw( new XPathException( "source for module " + location + " not found in database" ) );
@@ -2683,7 +2676,7 @@ public class XQueryContext implements BinaryValueManager, Context
                             if( ( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" ) ) {
                                 throw( new XPathException( "source for module " + location + " is not an XQuery or " + "declares a wrong mime-type" ) );
                             }
-                            moduleSource = new DBSource( broker, (BinaryDocument)sourceDoc, true );
+                            moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
 
                             // we don't know if the module will get returned, oh well
                             module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
@@ -2708,7 +2701,7 @@ public class XQueryContext implements BinaryValueManager, Context
                     try {
 
                         //TODO: use URIs to ensure proper resolution of relative locations
-                        moduleSource = SourceFactory.getSource( broker, moduleLoadPath, location, true );
+                        moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
 
                     } catch( MalformedURLException e ) {
                         throw( new XPathException( "source location for module " + namespaceURI + " should be a valid URL: " + e.getMessage() ) );
@@ -2746,7 +2739,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @SuppressWarnings( "unchecked" )
     public String getModuleLocation( String namespaceURI )
     {
-        Map<String, String> moduleMap = (Map)broker.getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
+        Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
         return( moduleMap.get( namespaceURI ) );
     }
 
@@ -2759,14 +2752,14 @@ public class XQueryContext implements BinaryValueManager, Context
     @SuppressWarnings( "unchecked" )
     public Iterator<String> getMappedModuleURIs()
     {
-        Map<String, String> moduleMap = (Map)broker.getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
+        Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
         return( moduleMap.keySet().iterator() );
     }
 
 
     private ExternalModule compileOrBorrowModule( String prefix, String namespaceURI, String location, Source source ) throws XPathException
     {
-        ExternalModule module = broker.getBrokerPool().getXQueryPool().borrowModule( broker, source, this );
+        ExternalModule module = getBroker().getBrokerPool().getXQueryPool().borrowModule( getBroker(), source, this );
 
         if( module == null ) {
             module = compileModule( prefix, namespaceURI, location, source );
@@ -2923,7 +2916,7 @@ public class XQueryContext implements BinaryValueManager, Context
             UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
-                throw( new XPathException( call, "err:XPST0017: Call to undeclared function: " + call.getQName().getStringValue() ) );
+                throw( new XPathException( call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue() ) );
             }
             call.resolveForwardReference( func );
         }
@@ -3110,7 +3103,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public DocumentImpl storeTemporaryDoc( org.exist.memtree.DocumentImpl doc ) throws XPathException
     {
         try {
-            DocumentImpl targetDoc = broker.storeTempResource( doc );
+            DocumentImpl targetDoc = getBroker().storeTempResource( doc );
 
             if( targetDoc == null ) {
                 throw( new XPathException( "Internal error: failed to store temporary doc fragment" ) );
@@ -3371,7 +3364,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         if( updateListener == null ) {
             updateListener = new ContextUpdateListener();
-            broker.getBrokerPool().getNotificationService().subscribe( updateListener );
+            getBroker().getBrokerPool().getNotificationService().subscribe( updateListener );
         }
         updateListener.addListener( listener );
     }
@@ -3380,7 +3373,7 @@ public class XQueryContext implements BinaryValueManager, Context
     protected void clearUpdateListeners()
     {
         if( updateListener != null ) {
-            broker.getBrokerPool().getNotificationService().unsubscribe( updateListener );
+        	getBroker().getBrokerPool().getNotificationService().unsubscribe( updateListener );
         }
         updateListener = null;
     }

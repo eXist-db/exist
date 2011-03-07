@@ -30,6 +30,8 @@ import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
+import org.exist.util.Configuration;
+import org.exist.xquery.PerformanceStats;
 
 /**
  * Database controller, all operation synchronized by this instance. (singleton)
@@ -103,6 +105,7 @@ public interface Database {
 	 * }
 	 */
 	public DBBroker get(Subject subject) throws EXistException;   
+	public DBBroker getActiveBroker();
 	public void release(DBBroker broker);
 	
 	/**
@@ -110,4 +113,9 @@ public interface Database {
 	 * @return Debuggee
 	 */
 	public Debuggee getDebuggee();
+
+	public PerformanceStats getPerformanceStats();
+
+	//old configuration
+	public Configuration getConfiguration();
 }

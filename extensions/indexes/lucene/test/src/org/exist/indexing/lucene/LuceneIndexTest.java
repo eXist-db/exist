@@ -401,7 +401,7 @@ public class LuceneIndexTest {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
             CompiledXQuery compiled = xquery.compile(context, "declare variable $q external; " +
                     "ft:query(//p, util:parse($q)/query)");
 
@@ -1263,7 +1263,7 @@ public class LuceneIndexTest {
                 qnlist.add(qn[i]);
             hints.put(QNamedKeysIndex.QNAMES_KEY, qnlist);
         }
-        XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
+        XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
         Occurrences[] occur = index.scanIndex(context, docs, null, hints);
         if (occur != null && expected != occur.length) {
             for (int i = 0; i < occur.length; i++) {

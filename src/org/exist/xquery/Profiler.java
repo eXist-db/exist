@@ -24,8 +24,8 @@ package org.exist.xquery;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.xquery.value.Sequence;
-import org.exist.storage.BrokerPool;
 
 /**
  * XQuery profiling output. Profiling information is written to a
@@ -77,11 +77,11 @@ public class Profiler {
 
     private long queryStart = 0;
 
-    private BrokerPool pool;
+    private Database db;
 
-    public Profiler(BrokerPool pool) {
-        this.pool = pool;
-        this.stats = new PerformanceStats(pool);
+    public Profiler(Database db) {
+        this.db = db;
+        this.stats = new PerformanceStats(db);
     }
 
     /**
@@ -138,7 +138,7 @@ public class Profiler {
     }
 
     public final boolean isLogEnabled() {
-        Boolean globalProp = (Boolean) pool.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
+        Boolean globalProp = (Boolean) db.getActiveBroker().getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
         return logEnabled || (globalProp != null && globalProp.booleanValue());
     }
 
@@ -190,8 +190,8 @@ public class Profiler {
     }
 
     private void save() {
-        if (pool != null) {
-            pool.getPerformanceStats().merge(stats);
+        if (db != null) {
+            db.getPerformanceStats().merge(stats);
         }
     }
 

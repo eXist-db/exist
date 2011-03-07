@@ -55,6 +55,7 @@ import java.util.Properties;
 /**
  * @author wolf
  */
+//TODO: it possible to have one per database
 public class XQuery {
 
     private final static Logger LOG = Logger.getLogger(XQuery.class);
@@ -69,7 +70,7 @@ public class XQuery {
     }
 
     public XQueryContext newContext(AccessContext accessCtx) {
-        return new XQueryContext(broker, accessCtx);
+        return new XQueryContext(broker.getBrokerPool(), accessCtx);
     }
     
     public XQueryPool getXQueryPool() {
@@ -155,7 +156,7 @@ public class XQuery {
             else
                 treeParser.xpath(ast, expr);
             if (treeParser.foundErrors()) {
-                AST treeAst = treeParser.getAST();
+                //AST treeAst = treeParser.getAST();
                 throw new StaticXQueryException(
                         ast.getLine(),
                         ast.getColumn(),
@@ -225,7 +226,7 @@ public class XQuery {
 		
         expression.reset();
         if (resetContext) {
-        	context.setBroker(broker);
+        	//context.setBroker(broker);
         	context.getWatchDog().reset();
         }
 
@@ -262,13 +263,13 @@ public class XQuery {
     }
 
 	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException, PermissionDeniedException {
-		XQueryContext context = new XQueryContext(broker, accessCtx);
+		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 		CompiledXQuery compiled = compile(context, expression);
 		return execute(compiled, null);
     }
 	
 	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
-		XQueryContext context = new XQueryContext(broker, accessCtx);
+		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 		CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
 		return execute(compiled, null);
     }
