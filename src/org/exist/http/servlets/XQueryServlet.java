@@ -125,7 +125,8 @@ public class XQueryServlet extends HttpServlet {
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-
+    private Authenticator authenticator;
+    
     private Subject defaultUser = null;
     private XmldbURI collectionURI = null;
     
@@ -159,6 +160,7 @@ public class XQueryServlet extends HttpServlet {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
         
+		authenticator = new BasicAuthenticator(pool);
 		defaultUser = pool.getSecurityManager().getGuestSubject();
 		
         String username = config.getInitParameter("user");
@@ -323,10 +325,6 @@ public class XQueryServlet extends HttpServlet {
 
         Subject user = defaultUser;
 
-        Subject requestUser = AccountImpl.getUserFromServletRequest(request);
-        if (requestUser != null)
-        	user = requestUser;
-
         // to determine the user, first check the request attribute "xquery.user", then
         // the current session attribute "user"
         Object userAttrib = request.getAttribute(ATTR_XQUERY_USER);
@@ -351,6 +349,17 @@ public class XQueryServlet extends HttpServlet {
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+").");
 			}
+        }
+        
+        if (user == defaultUser) {
+        	Subject requestUser = AccountImpl.getUserFromServletRequest(request);
+        	if (requestUser != null) {
+        		user = requestUser;
+        	} else {
+        		requestUser = authenticator.authenticate(request, response, false);
+        		if (requestUser != null) 
+        			user = requestUser;
+        	}
         }
         
         Source source = null;
@@ -416,8 +425,12 @@ public class XQueryServlet extends HttpServlet {
                 	try {
 						source.validate(user, Permission.READ);
 					} catch (PermissionDeniedException e) {
-	                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
-	                   return;
+						if (defaultUser.equals(user)) {
+							authenticator.sendChallenge(request, response);
+						} else {
+							response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
+						}
+						return;
 					}
                     
 					//Show the source of the XQuery
@@ -526,6 +539,13 @@ public class XQueryServlet extends HttpServlet {
             		serializerPool.returnObject(sax);
             	}
             }
+		} catch (PermissionDeniedException e) {
+			if (defaultUser.equals(user)) {
+				authenticator.sendChallenge(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + path + " denied.");
+			}
+			return;
         } catch (Throwable e){
             LOG.error(e.getMessage(), e);
             if (reportErrors)

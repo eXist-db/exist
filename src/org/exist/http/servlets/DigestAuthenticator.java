@@ -49,9 +49,16 @@ public class DigestAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
-    @Override
-	public Subject authenticate(HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return authenticate(request, response, true);
+	}
+
+	@Override
+	public Subject authenticate(
+			HttpServletRequest request,
+			HttpServletResponse response, 
+			boolean sendChallenge) throws IOException {
+		
 		String credentials = request.getHeader("Authorization");
 		if (credentials == null) {
 			sendChallenge(request, response);
@@ -63,12 +70,12 @@ public class DigestAuthenticator implements Authenticator {
 		AccountImpl user = (AccountImpl)secman.getAccount(null, digest.username);
 		if (user == null) {
 			// If user does not exist then send a challenge request again
-			sendChallenge(request, response);
+			if (sendChallenge) sendChallenge(request, response);
 			return null;
 		}
 		if (!digest.check(user.getDigestPassword())) {
 			// If password is incorrect then send a challenge request again
-			sendChallenge(request, response);
+			if (sendChallenge) sendChallenge(request, response);
 			return null;
 		}
 		return new SubjectAccreditedImpl(user, this);

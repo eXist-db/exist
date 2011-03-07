@@ -48,6 +48,9 @@ public class BasicAuthenticator implements Authenticator {
 		this.pool = pool;
 	}
 
+	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return authenticate(request, response, true);
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -55,8 +58,11 @@ public class BasicAuthenticator implements Authenticator {
 	 * org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http
 	 * .HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public Subject authenticate(HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+	public Subject authenticate(
+			HttpServletRequest request,
+			HttpServletResponse response, 
+			boolean sendChallenge) throws IOException {
+		
 		String credentials = request.getHeader("Authorization");
 		String username = null;
 		String password = null;
@@ -90,7 +96,7 @@ public class BasicAuthenticator implements Authenticator {
 			// prompt for credentials
 
 			// LOG.debug("Sending BASIC auth challenge.");
-			sendChallenge(request, response);
+			if (sendChallenge) sendChallenge(request, response);
 			return null;
 		}
 
@@ -100,7 +106,7 @@ public class BasicAuthenticator implements Authenticator {
 			user = secman.authenticate(username, password);
 		} catch (AuthenticationException e) {
 			// if authentication failed then send a challenge request again
-			sendChallenge(request, response);
+			if (sendChallenge) sendChallenge(request, response);
 			return null;
 		}
 
