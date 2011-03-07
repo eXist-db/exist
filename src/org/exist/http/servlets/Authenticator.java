@@ -44,6 +44,8 @@ public interface Authenticator {
      * @return The authenticated user or null if the user isn't autenticated
      * @throws IOException
      */
+	public Subject authenticate(HttpServletRequest request, HttpServletResponse response, boolean sendChallenge) throws IOException;
+	@Deprecated
 	public Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException;
 	
 	/**
