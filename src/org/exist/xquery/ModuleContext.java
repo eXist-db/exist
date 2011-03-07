@@ -25,7 +25,6 @@ import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -62,7 +61,8 @@ public class ModuleContext extends XQueryContext {
         this.modulePrefix = modulePrefix;
         this.location = location;
         setParentContext(parentContext);
-		loadDefaults(broker.getConfiguration());
+		loadDefaults(getBroker().getConfiguration());
+		this.profiler = new Profiler( getBroker().getBrokerPool() );
     }
 	
 	String getLocation() {
@@ -79,8 +79,9 @@ public class ModuleContext extends XQueryContext {
 	
 	public void setParentContext(XQueryContext parentContext) {
         this.parentContext = parentContext;
+        //XXX: raise error on null!
         if (parentContext != null) {
-		    this.broker = parentContext.broker;
+        	this.db = parentContext.db;
 		    baseURI = parentContext.baseURI;
 		    try {
 		        if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||

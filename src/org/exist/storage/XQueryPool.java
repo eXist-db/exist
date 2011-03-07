@@ -186,7 +186,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 		// it might become invalid if an imported module has changed.
 		CompiledXQuery query = (CompiledXQuery) stack.pop();
 		XQueryContext context = query.getContext();
-		context.setBroker(broker);
+		//context.setBroker(broker);
 		if (!query.isValid()) {
 			// the compiled query is no longer valid: one of the imported
 			// modules may have changed
@@ -207,7 +207,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
 		XQueryContext context = query.getContext();
-		context.setBroker(broker);
+		//context.setBroker(broker);
 		return query;
 		// if (!borrowModules(broker, context)) {
 		// // the compiled query is no longer valid: one of the imported
@@ -281,7 +281,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 		if (module == null)
 			return null;
 		XQueryContext context = module.getContext();
-		context.setBroker(broker);
+		//context.setBroker(broker);
 		if (!module.moduleIsValid(broker)) {
 			LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
 			remove(source);

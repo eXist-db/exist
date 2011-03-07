@@ -10,6 +10,7 @@ import java.util.TimeZone;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLStreamException;
 
+import org.exist.Database;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.DocumentImpl;
@@ -532,16 +533,6 @@ public interface Context {
 	 * @return  DBBroker instance
 	 */
 	public DBBroker getBroker();
-
-	public void setBroker(DBBroker broker);
-
-	/**
-	 * Get the user which executes the current query.
-	 *
-	 * @return  user
-	 * @deprecated use getSubject
-	 */
-	public Subject getUser();
 
 	/**
 	 * Get the subject which executes the current query.

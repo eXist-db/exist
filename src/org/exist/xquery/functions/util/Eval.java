@@ -246,7 +246,6 @@ public class Eval extends BasicFunction {
             try {
                 final XQueryContext context = callersContext.copyContext(); //make a copy
                 broker = db.get(callersContext.getSubject()); //get a new broker
-                context.setBroker(broker);
 
                 return doEval(context, contextSequence, args);
             } catch(EXistException ex) {
@@ -425,7 +424,6 @@ public class Eval extends BasicFunction {
                 compiled = xqueryService.compile(innerContext, querySource);
             } else {
                 compiled.getContext().updateContext(innerContext);
-                compiled.getContext().setBroker(broker); //will then use a new broker for the new thread if this is eval-async
             }
 
             Sequence sequence = xqueryService.execute(compiled, exprContext, false);

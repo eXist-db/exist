@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
 import org.exist.xquery.ErrorCodes.EXistErrorCode;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.functions.fn.FunDeepEqual;
@@ -34,8 +33,6 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
 
 /**
  * Implements the XQuery 3 switch expression.

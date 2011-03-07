@@ -732,7 +732,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private Sequence processQuery(String select) throws SAXException {
         XQueryContext context = null;
         try {
-			context = new XQueryContext(broker, accessCtx);
+			context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
 			for (Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {

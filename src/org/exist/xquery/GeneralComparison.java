@@ -855,7 +855,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                             }
                             catch( EXistException e ) {
-                                throw( new XPathException( this, e.getMessage(), e ) );
+                                throw( new XPathException( this, e ) );
                             }
                         }
                     } else {

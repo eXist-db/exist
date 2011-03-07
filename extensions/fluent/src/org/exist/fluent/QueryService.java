@@ -571,7 +571,7 @@ public class QueryService implements Cloneable {
 		final Set<QName> requiredVariables = new TreeSet<QName>();
 
 		private AnalysisXQueryContext(DBBroker broker, AccessContext accessCtx) {
-			super(broker, accessCtx);
+			super(broker.getBrokerPool(), accessCtx);
 		}
 
 		@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {

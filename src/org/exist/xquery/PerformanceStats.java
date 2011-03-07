@@ -22,9 +22,9 @@
 
 package org.exist.xquery;
 
+import org.exist.Database;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.storage.BrokerPool;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashMap;
@@ -151,12 +151,12 @@ public class PerformanceStats {
     
     private boolean enabled = false;
 
-    private BrokerPool pool;
+    private Database db;
 
-    public PerformanceStats(BrokerPool pool) {
-        this.pool = pool;
-        if (pool != null) {
-            String config = (String) pool.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
+    public PerformanceStats(Database db) {
+        this.db = db;
+        if (db != null) {
+            String config = (String) db.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
             if (config != null)
                 enabled = config.equals("functions") || config.equals("yes");
         }
@@ -168,8 +168,9 @@ public class PerformanceStats {
 
     public boolean isEnabled() {
         return enabled ||
-                (pool != null && pool.getPerformanceStats() != this &&
-                        pool.getPerformanceStats().isEnabled());
+                (db != null 
+            		&& db.getPerformanceStats() != this 
+            		&& db.getPerformanceStats().isEnabled());
     }
 
     public void recordQuery(String source, long elapsed) {

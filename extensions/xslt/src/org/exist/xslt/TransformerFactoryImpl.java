@@ -242,20 +242,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
 
 	@Override
 	public TransformerHandler newTransformerHandler() throws TransformerConfigurationException {
-		DBBroker broker = null;
-		try {
-			broker = getBroker();
-			return new TransformerHandlerImpl(new XSLContext(broker), newTransformer());
-		} catch (EXistException e) {
-			LOG.debug(e);
-	    	throw new TransformerConfigurationException("Compilation error.",e);
-		} finally {
-			try {
-				releaseBroker(broker);
-			} catch (EXistException e) {
-		    	throw new TransformerConfigurationException("Compilation error.",e);
-			}
-		}
+		return new TransformerHandlerImpl(new XSLContext(pool), newTransformer());
 	}
 
 	@Override
@@ -270,20 +257,7 @@ public class TransformerFactoryImpl extends SAXTransformerFactory {
         if (!(templates instanceof XSLStylesheet))
             throw new TransformerConfigurationException("Templates object was not created by exist xslt ("+templates.getClass()+")");
 
-        DBBroker broker = null;
-        try {
-        	broker = getBroker();
-			return new TransformerHandlerImpl(new XSLContext(broker), templates.newTransformer());
-		} catch (EXistException e) {
-			LOG.debug(e);
-	    	throw new TransformerConfigurationException("Compilation error.",e);
-		} finally {
-			try {
-				releaseBroker(broker);
-			} catch (EXistException e) {
-		    	throw new TransformerConfigurationException("Compilation error.",e);
-			}
-		}
+		return new TransformerHandlerImpl(new XSLContext(pool), templates.newTransformer());
 	}
 
 	@Override

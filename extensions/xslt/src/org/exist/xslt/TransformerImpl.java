@@ -188,7 +188,7 @@ public class TransformerImpl extends Transformer {
 			
 			StAXSequenceIterator sequenceIterator = new StAXSequenceIterator(source);
 			
-			XSLContext context = new XSLContext(broker);
+			XSLContext context = new XSLContext(db);
 			context.setOutput(out);
 
 			context.getResultWriter().writeStartDocument("UTF-8", "1.0");

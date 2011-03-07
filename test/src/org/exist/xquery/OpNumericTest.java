@@ -28,7 +28,7 @@ public class OpNumericTest extends TestCase {
 	        BrokerPool pool = BrokerPool.getInstance();
 	
 	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			context = new XQueryContext(broker, AccessContext.TEST);
+			context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
 			
 			dtDuration = new DayTimeDurationValue("P1D");
 			ymDuration = new YearMonthDurationValue("P1Y");

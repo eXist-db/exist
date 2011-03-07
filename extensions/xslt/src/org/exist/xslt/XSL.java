@@ -23,7 +23,6 @@ package org.exist.xslt;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.text.NumberFormat;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.ElementAtExist;
-import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -98,7 +96,7 @@ public class XSL {
     	
     	XSLElement stylesheet = new XSLElement(source);
     	
-    	XSLContext context = new XSLContext(broker);
+    	XSLContext context = new XSLContext(broker.getBrokerPool());
     	
     	context.setDefaultFunctionNamespace(Factory.namespaceURI);
     	
