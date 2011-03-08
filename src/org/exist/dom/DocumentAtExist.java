@@ -22,7 +22,7 @@
 
 package org.exist.dom;
 
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -60,5 +60,5 @@ public interface DocumentAtExist extends NodeAtExist, Document {
 	
     public XmldbURI getURI();
     
-    public BrokerPool getDatabase();
+    public Database getDatabase();
 }

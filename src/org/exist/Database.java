@@ -25,6 +25,7 @@ import java.util.Observer;
 
 import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
+import org.exist.numbering.NodeIdFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
@@ -118,4 +119,6 @@ public interface Database {
 
 	//old configuration
 	public Configuration getConfiguration();
+
+	public NodeIdFactory getNodeFactory();
 }

@@ -39,6 +39,7 @@ import org.w3c.dom.Text;
 
 import org.xml.sax.SAXException;
 
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentAtExist;
@@ -140,6 +141,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     boolean                    explicitCreation = false;
     
     boolean replaceAttribute = false;
+    
+    private Database db = null;
 
     public DocumentImpl( XQueryContext context, boolean explicitCreation ) {
         super( null, 0 );
@@ -149,12 +152,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if( context == null ) {
             namePool = new NamePool();
         } else {
+        	db = context.getDatabase();
             namePool = context.getSharedNamePool();
         }
     }
     
-    public BrokerPool getDatabase() {
-        return context.getBroker().getBrokerPool();
+    public Database getDatabase() {
+    	if (db == null)
+			try {
+				db = BrokerPool.getInstance();
+			} catch (EXistException e) {
+				e.printStackTrace();
+				throw new NullPointerException();
+			}
+        return db;
     }
 
     private static long createDocId() {
@@ -1162,12 +1173,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if( nodeId[0] != null ) {
             return;
         }
-        NodeIdFactory nodeFactory;
-        if( context == null ) {
-            nodeFactory = BrokerPool.getInstance().getNodeFactory();
-        } else {
-            nodeFactory = context.getBroker().getBrokerPool().getNodeFactory();
-        }
+        NodeIdFactory nodeFactory = getDatabase().getNodeFactory();
         nodeId[0] = nodeFactory.documentNodeId();
         if( size == 1 ) {
             return;
