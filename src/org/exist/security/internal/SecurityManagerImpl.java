@@ -339,7 +339,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		if(user.getHome() == null)
 			return;
 		
-		Subject currentUser = broker.getUser();
+		Subject currentUser = broker.getSubject();
 		
 		try {
 			broker.setUser(getSystemSubject());
@@ -349,7 +349,7 @@ public class SecurityManagerImpl implements SecurityManager {
 			CollectionConfiguration config = home.getConfiguration(broker);
 			String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
 			
-			home.getPermissions().setGroup(group);
+			//home.getPermissions().setGroup(group);
 			home.getPermissions().setGroup(group);
 			
 			broker.saveCollection(transaction, home);

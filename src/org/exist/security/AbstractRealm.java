@@ -382,7 +382,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         DBBroker broker = null;
         try {
             broker = getDatabase().get(null);
-            Account user = broker.getUser();
+            Account user = broker.getSubject();
 
             if(!(group.isManager(user) || user.hasDbaRole()) ) {
                 throw new PermissionDeniedException(" you are not allowed to change '" + group.getName() + "' group");

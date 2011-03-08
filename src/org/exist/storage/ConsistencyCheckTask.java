@@ -32,7 +32,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.ConsistencyCheck;
 import org.exist.backup.ErrorReport;

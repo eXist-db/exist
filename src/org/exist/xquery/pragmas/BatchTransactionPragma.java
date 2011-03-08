@@ -48,9 +48,9 @@ public class BatchTransactionPragma extends Pragma {
     		context.finishBatchTransaction();
         
     	} catch(TransactionException te) {
-        	throw new XPathException(expression, te.getMessage(), te);
+        	throw new XPathException(expression, te);
         } catch (TriggerException e) {
-        	throw new XPathException(expression, e.getMessage(), e);
+        	throw new XPathException(expression, e);
 		}
     }
 
@@ -61,9 +61,9 @@ public class BatchTransactionPragma extends Pragma {
     		context.startBatchTransaction();
         
     	} catch(TransactionException te) {
-        	throw new XPathException(expression, te.getMessage(), te);
+        	throw new XPathException(expression, te);
         } catch (TriggerException e) {
-        	throw new XPathException(expression, e.getMessage(), e);
+        	throw new XPathException(expression, e);
 		}
     }
 }

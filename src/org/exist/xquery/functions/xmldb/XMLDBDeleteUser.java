@@ -79,7 +79,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 		
         String user = args[0].getStringValue();
         
-        Subject contextUser = context.getUser();
+        Subject contextUser = context.getSubject();
 		if (contextUser.hasDbaRole()) {
 			if (contextUser.getName().equals(user)) {
 				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must not be deleting itself");

@@ -2,7 +2,6 @@ package org.exist.util.serializer;
 
 import java.io.Writer;
 
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 public class HTML5Writer extends XHTMLWriter {

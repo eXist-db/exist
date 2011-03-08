@@ -1471,7 +1471,7 @@ public class SVNFileUtil {
     	DBBroker broker = null;
 		try {
 			broker = database.get(null);
-	        return broker.getUser();
+	        return broker.getSubject();
 		} catch (EXistException e) {
             SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR, 
                     "Cannot get current user: {0}", e.getMessage());

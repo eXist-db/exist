@@ -32,7 +32,6 @@ import javax.xml.validation.Validator;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.BasicFunction;
@@ -71,8 +70,6 @@ public class Jaxv extends BasicFunction  {
             "referenced as xs:anyURI, a node (element or returned by fn:doc()) " +
             "or as Java file objects.";
 
-    private final BrokerPool brokerPool;
-    
     // Setup function signature
     public final static FunctionSignature signatures[] = {        
         
@@ -108,7 +105,6 @@ public class Jaxv extends BasicFunction  {
     
     public Jaxv(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
-        brokerPool = context.getBroker().getBrokerPool();
     }
 
     /**

@@ -1449,7 +1449,7 @@ public class BrokerPool extends Observable implements Database {
 					this.syncRequired = false;
                     this.checkpoint = false;
 				}				
-                if (serviceModeUser != null && !broker.getUser().equals(serviceModeUser)) {
+                if (serviceModeUser != null && !broker.getSubject().equals(serviceModeUser)) {
                     inServiceMode = true;
                 }
             }
@@ -1537,7 +1537,7 @@ public class BrokerPool extends Observable implements Database {
 	//TODO : make it protected ?
 	protected void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
-		Subject user = broker.getUser();
+		Subject user = broker.getSubject();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(securityManager.getSystemSubject());
         if (status != SHUTDOWN)

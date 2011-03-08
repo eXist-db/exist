@@ -3,8 +3,6 @@ package org.exist.util.serializer.json;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.exist.util.serializer.json.JSONNode.SerializationType;
-
 public class JSONValue extends JSONNode {
 	
 	public final static String NAME_VALUE = "#text";

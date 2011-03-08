@@ -57,7 +57,7 @@ public class NodePool {
     
 
     private int maxActive;
-    private Int2ObjectHashMap poolMap = new Int2ObjectHashMap(17);
+    private Int2ObjectHashMap<Pool> poolMap = new Int2ObjectHashMap<Pool>(17);
 
     public NodePool(int maxObjects) {
         this.maxActive = maxObjects;

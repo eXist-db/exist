@@ -74,7 +74,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
 		try {
-			return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI(), context.getAccessContext());
+			return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI(), context.getAccessContext());
 		} catch(XPathException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}

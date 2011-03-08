@@ -361,7 +361,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
     
     public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
-        if (getName().equals(DBBroker.ROOT_COLLECTION))
+        if (getName().equals(XmldbURI.ROOT_COLLECTION))
             return null;
         if (parent == null) {
             // load the collection to check if it is valid
