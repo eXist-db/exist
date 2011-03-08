@@ -90,7 +90,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 				}
 			} catch(Exception e) {
                 logger.error(e.getMessage());
-				throw new XPathException(this, e.getMessage(), e);
+				throw new XPathException(this, e);
 			} finally {
 				//release all locks
 				if(doc != null)

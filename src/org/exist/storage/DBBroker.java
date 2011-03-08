@@ -163,7 +163,7 @@ public abstract class DBBroker extends Observable {
      */
     @Deprecated
     public Subject getUser() {
-        return subject;
+        return getSubject();
     }
 
     /**

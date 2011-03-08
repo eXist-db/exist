@@ -70,7 +70,7 @@ public class GetRunningXQueries extends BasicFunction
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		if( !context.getUser().hasDbaRole() ) {
+		if( !context.getSubject().hasDbaRole() ) {
 			XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to get the list of running xqueries" );
         	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-xqueries", xPathException);
 			throw xPathException;

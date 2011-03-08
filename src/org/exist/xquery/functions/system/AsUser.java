@@ -84,7 +84,7 @@ public class AsUser extends Function {
             throw exception;
 		}
 
-		Subject oldUser = broker.getUser();
+		Subject oldUser = broker.getSubject();
 		try {
 			logger.info("Setting the authenticated user to: [" + username + "]");
 			broker.setUser(user);

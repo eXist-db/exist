@@ -23,7 +23,6 @@ package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
 
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
@@ -966,12 +965,12 @@ public class XmldbURI implements Comparable<Object>, Serializable
         }
 
         //Absolute path
-        if( DBBroker.ROOT_COLLECTION.equals( currentPath ) ) {
+        if( ROOT_COLLECTION.equals( currentPath ) ) {
             return( currentPath );
         }
 
         //Absolute path
-        if( currentPath.startsWith( DBBroker.ROOT_COLLECTION + "/" ) ) {
+        if( currentPath.startsWith( ROOT_COLLECTION + "/" ) ) {
             return( currentPath );
         }
 

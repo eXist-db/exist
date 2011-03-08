@@ -39,6 +39,7 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -142,7 +143,7 @@ public class XMLDBDocument extends Function {
 			DocumentImpl doc = context.getBroker().getResource(nextUri, Permission.READ);
 			if(doc == null) { 
 			    if (context.isRaiseErrorOnFailedRetrieval()) {
-				throw new XPathException(this, "FODC0002: can not access '" + nextUri + "'");
+				throw new XPathException(this, ErrorCodes.FODC0002, "can not access '" + nextUri + "'");
 			    }						
 			}else {
 			    mdocs.add(doc);

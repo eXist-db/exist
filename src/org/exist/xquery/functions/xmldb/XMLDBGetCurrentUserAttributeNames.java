@@ -55,7 +55,7 @@ public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
 
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
     {
-        Set<AXSchemaType> values = context.getUser().getMetadataKeys();
+        Set<AXSchemaType> values = context.getSubject().getMetadataKeys();
         Sequence retval = new ValueSequence();
         for (AXSchemaType value : values)
         {

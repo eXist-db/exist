@@ -55,7 +55,7 @@ public class DBFile implements PartSource {
 			try {
 				database = BrokerPool.getInstance();
 				broker = database.get(null);
-				Subject subject = broker.getUser();
+				Subject subject = broker.getSubject();
 				
 				URL url = new URL("xmldb:exist://jsessionid:"+subject.getSessionId()+"@"+ uri.toString());
 				connection = url.openConnection();

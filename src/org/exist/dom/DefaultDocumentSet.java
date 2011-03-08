@@ -47,7 +47,7 @@ import java.util.TreeSet;
  * 
  * @author wolf
  */
-public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
+public class DefaultDocumentSet extends Int2ObjectHashMap<DocumentImpl> implements MutableDocumentSet {
 
     private ArrayList<DocumentImpl> list = null;
     private TreeSet<Collection> collections = new TreeSet<Collection>();
@@ -107,7 +107,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             if (doc == null)
                 continue;
             if(broker == null || !checkPermissions ||
-                    doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+                    doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
                 // WM: we don't have a lock on the document, so we should not change its broker:
                 // doc.setBroker(broker);
                 put(doc.getDocId(), doc);
@@ -134,7 +134,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
             doc = collection.getDocumentNoLock(paths[i]);
             if (doc == null)
                    continue;
-            if (doc.getPermissions().validate(broker.getUser(), Permission.WRITE)) {
+            if (doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                 lock = doc.getUpdateLock();
 
                 lock.acquire(Lock.WRITE_LOCK);

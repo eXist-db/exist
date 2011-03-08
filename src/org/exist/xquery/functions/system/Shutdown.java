@@ -78,7 +78,7 @@ public class Shutdown extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		if(context.getUser().hasDbaRole())
+		if(context.getSubject().hasDbaRole())
 		{
 			//determine the shutdown delay
 			long delay = 0;

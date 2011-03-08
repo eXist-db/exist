@@ -84,7 +84,7 @@ public class XMLDBCreateUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		
-		if (!context.getUser().hasDbaRole()) {
+		if (!context.getSubject().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
@@ -116,7 +116,7 @@ public class XMLDBCreateUser extends BasicFunction {
 	}
         Collection collection = null;
 	try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
+            collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 	    ums.addAccount(userObj);
 			

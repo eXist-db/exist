@@ -67,8 +67,8 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
         // Check for DBA user
-        if (!context.getUser().hasDbaRole()) {
-            logger.error("Permission denied, user '" + context.getUser().getName() + "' must be a DBA to reindex the database");
+        if (!context.getSubject().hasDbaRole()) {
+            logger.error("Permission denied, user '" + context.getSubject().getName() + "' must be a DBA to reindex the database");
             return BooleanValue.FALSE;
         }
 

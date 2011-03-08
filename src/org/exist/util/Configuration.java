@@ -65,6 +65,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryContext;
@@ -169,9 +170,9 @@ public class Configuration implements ErrorHandler
                     configFile = new File( existHome, configFilename );
                 }
 
-                if( configFile == null ) {
-                    configFile = ConfigurationHelper.lookup( configFilename );
-                }
+                //if( configFile == null ) {
+                //    configFile = ConfigurationHelper.lookup( configFilename );
+                //}
 
                 if( !configFile.exists() || !configFile.canRead() ) {
                     throw( new DatabaseConfigurationException( "Unable to read configuration file at " + configFile ) );
@@ -326,8 +327,8 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        if( !list.contains( NativeBroker.TEMP_COLLECTION ) ) {
-            list.add( NativeBroker.TEMP_COLLECTION );
+        if( !list.contains( XmldbURI.TEMP_COLLECTION ) ) {
+            list.add( XmldbURI.TEMP_COLLECTION );
         }
         config.put( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS, list );
         LOG.debug( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS ) );

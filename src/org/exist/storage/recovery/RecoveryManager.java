@@ -108,7 +108,7 @@ public class RecoveryManager {
     			if (!checkpointFound) {
                     LOG.info("Scanning journal...");
     				reader.position(1);
-    				Long2ObjectHashMap txnsStarted = new Long2ObjectHashMap();
+    				Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<Loggable>();
 	    			Checkpoint lastCheckpoint = null;
 	    			long lastLsn = Lsn.LSN_INVALID;
 	                Loggable next;
@@ -188,7 +188,7 @@ public class RecoveryManager {
 
         try {
             // map to track running transactions
-            Long2ObjectHashMap runningTxns = new Long2ObjectHashMap();
+            Long2ObjectHashMap<Loggable> runningTxns = new Long2ObjectHashMap<Loggable>();
 
             // ------- REDO ---------
             if (LOG.isInfoEnabled())

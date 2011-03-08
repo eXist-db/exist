@@ -1,6 +1,5 @@
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.Subject;
 import org.exist.storage.sync.Sync;
@@ -9,7 +8,7 @@ import java.util.Stack;
 
 public class SystemTaskManager {
 
-    private final static Logger LOG = Logger.getLogger(SystemTaskManager.class);
+    //private final static Logger LOG = Logger.getLogger(SystemTaskManager.class);
 
     /**
 	 * The pending system maintenance tasks of the database instance.
@@ -40,7 +39,7 @@ public class SystemTaskManager {
             Subject oldUser = null;
             try {
                 broker = pool.get(null);
-                oldUser = broker.getUser();
+                oldUser = broker.getSubject();
                 broker.setUser(pool.getSecurityManager().getSystemSubject());
                 while (!waitingSystemTasks.isEmpty()) {
                     pool.sync(broker, Sync.MAJOR_SYNC);

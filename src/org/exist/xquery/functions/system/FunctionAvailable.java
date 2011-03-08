@@ -30,7 +30,6 @@ import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.InternalModule;
 import org.exist.xquery.Module;
-import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;

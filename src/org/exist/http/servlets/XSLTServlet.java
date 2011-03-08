@@ -606,7 +606,7 @@ public class XSLTServlet extends HttpServlet {
                 return null;
             }
 
-            if(!xslDoc.getPermissions().validate(broker.getUser(), Permission.READ)){
+            if(!xslDoc.getPermissions().validate(broker.getSubject(), Permission.READ)){
                 throw new TransformerException("Insufficient privileges to read resource " + path);
             }
             

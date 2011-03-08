@@ -1096,7 +1096,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             break;
         case NodeImpl.REFERENCE_NODE:
             if( expandRefs ) {
-                Serializer serializer = context.getBroker().getSerializer();
+                Serializer serializer = getDatabase().getActiveBroker().getSerializer();
                 serializer.reset();
                 serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
                 serializer.setReceiver( receiver );

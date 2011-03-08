@@ -349,7 +349,7 @@ public class XIncludeFilter implements Receiver {
                             docUri = parentUri.append(path);
                             try {
                                 doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-                                if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+                                if(doc != null && !doc.getPermissions().validate(serializer.broker.getSubject(), Permission.READ))
                                     throw new ResourceError("Permission denied to read xincluded resource");
                             } catch (PermissionDeniedException e) {
                                 LOG.warn("permission denied", e);

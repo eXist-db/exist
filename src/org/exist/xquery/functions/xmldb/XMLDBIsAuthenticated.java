@@ -57,6 +57,6 @@ public class XMLDBIsAuthenticated extends BasicFunction
 	
 	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
 	{
-		return new BooleanValue(context.getUser().isAuthenticated());
+		return new BooleanValue(context.getSubject().isAuthenticated());
 	}
 }

@@ -221,7 +221,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
               LOG.debug("Adding entry to " + request.getPath());
               DocumentImpl feedDoc = null;
               feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-              if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+              if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
                   throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
               TransactionManager transact = broker.getBrokerPool().getTransactionManager();
               Txn transaction = transact.beginTransaction();
@@ -322,7 +322,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          if (feedDoc==null) {
             throw new BadRequestException("Feed at "+request.getPath()+" does not exist.");
          }
-         if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+         if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
              throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
          String filename = request.getHeader("Slug");
          if (filename==null) {
@@ -497,14 +497,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                throw new BadRequestException("Collection at "+request.getPath()+" does not exist.");
             }
             feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-            if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+            if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
                 throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
             
             if (DOM.findChild(root,Atom.NAMESPACE_STRING,"title")==null) {
                throw new BadRequestException("The feed metadata sent does not contain a title.");
             }
 
-             if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE)) {
+             if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE)) {
                  throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
              }
              TransactionManager transact = broker.getBrokerPool().getTransactionManager();
@@ -548,7 +548,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                // Get the feed
                LOG.debug("Acquiring lock on feed document...");
                feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-               if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+               if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
                    throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
@@ -709,7 +709,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          // Get the feed
          //LOG.info("Acquiring lock on feed document...");
          feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-          if (!feedDoc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
+          if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
               throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
          feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
@@ -947,7 +947,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
          if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
-         collection.getPermissions().setOwner(broker.getUser(), owner);
+         collection.getPermissions().setOwner(broker.getSubject(), owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
 			try {
@@ -978,7 +978,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          org.exist.security.SecurityManager securityMan = broker.getBrokerPool().getSecurityManager();
          if (!securityMan.hasAccount(owner))
             throw new PermissionDeniedException("Failed to change feed owner: user " + owner + " does not exist.");
-         resource.getPermissions().setOwner(broker.getUser(), owner);
+         resource.getPermissions().setOwner(broker.getSubject(), owner);
          String group = element.getAttribute("group");
          if (!securityMan.hasGroup(group))
 			try {

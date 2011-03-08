@@ -204,11 +204,11 @@ public class GrammarTooling extends BasicFunction  {
 
                 } catch(ExistIOException ex) {
                     LOG.debug(ex.getCause());
-                    throw new XPathException(this, ex.getMessage(), ex.getCause());
+                    throw new XPathException(this, ex.getCause());
                     
                 } catch(Exception ex) {
                     LOG.debug(ex);
-                    throw new XPathException(this, ex.getMessage(), ex);
+                    throw new XPathException(this, ex);
                 }
                 
                 

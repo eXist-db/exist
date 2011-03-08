@@ -35,7 +35,7 @@ import org.exist.util.hashtable.ObjectHashSet;
  */
 public class XHTMLWriter extends IndentingXMLWriter {
 
-    private static ObjectHashSet emptyTags = new ObjectHashSet(31);
+    private static ObjectHashSet<String> emptyTags = new ObjectHashSet<String>(31);
     
     static {
         emptyTags.add("area");

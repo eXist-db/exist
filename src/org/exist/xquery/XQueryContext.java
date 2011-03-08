@@ -2114,9 +2114,8 @@ public class XQueryContext implements BinaryValueManager, Context
      * @return  user
      * @deprecated use getSubject
      */
-    public Subject getUser()
-    {
-        return( getBroker().getUser() );
+    public Subject getUser() {
+        return getSubject();
     }
 
     /**
