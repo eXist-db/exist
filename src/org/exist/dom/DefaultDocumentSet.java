@@ -47,7 +47,7 @@ import java.util.TreeSet;
  * 
  * @author wolf
  */
-public class DefaultDocumentSet extends Int2ObjectHashMap<DocumentImpl> implements MutableDocumentSet {
+public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
 
     private ArrayList<DocumentImpl> list = null;
     private TreeSet<Collection> collections = new TreeSet<Collection>();
