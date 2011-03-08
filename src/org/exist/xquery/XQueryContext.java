@@ -2093,6 +2093,10 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
+    public Database getDatabase() {
+    	return db;
+    }
+
     /**
      * Get the DBBroker instance used for the current query.
      *

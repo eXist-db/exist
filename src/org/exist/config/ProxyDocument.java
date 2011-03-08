@@ -21,9 +21,9 @@
  */
 package org.exist.config;
 
+import org.exist.Database;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.NodeAtExist;
-import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.*;
 
@@ -35,7 +35,7 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 	
 	private E document;
 	
-    public BrokerPool getDatabase() {
+    public Database getDatabase() {
         return getProxyObject().getDatabase();
     }
 

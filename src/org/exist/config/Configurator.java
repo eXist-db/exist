@@ -768,7 +768,7 @@ public class Configurator {
         }
     }
     
-    public static FullXmldbURI getFullURI(BrokerPool db, XmldbURI uri) {
+    public static FullXmldbURI getFullURI(Database db, XmldbURI uri) {
     	if (uri instanceof FullXmldbURI) {
 			return (FullXmldbURI) uri;
 		}
