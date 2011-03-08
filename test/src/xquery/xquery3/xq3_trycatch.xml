@@ -50,13 +50,13 @@
     <!-- derived from w3c: http://www.w3.org/TR/xquery-30-use-cases/#try-catch-use-cases -->
 
 
-    <test output="xml">
+    <test output="text">
         <task>Usecases Q1</task>
         <code><![CDATA[
 xquery version '3.0'; 
 try {
     <result>{
-        for $product in fn:doc("product-err.xml")//product
+        for $product in fn:doc("/db/xquery3/product-err.xml")//product
         return
             <product>{$product/name}
             <margin>{$product/price - $product/cost}</margin>
@@ -75,7 +75,7 @@ try {
         <code><![CDATA[
 xquery version '3.0';
 <result>{
-    for $product in fn:doc("product-err.xml")//product
+    for $product in fn:doc("/db/xquery3/product-err.xml")//product
     return
          try {
             <product>{$product/name}
