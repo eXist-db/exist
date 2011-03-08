@@ -265,12 +265,12 @@ public class XQuery {
 	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException, PermissionDeniedException {
 		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 		CompiledXQuery compiled = compile(context, expression);
-		return execute(compiled, null);
+		return execute(compiled, contextSequence);
     }
 	
 	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
 		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 		CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
-		return execute(compiled, null);
+		return execute(compiled, contextSequence);
     }
 }
