@@ -50,7 +50,7 @@
     <!-- derived from w3c: http://www.w3.org/TR/xquery-30-use-cases/#try-catch-use-cases -->
 
 
-    <test output="text">
+    <test output="xml">
         <task>Usecases Q1</task>
         <code><![CDATA[
 xquery version '3.0'; 
@@ -70,7 +70,7 @@ try {
     </test>
   
 
-    <test output="text">
+    <test output="xml">
         <task>Usecases Q2</task>
         <code><![CDATA[
 xquery version '3.0';
@@ -115,7 +115,7 @@ xquery version '3.0';
 
    
 
-    <test output="text">
+    <test output="xml">
         <task>Usecases Q3</task>
         <code><![CDATA[
 xquery version '3.0';
