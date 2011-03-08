@@ -107,6 +107,10 @@
             <test fork="yes" name="xquery.CoreTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.util.UtilTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="xquery.xinclude.XIncludeTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.xquery3.XQuery3Tests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.dates.DateTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.indexing.IndexingTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.expathrepo.ExpathRepoTests" todir="${junit.reports.dat}"/>
             <!--test fork="yes" name="xquery.xproc.XProcTests" todir="${junit.reports.dat}"/-->
 
             <!--  //-->            
