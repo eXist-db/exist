@@ -120,7 +120,7 @@ declare function users:update-user() as element()* {
             xdb:change-user($name, $pass, $groups, $home),
             if (xdb:get-current-user() eq $name) then
                 session:set-attribute("password", $pass)
-            else(),
+            else (),
             users:display()
             )
 };
@@ -168,7 +168,7 @@ declare function users:display() as element() {
                     users:edit-user(xs:integer($uid), xs:string($user/config:name), string-join($user/config:group/@name, ", "), xs:string($user/config:home))
             else if ($action eq "New User") then
                 users:edit-user(-1, "", "", ())
-            else()
+            else ()
         }
         <input type="hidden" name="panel" value="users"/>
     </form>
