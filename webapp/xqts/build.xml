@@ -89,7 +89,7 @@
     </target>
     
     <target name="check-files" unless="xqts.present">
-        <echo message="The XQTS sources could not be found in directory {$config.basedir}. Please edit"/>
+        <echo message="The XQTS sources could not be found in directory ${config.basedir}. Please edit"/>
         <echo message="webapp/xqts/config.xml and check the path specified via the"/>
         <echo message="&lt;basedir&gt; element."/>
     </target>
