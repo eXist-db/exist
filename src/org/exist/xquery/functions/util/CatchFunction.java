@@ -55,7 +55,9 @@ public class CatchFunction extends Function {
             "is thrown while executing $try-code-blocks, the function checks the name of " +
             "the exception and calls $catch-code-blocks if it matches one of " +
 			"the fully qualified Java class names specified in $java-classnames.  " +
-            "A value of \"*\" in $java-classnames will catch all java exceptions",
+            "A value of \"*\" in $java-classnames will catch all java exceptions. " +
+            "Inside the catch code block, the variable $util:exception will be bound to the java class name of the exception, " +
+            "and $util:exception-message will be bound to the message produced by the exception.",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
 					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
