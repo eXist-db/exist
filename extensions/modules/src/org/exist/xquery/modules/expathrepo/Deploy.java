@@ -267,7 +267,7 @@ public class Deploy extends BasicFunction {
 		Collection collection = null;
 		try {
 			collection = context.getBroker().getOrCreateCollection(txn, target);
-			setPermissions(collection.getPermissions());
+			setPermissions(null, collection.getPermissions());
 			context.getBroker().saveCollection(txn, collection);
 			mgr.commit(txn);
 		} catch (Exception e) {
@@ -320,7 +320,7 @@ public class Deploy extends BasicFunction {
 						IndexInfo info = targetCollection.validateXMLResource(txn, context.getBroker(), name, is);
 						info.getDocument().getMetadata().setMimeType(mime.getName());
 						Permission permission = info.getDocument().getPermissions();
-						setPermissions(permission);
+						setPermissions(mime, permission);
 						
 						targetCollection.store(txn, context.getBroker(), info, is, false);
 					} else {
@@ -331,7 +331,7 @@ public class Deploy extends BasicFunction {
 						is.close();
 						
 						Permission permission = doc.getPermissions();
-						setPermissions(permission);
+						setPermissions(mime, permission);
 						doc.getMetadata().setMimeType(mime.getName());
 						context.getBroker().storeXMLResource(txn, doc);
 					}
@@ -344,13 +344,24 @@ public class Deploy extends BasicFunction {
 		}
 	}
 
-	private void setPermissions(Permission permission) {
+	/**
+	 * Set owner, group and permissions. For XQuery resources, always set the executable flag.
+	 * @param mime
+	 * @param permission
+	 */
+	private void setPermissions(MimeType mime, Permission permission) {
 		if (user != null)
 			permission.setOwner(user);
 		if (group != null)
 			permission.setGroup(group);
+		int mode;
 		if (perms > -1)
-			permission.setPermissions(perms);
+			mode = perms;
+		else
+			mode = permission.getPermissions();
+		if (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))
+			mode = mode | 0111;
+		permission.setPermissions(mode);
 	}
 	
 	private ElementImpl findElement(NodeImpl root, QName qname) throws XPathException {
