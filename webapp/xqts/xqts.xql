@@ -566,4 +566,4 @@ return
     if ($group) then
         xqts:test-group($group, xs:boolean($mode))
     else
-        ()
+        xqts:test-all(xs:boolean($mode))
