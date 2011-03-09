@@ -49,6 +49,7 @@ import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.hashtable.NamePool;
@@ -1096,11 +1097,19 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             break;
         case NodeImpl.REFERENCE_NODE:
             if( expandRefs ) {
-                Serializer serializer = getDatabase().getActiveBroker().getSerializer();
-                serializer.reset();
-                serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
-                serializer.setReceiver( receiver );
-                serializer.toReceiver( document.references[document.alpha[nr]], false, false );
+            	DBBroker broker = null;
+            	try {
+					broker = getDatabase().get(null);
+                    Serializer serializer = broker.getSerializer();
+                    serializer.reset();
+                    serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
+                    serializer.setReceiver( receiver );
+                    serializer.toReceiver( document.references[document.alpha[nr]], false, false );
+				} catch (EXistException e) {
+					throw new SAXException(e);
+            	} finally {
+            		getDatabase().release(broker);
+            	}
             } else {
                 receiver.addReferenceNode( document.references[document.alpha[nr]] );
             }
