@@ -91,7 +91,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public boolean isManager(Account account) {
     	for (Reference<SecurityManager, Account> manager : managers) {
-    		if (manager.resolve().equals(account.getName()))
+    		if (manager.resolve().equals(account))
     			return true;
     	}
     	return false;
@@ -173,5 +173,9 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
                 break;
             }
         }
+    }
+    
+    protected void setManagers(List<Reference<SecurityManager, Account>> managers) {
+        this.managers = managers;
     }
 }
