@@ -37,6 +37,8 @@ public class URLRewriteTest {
         Element mockParameter1 = EasyMock.createMock(Element.class);
         Element mockParameter2 = EasyMock.createMock(Element.class);
 
+        expect(mockConfig.hasAttribute("absolute")).andReturn(false);
+
         expect(mockConfig.hasChildNodes()).andReturn(true);
         expect(mockConfig.getFirstChild()).andReturn(mockParameter1);
 
@@ -56,8 +58,11 @@ public class URLRewriteTest {
 
         expect(mockParameter2.getNextSibling()).andReturn(null);
 
+
         replay(mockConfig, mockParameter1, mockParameter2);
+
         TestableURLRewrite urlRewrite = new TestableURLRewrite(mockConfig, null);
+
         verify(mockConfig, mockParameter1, mockParameter2);
 
         final Map<String, List<String>> testParameters = new HashMap<String, List<String>>();
