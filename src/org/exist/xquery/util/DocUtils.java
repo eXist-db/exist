@@ -37,7 +37,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
