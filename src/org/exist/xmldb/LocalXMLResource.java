@@ -197,7 +197,16 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	public Node getContentAsDOM() throws XMLDBException {
 		if (root != null) {
             if(root instanceof NodeImpl) {
-                ((NodeImpl)root).expand();
+    			DBBroker broker = null;
+    			try {
+    				broker = pool.get(user);
+    				
+    				((NodeImpl)root).expand();
+    			} catch (EXistException e) {
+    				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+    			} finally {
+    				pool.release(broker);
+    			}
             }
 			return root;
         } else if (value != null) {
