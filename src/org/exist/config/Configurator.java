@@ -134,6 +134,22 @@ public class Configurator {
         return null;
     }
 
+    public static Method searchForGetMethod(Class<?> clazz, String property) {
+        try {
+            String methodName = "get"+ property;
+            methodName = methodName.toLowerCase();
+            for (Method method : clazz.getMethods()) {
+                if (method.getName().toLowerCase().equals(methodName))
+                    return method;
+            }
+        } catch (SecurityException e) {
+            //Nothing to do
+        } catch (NoClassDefFoundError e) {
+            //Nothing to do
+        }
+        return null;
+    }
+    
     public static Method searchForSetMethod(Class<?> clazz, Field field) {
         try {
             String methodName = "set"+field.getName();
@@ -538,7 +554,46 @@ public class Configurator {
         return false;
     }
 
+    protected static void serializeByReference(Configurable instance, SAXSerializer serializer, String fieldAsElementName, String referenceBy) throws SAXException {
+        Configurable resolved = ((ReferenceImpl)instance).resolve();
+        
+        Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
+        
+        Object value;
+        try {
+             value = getMethod.invoke(resolved);
+        } catch (IllegalArgumentException iae) {
+            LOG.error(iae);
+            return;
+        } catch (IllegalAccessException iae) {
+            LOG.error(iae);
+            return;
+        } catch(InvocationTargetException ite) {
+            LOG.error(ite);
+            return;
+        }
+        
+        QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
+        if(value == null) {
+        	String comment = "<"+qnConfig+" "+referenceBy+"=''/>";
+        	char[] ch = comment.toCharArray();
+        	serializer.characters(new char[] {'\n'}, 0, 1);
+        	serializer.comment(ch, 0, ch.length);
+        } else {
+            serializer.startElement(qnConfig, null);
+            serializer.attribute(new QName(referenceBy, null), value.toString());
+            serializer.endElement(qnConfig);
+        }
+        
+    }
+    
     protected static void serialize(Configurable instance, SAXSerializer serializer, String fieldAsElementName, String referenceBy) throws SAXException {
+        
+        if(instance instanceof ReferenceImpl) {
+            serializeByReference(instance, serializer, fieldAsElementName, referenceBy);
+            return;
+        }
+        
         Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
@@ -553,7 +608,7 @@ public class Configurator {
 
         final Field field = annotatedField.getField();
         if (field == null) {
-            LOG.warn("Reference field '"+referenceBy+"' can't be found for class '"+clazz+"'");
+            LOG.error("Reference field '"+referenceBy+"' can't be found for class '"+clazz+"'");
             return;
         }
         field.setAccessible(true);
@@ -561,10 +616,10 @@ public class Configurator {
         try {
             value = extractFieldValue(field, instance);
         } catch (IllegalArgumentException e) {
-            LOG.warn(e);
+            LOG.error(e);
             return;
         } catch (IllegalAccessException e) {
-            LOG.warn(e);
+            LOG.error(e);
             return;
         }
 
@@ -710,7 +765,7 @@ public class Configurator {
                         value = extractFieldValue(field, instance);
 
                         if(value == null) {
-                            LOG.warn("field '"+field.getName()+"' have unsupported type ["+typeName+"] - skiped");
+                            LOG.error("field '"+field.getName()+"' has unsupported type ["+typeName+"] - skiped");
                             //unsupported type - skip
                             //buf.append(field.get(instance));
                         }
