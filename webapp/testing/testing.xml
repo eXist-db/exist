@@ -125,6 +125,13 @@ return
 
                 <variablelist>
                     <varlistentry>
+                        <term>ignore</term>
+                        <listitem>
+                            <para>Set to "yes" to skip this test. Use it to temporarily disable failing tests which have not been fixed yet.</para>
+                        </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
                         <term>output</term>
                         <listitem>
                             <para>Either "text" or "xml". This defines how the output will be
