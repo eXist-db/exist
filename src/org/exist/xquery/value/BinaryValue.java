@@ -42,12 +42,18 @@ public abstract class BinaryValue extends AtomicValue {
 
     protected final int READ_BUFFER_SIZE = 4 * 1024; //4kb
 
+    private final BinaryValueManager binaryValueManager;
     private final BinaryValueType binaryValueType;
 
-    protected BinaryValue(BinaryValueType binaryValueType) {
+    protected BinaryValue(BinaryValueManager binaryValueManager, BinaryValueType binaryValueType) {
+        this.binaryValueManager = binaryValueManager;
         this.binaryValueType = binaryValueType;
     }
-    
+
+    protected final BinaryValueManager getManager() {
+        return binaryValueManager;
+    }
+
     protected BinaryValueType getBinaryValueType() {
         return binaryValueType;
     }
@@ -155,17 +161,35 @@ public abstract class BinaryValue extends AtomicValue {
 
     @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch(requiredType) {
-            case Type.UNTYPED_ATOMIC:
-                //TODO still needed? Added trim() since it looks like a new line character is added
-                return new UntypedAtomicValue(getStringValue());
-            case Type.STRING:
-                //TODO still needed? Added trim() since it looks like a new line character is added
-                return new StringValue(getStringValue());
-            default:
-                throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+
+        final AtomicValue result;
+
+        if(requiredType == getType()) {
+            result = this;
+        } else {
+            switch(requiredType) {
+                case Type.BASE64_BINARY:
+                    result = convertTo(new Base64BinaryValueType());
+                    break;
+                case Type.HEX_BINARY:
+                    result = convertTo(new HexBinaryValueType());
+                    break;
+                case Type.UNTYPED_ATOMIC:
+                    //TODO still needed? Added trim() since it looks like a new line character is added
+                    result = new UntypedAtomicValue(getStringValue());
+                    break;
+                case Type.STRING:
+                    //TODO still needed? Added trim() since it looks like a new line character is added
+                    result = new StringValue(getStringValue());
+                    break;
+                default:
+                    throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+            }
         }
+        return result;
     }
+
+    public abstract BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException;
 
     @Override
     public int conversionPreference(Class<?> javaClass) {

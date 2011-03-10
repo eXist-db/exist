@@ -21,22 +21,31 @@ import org.exist.xquery.XPathException;
  */
 public class BinaryValueFromFile extends BinaryValue {
 
-    private FileChannel channel;
-    private MappedByteBuffer buf;
+    private final File file;
+    private final FileChannel channel;
+    private final MappedByteBuffer buf;
 
-    protected BinaryValueFromFile(BinaryValueType binaryValueType, File f) throws XPathException {
-        super(binaryValueType);
+    protected BinaryValueFromFile(BinaryValueManager manager, BinaryValueType binaryValueType, File file) throws XPathException {
+        super(manager, binaryValueType);
         try {
-            channel = new RandomAccessFile(f, "r").getChannel();
-            buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
+            this.file = file;
+            this.channel = new RandomAccessFile(file, "r").getChannel();
+            this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
         } catch(IOException ioe) {
             throw new XPathException(ioe.getMessage(), ioe);
         }
     }
 
-    public static BinaryValueFromFile getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, File f) throws XPathException {
-        BinaryValueFromFile binaryFile = new BinaryValueFromFile(binaryValueType, f);
+    public static BinaryValueFromFile getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, File file) throws XPathException {
+        BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file);
         manager.registerBinaryValueInstance(binaryFile);
+        return binaryFile;
+    }
+
+    @Override
+    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
+        BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file);
+        getManager().registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
 

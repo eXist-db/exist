@@ -28,7 +28,8 @@ public class CachingFilterInputStream extends FilterInputStream {
     private int mark = 0;
     private boolean useCache = false;
     private int cacheOffset = 0;
-    
+
+    //TODO ensure that FilterInputStreamCache implementations are thread-safe
 
     /**
      * @param cache The cache implementation

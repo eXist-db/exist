@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import org.exist.xquery.XPathException;
 
 /**
  *
@@ -49,4 +50,14 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ite.getMessage(), ite);
         }
     }
+
+    public String verifyAndFormatString(String str) throws XPathException {
+        str = str.replaceAll("\\s", "");
+        verifyString(str);
+        return formatString(str);
+    }
+
+    protected abstract void verifyString(String str) throws XPathException;
+
+    protected abstract String formatString(String str);
 }

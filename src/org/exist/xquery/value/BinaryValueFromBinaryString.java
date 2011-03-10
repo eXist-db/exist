@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
+import org.exist.xquery.XPathException;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -23,9 +24,43 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     
     private final String value;
 
-    public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) {
-        super(binaryValueType);
-        this.value = value;
+    public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
+        super(null, binaryValueType);
+        this.value = binaryValueType.verifyAndFormatString(value);
+    }
+
+    @Override
+    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
+        //TODO temporary approach, consider implementing a TranscodingBinaryValueFromBinaryString(BinaryValueFromBinaryString) class
+        //that only does the transncoding lazily
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FilterOutputStream fos = null;
+        try {
+
+            //transcode
+            fos = binaryValueType.getEncoder(baos);
+            streamBinaryTo(fos);
+
+        } catch(IOException ioe) {
+            throw new XPathException(ioe.getMessage(), ioe);
+        } finally {
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException ioe) {
+                    LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+                }
+            }
+
+            try {
+                baos.close();
+            } catch(IOException ioe) {
+                LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
+            }
+        }
+
+        return new BinaryValueFromBinaryString(binaryValueType, new String(baos.toByteArray()));
     }
 
     @Override

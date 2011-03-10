@@ -22,13 +22,13 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private MemoryMappedFileFilterInputStreamCache cache;
 
 
-    protected BinaryValueFromInputStream(BinaryValueType binaryValueType, InputStream is) throws XPathException {
-        super(binaryValueType);
+    protected BinaryValueFromInputStream(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
+        super(manager, binaryValueType);
 
         try {
             this.cache = new MemoryMappedFileFilterInputStreamCache();
             this.is = new CachingFilterInputStream(cache, is);
-
+            
             //TODO make sure the cache is shutdown correctly when we are done!
 
         } catch(IOException ioe) {
@@ -40,8 +40,15 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     public static BinaryValueFromInputStream getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
-        BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(binaryValueType, is);
+        BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(manager, binaryValueType, is);
         manager.registerBinaryValueInstance(binaryInputStream);
+        return binaryInputStream;
+    }
+
+    @Override
+    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
+        BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
+        getManager().registerBinaryValueInstance(binaryInputStream);
         return binaryInputStream;
     }
 

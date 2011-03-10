@@ -40,12 +40,12 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
         this.url = url;
     }
 
-    private Base64BinaryDocument(InputStream is) throws XPathException {
-        super(new Base64BinaryValueType(), is);
+    private Base64BinaryDocument(BinaryValueManager manager, InputStream is) throws XPathException {
+        super(manager, new Base64BinaryValueType(), is);
     }
 
     public static Base64BinaryDocument getInstance(BinaryValueManager manager, InputStream is) throws XPathException {
-        Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(is);
+        Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);
         return b64BinaryDocument;
     }
