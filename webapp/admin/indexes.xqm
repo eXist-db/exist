@@ -76,8 +76,9 @@ declare function indexes:main() {
             <div class="panel">
                 <div class="panel-head">Browse Indexes</div>
                 <p>No Index Configurations were found in the /db/system/config collection.  
-                    Consider <a href="?panel=setup">loading the example files</a> and returning
-                    to browse the indexes created.</p>
+                    Consider installing eXist's <a href="?panel=setup">example files</a> or
+                    <a href="?panel=fundocs">documentation</a> and then returning here
+                    to browse the indexes.</p>
             </div>
         
         else if (empty($indexes:node-set)) then
