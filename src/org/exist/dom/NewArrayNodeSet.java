@@ -92,6 +92,23 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     //  used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
 
+    public NewArrayNodeSet(NewArrayNodeSet other) {
+    	size = other.size;
+    	isSorted = other.isSorted;
+    	hasOne = other.hasOne;
+    	itemType = other.itemType;
+    	nodes = new NodeProxy[other.nodes.length];
+    	System.arraycopy(other.nodes, 0, nodes, 0, nodes.length);
+    	
+    	documentCount = other.documentCount;
+    	documentIds = new int[other.documentIds.length];
+    	System.arraycopy(other.documentIds, 0, documentIds, 0, documentIds.length);
+    	documentOffsets = new int[other.documentOffsets.length];
+    	System.arraycopy(other.documentOffsets, 0, documentOffsets, 0, documentOffsets.length);
+    	documentLengths = new int[other.documentLengths.length];
+    	System.arraycopy(other.documentLengths, 0, documentLengths, 0, documentLengths.length);
+    }
+    
     /**
      * Creates a new <code>ExtArrayNodeSet</code> instance.
      *
@@ -149,7 +166,11 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     	return hasOne;
     }
 
-    private void ensureCapacity() {
+	public NodeSet copy() {
+		return new NewArrayNodeSet(this);
+	}
+
+	private void ensureCapacity() {
         if (size == nodes.length) {
             int nsize = size << 1;
             NodeProxy temp[] = new NodeProxy[nsize];
@@ -195,14 +216,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     public void add(NodeProxy proxy, int sizeHint) {
     	add(proxy);
     }
-
-//    public void addAll(Sequence other) throws XPathException {
-//        if (other instanceof AbstractNodeSet)
-//            addAll((NodeSet) other);
-//        else
-//            super.addAll(other);
-//    }
-
+    
     /*
      * (non-Javadoc)
      *
@@ -1099,7 +1113,41 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         return null;
     }
 
-    /**
+	public NodeSet except(NodeSet other) {
+		NewArrayNodeSet result = new NewArrayNodeSet(size);
+		for (int i = 0; i < size; i++) {
+            if (!other.contains(nodes[i]))
+            	result.add(nodes[i]);
+		}
+		return result;
+	}
+	
+	public NodeSet getContextNodes(int contextId) {
+        NewArrayNodeSet result = new NewArrayNodeSet(size);
+        DocumentImpl lastDoc = null;
+        for (int i = 0; i < size; i++) {
+            NodeProxy current = nodes[i];
+            ContextItem contextNode = current.getContext();
+            while (contextNode != null) {
+                if (contextNode.getContextId() == contextId) {
+                    NodeProxy context = contextNode.getNode();
+                    context.addMatches(current);
+
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        context.addContextNode(contextId, context);
+                    if (lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
+                        lastDoc = context.getDocument();
+                        result.add(context, getSizeHint(lastDoc));
+                    } else
+                        result.add(context);
+                }
+                contextNode = contextNode.getNextDirect();
+            }
+        }
+        return result;
+	}
+
+	/**
      * The method <code>debugParts</code>
      *
      * @return a <code>String</code> value

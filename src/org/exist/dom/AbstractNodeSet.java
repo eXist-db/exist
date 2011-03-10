@@ -140,6 +140,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public void addAll(Sequence other) throws XPathException {
         if (!other.isEmpty() && !Type.subTypeOf(other.getItemType(), Type.NODE))
             throw new XPathException("sequence argument is not a node sequence");
+        if (Type.subTypeOf(other.getItemType(), Type.NODE))
+        	addAll((NodeSet) other);
         for (SequenceIterator i = other.iterate(); i.hasNext();) {
             add(i.nextItem());
         }
@@ -157,7 +159,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public abstract int getLength();
 
-    @Override
+	public NodeSet copy() {
+		NewArrayNodeSet set = new NewArrayNodeSet(getLength());
+		set.addAll(this);
+		return set;
+	}
+
+	@Override
     public void setIsCached(boolean cached) {
         isCached = cached;
     }
