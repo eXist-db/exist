@@ -340,6 +340,9 @@ declare function users:edit-user($uid as xs:integer, $name as xs:string, $groups
 declare function users:edit-group($uid as xs:integer, $group as xs:string, $manager as xs:string?) as element() {
     <table border="0" cellspacing="5">
         <tr>
+            <th colspan="2" align="left">{request:get-parameter('action', '')}</th>
+        </tr>
+        <tr>
             <td>Group:</td>
             <td colspan="2"><input type="text" name="group"/></td>
         </tr>
