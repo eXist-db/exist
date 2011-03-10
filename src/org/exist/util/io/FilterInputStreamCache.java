@@ -10,6 +10,8 @@ import java.io.IOException;
  */
 public interface FilterInputStreamCache {
 
+    //TODO ensure that FilterInputStreamCache implementations are enforced thread-safe
+
     /**
      * Writes len bytes from the specified byte array starting at offset off to the cache.
      * The general contract for write(b, off, len) is that some of the bytes in the array b

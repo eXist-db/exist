@@ -21,14 +21,46 @@
  */
 package org.exist.xquery.value;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.exist.util.io.HexOutputStream;
+import org.exist.xquery.XPathException;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
 public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
 
+    private final static Pattern hexPattern = Pattern.compile("[A-Fa-f0-9]*");
+    private Matcher matcher;
+
     public HexBinaryValueType() {
         super(Type.HEX_BINARY, HexOutputStream.class);
+    }
+
+    private Matcher getMatcher(String toMatch) {
+        if(matcher == null) {
+            matcher = hexPattern.matcher(toMatch);
+        } else {
+            matcher = matcher.reset(toMatch);
+        }
+        return matcher;
+    }
+
+    @Override
+    protected void verifyString(String str) throws XPathException {
+
+        if((str.length() & 1) != 0) {
+            throw new XPathException("FORG0001: A hexBinary value must contain an even number of characters");
+        }
+
+        if(!getMatcher(str).matches()) {
+            throw new XPathException("FORG0001: Invalid hexadecimal digit");
+        }
+    }
+
+    @Override
+    protected String formatString(String str) {
+        return str.toUpperCase();
     }
 }
