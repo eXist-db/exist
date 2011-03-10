@@ -114,11 +114,8 @@ public class FunNot extends Function {
 //                    result = Sequence.EMPTY_SEQUENCE;
 //				else
                     result = evalBoolean(contextSequence, contextItem, arg);
-			} else {            
-    			result = new NewArrayNodeSet();
-    			
-    			if(!contextSequence.isEmpty())
-    				result.addAll(contextSequence);
+			} else {
+    			result = contextSequence.toNodeSet().copy();
 
     			if (inPredicate) {
     				for (SequenceIterator i = result.iterate(); i.hasNext();) {

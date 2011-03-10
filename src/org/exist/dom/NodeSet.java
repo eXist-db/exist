@@ -50,7 +50,14 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	 * Constant representing an empty node set.
 	 */
 	public final static NodeSet EMPTY_SET = new EmptyNodeSet();
-		
+	
+	/**
+	 * Get a copy of this node set which can be modified.
+	 * 
+	 * @return the copy
+	 */
+	public NodeSet copy();
+	
 	/**
 	 * Return an iterator on the nodes in this list. The iterator returns nodes
 	 * according to the internal ordering of nodes (i.e. level first), not in document-

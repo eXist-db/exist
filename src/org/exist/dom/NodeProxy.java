@@ -213,7 +213,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	return NodeValue.PERSISTENT_NODE;
     }
     
-    /**
+	public NodeSet copy() {
+		// return this, because there's no other node in the set
+		return this;
+	}
+
+	/**
      * Ordering first according to document ID; then if equal
      * according to node gid.
      * @param other a <code>NodeProxy</code> value
