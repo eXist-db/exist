@@ -179,7 +179,7 @@ declare function t:run-testSet($set as element(TestSet)) {
            {$copy/testName}
            {$copy/description}
            {
-               for $test at $p in $copy/test
+               for $test at $p in $copy/test[empty(@ignore) or @ignore = "no"]
                return
                    t:run-test($test, $p)
            }
