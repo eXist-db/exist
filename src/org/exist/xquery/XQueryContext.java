@@ -261,9 +261,6 @@ public class XQueryContext implements BinaryValueManager, Context
     private int                                        contextPosition               = 0;
     private Sequence                                   contextSequence               = null;
 
-    /** The builder used for creating in-memory document fragments. */
-    private MemTreeBuilder                             builder                       = null;
-
     /** Shared name pool used by all in-memory documents constructed in this query context. */
     private NamePool                                   sharedNamePool                = null;
 
@@ -376,8 +373,6 @@ public class XQueryContext implements BinaryValueManager, Context
             throw( new NullAccessContextException() );
         }
         this.accessCtx = accessCtx;
-        builder        = new MemTreeBuilder( this );
-        builder.startDocument();
         profiler = new Profiler( null );
     }
 
@@ -1387,8 +1382,8 @@ public class XQueryContext implements BinaryValueManager, Context
         }
         calendar         = null;
         implicitTimeZone = null;
-        builder          = new MemTreeBuilder( this );
-        builder.startDocument();
+        
+        resetDocumentBuilder();
 
         contextSequence = null;
 
@@ -2173,30 +2168,41 @@ public class XQueryContext implements BinaryValueManager, Context
         return( null );
     }
 
-
+    /** The builder used for creating in-memory document fragments. */
+    private MemTreeBuilder documentBuilder = null;
+    
     /**
      * Get the document builder currently used for creating temporary document fragments. A new document builder will be created on demand.
      *
      * @return  document builder
      */
-    public MemTreeBuilder getDocumentBuilder()
-    {
-        if( builder == null ) {
-            builder = new MemTreeBuilder( this );
-            builder.startDocument();
+    @Override
+    public MemTreeBuilder getDocumentBuilder() {
+        if(documentBuilder == null) {
+            documentBuilder = new MemTreeBuilder(this);
+            documentBuilder.startDocument();
         }
-        return( builder );
+        return documentBuilder;
     }
 
-
-    public MemTreeBuilder getDocumentBuilder( boolean explicitCreation )
-    {
-        if( builder == null ) {
-            builder = new MemTreeBuilder( this );
-            builder.startDocument( explicitCreation );
+    @Override
+    public MemTreeBuilder getDocumentBuilder(boolean explicitCreation) {
+        if(documentBuilder == null) {
+            documentBuilder = new MemTreeBuilder(this);
+            documentBuilder.startDocument(explicitCreation);
         }
-        return( builder );
+        return documentBuilder;
     }
+    
+    private void resetDocumentBuilder() {
+        setDocumentBuilder(null);
+    }
+    
+    private void setDocumentBuilder(MemTreeBuilder documentBuilder) {
+        this.documentBuilder = documentBuilder;
+    }
+    
+    
 
 
     /**
@@ -2296,15 +2302,15 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public void pushDocumentContext()
     {
-        fragmentStack.push( builder );
-        builder = null;
+        fragmentStack.push(getDocumentBuilder());
+        resetDocumentBuilder();
     }
 
 
     public void popDocumentContext()
     {
         if( !fragmentStack.isEmpty() ) {
-            builder = fragmentStack.pop();
+            setDocumentBuilder(fragmentStack.pop());
         }
     }
 
