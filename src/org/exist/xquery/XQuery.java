@@ -238,7 +238,7 @@ public class XQuery {
 		}
         
         //do any preparation before execution
-        context.prepare();
+        context.prepareForExecution();
 
         context.getProfiler().traceQueryStart();
         broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
