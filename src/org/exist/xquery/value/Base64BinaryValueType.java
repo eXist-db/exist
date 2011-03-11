@@ -13,7 +13,9 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
 
     //private final static Pattern base64Pattern = Pattern.compile("^(?:[A-Za-z0-9+/\\s]{4})*(?:[A-Za-z0-9+/\\s]{2}==|[A-Za-z0-9+/\\s]{3}=)?$");
     //private final static Pattern base64Pattern = Pattern.compile("^((?:(?:\\s*[A-Za-z0-9+/]){4})*(?:(?:\\s*[A-Za-z0-9+/]){2}\\s*=\\s*=|(?:\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
-    private final static Pattern base64Pattern = Pattern.compile("^((?:(?:\\s*[A-Za-z0-9+/]){4})*(?:(?:\\s*[A-Za-z0-9+/]){1}(?:\\s*[AQgw]){1}\\s*=\\s*=|(?:\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
+
+    //private final static Pattern base64Pattern = Pattern.compile("^((?:(?:\\s*[A-Za-z0-9+/]){4})*(?:(?:\\s*[A-Za-z0-9+/]){1}(?:\\s*[AQgw]){1}\\s*=\\s*=|(?:\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
+    private final static Pattern base64Pattern = Pattern.compile("^((?>(?>\\s*[A-Za-z0-9+/]){4})*(?>(?>\\s*[A-Za-z0-9+/]){1}(?>\\s*[AQgw]){1}\\s*=\\s*=|(?>\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
 
     private Matcher matcher;
 
@@ -32,7 +34,6 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
 
     @Override
     public void verifyString(String str) throws XPathException {
-        
         if(!getMatcher(str).matches()) {
             throw new XPathException("FORG0001: Invalid base64 data");
         }

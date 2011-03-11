@@ -109,10 +109,23 @@ public class UntypedAtomicValue extends AtomicValue {
         case Type.UNSIGNED_SHORT :
         case Type.UNSIGNED_BYTE :
             return new IntegerValue(value, requiredType);
+
+
+        /*
+         The problem is that if this UntypedAtomicValue is constructed from a text() node
+         stored in the database, which contains base64 or hex encoded data, then the string value could be huge
+         and it has already been constructed and stored in memort by UntypedAtomicValue
+         this should be defered
+
+         TODO replace UntypedAtomicValue with something that can allow lazily reading text()
+         values from the database.
+         */
         case Type.BASE64_BINARY :
             return new BinaryValueFromBinaryString(new Base64BinaryValueType(), value);
         case Type.HEX_BINARY :
             return new BinaryValueFromBinaryString(new HexBinaryValueType(), value);
+
+
         case Type.DATE_TIME :
             return new DateTimeValue(value);
         case Type.TIME :
