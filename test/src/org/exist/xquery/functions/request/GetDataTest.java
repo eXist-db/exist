@@ -70,7 +70,7 @@ public class GetDataTest extends RESTTest {
         post.setRequestHeader("Content-Type", "application/octet-stream");
         post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
 
-        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes())).getBytes());
+        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes()).trim()).getBytes());
     }
 
     //TODO need parameter for request:get-data() to control indenting etc - declare option exist:output perhaps?
