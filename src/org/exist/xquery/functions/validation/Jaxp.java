@@ -353,7 +353,7 @@ public class Jaxp extends BasicFunction {
     private File preparseDTD(StreamSource instance, String systemId)
             throws IOException, TransformerConfigurationException, TransformerException {
 
-        // prepareForExecution output tmp storage
+        // prepare output tmp storage
         File tmp = File.createTempFile("DTDvalidation", "tmp");
         tmp.deleteOnExit();
 

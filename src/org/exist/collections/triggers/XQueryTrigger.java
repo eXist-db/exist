@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
  * Any additional parameters will be declared as external variables with the type xs:string
  * 
  * These external variables for the Trigger are accessible to the user XQuery statement
- * <code>xxx:type</code> : the type of event for the Trigger. Either "prepareForExecution" or "finish"
+ * <code>xxx:type</code> : the type of event for the Trigger. Either "prepare" or "finish"
  * <code>xxx:collection</code> : the uri of the collection from which the event is triggered
  * <code>xxx:uri</code> : the uri of the document or collection from which the event is triggered
  * <code>xxx:new-uri</code> : the new uri of the document or collection from which the event is triggered
