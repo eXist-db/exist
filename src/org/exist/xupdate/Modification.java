@@ -249,7 +249,7 @@ public abstract class Modification {
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes
 			
-				//prepare Trigger
+				//prepareForExecution Trigger
 				prepareTrigger(transaction, doc);
 			}
 			return ql;
@@ -305,7 +305,7 @@ public abstract class Modification {
 	}
 	
 	/**
-	 * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 * Fires the prepareForExecution function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
 	 *  
 	 * @param transaction	The transaction
 	 * @param doc	The document to trigger for

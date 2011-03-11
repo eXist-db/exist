@@ -146,6 +146,7 @@ public abstract class DBBroker extends Observable {
      * Set the user that is currently using this DBBroker object.
      *
      * @param user
+     * @deprecated use setSubject
      */
     public void setUser(Subject user) {
         this.subject = user;

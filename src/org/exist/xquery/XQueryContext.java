@@ -532,15 +532,14 @@ public class XQueryContext implements BinaryValueManager, Context
     /**
      * Prepares the current context before xquery execution.
      */
-    public void prepare()
-    {
+    @Override
+    public void prepareForExecution() {
         //if there is an existing user in the current http session
         //then set the DBBroker user
-    	
-    	//Subject user = getUserFromHttpSession();
-        //if( user != null ) {
-        //    broker.setUser( user );
-        //}
+    	Subject user = getUserFromHttpSession();
+        if(user != null) {
+            getBroker().setSubject(user);
+        }
 
         //Reset current context position
         setContextSequencePosition( 0, null );
@@ -2128,7 +2127,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @return  The user or null if there is no session or no user
      */
-    private Subject getUserFromHttpSession()
+    public Subject getUserFromHttpSession()
     {
         SessionModule myModule = (SessionModule)getModule( SessionModule.NAMESPACE_URI );
 

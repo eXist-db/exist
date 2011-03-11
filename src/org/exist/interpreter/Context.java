@@ -72,7 +72,7 @@ public interface Context {
 	/**
 	 * Prepares the current context before xquery execution.
 	 */
-	public void prepare();
+	public void prepareForExecution();
 
 	public AccessContext getAccessContext();
 

@@ -158,7 +158,7 @@ public abstract class Modification extends AbstractExpression
                     throw new XPathException(this, "Updating the document object is not allowed.");
 				ql[i] = (StoredNode) n;
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
-				//prepare Trigger
+				//prepareForExecution Trigger
 				prepareTrigger(transaction, doc);
 			}
 			return ql;
@@ -273,7 +273,7 @@ public abstract class Modification extends AbstractExpression
     }
 	
 	/**
-	 * Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 * Fires the prepareForExecution function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
 	 *  
 	 * @param transaction	The transaction
 	 * @param doc	The document to trigger for
@@ -282,7 +282,7 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException
 	{
-		//if we are doing a batch update then only call prepare for the first update to that document
+		//if we are doing a batch update then only call prepareForExecution for the first update to that document
 		if(context.hasBatchTransaction())
 		{
 			Iterator<DocumentImpl> itTrigDoc = modifiedDocuments.getDocumentIterator();
@@ -296,7 +296,7 @@ public abstract class Modification extends AbstractExpression
 	    	}
 		}
 
-		//prepare the trigger
+		//prepareForExecution the trigger
         DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(context.getBroker());
 
          if(trigger != null) {

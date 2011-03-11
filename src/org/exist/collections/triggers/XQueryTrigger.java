@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
  * Any additional parameters will be declared as external variables with the type xs:string
  * 
  * These external variables for the Trigger are accessible to the user XQuery statement
- * <code>xxx:type</code> : the type of event for the Trigger. Either "prepare" or "finish"
+ * <code>xxx:type</code> : the type of event for the Trigger. Either "prepareForExecution" or "finish"
  * <code>xxx:collection</code> : the uri of the collection from which the event is triggered
  * <code>xxx:uri</code> : the uri of the document or collection from which the event is triggered
  * <code>xxx:new-uri</code> : the new uri of the document or collection from which the event is triggered
@@ -256,14 +256,14 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	}
 	
 	/**
-	 * @link org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
+	 * @link org.exist.collections.Trigger#prepareForExecution(java.lang.String, org.w3c.dom.Document)
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, 
 			XmldbURI documentPath, 
 			DocumentImpl existingDocument) throws TriggerException {
 		
 //		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document: '" + documentPath + "'");
-//		prepare(event, broker, transaction, documentPath, (XmldbURI) null);
+//		prepareForExecution(event, broker, transaction, documentPath, (XmldbURI) null);
 		
 	}
 	
@@ -473,13 +473,13 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        	//reset & prepare for execution
+        	//reset & prepareForExecution for execution
         	compiledQuery.reset();
 
         	context.getWatchDog().reset();
 
             //do any preparation before execution
-            context.prepare();
+            context.prepareForExecution();
 
         	return compiledQuery;
         } catch(XPathException e) {
@@ -684,7 +684,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 //	        NodeSet contextSet = NodeSet.EMPTY_SET;
 //			service.execute(compiledQuery, contextSet);
 //			//TODO : should we have a special processing ?
-//			LOG.debug("Trigger fired for prepare");
+//			LOG.debug("Trigger fired for prepareForExecution");
 //        }
 //        catch(XPathException e)
 //        {

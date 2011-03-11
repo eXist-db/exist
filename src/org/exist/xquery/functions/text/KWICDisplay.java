@@ -198,7 +198,7 @@ public class KWICDisplay extends BasicFunction {
             int pos = 0;
             int lastNodeNr = -1;
             
-            // prepare array for callback function arguments
+            // prepareForExecution array for callback function arguments
             Sequence params[] = new Sequence[callback.getSignature().getArgumentCount()];
             params[1] = firstProxy;
             params[2] = extraArgs;
