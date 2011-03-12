@@ -32,6 +32,8 @@ public class XmldbURITest extends TestCase {
             XmldbURI.xmldbUriFor("xmldb:exist://localhost/db/");
             XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db/");
             XmldbURI.xmldbUriFor("//localhost:8080/db/");
+            //XXX: this MUST work or no MS OS support at all 
+            //XmldbURI.xmldbUriFor("D:\\workspace\\");
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
