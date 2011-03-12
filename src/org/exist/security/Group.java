@@ -35,4 +35,5 @@ public interface Group extends Principal {
 
     public void removeManager(Account account) throws PermissionDeniedException;
 
+    public void assertCanModifyGroup(Account account) throws PermissionDeniedException;
 }

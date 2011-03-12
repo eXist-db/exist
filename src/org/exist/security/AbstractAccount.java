@@ -113,11 +113,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         }
 
         Account user = getDatabase().getSubject();
-        //TODO change once membersManbager is implemented correctly
-        if(!((user != null && user.hasDbaRole()) || group.isManager(user))){
-        //if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
-            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
-        }
+        group.assertCanModifyGroup(user);
 
         if(!groups.contains(group)) {
             groups.add(group);
@@ -133,16 +129,12 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
     public final void remGroup(String name) throws PermissionDeniedException {
 
+        Account subject = getDatabase().getSubject();
 
         for (Group group : groups) {
             if (group.getName().equals(name)) {
 
-                Account user = getDatabase().getSubject();
-                //TODO change once membersManbager is implemented correctly
-                if(!((user != null && user.hasDbaRole()) || group.isManager(user))){
-                //if(!((user != null && user.hasDbaRole()) || user.hasGroup(group.getName()))){
-                    throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to change group '" + group.getName() + "' memberships");
-                }
+                group.assertCanModifyGroup(subject);
 
                 //remove from the group
                 groups.remove(group);

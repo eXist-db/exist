@@ -89,6 +89,15 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
 
     @Override
+    public void assertCanModifyGroup(Account user) throws PermissionDeniedException {
+        if(user == null) {
+            throw new PermissionDeniedException("Unspecified User is not allowed to modify group '" + getName() + "'");
+        } else if(!user.hasDbaRole() && !isManager(user)) {
+            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to modify group '" + getName() + "'");
+        }
+    }
+
+    @Override
     public boolean isManager(Account account) {
     	for (Reference<SecurityManager, Account> manager : managers) {
     		if (manager.resolve().equals(account))
@@ -97,7 +106,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     	return false;
     }
 
-    private void _addManager(Account account) {
+    protected void _addManager(Account account) {
         if(!managers.contains(account.getName())) {
             managers.add(
         		new ReferenceImpl<SecurityManager, Account>(
@@ -111,9 +120,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public void addManager(Account manager) throws PermissionDeniedException {
     	Subject subject = getDatabase().getSubject();
-        if(!(isManager(subject) || subject.hasDbaRole())) {
-            throw new PermissionDeniedException("Only existing managers or DBA's may add a new manager to a group");
-        }
+
+        assertCanModifyGroup(subject);
         
         _addManager(manager);
     }
@@ -127,10 +135,9 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
     
     public void addManager(String name) throws PermissionDeniedException {
-    	Subject user = getDatabase().getSubject();
-        if(!isManager(user) && !user.hasDbaRole()) {
-            throw new PermissionDeniedException("Only existing managers or DBA's may add a new manager to a group");
-        }
+    	Subject subject = getDatabase().getSubject();
+
+        assertCanModifyGroup(subject);
         
         for(Reference<SecurityManager, Account> ref : managers) {
             if(ref.resolve().getName().equals(name)) {
@@ -162,10 +169,9 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public void removeManager(Account account) throws PermissionDeniedException {
 
-        Account user = getDatabase().getSubject();
-        if(!isManager(user) && !user.hasDbaRole()) {
-            throw new PermissionDeniedException("Only existing managers or DBA's may remove another manager from a group");
-        }
+        Account subject = getDatabase().getSubject();
+
+        assertCanModifyGroup(subject);
 
         for(Reference<SecurityManager, Account> ref : managers) {
             if(ref.resolve().getName().equals(account.getName())) {
