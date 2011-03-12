@@ -206,7 +206,7 @@ public class DocUtils {
 	 * 
 	 * @param context
 	 * @param istream
-	 * @return
+	 * @return document
 	 * @throws XPathException
 	 */
 	public static org.exist.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {

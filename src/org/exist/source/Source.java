@@ -106,7 +106,6 @@ public interface Source {
      *
      * @param  subject The subject
      * @param  perm The requested permissions
-     * @return true if subject has the requested permissions
      */
     public void validate(Subject subject, int perm) throws PermissionDeniedException;	
 
