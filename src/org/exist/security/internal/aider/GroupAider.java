@@ -141,6 +141,14 @@ public class GroupAider implements Group {
     }
 
     @Override
+    public void assertCanModifyGroup(Account account) throws PermissionDeniedException {
+        //do nothing
+        //TODO do we need to check any permissions?
+    }
+
+
+
+    @Override
     public Realm getRealm() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
