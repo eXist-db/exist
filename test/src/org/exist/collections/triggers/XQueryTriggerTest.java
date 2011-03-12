@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.TestUtils;
-import org.exist.storage.DBBroker;
 import org.exist.util.Base64Decoder;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -59,7 +58,6 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class XQueryTriggerTest {
 	
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 
     /** XQuery module implementing the trigger under test */
@@ -71,7 +69,7 @@ public class XQueryTriggerTest {
 		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
 		"	     <exist:parameter " +
 		"			name='url' " +
-		"			value='" +URI +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "' " +
+		"			value='" +XmldbURI.LOCAL_DB +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "' " +
 		"        />" +
 		"     </exist:trigger>" +
 		"  </exist:triggers>" +
@@ -120,9 +118,9 @@ public class XQueryTriggerTest {
     	"import module namespace util='http://exist-db.org/xquery/util'; " +
     	"" +
     	"declare function trigger:logDocumentEvent($type as xs:string, $event as xs:string, $uri as xs:anyURI) {" +
-    	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
+    	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
-    	    "'" + URI + "/" + TEST_COLLECTION + "', " +
+    	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
               "<xu:append select='/events'>" +
                 "<xu:element name='event'>" +
@@ -144,9 +142,9 @@ public class XQueryTriggerTest {
         "};" +
         "" +
     	"declare function trigger:logCollectionEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
-    	"let $isLoggedIn := xmldb:login('" + URI + "/" + TEST_COLLECTION + "', 'admin', '') return " +
+    	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
-    	    "'" + URI + "/" + TEST_COLLECTION + "', " +
+    	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
               "<xu:append select='/events'>" +
                 "<xu:element name='event'>" +
@@ -288,7 +286,7 @@ public class XQueryTriggerTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            root = DatabaseManager.getCollection(URI, "admin", "");
+            root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
@@ -309,7 +307,7 @@ public class XQueryTriggerTest {
     public static void shutdownDB() {
         TestUtils.cleanupDB();
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+            Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (XMLDBException e) {
