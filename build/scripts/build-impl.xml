@@ -408,7 +408,6 @@
         <!--delete dir="webapp/api"/>
         <mkdir dir="webapp/api"/-->
         <echo message="Generating Javadocs ..."/>
-        <echo message="XMLDB: ${xmldb.src} ${has.xmldb.src}"/>
         <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="webapp/api"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
@@ -445,7 +444,7 @@
             <link href="http://commons.apache.org/io/api-release/"/>
             <link href="http://commons.apache.org/logging/apidocs/"/>
             <link href="http://commons.apache.org/pool/apidocs/"/>
-            <link href="http://hc.apache.org/httpclient-3.x/apidocs/"/>
+            <link href="http://hc.apache.org/httpclient-legacy/apidocs/"/>
             <link href="http://jline.sourceforge.net/javadoc/"/>
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://www.slf4j.org/api/"/>
