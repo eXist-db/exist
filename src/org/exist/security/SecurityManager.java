@@ -150,7 +150,7 @@ public interface SecurityManager extends Configurable {
    /**
     * Particular web page for authentication.
     * 
-    * @return
+    * @return Authentication form location
     */
    public String getAuthenticationEntryPoint();
 }
