@@ -77,9 +77,11 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
         }
     }
 
+    @Deprecated
     public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
     }
 
+    @Deprecated
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
 	}
 	
@@ -123,7 +125,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 	}
 
 	@Override
-	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) {
 	}
 
 	@Override
@@ -131,7 +133,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 	}
 
 	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) {
 	}
 
 	@Override
@@ -139,7 +141,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) {
 	}
 
 	@Override
@@ -147,7 +149,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 	}
 
 	@Override
-	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) {
 	}
 
 	@Override
