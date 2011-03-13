@@ -262,8 +262,8 @@ try{
         </code>
         <expected>
             <result>
-                <code>java:org.exist.xquery.XPathException</code>
-                <desc>Could not locate collection: /db/foobaar/ [at line 4, column 5]</desc>
+                <code>java:org.xmldb.api.base.XMLDBException</code>
+                <desc>Collection /db/foobaar not found</desc>
             </result>
         </expected>
     </test>
@@ -278,13 +278,15 @@ try{
 <a/>
 } catch java:org.exist.xquery.XPathException {
 <b/>
-} catch * {
+} catch java:org.xmldb.api.base.XMLDBException {
 <c/>
+} catch * {
+<d/>
 }
 ]]>
         </code>
         <expected>
-            <b/>
+            <c/>
         </expected>
     </test>
 
