@@ -253,8 +253,17 @@ public class TryCatchExpression extends AbstractExpression {
 
         }
 
+        // Convert xpe to Throwable
+        Throwable retVal = xpe;
+
+        // Swap with cause if present
+        Throwable cause = xpe.getCause();
+        if(cause != null && !(cause instanceof XPathException) ){
+            retVal = cause;
+        }
+
         // Fallback, create java error
-        return new ErrorCodes.JavaErrorCode(xpe);
+        return new ErrorCodes.JavaErrorCode(retVal);
     }
 
     /* (non-Javadoc)
