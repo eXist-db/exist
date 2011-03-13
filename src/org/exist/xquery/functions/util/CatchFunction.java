@@ -45,24 +45,27 @@ import org.exist.xquery.value.Type;
 public class CatchFunction extends Function {
 
     protected static final Logger logger = Logger.getLogger(CatchFunction.class);
+    
     public final static FunctionSignature signature =
             new FunctionSignature(
-            new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "This function corresponds to a try-catch statement in Java. The code block "
-            + "in $try-code-blocks will be put inside a try-catch statement. If an exception "
-            + "is thrown while executing $try-code-blocks, the function checks the name of "
-            + "the exception and calls $catch-code-blocks if it matches one of "
-            + "the fully qualified Java class names specified in $java-classnames. "
-            + "A value of \"*\" in $java-classnames will catch all java exceptions. "
-            + "Inside the catch code block, the variable $util:exception will be bound to the java class name of the exception, "
-            + "and $util:exception-message will be bound to the message produced by the exception.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
-                new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
-                new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
-            },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"),
-            "Use the XQuery 3.0 try/catch expression in stead.");
+                new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                            "This function corresponds to a try-catch statement in Java. The code block "
+                            + "in $try-code-blocks will be put inside a try-catch statement. If an exception "
+                            + "is thrown while executing $try-code-blocks, the function checks the name of "
+                            + "the exception and calls $catch-code-blocks if it matches one of "
+                            + "the fully qualified Java class names specified in $java-classnames. "
+                            + "A value of \"*\" in $java-classnames will catch all java exceptions. "
+                            + "Inside the catch code block, the variable $util:exception will be bound to the "
+                            + "java class name of the exception, "
+                            + "and $util:exception-message will be bound to the message produced by the exception.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
+                    new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
+                    new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"),
+                "Use the XQuery 3.0 try/catch expression in stead."
+            );
 
     /**
      * @param context
@@ -74,6 +77,7 @@ public class CatchFunction extends Function {
     /* (non-Javadoc)
      * @see org.exist.xquery.Function#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
+    @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 
         // Get exception classes
