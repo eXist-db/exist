@@ -39,34 +39,31 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-
 /**
  * @author wolf
  */
 public class CatchFunction extends Function {
-	
-	protected static final Logger logger = Logger.getLogger(CatchFunction.class);
 
+    protected static final Logger logger = Logger.getLogger(CatchFunction.class);
     public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"This function corresponds to a try-catch statement in Java. The code block " +
-			"in $try-code-blocks will be put inside a try-catch statement. If an exception " +
-            "is thrown while executing $try-code-blocks, the function checks the name of " +
-            "the exception and calls $catch-code-blocks if it matches one of " +
-			"the fully qualified Java class names specified in $java-classnames. " +
-            "A value of \"*\" in $java-classnames will catch all java exceptions. " +
-            "Inside the catch code block, the variable $util:exception will be bound to the java class name of the exception, " +
-            "and $util:exception-message will be bound to the message produced by the exception.",
-			new SequenceType[] {
-					new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
-					new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
-					new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
-			},
-			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"),
-            "Use the XQuery 3.0 try/catch expression in stead."
-            );
-    
+            new FunctionSignature(
+            new QName("catch", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "This function corresponds to a try-catch statement in Java. The code block "
+            + "in $try-code-blocks will be put inside a try-catch statement. If an exception "
+            + "is thrown while executing $try-code-blocks, the function checks the name of "
+            + "the exception and calls $catch-code-blocks if it matches one of "
+            + "the fully qualified Java class names specified in $java-classnames. "
+            + "A value of \"*\" in $java-classnames will catch all java exceptions. "
+            + "Inside the catch code block, the variable $util:exception will be bound to the java class name of the exception, "
+            + "and $util:exception-message will be bound to the message produced by the exception.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("java-classnames", Type.STRING, Cardinality.ONE_OR_MORE, "The list of one or more fully qualified Java class names.  An entry of '*' will catch all java exceptions."),
+                new FunctionParameterSequenceType("try-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be put inside of a the try part of the try-catch statement."),
+                new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
+            },
+            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"),
+            "Use the XQuery 3.0 try/catch expression in stead.");
+
     /**
      * @param context
      */
@@ -78,7 +75,7 @@ public class CatchFunction extends Function {
      * @see org.exist.xquery.Function#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    	
+
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
             context.pushDocumentContext();
@@ -89,55 +86,62 @@ public class CatchFunction extends Function {
                 context.popDocumentContext();
                 context.popLocalVariables(mark);
             }
-        } catch(Exception e) {
-        	logger.debug("Caught exception in util:catch: " + e.getMessage());
+
+        } catch (Exception e) {
+
+            logger.debug("Caught exception in util:catch: " + e.getMessage());
             if (!(e instanceof XPathException)) {
                 logger.warn("Exception: " + e.getMessage(), e);
-			}
+            }
+
 //            context.popDocumentContext();
             context.getWatchDog().reset();
-            for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {
+
+            for (SequenceIterator i = exceptionClasses.iterate(); i.hasNext();) {
                 Item next = i.nextItem();
                 try {
-					String exClassName = next.getStringValue();
-					Class<?> exClass = null;
-					
-					if( !exClassName.equals( "*" ) ) {
-                     	exClass = Class.forName(next.getStringValue());
-					}
-					
-                    if( exClassName.equals( "*" ) || exClass.getName().equals( e.getClass().getName() ) || exClass.isInstance(e) ) {
+                    String exClassName = next.getStringValue();
+                    Class<?> exClass = null;
+
+                    if (!exClassName.equals("*")) {
+                        exClass = Class.forName(next.getStringValue());
+                    }
+
+                    if (exClassName.equals("*") || exClass.getName().equals(e.getClass().getName()) || exClass.isInstance(e)) {
                         logger.debug("Calling exception handler to process " + e.getClass().getName());
                         UtilModule myModule =
-                			(UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
+                                (UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         myModule.declareVariable(UtilModule.EXCEPTION_QNAME, new StringValue(e.getClass().getName()));
                         myModule.declareVariable(UtilModule.EXCEPTION_MESSAGE_QNAME, new StringValue(e.getMessage()));
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
+
                 } catch (Exception e2) {
                     if (e2 instanceof XPathException) {
                         throw (XPathException) e2;
-					} else {
-	                    throw new XPathException(this, "Error in exception handler: " + e2.getMessage(), e);
-					}
+
+                    } else {
+                        throw new XPathException(this, "Error in exception handler: " + e2.getMessage(), e);
+                    }
                 }
             }
+
             // this type of exception is not caught: throw again
-            if(e instanceof XPathException)
-                throw (XPathException)e;
+            if (e instanceof XPathException) {
+                throw (XPathException) e;
+            }
+            
             throw new XPathException(this, e);
         }
     }
 
-    
     /* (non-Javadoc)
      * @see org.exist.xquery.Function#returnsType()
      */
     public int returnsType() {
         return getArgument(1).returnsType();
     }
-    
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Function#getCardinality()
      */
