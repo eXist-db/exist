@@ -156,6 +156,21 @@ public abstract class Serializer implements XMLReader {
     protected final static QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
+
+    // required for XQJ/typed information implementation
+    // -----------------------------------------
+    protected final static QName ELEM_DOC_QNAME = new QName("document", Namespaces.EXIST_NS, "exist");
+    protected final static QName ELEM_ATTR_QNAME = new QName("attribute", Namespaces.EXIST_NS, "exist");
+    protected final static QName ELEM_TEXT_QNAME = new QName("text", Namespaces.EXIST_NS, "exist");
+
+    protected final static QName ATTR_URI_QNAME = new QName("uri", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_TNS_QNAME = new QName("target-namespace", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_LOCAL_QNAME = new QName("local", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_PREFIX_QNAME = new QName("prefix", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_HAS_ELEMENT_QNAME = new QName("has-element", Namespaces.EXIST_NS, "exist");
+    // -----------------------------------------
+
+
     protected DBBroker broker;
     protected String encoding = "UTF-8";
     private EntityResolver entityResolver = null;
@@ -879,10 +894,11 @@ public abstract class Serializer implements XMLReader {
 	 * @param seq
 	 * @param start
 	 * @param count
-	 * @param wrap
+	 * @param wrap Indicates whether the output should be wrapped
+         * @param typed Indicates whether the output types should be wrapped
 	 * @throws SAXException
 	 */
-	public void toSAX(Sequence seq, int start, int count, boolean wrap) throws SAXException {
+	public void toSAX(Sequence seq, int start, int count, boolean wrap, boolean typed) throws SAXException {
         try {
             setStylesheetFromProperties(null);
         } catch (TransformerConfigurationException e) {
@@ -909,9 +925,27 @@ public abstract class Serializer implements XMLReader {
 				LOG.debug("item " + i + " not found");
 				continue;
 			}
-			if (Type.subTypeOf(item.getType(), Type. NODE)) {
+
+                        if (Type.subTypeOf(item.getType(), Type. NODE)) {
 				NodeValue node = (NodeValue) item;
-				serializeToReceiver(node, false);
+				
+                                if(typed) {
+                                    //TODO the typed and wrapped stuff should ideally be replaced
+                                    //with Marshaller.marshallItem
+                                    //unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
+                                    //results in a stack overflow
+                                    //TODO consider a full XDM serializer in place of this for these special needs
+                                    
+                                    serializeTypePreNode(node);
+                                    if(node.getType() == Type.ATTRIBUTE) {
+                                        serializeTypeAttributeValue(node);
+                                    } else {
+                                        serializeToReceiver(node, false);
+                                    }
+                                    serializeTypePostNode(node);
+                                } else {
+                                    serializeToReceiver(node, false);
+                                }
 			} else {
 				if(wrap) {
 					attrs = new AttrList();
@@ -927,6 +961,7 @@ public abstract class Serializer implements XMLReader {
 					receiver.endElement(ELEM_VALUE_QNAME);
 				}
 			}
+
 		}
 		
 		if(wrap) {
@@ -1019,6 +1054,103 @@ public abstract class Serializer implements XMLReader {
 		}
 		return null;
 	}
+
+
+    /**
+     * Quick code fix for the remote XQJ API implementation.
+     *
+     * attribute name { "value" } ---> goes through fine.
+     *
+     * fn:doc($expr)/element()/attribute() ---> fails, as this is
+     * contained within the Database (not an in memory attribute).
+     *
+     * @param item a NodeValue
+     * @throws SAXException
+     * @author Charles Foster
+     */
+    protected void serializeTypeAttributeValue(NodeValue item) throws SAXException {
+        try {
+            receiver.characters(item.getStringValue());
+        } catch (XPathException e) {
+            LOG.error("XPath error trying to retrieve attribute value. " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Writes a start element for DOCUMENT, ATTRIBUTE and TEXT nodes.
+     * This is required for the XQJ API implementation.
+     *
+     * @param item a NodeValue which will be wrapped in a element.
+     * @throws SAXException
+     * @author Charles Foster
+     */
+    protected void serializeTypePreNode(NodeValue item) throws SAXException {
+        AttrList attrs = null;
+
+        switch(item.getType()) {
+            case Type.DOCUMENT:
+
+                String baseUri = item.getOwnerDocument().getBaseURI();
+
+                attrs = new AttrList();
+                if(baseUri != null && baseUri.length() > 0){
+                    attrs.addAttribute(ATTR_URI_QNAME, baseUri);
+                }
+                if(item.getOwnerDocument().getDocumentElement() == null) {
+                    attrs.addAttribute(ATTR_HAS_ELEMENT_QNAME, "false");
+                }
+
+                receiver.startElement(ELEM_DOC_QNAME, attrs);
+                break;
+
+            case Type.ATTRIBUTE:
+                attrs = new AttrList();
+
+                String attributeValue;
+                if((attributeValue = item.getNode().getLocalName()) != null && attributeValue.length() > 0){
+                    attrs.addAttribute(ATTR_LOCAL_QNAME, attributeValue);
+                }
+                if((attributeValue = item.getNode().getNamespaceURI()) != null && attributeValue.length() > 0) {
+                    attrs.addAttribute(ATTR_TNS_QNAME, attributeValue);
+                }
+                if((attributeValue = item.getNode().getPrefix()) != null && attributeValue.length() > 0) {
+                    attrs.addAttribute(ATTR_PREFIX_QNAME, attributeValue);
+                }
+
+                receiver.startElement(ELEM_ATTR_QNAME, attrs);
+                break;
+
+            case Type.TEXT:
+                receiver.startElement(ELEM_TEXT_QNAME, null);
+                break;
+
+            default:
+        }
+    }
+
+    /**
+     * Writes an end element for DOCUMENT, ATTRIBUTE and TEXT nodes.
+     * This is required for the XQJ API implementation.
+     *
+     * @param item the item which will be wrapped in an element.
+     * @throws SAXException
+     * @author Charles Foster
+     */
+    protected void serializeTypePostNode(NodeValue item) throws SAXException {
+        switch(item.getType()) {
+            case Type.DOCUMENT:
+                receiver.endElement(ELEM_DOC_QNAME);
+                break;
+            case Type.ATTRIBUTE:
+                receiver.endElement(ELEM_ATTR_QNAME);
+                break;
+            case Type.TEXT:
+                receiver.endElement(ELEM_TEXT_QNAME);
+                break;
+            default:
+        }
+    }
+
 
 	/**
 	 *  URIResolver is called by the XSL transformer to handle <xsl:include>,
