@@ -534,7 +534,7 @@ public class XQueryServlet extends HttpServlet {
 	            	serializer.setProperties(outputProperties);
 	            	serializer.setSAXHandlers(sax, sax);
 	            	
-	            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
+	            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false, false);
             	} finally {
             		serializerPool.returnObject(sax);
             	}

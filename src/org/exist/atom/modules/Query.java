@@ -233,7 +233,7 @@ public class Query extends AtomModuleBase implements Atom {
                serializer.setProperties(outputProperties);
                serializer.setSAXHandlers(sax, sax);
 
-               serializer.toSAX(resultSequence, 1, 1, false);
+               serializer.toSAX(resultSequence, 1, 1, false, false);
 
                SerializerPool.getInstance().returnObject(sax);
                w.flush();
@@ -315,7 +315,7 @@ public class Query extends AtomModuleBase implements Atom {
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
 
-            serializer.toSAX(resultSequence, 1, 1, false);
+            serializer.toSAX(resultSequence, 1, 1, false, false);
 
             SerializerPool.getInstance().returnObject(sax);
             w.flush();

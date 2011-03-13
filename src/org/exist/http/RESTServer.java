@@ -1874,7 +1874,9 @@ public class RESTServer {
 
 			serializer.setProperties(outputProperties);
 			serializer.setSAXHandlers(sax, sax);
-			serializer.toSAX(results, start, howmany, wrap);
+
+                        //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
+                        serializer.toSAX(results, start, howmany, wrap, typed);
 
 			writer.flush();
 			writer.close();

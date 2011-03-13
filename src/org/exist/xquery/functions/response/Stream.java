@@ -140,7 +140,7 @@ public class Stream extends BasicFunction {
 
     	    	serializer.setProperties(serializeOptions);
     	    	serializer.setSAXHandlers(sax, sax);
-            	serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false);
+            	serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
             	
         	} catch (SAXException e) {
         		e.printStackTrace();

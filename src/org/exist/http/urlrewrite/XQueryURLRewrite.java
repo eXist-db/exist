@@ -441,7 +441,7 @@ public class XQueryURLRewrite implements Filter {
 
 	    	serializer.setProperties(outputProperties);
 	    	serializer.setSAXHandlers(sax, sax);
-        	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
+        	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false, false);
         	
     	} catch (SAXException e) {
     		throw new IOException(e);
