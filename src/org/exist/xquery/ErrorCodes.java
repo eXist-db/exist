@@ -50,6 +50,7 @@ public class ErrorCodes {
     public static ErrorCode XPST0080 = new W3CErrorCode("XPST0080", "It is a static error if the target type of a cast or castable expression is xs:NOTATION or xs:anyAtomicType.");
     public static ErrorCode XPST0081 = new W3CErrorCode("XPST0081", "It is a static error if a QName used in an expression contains a namespace prefix that cannot be expanded into a namespace URI by using the statically known namespaces.");
     public static ErrorCode XPST0083 = new W3CErrorCode("XPST0083", "(Not currently used.)");
+
     /* XQuery 1.0 http://www.w3.org/TR/xquery/#id-errors */
     public static ErrorCode XQST0009 = new W3CErrorCode("XQST0009", "An implementation that does not support the Schema Import Feature must raise a static error if a Prolog contains a schema import.");
     public static ErrorCode XQST0012 = new W3CErrorCode("XQST0012", "It is a static error if the set of definitions contained in all schemas imported by a Prolog do not satisfy the conditions for schema validity specified in Sections 3 and 5 of [XML Schema] Part 1--i.e., each definition must be valid, complete, and unique.");
@@ -181,7 +182,7 @@ public class ErrorCodes {
 
     /* eXist specific XQuery and XPath errors
      *
-     * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]
+     * Codes have the format [EX][FO][XQ|XP][DY|SE|ST][nnnn]
      *
      * EX = eXist
      * XQ = XQuery
@@ -192,7 +193,7 @@ public class ErrorCodes {
      * nnnn = number
      */
     public static ErrorCode EXXQDY0001 = new EXistErrorCode("EXXQDY0001", "Index cannot be applied to the given expression.");
-    public static ErrorCode EXIST001 = new ErrorCode("EXIST001", "");
+    public static ErrorCode EXISTD0001 = new ErrorCode("EXISTD0001", "");
 
     public static class ErrorCode {
 
@@ -234,6 +235,17 @@ public class ErrorCodes {
 
         public EXistErrorCode(String code, String description) {
             super(new QName(code, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX), description);
+        }
+    }
+
+    public static class JavaErrorCode extends ErrorCode {
+
+        public JavaErrorCode(Throwable throwable) {
+            super(new QName(
+                        throwable.getClass().getName(),
+                        Namespaces.EXIST_XQUERY_XPATH_ERROR_NS,
+                        "java" ), // Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX
+                  throwable.getMessage());
         }
     }
 }

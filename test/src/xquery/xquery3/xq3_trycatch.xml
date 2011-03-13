@@ -245,4 +245,47 @@ local:thrice(try { "oops" } catch * { 3 } )
 
   -->
 
+
+    <test output="xml">
+        <task>Test for catching the right java exception</task>
+        <code><![CDATA[
+xquery version '3.0';
+try{
+    xmldb:store('/db/foobaar/', "text.xml", <a/>)
+} catch * ($errcode, $errdesc) {
+<result>
+<code>{$errcode}</code>
+<desc>{$errdesc}</desc>
+</result>
+}
+]]>
+        </code>
+        <expected>
+            <result>
+                <code>java:org.exist.xquery.XPathException</code>
+                <desc>Could not locate collection: /db/foobaar/ [at line 4, column 5]</desc>
+            </result>
+        </expected>
+    </test>
+
+    <test output="xml">
+        <task>Test for catching the right java exception 2</task>
+        <code><![CDATA[
+xquery version '3.0';
+try{
+    xmldb:store('/db/foobaar/', "text.xml", <a/>)
+} catch java:org.XPathException {
+<a/>
+} catch java:org.exist.xquery.XPathException {
+<b/>
+} catch * {
+<c/>
+}
+]]>
+        </code>
+        <expected>
+            <b/>
+        </expected>
+    </test>
+
 </TestSet>

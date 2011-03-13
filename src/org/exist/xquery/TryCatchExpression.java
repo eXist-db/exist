@@ -237,11 +237,24 @@ public class TryCatchExpression extends AbstractExpression {
      *  Extract and construct errorcode from error text.
      */
     private ErrorCode extractErrorCode(XPathException xpe)  {
-        String[] data = extractLocalName(xpe.getMessage());
-        ErrorCode errorCode = new ErrorCode(new QName(data[0], "err"), data[1]);
-        errorCode.getErrorQName().setPrefix("err");
-        LOG.debug("Parsed string for Errorcode. Qname='" + data[0] + "' message=" + data[1] + "'");
-        return errorCode;
+
+        // Get message from string
+        String message = xpe.getMessage();
+
+        // if the 9th position has a ":" it is probably a custom error text
+        if (':' == message.charAt(8)) {
+
+            String[] data = extractLocalName(xpe.getMessage());
+            ErrorCode errorCode = new ErrorCode(new QName(data[0], "err"), data[1]);
+            errorCode.getErrorQName().setPrefix("err");
+            LOG.debug("Parsed string '" + xpe.getMessage() + "' for Errorcode. "
+                    + "Qname='" + data[0] + "' message='" + data[1] + "'");
+            return errorCode;
+
+        }
+
+        // Fallback, create java error
+        return new ErrorCodes.JavaErrorCode(xpe);
     }
 
     /* (non-Javadoc)
