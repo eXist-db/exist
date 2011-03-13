@@ -60,7 +60,8 @@
                         serialization parameters.</para>
                 </listitem>
                 <listitem>
-                    <para>It turns out that some WebDAV clients can not handle estimated sizes, cutting off the transfer prematurely.  A workaround has
+                    <para>It turns out that some WebDAV clients can not handle estimated sizes, cutting off the transfer prematurely.  A 
+                        <ulink url="http://exist.svn.sourceforge.net/viewvc/exist/trunk/eXist/extensions/webdav/src/org/exist/webdav/MiltonDocument.java?r1=12791&amp;r2=12825&amp;pathrev=12825">workaround</ulink> has
                         been implemented to help some clients, but in some cases this doesn't seem to be sufficient.  
                         You may need to find a different WebDAV client or contact your WebDAV client's developer.
                     </para>
@@ -69,8 +70,8 @@
 
             <para>The Milton-based WebDAV interface has been successfully tested with: Windows Web Folders (Windows XP/7), <ulink
                     url="http://www.jscape.com/products/file-transfer-clients/anyclient/">AnyClient</ulink> (cross-platform), Mac OS X
-                Finder, <ulink url="http://www.panic.com/transmit/">Transmit</ulink> (Mac OS X), davfs version 1.4.5 (Linux)
-                and OpenOffice.org.</para>
+                Finder, <ulink url="http://www.panic.com/transmit/">Transmit</ulink> (Mac OS X), davfs version 1.4.5 (Linux),
+                OxygenXML and OpenOffice.org.</para>
             <para>The following clients are reported to have issues: <ulink url="http://en.wikipedia.org/wiki/GVFS"
                     >GVFS</ulink> (Nautilus) and <ulink url="http://www.netdrive.net/">NetDrive</ulink>.</para>
         </section>
