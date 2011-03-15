@@ -44,7 +44,7 @@ body
 
 .span-24, div.span-24 {
     /*overrules xsltforms.css*/
-    width: 100% !important;
+    width:100% !important;
 }
 
 .container {
@@ -81,8 +81,12 @@ td
 .float-right {
     float: right; 
     margin-right: 2px;
-    margin-top: -1em;
-}
+    margin-top: -1.5em;
+    }
+
+.toggle-button button {
+    margin-top: -1.5em;
+    }
 
 #page-head #navbar {
     margin: 10px 0 0 0;
@@ -150,7 +154,7 @@ button {
     border-color: gray;
     padding: .2em;
     vertical-align: middle;
-    text-align: center;    
+    text-align: center;
     -moz-border-radius: .4em;
     border-bottom-left-radius: 5px 5px;
     border-bottom-right-radius: 5px 5px;
@@ -181,11 +185,6 @@ button {
 {
     width: 20em;
 }
-
-.xforms-group-label-centered { 
-    padding: .5em 1em .5em 1em !important;
-    width: 15em !important;
-    }
 
 /* style every table data as a tab if the table has a class of tabs */
 
@@ -245,13 +244,6 @@ fieldset,
     margin-bottom: .1em;
     }
 
-fieldset .level-2,
-fieldset .level-3
-    {
-    margin-top: 1.5em;
-    margin-bottom: 2em;
-}
-
 .join {
     margin-bottom: .75em;
     font-weight: bold;
@@ -308,11 +300,6 @@ xf|submit xf|label.xforms-group-label-centered-general { /*buttons outside the f
 .xforms-group-content {
     vertical-align: top;
     margin-bottom: 0;    
-}
-
-fieldset .level-2 .xforms-group-content,
-fieldset .level-3 .xforms-group-content{
-    margin-bottom: .5em;    
 }
 
 xf|group xf|trigger.delete-button { /*for field delete buttons - sizing does not work*/
@@ -400,7 +387,7 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     height: 2em;
     width: 2em;
     padding: 0;
-    margin: 0 0 0 .25em;
+    margin: 0;
 }
 
 .node-button .xforms-control button .xforms-label {
@@ -408,7 +395,7 @@ span.xforms-hint-icon { /*negating the xsltforms.css hint icon*/
     width: 1em;
     text-align: center;
     padding: 0;
-    margin: 0 0 -5em 0;
+    1margin: 0 0 -2em 0;
 }
 
 .xforms-case .node-button {
@@ -452,10 +439,11 @@ div.xforms-hint-value p
     margin-bottom: .5em;
 }
 
-
 .xforms-value {
     padding-left: .25em;
 }
+
+/*compact*/
 
 .compact #fieldset-namePart label,
 .compact #fieldset-place label,
@@ -503,7 +491,7 @@ body
 }
 
 .compact button {
-    margin-left: 4.25em;
+    1margin-left: 4.25em;
 }
 
 .compact fieldset .level-2, 
@@ -550,17 +538,38 @@ body
     margin-bottom: 1em !important;
     }
 
-.level-1
+fieldset .level-1
     {
     margin-top: 1em;
     margin-bottom: 1em;    
 }
-
+/*
 .level-2,
 .level-3
 {
     margin-top: 2em;
     margin-bottom: 2em;    
+}
+*/
+/*
+fieldset .level-2 .xforms-group-content,
+fieldset .level-3 .xforms-group-content{
+    margin-bottom: .5em;    
+}
+*/
+fieldset .level-2,
+fieldset .level-3
+    {
+    margin-top: 2.5em;
+    margin-bottom: 2em;
+}
+
+.origin fieldset .level-2,
+.part fieldset .level-2,
+.physical-description fieldset .level-2
+    {
+    margin-top: 4em;
+    1margin-bottom: 2em;
 }
 
 .compact #relatedItem-titleInfo-anthology-repeat .xforms-repeat-item .xforms-group-content,
