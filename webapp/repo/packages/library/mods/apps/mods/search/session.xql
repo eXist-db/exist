@@ -23,17 +23,6 @@ declare option exist:serialize "media-type=application/xhtml+xml";
 
 declare variable $bs:USER := security:get-user-credential-from-session()[1];
 
-(: Not used. :)
-declare function mods:remove-empty-attributes($element as element()) as element() {
-element { node-name($element)}
-{ $element/@*[string-length(.) ne 0],
-for $child in $element/node( )
-return 
-    if ($child instance of element())
-    then mods:remove-empty-attributes($child)
-    else $child }
-};
-
 declare function bs:collection-is-writable($collection as xs:string) {
     if ($collection eq $sharing:groups-collection) then
         false()
@@ -114,14 +103,21 @@ declare function bs:retrieve($start as xs:int, $count as xs:int) {
                                         }
                                     </div>
                                     {
-                                        let $clean := $item
                                         let $clean := clean:cleanup($item)
                                         return
                                             mods:format-full(string($currentPos), $clean, $item) 
                                     }
                                 </td>
                         else
-                            <td class="pagination-toggle"><a>{mods:format-short(string($currentPos), $item)}</a></td>
+                            <td class="pagination-toggle">
+                            <a>
+                                {
+                                let $clean := clean:cleanup($item)
+                                            return
+                                            mods:format-short(string($currentPos), $clean)
+                                            (: originally $item was passed to mods:format-short() - was there a reason for this? :)
+                                }
+                            </a></td>
                     }
                 </tr>
         }

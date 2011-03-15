@@ -56,12 +56,12 @@ as element() {
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
             <title>
-            <!--eXist-begin
+            <!--eXist-begin-->
                 eXist Bibiliographical Demo
-                eXist-end-->
-            <!--Tamboti-begin-->
+                <!--eXist-end-->
+            <!--Tamboti-begin
                 Tamboti Metadata Framework
-            <!--Tamboti-end-->
+            Tamboti-end-->
             </title>
             { style:css('xhtml') }
             { $style }
@@ -169,17 +169,17 @@ as node()+ {
         <head>
             
             <title>
-            <!--eXist-begin
+            <!--eXist-begin-->
                 eXist Bibiliographical Demo - MODS record editor
-                eXist-end-->
-            <!--Tamboti-begin-->
+                <!--eXist-end-->
+            <!--Tamboti-begin
                 Tamboti Metadata Framework - MODS record editor
-            <!--Tamboti-end-->
+            Tamboti-end-->
             </title>
             <link rel="stylesheet" type="text/css" href="edit.css"/>
-            <!--Tamboti-begin-->
+            <!--Tamboti-begin
                 <link rel="stylesheet" type="text/css" href="tamboti.css"/>
-            <!--Tamboti-end-->
+            Tamboti-end-->
             { style:css('xforms') }
             { $style }
             { $model }
@@ -187,7 +187,7 @@ as node()+ {
         <body>
         <div id="page-head">
         
-        <!--Tamboti-begin-->
+        <!--Tamboti-begin
         <div id="page-head-left">
             <a href="/exist/library/">
                 <img 
@@ -209,8 +209,8 @@ as node()+ {
                     style="border-style: none"/>
             </a>
         </div>
-        <!--Tamboti-end-->
-        <!--eXist-begin
+        Tamboti-end-->
+        <!--eXist-begin-->
                 <a href="index.xml" style="text-decoration: none">
                     <img src="{$style:site-resources}/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
                 </a>
@@ -223,7 +223,7 @@ as node()+ {
                 <div id="navbar">
                     <h1>Open Source Native XML Database</h1>
                 </div>
-            eXist-end-->
+            <!--eXist-end-->
             </div>
             <div class="help"><a href="../docs/index.xml" style="text-decoration: none" target="_blank">Help</a></div>
             <div id="content1col">

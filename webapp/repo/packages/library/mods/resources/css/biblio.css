@@ -1,9 +1,11 @@
 p, td {
-    line-height:1.7em;
+    line-height: 1.25em;
 }
 
-.title {
-    font-style: italic;
+td .record,
+td .select
+{
+    font-size: 1em;
 }
 
 .help {
@@ -33,6 +35,8 @@ a:visited
     font-weight: normal;
     text-decoration: none;
     }
+
+/*folder view*/
 
 #collection-tree {
     float: left;
@@ -71,6 +75,16 @@ a:visited
     clear: left;    
 }
 
+ul.dynatree-container {
+    border: 0;
+}
+
+td.collection-path {
+    width: 800px;    
+}
+
+/*create new record dialog*/
+
 .language-label {
     padding: .5em;
 }
@@ -84,8 +98,8 @@ a:visited
     margin: .25em .5em .25em .5em;
 }
 
-ul.dynatree-container {
-    border: 0;
+.title {
+    font-style: italic;
 }
 
 .box {
@@ -114,14 +128,19 @@ ul.dynatree-container {
     color: #666;
 }
 
-td.collection-path {
-    width: 800px;    
+.search-form .buttons button, .button {
+    1display: inline;
+    1padding-bottom:2px;
+    1padding-left:1ex;
+    1padding-right:1ex;
+    1padding-top:2px;
+    1text-align: center;    
 }
 
 td.buttons button {
-    display: inline;
-    padding-left: 3em;
-    text-align: center;
+    1display: inline;
+    1padding-left: 3em;
+    1text-align: center;
     }
 
 .ui-autocomplete-input {
@@ -148,36 +167,21 @@ table tr.repeat {
     background-color: white;
 }
 
-#filters {
-    margin-top: -3px;
-}
-
-
-#form-submit {
-    margin-left: 7em;
-    }
-
 #form-submit {
     font-weight: bold; 
     display: inline;
     padding-bottom:2px;
     padding-left:1ex;
     padding-right:1ex;
-    padding-top:2px;}
-
-.search-form .buttons button, .button {
-    display: inline;
-    padding-bottom:2px;
-    padding-left:1ex;
-    padding-right:1ex;
     padding-top:2px;
-    text-align: center;    
-}
+    margin-left: 7em;
+    }
 
 .advanced-search {
     display:inline;
     padding-left: 10em;
     }
+
 .search-form .collection-input {
     border: 0;
     width:800px;
@@ -204,7 +208,10 @@ table tr.repeat {
     background-color: #CCC;
 }
 
+/*facets*/
+
 #filters {
+    margin-top: -3px;
     float: right;
     width: 240px;
     height: 320px;
@@ -241,20 +248,18 @@ table tr.repeat {
     background-color: #EDEDED;
 }
 
-.pagination {
-}
-
 .pagination-links {
     padding: 0 8px 0 8px;
     margin-bottom: 12px;
 }
 
 a {
-    color: #222;
+    color: #555555;
     text-decoration: none;
     font-weight: normal;
     
 }
+
 a:hover {
     text-decoration: none;
     color: blue;
@@ -264,9 +269,10 @@ a:hover {
 .pagination-toggle {
     cursor: pointer;
     text-decoration: none;
-    line-height:2em;
-    padding: .5em;
-    width:100%;
+    line-height: 2em;
+    padding-left: .5em;
+    padding-right: .5em;
+    width:100% !important;
 }
 
 .pagination-link {
@@ -307,8 +313,10 @@ a:hover {
     display: none;
 }
 
-.pagination-n, .actions {
-    width: 20px;
+.pagination-n, 
+.actions 
+{
+    width: 2em;
     text-align: center;
     vertical-align: middle;
     padding: 0;
@@ -321,30 +329,19 @@ a:hover {
     padding: 0;    
 }
 
-.biblio-full {
-    background-color: white;
-    width: 80%;
-}
-
 td .biblio-full {
-    color: #333;
+    background-color: white;
+    width: 100%;
+    color: #555555;
+    margin-top: -2em;
 }
 
 td .biblio-full .label {
-    1font-weight: bold;
     text-align: right;
     padding-right: 1em;
     vertical-align: middle;
-    width: 16em;
+    width: 30% !important;
     color: #5DB0E6;
-}
-
-td .biblio-full .host {
-    font-weight: bold;
-    text-align: right;
-    padding-right: 1em;
-    color: #5DB0E6;
-    width: 16em;
 }
 
 td .biblio-full .sublabel {
@@ -354,6 +351,14 @@ td .biblio-full .sublabel {
     vertical-align: middle;
     color: gray;
     width: 12.5em;
+}
+
+td .biblio-full .host {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 1em;
+    color: #5DB0E6;
+    width: 16em;
 }
 
 td .biblio-full .deemph {
@@ -367,7 +372,7 @@ td .biblio-full .deemph {
     font-weight: normal;
     text-align: left;
     vertical-align: middle;
-    width: 40em;
+    width: 70%;
 }
 
 .biblio-full .subrecord {
@@ -418,6 +423,7 @@ span.readable .dynatree-title {
     padding: 1em;
     margin-bottom: 2em;
 }
+/*folder sharing dialog*/
 
 .sharing-option {
     margin-top: 1em;

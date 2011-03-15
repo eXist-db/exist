@@ -52,18 +52,6 @@ declare function mods:clean-up-punctuation($input as xs:string) as xs:string? {
     , '!\.', '!')
 };
 
-(: derived from functx:remove-empty-attributes :)
-(: used in session.xql. :)
-declare function mods:remove-empty-attributes($element as element()) as element() {
-element { node-name($element)}
-{ $element/@*[string-length(.) ne 0],
-for $child in $element/node( )
-return 
-    if ($child instance of element())
-    then mods:remove-empty-attributes($child)
-    else $child }
-};
-
 (: ### general functions end ###:)
 
 declare function mods:get-collection($entry as element(mods:mods)) {
@@ -1349,7 +1337,7 @@ if ($titleInfo)
     <tr>
         <td class="label">
         {
-            if ($titleInfo/@type = 'translated') 
+            if (($titleInfo/@type = 'translated') and not($titleInfo/@transliteration)) 
             then 'Translated Title'
             else 
                 if ($titleInfo/@type = 'abbreviated') 
@@ -1368,56 +1356,58 @@ if ($titleInfo)
         <span class="deemph">
         {
         let $lang := $titleInfo/@lang/string()
+        let $xml-lang := $titleInfo/@xml:lang/string()
         return
-        if ($lang)
-        then        
-        (<br/>,
-        let $lang3 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $lang]/label
-        let $lang2 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $lang]/label
-        return
-        if ($lang3) 
-        then concat('(Language: ', $lang3[1])
-        else 
-            if ($lang2) 
-            then concat('(Language: ', $lang2) 
-            else $lang
-        )
-        else
-        ()
+            if ($lang or $xml-lang)
+            then        
+            (
+            <br/>, 'Language: '
+            ,
+            let $lang3 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $lang]/label
+            return
+                if ($lang3)
+                then $lang3
+                else
+                    let $lang2 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $lang]/label
+                    return
+                        if ($lang2) 
+                        then $lang2
+                        else
+                            let $lang3 := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $titleInfo/@xml:lang]/label
+                            return
+                                if ($lang3)
+                                then $lang3
+                                else
+                                    if ($lang)
+                                    then $lang
+                                    else
+                                        if ($xml-lang)
+                                        then $xml-lang
+                                        else ()
+            ) 
+            else ()
         }
         {
-        if ($titleInfo/@xml:lang/string())
+        let $transliteration := $titleInfo/@transliteration/string()
+        return
+        if ($transliteration)
         then
-        (<br/>, concat('(Language: ', 
-        doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $titleInfo/@xml:lang]/label
-        , 
-        ')')
-        )
-        else
-        ()
-        }
-        {
-        if ($titleInfo/@transliteration/string())
-        then
-            if (doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration][1]/label)
-            then
-            (<br/>, concat('(Transliteration: ', 
-            doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $titleInfo/@transliteration][1]/label
-            , ')'))
-            else
-            (<br/>, concat('(Transliteration: ',($titleInfo/@transliteration)
-        , ')'))
+            (<br/>, 'Transliteration: ',
+            let $transliteration-label := doc('/db/org/library/apps/mods/code-tables/transliteration-codes.xml')/code-table/items/item[value = $transliteration]/label
+            return
+                if ($transliteration-label)
+                then $transliteration-label
+                else $transliteration
+            )
         else
         ()
         }
         {
         if ($titleInfo/@script/string())
         then
-        (<br/>, concat('(Script: ', 
-        doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $titleInfo/@script]/label
-        , 
-        ')')
-        )
+            (<br/>, 'Script: ', 
+            doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $titleInfo/@script]/label
+            )
         else
         ()
         }
@@ -1823,11 +1813,11 @@ declare function mods:entry-full($entry as element())
 
 (: Creates view for detail view. :)
 (: NB: "mods:format-full()" is referenced in session.xql. :)
-declare function mods:format-full($id as xs:string, $entry as element(mods:mods), $original as element(mods:mods)) {
+declare function mods:format-full($id as xs:string, $clean as element(mods:mods), $item as element(mods:mods)) {
     <table class="biblio-full">
     {
-    mods:get-collection($original),
-    mods:entry-full($entry)
+        mods:get-collection($item),
+        mods:entry-full($clean)
     }
     </table>
 };
