@@ -159,6 +159,32 @@ public class ModuleUtils {
             }
 	}
         
+        /**
+	 * Takes a HTML InputSource and creates an XML representation of the HTML by
+	 * tidying it (uses NekoHTML)
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param srcHtml
+	 *            The Source for the HTML
+         * @param parserFeatures
+         *            The features to set on the Parser
+         * @param parserProperties
+         *            The properties to set on the Parser
+	 * 
+	 * @return An in-memory Document representing the XML'ised HTML
+	 */
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, Source srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+		
+            InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
+        
+            if(inputSource == null){
+                throw new XPathException(srcHtml.getClass().getName() + " is unsupported.");
+            }
+            
+            return htmlToXHtml(context, url, inputSource, parserFeatures, parserProperties);
+	}
+        
 	/**
 	 * Takes a HTML InputSource and creates an XML representation of the HTML by
 	 * tidying it (uses NekoHTML)
@@ -167,58 +193,61 @@ public class ModuleUtils {
 	 *            The Context of the calling XQuery
 	 * @param srcHtml
 	 *            The InputSource for the HTML
+         * @param parserFeatures
+         *            The features to set on the Parser
+         * @param parserProperties
+         *            The properties to set on the Parser
 	 * 
 	 * @return An in-memory Document representing the XML'ised HTML
 	 */
-	public static DocumentImpl htmlToXHtml(XQueryContext context, String url,
-			InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
-		// we use eXist's in-memory DOM implementation
-		org.exist.memtree.DocumentImpl memtreeDoc = null;
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+            // we use eXist's in-memory DOM implementation
+            org.exist.memtree.DocumentImpl memtreeDoc = null;
 
-		// use Neko to parse the HTML content to XML
-		XMLReader reader = null;
-		try {
-			LOG.debug("Converting HTML to XML using NekoHTML parser for: "
-					+ url);
-			reader = (XMLReader) Class.forName(
-					"org.cyberneko.html.parsers.SAXParser").newInstance();
+            // use Neko to parse the HTML content to XML
+            XMLReader reader = null;
+            try {
+                LOG.debug("Converting HTML to XML using NekoHTML parser for: " + url);
+                reader = (XMLReader) Class.forName("org.cyberneko.html.parsers.SAXParser").newInstance();
+                
+                if(parserFeatures != null) {
+                    for(Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
+                        reader.setFeature(parserFeature.getKey(), parserFeature.getValue());
+                    }
+                }
 
-                        if(parserFeatures != null) {
-                            for(Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
-                                reader.setFeature(parserFeature.getKey(), parserFeature.getValue());
-                            }
-                        }
+                if(parserProperties == null) {
+                    //default: do not modify the case of elements and attributes
+                    reader.setProperty("http://cyberneko.org/html/properties/names/elems","match");
+                    reader.setProperty("http://cyberneko.org/html/properties/names/attrs","no-change");
+                } else {
+                    for(Entry<String, String> parserProperty : parserProperties.entrySet()) {
+                        reader.setProperty(parserProperty.getKey(), parserProperty.getValue());
+                    }
+                }
+            } catch(Exception e) {
+                    String errorMsg = "Error while invoking NekoHTML parser. ("
+                                    + e.getMessage()
+                                    + "). If you want to parse non-wellformed HTML files, put "
+                                    + "nekohtml.jar into directory 'lib/user'.";
+                    LOG.error(errorMsg, e);
 
-			if(parserProperties == null) {
-                            //default: do not modify the case of elements and attributes
-                            reader.setProperty("http://cyberneko.org/html/properties/names/elems","match");
-                            reader.setProperty("http://cyberneko.org/html/properties/names/attrs","no-change");
-                        } else {
-                            for(Entry<String, String> parserProperty : parserProperties.entrySet()) {
-                                reader.setProperty(parserProperty.getKey(), parserProperty.getValue());
-                            }
-                        }
-		} catch (Exception e) {
-			String errorMsg = "Error while invoking NekoHTML parser. ("
-					+ e.getMessage()
-					+ "). If you want to parse non-wellformed HTML files, put "
-					+ "nekohtml.jar into directory 'lib/user'.";
-			LOG.error(errorMsg, e);
+                    throw new XPathException(errorMsg, e);
+            }
 
-			throw new XPathException(errorMsg, e);
-		}
-
-		SAXAdapter adapter = new SAXAdapter();
-		reader.setContentHandler(adapter);
-		try {
-			reader.parse(srcHtml);
-		} catch (IOException e) {
-			throw new XPathException(e.getMessage(), e);
-		}
-		Document doc = adapter.getDocument();
-		memtreeDoc = (DocumentImpl) doc;
-		memtreeDoc.setContext(context);
-		return memtreeDoc;
+            SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+            try {
+                reader.parse(srcHtml);
+            } catch (IOException e) {
+                    throw new XPathException(e.getMessage(), e);
+            }
+            
+            Document doc = adapter.getDocument();
+            memtreeDoc = (DocumentImpl) doc;
+            memtreeDoc.setContext(context);
+            
+            return memtreeDoc;
 	}
 
 	/**
