@@ -21,12 +21,13 @@
  */
 package org.exist.xquery.value;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
 
@@ -202,7 +203,8 @@ public class Type {
         defineSubType(NCNAME, ENTITY);
     }
 
-    private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
+    //private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
+    private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
     private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
 
     static {
@@ -230,11 +232,10 @@ public class Type {
         defineBuiltInType(UNTYPED, "xs:untyped");
         
         //Duplicate definition : new one first
-        defineBuiltInType(ATOMIC, "xs:anyAtomicType");
-        defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
+        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");
+
         //Duplicate definition : new one first
-        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic");
-        defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");		
+        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");
         
         defineBuiltInType(BOOLEAN, "xs:boolean");
         defineBuiltInType(DECIMAL, "xs:decimal");
@@ -273,11 +274,9 @@ public class Type {
         defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
         
         //Duplicate definition : new one first
-        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration");
-        defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");		
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");		
         //Duplicate definition : new one first
-        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration");
-        defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");		
+        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");
         
         defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
         defineBuiltInType(TOKEN, "xs:token");
@@ -290,19 +289,39 @@ public class Type {
         defineBuiltInType(ENTITY, "xs:ENTITY");
     }
 
-    public final static void defineBuiltInType(int type, String name) {
+    /**
+     * @param name The first name is the default name, any other names are aliases.
+     */
+    public static void defineBuiltInType(int type, String... name) {
         typeNames.put(type, name);
-        typeCodes.put(name, type);
+        for(String n : name) {
+            typeCodes.put(n, type);
+        }
     }
 
-	/**
-	 * Get the internal name for the built-in type.
-	 * 
-	 * @param type
-	 */
-	public final static String getTypeName(int type) {
-		return (String) typeNames.get(type);
-	}
+    /**
+     * Get the internal default name for the built-in type.
+     * 
+     * @param type
+     */
+    public static String getTypeName(int type) {
+        return (String) typeNames.get(type)[0];
+    }
+    
+    /**
+     * Get the internal aliases for the built-in type.
+     * 
+     * @param type
+     */
+    public static String[] getTypeAliases(int type) {
+        String names[] = typeNames.get(type);
+        if(names != null && names.length > 1) {
+            String aliases[] = new String[names.length - 1];
+            System.arraycopy(names, 1, aliases, 0, names.length - 1);
+            return aliases;
+        }
+        return null;
+    }
 
 	/**
 	 * Get the type code for a type identified by its internal name.
@@ -310,7 +329,7 @@ public class Type {
 	 * @param name
 	 * @throws XPathException
 	 */
-	public final static int getType(String name) throws XPathException {
+	public static int getType(String name) throws XPathException {
 		//if (name.equals("node"))
 		//	return NODE;
 		int code = typeCodes.get(name);
@@ -325,7 +344,7 @@ public class Type {
 	 * @param qname
 	 * @throws XPathException
 	 */
-	public final static int getType(QName qname) throws XPathException {
+	public static int getType(QName qname) throws XPathException {
 		String uri = qname.getNamespaceURI();
 		if (uri.equals(Namespaces.SCHEMA_NS))
 			return getType("xs:" + qname.getLocalName());
@@ -341,7 +360,7 @@ public class Type {
 	 * @param supertype
 	 * @param subtype
 	 */
-	public final static void defineSubType(int supertype, int subtype) {
+	public static void defineSubType(int supertype, int subtype) {
         superTypes[subtype] = supertype;
 	}
 
@@ -353,7 +372,7 @@ public class Type {
          *
          * @throws IllegalArgumentException When the type is invalid
 	 */
-	public final static boolean subTypeOf(int subtype, int supertype) {
+	public static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
 			return true;
 		//Note that it will return true even if subtype == EMPTY
@@ -376,7 +395,7 @@ public class Type {
 	 * 
 	 * @param subtype
 	 */
-	public final static int getSuperType(int subtype) {
+	public static int getSuperType(int subtype) {
 		if (subtype == ITEM || subtype == NODE)
 			return ITEM;
         int supertype = superTypes[subtype];
