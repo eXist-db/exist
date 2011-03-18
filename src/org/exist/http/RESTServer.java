@@ -703,9 +703,15 @@ public class RESTServer {
 
 						option = root.getAttribute("enclose");
 						if (option != null) {
-							if (option.equals("no"))
-								enclose = false;
-						}
+                                                    if (option.equals("no"))
+                                                            enclose = false;
+						} else {
+                                                    option = root.getAttribute("wrap");
+                                                    if (option != null) {
+                                                        if (option.equals("no"))
+                                                                enclose = false;
+                                                    }
+                                                }
 
 						option = root.getAttribute("typed");
 						if (option != null) {
