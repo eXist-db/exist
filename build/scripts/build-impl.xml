@@ -388,7 +388,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extensions-xar,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -603,6 +603,7 @@
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/expath" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/cocoon" target="clean" inheritall="false"/>
@@ -677,6 +678,10 @@
 
     <target name="extension-indexes" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/indexes" inheritall="false"/>
+    </target>
+
+    <target name="extension-expath" depends="prepare-extensions,jar">
+        <ant antfile="build.xml" dir="extensions/expath" inheritall="false"/>
     </target>
 
     <target name="extension-versioning" depends="prepare-extensions,jar">
