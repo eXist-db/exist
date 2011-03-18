@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
-import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /** [Definition:]   integer is <i>derived</i> from decimal by fixing the value of <i>fractionDigits<i> to be 0. 
@@ -36,18 +35,34 @@ import org.exist.xquery.XPathException;
  */
 public class IntegerValue extends NumericValue {
 
+        //TODO this class should be split into numerous sub classes for each xs: type with proper
+        //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
+    
 	public final static IntegerValue ZERO = new IntegerValue(0);
+        
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
 	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
 	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("-1");
-	private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775808");
-	private static final BigInteger SMALLEST_LONG  = LARGEST_LONG.negate();
-	private static final BigInteger LARGEST_INT  = new BigInteger("4294967296");
-	private static final BigInteger SMALLEST_INT  = LARGEST_INT.negate();
-	private static final BigInteger LARGEST_SHORT = new BigInteger("65536");
-	private static final BigInteger SMALLEST_SHORT = LARGEST_SHORT.negate();
-	private static final BigInteger LARGEST_BYTE = new BigInteger("256");
-	private static final BigInteger SMALLEST_BYTE = LARGEST_BYTE.negate();
+	
+        private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775807");
+	private static final BigInteger SMALLEST_LONG  = new BigInteger("-9223372036854775808");
+	
+        private static final BigInteger LARGEST_UNSIGNED_LONG = new BigInteger("18446744073709551615");
+        
+        private static final BigInteger LARGEST_INT  = new BigInteger("2147483647");
+	private static final BigInteger SMALLEST_INT  = new BigInteger("-2147483648");
+        
+        private static final BigInteger LARGEST_UNSIGNED_INT = new BigInteger("4294967295");
+	
+        private static final BigInteger LARGEST_SHORT = new BigInteger("32767");
+	private static final BigInteger SMALLEST_SHORT = new BigInteger("-32768");
+	
+        private static final BigInteger LARGEST_UNSIGNED_SHORT = new BigInteger("65535");
+        
+        private static final BigInteger LARGEST_BYTE = new BigInteger("127");
+	private static final BigInteger SMALLEST_BYTE = new BigInteger("-128");
+        
+        private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
 	
 	private BigInteger value;
 	// 	private long value;
@@ -112,11 +127,17 @@ public class IntegerValue extends NumericValue {
 	 * @throws XPathException
 	 */
 	private boolean checkType(BigInteger value2, int type2) throws XPathException {
-		switch (type) {
-		case Type.LONG :
-			// jmv: add test since now long is not the default implementation anymore:
-			return value.compareTo(SMALLEST_LONG) != Constants.INFERIOR &&
-				value.compareTo(LARGEST_LONG ) != Constants.SUPERIOR;
+            switch (type) {
+		
+                case Type.LONG :
+                    // jmv: add test since now long is not the default implementation anymore:
+                    return value.compareTo(SMALLEST_LONG) >= 0 &&
+                            value.compareTo(LARGEST_LONG ) <= 0;
+                    
+                case Type.UNSIGNED_LONG :
+                    return value.compareTo(ZERO_BIGINTEGER) >= 0 &&
+                            value.compareTo(LARGEST_UNSIGNED_LONG ) <= 0;
+                    
 		case Type.INTEGER :
 		case Type.DECIMAL :
 			return true;
@@ -132,29 +153,31 @@ public class IntegerValue extends NumericValue {
 			return value.compareTo(ONE_BIGINTEGER) == -1; // <1
 		
 		case Type.INT :
-			return value.compareTo(SMALLEST_INT) == 1 &&
-				value.compareTo(LARGEST_INT) == -1;
+			return value.compareTo(SMALLEST_INT) >= 0 &&
+				value.compareTo(LARGEST_INT) <= 0;
+                    
+                case Type.UNSIGNED_INT:
+                    return value.compareTo(ZERO_BIGINTEGER) >= 0 &&
+                            value.compareTo(LARGEST_UNSIGNED_INT) <= 0;
+                        
 		case Type.SHORT :
-			return value.compareTo(SMALLEST_SHORT) == 1 &&
-				value.compareTo(LARGEST_SHORT) == -1;
+			return value.compareTo(SMALLEST_SHORT) >= 0 &&
+				value.compareTo(LARGEST_SHORT) <= 0;
+                    
+                case Type.UNSIGNED_SHORT :
+			return value.compareTo(ZERO_BIGINTEGER) >= 0 &&
+				value.compareTo(LARGEST_UNSIGNED_SHORT) <= 0;
+                    
 		case Type.BYTE :
-			return value.compareTo(SMALLEST_BYTE) == 1 &&
-					value.compareTo(LARGEST_BYTE) == -1;
-		
-		case Type.UNSIGNED_LONG :
-			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
-				value.compareTo(LARGEST_LONG ) == -1;
-		case Type.UNSIGNED_INT:
-			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
-				value.compareTo(LARGEST_INT) == -1;
-		case Type.UNSIGNED_SHORT :
-			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
-				value.compareTo(LARGEST_SHORT) == -1;
-		case Type.UNSIGNED_BYTE :
-			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1 &&
-				value.compareTo(LARGEST_BYTE) == -1;
-	}
-	throw new XPathException("Unknown type: " + Type.getTypeName(type));
+			return value.compareTo(SMALLEST_BYTE) >= 0 &&
+					value.compareTo(LARGEST_BYTE) <= 0;
+                    
+                case Type.UNSIGNED_BYTE :
+                        return value.compareTo(ZERO_BIGINTEGER) >= 0 &&
+				value.compareTo(LARGEST_UNSIGNED_BYTE) <= 0;
+            }
+            
+            throw new XPathException("Unknown type: " + Type.getTypeName(type));
 	}
 
 	private final static boolean checkType(long value, int type) throws XPathException {
