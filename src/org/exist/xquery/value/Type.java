@@ -204,7 +204,7 @@ public class Type {
 
     private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<String[]>(100);
     //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
-    private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
+    private final static Object2IntHashMap<String> typeCodes = new Object2IntHashMap<String>(100);
 
     static {
         //TODO : use NODETYPES above ?
