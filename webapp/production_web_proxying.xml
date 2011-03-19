@@ -61,7 +61,7 @@
 
 
 # header helpers for reverse proxied servers
-proxy_set_header        Host                    $host;                          # Ensures the actual hostname is sent to eXist-db and not 'localhost'
+proxy_set_header        Host                    $host;                          # Ensures the actual hostname is sent to eXist-db and not 'localhost' (needed in eXist-db for server-name in controller-config.xml)
 proxy_set_header        X-Real-IP               $remote_addr;                   # The Real IP of the client and not the IP of nginx proxy
 proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
 proxy_set_header        nginx-request-uri       $request_uri;                   # The original URI before proxying
