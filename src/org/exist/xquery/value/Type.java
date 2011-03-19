@@ -21,13 +21,12 @@
  */
 package org.exist.xquery.value;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;
 
@@ -203,8 +202,8 @@ public class Type {
         defineSubType(NCNAME, ENTITY);
     }
 
-    //private final static Int2ObjectHashMap typeNames = new Int2ObjectHashMap(100);
-    private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
+    private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<String[]>(100);
+    //private final static Map<Integer, String[]> typeNames= new HashMap<Integer, String[]>(100);
     private final static Object2IntHashMap typeCodes = new Object2IntHashMap(100);
 
     static {
@@ -305,7 +304,7 @@ public class Type {
      * @param type
      */
     public static String getTypeName(int type) {
-        return (String) typeNames.get(type)[0];
+        return typeNames.get(type)[0];
     }
     
     /**
