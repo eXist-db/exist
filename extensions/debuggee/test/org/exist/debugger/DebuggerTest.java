@@ -145,7 +145,7 @@ public class DebuggerTest implements ResponseListener {
 			vars = source.getGlobalVariables();
 			assertEquals(1, vars.size());
 			for (Variable var : vars) {
-				assertEquals("dbgp:session", var.getName());
+				assertEquals("DBGp:session", var.getName());
 				assertEquals("default", var.getValue());
 			}
 
@@ -371,6 +371,35 @@ public class DebuggerTest implements ResponseListener {
 	
 	@Test
 	public void testStepInto() throws Exception {
+		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
+		for (int i = 0; i < 10; i++) {
+			Debugger debugger = DebuggerImpl.getDebugger();
+
+			System.out.println("init "+i);
+			DebuggingSource debuggerSource = debugger.init(url);
+
+			System.out.println("send stepInto");
+			debuggerSource.stepInto();
+			//Thread.sleep(1000);
+
+			System.out.println("send getStackFrames");
+			List<Location> stack = debuggerSource.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(8, stack.get(0).getLineBegin());
+			assertEquals(6, stack.get(0).getColumnBegin());
+
+			System.out.println("send stop");
+			debuggerSource.stop();
+			//Thread.sleep(1000);
+			
+			System.out.println("stoped");
+
+			DebuggerImpl.shutdownDebugger();
+		} 
+	}
+
+	@Test
+	public void testStoredInDB() throws Exception {
 		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
