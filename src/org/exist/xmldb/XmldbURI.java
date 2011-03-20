@@ -85,7 +85,7 @@ public class XmldbURI implements Comparable<Object>, Serializable
 
     public final static XmldbURI  SYSTEM_COLLECTION_URI        = create( SYSTEM_COLLECTION );
     /** /db/etc */
-    public final static XmldbURI  ETC_COLLECTION_URI           = ROOT_COLLECTION_URI.append("/etc");
+    public final static XmldbURI  ETC_COLLECTION_URI           = SYSTEM_COLLECTION_URI.append("/etc");
 
     public final static XmldbURI  CONFIG_COLLECTION_URI        = create( CONFIG_COLLECTION );
 
