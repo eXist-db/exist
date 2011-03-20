@@ -22,10 +22,13 @@
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
+import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.xml.sax.SAXException;
 
@@ -129,57 +132,68 @@ public class PropertyGet extends Command {
 
 	protected static StringBuilder getPropertyString(Variable variable, XQueryContext context) {
         Sequence value = variable.getValue();
-        Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
+        
+        DBBroker broker = null;
 
+        Database db = context.getDatabase();
         try {
-        	StringBuilder property = new StringBuilder();
-            if (value.hasOne()) {
-                String strVal = getPropertyValue(value.itemAt(0), serializer);
-                String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "node" :
-                    Type.getTypeName(value.getItemType());
-                property.append("<property name=\"");
-                property.append(variable.getQName().toString());
-                property.append("\" fullname=\"");
-                property.append(variable.getQName().toString());
-                property.append("\" type=\"");
-                property.append(type);
-                property.append("\" size=\"");
-                property.append(strVal.length());
-                property.append("\" encoding=\"none\">");
-                property.append(strVal);
-                property.append("</property>");
-            } else {
-            	property.append("<property name=\"");
-            	property.append(variable.getQName().toString());
-            	property.append("\" fullname=\"");
-            	property.append(variable.getQName().toString());
-            	property.append("\" type=\"array\" children=\"true\" numchildren=\"");
-            	property.append(value.getItemCount());
-            	property.append("\">");
-                int idx = 0;
-                for (SequenceIterator si = value.iterate(); si.hasNext(); idx++) {
-                    Item item = si.nextItem();
-                    String strVal = getPropertyValue(item, serializer);
-                    String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "xs:string" :
-                        Type.getTypeName(value.getItemType());
-                    property.append("<property name=\"");
-                    property.append(idx);
-                    property.append("\" type=\"");
-                    property.append(type);
-                    property.append("\" size=\"");
-                    property.append(strVal.length());
-                    property.append("\" encoding=\"none\">");
-                    property.append(strVal);
-                    property.append("</property>");
-                }
-                property.append("</property>");
-            }
-            return property;
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (XPathException e) {
-            e.printStackTrace();
+        	broker = db.getBroker();
+	        Serializer serializer = broker.getSerializer();
+	        serializer.reset();
+	
+	        try {
+	        	StringBuilder property = new StringBuilder();
+	            if (value.hasOne()) {
+	                String strVal = getPropertyValue(value.itemAt(0), serializer);
+	                String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "node" :
+	                    Type.getTypeName(value.getItemType());
+	                property.append("<property name=\"");
+	                property.append(variable.getQName().toString());
+	                property.append("\" fullname=\"");
+	                property.append(variable.getQName().toString());
+	                property.append("\" type=\"");
+	                property.append(type);
+	                property.append("\" size=\"");
+	                property.append(strVal.length());
+	                property.append("\" encoding=\"none\">");
+	                property.append(strVal);
+	                property.append("</property>");
+	            } else {
+	            	property.append("<property name=\"");
+	            	property.append(variable.getQName().toString());
+	            	property.append("\" fullname=\"");
+	            	property.append(variable.getQName().toString());
+	            	property.append("\" type=\"array\" children=\"true\" numchildren=\"");
+	            	property.append(value.getItemCount());
+	            	property.append("\">");
+	                int idx = 0;
+	                for (SequenceIterator si = value.iterate(); si.hasNext(); idx++) {
+	                    Item item = si.nextItem();
+	                    String strVal = getPropertyValue(item, serializer);
+	                    String type = Type.subTypeOf(value.getItemType(), Type.NODE) ? "xs:string" :
+	                        Type.getTypeName(value.getItemType());
+	                    property.append("<property name=\"");
+	                    property.append(idx);
+	                    property.append("\" type=\"");
+	                    property.append(type);
+	                    property.append("\" size=\"");
+	                    property.append(strVal.length());
+	                    property.append("\" encoding=\"none\">");
+	                    property.append(strVal);
+	                    property.append("</property>");
+	                }
+	                property.append("</property>");
+	            }
+	            return property;
+	        } catch (SAXException e) {
+	            e.printStackTrace();
+	        } catch (XPathException e) {
+	            e.printStackTrace();
+	        }
+        } catch (EXistException e) {
+			e.printStackTrace();
+		} finally {
+        	db.release(broker);
         }
         return null;
     }
