@@ -25,6 +25,9 @@
             <link href="quickstart.xml">Quick Start</link>
         </item>
         <item>
+            <link href="documentation.xml">Main Documentation</link>
+        </item>
+        <item>
             <link href="http://atomic.exist-db.org/">eXist Developer's Blog</link>
         </item>
         <item>
@@ -35,9 +38,6 @@
         </item>
         <item>
             <link href="xquery/functions.xql">Function Library</link>
-        </item>
-        <item>
-            <link href="documentation.xml">Main Documentation</link>
         </item>
 		<item>
 			<link href="http://en.wikibooks.org/wiki/XQuery">XQuery Wikibook</link>
@@ -59,8 +59,8 @@
     </group>
     <group name="Community">
         <item>
-            <link href="index.xml#community">Chatbox/IRC</link>
             <link href="index.xml#community">Mailing Lists</link>
+            <link href="index.xml#community">IRC Chat</link>
             <link href="index.xml#community">Social Media</link>
         </item>
     </group>
@@ -75,10 +75,10 @@
             <link href="api/index.html">Javadocs</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
+            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
+            <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
         </item>
     </group>
     <group name="Administration">
