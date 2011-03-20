@@ -57,25 +57,6 @@
         </folder>
         <folder name="build">
             <folder name="scripts">
-                <folder name="cocoon">
-                    <file name="build/scripts/cocoon/build.properties"/>
-                    <file name="build/scripts/cocoon/build.xml"/>
-                    <file
-                        name="build/scripts/cocoon/exist.generator.xmap"/>
-                    <file name="build/scripts/cocoon/exist.xsamples"/>
-                    <file name="build/scripts/cocoon/exist-gump.xsl"/>
-                    <file name="build/scripts/cocoon/exist-jars.xsl"/>
-                    <file
-                        name="build/scripts/cocoon/exist-logicsheet.xconf"/>
-                    <file name="build/scripts/cocoon/exist-servlet.xweb"/>
-                    <file
-                        name="build/scripts/cocoon/exist-servlet-mapping.xweb"/>
-                    <file
-                        name="build/scripts/cocoon/exist-sourcefactory.xconf"/>
-                    <file
-                        name="build/scripts/cocoon/exist-sourcefactory-with-xindice.xconf"
-                    />
-                </folder>
                 <folder name="cruisecontrol">
                     <folder name="projects">
                         <file
@@ -193,211 +174,8 @@
             </folder>
             <folder name="irclog">
                 <folder name="images">
-                    <folder name=".svn">
-                        <folder name="prop-base">
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/arrow_refresh.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/bottom_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/bottom_mid.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/bottom_right_resize.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/bottom_right.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/center_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/center_right.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/close.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/connect.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/contents_bg.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/disconnect.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/indicator_medium.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/keyboard_add.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/logo.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/logo.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/overlay.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/sizer.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/top_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/top_mid.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/prop-base/top_right.gif.svn-base"
-                            />
-                        </folder>
-                        <folder name="props"/>
-                        <folder name="text-base">
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/arrow_refresh.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/bottom_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/bottom_mid.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/bottom_right_resize.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/bottom_right.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/center_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/center_right.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/close.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/connect.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/contents_bg.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/disconnect.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/indicator_medium.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/keyboard_add.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/logo.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/logo.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/overlay.png.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/sizer.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/top_left.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/top_mid.gif.svn-base"/>
-                            <file
-                                name="webapp/irclog/images/.svn/text-base/top_right.gif.svn-base"
-                            />
-                        </folder>
-                        <folder name="tmp">
-                            <folder name="prop-base"/>
-                            <folder name="props"/>
-                            <folder name="text-base"/>
-                        </folder>
-                        <file
-                            name="webapp/irclog/images/.svn/all-wcprops"/>
-                        <file name="webapp/irclog/images/.svn/entries"/>
-                    </folder>
                     <folder name="aero">
-                        <folder name=".svn">
-                            <folder name="prop-base">
-                                <file
-                                    name="webapp/irclog/images/aero/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/aero/.svn/prop-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="props"/>
-                            <folder name="text-base">
-                                <file
-                                    name="webapp/irclog/images/aero/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/aero/.svn/text-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="tmp">
-                                <folder name="prop-base"/>
-                                <folder name="props"/>
-                                <folder name="text-base"/>
-                            </folder>
-                            <file
-                                name="webapp/irclog/images/aero/.svn/all-wcprops"/>
-                            <file
-                                name="webapp/irclog/images/aero/.svn/entries"
-                            />
-                        </folder>
                         <folder name="basic-dialog">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/aero-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/aero-close-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/bg-center.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/bg-left.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/bg-right.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/collapse-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/expand-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/prop-base/w-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/aero-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/aero-close-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/bg-center.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/bg-left.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/bg-right.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/collapse-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/expand-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/text-base/w-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/basic-dialog/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/basic-dialog/aero-close.gif"/>
                             <file
@@ -431,57 +209,6 @@
                             />
                         </folder>
                         <folder name="grid">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/grid-blue-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/grid-hrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/grid-vista-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/pspbrwse.jbf.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/sort_asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/sort_desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/prop-base/sort-col-bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/grid-blue-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/grid-hrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/grid-vista-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/pspbrwse.jbf.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/sort_asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/sort_desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/grid/.svn/text-base/sort-col-bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/grid/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/grid/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/grid/grid-blue-split.gif"/>
                             <file
@@ -501,65 +228,6 @@
                             />
                         </folder>
                         <folder name="layout">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/prop-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/layout/.svn/text-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/layout/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/layout/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/layout/collapse.gif"/>
                             <file
@@ -583,101 +251,11 @@
                             />
                         </folder>
                         <folder name="qtip">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/qtip/.svn/prop-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/qtip/.svn/text-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/qtip/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/qtip/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/qtip/bg.gif"
                             />
                         </folder>
                         <folder name="sizer">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/prop-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/text-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/sizer/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/sizer/e-handle.gif"/>
                             <file
@@ -705,57 +283,6 @@
                             />
                         </folder>
                         <folder name="tabs">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-strip-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-strip-bg.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/prop-base/tab-strip-btm-bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-strip-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-strip-bg.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/text-base/tab-strip-btm-bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/tabs/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/tabs/tab-btm-inactive-left-bg.gif"/>
                             <file
@@ -775,33 +302,6 @@
                             />
                         </folder>
                         <folder name="toolbar">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/prop-base/bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/prop-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/text-base/bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/text-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/aero/toolbar/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/aero/toolbar/bg.gif"/>
                             <file
@@ -813,105 +313,7 @@
                         <file name="webapp/irclog/images/aero/s.gif"/>
                     </folder>
                     <folder name="default">
-                        <folder name=".svn">
-                            <folder name="prop-base">
-                                <file
-                                    name="webapp/irclog/images/default/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/prop-base/s.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/prop-base/shadow.png.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/prop-base/shadow-lr.png.svn-base"
-                                />
-                            </folder>
-                            <folder name="props"/>
-                            <folder name="text-base">
-                                <file
-                                    name="webapp/irclog/images/default/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/text-base/s.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/text-base/shadow.png.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/default/.svn/text-base/shadow-lr.png.svn-base"
-                                />
-                            </folder>
-                            <folder name="tmp">
-                                <folder name="prop-base"/>
-                                <folder name="props"/>
-                                <folder name="text-base"/>
-                            </folder>
-                            <file
-                                name="webapp/irclog/images/default/.svn/all-wcprops"/>
-                            <file
-                                name="webapp/irclog/images/default/.svn/entries"
-                            />
-                        </folder>
                         <folder name="basic-dialog">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/btn-arrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/btn-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/progress.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/progress2.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/prop-base/s-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/btn-arrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/btn-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/progress.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/progress2.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/text-base/s-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/basic-dialog/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/basic-dialog/btn-arrow.gif"/>
                             <file
@@ -937,57 +339,6 @@
                             />
                         </folder>
                         <folder name="box">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/corners.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/corners-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/l.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/l-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/r.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/r-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/tb.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/prop-base/tb-blue.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/corners.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/corners-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/l.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/l-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/r.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/r-blue.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/tb.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/box/.svn/text-base/tb-blue.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/box/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/box/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/box/corners.gif"/>
                             <file
@@ -1007,37 +358,6 @@
                             />
                         </folder>
                         <folder name="dd">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/prop-base/drop-add.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/prop-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/prop-base/drop-yes.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/text-base/drop-add.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/text-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/dd/.svn/text-base/drop-yes.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/dd/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/dd/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/dd/drop-add.gif"/>
                             <file
@@ -1047,33 +367,6 @@
                             />
                         </folder>
                         <folder name="form">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/form/.svn/prop-base/date-trigger.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/form/.svn/prop-base/trigger.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/form/.svn/text-base/date-trigger.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/form/.svn/text-base/trigger.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/form/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/form/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/form/date-trigger.gif"/>
                             <file
@@ -1081,181 +374,6 @@
                             />
                         </folder>
                         <folder name="grid">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/arrow-left-white.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/arrow-right-white.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/col-move-bottom.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/col-move-top.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/dirty.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/done.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/drop-yes.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/footer-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-blue-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-blue-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-hrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/grid-vista-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-lock.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-lock.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-unlock.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/hmenu-unlock.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/invalid_line.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/mso-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/nowait.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-first.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-first-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-last.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-last-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-next.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-next-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-prev.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/page-prev-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/pick-button.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/refresh.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/sort_asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/sort_desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/Thumbs.db.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/prop-base/wait.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/arrow-left-white.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/arrow-right-white.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/col-move-bottom.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/col-move-top.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/dirty.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/done.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/drop-yes.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/footer-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-blue-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-blue-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-hrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/grid-vista-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-lock.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-lock.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-unlock.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/hmenu-unlock.png.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/invalid_line.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/mso-hd.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/nowait.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-first.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-first-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-last.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-last-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-next.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-next-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-prev.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/page-prev-disabled.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/pick-button.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/refresh.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/sort_asc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/sort_desc.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/Thumbs.db.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/grid/.svn/text-base/wait.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/grid/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/grid/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/grid/arrow-left-white.gif"/>
                             <file
@@ -1337,73 +455,6 @@
                             />
                         </folder>
                         <folder name="layout">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/stuck.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/prop-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/stuck.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/layout/.svn/text-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/layout/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/layout/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/layout/collapse.gif"/>
                             <file
@@ -1431,45 +482,6 @@
                             />
                         </folder>
                         <folder name="menu">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/prop-base/checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/prop-base/group-checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/prop-base/menu.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/prop-base/menu-parent.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/prop-base/unchecked.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/text-base/checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/text-base/group-checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/text-base/menu.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/text-base/menu-parent.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/menu/.svn/text-base/unchecked.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/menu/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/menu/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/menu/checked.gif"/>
                             <file
@@ -1483,69 +495,11 @@
                             />
                         </folder>
                         <folder name="qtip">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/qtip/.svn/prop-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/qtip/.svn/text-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/qtip/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/qtip/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/qtip/bg.gif"
                             />
                         </folder>
                         <folder name="shared">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/prop-base/calendar.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/prop-base/left-btn.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/prop-base/right-btn.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/prop-base/warning.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/text-base/calendar.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/text-base/left-btn.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/text-base/right-btn.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/shared/.svn/text-base/warning.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/shared/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/shared/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/shared/calendar.gif"/>
                             <file
@@ -1557,77 +511,6 @@
                             />
                         </folder>
                         <folder name="sizer">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/square.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/prop-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/square.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/sizer/.svn/text-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/sizer/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/sizer/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/sizer/e-handle.gif"/>
                             <file
@@ -1657,45 +540,6 @@
                             />
                         </folder>
                         <folder name="tabs">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/prop-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/prop-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/prop-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/prop-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/prop-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/text-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/text-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/text-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/text-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tabs/.svn/text-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/tabs/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/tabs/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/tabs/tab-btm-inactive-left-bg.gif"/>
                             <file
@@ -1709,49 +553,6 @@
                             />
                         </folder>
                         <folder name="toolbar">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/btn-arrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/btn-arrow-light.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/btn-over-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/tb-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/prop-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/btn-arrow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/btn-arrow-light.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/btn-over-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/tb-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/text-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/toolbar/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/toolbar/btn-arrow.gif"/>
                             <file
@@ -1767,113 +568,6 @@
                             />
                         </folder>
                         <folder name="tree">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-add.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-between.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-under.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/drop-yes.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-end.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-end-minus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-end-minus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-end-plus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-end-plus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-line.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-minus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-minus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-plus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/elbow-plus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/folder.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/folder-open.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/leaf.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/prop-base/s.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-add.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-between.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-no.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-over.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-under.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/drop-yes.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-end.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-end-minus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-end-minus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-end-plus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-end-plus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-line.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-minus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-minus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-plus.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/elbow-plus-nl.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/folder.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/folder-open.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/leaf.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/loading.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/default/tree/.svn/text-base/s.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/default/tree/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/default/tree/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/default/tree/drop-add.gif"/>
                             <file
@@ -1930,85 +624,7 @@
                         />
                     </folder>
                     <folder name="gray">
-                        <folder name=".svn">
-                            <folder name="prop-base">
-                                <file
-                                    name="webapp/irclog/images/gray/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/gray/.svn/prop-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="props"/>
-                            <folder name="text-base">
-                                <file
-                                    name="webapp/irclog/images/gray/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/gray/.svn/text-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="tmp">
-                                <folder name="prop-base"/>
-                                <folder name="props"/>
-                                <folder name="text-base"/>
-                            </folder>
-                            <file
-                                name="webapp/irclog/images/gray/.svn/all-wcprops"/>
-                            <file
-                                name="webapp/irclog/images/gray/.svn/entries"
-                            />
-                        </folder>
                         <folder name="basic-dialog">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/dlg-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/prop-base/s-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/dlg-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/text-base/s-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/basic-dialog/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/basic-dialog/close.gif"/>
                             <file
@@ -2028,97 +644,11 @@
                             />
                         </folder>
                         <folder name="grid">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/grid/.svn/prop-base/grid-hrow.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/grid/.svn/text-base/grid-hrow.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/grid/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/grid/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/grid/grid-hrow.gif"
                             />
                         </folder>
                         <folder name="layout">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/prop-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/layout/.svn/text-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/layout/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/layout/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/layout/collapse.gif"/>
                             <file
@@ -2144,45 +674,6 @@
                             />
                         </folder>
                         <folder name="menu">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/prop-base/checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/prop-base/group-checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/prop-base/menu.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/prop-base/menu-parent.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/prop-base/unchecked.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/text-base/checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/text-base/group-checked.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/text-base/menu.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/text-base/menu-parent.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/menu/.svn/text-base/unchecked.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/menu/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/menu/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/menu/checked.gif"/>
                             <file
@@ -2196,101 +687,11 @@
                             />
                         </folder>
                         <folder name="qtip">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/qtip/.svn/prop-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/qtip/.svn/text-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/qtip/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/qtip/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/qtip/bg.gif"
                             />
                         </folder>
                         <folder name="sizer">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/prop-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/text-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/sizer/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/sizer/e-handle.gif"/>
                             <file
@@ -2318,45 +719,6 @@
                             />
                         </folder>
                         <folder name="tabs">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/prop-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/prop-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/prop-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/prop-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/prop-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/text-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/text-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/text-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/text-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/text-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/tabs/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/tabs/tab-btm-inactive-left-bg.gif"/>
                             <file
@@ -2370,33 +732,6 @@
                             />
                         </folder>
                         <folder name="toolbar">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/prop-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/prop-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/text-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/text-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/gray/toolbar/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/gray/toolbar/gray-bg.gif"/>
                             <file
@@ -2408,101 +743,7 @@
                         <file name="webapp/irclog/images/gray/s.gif"/>
                     </folder>
                     <folder name="vista">
-                        <folder name=".svn">
-                            <folder name="prop-base">
-                                <file
-                                    name="webapp/irclog/images/vista/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/vista/.svn/prop-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="props"/>
-                            <folder name="text-base">
-                                <file
-                                    name="webapp/irclog/images/vista/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                <file
-                                    name="webapp/irclog/images/vista/.svn/text-base/s.gif.svn-base"
-                                />
-                            </folder>
-                            <folder name="tmp">
-                                <folder name="prop-base"/>
-                                <folder name="props"/>
-                                <folder name="text-base"/>
-                            </folder>
-                            <file
-                                name="webapp/irclog/images/vista/.svn/all-wcprops"/>
-                            <file
-                                name="webapp/irclog/images/vista/.svn/entries"
-                            />
-                        </folder>
                         <folder name="basic-dialog">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/bg-center.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/bg-left.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/bg-right.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/dlg-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/prop-base/w-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/bg-center.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/bg-left.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/bg-right.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/dlg-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/hd-sprite.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/text-base/w-handle.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/basic-dialog/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/basic-dialog/bg-center.gif"/>
                             <file
@@ -2530,33 +771,6 @@
                             />
                         </folder>
                         <folder name="grid">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/grid/.svn/prop-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/grid/.svn/prop-base/grid-vista-hd.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/grid/.svn/text-base/grid-split.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/grid/.svn/text-base/grid-vista-hd.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/grid/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/grid/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/grid/grid-split.gif"/>
                             <file
@@ -2564,69 +778,6 @@
                             />
                         </folder>
                         <folder name="layout">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/prop-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/gradient-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/ns-collapse.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/ns-expand.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/panel-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/panel-title-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/panel-title-light-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/stick.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/tab-close.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/layout/.svn/text-base/tab-close-on.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/layout/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/layout/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/layout/collapse.gif"/>
                             <file
@@ -2652,101 +803,11 @@
                             />
                         </folder>
                         <folder name="qtip">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/qtip/.svn/prop-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/qtip/.svn/text-base/bg.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/qtip/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/qtip/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/qtip/bg.gif"
                             />
                         </folder>
                         <folder name="sizer">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/prop-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/e-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/e-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/ne-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/ne-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/nw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/nw-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/se-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/se-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/s-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/s-handle-dark.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/sw-handle.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/text-base/sw-handle-dark.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/sizer/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/sizer/e-handle.gif"/>
                             <file
@@ -2774,45 +835,6 @@
                             />
                         </folder>
                         <folder name="tabs">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/prop-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/prop-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/prop-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/prop-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/prop-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/text-base/tab-btm-inactive-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/text-base/tab-btm-inactive-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/text-base/tab-btm-left-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/text-base/tab-btm-right-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/text-base/tab-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/tabs/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/tabs/tab-btm-inactive-left-bg.gif"/>
                             <file
@@ -2826,33 +848,6 @@
                             />
                         </folder>
                         <folder name="toolbar">
-                            <folder name=".svn">
-                                <folder name="prop-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/prop-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/prop-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="props"/>
-                                <folder name="text-base">
-                                    <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/text-base/gray-bg.gif.svn-base"/>
-                                    <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/text-base/tb-btn-sprite.gif.svn-base"
-                                    />
-                                </folder>
-                                <folder name="tmp">
-                                    <folder name="prop-base"/>
-                                    <folder name="props"/>
-                                    <folder name="text-base"/>
-                                </folder>
-                                <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/all-wcprops"/>
-                                <file
-                                    name="webapp/irclog/images/vista/toolbar/.svn/entries"
-                                />
-                            </folder>
                             <file
                                 name="webapp/irclog/images/vista/toolbar/gray-bg.gif"/>
                             <file
@@ -2887,58 +882,6 @@
                     <file name="webapp/irclog/images/top_right.gif"/>
                 </folder>
                 <folder name="scripts">
-                    <folder name=".svn">
-                        <folder name="prop-base"/>
-                        <folder name="props"/>
-                        <folder name="text-base">
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/behaviour.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/builder.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/calendar.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/calendar-en.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/calendar-setup.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/controls.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/dragdrop.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/effects.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/ext-all.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/ext-yui-adapter.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/irc.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/irclog.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/prototype.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/scriptaculous.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/slider.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/soundmanager2.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/windows.js.svn-base"/>
-                            <file
-                                name="webapp/irclog/scripts/.svn/text-base/yui-utilities.js.svn-base"
-                            />
-                        </folder>
-                        <folder name="tmp">
-                            <folder name="prop-base"/>
-                            <folder name="props"/>
-                            <folder name="text-base"/>
-                        </folder>
-                        <file
-                            name="webapp/irclog/scripts/.svn/all-wcprops"/>
-                        <file name="webapp/irclog/scripts/.svn/entries"
-                        />
-                    </folder>
                     <file name="webapp/irclog/scripts/behaviour.js"/>
                     <file name="webapp/irclog/scripts/builder.js"/>
                     <file name="webapp/irclog/scripts/calendar.js"/>
@@ -2961,69 +904,11 @@
                     />
                 </folder>
                 <folder name="sounds">
-                    <folder name=".svn">
-                        <folder name="prop-base">
-                            <file
-                                name="webapp/irclog/sounds/.svn/prop-base/msg_in.mp3.svn-base"/>
-                            <file
-                                name="webapp/irclog/sounds/.svn/prop-base/msg_out.mp3.svn-base"/>
-                            <file
-                                name="webapp/irclog/sounds/.svn/prop-base/SPLASH_1.mp3.svn-base"
-                            />
-                        </folder>
-                        <folder name="props"/>
-                        <folder name="text-base">
-                            <file
-                                name="webapp/irclog/sounds/.svn/text-base/msg_in.mp3.svn-base"/>
-                            <file
-                                name="webapp/irclog/sounds/.svn/text-base/msg_out.mp3.svn-base"/>
-                            <file
-                                name="webapp/irclog/sounds/.svn/text-base/SPLASH_1.mp3.svn-base"
-                            />
-                        </folder>
-                        <folder name="tmp">
-                            <folder name="prop-base"/>
-                            <folder name="props"/>
-                            <folder name="text-base"/>
-                        </folder>
-                        <file
-                            name="webapp/irclog/sounds/.svn/all-wcprops"/>
-                        <file name="webapp/irclog/sounds/.svn/entries"/>
-                    </folder>
                     <file name="webapp/irclog/sounds/msg_in.mp3"/>
                     <file name="webapp/irclog/sounds/msg_out.mp3"/>
                     <file name="webapp/irclog/sounds/SPLASH_1.mp3"/>
                 </folder>
                 <folder name="styles">
-                    <folder name=".svn">
-                        <folder name="prop-base"/>
-                        <folder name="props"/>
-                        <folder name="text-base">
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/calendar-blue.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/ext-all.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/irc.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/irclog.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/ytheme-aero.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/ytheme-gray.css.svn-base"/>
-                            <file
-                                name="webapp/irclog/styles/.svn/text-base/ytheme-vista.css.svn-base"
-                            />
-                        </folder>
-                        <folder name="tmp">
-                            <folder name="prop-base"/>
-                            <folder name="props"/>
-                            <folder name="text-base"/>
-                        </folder>
-                        <file
-                            name="webapp/irclog/styles/.svn/all-wcprops"/>
-                        <file name="webapp/irclog/styles/.svn/entries"/>
-                    </folder>
                     <file name="webapp/irclog/styles/calendar-blue.css"/>
                     <file name="webapp/irclog/styles/ext-all.css"/>
                     <file name="webapp/irclog/styles/irc.css"/>
@@ -3346,41 +1231,6 @@
                     <file name="webapp/xquery/styles/xquery.css"/>
                 </folder>
                 <folder name="stylesheets">
-                    <folder name=".svn">
-                        <folder name="prop-base">
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/prop-base/acronyms.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/prop-base/detailed.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/prop-base/functions.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/prop-base/overview.xsl.svn-base"
-                            />
-                        </folder>
-                        <folder name="props"/>
-                        <folder name="text-base">
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/text-base/acronyms.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/text-base/detailed.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/text-base/functions.xsl.svn-base"/>
-                            <file
-                                name="webapp/xquery/stylesheets/.svn/text-base/overview.xsl.svn-base"
-                            />
-                        </folder>
-                        <folder name="tmp">
-                            <folder name="prop-base"/>
-                            <folder name="props"/>
-                            <folder name="text-base"/>
-                        </folder>
-                        <file
-                            name="webapp/xquery/stylesheets/.svn/all-wcprops"/>
-                        <file
-                            name="webapp/xquery/stylesheets/.svn/entries"
-                        />
-                    </folder>
                     <file name="webapp/xquery/stylesheets/detailed.xsl"/>
                     <file name="webapp/xquery/stylesheets/functions.xsl"/>
                     <file name="webapp/xquery/stylesheets/overview.xsl"
@@ -3473,7 +1323,6 @@
             <file name="webapp/scheduler.xml"/>
             <file name="webapp/security.xml"/>
             <file name="webapp/sidebar.xml"/>
-            <file name="webapp/sitemap.xmap"/>
             <file name="webapp/triggers.xml"/>
             <file name="webapp/tuning.xml"/>
             <file name="webapp/update_ext.xml"/>
