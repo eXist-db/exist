@@ -333,7 +333,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     //html document
                     try {
                         //parse html to xml(html)
-                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource( new ByteArrayInputStream( body ) ) ).getDocumentElement();
+                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(new ByteArrayInputStream(body)), null, null).getDocumentElement();
                         builder.addAttribute( new QName( "type", null, null ), "xhtml" );
                         responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );                  
                     }
