@@ -10,7 +10,8 @@
 }
 
 /* Font size adjustments. Copied from Yahoo YUI */
-body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}
+body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;
+    bgcolor="#FFFFFF";}
 table {font-size:inherit;font:100%;}
 /**
  * Bump up IE to get to 13px equivalent
@@ -65,6 +66,13 @@ a, a:visited {
     font-weight: normal;
     margin: 0;
     padding: 5px 0;
+}
+#logo a, #logo a:hover {
+    text-decoration: none;
+    border-bottom: none;
+}
+#logo img {
+    border-style: none;
 }
 #page-head #menu {
     margin: 0.3em 0 0 0;
