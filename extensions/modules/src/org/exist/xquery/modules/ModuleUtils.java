@@ -22,9 +22,14 @@
 package org.exist.xquery.modules;
 
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
 
 import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentBuilderReceiver;
@@ -44,7 +49,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * Utility Functions for XQuery Extension Modules
- * 
+ *
  * @author Adam Retter <adam@exist-db.org>
  * @serial 200805202059
  * @version 1.1
@@ -55,123 +60,200 @@ public class ModuleUtils {
 	/**
 	 * Takes a String of XML and Creates an XML Node from it using SAX in the
 	 * context of the query
-	 * 
+	 *
 	 * @param context
 	 *            The Context of the calling XQuery
-	 * @param xml
+	 * @param str
 	 *            The String of XML
-	 * 
+	 *
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue stringToXML( XQueryContext context, String xml ) throws XPathException, SAXException 
-	{
-		return( streamToXML( context, new ByteArrayInputStream( xml.getBytes() ) ) );
+	public static NodeValue stringToXML(XQueryContext context, String str) throws XPathException, SAXException {
+            Reader reader = new StringReader(str);
+            try {
+                return inputSourceToXML(context, new InputSource(reader));
+            } finally {
+                try {
+                    reader.close();
+                } catch(IOException ioe) {
+                    LOG.warn("Unable to close reader: " + ioe.getMessage(), ioe);
+                }
+            }
 	}
-	
-	
+
+
 	/**
-	 * Takes a  InputStream of XML and Creates an XML Node from it using SAX in the
+	 * Takes an InputStream of XML and Creates an XML Node from it using SAX in the
 	 * context of the query
-	 * 
+	 *
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param is
+	 *            The InputStream of XML
+	 *
+	 * @return The NodeValue of XML
+	 */
+	public static NodeValue streamToXML(XQueryContext context, InputStream is) throws XPathException, SAXException {
+            return inputSourceToXML(context, new InputSource(is));
+	}
+
+        /**
+	 * Takes a Source of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 *
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param src
+	 *            The Source of XML
+	 *
+	 * @return The NodeValue of XML
+	 */
+        public static NodeValue sourceToXML(XQueryContext context, Source src)  throws XPathException, SAXException {
+            InputSource inputSource = SAXSource.sourceToInputSource(src);
+
+            if(inputSource == null){
+                throw new XPathException(src.getClass().getName() + " is unsupported.");
+            }
+
+            return inputSourceToXML(context, inputSource);
+        }
+
+
+        /**
+	 * Takes a InputSource of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 *
 	 * @param context
 	 *            The Context of the calling XQuery
 	 * @param xml
-	 *            The InputStream of XML
-	 * 
+	 *            The InputSource of XML
+	 *
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue streamToXML( XQueryContext context, InputStream xml ) throws XPathException, SAXException 
-	{
-		context.pushDocumentContext();
+	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource) throws XPathException, SAXException  {
+            context.pushDocumentContext();
 
-        XMLReader reader = null;
-		try {
-			// try and construct xml document from input stream, we use eXist's
-			// in-memory DOM implementation
-            reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
-            LOG.debug( "Parsing XML response ..." );
-			
-			// TODO : we should be able to cope with context.getBaseURI()
-			InputSource src = new InputSource( xml );
-			MemTreeBuilder builder = context.getDocumentBuilder();
-			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
-			reader.setContentHandler( receiver );
-			reader.parse( src );
-			Document doc = receiver.getDocument();
-			// return (NodeValue)doc.getDocumentElement();
-			return( (NodeValue)doc );
-		} 
-		catch( IOException e ) {
-			throw( new XPathException(e.getMessage() ) );
-		} 
-		finally {
-			context.popDocumentContext();
+            XMLReader reader = null;
+            try {
+                // try and construct xml document from input stream, we use eXist's
+                // in-memory DOM implementation
+                reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+                LOG.debug( "Parsing XML response ..." );
 
-            if(reader != null)
-                context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
-		}
+                // TODO : we should be able to cope with context.getBaseURI()
+                MemTreeBuilder builder = context.getDocumentBuilder();
+                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
+                reader.setContentHandler(receiver);
+                reader.parse(inputSource);
+                Document doc = receiver.getDocument();
+                // return (NodeValue)doc.getDocumentElement();
+                return((NodeValue)doc);
+            } catch(IOException e) {
+                throw(new XPathException(e.getMessage()));
+            }  finally {
+                context.popDocumentContext();
+
+                if(reader != null){
+                    context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
+                }
+            }
 	}
-	
+
+        /**
+	 * Takes a HTML InputSource and creates an XML representation of the HTML by
+	 * tidying it (uses NekoHTML)
+	 *
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param srcHtml
+	 *            The Source for the HTML
+         * @param parserFeatures
+         *            The features to set on the Parser
+         * @param parserProperties
+         *            The properties to set on the Parser
+	 *
+	 * @return An in-memory Document representing the XML'ised HTML
+	 */
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, Source srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+
+            InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
+
+            if(inputSource == null){
+                throw new XPathException(srcHtml.getClass().getName() + " is unsupported.");
+            }
+
+            return htmlToXHtml(context, url, inputSource, parserFeatures, parserProperties);
+	}
 
 	/**
 	 * Takes a HTML InputSource and creates an XML representation of the HTML by
 	 * tidying it (uses NekoHTML)
-	 * 
+	 *
 	 * @param context
 	 *            The Context of the calling XQuery
 	 * @param srcHtml
 	 *            The InputSource for the HTML
-	 * 
+         * @param parserFeatures
+         *            The features to set on the Parser
+         * @param parserProperties
+         *            The properties to set on the Parser
+	 *
 	 * @return An in-memory Document representing the XML'ised HTML
 	 */
-	public static DocumentImpl htmlToXHtml(XQueryContext context, String url,
-			InputSource srcHtml) throws XPathException, SAXException {
-		// we use eXist's in-memory DOM implementation
-		org.exist.memtree.DocumentImpl memtreeDoc = null;
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+            // we use eXist's in-memory DOM implementation
+            org.exist.memtree.DocumentImpl memtreeDoc = null;
 
-		// use Neko to parse the HTML content to XML
-		XMLReader reader = null;
-		try {
-			LOG.debug("Converting HTML to XML using NekoHTML parser for: "
-					+ url);
-			reader = (XMLReader) Class.forName(
-					"org.cyberneko.html.parsers.SAXParser").newInstance();
+            // use Neko to parse the HTML content to XML
+            XMLReader reader = null;
+            try {
+                LOG.debug("Converting HTML to XML using NekoHTML parser for: " + url);
+                reader = (XMLReader) Class.forName("org.cyberneko.html.parsers.SAXParser").newInstance();
 
-			// do not modify the case of elements and attributes
-			reader
-					.setProperty(
-							"http://cyberneko.org/html/properties/names/elems",
-							"match");
-			reader.setProperty(
-					"http://cyberneko.org/html/properties/names/attrs",
-					"no-change");
-		} catch (Exception e) {
-			String errorMsg = "Error while involing NekoHTML parser. ("
-					+ e.getMessage()
-					+ "). If you want to parse non-wellformed HTML files, put "
-					+ "nekohtml.jar into directory 'lib/user'.";
-			LOG.error(errorMsg, e);
+                if(parserFeatures != null) {
+                    for(Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
+                        reader.setFeature(parserFeature.getKey(), parserFeature.getValue());
+                    }
+                }
 
-			throw new XPathException(errorMsg, e);
-		}
+                if(parserProperties == null) {
+                    //default: do not modify the case of elements and attributes
+                    reader.setProperty("http://cyberneko.org/html/properties/names/elems","match");
+                    reader.setProperty("http://cyberneko.org/html/properties/names/attrs","no-change");
+                } else {
+                    for(Entry<String, String> parserProperty : parserProperties.entrySet()) {
+                        reader.setProperty(parserProperty.getKey(), parserProperty.getValue());
+                    }
+                }
+            } catch(Exception e) {
+                    String errorMsg = "Error while invoking NekoHTML parser. ("
+                                    + e.getMessage()
+                                    + "). If you want to parse non-wellformed HTML files, put "
+                                    + "nekohtml.jar into directory 'lib/user'.";
+                    LOG.error(errorMsg, e);
 
-		SAXAdapter adapter = new SAXAdapter();
-		reader.setContentHandler(adapter);
-		try {
-			reader.parse(srcHtml);
-		} catch (IOException e) {
-			throw new XPathException(e.getMessage(), e);
-		}
-		Document doc = adapter.getDocument();
-		memtreeDoc = (DocumentImpl) doc;
-		memtreeDoc.setContext(context);
-		return memtreeDoc;
+                    throw new XPathException(errorMsg, e);
+            }
+
+            SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+            try {
+                reader.parse(srcHtml);
+            } catch (IOException e) {
+                    throw new XPathException(e.getMessage(), e);
+            }
+
+            Document doc = adapter.getDocument();
+            memtreeDoc = (DocumentImpl) doc;
+            memtreeDoc.setContext(context);
+
+            return memtreeDoc;
 	}
 
 	/**
 	 * Parses a structure like <parameters><param name="a" value="1"/><param
 	 * name="b" value="2"/></parameters> into a set of Properties
-	 * 
+	 *
 	 * @param nParameters
 	 *            The parameters Node
 	 * @return a set of name value properties for representing the XML
@@ -186,7 +268,7 @@ public class ModuleUtils {
 	/**
 	 * Parses a structure like <properties><property name="a" value="1"/><property
 	 * name="b" value="2"/></properties> into a set of Properties
-	 * 
+	 *
 	 * @param nProperties
 	 *            The properties Node
 	 * @return a set of name value properties for representing the XML
@@ -201,7 +283,7 @@ public class ModuleUtils {
 	/**
 	 * Parses a structure like <properties><property name="a" value="1"/><property
 	 * name="b" value="2"/></properties> into a set of Properties
-	 * 
+	 *
 	 * @param container
 	 *            The container of the properties
 	 * @param elementName
