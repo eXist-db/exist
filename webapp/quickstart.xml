@@ -143,7 +143,7 @@ Logging already initialized. Skipping...
                     scripts and have to be set correctly before the scripts are run (you can also insert the lines required in the beginning of the scripts themselves).</para>
                 <itemizedlist>
                     <listitem>
-                        <para><envar>ZZZZZZJAVA_HOME</envar> should point to the directory where the Java
+                        <para><envar>JAVA_HOME</envar> should point to the directory where the Java
                             JDK is installed. A common problem is that the path added by the
                             installer points to the JRE, not the JDK. 
                             For instructions about how to set JAVA_HOME on Windows, 
