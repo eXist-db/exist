@@ -341,16 +341,18 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
-            <a href="/exist">
-            <xsl:choose>
-                <xsl:when test="graphic/@fileref">
-                    <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none"/>
-                </xsl:otherwise>
-            </xsl:choose>
-            </a>
+            <div id="logo">
+                <a href="/exist">
+                    <xsl:choose>
+                        <xsl:when test="graphic/@fileref">
+                            <img src="{$pathToWebapp}{graphic/@fileref}" title="eXist-db: Open Source Native XML Database"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <img src="{$pathToWebapp}logo.jpg" title="eXist-db: Open Source Native XML Database"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>
+            </div>
             <div id="quicksearch">
                 <form action="{../sidebar:sidebar/sidebar:search/@href}" method="GET">
                     <input type="text" size="20" name="q"/>

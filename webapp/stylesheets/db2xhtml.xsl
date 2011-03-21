@@ -59,7 +59,7 @@
 
                 <xsl:apply-templates select="(bookinfo|articleinfo)/xf:*"/>
             </head>
-            <body bgcolor="#FFFFFF">
+            <body>
                 <xsl:apply-templates xmlns:xi="http://www.w3.org/2001/XInclude" select="xi:include"/>
                 <xsl:apply-templates select="bookinfo|articleinfo"/>
                 <xsl:apply-templates select="sidebar:sidebar"/>
@@ -354,20 +354,20 @@
     </xsl:template>
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
-            <a href="{$pathToWebapp}index.xml" style="text-decoration: none">
-                <xsl:choose>
-                    <xsl:when test="graphic/@fileref">
-                        <img src="{$pathToWebapp}{graphic/@fileref}"
-                            title="eXist-db: Open Source Native XML Database"
-                            style="border-style: none;text-decoration: none" alt="Logo"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <img src="{$pathToWebapp}logo.jpg"
-                            title="eXist-db: Open Source Native XML Database"
-                            style="border-style: none;text-decoration: none" alt="Logo"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </a>
+            <div id="logo">
+                <a href="{$pathToWebapp}index.xml">
+                    <xsl:choose>
+                        <xsl:when test="graphic/@fileref">
+                            <img src="{$pathToWebapp}{graphic/@fileref}"
+                                title="eXist-db: Open Source Native XML Database" alt="Logo"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <img src="{$pathToWebapp}logo.jpg"
+                                title="eXist-db: Open Source Native XML Database" alt="Logo"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>
+            </div>
             <div id="quicksearch">
                 <form action="{../sidebar:sidebar/sidebar:search/@href}" method="get">
                     <input type="text" size="20" name="q"/>
