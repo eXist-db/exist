@@ -22,6 +22,7 @@
 package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
+import org.exist.Database;
 import org.exist.debuggee.dbgp.Errors;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -104,15 +105,21 @@ public class Source extends Command {
         		} else {
 	        		XmldbURI pathUri = XmldbURI.create( URLDecoder.decode( fileURI.substring(15) , "UTF-8" ) );
 	
-	        		DBBroker broker = getJoint().getContext().getBroker();
-	    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-	
-	    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-	    				is = broker.getBinaryResource((BinaryDocument) resource);
-	    			} else {
-	    				//TODO: xml source???
-	    				return;
-	    			}
+	        		Database db = getJoint().getContext().getDatabase();
+	        		DBBroker broker = null;
+	        		try {
+		        		broker = getJoint().getContext().getBroker();
+		    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+		
+		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+		    				is = broker.getBinaryResource((BinaryDocument) resource);
+		    			} else {
+		    				//TODO: xml source???
+		    				return;
+		    			}
+	        		} finally {
+	        			db.release(broker);
+	        		}
         		}
         	} else {
         		URL url = new URL(fileURI);
