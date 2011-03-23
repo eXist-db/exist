@@ -1757,9 +1757,10 @@ public class InteractiveClient {
             }
             // maybe a depth or recurs flag could be added here
             File temp[] = file.listFiles();
-            for (int i = 0; i < temp.length; i++) {
-                store(c, temp[i], upload);
-            }
+            if (temp != null)
+	            for (int i = 0; i < temp.length; i++) {
+	                store(c, temp[i], upload);
+	            }
             return;
         }
         
