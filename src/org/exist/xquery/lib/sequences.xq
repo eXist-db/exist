@@ -1,12 +1,17 @@
+(:~ Basic XQuery equivalents of map, fold, and filter functions adapted from 
+ :  the standard library of the Scheme programming language.  Demonstrates the 
+ :  use of higher-order functions in eXist.
+ :)
 module namespace seq="http://exist-db.org/xquery/sequences";
 
 import module namespace util="http://exist-db.org/xquery/util";
 
-(: 	Applies $func element-wise to the elements
-	of two sequences and returns the results as 
-	a new sequence. Both input sequences should
-	have the same length.
-:)
+
+(:~ Applies $func to the items
+ :  of two sequences and returns the results as 
+ :  a new sequence. Both input sequences should
+ :  have the same length.
+ :)
 declare function seq:map($func as function, $seqA as item()*, $seqB as item()*) 
 as item()* {
 	if(count($seqA) != count($seqB)) then
@@ -18,10 +23,10 @@ as item()* {
         	util:call($func, $a, $b)
 };
 
-(:	Calls $func for all items in the sequence. For example, if
-	the sequence is (1, 2, 3), $func will be called with arguments
-	(1, 2) and (3, 3).
-:)
+(:~	Calls $func for all items in the sequence. For example, if
+ :  the sequence is (1, 2, 3), $func will be called with arguments
+ :  (1, 2) and (3, 3).
+ :)
 declare function seq:fold($func as function, $seq as item()*, $start as item()) {
 	if(empty($seq)) then
 		$start
@@ -29,11 +34,11 @@ declare function seq:fold($func as function, $seq as item()*, $start as item()) 
 		seq:fold($func, remove($seq, 1), util:call($func, $start, $seq[1]))
 };
 
-(:	Filters the passed sequence by calling $func for every
-	item. All items for which $func returns true are copied
-	to the output sequence, items for which it returns false
-	are skipped.
-:)
+(:~ Filters the passed sequence by calling $func for every
+ :  item. All items for which $func returns true are copied
+ :  to the output sequence, items for which it returns false
+ :  are skipped.
+ :)
 declare function seq:filter($func as function, $seq as item()*) 
 as item()* {
 	for $i in $seq
