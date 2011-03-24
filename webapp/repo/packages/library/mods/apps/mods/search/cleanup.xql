@@ -1,11 +1,14 @@
 (:~
-    Module to clean up a MODS record. Removes empty elements.
+    Module to clean up a MODS record. Removes empty elements, empty attributes and elements without required subelements.
 :)
+
 module namespace clean="http:/exist-db.org/xquery/mods/cleanup";
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace xlink="http://www.w3.org/1999/xlink";
+declare namespace functx = "http://www.functx.com";
 
+(: Removes empty attributes. Attributes are often left empty by the editor. :)
 declare function clean:remove-empty-attributes($element as element()) as element() {
 element { node-name($element)}
 { $element/@*[string-length(.) ne 0],
@@ -16,113 +19,57 @@ return
     else $child }
 };
 
-declare function clean:remove-element-if-empty-text($node as element()) {
-    if (empty($node//text())) then
-        ()
+(: Removes titleIfo, name and relatedItem nodes that do not contain nodes required by the respective elements. :)
+declare function clean:remove-parent-with-missing-required-node($node as element()) {
+element {node-name($node)} 
+{ $node/@*,
+for $element in $node/*
+return
+    if ($element/name() = 'titleInfo') 
+    then
+        if ($element/mods:title/text())
+        then $element
+        else ()
     else
-        element { node-name($node) } {
-            $node/@*, for $child in $node/node() return clean:cleanup($child)
-        }
+        if ($element/name() = 'name')
+        then
+            if ($element/mods:namePart/text())
+            then $element
+            else ()
+        else
+            if ($element/name() = 'relatedItem')
+            then
+                if ((string-length($element) > 0) or (string-length($element/@xlink:href) > 0))
+                then $element
+                else ()
+            else $element
+}
 };
 
-declare function clean:remove-element-if-empty-attribute($node as element(), $attr as attribute()?) {
-    if (string-length($attr) eq 0 and empty($node//text())) then
-        ()
-    else
-        $node
-};
+(: Removes an element if it is empty or contains whitespace only. A relatedItem should be allowed to be empty if it has an @xlink:href. :)
+(: Derived from functx:remove-elements-deep. :)
+(: Contains functx:all-whitespace. :)
+declare function clean:remove-empty-elements($nodes as node()*)  as node()* {
+   for $node in $nodes
+   return
+     if ($node instance of element())
+     then if ((normalize-space($node) = '') and (not($node/@xlink:href)))
+          then ()
+          else element { node-name($node)}
+                { $node/@*,
+                  clean:remove-empty-elements($node/node())}
+     else if ($node instance of document-node())
+     then clean:remove-empty-elements($node/node())
+     else $node
+ } ;
 
+(: The function called in session.xql which passes search results to retrieve-mods.xql after cleaning them. :)
 declare function clean:cleanup($node as node()) {
-    typeswitch ($node)
-        case element(mods:subject) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:place) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:placeTerm) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:dateIssued) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:publisher) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:edition) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:language) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:abstract) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:tableOfContents) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:note) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:identifier) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:location) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:part) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:classification) return
-            clean:remove-element-if-empty-text($node)
-        
-        case element(mods:topic) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:geographic) return
-            clean:remove-element-if-empty-text($node)            
-        case element(mods:temporal) return
-            clean:remove-element-if-empty-text($node)            
-        case element(mods:namePart) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:name) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:title) return
-            clean:remove-element-if-empty-text($node)            
-        case element(mods:subTitle) return
-            clean:remove-element-if-empty-text($node)            
-        case element(mods:titleInfo) return
-            clean:remove-element-if-empty-text($node)            
-        
-        
-        case element(mods:nonSort) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:subTitle) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:partNumber) return
-            clean:remove-element-if-empty-text($node)
-        case element(mods:partName) return
-            clean:remove-element-if-empty-text($node)
-            
-        case element(mods:relatedItem) return
-            clean:remove-element-if-empty-attribute($node, $node/@xlink:href)
-            
-        case element() return
-            element { node-name($node) } {
-                $node/@*, for $child in $node/node() return clean:cleanup($child)
-            }
-        case element() return
-            clean:remove-empty-attributes($node)
-        
-        default return
-            $node
-};
-
-(: not used. :)
-declare function clean:clean-namespaces($node as node()) {
-    typeswitch ($node)
-        case element() return
-            if (namespace-uri($node) eq "http://www.loc.gov/mods/v3") then
-                element { QName("http://www.loc.gov/mods/v3", local-name($node)) } {
-                    $node/@*, for $child in $node/node() return clean:clean-namespaces($child)
-                }
-            else
-                $node
-        default return
-            $node
-};
+let $result := clean:remove-parent-with-missing-required-node($node)
+return
+    let $result := clean:remove-empty-attributes($result)
+    return
+        let $result := clean:remove-empty-elements($result)
+        return
+            $result
+            };

@@ -4,6 +4,7 @@
         close all eXist-begin and eXist-end, 
         and open all Tamboti-begin and Tamboti-end.
         Make corresponding change in /db/org/library/modules/style.xqm.
+        Until the search works, one should comment out <div id="quicksearch">.
     --><head>
         <!--eXist-begin--><title>eXist - Bibliographic Demo</title>
             <!--eXist-end-->
@@ -13,7 +14,15 @@
         <!--Tamboti-begin
         <link rel="stylesheet" type="text/css" href="../../../resources/css/tamboti.css"/>
         Tamboti-end--></head><body><div id="page-head">
-            <!--eXist-begin--><a href="/exist/" style="text-decoration: none"><img src="../../../resources/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/></a><div id="quicksearch"><form action="" method="GET"><input type="text" size="20" name="q"/><input type="submit" value="Search"/></form></div><div id="navbar"><h1>Open Source Native XML Database</h1></div>
+            <!--eXist-begin--><a href="/exist/" style="text-decoration: none"><img src="../../../resources/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/></a>
+            <!-- 
+            <div id="quicksearch">
+                <form action="" method="GET">
+                    <input type="text" size="20" name="q"/>
+                    <input type="submit" value="Search"/>
+                </form>
+            </div>
+            --><div id="navbar"><h1>Open Source Native XML Database</h1></div>
             <!--eXist-end-->
             <!--Tamboti-begin
             <div id="page-head-left">
