@@ -1,7 +1,10 @@
+xquery version "1.0";
+
 (:~ Basic XQuery equivalents of map, fold, and filter functions adapted from 
  :  the standard library of the Scheme programming language.  Demonstrates the 
  :  use of higher-order functions in eXist.
  :)
+
 module namespace seq="http://exist-db.org/xquery/sequences";
 
 import module namespace util="http://exist-db.org/xquery/util";
