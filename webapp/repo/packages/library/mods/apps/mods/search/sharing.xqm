@@ -5,18 +5,16 @@ module namespace sharing = "http://exist-db.org/mods/sharing";
 import module namespace config = "http://exist-db.org/mods/config" at "../config.xqm";
 import module namespace mail = "http://exist-db.org/xquery/mail";
 import module namespace security = "http://exist-db.org/mods/security" at "security.xqm";
-declare namespace group = "http://exist-db.org/mods/sharing/group";
-
-declare variable $sharing:groups-collection := fn:concat($config:mods-root, "/groups");
+declare namespace group = "http://commons/sharing/group";
 
 declare function sharing:get-groups() as element(group:group)*
 {
-    fn:collection($sharing:groups-collection)/group:group
+    fn:collection($config:groups-collection)/group:group
 };
 
 declare function sharing:group-exists($groupId as xs:string) as xs:boolean
 {
-    exists(fn:collection($sharing:groups-collection)/group:group[@id eq $groupId])
+    exists(fn:collection($config:groups-collection)/group:group[@id eq $groupId])
 };
 
 declare function sharing:get-group-members($groupId) as xs:string*
@@ -30,7 +28,7 @@ declare function sharing:get-group-members($groupId) as xs:string*
 declare function sharing:get-group-id($collection as xs:string) as xs:string?
 {
     let $security-group := security:get-group($collection) return
-        fn:string(fn:collection($sharing:groups-collection)/group:group[group:system/group:group eq $security-group]/@id)
+        fn:string(fn:collection($config:groups-collection)/group:group[group:system/group:group eq $security-group]/@id)
 };
 
 declare function sharing:group-readable($collection as xs:string) as xs:boolean
@@ -86,7 +84,7 @@ declare function sharing:other-writeable($collection as xs:string) as xs:boolean
 
 declare function sharing:__group-id-to-system-group-name($groupId as xs:string) as xs:string?
 {
-    fn:collection($sharing:groups-collection)/group:group[@id eq $groupId]/group:system/group:group
+    fn:collection($config:groups-collection)/group:group[@id eq $groupId]/group:system/group:group
 };
 
 declare function sharing:share-with-other($collection as xs:string, $read as xs:boolean, $write as xs:boolean) as xs:boolean
@@ -130,7 +128,7 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
     
         if(security:create-group($system-group-name, $group-member))then
         (
-            let $group-doc := xmldb:store($sharing:groups-collection, (),
+            let $group-doc := xmldb:store($config:groups-collection, (),
                 <group:group id="{$new-group-id}">
                     <group:system>
                         <group:owner>{$owner}</group:owner>
@@ -151,7 +149,7 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
 
 declare function sharing:update-group($group-name as xs:string, $group-members as xs:string) as xs:string
 {
-    let $group := fn:collection($sharing:groups-collection)/group:group[group:name eq $group-name],
+    let $group := fn:collection($config:groups-collection)/group:group[group:name eq $group-name],
     $group-id := $group/@id,
     $system-group := $group/group:system/group:group,
     $existing-group-members := security:get-group-members($system-group),
@@ -237,16 +235,16 @@ declare function sharing:process-email-template($element as element(), $group-na
 
 declare function sharing:get-users-groups($user as xs:string) as element(group:group)*
 {
-    fn:collection($sharing:groups-collection)/group:group[group:system/group:group = security:get-groups($user)]       
+    fn:collection($config:groups-collection)/group:group[group:system/group:group = security:get-groups($user)]       
 };
 
 declare function sharing:get-group($group-id as xs:string) as element(group:group)?
 {
-    fn:collection($sharing:groups-collection)/group:group[@id eq $group-id]
+    fn:collection($config:groups-collection)/group:group[@id eq $group-id]
 };
 
 declare function sharing:find-group-collections($group-id as xs:string) as xs:string*
 {
     let $system-group := sharing:__group-id-to-system-group-name($group-id) return
-        security:find-collections-with-group($security:users-collection, $system-group)
+        security:find-collections-with-group($config:users-collection, $system-group)
 };

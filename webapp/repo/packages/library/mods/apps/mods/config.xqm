@@ -2,10 +2,13 @@ xquery version "1.0";
 
 module namespace config="http://exist-db.org/mods/config";
 
-declare variable $config:mods-root := "/db/mods";
+declare variable $config:mods-root := "/db/commons";
 declare variable $config:search-app-root := "/db/org/library/apps/mods/search";
 declare variable $config:edit-app-root := "/db/org/library/apps/mods/edit";
 declare variable $config:force-lower-case-usernames as xs:boolean := true();
+
+declare variable $config:users-collection := fn:concat($config:mods-root, "/users");
+declare variable $config:groups-collection := fn:concat($config:mods-root, "/groups");
 
 declare variable $config:mods-temp-collection := "/db/org/library/apps/mods/temp";
 

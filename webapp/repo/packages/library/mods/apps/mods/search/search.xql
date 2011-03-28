@@ -212,7 +212,7 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
             let $log := util:log("DEBUG", ("$expr0: ", $expr0))
             let $collection-path := $xml/ancestor::query/collection/string()
             
-            let $collection := if($collection-path eq $sharing:groups-collection or $collection-path eq fn:replace($sharing:groups-collection, "/db/", ""))then
+            let $collection := if($collection-path eq $config:groups-collection or $collection-path eq fn:replace($config:groups-collection, "/db/", ""))then
             (
                 let $group-ids := sharing:get-users-groups(security:get-user-credential-from-session()[1])/@id return
                     if(not(empty($group-ids)))then
@@ -228,7 +228,7 @@ declare function biblio:generate-query($xml as element()) as xs:string* {
                          fn:concat("collection('", $config:mods-root, "')//")
                     )
             )            
-            else if(fn:starts-with($collection-path, $sharing:groups-collection) or fn:starts-with($collection-path, fn:replace($sharing:groups-collection, "/db/", "")))then
+            else if(fn:starts-with($collection-path, $config:groups-collection) or fn:starts-with($collection-path, fn:replace($config:groups-collection, "/db/", "")))then
             (
                 (: search inside a group of shared collections :)
                  let $group-id := fn:replace($collection-path, ".*/", ""),
