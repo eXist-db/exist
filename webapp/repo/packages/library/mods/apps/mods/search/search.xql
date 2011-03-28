@@ -761,7 +761,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                     <div id="group-sharing-panel" class="sharing-panel">
                         <div>   
                             <span>
-                                <input id="group-sharing-premissions-write" type="checkbox" name="group-sharing-permissions" value="write">
+                                <input id="group-sharing-permissions-write" type="checkbox" name="group-sharing-permissions" value="write">
                                 {
                                     (:
                                     if(sharing:group-writeable($collection))then(attribute checked{ "checked" })else()
@@ -769,7 +769,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                     ()
                                 }
                                 </input>
-                                <label for="group-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
+                                <label for="group-sharing-permissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
                             </span>
                         </div>
                         <div>
@@ -825,7 +825,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                 <div id="other-sharing-panel" class="sharing-panel">
                     <div>
                         <span>
-                            <input id="other-sharing-premissions-write" type="checkbox" name="other-sharing-permissions" value="write">
+                            <input id="other-sharing-permissions-write" type="checkbox" name="other-sharing-permissions" value="write">
                             {
                                 (:
                                 if(sharing:other-writeable($collection))then(attribute checked{ "checked" })else()
@@ -833,7 +833,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                 ()
                             }
                             </input>
-                            <label for="other-sharing-premissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
+                            <label for="other-sharing-permissions-write" class="labelWithCheckboxLeft">Allow Write Access</label>
                         </span>
                     </div>
                 </div>
