@@ -307,4 +307,12 @@ public class UserAider implements Account {
     public void save() throws PermissionDeniedException {
         //do nothing
     }
+
+    @Override
+    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+         //do nothing
+        //TODO do we need to check any permissions?
+    }
+
+
 }

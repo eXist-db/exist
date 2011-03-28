@@ -100,7 +100,7 @@ public abstract class AbstractPrincipal implements Principal {
 	}
 	
     @Override
-	public final String getName() {
+	public String getName() {
 		return name;
 	}
 

@@ -263,4 +263,11 @@ public abstract class AbstractSubject implements Subject {
         public Set<AXSchemaType> getMetadataKeys() {
             return account.getMetadataKeys();
         }
+
+    @Override
+    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+        account.assertCanModifyAccount(user);
+    }
+
+
 }
