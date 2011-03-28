@@ -5,6 +5,10 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 declare variable $home external;
 declare variable $dir external;
 
+declare variable $commons-collection-name := "commons";
+declare variable $commons-users-collection-name := "users";
+declare variable $commons-groups-collection-name := "groups";
+
 declare function local:mkcol-recursive($collection, $components) {
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
@@ -38,9 +42,11 @@ xdb:set-collection-permissions("/db/org/library/apps/mods/temp", "editor", "bibl
 
 local:mkcol("/db", "mods/samples"),
 local:mkcol("/db", "mods/eXist"),
-local:mkcol("/db", "mods/users"),
-local:mkcol("/db", "mods/groups"),
-xdb:set-collection-permissions("/db/mods/users", "editor", "biblio.users", util:base-to-integer(0770, 8)),
-xdb:set-collection-permissions("/db/mods/groups", "editor", "biblio.users", util:base-to-integer(0770, 8)),
+
+local:mkcol("/db", $commons-collection-name),
+local:mkcol(fn:concat("/db/", $commons-collection-name), $commons-users-collection-name),
+local:mkcol(fn:concat("/db/", $commons-collection-name), $commons-groups-collection-name),
+xdb:set-collection-permissions(fn:concat("/db/", $commons-collection-name, "/", $commons-users-collection-name), "editor", "biblio.users", util:base-to-integer(0770, 8)),
+xdb:set-collection-permissions(fn:concat("/db/", $commons-collection-name, "/", $commons-groups-collection-name), "editor", "biblio.users", util:base-to-integer(0770, 8)),
 xdb:store-files-from-pattern("/db/mods/samples", $home, "samples/mods/*.xml"),
 xdb:store-files-from-pattern("/db/mods/eXist", $home, "samples/mods/eXist/*.xml")

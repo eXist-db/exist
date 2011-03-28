@@ -37,7 +37,7 @@ declare function local:db-collection-children($collection-path as xs:string) as 
 declare function local:group-children($collection-path as xs:string) as element(children)* {
     let $user-groups := sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
         for $group at $i in  $user-groups return
-            <children>{local:tree-node(fn:concat($sharing:groups-collection, "/", $group/@id), false(), $group/group:name, (), (), util:function(xs:QName("local:group-collection-children"), 1))/*}</children>
+            <children>{local:tree-node(fn:concat($config:groups-collection, "/", $group/@id), false(), $group/group:name, (), (), util:function(xs:QName("local:group-collection-children"), 1))/*}</children>
 };
 
 (:~
@@ -65,8 +65,8 @@ declare function local:user-collection-for-group($group-id as xs:string, $user-c
 declare function local:group-collection-children($group-collection-path as xs:string)
 {
     let $group-id := fn:replace($group-collection-path, ".*/", "") return
-        for $user-collection in xmldb:get-child-collections($security:users-collection)
-        let $user-collection-path := fn:concat($security:users-collection, "/", $user-collection) return
+        for $user-collection in xmldb:get-child-collections($config:users-collection)
+        let $user-collection-path := fn:concat($config:users-collection, "/", $user-collection) return
             for $node in local:user-collection-for-group($group-id, $user-collection-path) return
                 <children>{$node/*}</children>
 };
@@ -135,7 +135,7 @@ declare function local:collections($root as xs:string) {
             if(security:can-read-collection($user, $root)) then
             
                 (: is this the users collection? :)
-                if($root eq $security:users-collection) then
+                if($root eq $config:users-collection) then
                 (
                     (: users collection is treated specially :)
                     if($children = $user)then
@@ -146,10 +146,10 @@ declare function local:collections($root as xs:string) {
                     )else()
                 )
                 (: groups collection is treated specially, i.e. skipped :)
-                else if($root eq $sharing:groups-collection)then
+                else if($root eq $config:groups-collection)then
                 (
                     if($user ne "guest")then(
-                        local:tree-node($sharing:groups-collection, false(), "Groups", "../skin/ltFld.groups.gif", (), util:function(xs:QName("local:group-children"), 1))/*
+                        local:tree-node($config:groups-collection, false(), "Groups", "../skin/ltFld.groups.gif", (), util:function(xs:QName("local:group-children"), 1))/*
                     )else()
                 )
                 else

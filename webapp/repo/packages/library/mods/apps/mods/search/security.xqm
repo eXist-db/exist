@@ -12,7 +12,6 @@ declare variable $security:SESSION_USER_ATTRIBUTE := "biblio.user";
 declare variable $security:SESSION_PASSWORD_ATTRIBUTE := "biblio.password";
 
 declare variable $security:biblio-users-group := "biblio.users";
-declare variable $security:users-collection := fn:concat($config:mods-root, "/users");
 
 (:~
 : Authenticates a user and creates their mods home collection if it does not exist
@@ -101,7 +100,7 @@ declare function security:home-collection-exists($user as xs:string) as xs:boole
 declare function security:get-home-collection-uri($user as xs:string) as xs:string
 {
     let $username := if($config:force-lower-case-usernames)then(fn:lower-case($user))else($user) return
-        fn:concat($security:users-collection, "/", $username)
+        fn:concat($config:users-collection, "/", $username)
 };
 
 (:~
@@ -112,12 +111,12 @@ declare function security:get-home-collection-uri($user as xs:string) as xs:stri
 declare function security:create-home-collection($user as xs:string) as xs:string?
 {
     let $username := if($config:force-lower-case-usernames)then(fn:lower-case($user))else($user) return
-        if(xmldb:collection-available($security:users-collection))then
+        if(xmldb:collection-available($config:users-collection))then
         (
-            let $collection-uri := xmldb:create-collection($security:users-collection, $username) return
+            let $collection-uri := xmldb:create-collection($config:users-collection, $username) return
                 if($collection-uri) then
                 (
-                    (: note users the group biblio.users need read access to a users home collection root so that they can list the collections inside to match against shared groups :)
+                    (: note users the group biblio.users need read access to a users home collection root so that they can list the collections inside to match against shared :)
                     let $null := xmldb:set-collection-permissions($collection-uri, $username, $security:biblio-users-group, xmldb:string-to-permissions("rwur-----")) return
                         $collection-uri
                 ) else (
