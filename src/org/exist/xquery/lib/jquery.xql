@@ -445,6 +445,11 @@ declare function jquery:dialog($config as element(jquery:dialog)) as node()* {
                     $('#{$id/string()}').dialog({{
                         modal: { if ($modal) then 'true' else 'false' },
                         autoOpen: false,
+                        {
+                            if($config/@onOpen)then(
+                                fn:concat("open: function(event, ui){ ",  string($config/@onOpen), "(); },")
+                            )else()
+                        }
                         buttons: {{ { $buttons } }}
                         {
                             let $attribs :=
