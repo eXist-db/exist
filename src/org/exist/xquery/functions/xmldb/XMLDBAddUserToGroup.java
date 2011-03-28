@@ -39,6 +39,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 
 /**
  * @author Adam Retter <adam@existsolutions.com>
@@ -94,14 +95,34 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             Account account = sm.getAccount(context.getBroker().getSubject(), userName);
             if(account != null) {
                 account.addGroup(group);
-                sm.updateAccount(context.getBroker().getSubject(), account);
+                
+                //TEMP - ESCALATE TO DBA :-(
+                /**
+                 * Security Manager has a fundamental flaw
+                 * Group Membership is stored in the Account XML: so you cannot
+                 * add a user to a group without modifying the users XML
+                 * this is a security issue as if you are not that user
+                 * you have to escalate to DBA - must redesign
+                 * Consider Unix /etc/groups design!
+                 */
+                Subject currentSubject = context.getBroker().getSubject();
+                try {
+                    //escalate
+                    context.getBroker().setSubject(sm.getSystemSubject());
+
+                    //perform action
+                    sm.updateAccount(context.getBroker().getSubject(), account);
+                } finally {
+                    context.getBroker().setSubject(currentSubject);
+                }
+                //END TEMP
 
                 return BooleanValue.TRUE;
             } else {
                 logger.warn("Could not find account for username '" + userName + "' in call to xmldb:add-user-to-group");
             }
         } catch(PermissionDeniedException pde) {
-        	throw new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' don not authorize to call this function.");
+        	throw new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' don not authorize to call this function.", pde);
         } catch(EXistException exe) {
             logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", exe);
         }

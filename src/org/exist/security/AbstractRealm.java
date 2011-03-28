@@ -335,11 +335,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         try {
-        	Account user = getDatabase().getSubject();
-
-            if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
-                            throw new PermissionDeniedException(
-                                    " you are not allowed to change '"+account.getName()+"' account");
+            Account user = getDatabase().getSubject();
+            account.assertCanModifyAccount(user);
 
 
             Account updatingAccount = getAccount(invokingUser, account.getName());
@@ -371,7 +368,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             return true;
         } finally {
             if(broker != null) {
-                getDatabase().release(broker);
+                getDatabase().release(broker); //TODO we are realeasing null - is this a problem
             }
         }
     }
@@ -384,9 +381,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             broker = getDatabase().get(null);
             Account user = broker.getSubject();
 
-            if(!(group.isManager(user) || user.hasDbaRole()) ) {
-                throw new PermissionDeniedException(" you are not allowed to change '" + group.getName() + "' group");
-            }
+            group.assertCanModifyGroup(user);
 
             Group updatingGroup = getGroup(invokingUser, group.getName());
             if(updatingGroup == null) {

@@ -162,6 +162,8 @@ public interface Account extends Principal, User {
      */
     @Override
     boolean isEnabled();
+    
+    public void assertCanModifyAccount(Account user) throws PermissionDeniedException;
 
     
     public void setMetadataValue(AXSchemaType axSchemaType, String value);

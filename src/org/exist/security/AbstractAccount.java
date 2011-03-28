@@ -156,7 +156,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
     @Override
-	public final String[] getGroups() {
+	public String[] getGroups() {
 		if (groups == null) return new String[0];
 		
 		int i = 0;
@@ -301,5 +301,14 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             metadataKeys.add(AXSchemaType.valueOfNamespace(key));
         }
         return metadataKeys;
+    }
+
+    @Override
+    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+        if(user == null) {
+            throw new PermissionDeniedException("Unspecified User is not allowed to modify account '" + getName() + "'");
+        } else if(!user.hasDbaRole() && !user.getName().equals(getName())) {
+            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to modify account '" + getName() + "'");
+        }
     }
 }

@@ -66,6 +66,10 @@ public class XPathException extends Exception {
         this.source = expr.getSource();
     }
 
+    /**
+     * Use constructor with errorCode and errorVal
+     */
+    @Deprecated
     public XPathException(XQueryAST ast, String message) {
         super();
         this.message = message;
@@ -75,22 +79,19 @@ public class XPathException extends Exception {
         }
     }
 
-    /**
-     * @param cause
-     */
+    @Deprecated
     public XPathException(Throwable cause) {
         super(cause);
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
+    @Deprecated
     public XPathException(String message, Throwable cause) {
         super(cause);
         this.message = message;
     }
 
+
+    @Deprecated
     public XPathException(Expression expr, Throwable cause) {
         this(expr.getLine(), expr.getColumn(), cause.getMessage(), cause);
     }
@@ -119,6 +120,7 @@ public class XPathException extends Exception {
         this.errorVal = errorVal;
     }
 
+    @Deprecated
     public XPathException(int line, int column, String message, Throwable cause) {
         super(cause);
         this.message = message;
@@ -126,6 +128,7 @@ public class XPathException extends Exception {
         this.column = column;
     }
 
+    @Deprecated
     public XPathException(int line, int column, Throwable cause) {
         super(cause);
         this.line = line;
