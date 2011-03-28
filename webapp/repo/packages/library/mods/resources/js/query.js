@@ -80,6 +80,7 @@ $(document).ready(function(){
     });
 });
 
+
 function getActiveGroup()
 {
     var selectedGroupId = $('#group-list').val();
@@ -110,11 +111,11 @@ function initCollectionTree() {
             updateCollectionPaths(title, key);
             showHideCollectionWriteableControls();
             showHideCollectionOwnerControls();
-            var groupId = getActiveGroup();
+            /*var groupId = getActiveGroup();
             if(groupId){
                 updateSharingGroupCheckboxes(groupId);
             }
-            updateSharingOtherCheckboxes();
+            updateSharingOtherCheckboxes();*/
         },
         onPostInit: function () {
             // when tree is reloaded, reactivate the current node to trigger an onActivate event
@@ -477,6 +478,21 @@ function searchTabSelected(ev, ui) {
     if (ui.index == 3) {
         $('#personal-list-size').load('user.xql', { action: 'count' });
     }
+}
+
+function updateSharingDialog() {
+     
+     var collection = getCurrentCollection();
+     var params = { action: "get-groups", collection: collection };
+     $.get("operations.xql", params, function(data) {
+        var groups = $(data).find("groups");
+        if(groups != null){
+            $(groups).find("group").each(function(){
+                //TODO we could use this to update the sharing group list
+                //so that things are perhaps simpler
+            });
+        }
+     });
 }
 
 function updateSharingGroupMembers(groupId) {

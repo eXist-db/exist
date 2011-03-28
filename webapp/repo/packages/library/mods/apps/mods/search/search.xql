@@ -18,7 +18,7 @@ xquery version "1.0";
     of the query.
 :)
 declare namespace biblio="http:/exist-db.org/xquery/biblio";
-declare namespace group="http://exist-db.org/mods/sharing/group";
+declare namespace group="http://commons/sharing/group";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
@@ -740,7 +740,7 @@ declare function biblio:form-add-sharing-group() {
 };
 
 declare function biblio:form-collection-sharing($collection as xs:string) {
-    <jquery:dialog id="sharing-collection-dialog" modal="true" title="Folder Sharing" trigger="#collection-sharing" width="450">
+    <jquery:dialog id="sharing-collection-dialog" modal="true" title="Folder Sharing" trigger="#collection-sharing" width="450" onOpen="updateSharingDialog">
         <jquery:button label="Update" function="updateCollectionSharing"/>
         <jquery:button id="cancel" label="Cancel"/>
         <form id="update-collection-sharing-form" action="operations.xql">

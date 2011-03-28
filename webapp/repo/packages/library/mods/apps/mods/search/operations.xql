@@ -2,6 +2,7 @@ xquery version "1.0";
 
 import module namespace security="http://exist-db.org/mods/security" at "security.xqm";
 import module namespace sharing="http://exist-db.org/mods/sharing" at "sharing.xqm";
+declare namespace group = "http://commons/sharing/group";
 
 declare namespace op="http://exist-db.org/xquery/biblio/operations";
 
@@ -196,6 +197,24 @@ declare function op:get-sharing-group-members($groupId as xs:string) as element(
     </members>        
 };
 
+declare function op:get-groups($collection as xs:string) as element(groups) {
+    <group:groups>
+    {
+        for $group in sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
+            element group:group {
+                $group/@*,
+                if($group/group:system/group:group eq security:get-group($collection))then
+                (
+                    attribute collection { $collection },
+                    for $member in sharing:get-group-members($group/@id) return
+                        <group:member>{$member}</group:member>
+                )else(),
+                $group/child::node()
+            }
+    }
+    </group:groups>
+};
+
 declare function op:get-group-permissions($collection as xs:string, $groupId as xs:string) as element(permissions){
     <permissions>
     {
@@ -244,6 +263,8 @@ return
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
         op:update-collection-sharing($collection, request:get-parameter("sharingCollectionWith[]",()), request:get-parameter("groupList",()), request:get-parameter("groupMember[]",()), request:get-parameter("groupSharingPermissions[]",()), request:get-parameter("otherSharingPermissions[]",()))
+    else if($action eq "get-groups")then
+        op:get-groups($collection)
     else if($action eq "get-group-permissions")then
         op:get-group-permissions($collection, request:get-parameter("groupId",()))
     else if($action eq "get-other-permissions")then
