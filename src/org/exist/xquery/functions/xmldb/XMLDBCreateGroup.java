@@ -127,6 +127,26 @@ public class XMLDBCreateGroup extends BasicFunction {
 			// create the group
 			group = sm.addGroup(group);
 
+                        //TEMP - ESCALATE TO DBA :-(
+                        //START TEMP - we also need to make every manager a member of the group otherwise
+                        //they do not show up as group memebers automatically - this is a design problem because group
+                        //membership is managed on the user and not the group, this needs to be fixed!
+                        //see XMLDBAddUserToGroup also
+                        Subject currentSubject = context.getBroker().getSubject();
+                        try {
+                            //escalate
+                            context.getBroker().setSubject(sm.getSystemSubject());
+
+                            //perform action
+                            for(Account manager : group.getManagers()) {
+                                manager.addGroup(group);
+                                sm.updateAccount(sm.getSystemSubject(), manager);
+                            }
+                        } finally {
+                            context.getBroker().setSubject(currentSubject);
+                        }
+                        //END TEMP
+
 			return BooleanValue.TRUE;
 
 		} catch (PermissionDeniedException pde) {
