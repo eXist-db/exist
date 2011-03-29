@@ -104,6 +104,7 @@ public class XMLDBAddUserToGroup extends BasicFunction {
                  * this is a security issue as if you are not that user
                  * you have to escalate to DBA - must redesign
                  * Consider Unix /etc/groups design!
+                 * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
                  */
                 Subject currentSubject = context.getBroker().getSubject();
                 try {

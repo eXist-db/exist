@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -91,7 +92,24 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
             Account account = sm.getAccount(null, userName);
 
             account.remGroup(groupName);
-            sm.updateAccount(null, account);
+
+            //TEMP - ESCALATE TO DBA :-(
+            //START TEMP - Whilst we can remove the group from the user
+            //we cannot update the user because we do not have sufficient permissions
+            //in the real world we should not be able to do either. The modelling of group
+            //membership as a concern of user data is wrong! Should follow Unix approach.
+            //see XMLDBAddUserToGroup also
+            Subject currentSubject = context.getBroker().getSubject();
+            try {
+                //escalate
+                context.getBroker().setSubject(sm.getSystemSubject());
+
+                //perform action
+                sm.updateAccount(null, account);
+            } finally {
+                context.getBroker().setSubject(currentSubject);
+            }
+            //END TEMP
 
             return BooleanValue.TRUE;
 
