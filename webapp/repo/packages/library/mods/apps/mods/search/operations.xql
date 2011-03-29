@@ -41,6 +41,11 @@ declare function op:move-collection($parent as xs:string, $path as xs:string) as
         <status id="moved" from="{$parent}">{$path}</status>
 };
 
+declare function op:rename-collection($path as xs:string, $name as xs:string) as element(status) {
+    let $null := xmldb:rename($path, $name) return
+        <status id="renamed" from="{$path}">{$name}</status>
+};
+
 declare function op:remove-collection($collection as xs:string) as element(status) {
     let $null := xmldb:remove($collection) return
         <status id="removed">{$collection}</status>
@@ -259,6 +264,8 @@ return
         op:create-collection($collection, request:get-parameter("name",()))
     else if($action eq "move-collection")then
         op:move-collection($collection, request:get-parameter("path",()))
+    else if($action eq "rename-collection")then
+        op:rename-collection($collection, request:get-parameter("name",()))
     else if($action eq "remove-collection")then
         op:remove-collection($collection)
     else if($action eq "update-collection-sharing")then
