@@ -51,6 +51,14 @@ declare function op:remove-collection($collection as xs:string) as element(statu
         <status id="removed">{$collection}</status>
 };
 
+declare function op:remove-group($groupId as xs:string) as element(status) {
+    let $result := sharing:remove-group($groupId) return
+        if($result)then
+            <status id="removed">{$groupId}</status>
+        else
+            <status>invalid permissions</status>
+};
+
 declare function op:update-collection-sharing($collection as xs:string, $sharing-collection-with as xs:string*, $group-list as xs:string?, $group-member as xs:string*, $group-sharing-permissions as xs:string*, $other-sharing-permissions as xs:string*) as element(status) {
 
     (: other :)
@@ -193,29 +201,33 @@ declare function op:move-resource($resource-id as xs:string, $destination-collec
 };
 
 declare function op:get-sharing-group-members($groupId as xs:string) as element(members){
-    <members group-id="{$groupId}">
-        <owner>{element {sharing:is-group-owner($groupId, security:get-user-credential-from-session()[1])} {""}}</owner>
-        {
-            for $group-member in sharing:get-group-members($groupId) return
-                <member>{$group-member}</member>
-        }
-    </members>        
+    let $user := security:get-user-credential-from-session()[1] return
+    
+        <members group-id="{$groupId}" owner="{sharing:is-group-owner($groupId, $user)}">
+            <owner>{element {sharing:is-group-owner($groupId, security:get-user-credential-from-session()[1])} {""}}</owner>
+            {
+                for $group-member in sharing:get-group-members($groupId) return
+                    <member>{$group-member}</member>
+            }
+        </members>        
 };
 
 declare function op:get-groups($collection as xs:string) as element(groups) {
     <group:groups>
     {
-        for $group in sharing:get-users-groups(security:get-user-credential-from-session()[1]) return
-            element group:group {
-                $group/@*,
-                if($group/group:system/group:group eq security:get-group($collection))then
-                (
-                    attribute collection { $collection },
-                    for $member in sharing:get-group-members($group/@id) return
-                        <group:member>{$member}</group:member>
-                )else(),
-                $group/child::node()
-            }
+        let $user := security:get-user-credential-from-session()[1] return
+            for $group in sharing:get-users-groups($user) return
+                element group:group {
+                    $group/@*,
+                    if($group/group:system/group:group eq security:get-group($collection))then
+                    (
+                        attribute collection { $collection },
+                        attribute owner { sharing:is-group-owner($group/@id, $user) },
+                        for $member in sharing:get-group-members($group/@id) return
+                            <group:member>{$member}</group:member>
+                    )else(),
+                    $group/child::node()
+                }
     }
     </group:groups>
 };
@@ -284,5 +296,7 @@ return
         op:move-resource(request:get-parameter("resource",()), request:get-parameter("path",()))
     else if($action eq "get-collection-sharing")then
         op:get-collection-sharing($collection)
+    else if($action eq "remove-group")then
+        op:remove-group(request:get-parameter("groupId",()))
     else
         op:unknown-action($action)

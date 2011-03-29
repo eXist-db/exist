@@ -147,6 +147,13 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
         else() 
 };
 
+declare function sharing:remove-group($group-id as xs:string) as xs:boolean {
+    let $group := sharing:get-group($group-id),
+    $sys-group-name := $group/group:system/group:group return
+        () (: TODO call securitymanager:remove-group() :)
+        
+};
+
 declare function sharing:update-group($group-id as xs:string, $group-members as xs:string+) as xs:string
 {
     let $group := fn:collection($config:groups-collection)/group:group[@id eq $group-id],
