@@ -1,0 +1,204 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for differences in structual queries on persistent vs in-memory nodes</testName>
+    <description>
+        <p>These tests test for differences when structural aspects are queried, for persistent nodes vs. in-memory nodes. Two phenomena are investigated for both types:
+            <ul>
+                <li>the use of a variable (bound to a sequence of nodes) in a location step</li>
+                <li>behaviour of last() either as single predicate, or refining another predicate</li>
+            </ul>
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <el n="1">test1</el>
+                <el n="2">test2</el>
+                <el>test3</el>
+            </test>
+        </store>
+    </setup>
+    <functions><![CDATA[
+    declare variable $in-memory := 
+        <test>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+            <el>test3</el>
+        </test>;
+    ]]></functions>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+    </tearDown>
+    <test output="xml">
+        <task>[persistent] variable in location step</task>
+        <code><![CDATA[
+            let $persistent := collection('/db/coll')/test
+            let $els := collection('/db/coll')//el
+            return $persistent//$els
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[persistent] variable in location step + predicate</task>
+        <code><![CDATA[
+            let $persistent := collection('/db/coll')/test
+            let $els := $persistent//el
+            return $persistent//$els[some $c in $els satisfies $c is .]
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[in-memory] variable in location step</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $in-memory//$els
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[in-memory] variable in location step + predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $in-memory//$els[some $c in $els satisfies $c is .]
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+            <el>test3</el>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[persistent] last() in single predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el
+            return $els[last()]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[persistent] position() = last() in single predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el
+            return $els[position() = last()]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[persistent] . is $nodes[last() in single predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el
+            return $els[. is $els[last()]]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[persistent] last() in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el[@n]
+            return $els[last()]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[persistent] position() = last() in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el[@n]
+            return $els[position() = last()]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[persistent] . is $nodes[last()] in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := collection('/db/coll')//el[@n]
+            return $els[. is $els[last()]]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>
+
+    <test output="xml">
+        <task>[in-memory] last() in single predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $els[last()]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[in-memory] position() = last() in single predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $els[position() = last()]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[in-memory] . is $nodes[last()] in single predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $els[. is $els[last()]]
+            ]]></code>
+        <expected>
+            <el>test3</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[in-memory] last() in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el[@n]
+            return $els[last()]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[in-memory] position() = last() in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el[@n]
+            return $els[position() = last()]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[in-memory] . is $nodes[last()] in predicate refining another predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el[@n]
+            return $els[. is $els[last()]]
+            ]]></code>
+        <expected>
+            <el n="2">test2</el>
+        </expected>
+    </test>    
+</TestSet>

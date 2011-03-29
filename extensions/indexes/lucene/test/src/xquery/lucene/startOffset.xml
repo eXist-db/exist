@@ -1,0 +1,163 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for correct offset calculation of util:expand()</testName>
+    <description>
+        <p>These tests whether util:expand() calculates correct start offsets. Since there seems to be a 
+        problem with first matching strings of certain nodes, tests come in pairs: one matching the first word, 
+        the other matching the second word of a node.</p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <fulltext default="none" attributes="no" alphanum="true">
+                    </fulltext>
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+                        <text qname="el"/>
+                    </lucene>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test1.xml">
+            <test>
+                <a><b>word</b></a><el>strong string</el>
+            </test>
+        </store>
+        <store collection="/db/coll" name="test2.xml">
+            <el>
+                <a><b>word</b></a><c>strong string</c>
+            </el>
+        </store>
+        <store collection="/db/coll" name="test3.xml">
+            <el>
+                <a>word</a><c>strong string</c>
+            </el>
+        </store>
+        <store collection="/db/coll" name="test4.xml">
+            <el>
+                <a><b/></a><c>strong string</c>
+            </el>
+        </store>
+        <store collection="/db/coll" name="test5.xml">
+            <el>
+                <a><b/><c>strong string</c></a>
+            </el>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <test output="xml">
+        <task>atomic match preceded by complex element, first word</task>
+        <code><![CDATA[
+            doc('/db/coll/test1.xml')//el[ft:query(., 'strong')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el><exist:match>strong</exist:match> string</el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>atomic match preceded by complex element, second word</task>
+        <code><![CDATA[
+            doc('/db/coll/test1.xml')//el[ft:query(., 'string')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>strong <exist:match>string</exist:match></el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>nested match preceded by simple element, first word</task>
+        <code><![CDATA[
+            doc('/db/coll/test3.xml')//el[ft:query(., 'strong')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a>word</a><c><exist:match>strong</exist:match> string</c>
+            </el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>nested match preceded by simple element, second word</task>
+        <code><![CDATA[
+            doc('/db/coll/test3.xml')//el[ft:query(., 'string')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a>word</a><c>strong <exist:match>string</exist:match></c>
+            </el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>nested match preceded by empty element, first word</task>
+        <code><![CDATA[
+            doc('/db/coll/test5.xml')//el[ft:query(., 'strong')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b/><c><exist:match>strong</exist:match> string</c></a>
+            </el>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>nested match preceded by empty element, second word</task>
+        <code><![CDATA[
+            doc('/db/coll/test5.xml')//el[ft:query(., 'string')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b/><c>strong <exist:match>string</exist:match></c></a>
+            </el>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>nested match preceded by complex element, first word</task>
+        <code><![CDATA[
+            doc('/db/coll/test2.xml')//el[ft:query(., 'strong')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b>word</b></a><c><exist:match>strong</exist:match> string</c>
+            </el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>nested match preceded by complex element, second word</task>
+        <code><![CDATA[
+            doc('/db/coll/test2.xml')//el[ft:query(., 'string')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b>word</b></a><c>strong <exist:match>string</exist:match></c>
+            </el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>nested match preceded by complex element (with empty child), first word</task>
+        <code><![CDATA[
+            doc('/db/coll/test4.xml')//el[ft:query(., 'strong')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b/></a><c><exist:match>strong</exist:match> string</c>
+            </el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>nested match preceded by complex element (with empty child), second word</task>
+        <code><![CDATA[
+            doc('/db/coll/test4.xml')//el[ft:query(., 'string')]/util:expand(.)
+            ]]></code>
+        <expected>
+            <el>
+                <a><b/></a><c>strong <exist:match>string</exist:match></c>
+            </el>
+        </expected>
+    </test>
+</TestSet>

@@ -1,0 +1,89 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for behaviour of eXist w.r.t. variable references in location step</testName>
+    <description>
+        <p>These tests check eXist's behaviour when variable references are used in a location step, both on persistend nodes and in-memory nodes. Two test contexts are repeated:
+            <ul>
+                <li>the use of a variable reference in a location step</li>
+                <li>the use of a variable reference inside a predicate</li>
+            </ul>
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <a><el n="1">match1</el></a>
+                <a><el n="2">match2</el></a>
+                <b><el n="3">match2</el></b>
+            </test>
+        </store>
+    </setup>
+    <functions><![CDATA[
+    declare variable $in-memory := 
+            <test>
+                <a><el n="1">match1</el></a>
+                <a><el n="2">match2</el></a>
+                <b><el n="3">match2</el></b>
+            </test>;
+    ]]></functions>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+    </tearDown>
+    <test output="xml" ignore="yes">
+        <task>[persistent] variable in location step</task>
+        <code><![CDATA[
+            let $test := collection('/db/coll')/test
+            let $match2 := $test//el[matches(., 'match2')]
+            return $test/a/$match2
+        ]]></code>
+        <expected>
+            <el n="2">match2</el>
+            <el n="3">match2</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[persistent] variable in location step + predicate</task>
+        <code><![CDATA[
+            let $test := collection('/db/coll')/test
+            let $match2 := $test//el[matches(., 'match2')]
+            return $test/a[./$match2]
+            ]]></code>
+        <expected>
+            <a>
+                <el n="1">match1</el>
+            </a>
+            <a>
+                <el n="2">match2</el>
+            </a>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[in-memory] variable in location step</task>
+        <code><![CDATA[
+            let $test := $in-memory
+            let $match2 := $test//el[matches(., 'match2')]
+            return $test/a/$match2
+            ]]></code>
+        <expected>
+            <el n="2">match2</el>
+            <el n="3">match2</el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[in-memory] variable in location step + predicate</task>
+        <code><![CDATA[
+            let $test := $in-memory
+            let $match2 := $test//el[matches(., 'match2')]
+            return $test/a[./$match2]
+            ]]></code>
+        <expected>
+            <a>
+                <el n="1">match1</el>
+            </a>
+            <a>
+                <el n="2">match2</el>
+            </a>
+        </expected>
+    </test>    
+</TestSet>
