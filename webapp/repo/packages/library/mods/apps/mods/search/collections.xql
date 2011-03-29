@@ -100,9 +100,12 @@ declare function col:get-root-collection($root-collection-path as xs:string) as 
             $can-write := security:can-write-collection($user, $root-collection-path),
             
             (: home collection :)
-            $home-collection-path := security:get-home-collection-uri($user),
-            $has-home-children := not(empty(xmldb:get-child-collections($home-collection-path))),
-            $home-json := col:create-tree-node("Home", $home-collection-path, true(), "../skin/ltFld.user.gif" , "Home Folder", true(), "userHomeSubCollection", $has-home-children, ()),
+            $home-json := 
+                if(security:home-collection-exists($user))then
+                    let $home-collection-path := security:get-home-collection-uri($user),
+                    $has-home-children := not(empty(xmldb:get-child-collections($home-collection-path))) return
+                        col:create-tree-node("Home", $home-collection-path, true(), "../skin/ltFld.user.gif" , "Home Folder", true(), "userHomeSubCollection", $has-home-children, ())
+                else(),
             
             (: group collection :)
             $has-group-children := not(empty(sharing:get-users-groups(security:get-user-credential-from-session()[1]))),
