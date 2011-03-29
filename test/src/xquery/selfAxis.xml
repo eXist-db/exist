@@ -1,0 +1,132 @@
+<TestSet>
+    <testName>tests for self axis</testName>
+    <description>
+        <p>tests for selection of nodes with self axis, both 
+            <ul>
+                <li>abbreviated (.) and full (self::)</li>
+                <li>in location step and predicate</li>
+                <li>in 'bare' and parenthesized contexts</li>
+            </ul>
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>test</test>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+    </tearDown>
+    <test output="xml">
+        <task>[bare context] self axis in location step, abbreviated</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/.
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[bare context] self axis in location step, full</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/self::*
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[bare context] self axis in location step, full with name test</task>
+        <code><![CDATA[
+            collection('/db/coll')//test/self::test
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[bare context] self axis in predicate, abbreviated</task>
+        <code><![CDATA[
+            collection('/db/coll')//test[.]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[bare context] self axis in predicate, full</task>
+        <code><![CDATA[
+            collection('/db/coll')//test[self::*]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[bare context] self axis in predicate, full with name test</task>
+        <code><![CDATA[
+            collection('/db/coll')//test[self::test]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+<!-- -->
+    <test output="xml">
+        <task>[parenthesized context] self axis in location step, abbreviated</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/.)
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[parenthesized context] self axis in location step, full</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/self::*)
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[parenthesized context] self axis in location step, full with name test</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test/self::test)
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[parenthesized context] self axis in predicate, abbreviated</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test)[.]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[parenthesized context] self axis in predicate, full</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test)[self::*]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[parenthesized context] self axis in predicate, full with name test</task>
+        <code><![CDATA[
+            (collection('/db/coll')//test)[self::test]
+            ]]></code>
+        <expected>
+            <test>test</test>
+        </expected>
+    </test>    
+    
+</TestSet>
