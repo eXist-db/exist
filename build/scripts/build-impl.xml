@@ -381,8 +381,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all"
-        depends="jar,wrapper,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-webdav,test-compile"
+    <target name="all" depends="jar,wrapper,extension-betterform, extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-webdav,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -510,6 +509,7 @@
         <ant antfile="xprocxq.xml" dir="extensions" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -554,6 +554,10 @@
         <ant antfile="build.xml" dir="tools/wrapper" inheritall="false"/>
     </target>
 
+   <target name="extension-betterform" depends="jar">
+	   <ant antfile="build.xml" dir="extensions/betterform" inheritall="false"/>
+   </target>
+   
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
     </target>

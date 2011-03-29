@@ -69,7 +69,9 @@ declare function setup:importLocal() as element()+
         else
         (
             concat($home, $pathSep, "webapp")
-        )
+		),
+	$betterform := concat($home, "/extensions/betterform/src/main/xrx/timetracker/")
+	
     return (
                 setup:create-collection("/db/system/config", "db"),
                 setup:create-collection("/db/system/config/db", "shakespeare"),
@@ -121,10 +123,10 @@ declare function setup:importLocal() as element()+
 
                 setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xql", "application/xquery"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
-                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery") (:,
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery"),
 
                 (: Storing XForms in the db won't work right now :)
-                
+                (:
                 setup:create-collection("/db", "xforms"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xml", "text/html"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xq*", "application/xquery"),
@@ -137,6 +139,40 @@ declare function setup:importLocal() as element()+
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.js","application/x-javascript"),
                 setup:store-files("/db/xforms/xsltforms", $webapp, "xforms/xsltforms/*.css","text/css")
                 :)
+				
+				(: Storing betterFORM XRX sample application :)
+				setup:create-collection("/db", "betterform"),
+				setup:create-collection("/db/betterform", "apps"),
+				setup:create-collection("/db/betterform/apps", "timetracker"),				
+				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.html","text/html"),
+				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.xml","application/xml"),
+				setup:create-collection("/db/betterform/apps/timetracker", "data"),
+				setup:store-files("/db/betterform/apps/timetracker/data", $betterform, "data/*.xml", "application/xml"),
+				setup:create-collection("/db/betterform/apps/timetracker/data", "task"),
+				setup:store-files("/db/betterform/apps/timetracker/data/task", $betterform, "data/task/*.xml","application/xml"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "edit"),
+				setup:store-files("/db/betterform/apps/timetracker/edit", $betterform, "edit/*.xql","application/xquery"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "lucene"),
+				setup:store-files("/db/betterform/apps/timetracker/lucene", $betterform, "lucene/*.xconf","application/xml"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "reports"),
+				setup:store-files("/db/betterform/apps/timetracker/reports", $betterform, "reports/*.xql","application/xquery"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "resources"),
+				setup:store-files("/db/betterform/apps/timetracker/resources", $betterform, "resources/*.css","text/css"),
+				setup:create-collection("/db/betterform/apps/timetracker/resources", "images"),
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.gif","image/gif"),
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.png","image/png"),
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.jpg","image/jpeg"),  
+				setup:create-collection("/db/betterform/apps/timetracker/", "search"),
+				setup:store-files("/db/betterform/apps/timetracker/search", $betterform, "search/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/search", $betterform, "search/*.html","text/html"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "update"),
+				setup:store-files("/db/betterform/apps/timetracker/update", $betterform, "update/*.xql","application/xquery"),
+				setup:create-collection("/db/betterform/apps/timetracker/", "views"),
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.html","text/html"),
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xsl","application/xml")
+
     )
 };
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:bf="http://betterform.sourceforge.net/xforms">
+    <worker id="1">Homer</worker>
+    <worker id="2">Bart</worker>
+    <worker id="3">Lisa</worker>
+    <worker id="4">Marge</worker>
+    <worker id="5">Maggie</worker>
+    <worker id="6">Itchy</worker>
+    <worker id="7">Mr. Burns</worker>
+    <worker id="8">Ned</worker>
+</data>
