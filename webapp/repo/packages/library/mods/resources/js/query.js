@@ -155,8 +155,12 @@ function initCollectionTree() {
         return false;
     });
     $('#collection-reload').click(function () {
-        $("#collection-tree-tree").dynatree("reload");
-        return false;
+        //reload the entire tree
+        var tree = $("#collection-tree-tree").dynatree("getTree");
+		if(tree) {
+			tree.reload();
+		}
+		return false;
     });
 }
 
@@ -265,8 +269,36 @@ function createCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'create-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("reload");
+        
+        //reload the tree node
+        refreshCurrentTreeNode();
+        
+        //close the dialog
         dialog.dialog("close");
+    });
+}
+
+//refreshes the tree node
+function refreshTreeNode(node) {
+	if(node) {
+        node.reloadChildren(function(node, isOk){
+            //alert("reloaded node" + node);
+        });
+    }
+}
+
+//refreshes the currently selected tree node
+function refreshCurrentTreeNode() {
+    var node = $("#collection-tree-tree").dynatree("getActiveNode");
+	refreshTreeNode(node);
+}
+
+//refreshes the parent of the currently selected tree node
+function refreshParentTreeNode() {
+    //reload the parent tree node
+    $("#collection-tree-tree").dynatree("getActiveNode").visitParents(function(parentNode){
+        refreshTreeNode(parentNode);
+        return false;
     });
 }
 
@@ -278,7 +310,11 @@ function renameCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'rename-collection', name: name, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("reload");
+       
+        //reload the parent tree node
+        refreshParentTreeNode();
+       
+        //close the dialog
         dialog.dialog("close");
     });
 }
@@ -291,7 +327,11 @@ function moveCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'move-collection', path: path, collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("reload");
+        
+        //reload the parent tree node
+        refreshParentTreeNode();
+       
+        //close the dialog
         dialog.dialog("close");
     });
 }
@@ -303,7 +343,11 @@ function removeCollection(dialog) {
     var collection = getCurrentCollection();
     var params = { action: 'remove-collection', collection: collection };
     $.get("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("reload");
+        
+        //reload the parent tree node
+        refreshParentTreeNode();
+       
+        //close the dialog
         dialog.dialog("close");
     });
 }
@@ -338,7 +382,10 @@ function updateCollectionSharing(dialog) {
     
     var params = { "action":"update-collection-sharing", "collection":collection, "sharingCollectionWith":sharingCollectionWith, "groupList": groupList, "groupMember": groupMember, "groupSharingPermissions": groupSharingPermissions, "otherSharingPermissions": otherSharingPermissions };
     $.post("operations.xql", params, function (data) {
-        $("#collection-tree-tree").dynatree("reload");
+        //reload the tree node
+        refreshCurrentTreeNode();
+       
+        //close the dialog
         dialog.dialog("close");
     });
 }
