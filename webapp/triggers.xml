@@ -18,7 +18,7 @@
                 as how Triggers are created and configured. It assumes readers have a basic
                 understanding of XML, Java and XQuery.</para>
             <para>Triggers may be configured by the User to respond to document and/or collection events.
-            From 1.5 version of eXist defines five events, all of which are applicable to the collection configured with the Trigger:</para>
+                From version 1.5, eXist defines five events, all of which are applicable to the collection configured with the Trigger:</para>
             <itemizedlist>
                 <listitem>
                     <para>
@@ -30,7 +30,7 @@
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis>copy</emphasis>: Fired when a collection or document is coped</para>
+                        <emphasis>copy</emphasis>: Fired when a collection or document is copied</para>
                 </listitem>
                 <listitem>
                     <para>
@@ -49,7 +49,7 @@
             and after events.</para>
             <section>
                 <title>XQuery Triggers</title>
-                <para>Triggers written in XQuery may be configuring by using the org.exist.collections.triggers.XQueryTrigger to fire the XQuery.
+                <para>Triggers written in XQuery may be configured by using the org.exist.collections.triggers. XQueryTrigger to fire the XQuery.
                 The XQuery to be executed when the trigger is fired may either be placed in the collection.xconf itself or indicated by a URL.</para>
                 <para>The XQuery functions mapped to trigger event:</para>
                 <itemizedlist>
@@ -120,14 +120,14 @@
                 <title>Java Triggers</title>
                 <para>Triggers written in Java must implement the org.exist.collections.triggers.CollectionTrigger or 
                 	org.exist.collections.triggers.DocumentTrigger interface. The Java class for your trigger must be 
-                	available on the class path, lib/user is a good place copy your custom trigger to.</para>
+                	available on the class path, lib/user is a good place to copy your custom trigger to.</para>
                 <para>The DocumentTrigger interface provides a convenient starting place and provides the methods.</para>
             </section>
         </section>
         <section id="trigger-config">
             <title>Configuring Triggers</title>
 
-            <para>Users configure Triggers using collection-specific configuration files. These files are stored
+            <para>Triggers are configured using collection-specific configuration files. These files are stored
                 as standard XML documents in the system collection:
                 <filename>/db/system/config</filename>, which can be accessed using the Admin
                 interface or Java Client. In addition to defining settings for Triggers
@@ -142,9 +142,9 @@
                 own <emphasis>trigger creation policy</emphasis> defined by a configuration file.</para>
 
             <para>To configure triggers for a given collection - for example:
-                <filename>/db/foo</filename> - you must create a new <filename>.xconf</filename>
+                <filename>/db/foo</filename> - create a new <filename>.xconf</filename>
                 configuration file and store it in the system collection (e.g.
-                    <filename>/db/system/config/db/foo</filename>). You can choose any name for this
+                    <filename>/db/system/config/db/foo/collection.xconf</filename>). You may choose any name for this
                 document so long as it has the <filename>.xconf</filename> extension, although
                 <filename>collection.xconf</filename> is recommended. Note that
                 since subcollections will inherit the configuration policy of their parent
@@ -173,12 +173,20 @@
                 <para>In the <sgmltag>triggers</sgmltag> element are elements that define each trigger
                 and the event(s) that it is fired for.</para>
 
-                <para>Each <sgmltag>trigger</sgmltag> element has two attributes, <emphasis>event</emphasis> which is a comma
-                seperated list of events to fire for and <emphasis>class</emphasis> which is the name of the Java Class to fire on the event.
-                It may also contain several <sgmltag>parameter</sgmltag> elements defining any parameters to send to the trigger.</para>
+                <para>Each <sgmltag>trigger</sgmltag> element has two attributes, <emphasis>event</emphasis> and <emphasis>class</emphasis>.</para>
+                <para>The <emphasis>event</emphasis> attribute is a comma
+                    separated list of events (<option>create</option>, <option>update</option>, <option>copy</option>, <option>move</option>, <option>delete</option>)
+                    to fire on.
+                    If the <emphasis>event</emphasis> attribute is not present for an Xquery trigger then the Xquery will never be invoked. 
+                    For other (Java) triggers the <emphasis>event</emphasis> attribute may or may not have any effect depending on the
+                    implementation of the <methodname>configure()</methodname> method and so on.
+                </para>
+                <para>The <emphasis>class</emphasis> is the name of the Java Class to fire when an event occurs. 
+                    XQuery triggers are handled by a built-in Java trigger: <classname>org.exist.collections.triggers.XQueryTrigger</classname>.</para>
+                <para>The trigger definition may also contain zero or more <sgmltag>parameter</sgmltag> elements defining any parameters to send to the trigger.</para>
                 <section>
                     <title>Configuring an XQuery Trigger</title>
-					<para>When configuring an XQuery trigger there are a few parameters that may need to be set -</para>
+					<para>When configuring an XQuery trigger there are a few parameters that may need to be set:</para>
 					<itemizedlist>
 						<listitem>
 							<para><emphasis>url</emphasis>: The URL to the XQuery that the XQuery Trigger should execute</para>
@@ -193,6 +201,11 @@
 							<para>Any other parameters will be passed to the XQuery as external variables of type xs:string</para>
 						</listitem>
 					</itemizedlist>
+                    <para>The <emphasis>event</emphasis> attribute must be present and list each of the event types that the XQuery trigger should
+                        process. If the attribute is not present or it is an empty list, then the XQuery will never be invoked.
+                        Note also that the <emphasis>event</emphasis> names from prior eXist versions may also be used 
+                        (<option>store</option>, <option>update</option>, <option>remove</option>).
+                    </para>
                     <para>The following example shows two XQuery Triggers configured, the first executes an XQuery stored in the database
                     whereas the second executes XQuery placed inline in the collection.xconf:</para>
 					<example>
@@ -203,7 +216,7 @@
 			<parameter name="url" value="xmldb:exist://localhost/db/myTrigger.xql"/>
 		</trigger>
 		
-		<trigger class="org.exist.collections.triggers.XQueryTrigger">
+		<trigger event="create" class="org.exist.collections.triggers.XQueryTrigger">
 			<parameter name="query" value="
 				module namespace trigger='http://exist-db.org/xquery/trigger';
 				
@@ -211,16 +224,6 @@
 					util:log('debug', concat('Trigger fired at ', current-dateTime()))
 				};"
 			/>
-		</trigger>
-
-		<trigger class="org.exist.collections.triggers.XQueryTrigger">
-			<parameter name="query">
-				module namespace trigger='http://exist-db.org/xquery/trigger';
-				
-				declare function trigger:before-create-document($uri as xs:anyURI) {
-					util:log('debug', concat('Trigger fired at ', current-dateTime()))
-				};
-			</parameter>
 		</trigger>
     </triggers>
 </collection>]]></markup></programlisting>
@@ -534,11 +537,12 @@ public class LoggingTrigger extends FilteringTrigger implements DocumentTrigger
                 <para>This collection trigger will save all old versions of documents before they are overwritten or removed. The old versions are kept in the
                     'history root' which is by default <code>/db/history</code>, but can be changed with the parameter <code>root</code>.
                     You need to configure this trigger for every collection whose history you want to preserve.</para>
+                <para>The <emphasis>event</emphasis> attribute is ignored by <classname>HistoryTrigger</classname></para>
                 <example>
                     <title>History Trigger collection.xconf</title>
                     <programlisting><markup><![CDATA[<collection xmlns='http://exist-db.org/collection-config/1.0'>
      <triggers>
-       <trigger event="update,remove" class="org.exist.collections.triggers.HistoryTrigger"/>
+       <trigger class="org.exist.collections.triggers.HistoryTrigger"/>
      </triggers>
 </collection>]]>
                             </markup></programlisting>
@@ -549,6 +553,7 @@ public class LoggingTrigger extends FilteringTrigger implements DocumentTrigger
                 <para>STXTransformerTrigger applies an STX stylesheet to the input SAX stream, using <a href="http://joost.sourceforge.net">Joost</a>.
                     The stylesheet location is identified by parameter "src". If the src parameter is just a path, the stylesheet will be loaded from the database,
                     otherwise, it is interpreted as an URI.</para>
+                <para>The <emphasis>event</emphasis> attribute is ignored by <classname>STXTransformerTrigger</classname></para>
             </section>
         </section>
     </chapter>
