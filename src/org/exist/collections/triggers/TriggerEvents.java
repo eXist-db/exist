@@ -173,7 +173,7 @@ public class TriggerEvents {
 				break;
 
 			case 2:
-				result.add(EVENTS.MOVE_DOCUMENT);
+				result.add(EVENTS.DELETE_DOCUMENT);
 				break;
 
 			default:
