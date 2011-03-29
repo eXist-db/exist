@@ -1,7 +1,8 @@
 xquery version "1.0";
 
 declare option exist:serialize "method=html media-type=text/html";
-
+let $contextPath := request:get-context-path()
+return
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:xf="http://www.w3.org/2002/xforms">
     <head>
@@ -93,7 +94,7 @@ declare option exist:serialize "method=html media-type=text/html";
         <div id="pagecontent">
             <div id="wrapper">
                 <div dojoType="dojox.data.XmlStore"
-                     url="/exist/rest/db/betterform/apps/timetracker/data/task?_query=//task&amp;_howmany=5&amp;_xsl=/db/betterform/apps/timetracker/views/flattenAttributes.xsl"
+                     url="{$contextPath}/rest/db/betterform/apps/timetracker/data/task?_query=//task&amp;_howmany=5&amp;_xsl=/db/betterform/apps/timetracker/views/flattenAttributes.xsl"
                      jsId="taskStore"
                      label="title"
                      attributeMap="{{'duration.@hours':'@hours'}}">

@@ -8,7 +8,8 @@ declare option exist:serialize "method=xhtml media-type=text/xml";
 
 declare function local:timestamp() as xs:string{
       let $timestamp := request:get-parameter("timestamp", "")
-      let $path2resource := concat("/exist/rest/db/betterform/apps/timetracker/data/task?_query=/*/task",encode-for-uri('['), "created='" ,$timestamp,"'",encode-for-uri(']'))
+      let $contextPath := request:get-context-path()
+      let $path2resource := concat($contextPath,"/rest/db/betterform/apps/timetracker/data/task?_query=/*/task",encode-for-uri('['), "created='" ,$timestamp,"'",encode-for-uri(']'))
       return $path2resource
 };
 
@@ -23,25 +24,22 @@ declare function local:mode() as xs:string{
 };
 
 
-
+let $contextPath := request:get-context-path()
+return
 <html   xmlns="http://www.w3.org/1999/xhtml"
         xmlns:xf="http://www.w3.org/2002/xforms"
         xmlns:exist="http://exist.sourceforge.net/NS/exist"
         xmlns:ev="http://www.w3.org/2001/xml-events">
    <head>
       <title>Edit Task</title>
-       <link rel="stylesheet" type="text/css" href="/exist/resources/styles/bf.css"/>
-       <link rel="stylesheet" type="text/css" href="/exist/resources/styles/demo.css"/>
-       <link rel="stylesheet" type="text/css"
-             href="/exist/rest/db/betterform/apps/timetracker/resources/timetracker.css"/>
-       <link rel="stylesheet" type="text/css"
-             href="/exist/rest/db/betterform/apps/timetracker/resources/InlineRoundBordersAlert.css"/>
+       <link rel="stylesheet" type="text/css" href="./resources/timetracker.css"/>
+       <link rel="stylesheet" type="text/css" href="./resources/InlineRoundBordersAlert.css"/>
     </head>
     <body class="tundra InlineRoundBordersAlert">
     	<div id="xforms">
             <div style="display:none">
                 <xf:model>
-                    <xf:instance id="i-task" src="/exist/rest/db/betterform/apps/timetracker/data/task.xml"/>
+                    <xf:instance id="i-task" src="{$contextPath}/rest/db/betterform/apps/timetracker/data/task.xml"/>
 
                   <xf:bind nodeset="task">
                       <xf:bind nodeset="date" type="xf:date" required="true()" />
@@ -61,15 +59,15 @@ declare function local:mode() as xs:string{
                                  replace="instance"
                                  serialization="none">
                                  <!--
-                                     <xf:resource value="concat('/exist/rest/db/betterform/apps/timetracker/data/task?_query=/data/task', encode-for-uri('['),'created=', '{local:timestamp()}',encode-for-uri(']') )"/>
+                                     <xf:resource value="concat('{$contextPath}/rest/db/betterform/apps/timetracker/data/task?_query=/data/task', encode-for-uri('['),'created=', '{local:timestamp()}',encode-for-uri(']') )"/>
                                  -->
                  </xf:submission>
 
 
-                 <xf:instance id="i-project"     src="/exist/rest/db/betterform/apps/timetracker/data/project.xml"/>
-                 <xf:instance id="i-worker"  	 src="/exist/rest/db/betterform/apps/timetracker/data/worker.xml"/>
-                 <xf:instance id="i-tasktype"  	 src="/exist/rest/db/betterform/apps/timetracker/data/tasktype.xml"/>
-                 <xf:instance id="i-controller"  src="/exist/rest/db/betterform/apps/timetracker/data/controller.xml"/>
+                 <xf:instance id="i-project"     src="{$contextPath}/rest/db/betterform/apps/timetracker/data/project.xml"/>
+                 <xf:instance id="i-worker"  	 src="{$contextPath}/rest/db/betterform/apps/timetracker/data/worker.xml"/>
+                 <xf:instance id="i-tasktype"  	 src="{$contextPath}/rest/db/betterform/apps/timetracker/data/tasktype.xml"/>
+                 <xf:instance id="i-controller"  src="{$contextPath}/rest/db/betterform/apps/timetracker/data/controller.xml"/>
 
                  <xf:instance id="tmp">
                     <data xmlns="">
@@ -81,7 +79,7 @@ declare function local:mode() as xs:string{
                                method="put"
                                replace="none"
                                ref="instance()">
-                    <xf:resource value="concat('/exist/rest/db/betterform/apps/timetracker/data/task/', instance('i-task')/task/created, '.xml')"/>
+                    <xf:resource value="concat('{$contextPath}/rest/db/betterform/apps/timetracker/data/task/', instance('i-task')/task/created, '.xml')"/>
 
                     <xf:header>
                         <xf:name>username</xf:name>
@@ -132,7 +130,7 @@ declare function local:mode() as xs:string{
 
                 <xf:submission id="s-clean"
                                ref="instance('i-task')"
-                               resource="/exist/rest/db/betterform/apps/timetracker/data/task.xml"
+                               resource="{$contextPath}/rest/db/betterform/apps/timetracker/data/task.xml"
                                method="get"
                                replace="instance"
                                instance="i-task">

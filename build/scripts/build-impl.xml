@@ -615,7 +615,7 @@
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/betterform" target="uninstall" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/contentextraction" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>

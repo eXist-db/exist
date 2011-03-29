@@ -51,14 +51,14 @@
     
 }
 
-.InlineRoundBordersAlert .caVerticalTableLabel,
+.InlineRoundBordersAlert .bfVerticalTableLabel,
 .InlineRoundBordersAlert .caLabelColumn {
     padding-right: 5px;
     width: 23%;
     text-align:right;
 }
 
-.InlineRoundBordersAlert .caVerticalTableValue {
+.InlineRoundBordersAlert .bfVerticalTableValue {
     width: 24%;
     height:29px;
     padding-bottom:5px;
@@ -92,7 +92,7 @@
     font-size: 9pt;
     font-family: sans-serif;
     width:95%;
-    padding: 7px 0px 3px 20px;
+    padding: 6px 0px 3px 25px;
     height:15px;
     border:solid 1px;
 }
@@ -105,12 +105,16 @@
     display: block;
     background: #FFCFCF;
     color: #801B1B;
-    -moz-border-radius-topright: 8px;
+    -moz-border-radius-topleft: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-moz-border-radius-topright: 8px;
     -moz-border-radius-bottomright: 8px;
-    -webkit-border-top-right-radius: 8px;
+    -webkit-border-top-left-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	-webkit-border-top-right-radius: 8px;
     -webkit-border-bottom-right-radius: 8px;
-    background: #FFCFCF url(../../../resources/images/error.png) no-repeat scroll 2% 5px;
-    margin: 0;
+    background: #FFCFCF url(images/error.png) no-repeat scroll 2% 5px;
+    margin: 0 1px 0 0;
     /*overflow: hidden; */
     white-space: nowrap;
     /*width: 100%;*/
@@ -119,11 +123,15 @@
 
 .InlineRoundBordersAlert .xfHint {
     display: block;
-    background: #F2F2F2 url(../../../resources/images/hint.png) no-repeat 3% 7px;
+    background: #F2F2F2 url(images/hint.png) no-repeat 3% 5px;
     color: #666666;
-    -moz-border-radius-topright: 8px;
+    -moz-border-radius-topleft: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-moz-border-radius-topright: 8px;
     -moz-border-radius-bottomright: 8px;
-    -webkit-border-top-right-radius: 8px;
+    -webkit-border-top-left-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	-webkit-border-top-right-radius: 8px;
     -webkit-border-bottom-right-radius: 8px;
     margin: 0;
     /*overflow: hidden;*/
@@ -137,7 +145,7 @@
 
 .InlineRoundBordersAlert .info {
     display: block;
-    background: #F0FEE9 url(../../../resources/images/ok.png) no-repeat 3% 7px;
+    background: #F0FEE9 url(images/ok.png) no-repeat 3% 5px;
     color: #666666;
     -moz-border-radius-topright: 8px;
     -moz-border-radius-bottomright: 8px;
@@ -184,4 +192,8 @@
 .xfLabel{
     padding-top:6px;
     display:block;
+}
+
+.xfControl {
+	width:100%;
 }

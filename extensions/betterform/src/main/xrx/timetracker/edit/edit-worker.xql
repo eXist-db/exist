@@ -8,7 +8,8 @@ declare option exist:serialize "method=xhtml media-type=text/xml";
 
 declare function local:getWorker() as xs:string{
       let $id := request:get-parameter("id", "")
-      let $path2resource := concat("/exist/rest/db/betterform/apps/timetracker/data?_query=/*/worker",encode-for-uri('['), "@id='" ,$id,"'",encode-for-uri(']'))
+      let $contextPath := request:get-context-path()
+      let $path2resource := concat("{$contextPath}/rest/db/betterform/apps/timetracker/data?_query=/*/worker",encode-for-uri('['), "@id='" ,$id,"'",encode-for-uri(']'))
       return $path2resource
 };
 
@@ -18,7 +19,8 @@ declare function local:mode() as xs:string{
 };
 
 
-
+let $contextPath := request:get-context-path()
+return
 <html   xmlns="http://www.w3.org/1999/xhtml"
         xmlns:xf="http://www.w3.org/2002/xforms"
         xmlns:exist="http://exist.sourceforge.net/NS/exist"
@@ -30,15 +32,15 @@ declare function local:mode() as xs:string{
     	<div id="xforms" style="height:360px;">
         <div style="display:none">
             <xf:model>
-              <xf:instance id="i-worker" src="/exist/rest/db/betterform/apps/timetracker/data/worker.xml"/>
+              <xf:instance id="i-worker" src="{$contextPath}/rest/db/betterform/apps/timetracker/data/worker.xml"/>
 
-             <xf:instance id="i-controller"  src="/exist/rest/db/betterform/apps/timetracker/data/controller.xml"/>
+             <xf:instance id="i-controller"  src="{$contextPath}/rest/db/betterform/apps/timetracker/data/controller.xml"/>
 
 
         <xf:submission id="s-add"
                        method="put"
                        replace="none">
-		    <xf:resource value="concat('/exist/rest/db/betterform/apps/timetracker/data/worker.xml')"/>
+		    <xf:resource value="concat('{$contextPath}/rest/db/betterform/apps/timetracker/data/worker.xml')"/>
 
             <xf:header>
                 <xf:name>username</xf:name>

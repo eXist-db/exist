@@ -1,8 +1,0 @@
-/*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
-	Available via Academic Free License >= 2.1 OR the modified BSD license.
-	see: http://dojotoolkit.org/license for details
-*/
-
-
-if(!dojo._hasResource["betterform.ui.input.TextField"]){dojo._hasResource["betterform.ui.input.TextField"]=true;dojo.provide("betterform.ui.input.TextField");dojo.require("dijit._Widget");dojo.require("dijit._Templated");dojo.require("dijit.form.TextBox");dojo.require("betterform.ui.ControlValue");dojo.declare("betterform.ui.input.TextField",[betterform.ui.ControlValue,dijit.form.TextBox],{intermediateChanges:true,postMixInProperties:function $DA21_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);},postCreate:function $DA22_(){this.inherited(arguments);this.setCurrentValue();},_onFocus:function $DA23_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA24_(){this.inherited(arguments);this.handleOnBlur();},onChange:function $DA25_(_1,_2){this.inherited(arguments);if(this.incremental){this.setControlValue();}},getControlValue:function $DA26_(){return this._getValueAttr();},_handleSetControlValue:function $DA27_(_3){this.focusNode.value=_3;this.attr("displayedValue",_3);},setTextValue:function $DA28_(_4){this.setControlValue(this.getControlValue());},applyState:function $DA29_(){if(this.xfControl.isReadonly()){dojo.attr(this.domNode,"readonly","readonly");}else{if(dojo.hasAttr(this.domNode,"readonly")){dojo.removeAttr(this.domNode,"readonly");}else{if(dojo.hasAttr(this.domNode,"disabled")){dojo.removeAttr(this.domNode,"disabled");}}}},getTextValue:function $DA3A_(){return this.getControlValue();}});}

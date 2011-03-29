@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <app name="xfTimeTracker" rootCollection="">
+    <organisation></organisation>
     <description>XRX Timetracker Sample</description>
     <version>0.2</version>
+    <release-date></release-date>
     <authors>
         <author>Joern Turner</author>
         <author>Fabian Otto</author>

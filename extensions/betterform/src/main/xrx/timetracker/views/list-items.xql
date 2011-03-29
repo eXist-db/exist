@@ -83,12 +83,14 @@ declare function local:project() as element()?
    </table>
 };
 
+let $contextPath := request:get-context-path()
+return
 <html   xmlns="http://www.w3.org/1999/xhtml"
         xmlns:ev="http://www.w3.org/2001/xml-events">
    <head>
       <title>All Tasks</title>
       <link rel="stylesheet" type="text/css"
-                href="/exist/rest/db/betterform/apps/timetracker/resources/timetracker.css"/>
+                href="{$contextPath}/rest/db/betterform/apps/timetracker/resources/timetracker.css"/>
 
     </head>
     <body>
