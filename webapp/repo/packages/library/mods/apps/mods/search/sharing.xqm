@@ -147,10 +147,9 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
         else() 
 };
 
-declare function sharing:update-group($group-name as xs:string, $group-members as xs:string+) as xs:string
+declare function sharing:update-group($group-id as xs:string, $group-members as xs:string+) as xs:string
 {
-    let $group := fn:collection($config:groups-collection)/group:group[group:name eq $group-name],
-    $group-id := $group/@id,
+    let $group := fn:collection($config:groups-collection)/group:group[@id eq $group-id],
     $system-group := $group/group:system/group:group,
     $existing-group-members := security:get-group-members($system-group),
     $group-modifications := (
@@ -165,7 +164,7 @@ declare function sharing:update-group($group-name as xs:string, $group-members a
                 security:remove-user-from-group($existing-group-member, $system-group),
                 if($config:send-notification-emails)then
                 (
-                    sharing:send-group-removal-mail($group-name, $existing-group-member)
+                    sharing:send-group-removal-mail($group/group:name, $existing-group-member)
                 )else()
             )
         ,
@@ -180,11 +179,11 @@ declare function sharing:update-group($group-name as xs:string, $group-members a
                 security:add-user-to-group($group-member, $system-group),
                 if($config:send-notification-emails)then
                 (
-                    sharing:send-group-invitation-mail($group-name, $group-member)
+                    sharing:send-group-invitation-mail($group/group:name, $group-member)
                 )else()
             )
     ) return
-        $group-id
+        $group/@id
 };
 
 declare function sharing:send-group-invitation-mail($group-name as xs:string, $username as xs:string) as empty()
