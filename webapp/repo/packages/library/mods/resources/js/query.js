@@ -16,6 +16,8 @@ $(document).ready(function(){
     $('#collection-sharing').hide();
     $('#collection-create-resource').hide();
     
+    $('#remove-group-button').hide();
+    
 });
 
 /* sharing dialog actions */
@@ -70,6 +72,9 @@ $(document).ready(function(){
     });
     
     //add group events
+    $('#remove-group-button').click(function(){
+        removeGroup();
+    });
     $('#new-group-button').click(function(){
         $('#new-group-sharing-dialog').dialog('open');
     });
@@ -80,7 +85,7 @@ $(document).ready(function(){
     });
 });
 
-
+/*
 function getActiveGroup()
 {
     var selectedGroupId = $('#group-list').val();
@@ -89,7 +94,7 @@ function getActiveGroup()
     } else {
         return $('#group-list option[0]').val();
     }
-}
+}*/
 
 function getCurrentCollection() {
     return "/db" + $('#simple-search-form input[name = collection]').val();
@@ -542,6 +547,9 @@ function searchTabSelected(ev, ui) {
 //called when the collection/folder sharing dialog is opened
 function updateSharingDialog() {
      
+    //hide remove group button by default, may be re-enabled below if permissions are correct
+    $('#remove-group-button').hide();
+     
      var collection = getCurrentCollection();
      
      //load the groups and select the current group
@@ -549,10 +557,16 @@ function updateSharingDialog() {
      $.get("operations.xql", params, function(data) {
         var groups = $(data).find("groups").children();
         if(groups != null) {
+        
+            //clear all current entries
             var groupList = $('#group-list').find('option').remove().end();
+            groupList.append('<option disabled="disabled" value=""></option>');
+            
+            //add entries from server
             $(groups).each(function(){
                 var v = $(this).attr('id');
                 var n = $(this).find('name').text();
+                
                 if($(this).attr('collection') != null){
                     $(groupList).append('<option selected="selected" value="' + v + '">' + n + '</option>');
                 } else {
@@ -561,8 +575,13 @@ function updateSharingDialog() {
             });
             
             //update group sharing details
-            var groupId = $(data).find('group[collection]').attr('id');
-            updateSharingGroupMembers(groupId);
+            $(groups).each(function(){
+                if($(this).attr('collection') != null) {
+                    var groupId = $(this).attr('id');
+                    updateSharingGroupMembers(groupId);
+                    return false;
+                }
+            });
         }
      });
      
@@ -595,9 +614,20 @@ function updateSharingGroupMembers(groupId) {
             $(data).find('member').each(function(){
                 addMemberToSharingGroupMembers($(this).text(), owner);
             });
+            
+            //if we are the owner of the group, we can show a button to remove the group
+            if($(data).find('members').attr('owner') != null) {
+                $('#remove-group-button').show();
+            } else {
+                $('#remove-group-button').hide();
+            }
         });
         
         updateSharingGroupCheckboxes(groupId);
+    } else {
+        
+        //if there is no group id, we cant remove the group so hide the option
+        $('#remove-group-button').hide();
     }
 }
 
@@ -715,4 +745,17 @@ function addNewGroupToGroupList(groupName){
     
     //update the members etc
     updateSharingGroupMembers($('#group-list').val());
+}
+
+function removeGroup() {
+    var answer = confirm("Whilst you are the Group owner, there may be other users reliant on this group. Are you sure you wish to remove the group?");
+    if(answer) {
+        var groupId = $('#group-list > option[selected = "selected"]').attr('value');
+        var params = { action: "remove-group", groupId: groupId };
+        $.get("operations.xql", params, function(data) {
+            
+            //refresh the sharing dialog
+            updateSharingDialog();
+        });
+    }
 }

@@ -787,6 +787,7 @@ declare function biblio:form-collection-sharing($collection as xs:string) {
                                     )
                             }
                             </select>
+                            <input id="remove-group-button" type="button" value="Remove Group"/>
                             <input id="new-group-button" type="button" value="New Group"/>
                         </div>
                         <div id="group-members">
