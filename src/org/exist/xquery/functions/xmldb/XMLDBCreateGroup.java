@@ -131,7 +131,7 @@ public class XMLDBCreateGroup extends BasicFunction {
                         //START TEMP - we also need to make every manager a member of the group otherwise
                         //they do not show up as group memebers automatically - this is a design problem because group
                         //membership is managed on the user and not the group, this needs to be fixed!
-                        //see XMLDBAddUserToGroup also
+                        //see XMLDBAddUserToGroup and XMLDBRemoveUserFromGroup also
                         Subject currentSubject = context.getBroker().getSubject();
                         try {
                             //escalate
