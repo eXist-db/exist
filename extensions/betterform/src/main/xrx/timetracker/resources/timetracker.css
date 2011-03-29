@@ -1,0 +1,402 @@
+body{
+    margin:0;
+    padding:0;
+    background:#D3D3D3;
+}
+
+#header{
+    width:100%;
+    background:white;
+    height:90px;
+}
+#header a{
+    float:left;
+    width:220px;
+}
+#appName{
+    float:right;
+    color:#b0c4de;
+    font-size:20pt;
+    margin-right:10px;                                                                                        
+    margin-top:55px;
+}
+#bfLoading {
+    top:0;
+    right:10px;
+}
+select{
+    border:thin solid #b3b3b3 !important;
+    margin:0;
+    padding:0;
+}
+
+#shadowTop{
+    width:100%;
+}
+
+#searchBar{
+    width:100%;
+    overflow:hidden;
+    display:block;
+    vertical-align:middle;
+}
+#searchBar .xfControl{
+    margin-right:10px;
+    float:left;
+    
+}
+#searchBar .xfControl input{
+    color:#4682b4;
+}
+
+#searchBar .xfControl .xfLabel{
+    color:#666666 !important;
+    float:left;
+    padding:0;
+    margin:0 10px 0 10px;
+}
+
+.xfInput .xfValue{
+    height:auto;
+}
+.InlineRoundBordersAlert #searchBar  .xfValue{
+    -moz-border-radius:0;
+    -webkit-border-radius:0;
+}
+
+#overviewBtn{
+    margin-left:10px;
+}
+
+.dijitTooltipContainer{
+    margin-left:8px;
+}
+.dijitTooltipConnector{
+    margin-left:8px;
+}
+
+#closeFilter-value{
+    background-image:url(/betterform/rest/db/betterform/apps/timetracker/resources/images/search.gif);
+    width:24px;
+    height:24px;
+}
+.InlineRoundBordersAlert .xfValue {
+    padding:0;
+}
+
+#fromTo{
+    text-align:right;
+    margin-right:10px;
+}
+
+#summary{
+    background:transparent;
+    width:220px !important;
+    border-collapse:collapse;
+    display:table;
+    float:right;
+}
+#summary td{
+    color:#4682b4 !important;
+    font-size:1.2em;
+    padding:5px;
+    white-space:nowrap;
+}
+#summary .summaryLabel{
+    color:#666666 !important;
+}
+
+#formWrapper{
+    padding:0;
+    margin:0;
+    
+
+}
+#content {
+	-moz-background-clip:border;
+	-moz-background-inline-policy:continuous;
+	background:transparent none repeat scroll 0 0;
+	display:block;
+	height:100%;
+	overflow:auto;
+	width:100%;
+	float:none;
+}
+
+.header {
+	font-size: 16pt;
+	color: gray;
+	border-bottom: thin solid gray;
+}
+
+tr.xfRepeatHeader  td {
+	font-weight: bold;
+	padding-right: 5px;
+}
+
+#embedInline{
+    padding:10px;
+}
+
+#embedTarget{
+	height:600px;
+}
+#taskDialog{
+    height:550px !important;
+}
+#taskDialog select{
+    padding:5px 0;
+}
+
+#embedDialog{
+    width:600px;
+    height:540px !important;
+    overflow:auto;
+}
+
+.InlineRoundBordersAlert #embedDialog  .caVerticalTable {
+    border: none;
+    padding: 20px;
+    padding-bottom: 0px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#embedDialog .xfGroup{
+    display:block;
+
+}
+
+#embedDialog .dijitDialogPaneContent{
+    overflow:auto;
+}
+#embedDialog .bfVerticalTableLabel{
+    width:100px;
+}
+#embedDialog .bfVerticalTableValue{
+    width:250px;
+}
+
+#embedDialog .bfVerticalTableInfo{
+    width:200px;
+}
+
+#embedDialog .xfControl .xfValue{
+    width:100%;
+}
+
+#embedDialog .caLabelColumn{
+    text-align:right;
+    padding-right:5px;
+}
+#embedDialog .bfCellWrapperValue .xfValue{
+    width:125px;
+}
+#embedDialog select{
+    border:thin solid gray;
+}
+
+.caTabContainer {
+	overflow: hidden;
+}
+
+tr.xfRepeatItem  td {
+	padding-right: 5px;
+}
+
+/* project column */
+.caTableCol-1 {
+	text-align: left;
+	width: 11ex;
+}
+
+/* date column */
+.caTableCol-2 {
+	text-align: left;
+	width: 11ex;
+}
+
+/* time column */
+.caTableCol-3 {
+	text-align: right;
+}
+
+/* time column */
+.caTableCol-4 {
+	text-align: left;
+}
+
+/* time column */
+.caTableCol-5 {
+	text-align: left;
+}
+
+/* note column */
+.caTableCol-6 {
+	overflow: hidden;
+}
+
+/* time column */
+.caTableCol-7 {
+	text-align: left;
+}
+
+/* time column */
+.caTableCol-8 {
+	text-align: right;
+}
+
+#task-table{
+	height:380px;
+}
+#task-table span .xfControl {
+	display: block;
+	/*margin-left: 5px;*/
+}
+#task-table .xfValue{
+	width:100%;
+}
+#task-table .bfGroupLabelLeft{
+	width:100%;
+}
+#task-table .bfGroupLabelLeft  .xfValue{
+	width:50%;
+}
+#taskTable .dateCol{
+    white-space:nowrap;
+}
+
+#taskTable .selectorCol{
+    width:10px;
+    text-align:center;
+}
+
+.xsdDate .xfValue {
+	width:100px;
+
+}
+#searchBar .xsdDate .xfValue{
+    background:transparent;
+    width:120px;
+}
+
+#durationLabel{
+    margin-left:10px;
+    display:block;
+}
+#durationLabel .xfValue{
+    font-size:14pt;
+    color:#4682b4;
+    display:block;
+    margin:5px 0;
+}
+
+.listing .xfSelectorItem {
+	display:block;
+}
+
+#overall-time-label {
+	display: inline;
+	margin-right: 2em;
+}
+
+#result-list {
+	height: 390px;
+	overflow-y: scroll;
+}
+
+.dijitButton{
+    margin:0.2em 0;
+}
+.bf .embedDialog .dijitCheckBox,
+.tundra .embedDialog .dijitCheckBox,
+.soria .embedDialog .dijitCheckBox{
+    width:20px;
+}
+
+/*data table (list-items.xql) styles*/
+#taskTable{
+    border:none;
+    border-collapse:collapse;
+    width:100%;
+    display:table;
+}
+
+#taskTable th,#taskTable td{
+    padding:5px;
+    border:thin solid steelBlue;
+}
+#taskTable th{
+    background:#b0c4de;
+}
+
+#add-task-table{
+    height:400px;
+}
+#add-task-table .xfReadWrite .dijitCheckBox, .xfReadWrite .dijitCheckBoxIcon {
+    -moz-border-radius:0 0 0 0 !important;
+    -webkit-border-radius: 0 0 0 0 !important;
+    width:14px !important;
+    padding:0;
+    
+}
+
+#add-task-table .xfAlert,
+#add-task-table .xfHint,
+#add-task-table .xfInfo {
+	position:relative;
+	top: 0px;
+	margin-left: 0px;
+}
+
+#add-task-table .bfGroupLabelLeft {
+    width:99%;
+}
+
+
+#add-task-table .bfGroupLabelLeft .caHorizontalTableValue{
+    width:50%;
+}
+
+#add-task-table .bfGroupLabelLeft .caHorizontalTableValue select{
+    width:99%;
+    margin-left:2px;
+    margin-bottom:8px;
+
+}
+#add-task-table .xfValue{
+    padding:5px 0;
+}
+
+.caHorizontalTable{
+    display:table;
+    margin-bottom:10px;
+}
+.InlineRoundBordersAlert .xsdBoolean .dijitCheckBoxInput{
+    
+}
+.xfSelectorItem{
+    padding:0;
+    margin:1px;
+}
+
+#dialogButtons td{
+    padding-right:3px;
+}
+#checkBoxSelectors{
+    padding-bottom:2px;
+}
+.InlineRoundBordersAlert .suppressInfo .info{
+	position:relative;
+	left:-1000px;
+}
+
+.xfLabel{
+    padding-top:6px;
+    display:block;
+}
+
+#date-value{
+	width:248px;
+}

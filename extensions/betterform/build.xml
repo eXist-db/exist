@@ -1,0 +1,140 @@
+<!--
+  ~ Copyright (c) 2011. betterForm Project - http://www.betterform.de
+  ~ Licensed under the terms of BSD License
+  ~ Author betterFORM team ( info AT betterform.de )
+  -->
+
+<project name="betterFORM extension for eXist" default="install" basedir=".">
+    <property name="exist.rootdir" value="${basedir}/../.."/>
+    <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
+
+    <property file="../local.build.properties"/>
+    <property file="../build.properties"/>
+
+    <condition property="include.feature.betterform.config">
+        <istrue value="${include.feature.betterform}"/>
+    </condition>
+
+    <condition property="betterform.installed">
+        <available file="${exist.rootdir}/webapp/betterform"/>
+    </condition>
+
+    <property name="betterform.home" value="${exist.rootdir}/extensions/betterform"/>
+    <property name="betterform.etc" value="${betterform.home}/src/main/etc"/>
+    <property name="betterform.xrx" value="${betterform.home}/src/main/xrx"/>
+    <property name="betterform.lib" value="${betterform.home}/src/main/lib"/>
+    <property name="betterform.webapp" value="${betterform.home}/src/main/webapp"/>
+
+    <!--todo:move property to build.properties.xml-->
+    <property name="bf.release.name" value="betterform-3.2.0"/>
+
+
+    <macrodef name="xslt-saxon">
+        <attribute name="in"/>
+        <attribute name="out"/>
+        <attribute name="style"/>
+        <sequential>
+            <echo level="info">XSLT Generating @{out}</echo>
+            <java classname="net.sf.saxon.Transform"
+                  classpath="${betterform.home}/src/main/lib/saxon-9.2.1.5.jar"
+                  logError="true"
+                  output="@{out}"
+                  fork="true">
+                <arg value="@{in}"/>
+                <arg value="@{style}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <path id="classpath.exist">
+        <fileset dir="${exist.rootdir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${exist.rootdir}/exist.jar"/>
+        <pathelement path="${exist.rootdir}/exist-optional.jar"/>
+    </path>
+
+    <target name="install" description="install betterFORM into an existing eXist XML DB installation"
+            if="include.feature.betterform.config" unless="betterform.installed">
+        <echo>
+            Add betterFORM config parameters to eXist to ${exist.web.xml}
+        </echo>
+
+        <antcall target="patchWebXml"/>
+
+        <echo>
+            Deploy betterFORM resources to eXist webapp (${exist.web.xml}/webapp)
+        </echo>
+
+        <antcall target="deployBFResources"/>
+    </target>
+
+    <target name="clean" xmlns:xmldb="http://exist-db.org/ant" description="uninstall betterFORM"
+            if="include.feature.betterform.config">
+        <echo>
+            Uninstalling betterFORM.
+        </echo>
+
+
+        <delete dir="${exist.rootdir}/webapp/betterform"/>
+
+        <move file="${betterform.home}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar"
+              failonerror="false"/>
+        <move file="${betterform.home}/uninstall/commons-lang-2.0-20041007T2305.jar"
+              tofile="${exist.rootdir}/lib/cocoon/commons-lang-2.0-20041007T2305.jar" failonerror="false"/>
+
+        <!--delete files from WEB-INF-->
+        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
+        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
+        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
+
+        <delete dir="${exist.rootdir}/webapp/WEB-INF/lib"/>
+
+        <!-- restore web.xml -->
+        <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
+        <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
+    </target>
+
+    <target name="patchWebXml">
+        <mkdir dir="${betterform.home}/uninstall"/>
+        <property name="javax.xml.transform.TransformerFactory" value="net.sf.saxon.TransformerFactoryImpl"/>
+        <xslt-saxon in="${exist.web.xml}" style="${betterform.etc}/MergeWebXML.xsl" out="${exist.web.xml}.bf"/>
+        <move file="${exist.web.xml}" tofile="${betterform.home}/uninstall/web.xml" failonerror="true"/>
+        <move file="${exist.web.xml}.bf" tofile="${exist.web.xml}"/>
+    </target>
+
+    <target name="deployBFResources">
+        <echo>
+            Creating uninstall folder.
+        </echo>
+
+        <mkdir dir="${betterform.home}/uninstall"/>
+        <move file="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" tofile="${betterform.home}/uninstall/ehcache-1.1.jar"
+              failonerror="true"/>
+        <move file="${exist.rootdir}/lib/cocoon/commons-lang-2.0-20041007T2305.jar"
+              tofile="${betterform.home}/uninstall/commons-lang-2.0-20041007T2305.jar" failonerror="true"/>
+
+        <echo>
+            Copying libraries so start.config finds them
+        </echo>
+        <mkdir dir="${exist.rootdir}/webapp/WEB-INF/lib"/>
+        <copy todir="${exist.rootdir}/webapp/WEB-INF/lib" overwrite="true">
+            <fileset dir="${betterform.lib}"/>
+        </copy>
+
+        <echo>
+            Copying betterFORM configuration files to WEB-INF dir.
+        </echo>
+        <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
+        <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
+        <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
+
+        <echo>
+            Copying betterFORM error page to webapp.
+        </echo>
+        <copy todir="${exist.rootdir}/webapp/betterform/xquery">
+            <fileset file="${betterform.webapp}/xquery/xferror.xql"/>
+        </copy>
+    </target>
+
+</project>

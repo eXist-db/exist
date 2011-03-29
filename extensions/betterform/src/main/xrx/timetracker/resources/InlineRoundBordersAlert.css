@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2010. betterForm Project - http://www.betterform.de
+ * Licensed under the terms of BSD License
+ */
+
+
+
+.InlineRoundBordersAlert table {
+    border-collapse: collapse;
+}
+
+.InlineRoundBordersAlert * {
+    /*font-size: 11pt;*/
+    font-family: sans-serif;
+    color: #666666;
+}
+
+.InlineRoundBordersAlert .dijitButtonNode {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.InlineRoundBordersAlert .dijitTextBoxFocused,
+.InlineRoundBordersAlert .dijitComboBoxFocused,
+.InlineRoundBordersAlert .dijitSpinnerFocused,
+.InlineRoundBordersAlert .dijitSpinnerUpArrowActive,
+.InlineRoundBordersAlert .dijitSpinnerDownArrowActive,
+.InlineRoundBordersAlert .dijitTextAreaFocused {
+    border-color: gray;
+}
+
+.InlineRoundBordersAlert .dijitInputField input,
+.InlineRoundBordersAlert .dijitTextBox,
+.InlineRoundBordersAlert .dijitComboBox,
+.InlineRoundBordersAlert .dijitSpinner {
+    margin: 0;
+}
+.InlineRoundBordersAlert #signin{
+    float:right;
+    font-size:8pt;
+    margin:0;
+    padding:0;
+    text-align:right;
+    width:216px;
+    color:blue;
+    text-decoration:underline;
+}
+.InlineRoundBordersAlert #subtitle{
+    display:block;
+    font-size:8pt;
+    
+}
+
+.InlineRoundBordersAlert .bfVerticalTableLabel,
+.InlineRoundBordersAlert .caLabelColumn {
+    padding-right: 5px;
+    width: 23%;
+    text-align:right;
+}
+
+.InlineRoundBordersAlert .bfVerticalTableValue {
+    width: 24%;
+    height:29px;
+    padding-bottom:5px;
+}
+
+.InlineRoundBordersAlert .bfVerticalTableInfo {
+    width: 120px;
+	position:relative;
+
+}
+
+.InlineRoundBordersAlert .xfValue {
+    padding: 5px 0;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-bottom-left-radius: 8px;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+}
+
+.InlineRoundBordersAlert .xfInvalid .xfValue {
+    background: white;
+}
+ .InlineRoundBordersAlert  .xfAlert,
+ .InlineRoundBordersAlert  .xfHint,
+ .InlineRoundBordersAlert  .xfHelp,
+ .InlineRoundBordersAlert  .info {
+    font-size: 9pt;
+    font-family: sans-serif;
+    width:95%;
+    padding: 6px 0px 3px 25px;
+    height:15px;
+    border:solid 1px;
+}
+.InlineRoundBordersAlert .xsdBoolean .xfValue{
+    -moz-border-radius:0;
+    -webkit-border-radius:0;
+}
+
+.InlineRoundBordersAlert .xfAlert {
+    display: block;
+    background: #FFCFCF;
+    color: #801B1B;
+    -moz-border-radius-topleft: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-left-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	-webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    background: #FFCFCF url(images/error.png) no-repeat scroll 2% 5px;
+    margin: 0 1px 0 0;
+    /*overflow: hidden; */
+    white-space: nowrap;
+    /*width: 100%;*/
+	border-color:#E5A3A3 !important;
+}
+
+.InlineRoundBordersAlert .xfHint {
+    display: block;
+    background: #F2F2F2 url(images/hint.png) no-repeat 3% 5px;
+    color: #666666;
+    -moz-border-radius-topleft: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-left-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	-webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    margin: 0;
+    /*overflow: hidden;*/
+    white-space: nowrap;
+    /*width: 100%;    */
+    border-color:#DBDBDB !important;
+
+}
+
+
+
+.InlineRoundBordersAlert .info {
+    display: block;
+    background: #F0FEE9 url(images/ok.png) no-repeat 3% 5px;
+    color: #666666;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    margin: 0;
+    /*overflow: hidden;*/
+    white-space: nowrap;
+   /* width: 100%;*/
+    border-color:#E1EFDB !important;
+}
+
+.InlineRoundBordersAlert .xfControl, .InlineRoundBordersAlert .xfAlert, .InlineRoundBordersAlert .xfHint, .InlineRoundBordersAlert .info {
+    /*margin-bottom: 8px;*/
+}
+
+.InlineRoundBordersAlert .xfGroupLabel {
+    font-size: 1.5em;
+    /*border-bottom: 4px double #999999;*/
+    padding-bottom: 5px;
+    color: #333333;
+}
+
+.InlineRoundBordersAlert .xfTriggerMiddleColumnTrigger {
+    float: right;
+}
+
+
+.InlineRoundBordersAlert .dijitFocused {
+    background-color: #F2F2F2 !important;
+}
+
+.InlineRoundBordersAlert td, td span {
+    /*position: relative;*/
+}
+
+/*
+.InlineRoundBordersAlert .dijitTextBox,
+.InlineRoundBordersAlert .dijitComboBox,
+.InlineRoundBordersAlert .dijitSpinner  {
+    width: 10em;
+}
+*/
+.xfLabel{
+    padding-top:6px;
+    display:block;
+}
+
+.xfControl {
+	width:100%;
+}
