@@ -1,8 +1,0 @@
-/*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
-	Available via Academic Free License >= 2.1 OR the modified BSD license.
-	see: http://dojotoolkit.org/license for details
-*/
-
-
-if(!dojo._hasResource["betterform.ui.textarea.SimpleTextarea"]){dojo._hasResource["betterform.ui.textarea.SimpleTextarea"]=true;dojo.provide("betterform.ui.textarea.SimpleTextarea");dojo.require("betterform.ui.ControlValue");dojo.require("dijit.form.SimpleTextarea");dojo.declare("betterform.ui.textarea.SimpleTextarea",[betterform.ui.ControlValue,dijit.form.SimpleTextarea],{postMixInProperties:function $DA5R_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);},postCreate:function $DA5S_(){this.inherited(arguments);this.setCurrentValue();},_onFocus:function $DA5T_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA5U_(){this.inherited(arguments);this.handleOnBlur();},_onInput:function $DA5V_(e){this.inherited(arguments);if(this.incremental){this.setControlValue();}},getControlValue:function $DA5W_(){return this._getValueAttr();},applyState:function $DA5X_(){if(this.xfControl.isReadonly()){dojo.attr(this.domNode,"readonly","readonly");}else{if(dojo.hasAttr(this.domNode,"readonly")){dojo.removeAttr(this.domNode,"readonly");}else{if(dojo.hasAttr(this.domNode,"disabled")){dojo.removeAttr(this.domNode,"disabled");}}}},_handleSetControlValue:function $DA5Y_(_2){this._setValueAttr(_2);}});}

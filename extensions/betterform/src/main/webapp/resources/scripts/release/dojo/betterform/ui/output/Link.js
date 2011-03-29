@@ -1,8 +1,0 @@
-/*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
-	Available via Academic Free License >= 2.1 OR the modified BSD license.
-	see: http://dojotoolkit.org/license for details
-*/
-
-
-if(!dojo._hasResource["betterform.ui.output.Link"]){dojo._hasResource["betterform.ui.output.Link"]=true;dojo.provide("betterform.ui.output.Link");dojo.require("dijit._Widget");dojo.require("dijit._Templated");dojo.require("betterform.ui.ControlValue");dojo.declare("betterform.ui.output.Link",[betterform.ui.ControlValue],{href:"",label:null,templateString:"<span><a href=\"${href}\" target=\"_blank\" dojoAttachPoint=\"containerNode\"></a></span>",postMixInProperties:function $DA3O_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);},postCreate:function $DA3P_(){this.label=dojo.byId(this.xfControl.id+"-label");if(this.label!=undefined){this.containerNode.innerHTML=this.label.innerHTML;this.label.innerHTML="";}},_onFocus:function $DA3Q_(){this.inherited(arguments);this.handleOnFocus();},_onBlur:function $DA3R_(){this.inherited(arguments);this.handleOnBlur();},getControlValue:function $DA3S_(){return this.containerNode.innerHTML;},applyState:function $DA3T_(){},_handleSetControlValue:function $DA3U_(_1){dojo.attr(this.containerNode,"href",_1);if(_1.indexOf("/")>0){_1=_1.substring(_1.lastIndexOf("/")+1,_1.length);}if(_1.indexOf(".")>0){_1=_1.substring(0,_1.lastIndexOf("."));}this.containerNode.innerHTML=_1;},_setLabel:function $DA3V_(_2){if(this.containerNode.innerHTML==""){var _3=document.createTextNode(_2);dojo.place(_3,this.containerNode);}else{this.containerNode.innerHTML=_2;}}});}

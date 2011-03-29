@@ -1,8 +1,0 @@
-/*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
-	Available via Academic Free License >= 2.1 OR the modified BSD license.
-	see: http://dojotoolkit.org/license for details
-*/
-
-
-if(!dojo._hasResource["betterform.ConvexProcessor"]){dojo._hasResource["betterform.ConvexProcessor"]=true;dojo.provide("betterform.ConvexProcessor");dojo.require("betterform.FluxProcessor");dojo.declare("betterform.ConvexProcessor","betterform.FluxProcessor",{sessionKey:"",skipshutdown:false,isDirty:false,factory:null,currentControlId:"",unloadMsg:"You are about to leave this XForms application",constructor:function $DAzs_(){this.factory=new betterform.ui.UIElementFactory();},_buildUI:function $DAzt_(_1){alert("ConvexProcessor.buildUI");dojo.query("*",_1).forEach(function(_2){if(_2.tagName.indexOf("XF:")!=-1){}});},closeSession:function $DAzu_(){alert("ConvexProcessor.closeSession");},ignoreExceptions:function $DAzv_(_3){alert("ConvexProcessor.ignoreException");},dispatchEvent:function $DAzw_(_4){alert("ConvexProcessor.dispatch");},setControlValue:function $DAzx_(id,_6){alert("ConvexProcessor.setControlValue");},setRange:function $DAzy_(id,_8){alert("ConvexProcessor.setRange");},setRepeatIndex:function $DAzz_(_9){alert("ConvexProcessor.setRepeatIndex");},_useLoadingMessage:function $DAz0_(){alert("ConvexProcessor.useLoadingMessage");},_handleExceptions:function $DAz1_(_a){alert("ConvexProcessor.handleExceptions");console.error(_a);},setView:function $DAz2_(_b){alert("ConvexProcessor.setView");var _c=dojo.byId("xformsui");_c.innerHTML=_b;_c.className="enabled";dojo.parser.parse(_c);return true;}});}

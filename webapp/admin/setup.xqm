@@ -72,9 +72,9 @@ declare function setup:importLocal() as element()+
         (
             concat($home, $pathSep, "webapp")
         )
-        (: ,
+        ,
         $betterform := concat($home, "/extensions/betterform/src/main/xrx/timetracker/")
-        :)
+
     return (
                 setup:create-collection("/db/system/config", "db"),
                 setup:create-collection("/db/system/config/db", "shakespeare"),
@@ -146,10 +146,10 @@ declare function setup:importLocal() as element()+
 
                 setup:store-files("/db/xproc/examples", $webapp, "xproc/examples/*.xql", "application/xquery"),
                 setup:store-files("/db/xproc", $webapp, "xproc/*.xml", "text/xml"),
-                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery") (:,
+                setup:store-files("/db/xproc", $webapp, "xproc/*.xql", "application/xquery"),
 
                 (: Storing XForms in the db won't work right now :)
-
+                (:
                 setup:create-collection("/db", "xforms"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xml", "text/html"),
                 setup:store-files("/db/xforms", $webapp, "xforms/*.xq*", "application/xquery"),
@@ -165,7 +165,7 @@ declare function setup:importLocal() as element()+
 
 
 				(: Storing betterFORM XRX sample application :)
-				(:
+
 				setup:create-collection("/db", "betterform"),
 				setup:create-collection("/db/betterform", "apps"),
 				setup:create-collection("/db/betterform/apps", "timetracker"),				
@@ -197,7 +197,7 @@ declare function setup:importLocal() as element()+
 				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xql","application/xquery"),
 				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.html","text/html"),
 				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xsl","application/xml")
-                :)
+
     )
 };
 

@@ -1,8 +1,0 @@
-/*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
-	Available via Academic Free License >= 2.1 OR the modified BSD license.
-	see: http://dojotoolkit.org/license for details
-*/
-
-
-if(!dojo._hasResource["betterform.ui.trigger.LinkButton"]){dojo._hasResource["betterform.ui.trigger.LinkButton"]=true;dojo.provide("betterform.ui.trigger.LinkButton");dojo.require("betterform.ui.ControlValue");dojo.declare("betterform.ui.trigger.LinkButton",betterform.ui.ControlValue,{label:"",templateString:"<span class=\"xfValue\"\n    ><a href=\"#\" dojoAttachPoint=\"linknode\" onclick=\"return false;\" dojoAttachEvent=\"onclick:onClick\"></a\n></span>\n",postMixInProperties:function $DA54_(){this.inherited(arguments);this.applyProperties(dijit.byId(this.xfControlId),this.srcNodeRef);this.label=dojo.attr(this.srcNodeRef,"label");},postCreate:function $DA55_(){this.linknode.innerHTML=this.label;},onClick:function $DA56_(e){if(!(dojo.attr(this.domNode,"disabled")=="disabled")){e.cancelBubble=true;fluxProcessor.dispatchEvent(this.xfControlId);}},getControlValue:function $DA57_(){console.warn("TBD: betterform.ui.trigger.Button.getControlValue");return dojo.attr(this.domNode,"value");},_handleSetControlValue:function $DA58_(_2){console.warn("TBD: betterform.ui.trigger.Button._handleSetControlValue: Value: ",_2);},_setLabel:function $DA59_(_3){dojo.query("a",this.domNode)[0].innerHTML=_3;}});}

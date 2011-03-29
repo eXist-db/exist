@@ -20,7 +20,7 @@ return
 	body{
         font-family:Tahoma;
         font-size:14pt;
-        background:url('/exist/betterform/resources/images/bgOne.gif') repeat-x scroll;
+        background:url('resources/images/bgOne.gif') repeat-x scroll;
     }
 	pre { font-size:8pt; }
     .errorContent{
@@ -72,6 +72,3 @@ return
     </div>
 </body>
 </html>
-
-
-

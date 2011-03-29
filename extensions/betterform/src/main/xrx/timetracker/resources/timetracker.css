@@ -17,10 +17,10 @@ body{
     float:right;
     color:#b0c4de;
     font-size:20pt;
-    margin-right:10px;
+    margin-right:10px;                                                                                        
     margin-top:55px;
 }
-#caLoading {
+#bfLoading {
     top:0;
     right:10px;
 }
@@ -76,7 +76,7 @@ select{
 }
 
 #closeFilter-value{
-    background-image:url(/exist/rest/db/betterform/apps/timetracker/resources/images/search.gif);
+    background-image:url(/betterform/rest/db/betterform/apps/timetracker/resources/images/search.gif);
     width:24px;
     height:24px;
 }
@@ -171,10 +171,10 @@ tr.xfRepeatHeader  td {
 #embedDialog .dijitDialogPaneContent{
     overflow:auto;
 }
-#embedDialog .caVerticalTableLabel{
+#embedDialog .bfVerticalTableLabel{
     width:100px;
 }
-#embedDialog .caVerticalTableValue{
+#embedDialog .bfVerticalTableValue{
     width:250px;
 }
 
@@ -257,10 +257,10 @@ tr.xfRepeatItem  td {
 #task-table .xfValue{
 	width:100%;
 }
-#task-table .caHorizontalColumn{
+#task-table .bfGroupLabelLeft{
 	width:100%;
 }
-#task-table .caHorizontalColumn  .xfValue{
+#task-table .bfGroupLabelLeft  .xfValue{
 	width:50%;
 }
 #taskTable .dateCol{
@@ -309,7 +309,9 @@ tr.xfRepeatItem  td {
 .dijitButton{
     margin:0.2em 0;
 }
-.tundra .embedDialog .dijitCheckBox{
+.bf .embedDialog .dijitCheckBox,
+.tundra .embedDialog .dijitCheckBox,
+.soria .embedDialog .dijitCheckBox{
     width:20px;
 }
 
@@ -340,16 +342,24 @@ tr.xfRepeatItem  td {
     
 }
 
-#add-task-table .caHorizontalColumn {
+#add-task-table .xfAlert,
+#add-task-table .xfHint,
+#add-task-table .xfInfo {
+	position:relative;
+	top: 0px;
+	margin-left: 0px;
+}
+
+#add-task-table .bfGroupLabelLeft {
     width:99%;
 }
 
 
-#add-task-table .caHorizontalColumn .caHorizontalTableValue{
+#add-task-table .bfGroupLabelLeft .caHorizontalTableValue{
     width:50%;
 }
 
-#add-task-table .caHorizontalColumn .caHorizontalTableValue select{
+#add-task-table .bfGroupLabelLeft .caHorizontalTableValue select{
     width:99%;
     margin-left:2px;
     margin-bottom:8px;
@@ -378,6 +388,15 @@ tr.xfRepeatItem  td {
     padding-bottom:2px;
 }
 .InlineRoundBordersAlert .suppressInfo .info{
-	position:absolute;
+	position:relative;
 	left:-1000px;
+}
+
+.xfLabel{
+    padding-top:6px;
+    display:block;
+}
+
+#date-value{
+	width:248px;
 }
