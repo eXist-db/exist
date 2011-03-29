@@ -480,19 +480,35 @@ function searchTabSelected(ev, ui) {
     }
 }
 
+//called when the collection/folder sharing dialog is opened
 function updateSharingDialog() {
      
      var collection = getCurrentCollection();
+     
+     //load the groups and select the current group
      var params = { action: "get-groups", collection: collection };
      $.get("operations.xql", params, function(data) {
-        var groups = $(data).find("groups");
-        if(groups != null){
-            $(groups).find("group").each(function(){
-                //TODO we could use this to update the sharing group list
-                //so that things are perhaps simpler
+        var groups = $(data).find("groups").children();
+        if(groups != null) {
+            var groupList = $('#group-list').find('option').remove().end();
+            $(groups).each(function(){
+                var v = $(this).attr('id');
+                var n = $(this).find('name').text();
+                if($(this).attr('collection') != null){
+                    $(groupList).append('<option selected="selected" value="' + v + '">' + n + '</option>');
+                } else {
+                   $(groupList).append('<option value="' + v + '">' + n + '</option>');
+                }
             });
+            
+            //update group sharing details
+            var groupId = $(data).find('group[collection]').attr('id');
+            updateSharingGroupMembers(groupId);
         }
      });
+     
+     //update other sharing details
+     updateSharingOtherCheckboxes();
 }
 
 function updateSharingGroupMembers(groupId) {
