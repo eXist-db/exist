@@ -104,7 +104,10 @@ function initCollectionTree() {
     dynaTree.dynatree({
         fx: { height: "toggle", duration: 200 },
         persist: true,
-        initAjax: {url: "collections.xql" },
+        initAjax: { 
+            url: "collections.xql"
+        },
+        autoFocus: false,
         onActivate: function (dtnode) {
             var title = dtnode.data.title;
             var key = dtnode.data.key;
@@ -117,6 +120,15 @@ function initCollectionTree() {
             }
             updateSharingOtherCheckboxes();*/
         },
+        onLazyRead: function(node){
+            node.appendAjax({
+                url: "collections.xql",
+	            data: { 
+	               key: node.data.key
+               }
+              });
+        },
+
         onPostInit: function () {
             // when tree is reloaded, reactivate the current node to trigger an onActivate event
             this.reactivate();
