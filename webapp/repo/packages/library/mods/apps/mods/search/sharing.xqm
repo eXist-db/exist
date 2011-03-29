@@ -147,7 +147,7 @@ declare function sharing:create-group($group-name as xs:string, $owner as xs:str
         else() 
 };
 
-declare function sharing:update-group($group-name as xs:string, $group-members as xs:string) as xs:string
+declare function sharing:update-group($group-name as xs:string, $group-members as xs:string+) as xs:string
 {
     let $group := fn:collection($config:groups-collection)/group:group[group:name eq $group-name],
     $group-id := $group/@id,
@@ -155,7 +155,7 @@ declare function sharing:update-group($group-name as xs:string, $group-members a
     $existing-group-members := security:get-group-members($system-group),
     $group-modifications := (
         for $existing-group-member in $existing-group-members return
-            if(fn:contains($group-members, $existing-group-member))then
+            if($group-members = $existing-group-member)then
             (
                 (: user is in both lists, do nothing :)
             )
@@ -170,7 +170,7 @@ declare function sharing:update-group($group-name as xs:string, $group-members a
             )
         ,
         for $group-member in $group-members return
-            if(fn:contains($existing-group-members, $group-member))then
+            if($existing-group-members = $group-member)then
             (
                 (: user is in both lists, do nothing :)
             )
