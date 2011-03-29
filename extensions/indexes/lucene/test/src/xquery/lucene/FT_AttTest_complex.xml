@@ -57,13 +57,13 @@
             ]]></code>
         <expected>val2</expected>
     </test>
-    <!--test output="text">
+    <test output="text" ignore="yes">
         <task>[query] old FT index (qname), attribute context (attribute::)</task>
         <code><![CDATA[
             collection('/db/coll')//p/attribute::att1[match-any(., 'val1')]/string()
             ]]></code>
         <expected>val1</expected>
-    </test-->
+    </test>
     <test output="text">
         <task>[query] old FT index (path), attribute context, path (attribute::)</task>
         <code><![CDATA[
