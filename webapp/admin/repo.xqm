@@ -229,7 +229,7 @@ declare function repomanager:main() as element() {
                             else (
                                 <a href="?panel=repo&amp;action=activate&amp;name={$package-name}&amp;package={$pkg-name}&amp;type={$type}">Install</a>,
                                 <span> | </span>,
-                                <a href="?panel=repo&amp;action=activate&amp;name={$package-name}">Remove</a>
+                                <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">Remove</a>
                             )
                            }
            
