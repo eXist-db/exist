@@ -358,12 +358,12 @@ public class SendEmailFunction extends BasicFunction
             if(mail.getFrom().indexOf("<") != -1)
             {
                 //yes, just send the email address
-                smtpOut.println("MAIL FROM: " + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")));
+                smtpOut.println("MAIL FROM:<" + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")) + ">");
             }
             else
             {
                 //no, doesnt include a name so send the email address
-                smtpOut.println("MAIL FROM: " + mail.getFrom());
+                smtpOut.println("MAIL FROM:<" + mail.getFrom() + ">");
             }
             smtpOut.flush();
 
@@ -388,11 +388,11 @@ public class SendEmailFunction extends BasicFunction
                 if(((String)allrecipients.get(x)).indexOf("<") != -1)
                 {
                     //yes, just send the email address
-                    smtpOut.println("RCPT TO: " + ((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">")));
+                    smtpOut.println("RCPT TO:<" + ((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">")) + ">");
                 }
                 else
                 {
-                    smtpOut.println("RCPT TO: " + ((String)allrecipients.get(x)));
+                    smtpOut.println("RCPT TO:<" + ((String)allrecipients.get(x)) + ">");
                 }
                 smtpOut.flush();
 
