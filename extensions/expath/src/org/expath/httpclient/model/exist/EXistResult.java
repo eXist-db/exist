@@ -49,7 +49,7 @@ public class EXistResult implements Result {
         this.context = context;
     }
     
-    @Override
+    //@Override
     public void add(String string) throws HttpClientException {
         try {
             result.add(new StringValue(string));
@@ -59,7 +59,7 @@ public class EXistResult implements Result {
     }
 
     //TODO would be better if the EXPath API provided a stream!
-    @Override
+    //@Override
     public void add(byte[] bytes) throws HttpClientException {
         try {
             result.add(new Base64Binary(bytes));
@@ -68,7 +68,7 @@ public class EXistResult implements Result {
         }
     }
 
-    @Override
+    //@Override
     public void add(Source src) throws HttpClientException {
         
         try {
@@ -85,7 +85,7 @@ public class EXistResult implements Result {
         }
     }
 
-    @Override
+    //@Override
     public void add(HttpResponse response) throws HttpClientException {
         EXistTreeBuilder builder = new EXistTreeBuilder(context);
         response.outputResponseElement(builder);

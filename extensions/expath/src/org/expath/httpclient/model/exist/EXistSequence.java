@@ -53,12 +53,12 @@ public class EXistSequence implements Sequence {
         this.context = context;
     }
     
-    @Override
+    //@Override
     public boolean isEmpty() throws HttpClientException {
         return sequence.isEmpty();
     }
 
-    @Override
+    //@Override
     public Sequence next() throws HttpClientException {
         try {
             return new EXistSequence((NodeValue)sequenceIterator.nextItem(), context);
@@ -67,7 +67,7 @@ public class EXistSequence implements Sequence {
         }
     }
 
-    @Override
+    //@Override
     public void serialize(OutputStream out, Properties params) throws HttpClientException {
         
         

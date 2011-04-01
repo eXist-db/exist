@@ -52,11 +52,11 @@ public class EXistElement implements Element {
         this.context = context;
     }
     
-    @Override
+    //@Override
     public Iterable<Attribute> attributes() throws HttpClientException {
         
         return new Iterable<Attribute>() {
-            @Override
+            //@Override
             public Iterator<Attribute> iterator() {
                 return new Iterator<Attribute>() {
                     
@@ -64,12 +64,12 @@ public class EXistElement implements Element {
                     private final int length = attrs.getLength();
                     private int position = 0;
                     
-                    @Override
+                    //@Override
                     public boolean hasNext() {
                         return(position < length);
                     }
 
-                    @Override
+                    //@Override
                     public Attribute next() {
                         if(position >= length){
                             throw new NoSuchElementException();
@@ -78,7 +78,7 @@ public class EXistElement implements Element {
                         return new EXistAttribute((Attr)attrs.item(position++));
                     }
 
-                    @Override
+                    //@Override
                     public void remove() {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
@@ -88,19 +88,19 @@ public class EXistElement implements Element {
         };
     }
 
-    @Override
+    //@Override
     public Iterable<Element> children() throws HttpClientException {
         final Node node = element.getNode();
         return new IterableElement(node);
     }
 
-    @Override
+    //@Override
     public String getAttribute(String local_name) throws HttpClientException {
         NamedNodeMap attrs = element.getNode().getAttributes();
         return ((Attr)attrs.getNamedItem(local_name)).getValue();
     }
 
-    @Override
+    //@Override
     public Sequence getContent() throws HttpClientException {
         org.exist.xquery.value.Sequence valueSequence = new ValueSequence();
         
@@ -117,22 +117,22 @@ public class EXistElement implements Element {
         }
     }
 
-    @Override
+    //@Override
     public String getDisplayName() throws HttpClientException {
         return element.getNode().getNodeName();
     }
 
-    @Override
+    //@Override
     public String getLocalName() throws HttpClientException {
         return element.getNode().getLocalName();
     }
 
-    @Override
+    //@Override
     public String getNamespaceUri() {
         return element.getNode().getNamespaceURI();
     }
 
-    @Override
+    //@Override
     public boolean hasNoNsChild() throws HttpClientException {
         NodeList children = element.getNode().getChildNodes();
         for(int i = 0; i < children.getLength(); i++) {
@@ -144,7 +144,7 @@ public class EXistElement implements Element {
         return false;
     }
 
-    @Override
+    //@Override
     public Iterable<Element> httpNsChildren() throws HttpClientException {
        
         final Node node = element.getNode();
@@ -165,7 +165,7 @@ public class EXistElement implements Element {
      * HTTP Client namespace, or in no namespace and the name of which is not
      * in {@code names}.
      */
-    @Override
+    //@Override
     public void noOtherNCNameAttribute(String[] names) throws HttpClientException {
         NamedNodeMap attributes = element.getNode().getAttributes();
         
@@ -204,7 +204,7 @@ public class EXistElement implements Element {
             this.inNamespaceURI = inNamespaceURI;
         }
         
-        @Override
+        //@Override
         public Iterator<Element> iterator() {
             return new ElementIterator(node, inNamespaceURI);
         }
@@ -224,12 +224,12 @@ public class EXistElement implements Element {
             this.inNamespaceURI = inNamespaceURI;
         }
 
-        @Override
+        //@Override
         public boolean hasNext() {
             return(position < getLength());
         }
 
-        @Override
+        //@Override
         public Element next() {
             if(position >= getLength()){
                 throw new NoSuchElementException();
@@ -238,7 +238,7 @@ public class EXistElement implements Element {
             return new EXistElement((NodeValue)getElements().get(position++), context);
         }
 
-        @Override
+        //@Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
