@@ -1,3 +1,57 @@
+/*docs begin*/
+
+.app-name {display: none}
+
+#sidebar {
+    top: 11em;
+}
+
+ol, ul {
+    font-size: 1.2em;
+}
+
+h1 {
+    background-color: #5DB0E6;
+}
+
+.publication {
+    color: #3399CC;
+}
+
+.container {
+    color: #BDA21E;
+}
+
+.location{
+    color: #B02B73;
+}
+
+.chapter {
+    font-size: 1.2em;
+    }
+
+table.center {
+    margin-left:auto; 
+    margin-right:auto;
+    }
+
+.chapter p {
+    font-size: 1.2em;
+}
+
+.note {
+    background-color: #5DB0E6;
+    border-left: 2px solid #5DB0E6;
+    border-right: 2px solid #5DB0E6;
+    border-bottom: 2px solid #5DB0E6;
+}
+
+.note .note_content {
+    background-color: #EDF0FA;
+    }
+
+/*docs end*/    
+
 p, td {
     line-height: 1.25em;
 }
@@ -29,13 +83,23 @@ td .select
     height: 14em;
 }
 
+#page-head-left {
+    position: absolute;
+    left: 0;
+}
+
+#page-head-right {
+    position: absolute;
+    right: 0;
+    margin-top: 1em;
+}
+
 a, 
 a:visited 
     {
-    font-weight: normal;
-    text-decoration: none;
+    color: #5DB0E6;
     }
-
+    
 /*folder view*/
 
 #collection-tree {
@@ -118,10 +182,6 @@ td.collection-path {
     margin: 8px 8px;
 }
 
-#main-content {
-    margin-left: 50px;
-}
-
 .search-form td {
     padding: 4px 4px 0 4px;
     text-align: left;
@@ -197,9 +257,6 @@ table tr.repeat {
     padding: 2px 8px 12px 8px;
 }
 
-#result-container {
-}
-
 #results {
     margin-top: .5em;
 }
@@ -269,7 +326,7 @@ a:hover {
 .pagination-toggle {
     cursor: pointer;
     text-decoration: none;
-    line-height: 2em;
+    line-height: 1.8em;
     padding-left: .5em;
     padding-right: .5em;
     width:100% !important;
@@ -314,14 +371,23 @@ a:hover {
 }
 
 .pagination-n, 
-.actions 
+.actions-cell,
+.detail-type,
+.list-type
 {
-    width: 2em;
     text-align: center;
-    vertical-align: middle;
-    padding: 0;
+    vertical-align: top;
     margin: 0;
 }
+
+.list-type img {
+    margin-right: 4px;
+    width: 2em;
+    
+}
+.pagination-n {
+    padding: 0.55em 0 0 0;
+ }
 
 .subject td {
     vertical-align: middle;
@@ -329,18 +395,21 @@ a:hover {
     padding: 0;    
 }
 
+.action-toolbar {
+    float: right;
+}
 td .biblio-full {
     background-color: white;
     width: 100%;
     color: #555555;
-    margin-top: -2em;
+    margin-top: -1em;
 }
 
 td .biblio-full .label {
     text-align: right;
     padding-right: 1em;
     vertical-align: middle;
-    width: 30% !important;
+    width: 45em;
     color: #5DB0E6;
 }
 
@@ -398,7 +467,7 @@ td .biblio-full .deemph {
 
 .save img, .actions-toolbar img {
     border: 0;
-    margin: 0;
+    margin: 0 0 0;
 }
 
 .ui-widget {

@@ -1,1 +1,59 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID=""><titleInfo lang="" script="Latn" type=""><nonSort/><title/><subTitle/></titleInfo><name type="corporate"><namePart/></name><originInfo><place><placeTerm type="text"/></place><publisher/><dateIssued encoding="w3cdtf"/><issuance>monographic</issuance></originInfo><part/><physicalDescription><extent/></physicalDescription><targetAudience authority="marctarget">adult</targetAudience><typeOfResource>cartographic</typeOfResource><genre authority="marcgt">map</genre><subject authority="" xlink="" lang="" script="" transliteration=""><topic authority=""/><geographic/><temporal encoding="w3cdtf" point="" keyDate=""/><hierarchicalGeographic><continent/><country/><province/><region/><state/><territory/><county/><city/><citySection/><island/><area/><extraterrestrialArea/></hierarchicalGeographic><cartographics><scale/><coordinates/><projection/></cartographics><geographicCode authority=""/></subject><classification authority="lcc" displayLabel="" lang=""/><abstract/><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><relatedItem/><identifier displayLabel="" type="local"/><location/><accessCondition/></mods>
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo lang="" script="Latn" type="">
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="corporate">
+        <namePart/>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text"/>
+        </place>
+        <publisher/>
+        <dateIssued encoding="w3cdtf"/>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <part/>
+    <physicalDescription>
+        <extent/>
+    </physicalDescription>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>cartographic</typeOfResource>
+    <genre authority="marcgt">map</genre>
+    <subject authority="" xlink="" lang="" script="" transliteration="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <hierarchicalGeographic>
+            <continent/>
+            <country/>
+            <province/>
+            <region/>
+            <state/>
+            <territory/>
+            <county/>
+            <city/>
+            <citySection/>
+            <island/>
+            <area/>
+            <extraterrestrialArea/>
+        </hierarchicalGeographic>
+        <cartographics>
+            <scale/>
+            <coordinates/>
+            <projection/>
+        </cartographics>
+        <geographicCode authority=""/>
+    </subject>
+    <classification authority="lcc" displayLabel="" lang=""/>
+    <abstract/>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <relatedItem/>
+    <identifier displayLabel="" type="local"/>
+    <location/>
+    <accessCondition/>
+</mods>

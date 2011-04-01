@@ -1,1 +1,23 @@
-<code-table><code-table-name>name-role-relator-authority-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/sourcelist/relator-role.html</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>Local</label><value>local</value></item><item><label>MARC Code List for Relators</label><value>marcrelator</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>name-role-relator-authority-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/sourcelist/relator-role.html</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Local</label>
+            <value>local</value>
+        </item>
+        <item>
+            <label>MARC Code List for Relators</label>
+            <value>marcrelator</value>
+        </item>
+    </items>
+</code-table>

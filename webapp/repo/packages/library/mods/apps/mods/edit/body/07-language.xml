@@ -1,24 +1,77 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="language" tab-id="language"><div class="block-form">
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="language" tab-id="language">
+    <div class="block-form">
         <!--DLF/Aquifer: Recommended if applicable-->
         <!--Cluster: include-->
         <!-- DLF/Aquifer: Required, if language is primary to resource. Required: at least one pair of languageTerm elements representing the primary language of the text wrapped in a single language element. One of these languageTerm elements should carry the attribute type="text" and the other should have type="code". -->
         <!--Cluster: Allow coded input in iso639-2b code only. iso639-2b is the code used for @lang = language-3-type-sorted-code. Have textual equivalent input automatically. -->
-        <!--NB: This element can be repeated because of @objectPart. DLF/Aquifer holds @objectPart to be an attribute on languageTerm, Guidelines hold @objectPart to be an attribute on on language. --><fieldset class="level-1"><div class="join wide"><span class="legend">Resource Languages</span><span class="join-button"><xf:trigger><xf:label>&#160;+</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:language" at="index('language-repeat')" position="after"/></xf:action></xf:trigger></span><span class="join-button"><xf:trigger><xf:label>&#160;–</xf:label><xf:action ev:event="DOMActivate"><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language" at="index('language-repeat')"/></xf:action></xf:trigger></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Here the language of the contents of the described resource as a whole is noted. </p><p> Language may also be expressed in relation to a single field, by means of the Language field, in order to note the language used in
+        <!--NB: This element can be repeated because of @objectPart. DLF/Aquifer holds @objectPart to be an attribute on languageTerm, Guidelines hold @objectPart to be an attribute on on language. -->
+        <fieldset class="level-1">
+            <div class="join wide">
+                <span class="legend">Resource Languages</span>
+                <span class="join-button">
+                    <xf:trigger>
+                        <xf:label>&#160;+</xf:label>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:language" at="index('language-repeat')" position="after"/>
+                        </xf:action>
+                    </xf:trigger>
+                </span>
+                <span class="join-button">
+                    <xf:trigger>
+                        <xf:label>&#160;–</xf:label>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language" at="index('language-repeat')"/>
+                        </xf:action>
+                    </xf:trigger>
+                </span>
+                <span class="xforms-hint">
+                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
+                    <div class="xforms-hint-value">
+                        <p> Here the language of the contents of the described resource as a whole is noted. </p>
+                        <p> Language may also be expressed in relation to a single field, by means of the Language field, in order to note the language used in
                             a particular field. This is only necessary if the language used in the field in quesiotn (e.g. in an alternative title) is different
-                            from the language noted in Resource Language. </p><p> Cataloging Language under Record Info is used to note the language used in the record itself. Cataloging Language is not the
+                            from the language noted in Resource Language. </p>
+                        <p> Cataloging Language under Record Info is used to note the language used in the record itself. Cataloging Language is not the
                             Resource Language, but of the metadata describing a resource, i.e. the record you are working on or looking at now. The Language of
                             Cataloging is assumed to be English; if you wish to note another Language of Cataloging, click "Show All" to display the required
-                            tab.. </p><p> At least one Resource Language field is required for all resources in which language is primary to understanding the resource. These
-                            resources include textual resources, but also audio and video resources with spoken word components. </p><p> Although Language is usually not required for non-textual resources such as images, it could be used effectively for such resources
+                            tab.. </p>
+                        <p> At least one Resource Language field is required for all resources in which language is primary to understanding the resource. These
+                            resources include textual resources, but also audio and video resources with spoken word components. </p>
+                        <p> Although Language is usually not required for non-textual resources such as images, it could be used effectively for such resources
                             when language is a component. Examples of the latter might include a photograph of a sign with text or a monument with an
-                            inscription. </p><p> The Language field is optional for resources in which language is important to understanding the resource, but not primary. For
+                            inscription. </p>
+                        <p> The Language field is optional for resources in which language is important to understanding the resource, but not primary. For
                             example, the caption of a photograph may in some instances be important to understanding the photograph, but not primary. If the
-                            content of the resource is in more than one language, Language is repeated for each language employed. </p></div></span></div>
+                            content of the resource is in more than one language, Language is repeated for each language employed. </p>
+                    </div>
+                </span>
+            </div>
             
-            <!--language repeat begins--><xf:repeat nodeset="instance('save-data')/mods:language" id="language-repeat">
+            <!--language repeat begins-->
+            <xf:repeat nodeset="instance('save-data')/mods:language" id="language-repeat">
                 
                     <!--language node-add begins-->
-                    <!--NB: attributes do not work--><xf:group appearance="full" ref=".[not(mods:languageTerm)]"><xf:switch><xf:case id="language-add-node-hide"><div class="node-button"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">&gt;</xf:label><xf:toggle case="language-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="language-add-node-unhide"><div class="node-button"><xf:trigger><xf:label class="xforms-group-label-centered">&lt;</xf:label><xf:toggle case="language-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="language-add-node-recommended" ref=".[not(mods:languageTerm)]" appearance="full">
+                    <!--NB: attributes do not work-->
+                <xf:group appearance="full" ref=".[not(mods:languageTerm)]">
+                    <xf:switch>
+                        <xf:case id="language-add-node-hide">
+                            <div class="node-button">
+                                <xf:trigger class="add-button">
+                                    <xf:label class="xforms-group-label-centered">&gt;</xf:label>
+                                    <xf:toggle case="language-add-node-unhide" ev:event="DOMActivate"/>
+                                </xf:trigger>
+                            </div>
+                        </xf:case>
+                        <xf:case id="language-add-node-unhide">
+                            <div class="node-button">
+                                <xf:trigger>
+                                    <xf:label class="xforms-group-label-centered">&lt;</xf:label>
+                                    <xf:toggle case="language-add-node-hide" ev:event="DOMActivate"/>
+                                </xf:trigger>
+                            </div>
+                            <div class="node-adds">
+                                <xf:group id="language-add-node-recommended" ref=".[not(mods:languageTerm)]" appearance="full">
                                         <!--<xf:label class="xforms-group-label-centered">Recommended Fields</xf:label>-->
                                         <!--
                                             <xf:trigger ref=".[not(@objectPart)]" class="add-button">
@@ -28,115 +81,513 @@
                                             <xf:insert context="." origin="instance('insert-templates')/mods:language/mods:languageTerm/@objectPart"/>
                                             </xf:action>
                                             </xf:trigger>                        
-                                        --><xf:trigger ref=".[not(mods:languageTerm)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Language Term</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="language-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:languageTerm" at="index('language-repeat')" position="after" origin="instance('insert-templates')/mods:language/mods:languageTerm"/></xf:action></xf:trigger></xf:group></div></xf:case></xf:switch></xf:group>
+                                        -->
+                                    <xf:trigger ref=".[not(mods:languageTerm)]" class="add-button">
+                                        <xf:label class="xforms-group-label-centered">Add Language Term</xf:label>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="language-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert nodeset="mods:languageTerm" at="index('language-repeat')" position="after" origin="instance('insert-templates')/mods:language/mods:languageTerm"/>
+                                        </xf:action>
+                                    </xf:trigger>
+                                </xf:group>
+                            </div>
+                        </xf:case>
+                    </xf:switch>
+                </xf:group>
                     <!--language node-add ends-->
                     <!--language input begins-->
                     <!--DLF/Aquifer: OPTIONAL-->
-                    <!--Cluster: include--><xf:group ref=".[@objectPart]" appearance="full"><xf:input ref="./@objectPart" class="text_50"><xf:label>Object Part: </xf:label><xf:hint><p> This field designates which part of the resource is in the language stated in Language Term. The values of the field are not
+                    <!--Cluster: include-->
+                <xf:group ref=".[@objectPart]" appearance="full">
+                    <xf:input ref="./@objectPart" class="text_50">
+                        <xf:label>Object Part: </xf:label>
+                        <xf:hint>
+                            <p> This field designates which part of the resource is in the language stated in Language Term. The values of the field are not
                                     controlled by an authority list; examples of values of Object Part are "Summary" and "Caption". If you use this field, use
-                                    expressions of similar generality. </p></xf:hint></xf:input></xf:group><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in
-                                    Language of Resource. The most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    expressions of similar generality. </p>
+                        </xf:hint>
+                    </xf:input>
+                </xf:group>
+                <xf:group ref=".[@lang]" appearance="full">
+                    <xf:select1 ref="./@lang">
+                        <xf:label>Language:</xf:label>
+                        <xf:hint>
+                            <p> The language used within Title Information is specified here, if this language is different from the language noted in
+                                    Language of Resource. The most common languages have been moved to the top of the list. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                    <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in
+                    <!--Cluster: omit-->
+                <xf:group ref=".[@xml:lang]" appearance="full">
+                    <xf:select1 ref="./@xml:lang">
+                        <xf:label>xml:lang:</xf:label>
+                        <xf:hint>
+                            <p> The language used within Title Information is specified here, if this language is different from the language noted in
                                     Language of Resource. xml:lang is used to specify the language used within a field, using specifications in RFC 3066. RFC
                                     3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in
-                                    639-1. </p><p> The recommendation is not to use xml:lang, but to use the Language. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    639-1. </p>
+                            <p> The recommendation is not to use xml:lang, but to use the Language. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                    <!--Cluster: include--><xf:group ref=".[@type]" appearance="full"><xf:select1 ref="./@type"><xf:label>Type:</xf:label><xf:hint><p> This field is used to express whether the Language Term value is in textual or coded form. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. When
+                    <!--Cluster: include-->
+                <xf:group ref=".[@type]" appearance="full">
+                    <xf:select1 ref="./@type">
+                        <xf:label>Type:</xf:label>
+                        <xf:hint>
+                            <p> This field is used to express whether the Language Term value is in textual or coded form. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='code-text-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
+                <xf:group ref=".[@type='transliterated']" appearance="full">
+                    <xf:select1 ref="./@transliteration" selection="open">
+                        <xf:label>Transliteration:</xf:label>
+                        <xf:hint>
+                            <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. When
                                     specificing the transliteration used, also specify the language employed. There is at present no standard list of
                                     transliteration schemes available. If you wish to employ a transliteration on the scheme, please contact <!--contact -->. In
                                     general, the Library of Congress transliteration schemes (<!-- NB -->) should be used. If you follow a transliteration
                                     scheme authorised by <!--NB-->, choose <!--NB--> as the value and note the language from which the transliteration is made.
                                     The following transliteration schemes are authorised by <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean:
                                     <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB--> If you employ a different, but recognised, transliteration scheme, you may
-                                    have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    have it added to the list. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                    <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
+                    <!--Cluster: include-->
+                <xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full">
+                    <xf:select1 ref="./@script">
+                        <xf:label>Script:</xf:label>
+                        <xf:hint>
+                            <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
                                     (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji,
-                                    Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--DLF/Aquifer: OPTIONAL]]-->
-                    <!--Cluster: hide--><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_100"><xf:label>Display Label: </xf:label><xf:hint><p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may
+                    <!--Cluster: hide-->
+                <xf:group ref=".[@displayLabel]" appearance="full">
+                    <xf:input ref="./@displayLabel" class="text_100">
+                        <xf:label>Display Label: </xf:label>
+                        <xf:hint>
+                            <p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may
                                     be used whenever appropriate to indicate the preferred labeling when displayed. Appropriate cases include titles other than
                                     the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons.
-                                </p></xf:hint></xf:input></xf:group>
+                                </p>
+                        </xf:hint>
+                    </xf:input>
+                </xf:group>
                     <!--DLF/Aquifer: N/A]]-->
-                    <!--Cluster: hide--><xf:group ref=".[@altRepGroup]" appearance="full"><xf:select1 ref="./@altRepGroup" selection="open"><xf:label>altRepGroup: </xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--Cluster: hide-->
+                <xf:group ref=".[@altRepGroup]" appearance="full">
+                    <xf:select1 ref="./@altRepGroup" selection="open">
+                        <xf:label>altRepGroup: </xf:label>
+                        <xf:hint>Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--DLF/Aquifer: N/A]]-->
-                    <!--Cluster: hide--><xf:group ref=".[@usage]" appearance="full"><xf:select1 ref="./@usage"><xf:label>Usage: </xf:label><xf:hint><p>Usage with the value "primary" can be used with repeated fields to indicate special prominence of one that is useful for
-                                    various special purposes such as indexing.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--Cluster: hide-->
+                <xf:group ref=".[@usage]" appearance="full">
+                    <xf:select1 ref="./@usage">
+                        <xf:label>Usage: </xf:label>
+                        <xf:hint>
+                            <p>Usage with the value "primary" can be used with repeated fields to indicate special prominence of one that is useful for
+                                    various special purposes such as indexing.</p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                     <!--language input ends-->
-                    <!--languageTerm begins--><xf:group id="fieldset-languageTerm" ref=".[mods:languageTerm]"><fieldset class="level-2"><div class="join"><span class="legend">Language Terms</span><span class="join-button"><xf:trigger><xf:label>&#160;+</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:languageTerm" at="index('languageTerm-repeat')" position="after"/></xf:action></xf:trigger></span><span class="join-button"><xf:trigger><xf:label>&#160;–</xf:label><xf:action ev:event="DOMActivate"><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language/mods:languageTerm" at="index('languageTerm-repeat')"/></xf:action></xf:trigger></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Language Term specifies the language(s) of the content of the resource.
+                    <!--languageTerm begins-->
+                <xf:group id="fieldset-languageTerm" ref=".[mods:languageTerm]">
+                    <fieldset class="level-2">
+                        <div class="join">
+                            <span class="legend">Language Terms</span>
+                            <span class="join-button">
+                                <xf:trigger>
+                                    <xf:label>&#160;+</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:insert nodeset="mods:languageTerm" at="index('languageTerm-repeat')" position="after"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </span>
+                            <span class="join-button">
+                                <xf:trigger>
+                                    <xf:label>&#160;–</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language/mods:languageTerm" at="index('languageTerm-repeat')"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </span>
+                            <span class="xforms-hint">
+                                <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
+                                <div class="xforms-hint-value">
+                                    <p> Language Term specifies the language(s) of the content of the resource.
                                             <!--NB: revise after question of two types of input is solved.--> It may be expressed in textual or coded form. If
                                             in coded form, the source of the code should be indicated in the value of the authority field. If no authority is
                                             given, it is assumed that the content is textual, i.e. that the Type is "text". If there is more than one
                                             representation of the same language, e.g. using different forms of the same language (code or text) or from
-                                            different authorities, Language Term is repeated within the Language container. </p></div></span></div>
-                            <!--languageTerm repeat begins--><xf:repeat nodeset="instance('save-data')/mods:language/mods:languageTerm" id="languageTerm-repeat">
-                                <!--languageTerm input begins--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language
-                                                noted in Language of Resource. The most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                            different authorities, Language Term is repeated within the Language container. </p>
+                                </div>
+                            </span>
+                        </div>
+                            <!--languageTerm repeat begins-->
+                        <xf:repeat nodeset="instance('save-data')/mods:language/mods:languageTerm" id="languageTerm-repeat">
+                                <!--languageTerm input begins-->
+                            <xf:group ref=".[@lang]" appearance="full">
+                                <xf:select1 ref="./@lang">
+                                    <xf:label>Language:</xf:label>
+                                    <xf:hint>
+                                        <p> The language used within Title Information is specified here, if this language is different from the language
+                                                noted in Language of Resource. The most common languages have been moved to the top of the list. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                                <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language
+                                <!--Cluster: omit-->
+                            <xf:group ref=".[@xml:lang]" appearance="full">
+                                <xf:select1 ref="./@xml:lang">
+                                    <xf:label>xml:lang:</xf:label>
+                                    <xf:hint>
+                                        <p> The language used within Title Information is specified here, if this language is different from the language
                                                 noted in Language of Resource. xml:lang is used to specify the language used within a field, using
                                                 specifications in RFC 3066. RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2
-                                                codes for those languages not given in 639-1. </p><p> The recommendation is not to use xml:lang, but to use the Language. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                                codes for those languages not given in 639-1. </p>
+                                        <p> The recommendation is not to use xml:lang, but to use the Language. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include--><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title
+                                <!--Cluster: include-->
+                            <xf:group ref=".[@type='transliterated']" appearance="full">
+                                <xf:select1 ref="./@transliteration" selection="open">
+                                    <xf:label>Transliteration:</xf:label>
+                                    <xf:hint>
+                                        <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title
                                                 Information. When specificing the transliteration used, also specify the language employed. There is at present
                                                 no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme,
                                                 please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should
                                                 be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note
                                                 the language from which the transliteration is made. The following transliteration schemes are authorised by
                                                 <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB-->
-                                                If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                                If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is
+                                <!--Cluster: include-->
+                            <xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full">
+                                <xf:select1 ref="./@script">
+                                    <xf:label>Script:</xf:label>
+                                    <xf:hint>
+                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is
                                                 "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han
-                                                (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                                (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: OPTIONAL-->
                                 <!--Cluster: include, with default "code"-->
                                 <!--NB: Both text and code version should be saved.-->
                                 <!--DLF/Aquifer: REQUIRED-->
-                                <!--Cluster: include, with default "iso639-2b"--><xf:group ref=".[@type='code']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: include, with default "iso639-2b"-->
+                            <xf:group ref=".[@type='code']" appearance="full">
+                                <xf:select1 ref="./@authority">
+                                    <xf:label>Authority:</xf:label>
+                                    <xf:hint>
+                                        <p> The name of the authoritative list for a controlled value is recorded here. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: N/A]]-->
-                                <!--Cluster: hide--><xf:group ref=".[@authorityURI]" appearance="full"><xf:select1 ref="./@authorityURI" selection="open"><xf:label>authorityURI: </xf:label><xf:hint> Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: hide-->
+                            <xf:group ref=".[@authorityURI]" appearance="full">
+                                <xf:select1 ref="./@authorityURI" selection="open">
+                                    <xf:label>authorityURI: </xf:label>
+                                    <xf:hint> Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: N/A]]-->
-                                <!--Cluster: hide--><xf:group ref=".[@valueURI]" appearance="full"><xf:select1 ref="./@valueURI"><xf:label>valueURI: </xf:label><xf:hint> Hint </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_100"><xf:label>Type: </xf:label><xf:hint> Hint </xf:hint></xf:input></xf:group>
+                                <!--Cluster: hide-->
+                            <xf:group ref=".[@valueURI]" appearance="full">
+                                <xf:select1 ref="./@valueURI">
+                                    <xf:label>valueURI: </xf:label>
+                                    <xf:hint> Hint </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                            <xf:group ref=".[@type]" appearance="full">
+                                <xf:input ref="./@type" class="text_100">
+                                    <xf:label>Type: </xf:label>
+                                    <xf:hint> Hint </xf:hint>
+                                </xf:input>
+                            </xf:group>
                                 <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[@type='code']" appearance="full"><xf:select1 ref="."><xf:label>Language Term (code):</xf:label><xf:hint><p> Language Term specifies the language(s) of the content of the resource. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
-                                <!--NB: code tables for rfc3066, iso639-3 and rfc4646 could be made as well.--><xf:group ref=".[@type='text']" appearance="full"><xf:select1 ref="."><xf:label>Language Term (text):</xf:label><xf:hint><p> Language Term specifies the language(s) of the content of the resource. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item[value=instance('save-data')/mods:language/mods:languageTerm[@type='code']]"><xf:label ref="label"/><xf:value ref="label"/></xf:itemset></xf:select1></xf:group>
-                                <!--languageTerm input ends--></xf:repeat>
-                            <!--languageTerm repeat ends--></fieldset></xf:group>
+                                <!--Cluster: include-->
+                            <xf:group ref=".[@type='code']" appearance="full">
+                                <xf:select1 ref=".">
+                                    <xf:label>Language Term (code):</xf:label>
+                                    <xf:hint>
+                                        <p> Language Term specifies the language(s) of the content of the resource. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                                <!--NB: code tables for rfc3066, iso639-3 and rfc4646 could be made as well.-->
+                            <xf:group ref=".[@type='text']" appearance="full">
+                                <xf:select1 ref=".">
+                                    <xf:label>Language Term (text):</xf:label>
+                                    <xf:hint>
+                                        <p> Language Term specifies the language(s) of the content of the resource. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item[value=instance('save-data')/mods:language/mods:languageTerm[@type='code']]">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="label"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                                <!--languageTerm input ends-->
+                        </xf:repeat>
+                            <!--languageTerm repeat ends-->
+                    </fieldset>
+                </xf:group>
                     <!--languageTerm ends-->
-                    <!--scriptTerm begins--><xf:group id="fieldset-scriptTerm" ref=".[mods:scriptTerm]"><fieldset class="level-2"><div class="join"><span class="legend">Script Terms</span><span class="join-button"><xf:trigger><xf:label>&#160;+</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:scriptTerm" at="index('scriptTerm-repeat')" position="after"/></xf:action></xf:trigger></span><span class="join-button"><xf:trigger><xf:label>&#160;–</xf:label><xf:action ev:event="DOMActivate"><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language/mods:scriptTerm" at="index('scriptTerm-repeat')"/></xf:action></xf:trigger></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>Hint</p></div></span></div>
-                            <!--scriptTerm repeat begins--><xf:repeat nodeset="instance('save-data')/mods:language/mods:scriptTerm" id="scriptTerm-repeat">
-                                <!--scriptTerm input begins--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Script:</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                    <!--scriptTerm begins-->
+                <xf:group id="fieldset-scriptTerm" ref=".[mods:scriptTerm]">
+                    <fieldset class="level-2">
+                        <div class="join">
+                            <span class="legend">Script Terms</span>
+                            <span class="join-button">
+                                <xf:trigger>
+                                    <xf:label>&#160;+</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:insert nodeset="mods:scriptTerm" at="index('scriptTerm-repeat')" position="after"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </span>
+                            <span class="join-button">
+                                <xf:trigger>
+                                    <xf:label>&#160;–</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:language/mods:scriptTerm" at="index('scriptTerm-repeat')"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </span>
+                            <span class="xforms-hint">
+                                <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
+                                <div class="xforms-hint-value">
+                                    <p>Hint</p>
+                                </div>
+                            </span>
+                        </div>
+                            <!--scriptTerm repeat begins-->
+                        <xf:repeat nodeset="instance('save-data')/mods:language/mods:scriptTerm" id="scriptTerm-repeat">
+                                <!--scriptTerm input begins-->
+                            <xf:group ref=".[@lang]" appearance="full">
+                                <xf:select1 ref="./@lang">
+                                    <xf:label>Script:</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                                <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: omit-->
+                            <xf:group ref=".[@xml:lang]" appearance="full">
+                                <xf:select1 ref="./@xml:lang">
+                                    <xf:label>xml:lang:</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include--><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title
+                                <!--Cluster: include-->
+                            <xf:group ref=".[@type='transliterated']" appearance="full">
+                                <xf:select1 ref="./@transliteration" selection="open">
+                                    <xf:label>Transliteration:</xf:label>
+                                    <xf:hint>
+                                        <p> Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title
                                                 Information. When specificing the transliteration used, also specify the language employed. There is at present
                                                 no standard list of transliteration schemes available. If you wish to employ a transliteration on the scheme,
                                                 please contact <!--contact -->. In general, the Library of Congress transliteration schemes (<!-- NB -->) should
                                                 be used. If you follow a transliteration scheme authorised by <!--NB-->, choose <!--NB--> as the value and note
                                                 the language from which the transliteration is made. The following transliteration schemes are authorised by
                                                 <!--NB-->: Chinese: pinyin Japanese: (modified) Hepburn Korean: <!--NB--> Russian: <!--NB--> Sanskrit: <!--NB-->
-                                                If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                                If you employ a different, but recognised, transliteration scheme, you may have it added to the list. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                                <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is
+                                <!--Cluster: include-->
+                            <xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full">
+                                <xf:select1 ref="./@script">
+                                    <xf:label>Script:</xf:label>
+                                    <xf:hint>
+                                        <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is
                                                 "Han (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han
-                                                (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                                (Hanzi, Kanji, Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: OPTIONAL-->
                                 <!--Cluster: include, with default "code"-->
                                 <!--NB: Both text and code version should be saved.-->
                                 <!--DLF/Aquifer: REQUIRED-->
-                                <!--Cluster: include, with default "iso639-2b"--><xf:group ref=".[@type='code']" appearance="full"><xf:select1 ref="./@authority"><xf:label>Authority:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: include, with default "iso639-2b"-->
+                            <xf:group ref=".[@type='code']" appearance="full">
+                                <xf:select1 ref="./@authority">
+                                    <xf:label>Authority:</xf:label>
+                                    <xf:hint>
+                                        <p> The name of the authoritative list for a controlled value is recorded here. </p>
+                                    </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-authority-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: N/A]]-->
-                                <!--Cluster: hide--><xf:group ref=".[@authorityURI]" appearance="full"><xf:select1 ref="./@authorityURI" selection="open"><xf:label>authorityURI: </xf:label><xf:hint> Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                <!--Cluster: hide-->
+                            <xf:group ref=".[@authorityURI]" appearance="full">
+                                <xf:select1 ref="./@authorityURI" selection="open">
+                                    <xf:label>authorityURI: </xf:label>
+                                    <xf:hint> Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
                                 <!--DLF/Aquifer: N/A]]-->
-                                <!--Cluster: hide--><xf:group ref=".[@valueURI]" appearance="full"><xf:select1 ref="./@valueURI"><xf:label>valueURI: </xf:label><xf:hint> Hint </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type]" appearance="full"><xf:input ref="./@type" class="text_100"><xf:label>Type: </xf:label><xf:hint> Hint </xf:hint></xf:input></xf:group>
+                                <!--Cluster: hide-->
+                            <xf:group ref=".[@valueURI]" appearance="full">
+                                <xf:select1 ref="./@valueURI">
+                                    <xf:label>valueURI: </xf:label>
+                                    <xf:hint> Hint </xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                            <xf:group ref=".[@type]" appearance="full">
+                                <xf:input ref="./@type" class="text_100">
+                                    <xf:label>Type: </xf:label>
+                                    <xf:hint> Hint </xf:hint>
+                                </xf:input>
+                            </xf:group>
                                 <!--DLF/Aquifer: REQUIRED IF APPLICABLE-->
-                                <!--Cluster: include--><xf:group ref=".[@type='code']" appearance="full"><xf:select1 ref="."><xf:label>Script Term (code):</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@type='text']" appearance="full"><xf:select1 ref="."><xf:label>Script Term (text):</xf:label><xf:hint>Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item[value=instance('save-data')/mods:language/mods:scriptTerm[@type='code']]"><xf:label ref="label"/><xf:value ref="label"/></xf:itemset></xf:select1></xf:group>
-                                <!--scriptTerm input ends--></xf:repeat>
-                            <!--scriptTerm repeat ends--></fieldset></xf:group>
-                    <!--scriptTerm ends--></xf:repeat>
-            <!--language repeat ends--><xf:group id="language-add-element" ref=".[not(./mods:language)]" appearance="full"><xf:trigger ref=".[not(mods:language)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Resource Language</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('language-repeat')" position="after" origin="instance('new-instance')/mods:language"/></xf:action></xf:trigger></xf:group></fieldset></div></div>
+                                <!--Cluster: include-->
+                            <xf:group ref=".[@type='code']" appearance="full">
+                                <xf:select1 ref=".">
+                                    <xf:label>Script Term (code):</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="value"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                            <xf:group ref=".[@type='text']" appearance="full">
+                                <xf:select1 ref=".">
+                                    <xf:label>Script Term (text):</xf:label>
+                                    <xf:hint>Hint</xf:hint>
+                                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item[value=instance('save-data')/mods:language/mods:scriptTerm[@type='code']]">
+                                        <xf:label ref="label"/>
+                                        <xf:value ref="label"/>
+                                    </xf:itemset>
+                                </xf:select1>
+                            </xf:group>
+                                <!--scriptTerm input ends-->
+                        </xf:repeat>
+                            <!--scriptTerm repeat ends-->
+                    </fieldset>
+                </xf:group>
+                    <!--scriptTerm ends-->
+            </xf:repeat>
+            <!--language repeat ends-->
+            <xf:group id="language-add-element" ref=".[not(./mods:language)]" appearance="full">
+                <xf:trigger ref=".[not(mods:language)]" class="add-button">
+                    <xf:label class="xforms-group-label-centered">Add Missing Resource Language</xf:label>
+                    <xf:action ev:event="DOMActivate">
+                        <xf:insert nodeset="mods:form" at="index('language-repeat')" position="after" origin="instance('new-instance')/mods:language"/>
+                    </xf:action>
+                </xf:trigger>
+            </xf:group>
+        </fieldset>
+    </div>
+</div>

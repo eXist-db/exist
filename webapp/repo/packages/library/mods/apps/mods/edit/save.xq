@@ -3,13 +3,26 @@ xquery version "1.0";
 (: XQuery script to save a new MODS record from an incoming HTTP POST :)
 
 import module namespace style = "http://exist-db.org/mods-style" at "../../../modules/style.xqm";
-import module namespace clean = "http:/exist-db.org/xquery/mods/cleanup" at "../search/cleanup.xql";
 
+declare namespace clean = "http:/exist-db.org/xquery/mods/cleanup";
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xforms="http://www.w3.org/2002/xforms";
 declare namespace ev="http://www.w3.org/2001/xml-events";
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace e="http://www.asia-europe.uni-heidelberg.de/";
+
+declare function clean:clean-namespaces($node as node()) {
+    typeswitch ($node)
+        case element() return
+            if (namespace-uri($node) eq "http://www.loc.gov/mods/v3") then
+                element { QName("http://www.loc.gov/mods/v3", local-name($node)) } {
+                    $node/@*, for $child in $node/node() return clean:clean-namespaces($child)
+                }
+            else
+                $node
+        default return
+            $node
+};
 
 declare function xf:do-updates($item, $doc) {
     (: This checks to see if we have a titleInfo in the saved document.  
@@ -256,28 +269,16 @@ declare function xf:do-updates($item, $doc) {
     else ()
 };
 
-let $title := 'MODS Record Save'
+(: this is where the form "POSTS" documents to this XQuery using the POST method of a submission :)
+let $item := clean:clean-namespaces(request:get-data())
 
 (: this service takes an incoming POST and saves the appropriate records :)
 (: note that in this version, the incoming @ID is required :)
-(: the user must have write and update access to the data collection :)
 
-(: The data collection passed in the URL :)
+(: This returns "/db/org/library/apps/mods/temp", but the URL contains the target collection as "collection". :)
 let $collection := request:get-parameter('collection', ())
 
 let $action := request:get-parameter('action', 'save')
-
-let $app-collection := $style:db-path-to-app
-
-let $data-collection :=
-    if ($collection) then
-        $collection
-    else
-        $style:db-path-to-app-data
-let $log := util:log("DEBUG", ("Saving to collection: ", $data-collection))
-
-(: this is where the form "POSTS" documents to this XQuery using the POST method of a submission :)
-let $item := clean:clean-namespaces(request:get-data())
 
 (: check to see if we have an indentifier in the incoming post :)
 let $incoming-id := $item/@ID
@@ -294,36 +295,31 @@ if ( string-length($incoming-id) = 0 )
 (: else we are doing an update to an existing file :)
 
 let $file-to-update := concat($incoming-id, '.xml')
-let $file-path := concat($data-collection, '/', $file-to-update)
+let $file-path := concat($collection, '/', $file-to-update)
 
 (: this is the document on disk to be updated :)
 let $doc := doc($file-path)/mods:mods
 
-(: If the incoming has any part then we update it in the document 
+(: If the incoming has any part then we update it in the document. 
 
 Note that is has the side effect of adding the mods prefix in the data files.  Semantically this
 means the same thing but I don't know of a way to tell eXist to always use a default namespace
-when doing an update. :)
+when doing an update. To remedy this, clean:clean-namespaces() is applied to the record. :)
 
 (: TODO: figure out some way to pass the element name to an XQuery function and then do an eval on the update :)
 
 let $updates := 
     if ($action eq 'cancel') then
-        xmldb:remove($data-collection, $file-to-update)
+        xmldb:remove($collection, $file-to-update)
     else
-        xf:do-updates($item, $doc)
-    
-let $copy :=
-    if ($action eq 'close') then
-        (: "$doc/*/e:collection" should in principle be "$doc/mods:extension/e:collection", 
-        but we cannot be sure that there will not be more than one "extension" element 
-        and that "our" extension will be the first. :)
-        let $targetCollection := $doc/*/e:collection
+        if ($action eq 'close') then
+        (: NB: $target-collection should be derived from $target-collection in edit.xq or pulled from the URL. What is the difference from $collection?:)
+        let $target-collection := $doc/mods:extension/e:collection
         return
-            xmldb:move($data-collection, $targetCollection, $file-to-update)
-    else
-        ()
+            xmldb:move($collection, $target-collection, $file-to-update)
+        else
+            xf:do-updates($item, $doc)    
 return
 <results>
-  <message>Update Status = OK titles = {count($item/mods:titleInfo)}</message>
+  <message>Update Status = OK</message>
 </results>

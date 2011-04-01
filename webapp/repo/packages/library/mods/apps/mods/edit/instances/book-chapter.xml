@@ -1,1 +1,63 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID=""><titleInfo><nonSort/><title/><subTitle/></titleInfo><name type="personal"><namePart type="given"/><namePart type="family"/><role><roleTerm type="code">aut</roleTerm></role></name><originInfo><issuance>monographic</issuance></originInfo><part type=""><detail type="" level="" order=""><number/><title/></detail><extent unit=""><start/><end/><total/><list/></extent><text/></part><physicalDescription/><targetAudience authority="marctarget">adult</targetAudience><typeOfResource>text</typeOfResource><genre>chapter</genre><subject authority="" xlink="" lang="" script="" transliteration=""><topic authority=""/><geographic/><temporal encoding="w3cdtf" point="" keyDate=""/><titleInfo lang="" type="" authority="" script="" transliteration=""><nonSort/><title/><subTitle/></titleInfo><name type="" authority="" script="" transliteration=""><namePart type=""/></name></subject><classification authority="lcc" displayLabel="" lang=""/><abstract/><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><relatedItem type="host" xlink=""><part><extent unit="page"><start/><end/></extent></part></relatedItem><identifier displayLabel="" type="local"/><location/><accessCondition/></mods>
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo>
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="personal">
+        <namePart type="given"/>
+        <namePart type="family"/>
+        <role>
+            <roleTerm type="code">aut</roleTerm>
+        </role>
+    </name>
+    <originInfo>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <part type="">
+        <detail type="" level="" order="">
+            <number/>
+            <title/>
+        </detail>
+        <extent unit="">
+            <start/>
+            <end/>
+            <total/>
+            <list/>
+        </extent>
+        <text/>
+    </part>
+    <physicalDescription/>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>text</typeOfResource>
+    <genre>chapter</genre>
+    <subject authority="" xlink="" lang="" script="" transliteration="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" type="" authority="" script="" transliteration="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+        </titleInfo>
+        <name type="" authority="" script="" transliteration="">
+            <namePart type=""/>
+        </name>
+    </subject>
+    <classification authority="lcc" displayLabel="" lang=""/>
+    <abstract/>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <relatedItem type="host" xlink="">
+        <part>
+            <extent unit="page">
+                <start/>
+                <end/>
+            </extent>
+        </part>
+    </relatedItem>
+    <identifier displayLabel="" type="local"/>
+    <location/>
+    <accessCondition/>
+</mods>

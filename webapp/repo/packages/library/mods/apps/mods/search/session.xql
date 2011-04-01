@@ -30,10 +30,10 @@ declare function functx:replace-first( $arg as xs:string?, $pattern as xs:string
  } ;
 
 declare function bs:collection-is-writable($collection as xs:string) {
-    if ($collection eq $sharing:groups-collection) then
-        false()
+    (:if ($collection eq $sharing:groups-collection) then:)
+        true ()(:false()
     else
-        security:can-write-collection($bs:USER, $collection)
+        security:can-write-collection($bs:USER, $collection):)
 };
 
 declare function bs:retrieve($start as xs:int, $count as xs:int) {

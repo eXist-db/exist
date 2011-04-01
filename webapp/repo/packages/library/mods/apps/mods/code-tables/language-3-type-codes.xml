@@ -1,7 +1,3071 @@
-<code-table><code-table-name>language-3-type-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt</basis><description/><notes> See also http://www.loc.gov/standards/codelists/languages.xml, http://www.loc.gov/marc/languages/language_code.html. The following classifiers have
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>language-3-type-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt</basis>
+    <description/>
+    <notes> See also http://www.loc.gov/standards/codelists/languages.xml, http://www.loc.gov/marc/languages/language_code.html. The following classifiers have
         been applied: common, transliteration, Latin/not Latin. The classifier common has been applied subjectively. The classifier transliteration has been
         applied by noting all languages in ALA-LC Romanization Tables at http://www.loc.gov/catdir/cpso/roman.html, minus Lepcha, Limbu, Moplah and Non-Slavic
         Languages (in Cyrillic Script). On the basis of http://www.omniglot.com/writing/languages.htm, it has been noted which languages use Latin script. If
         central pages of www.omniglot.com have not been used for a notation, type="added" has been attributed. With languages where both a script based on Latin
         and a script not based on Latin (mostly Cyrillic) is used, the notation gives "non Latin". The modern form of the languages is intended, unless the
-        language name indicated otherwise. The order or family name and given name is noted in <nameOrder/></notes><items><item><label>(no language selected)</label><value/></item><item><label>--more common languages above--</label><value/></item><item><value>aar</value><valueTerm/><valueTwo>aa</valueTwo><label>Afar</label><scriptClassifier>Latin</scriptClassifier></item><item><value>abk</value><valueTerm/><valueTwo>ab</valueTwo><label>Abkhazian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ace</value><valueTerm/><label>Achinese</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>ara</value><valueTerm/><valueTwo>ar</valueTwo><label>Arabic</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ach</value><valueTerm/><label>Acoli</label></item><item><value>ada</value><valueTerm/><label>Adangme</label></item><item><value>ady</value><valueTerm/><label>Adyghe<!--; Adygei--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>afa</value><valueTerm/><label>Afro-Asiatic languages</label></item><item><value>afh</value><valueTerm/><label>Afrihili</label></item><item><value>afr</value><valueTerm/><valueTwo>af</valueTwo><label>Afrikaans</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ain</value><valueTerm/><label>Ainu</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>aka</value><valueTerm/><valueTwo>ak</valueTwo><label>Akan</label><scriptClassifier>Latin</scriptClassifier></item><item><value>akk</value><valueTerm/><label>Akkadian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>alb</value><valueTerm>sqi</valueTerm><valueTwo>sq</valueTwo><label>Albanian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ale</value><valueTerm/><label>Aleut</label><scriptClassifier>Latin</scriptClassifier></item><item><value>alg</value><valueTerm/><label>Algonquian languages</label></item><item><value>alt</value><valueTerm/><label>Southern Altai</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>amh</value><valueTerm/><valueTwo>am</valueTwo><label>Amharic</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ang</value><valueTerm/><label>English, Old<!-- (ca.450-1100)--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>anp</value><valueTerm/><label>Angika</label></item><item><value>apa</value><valueTerm/><label>Apache languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>arc</value><valueTerm/><label>Official Aramaic<!-- (700-300 BCE)--><!--; Imperial Aramaic (700-300 BCE)--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>arg</value><valueTerm/><valueTwo>an</valueTwo><label>Aragonese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>arm</value><valueTerm>hye</valueTerm><valueTwo>hy</valueTwo><label>Armenian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>arn</value><valueTerm/><label>Mapudungun<!--; Mapuche--></label></item><item><value>arp</value><valueTerm/><label>Arapaho</label><scriptClassifier>Latin</scriptClassifier></item><item><value>art</value><valueTerm/><label>Artificial languages</label></item><item><value>arw</value><valueTerm/><label>Arawak</label><scriptClassifier>Latin</scriptClassifier></item><item><value>asm</value><valueTerm/><valueTwo>as</valueTwo><label>Assamese</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ast</value><valueTerm/><label>Asturian<!--; Bable; Leonese; Asturleonese--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>ath</value><valueTerm/><label>Athapascan languages</label></item><item><value>aus</value><valueTerm/><label>Australian languages</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>ava</value><valueTerm/><valueTwo>av</valueTwo><label>Avaric</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ave</value><valueTerm/><valueTwo>ae</valueTwo><label>Avestan</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>awa</value><valueTerm/><label>Awadhi</label></item><item><value>aym</value><valueTerm/><valueTwo>ay</valueTwo><label>Aymara</label><scriptClassifier>Latin</scriptClassifier></item><item><value>aze</value><valueTerm/><valueTwo>az</valueTwo><label>Azerbaijani</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>bad</value><valueTerm/><label>Banda languages</label></item><item><value>bai</value><valueTerm/><label>Bamileke languages</label></item><item><value>bak</value><valueTerm/><valueTwo>ba</valueTwo><label>Bashkir</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bal</value><valueTerm/><label>Baluchi</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bam</value><valueTerm/><valueTwo>bm</valueTwo><label>Bambara</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ban</value><valueTerm/><label>Balinese</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>baq</value><valueTerm>eus</valueTerm><valueTwo>eu</valueTwo><label>Basque</label><scriptClassifier>Latin</scriptClassifier></item><item><value>bas</value><valueTerm/><label>Basa</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bat</value><valueTerm/><label>Baltic languages</label></item><item><value>bej</value><valueTerm/><label>Beja<!--; Bedawiyet--></label></item><item><value>bel</value><valueTerm/><valueTwo>be</valueTwo><label>Belarusian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>bem</value><valueTerm/><label>Bemba</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ben</value><valueTerm/><valueTwo>bn</valueTwo><label>Bengali</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ber</value><valueTerm/><label>Berber languages</label></item><item><value>bho</value><valueTerm/><label>Bhojpuri</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bih</value><valueTerm/><valueTwo>bh</valueTwo><label>Bihari languages</label></item><item><value>bik</value><valueTerm/><label>Bikol</label><scriptClassifier>Latin</scriptClassifier></item><item><value>bin</value><valueTerm/><label>Bini<!--; Edo--></label></item><item><value>bis</value><valueTerm/><valueTwo>bi</valueTwo><label>Bislama</label><scriptClassifier>Latin</scriptClassifier></item><item><value>bla</value><valueTerm/><label>Siksika</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bnt</value><valueTerm/><label>Bantu (Other)</label></item><item><value>bos</value><valueTerm/><valueTwo>bs</valueTwo><label>Bosnian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bra</value><valueTerm/><label>Braj</label></item><item><value>bre</value><valueTerm/><valueTwo>br</valueTwo><label>Breton</label><scriptClassifier>Latin</scriptClassifier></item><item><value>btk</value><valueTerm/><label>Batak languages</label></item><item><value>bua</value><valueTerm/><label>Buriat</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bug</value><valueTerm/><label>Buginese</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>bul</value><valueTerm/><valueTwo>bg</valueTwo><label>Bulgarian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>bur</value><valueTerm>mya</valueTerm><valueTwo>my</valueTwo><label>Burmese</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>byn</value><valueTerm/><label>Blin<!--; Bilin--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>cad</value><valueTerm/><label>Caddo</label></item><item><value>cai</value><valueTerm/><label>Central American Indian languages</label></item><item><value>car</value><valueTerm/><label>Galibi Carib</label></item><item><value>cat</value><valueTerm/><valueTwo>ca</valueTwo><label>Catalan<!--; Valencian--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>cau</value><valueTerm/><label>Caucasian languages</label></item><item><value>ceb</value><valueTerm/><label>Cebuano</label><scriptClassifier>Latin</scriptClassifier></item><item><value>cel</value><valueTerm/><label>Celtic languages</label></item><item><value>cha</value><valueTerm/><valueTwo>ch</valueTwo><label>Chamorro</label><scriptClassifier>Latin</scriptClassifier></item><item><value>chb</value><valueTerm/><label>Chibcha</label></item><item><value>che</value><valueTerm/><valueTwo>ce</valueTwo><label>Chechen</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chg</value><valueTerm/><label>Chagatai</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chi</value><valueTerm>zho</valueTerm><valueTwo>zh</valueTwo><label>Chinese</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier><nameOrder>family-given</nameOrder></item><item><value>chk</value><valueTerm/><label>Chuukese</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chm</value><valueTerm/><label>Mari</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chn</value><valueTerm/><label>Chinook jargon</label></item><item><value>cho</value><valueTerm/><label>Choctaw</label><scriptClassifier>Latin</scriptClassifier></item><item><value>chp</value><valueTerm/><label>Chipewyan<!--; Dene Suline--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chr</value><valueTerm/><label>Cherokee</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chu</value><valueTerm/><valueTwo>cu</valueTwo><label>Church Slavic<!--; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>chv</value><valueTerm/><valueTwo>cv</valueTwo><label>Chuvash</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>chy</value><valueTerm/><label>Cheyenne</label><scriptClassifier>Latin</scriptClassifier></item><item><value>cmc</value><valueTerm/><label>Chamic languages</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>cop</value><valueTerm/><label>Coptic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>cor</value><valueTerm/><valueTwo>kw</valueTwo><label>Cornish</label><scriptClassifier>Latin</scriptClassifier></item><item><value>cos</value><valueTerm/><valueTwo>co</valueTwo><label>Corsican</label><scriptClassifier>Latin</scriptClassifier></item><item><value>cpe</value><valueTerm/><label>Creoles and pidgins, English based</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>cpf</value><valueTerm/><label>Creoles and pidgins, French-based </label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>cpp</value><valueTerm/><label>Creoles and pidgins, Portuguese-based </label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>cre</value><valueTerm/><valueTwo>cr</valueTwo><label>Cree</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>crh</value><valueTerm/><label>Crimean Tatar<!--; Crimean Turkish--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>crp</value><valueTerm/><label>Creoles and pidgins </label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>csb</value><valueTerm/><label>Kashubian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>cus</value><valueTerm/><label>Cushitic languages</label></item><item><value>cze</value><valueTerm>ces</valueTerm><valueTwo>cs</valueTwo><label>Czech</label><scriptClassifier>Latin</scriptClassifier></item><item><value>dak</value><valueTerm/><label>Dakota</label><scriptClassifier>Latin</scriptClassifier></item><item><value>dan</value><valueTerm/><valueTwo>da</valueTwo><label>Danish</label><scriptClassifier>Latin</scriptClassifier></item><item><value>dar</value><valueTerm/><label>Dargwa</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>day</value><valueTerm/><label>Land Dayak languages</label></item><item><value>del</value><valueTerm/><label>Delaware</label><scriptClassifier>Latin</scriptClassifier></item><item><value>den</value><valueTerm/><label>Slave<!-- (Athapascan)--></label></item><item><value>dgr</value><valueTerm/><label>Dogrib</label></item><item><value>din</value><valueTerm/><label>Dinka</label><scriptClassifier>Latin</scriptClassifier></item><item><value>div</value><valueTerm/><valueTwo>dv</valueTwo><label>Divehi<!--; Dhivehi; Maldivian--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>doi</value><valueTerm/><label>Dogri</label></item><item><value>dra</value><valueTerm/><label>Dravidian languages</label></item><item><value>dsb</value><valueTerm/><label>Lower Sorbian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>dua</value><valueTerm/><label>Duala</label><scriptClassifier>Latin</scriptClassifier></item><item><value>dum</value><valueTerm/><label>Dutch, Middle<!-- (ca.1050-1350)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>dut</value><valueTerm>nld</valueTerm><valueTwo>nl</valueTwo><label>Dutch<!--; Flemish--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>dyu</value><valueTerm/><label>Dyula</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>dzo</value><valueTerm/><valueTwo>dz</valueTwo><label>Dzongkha</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>efi</value><valueTerm/><label>Efik</label></item><item><value>egy</value><valueTerm/><label>Egyptian (Ancient)</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>eka</value><valueTerm/><label>Ekajuk</label></item><item><value>elx</value><valueTerm/><label>Elamite</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>eng</value><valueTerm/><valueTwo>en</valueTwo><label>English</label><frequencyClassifier>default</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>enm</value><valueTerm/><label>English, Middle<!-- (1100-1500)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>epo</value><valueTerm/><valueTwo>eo</valueTwo><label>Esperanto</label><scriptClassifier>Latin</scriptClassifier></item><item><value>est</value><valueTerm/><valueTwo>et</valueTwo><label>Estonian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ewe</value><valueTerm/><valueTwo>ee</valueTwo><label>Ewe</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ewo</value><valueTerm/><label>Ewondo</label><scriptClassifier>Latin</scriptClassifier></item><item><value>fan</value><valueTerm/><label>Fang</label></item><item><value>fao</value><valueTerm/><valueTwo>fo</valueTwo><label>Faroese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>fat</value><valueTerm/><label>Fanti</label></item><item><value>fij</value><valueTerm/><valueTwo>fj</valueTwo><label>Fijian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>fil</value><valueTerm/><label>Filipino<!--; Pilipino--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>fin</value><valueTerm/><valueTwo>fi</valueTwo><label>Finnish</label><scriptClassifier>Latin</scriptClassifier></item><item><value>fiu</value><valueTerm/><label>Finno-Ugrian languages</label></item><item><value>fon</value><valueTerm/><label>Fon</label></item><item><value>fre</value><valueTerm>fra</valueTerm><valueTwo>fr</valueTwo><label>French</label><scriptClassifier>Latin</scriptClassifier><frequencyClassifier>common</frequencyClassifier></item><item><value>frm</value><valueTerm/><label>French, Middle<!-- (ca.1400-1600)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>fro</value><valueTerm/><label>French, Old<!-- (842-ca.1400)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>frr</value><valueTerm/><label>Northern Frisian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>frs</value><valueTerm/><label>Eastern Frisian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>fry</value><valueTerm/><valueTwo>fy</valueTwo><label>Western Frisian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ful</value><valueTerm/><valueTwo>ff</valueTwo><label>Fulah</label></item><item><value>fur</value><valueTerm/><label>Friulian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>gaa</value><valueTerm/><label>Ga</label><scriptClassifier>Latin</scriptClassifier></item><item><value>gay</value><valueTerm/><label>Gayo</label></item><item><value>gba</value><valueTerm/><label>Gbaya</label></item><item><value>gem</value><valueTerm/><label>Germanic languages</label></item><item><value>geo</value><valueTerm>kat</valueTerm><valueTwo>ka</valueTwo><label>Georgian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ger</value><valueTerm>deu</valueTerm><valueTwo>de</valueTwo><label>German</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>gez</value><valueTerm/><label>Geez</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>gil</value><valueTerm/><label>Gilbertese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>gla</value><valueTerm/><valueTwo>gd</valueTwo><label>Gaelic<!--; Scottish Gaelic--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>gle</value><valueTerm/><valueTwo>ga</valueTwo><label>Irish</label><scriptClassifier>Latin</scriptClassifier></item><item><value>glg</value><valueTerm/><valueTwo>gl</valueTwo><label>Galician</label><scriptClassifier>Latin</scriptClassifier></item><item><value>glv</value><valueTerm/><valueTwo>gv</valueTwo><label>Manx</label><scriptClassifier>Latin</scriptClassifier></item><item><value>gmh</value><valueTerm/><label>German, Middle High<!-- (ca.1050-1500)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>goh</value><valueTerm/><label>German, Old High<!-- (ca.750-1050)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>gon</value><valueTerm/><label>Gondi</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>gor</value><valueTerm/><label>Gorontalo</label></item><item><value>got</value><valueTerm/><label>Gothic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>grb</value><valueTerm/><label>Grebo</label></item><item><value>grc</value><valueTerm/><label>Greek, Ancient<!-- (to 1453)--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>gre</value><valueTerm>ell</valueTerm><valueTwo>el</valueTwo><label>Greek, Modern<!-- (1453-)--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>grn</value><valueTerm/><valueTwo>gn</valueTwo><label>Guarani</label><scriptClassifier>Latin</scriptClassifier></item><item><value>gsw</value><valueTerm/><label>Swiss German<!--; Alemannic; Alsatian--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>guj</value><valueTerm/><valueTwo>gu</valueTwo><label>Gujarati</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>gwi</value><valueTerm/><label>Gwich'in</label><scriptClassifier>Latin</scriptClassifier></item><item><value>hai</value><valueTerm/><label>Haida</label><scriptClassifier>Latin</scriptClassifier></item><item><value>hat</value><valueTerm/><valueTwo>ht</valueTwo><label>Haitian<!--; Haitian Creole--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>hau</value><valueTerm/><valueTwo>ha</valueTwo><label>Hausa</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>haw</value><valueTerm/><label>Hawaiian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>heb</value><valueTerm/><valueTwo>he</valueTwo><label>Hebrew</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>her</value><valueTerm/><valueTwo>hz</valueTwo><label>Herero</label><scriptClassifier>Latin</scriptClassifier></item><item><value>hil</value><valueTerm/><label>Hiligaynon</label><scriptClassifier>Latin</scriptClassifier></item><item><value>him</value><valueTerm/><label>Himachali languages<!--; Western Pahari languages--></label></item><item><value>hin</value><valueTerm/><valueTwo>hi</valueTwo><label>Hindi</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>hit</value><valueTerm/><label>Hittite</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>hmn</value><valueTerm/><label>Hmong<!--; Mong--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>hmo</value><valueTerm/><valueTwo>ho</valueTwo><label>Hiri Motu</label></item><item><value>hrv</value><valueTerm/><valueTwo>hr</valueTwo><label>Croatian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>hsb</value><valueTerm/><label>Upper Sorbian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>hun</value><valueTerm/><valueTwo>hu</valueTwo><label>Hungarian</label><scriptClassifier>Latin</scriptClassifier><nameOrder>family-given</nameOrder></item><item><value>hup</value><valueTerm/><label>Hupa</label></item><item><value>iba</value><valueTerm/><label>Iban</label></item><item><value>ibo</value><valueTerm/><valueTwo>ig</valueTwo><label>Igbo</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ice</value><valueTerm>isl</valueTerm><valueTwo>is</valueTwo><label>Icelandic</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ido</value><valueTerm/><valueTwo>io</valueTwo><label>Ido</label><scriptClassifier>Latin</scriptClassifier></item><item><value>iii</value><valueTerm/><valueTwo>ii</valueTwo><label>Sichuan Yi<!--; Nuosu--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ijo</value><valueTerm/><label>Ijo languages</label></item><item><value>iku</value><valueTerm/><valueTwo>iu</valueTwo><label>Inuktitut</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>ile</value><valueTerm/><valueTwo>ie</valueTwo><label>Interlingue<!--; Occidental--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>ilo</value><valueTerm/><label>Iloko</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ina</value><valueTerm/><valueTwo>ia</valueTwo><label>Interlingua<!-- (International Auxiliary Language Association)--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>inc</value><valueTerm/><label>Indic languages</label></item><item><value>ind</value><valueTerm/><valueTwo>id</valueTwo><label>Indonesian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ine</value><valueTerm/><label>Indo-European languages</label></item><item><value>inh</value><valueTerm/><label>Ingush</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ipk</value><valueTerm/><valueTwo>ik</valueTwo><label>Inupiaq</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ira</value><valueTerm/><label>Iranian languages</label></item><item><value>iro</value><valueTerm/><label>Iroquoian languages</label></item><item><value>ita</value><valueTerm/><valueTwo>it</valueTwo><label>Italian</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>jav</value><valueTerm/><valueTwo>jv</valueTwo><label>Javanese</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>jbo</value><valueTerm/><label>Lojban</label><scriptClassifier>Latin</scriptClassifier></item><item><value>jpr</value><valueTerm/><label>Judeo-Persian</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>jpn</value><valueTerm/><valueTwo>ja</valueTwo><label>Japanese</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier><nameOrder>family-given</nameOrder></item><item><value>jrb</value><valueTerm/><label>Judeo-Arabic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kaa</value><valueTerm/><label>Kara-Kalpak</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kab</value><valueTerm/><label>Kabyle</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kac</value><valueTerm/><label>Kachin<!--; Jingpho--></label></item><item><value>kal</value><valueTerm/><valueTwo>kl</valueTwo><label>Kalaallisut<!--; Greenlandic--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>kam</value><valueTerm/><label>Kamba</label></item><item><value>kan</value><valueTerm/><valueTwo>kn</valueTwo><label>Kannada</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>kar</value><valueTerm/><label>Karen languages</label></item><item><value>kas</value><valueTerm/><valueTwo>ks</valueTwo><label>Kashmiri</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>kau</value><valueTerm/><valueTwo>kr</valueTwo><label>Kanuri</label><scriptClassifier>Latin</scriptClassifier></item><item><value>kaw</value><valueTerm/><label>Kawi</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kaz</value><valueTerm/><valueTwo>kk</valueTwo><label>Kazakh</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kbd</value><valueTerm/><label>Kabardian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kha</value><valueTerm/><label>Khasi</label></item><item><value>khi</value><valueTerm/><label>Khoisan languages</label></item><item><value>khm</value><valueTerm/><valueTwo>km</valueTwo><label>Central Khmer</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>kho</value><valueTerm/><label>Khotanese<!--; Sakan--></label></item><item><value>kik</value><valueTerm/><valueTwo>ki</valueTwo><label>Kikuyu<!--; Gikuyu--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>kin</value><valueTerm/><valueTwo>rw</valueTwo><label>Kinyarwanda</label><scriptClassifier>Latin</scriptClassifier></item><item><value>kir</value><valueTerm/><valueTwo>ky</valueTwo><label>Kirghiz<!--; Kyrgyz--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kmb</value><valueTerm/><label>Kimbundu</label></item><item><value>kok</value><valueTerm/><label>Konkani</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kom</value><valueTerm/><valueTwo>kv</valueTwo><label>Komi</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kon</value><valueTerm/><valueTwo>kg</valueTwo><label>Kongo</label></item><item><value>kor</value><valueTerm/><valueTwo>ko</valueTwo><label>Korean</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier><nameOrder>family-given</nameOrder></item><item><value>kos</value><valueTerm/><label>Kosraean</label></item><item><value>kpe</value><valueTerm/><label>Kpelle</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>krc</value><valueTerm/><label>Karachay-Balkar</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>krl</value><valueTerm/><label>Karelian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>kro</value><valueTerm/><label>Kru languages</label></item><item><value>kru</value><valueTerm/><label>Kurukh</label></item><item><value>kua</value><valueTerm/><valueTwo>kj</valueTwo><label>Kuanyama<!--; Kwanyama--></label></item><item><value>kum</value><valueTerm/><label>Kumyk</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>kur</value><valueTerm/><valueTwo>ku</valueTwo><label>Kurdish</label><scriptClassifier>not Latin</scriptClassifier><transliterationClassifier>transliteration</transliterationClassifier></item><item><value>kut</value><valueTerm/><label>Kutenai</label></item><item><value>lad</value><valueTerm/><label>Ladino</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>lah</value><valueTerm/><label>Lahnda</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>lam</value><valueTerm/><label>Lamba</label></item><item><value>lao</value><valueTerm/><valueTwo>lo</valueTwo><label>Lao</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>lat</value><valueTerm/><valueTwo>la</valueTwo><label>Latin</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>lav</value><valueTerm/><valueTwo>lv</valueTwo><label>Latvian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>lez</value><valueTerm/><label>Lezghian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>lim</value><valueTerm/><valueTwo>li</valueTwo><label>Limburgan<!--; Limburger; Limburgish--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>lin</value><valueTerm/><valueTwo>ln</valueTwo><label>Lingala</label><scriptClassifier>Latin</scriptClassifier></item><item><value>lit</value><valueTerm/><valueTwo>lt</valueTwo><label>Lithuanian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>lol</value><valueTerm/><label>Mongo</label></item><item><value>loz</value><valueTerm/><label>Lozi</label></item><item><value>ltz</value><valueTerm/><valueTwo>lb</valueTwo><label>Luxembourgish<!--; Letzeburgesch--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>lua</value><valueTerm/><label>Luba-Lulua</label><scriptClassifier>Latin</scriptClassifier></item><item><value>lub</value><valueTerm/><valueTwo>lu</valueTwo><label>Luba-Katanga</label></item><item><value>lug</value><valueTerm/><valueTwo>lg</valueTwo><label>Ganda</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>lui</value><valueTerm/><label>Luiseno</label></item><item><value>lun</value><valueTerm/><label>Lunda</label></item><item><value>luo</value><valueTerm/><label>Luo<!-- (Kenya and Tanzania)--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>lus</value><valueTerm/><label>Lushai</label></item><item><value>mac</value><valueTerm>mkd</valueTerm><valueTwo>mk</valueTwo><label>Macedonian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>mad</value><valueTerm/><label>Madurese</label><transliterationClassifier>transliteration</transliterationClassifier></item><item><value>mag</value><valueTerm/><label>Magahi</label></item><item><value>mah</value><valueTerm/><valueTwo>mh</valueTwo><label>Marshallese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mai</value><valueTerm/><label>Maithili</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>mak</value><valueTerm/><label>Makasar</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mal</value><valueTerm/><valueTwo>ml</valueTwo><label>Malayalam</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>man</value><valueTerm/><label>Mandingo</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mao</value><valueTerm>mri</valueTerm><valueTwo>mi</valueTwo><label>Maori</label><scriptClassifier>Latin</scriptClassifier></item><item><value>map</value><valueTerm/><label>Austronesian languages</label></item><item><value>mar</value><valueTerm/><valueTwo>mr</valueTwo><label>Marathi</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>mas</value><valueTerm/><label>Masai</label><scriptClassifier>Latin</scriptClassifier></item><item><value>may</value><valueTerm>msa</valueTerm><valueTwo>ms</valueTwo><label>Malay</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>mdf</value><valueTerm/><label>Moksha</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mdr</value><valueTerm/><label>Mandar</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>men</value><valueTerm/><label>Mende</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mga</value><valueTerm/><label>Irish, Middle<!-- (900-1200)--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mic</value><valueTerm/><label>Mi'kmaq<!--; Micmac--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>min</value><valueTerm/><label>Minangkabau</label></item><item><value>mis</value><valueTerm/><label>Uncoded languages</label></item><item><value>mkh</value><valueTerm/><label>Mon-Khmer languages</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>mlg</value><valueTerm/><valueTwo>mg</valueTwo><label>Malagasy</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mlt</value><valueTerm/><valueTwo>mt</valueTwo><label>Maltese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mnc</value><valueTerm/><label>Manchu</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mni</value><valueTerm/><label>Manipuri</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>mno</value><valueTerm/><label>Manobo languages</label></item><item><value>moh</value><valueTerm/><label>Mohawk</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mon</value><valueTerm/><valueTwo>mn</valueTwo><label>Mongolian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>mos</value><valueTerm/><label>Mossi</label></item><item><value>mul</value><valueTerm/><label>Multiple languages</label><frequencyClassifier>common</frequencyClassifier></item><item><value>mun</value><valueTerm/><label>Munda languages</label></item><item><value>mus</value><valueTerm/><label>Creek</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mwl</value><valueTerm/><label>Mirandese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>mwr</value><valueTerm/><label>Marwari</label></item><item><value>myn</value><valueTerm/><label>Mayan languages</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>myv</value><valueTerm/><label>Erzya</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>nah</value><valueTerm/><label>Nahuatl languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nai</value><valueTerm/><label>North American Indian languages</label></item><item><value>nap</value><valueTerm/><label>Neapolitan</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nau</value><valueTerm/><valueTwo>na</valueTwo><label>Nauru</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nav</value><valueTerm/><valueTwo>nv</valueTwo><label>Navajo<!--; Navaho--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>nbl</value><valueTerm/><valueTwo>nr</valueTwo><label>Ndebele, South<!--; South Ndebele--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>nde</value><valueTerm/><valueTwo>nd</valueTwo><label>Ndebele, North<!--; North Ndebele--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>ndo</value><valueTerm/><valueTwo>ng</valueTwo><label>Ndonga</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nds</value><valueTerm/><label>Low German<!--; Low Saxon; German, Low; Saxon, Low--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>nep</value><valueTerm/><valueTwo>ne</valueTwo><label>Nepali</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>new</value><valueTerm/><label>Nepal Bhasa<!--; Newari--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>nia</value><valueTerm/><label>Nias</label></item><item><value>nic</value><valueTerm/><label>Niger-Kordofanian languages</label></item><item><value>niu</value><valueTerm/><label>Niuean</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nno</value><valueTerm/><valueTwo>nn</valueTwo><label>Norwegian Nynorsk<!--; Nynorsk, Norwegian--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>nob</value><valueTerm/><valueTwo>nb</valueTwo><label>Bokmål, Norwegian<!--; Norwegian Bokmål--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>nog</value><valueTerm/><label>Nogai</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>non</value><valueTerm/><label>Norse, Old</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>nor</value><valueTerm/><valueTwo>no</valueTwo><label>Norwegian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>nqo</value><valueTerm/><label>N'Ko</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>nso</value><valueTerm/><label>Pedi<!--; Sepedi; Northern Sotho--></label></item><item><value>nub</value><valueTerm/><label>Nubian languages</label></item><item><value>nwc</value><valueTerm/><label>Classical Newari<!--; Old Newari; Classical Nepal Bhasa--></label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>nya</value><valueTerm/><valueTwo>ny</valueTwo><label>Chichewa<!--; Chewa; Nyanja--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>nym</value><valueTerm/><label>Nyamwezi</label></item><item><value>nyn</value><valueTerm/><label>Nyankole</label></item><item><value>nyo</value><valueTerm/><label>Nyoro</label></item><item><value>nzi</value><valueTerm/><label>Nzima</label></item><item><value>oci</value><valueTerm/><valueTwo>oc</valueTwo><label>Occitan<!-- (post 1500)--><!--; Provençal--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>oji</value><valueTerm/><valueTwo>oj</valueTwo><label>Ojibwa</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ori</value><valueTerm/><valueTwo>or</valueTwo><label>Oriya</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>orm</value><valueTerm/><valueTwo>om</valueTwo><label>Oromo</label><scriptClassifier>Latin</scriptClassifier></item><item><value>osa</value><valueTerm/><label>Osage</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>oss</value><valueTerm/><valueTwo>os</valueTwo><label>Ossetian<!--; Ossetic--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>ota</value><valueTerm/><label>Turkish, Ottoman<!-- (1500-1928)--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>oto</value><valueTerm/><label>Otomian languages</label></item><item><value>paa</value><valueTerm/><label>Papuan languages</label></item><item><value>pag</value><valueTerm/><label>Pangasinan</label></item><item><value>pal</value><valueTerm/><label>Pahlavi</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>pam</value><valueTerm/><label>Pampanga<!--; Kapampangan--></label></item><item><value>pan</value><valueTerm/><valueTwo>pa</valueTwo><label>Panjabi<!--; Punjabi--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>pap</value><valueTerm/><label>Papiamento</label><scriptClassifier>Latin</scriptClassifier></item><item><value>pau</value><valueTerm/><label>Palauan</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>peo</value><valueTerm/><label>Persian, Old<!-- (ca.600-400 B.C.)--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>per</value><valueTerm>fas</valueTerm><valueTwo>fa</valueTwo><label>Persian</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>phi</value><valueTerm/><label>Philippine languages</label></item><item><value>phn</value><valueTerm/><label>Phoenician</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>pli</value><valueTerm/><valueTwo>pi</valueTwo><label>Pali</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>pol</value><valueTerm/><valueTwo>pl</valueTwo><label>Polish</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>pon</value><valueTerm/><label>Pohnpeian</label></item><item><value>por</value><valueTerm/><valueTwo>pt</valueTwo><label>Portuguese</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>pra</value><valueTerm/><label>Prakrit languages</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>pro</value><valueTerm/><label>Provençal, Old<!-- (to 1500)--></label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>pus</value><valueTerm/><valueTwo>ps</valueTwo><label>Pushto<!--; Pashto--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>qaa-qtz</value><valueTerm/><label>Reserved for local use</label></item><item><value>que</value><valueTerm/><valueTwo>qu</valueTwo><label>Quechua</label><scriptClassifier>Latin</scriptClassifier></item><item><value>raj</value><valueTerm/><label>Rajasthani</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>rap</value><valueTerm/><label>Rapanui</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>rar</value><valueTerm/><label>Rarotongan<!--; Cook Islands Maori--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>roa</value><valueTerm/><label>Romance languages</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>roh</value><valueTerm/><valueTwo>rm</valueTwo><label>Romansh</label><scriptClassifier>Latin</scriptClassifier></item><item><value>rom</value><valueTerm/><label>Romany</label><scriptClassifier>Latin</scriptClassifier></item><item><value>rum</value><valueTerm>ron</valueTerm><valueTwo>ro</valueTwo><label>Romanian<!--; Moldavian; Moldovan--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>run</value><valueTerm/><valueTwo>rn</valueTwo><label>Rundi</label><scriptClassifier>Latin</scriptClassifier></item><item><value>rup</value><valueTerm/><label>Aromanian<!--; Arumanian; Macedo-Romanian--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>rus</value><valueTerm/><valueTwo>ru</valueTwo><label>Russian</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>sad</value><valueTerm/><label>Sandawe</label></item><item><value>sag</value><valueTerm/><valueTwo>sg</valueTwo><label>Sango</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sah</value><valueTerm/><label>Yakut</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>sai</value><valueTerm/><label>South American Indian (Other)</label></item><item><value>sal</value><valueTerm/><label>Salishan languages</label></item><item><value>sam</value><valueTerm/><label>Samaritan Aramaic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>san</value><valueTerm/><valueTwo>sa</valueTwo><label>Sanskrit</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>sas</value><valueTerm/><label>Sasak</label></item><item><value>sat</value><valueTerm/><label>Santali</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>scn</value><valueTerm/><label>Sicilian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sco</value><valueTerm/><label>Scots</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sel</value><valueTerm/><label>Selkup</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>sem</value><valueTerm/><label>Semitic languages</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>sga</value><valueTerm/><label>Irish, Old<!-- (to 900)--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>sgn</value><valueTerm/><label>Sign Languages</label></item><item><value>shn</value><valueTerm/><label>Shan</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>sid</value><valueTerm/><label>Sidamo</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>sin</value><valueTerm/><valueTwo>si</valueTwo><label>Sinhalese<!--; Sinhala--></label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>sio</value><valueTerm/><label>Siouan languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sit</value><valueTerm/><label>Sino-Tibetan languages</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>sla</value><valueTerm/><label>Slavic languages</label></item><item><value>slo</value><valueTerm>slk</valueTerm><valueTwo>sk</valueTwo><label>Slovak</label><scriptClassifier>Latin</scriptClassifier></item><item><value>slv</value><valueTerm/><valueTwo>sl</valueTwo><label>Slovenian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sma</value><valueTerm/><label>Southern Sami</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sme</value><valueTerm/><valueTwo>se</valueTwo><label>Northern Sami</label><scriptClassifier>Latin</scriptClassifier></item><item><value>smi</value><valueTerm/><label>Sami languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>smj</value><valueTerm/><label>Lule Sami</label><scriptClassifier>Latin</scriptClassifier></item><item><value>smn</value><valueTerm/><label>Inari Sami</label><scriptClassifier>Latin</scriptClassifier></item><item><value>smo</value><valueTerm/><valueTwo>sm</valueTwo><label>Samoan</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sms</value><valueTerm/><label>Skolt Sami</label><scriptClassifier>Latin</scriptClassifier></item><item><value>sna</value><valueTerm/><valueTwo>sn</valueTwo><label>Shona</label><scriptClassifier>Latin</scriptClassifier></item><item><value>snd</value><valueTerm/><valueTwo>sd</valueTwo><label>Sindhi</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>snk</value><valueTerm/><label>Soninke</label><scriptClassifier type="added">Latin</scriptClassifier></item><item><value>sog</value><valueTerm/><label>Sogdian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>som</value><valueTerm/><valueTwo>so</valueTwo><label>Somali</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>son</value><valueTerm/><label>Songhai languages</label></item><item><value>sot</value><valueTerm/><valueTwo>st</valueTwo><label>Sotho, Southern</label><scriptClassifier>Latin</scriptClassifier></item><item><value>spa</value><valueTerm/><valueTwo>es</valueTwo><label>Spanish<!--; Castilian--></label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>srd</value><valueTerm/><valueTwo>sc</valueTwo><label>Sardinian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>srn</value><valueTerm/><label>Sranan Tongo</label><scriptClassifier>Latin</scriptClassifier></item><item><value>srp</value><valueTerm/><valueTwo>sr</valueTwo><label>Serbian</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>srr</value><valueTerm/><label>Serer</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ssa</value><valueTerm/><label>Nilo-Saharan languages</label></item><item><value>ssw</value><valueTerm/><valueTwo>ss</valueTwo><label>Swati</label><scriptClassifier>Latin</scriptClassifier></item><item><value>suk</value><valueTerm/><label>Sukuma</label></item><item><value>sun</value><valueTerm/><valueTwo>su</valueTwo><label>Sundanese</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>sus</value><valueTerm/><label>Susu</label></item><item><value>sux</value><valueTerm/><label>Sumerian</label><scriptClassifier type="added">not Latin</scriptClassifier></item><item><value>swa</value><valueTerm/><valueTwo>sw</valueTwo><label>Swahili</label><scriptClassifier>Latin</scriptClassifier></item><item><value>swe</value><valueTerm/><valueTwo>sv</valueTwo><label>Swedish</label><scriptClassifier>Latin</scriptClassifier></item><item><value>syc</value><valueTerm/><label>Classical Syriac</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>syr</value><valueTerm/><label>Syriac</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>tah</value><valueTerm/><valueTwo>ty</valueTwo><label>Tahitian</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tai</value><valueTerm/><label>Tai languages</label></item><item><value>tam</value><valueTerm/><valueTwo>ta</valueTwo><label>Tamil</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>tat</value><valueTerm/><valueTwo>tt</valueTwo><label>Tatar</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>tel</value><valueTerm/><valueTwo>te</valueTwo><label>Telugu</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>tem</value><valueTerm/><label>Timne</label></item><item><value>ter</value><valueTerm/><label>Tereno</label></item><item><value>tet</value><valueTerm/><label>Tetum</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tgk</value><valueTerm/><valueTwo>tg</valueTwo><label>Tajik</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>tgl</value><valueTerm/><valueTwo>tl</valueTwo><label>Tagalog</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>tha</value><valueTerm/><valueTwo>th</valueTwo><label>Thai</label><frequencyClassifier>common</frequencyClassifier><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>tib</value><valueTerm>bod</valueTerm><valueTwo>bo</valueTwo><label>Tibetan</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>tig</value><valueTerm/><label>Tigre</label></item><item><value>tir</value><valueTerm/><valueTwo>ti</valueTwo><label>Tigrinya</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>tiv</value><valueTerm/><label>Tiv</label></item><item><value>tkl</value><valueTerm/><label>Tokelau</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tlh</value><valueTerm/><label>Klingon<!--; tlhIngan-Hol--></label></item><item><value>tli</value><valueTerm/><label>Tlingit</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tmh</value><valueTerm/><label>Tamashek</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tog</value><valueTerm/><label>Tonga (Nyasa)</label></item><item><value>ton</value><valueTerm/><valueTwo>to</valueTwo><label>Tonga (Tonga Islands)</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tpi</value><valueTerm/><label>Tok Pisin</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tsi</value><valueTerm/><label>Tsimshian</label></item><item><value>tsn</value><valueTerm/><valueTwo>tn</valueTwo><label>Tswana</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tso</value><valueTerm/><valueTwo>ts</valueTwo><label>Tsonga</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tuk</value><valueTerm/><valueTwo>tk</valueTwo><label>Turkmen</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>tum</value><valueTerm/><label>Tumbuka</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tup</value><valueTerm/><label>Tupi languages</label></item><item><value>tur</value><valueTerm/><valueTwo>tr</valueTwo><label>Turkish</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>tut</value><valueTerm/><label>Altaic languages</label></item><item><value>tvl</value><valueTerm/><label>Tuvalu</label><scriptClassifier>Latin</scriptClassifier></item><item><value>twi</value><valueTerm/><valueTwo>tw</valueTwo><label>Twi</label><scriptClassifier>Latin</scriptClassifier></item><item><value>tyv</value><valueTerm/><label>Tuvinian</label></item><item><value>udm</value><valueTerm/><label>Udmurt</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>uga</value><valueTerm/><label>Ugaritic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>uig</value><valueTerm/><valueTwo>ug</valueTwo><label>Uighur<!--; Uyghur--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ukr</value><valueTerm/><valueTwo>uk</valueTwo><label>Ukrainian</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>umb</value><valueTerm/><label>Umbundu</label></item><item><value>und</value><valueTerm/><label>Undetermined</label></item><item><value>urd</value><valueTerm/><valueTwo>ur</valueTwo><label>Urdu</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>uzb</value><valueTerm/><valueTwo>uz</valueTwo><label>Uzbek</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>vai</value><valueTerm/><label>Vai</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>ven</value><valueTerm/><valueTwo>ve</valueTwo><label>Venda</label><scriptClassifier>Latin</scriptClassifier></item><item><value>vie</value><valueTerm/><valueTwo>vi</valueTwo><label>Vietnamese</label><frequencyClassifier>common</frequencyClassifier><scriptClassifier>Latin</scriptClassifier></item><item><value>vol</value><valueTerm/><valueTwo>vo</valueTwo><label>Volapük</label><scriptClassifier>Latin</scriptClassifier></item><item><value>vot</value><valueTerm/><label>Votic</label><scriptClassifier>not Latin</scriptClassifier></item><item><value>wak</value><valueTerm/><label>Wakashan languages</label></item><item><value>wal</value><valueTerm/><label>Walamo</label></item><item><value>war</value><valueTerm/><label>Waray</label><scriptClassifier>Latin</scriptClassifier></item><item><value>was</value><valueTerm/><label>Washo</label></item><item><value>wel</value><valueTerm>cym</valueTerm><valueTwo>cy</valueTwo><label>Welsh</label><scriptClassifier>Latin</scriptClassifier></item><item><value>wen</value><valueTerm/><label>Sorbian languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>wln</value><valueTerm/><valueTwo>wa</valueTwo><label>Walloon</label><scriptClassifier>Latin</scriptClassifier></item><item><value>wol</value><valueTerm/><valueTwo>wo</valueTwo><label>Wolof</label><scriptClassifier>Latin</scriptClassifier></item><item><value>xal</value><valueTerm/><label>Kalmyk<!--; Oirat--></label><scriptClassifier>not Latin</scriptClassifier></item><item><value>xho</value><valueTerm/><valueTwo>xh</valueTwo><label>Xhosa</label><scriptClassifier>Latin</scriptClassifier></item><item><value>yao</value><valueTerm/><label>Yao</label></item><item><value>yap</value><valueTerm/><label>Yapese</label><scriptClassifier>Latin</scriptClassifier></item><item><value>yid</value><valueTerm/><valueTwo>yi</valueTwo><label>Yiddish</label><transliterationClassifier>transliteration</transliterationClassifier><scriptClassifier>not Latin</scriptClassifier></item><item><value>yor</value><valueTerm/><valueTwo>yo</valueTwo><label>Yoruba</label><scriptClassifier>Latin</scriptClassifier></item><item><value>ypk</value><valueTerm/><label>Yupik languages</label><scriptClassifier>Latin</scriptClassifier></item><item><value>zap</value><valueTerm/><label>Zapotec</label><scriptClassifier>Latin</scriptClassifier></item><item><value>zbl</value><valueTerm/><label>Blissymbols<!--; Blissymbolics; Bliss--></label></item><item><value>zen</value><valueTerm/><label>Zenaga</label></item><item><value>zha</value><valueTerm/><valueTwo>za</valueTwo><label>Zhuang<!--; Chuang--></label><scriptClassifier>Latin</scriptClassifier></item><item><value>znd</value><valueTerm/><label>Zande languages</label></item><item><value>zul</value><valueTerm/><valueTwo>zu</valueTwo><label>Zulu</label><scriptClassifier>Latin</scriptClassifier></item><item><value>zun</value><valueTerm/><label>Zuni</label><scriptClassifier>Latin</scriptClassifier></item><item><value>zxx</value><valueTerm/><label>No linguistic content<!--; Not applicable--></label><frequencyClassifier>common</frequencyClassifier></item><item><value>zza</value><valueTerm/><label>Zaza<!--; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki--></label></item></items></code-table>
+        language name indicated otherwise. The order or family name and given name is noted in <nameOrder/>
+    </notes>
+    <items>
+        <item>
+            <label>(no language selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>--more common languages above--</label>
+            <value/>
+        </item>
+        <item>
+            <value>aar</value>
+            <valueTerm/>
+            <valueTwo>aa</valueTwo>
+            <label>Afar</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>abk</value>
+            <valueTerm/>
+            <valueTwo>ab</valueTwo>
+            <label>Abkhazian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ace</value>
+            <valueTerm/>
+            <label>Achinese</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ara</value>
+            <valueTerm/>
+            <valueTwo>ar</valueTwo>
+            <label>Arabic</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ach</value>
+            <valueTerm/>
+            <label>Acoli</label>
+        </item>
+        <item>
+            <value>ada</value>
+            <valueTerm/>
+            <label>Adangme</label>
+        </item>
+        <item>
+            <value>ady</value>
+            <valueTerm/>
+            <label>Adyghe<!--; Adygei--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>afa</value>
+            <valueTerm/>
+            <label>Afro-Asiatic languages</label>
+        </item>
+        <item>
+            <value>afh</value>
+            <valueTerm/>
+            <label>Afrihili</label>
+        </item>
+        <item>
+            <value>afr</value>
+            <valueTerm/>
+            <valueTwo>af</valueTwo>
+            <label>Afrikaans</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ain</value>
+            <valueTerm/>
+            <label>Ainu</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>aka</value>
+            <valueTerm/>
+            <valueTwo>ak</valueTwo>
+            <label>Akan</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>akk</value>
+            <valueTerm/>
+            <label>Akkadian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>alb</value>
+            <valueTerm>sqi</valueTerm>
+            <valueTwo>sq</valueTwo>
+            <label>Albanian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ale</value>
+            <valueTerm/>
+            <label>Aleut</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>alg</value>
+            <valueTerm/>
+            <label>Algonquian languages</label>
+        </item>
+        <item>
+            <value>alt</value>
+            <valueTerm/>
+            <label>Southern Altai</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>amh</value>
+            <valueTerm/>
+            <valueTwo>am</valueTwo>
+            <label>Amharic</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ang</value>
+            <valueTerm/>
+            <label>English, Old<!-- (ca.450-1100)--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>anp</value>
+            <valueTerm/>
+            <label>Angika</label>
+        </item>
+        <item>
+            <value>apa</value>
+            <valueTerm/>
+            <label>Apache languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>arc</value>
+            <valueTerm/>
+            <label>Official Aramaic<!-- (700-300 BCE)--><!--; Imperial Aramaic (700-300 BCE)--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>arg</value>
+            <valueTerm/>
+            <valueTwo>an</valueTwo>
+            <label>Aragonese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>arm</value>
+            <valueTerm>hye</valueTerm>
+            <valueTwo>hy</valueTwo>
+            <label>Armenian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>arn</value>
+            <valueTerm/>
+            <label>Mapudungun<!--; Mapuche--></label>
+        </item>
+        <item>
+            <value>arp</value>
+            <valueTerm/>
+            <label>Arapaho</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>art</value>
+            <valueTerm/>
+            <label>Artificial languages</label>
+        </item>
+        <item>
+            <value>arw</value>
+            <valueTerm/>
+            <label>Arawak</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>asm</value>
+            <valueTerm/>
+            <valueTwo>as</valueTwo>
+            <label>Assamese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ast</value>
+            <valueTerm/>
+            <label>Asturian<!--; Bable; Leonese; Asturleonese--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ath</value>
+            <valueTerm/>
+            <label>Athapascan languages</label>
+        </item>
+        <item>
+            <value>aus</value>
+            <valueTerm/>
+            <label>Australian languages</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ava</value>
+            <valueTerm/>
+            <valueTwo>av</valueTwo>
+            <label>Avaric</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ave</value>
+            <valueTerm/>
+            <valueTwo>ae</valueTwo>
+            <label>Avestan</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>awa</value>
+            <valueTerm/>
+            <label>Awadhi</label>
+        </item>
+        <item>
+            <value>aym</value>
+            <valueTerm/>
+            <valueTwo>ay</valueTwo>
+            <label>Aymara</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>aze</value>
+            <valueTerm/>
+            <valueTwo>az</valueTwo>
+            <label>Azerbaijani</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bad</value>
+            <valueTerm/>
+            <label>Banda languages</label>
+        </item>
+        <item>
+            <value>bai</value>
+            <valueTerm/>
+            <label>Bamileke languages</label>
+        </item>
+        <item>
+            <value>bak</value>
+            <valueTerm/>
+            <valueTwo>ba</valueTwo>
+            <label>Bashkir</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bal</value>
+            <valueTerm/>
+            <label>Baluchi</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bam</value>
+            <valueTerm/>
+            <valueTwo>bm</valueTwo>
+            <label>Bambara</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ban</value>
+            <valueTerm/>
+            <label>Balinese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>baq</value>
+            <valueTerm>eus</valueTerm>
+            <valueTwo>eu</valueTwo>
+            <label>Basque</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bas</value>
+            <valueTerm/>
+            <label>Basa</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bat</value>
+            <valueTerm/>
+            <label>Baltic languages</label>
+        </item>
+        <item>
+            <value>bej</value>
+            <valueTerm/>
+            <label>Beja<!--; Bedawiyet--></label>
+        </item>
+        <item>
+            <value>bel</value>
+            <valueTerm/>
+            <valueTwo>be</valueTwo>
+            <label>Belarusian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bem</value>
+            <valueTerm/>
+            <label>Bemba</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ben</value>
+            <valueTerm/>
+            <valueTwo>bn</valueTwo>
+            <label>Bengali</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ber</value>
+            <valueTerm/>
+            <label>Berber languages</label>
+        </item>
+        <item>
+            <value>bho</value>
+            <valueTerm/>
+            <label>Bhojpuri</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bih</value>
+            <valueTerm/>
+            <valueTwo>bh</valueTwo>
+            <label>Bihari languages</label>
+        </item>
+        <item>
+            <value>bik</value>
+            <valueTerm/>
+            <label>Bikol</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bin</value>
+            <valueTerm/>
+            <label>Bini<!--; Edo--></label>
+        </item>
+        <item>
+            <value>bis</value>
+            <valueTerm/>
+            <valueTwo>bi</valueTwo>
+            <label>Bislama</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bla</value>
+            <valueTerm/>
+            <label>Siksika</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bnt</value>
+            <valueTerm/>
+            <label>Bantu (Other)</label>
+        </item>
+        <item>
+            <value>bos</value>
+            <valueTerm/>
+            <valueTwo>bs</valueTwo>
+            <label>Bosnian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bra</value>
+            <valueTerm/>
+            <label>Braj</label>
+        </item>
+        <item>
+            <value>bre</value>
+            <valueTerm/>
+            <valueTwo>br</valueTwo>
+            <label>Breton</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>btk</value>
+            <valueTerm/>
+            <label>Batak languages</label>
+        </item>
+        <item>
+            <value>bua</value>
+            <valueTerm/>
+            <label>Buriat</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bug</value>
+            <valueTerm/>
+            <label>Buginese</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bul</value>
+            <valueTerm/>
+            <valueTwo>bg</valueTwo>
+            <label>Bulgarian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>bur</value>
+            <valueTerm>mya</valueTerm>
+            <valueTwo>my</valueTwo>
+            <label>Burmese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>byn</value>
+            <valueTerm/>
+            <label>Blin<!--; Bilin--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cad</value>
+            <valueTerm/>
+            <label>Caddo</label>
+        </item>
+        <item>
+            <value>cai</value>
+            <valueTerm/>
+            <label>Central American Indian languages</label>
+        </item>
+        <item>
+            <value>car</value>
+            <valueTerm/>
+            <label>Galibi Carib</label>
+        </item>
+        <item>
+            <value>cat</value>
+            <valueTerm/>
+            <valueTwo>ca</valueTwo>
+            <label>Catalan<!--; Valencian--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cau</value>
+            <valueTerm/>
+            <label>Caucasian languages</label>
+        </item>
+        <item>
+            <value>ceb</value>
+            <valueTerm/>
+            <label>Cebuano</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cel</value>
+            <valueTerm/>
+            <label>Celtic languages</label>
+        </item>
+        <item>
+            <value>cha</value>
+            <valueTerm/>
+            <valueTwo>ch</valueTwo>
+            <label>Chamorro</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chb</value>
+            <valueTerm/>
+            <label>Chibcha</label>
+        </item>
+        <item>
+            <value>che</value>
+            <valueTerm/>
+            <valueTwo>ce</valueTwo>
+            <label>Chechen</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chg</value>
+            <valueTerm/>
+            <label>Chagatai</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chi</value>
+            <valueTerm>zho</valueTerm>
+            <valueTwo>zh</valueTwo>
+            <label>Chinese</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+            <nameOrder>family-given</nameOrder>
+        </item>
+        <item>
+            <value>chk</value>
+            <valueTerm/>
+            <label>Chuukese</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chm</value>
+            <valueTerm/>
+            <label>Mari</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chn</value>
+            <valueTerm/>
+            <label>Chinook jargon</label>
+        </item>
+        <item>
+            <value>cho</value>
+            <valueTerm/>
+            <label>Choctaw</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chp</value>
+            <valueTerm/>
+            <label>Chipewyan<!--; Dene Suline--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chr</value>
+            <valueTerm/>
+            <label>Cherokee</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chu</value>
+            <valueTerm/>
+            <valueTwo>cu</valueTwo>
+            <label>Church Slavic<!--; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chv</value>
+            <valueTerm/>
+            <valueTwo>cv</valueTwo>
+            <label>Chuvash</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>chy</value>
+            <valueTerm/>
+            <label>Cheyenne</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cmc</value>
+            <valueTerm/>
+            <label>Chamic languages</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cop</value>
+            <valueTerm/>
+            <label>Coptic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cor</value>
+            <valueTerm/>
+            <valueTwo>kw</valueTwo>
+            <label>Cornish</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cos</value>
+            <valueTerm/>
+            <valueTwo>co</valueTwo>
+            <label>Corsican</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cpe</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, English based</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cpf</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, French-based </label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cpp</value>
+            <valueTerm/>
+            <label>Creoles and pidgins, Portuguese-based </label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cre</value>
+            <valueTerm/>
+            <valueTwo>cr</valueTwo>
+            <label>Cree</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>crh</value>
+            <valueTerm/>
+            <label>Crimean Tatar<!--; Crimean Turkish--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>crp</value>
+            <valueTerm/>
+            <label>Creoles and pidgins </label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>csb</value>
+            <valueTerm/>
+            <label>Kashubian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>cus</value>
+            <valueTerm/>
+            <label>Cushitic languages</label>
+        </item>
+        <item>
+            <value>cze</value>
+            <valueTerm>ces</valueTerm>
+            <valueTwo>cs</valueTwo>
+            <label>Czech</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dak</value>
+            <valueTerm/>
+            <label>Dakota</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dan</value>
+            <valueTerm/>
+            <valueTwo>da</valueTwo>
+            <label>Danish</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dar</value>
+            <valueTerm/>
+            <label>Dargwa</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>day</value>
+            <valueTerm/>
+            <label>Land Dayak languages</label>
+        </item>
+        <item>
+            <value>del</value>
+            <valueTerm/>
+            <label>Delaware</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>den</value>
+            <valueTerm/>
+            <label>Slave<!-- (Athapascan)--></label>
+        </item>
+        <item>
+            <value>dgr</value>
+            <valueTerm/>
+            <label>Dogrib</label>
+        </item>
+        <item>
+            <value>din</value>
+            <valueTerm/>
+            <label>Dinka</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>div</value>
+            <valueTerm/>
+            <valueTwo>dv</valueTwo>
+            <label>Divehi<!--; Dhivehi; Maldivian--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>doi</value>
+            <valueTerm/>
+            <label>Dogri</label>
+        </item>
+        <item>
+            <value>dra</value>
+            <valueTerm/>
+            <label>Dravidian languages</label>
+        </item>
+        <item>
+            <value>dsb</value>
+            <valueTerm/>
+            <label>Lower Sorbian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dua</value>
+            <valueTerm/>
+            <label>Duala</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dum</value>
+            <valueTerm/>
+            <label>Dutch, Middle<!-- (ca.1050-1350)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dut</value>
+            <valueTerm>nld</valueTerm>
+            <valueTwo>nl</valueTwo>
+            <label>Dutch<!--; Flemish--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dyu</value>
+            <valueTerm/>
+            <label>Dyula</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>dzo</value>
+            <valueTerm/>
+            <valueTwo>dz</valueTwo>
+            <label>Dzongkha</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>efi</value>
+            <valueTerm/>
+            <label>Efik</label>
+        </item>
+        <item>
+            <value>egy</value>
+            <valueTerm/>
+            <label>Egyptian (Ancient)</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>eka</value>
+            <valueTerm/>
+            <label>Ekajuk</label>
+        </item>
+        <item>
+            <value>elx</value>
+            <valueTerm/>
+            <label>Elamite</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>eng</value>
+            <valueTerm/>
+            <valueTwo>en</valueTwo>
+            <label>English</label>
+            <frequencyClassifier>default</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>enm</value>
+            <valueTerm/>
+            <label>English, Middle<!-- (1100-1500)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>epo</value>
+            <valueTerm/>
+            <valueTwo>eo</valueTwo>
+            <label>Esperanto</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>est</value>
+            <valueTerm/>
+            <valueTwo>et</valueTwo>
+            <label>Estonian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ewe</value>
+            <valueTerm/>
+            <valueTwo>ee</valueTwo>
+            <label>Ewe</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ewo</value>
+            <valueTerm/>
+            <label>Ewondo</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fan</value>
+            <valueTerm/>
+            <label>Fang</label>
+        </item>
+        <item>
+            <value>fao</value>
+            <valueTerm/>
+            <valueTwo>fo</valueTwo>
+            <label>Faroese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fat</value>
+            <valueTerm/>
+            <label>Fanti</label>
+        </item>
+        <item>
+            <value>fij</value>
+            <valueTerm/>
+            <valueTwo>fj</valueTwo>
+            <label>Fijian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fil</value>
+            <valueTerm/>
+            <label>Filipino<!--; Pilipino--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fin</value>
+            <valueTerm/>
+            <valueTwo>fi</valueTwo>
+            <label>Finnish</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fiu</value>
+            <valueTerm/>
+            <label>Finno-Ugrian languages</label>
+        </item>
+        <item>
+            <value>fon</value>
+            <valueTerm/>
+            <label>Fon</label>
+        </item>
+        <item>
+            <value>fre</value>
+            <valueTerm>fra</valueTerm>
+            <valueTwo>fr</valueTwo>
+            <label>French</label>
+            <scriptClassifier>Latin</scriptClassifier>
+            <frequencyClassifier>common</frequencyClassifier>
+        </item>
+        <item>
+            <value>frm</value>
+            <valueTerm/>
+            <label>French, Middle<!-- (ca.1400-1600)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fro</value>
+            <valueTerm/>
+            <label>French, Old<!-- (842-ca.1400)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>frr</value>
+            <valueTerm/>
+            <label>Northern Frisian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>frs</value>
+            <valueTerm/>
+            <label>Eastern Frisian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>fry</value>
+            <valueTerm/>
+            <valueTwo>fy</valueTwo>
+            <label>Western Frisian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ful</value>
+            <valueTerm/>
+            <valueTwo>ff</valueTwo>
+            <label>Fulah</label>
+        </item>
+        <item>
+            <value>fur</value>
+            <valueTerm/>
+            <label>Friulian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gaa</value>
+            <valueTerm/>
+            <label>Ga</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gay</value>
+            <valueTerm/>
+            <label>Gayo</label>
+        </item>
+        <item>
+            <value>gba</value>
+            <valueTerm/>
+            <label>Gbaya</label>
+        </item>
+        <item>
+            <value>gem</value>
+            <valueTerm/>
+            <label>Germanic languages</label>
+        </item>
+        <item>
+            <value>geo</value>
+            <valueTerm>kat</valueTerm>
+            <valueTwo>ka</valueTwo>
+            <label>Georgian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ger</value>
+            <valueTerm>deu</valueTerm>
+            <valueTwo>de</valueTwo>
+            <label>German</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gez</value>
+            <valueTerm/>
+            <label>Geez</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gil</value>
+            <valueTerm/>
+            <label>Gilbertese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gla</value>
+            <valueTerm/>
+            <valueTwo>gd</valueTwo>
+            <label>Gaelic<!--; Scottish Gaelic--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gle</value>
+            <valueTerm/>
+            <valueTwo>ga</valueTwo>
+            <label>Irish</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>glg</value>
+            <valueTerm/>
+            <valueTwo>gl</valueTwo>
+            <label>Galician</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>glv</value>
+            <valueTerm/>
+            <valueTwo>gv</valueTwo>
+            <label>Manx</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gmh</value>
+            <valueTerm/>
+            <label>German, Middle High<!-- (ca.1050-1500)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>goh</value>
+            <valueTerm/>
+            <label>German, Old High<!-- (ca.750-1050)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gon</value>
+            <valueTerm/>
+            <label>Gondi</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gor</value>
+            <valueTerm/>
+            <label>Gorontalo</label>
+        </item>
+        <item>
+            <value>got</value>
+            <valueTerm/>
+            <label>Gothic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>grb</value>
+            <valueTerm/>
+            <label>Grebo</label>
+        </item>
+        <item>
+            <value>grc</value>
+            <valueTerm/>
+            <label>Greek, Ancient<!-- (to 1453)--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gre</value>
+            <valueTerm>ell</valueTerm>
+            <valueTwo>el</valueTwo>
+            <label>Greek, Modern<!-- (1453-)--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>grn</value>
+            <valueTerm/>
+            <valueTwo>gn</valueTwo>
+            <label>Guarani</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gsw</value>
+            <valueTerm/>
+            <label>Swiss German<!--; Alemannic; Alsatian--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>guj</value>
+            <valueTerm/>
+            <valueTwo>gu</valueTwo>
+            <label>Gujarati</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>gwi</value>
+            <valueTerm/>
+            <label>Gwich'in</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hai</value>
+            <valueTerm/>
+            <label>Haida</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hat</value>
+            <valueTerm/>
+            <valueTwo>ht</valueTwo>
+            <label>Haitian<!--; Haitian Creole--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hau</value>
+            <valueTerm/>
+            <valueTwo>ha</valueTwo>
+            <label>Hausa</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>haw</value>
+            <valueTerm/>
+            <label>Hawaiian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>heb</value>
+            <valueTerm/>
+            <valueTwo>he</valueTwo>
+            <label>Hebrew</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>her</value>
+            <valueTerm/>
+            <valueTwo>hz</valueTwo>
+            <label>Herero</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hil</value>
+            <valueTerm/>
+            <label>Hiligaynon</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>him</value>
+            <valueTerm/>
+            <label>Himachali languages<!--; Western Pahari languages--></label>
+        </item>
+        <item>
+            <value>hin</value>
+            <valueTerm/>
+            <valueTwo>hi</valueTwo>
+            <label>Hindi</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hit</value>
+            <valueTerm/>
+            <label>Hittite</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hmn</value>
+            <valueTerm/>
+            <label>Hmong<!--; Mong--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hmo</value>
+            <valueTerm/>
+            <valueTwo>ho</valueTwo>
+            <label>Hiri Motu</label>
+        </item>
+        <item>
+            <value>hrv</value>
+            <valueTerm/>
+            <valueTwo>hr</valueTwo>
+            <label>Croatian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hsb</value>
+            <valueTerm/>
+            <label>Upper Sorbian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>hun</value>
+            <valueTerm/>
+            <valueTwo>hu</valueTwo>
+            <label>Hungarian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+            <nameOrder>family-given</nameOrder>
+        </item>
+        <item>
+            <value>hup</value>
+            <valueTerm/>
+            <label>Hupa</label>
+        </item>
+        <item>
+            <value>iba</value>
+            <valueTerm/>
+            <label>Iban</label>
+        </item>
+        <item>
+            <value>ibo</value>
+            <valueTerm/>
+            <valueTwo>ig</valueTwo>
+            <label>Igbo</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ice</value>
+            <valueTerm>isl</valueTerm>
+            <valueTwo>is</valueTwo>
+            <label>Icelandic</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ido</value>
+            <valueTerm/>
+            <valueTwo>io</valueTwo>
+            <label>Ido</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>iii</value>
+            <valueTerm/>
+            <valueTwo>ii</valueTwo>
+            <label>Sichuan Yi<!--; Nuosu--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ijo</value>
+            <valueTerm/>
+            <label>Ijo languages</label>
+        </item>
+        <item>
+            <value>iku</value>
+            <valueTerm/>
+            <valueTwo>iu</valueTwo>
+            <label>Inuktitut</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ile</value>
+            <valueTerm/>
+            <valueTwo>ie</valueTwo>
+            <label>Interlingue<!--; Occidental--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ilo</value>
+            <valueTerm/>
+            <label>Iloko</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ina</value>
+            <valueTerm/>
+            <valueTwo>ia</valueTwo>
+            <label>Interlingua<!-- (International Auxiliary Language Association)--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>inc</value>
+            <valueTerm/>
+            <label>Indic languages</label>
+        </item>
+        <item>
+            <value>ind</value>
+            <valueTerm/>
+            <valueTwo>id</valueTwo>
+            <label>Indonesian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ine</value>
+            <valueTerm/>
+            <label>Indo-European languages</label>
+        </item>
+        <item>
+            <value>inh</value>
+            <valueTerm/>
+            <label>Ingush</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ipk</value>
+            <valueTerm/>
+            <valueTwo>ik</valueTwo>
+            <label>Inupiaq</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ira</value>
+            <valueTerm/>
+            <label>Iranian languages</label>
+        </item>
+        <item>
+            <value>iro</value>
+            <valueTerm/>
+            <label>Iroquoian languages</label>
+        </item>
+        <item>
+            <value>ita</value>
+            <valueTerm/>
+            <valueTwo>it</valueTwo>
+            <label>Italian</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>jav</value>
+            <valueTerm/>
+            <valueTwo>jv</valueTwo>
+            <label>Javanese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>jbo</value>
+            <valueTerm/>
+            <label>Lojban</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>jpr</value>
+            <valueTerm/>
+            <label>Judeo-Persian</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>jpn</value>
+            <valueTerm/>
+            <valueTwo>ja</valueTwo>
+            <label>Japanese</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+            <nameOrder>family-given</nameOrder>
+        </item>
+        <item>
+            <value>jrb</value>
+            <valueTerm/>
+            <label>Judeo-Arabic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kaa</value>
+            <valueTerm/>
+            <label>Kara-Kalpak</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kab</value>
+            <valueTerm/>
+            <label>Kabyle</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kac</value>
+            <valueTerm/>
+            <label>Kachin<!--; Jingpho--></label>
+        </item>
+        <item>
+            <value>kal</value>
+            <valueTerm/>
+            <valueTwo>kl</valueTwo>
+            <label>Kalaallisut<!--; Greenlandic--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kam</value>
+            <valueTerm/>
+            <label>Kamba</label>
+        </item>
+        <item>
+            <value>kan</value>
+            <valueTerm/>
+            <valueTwo>kn</valueTwo>
+            <label>Kannada</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kar</value>
+            <valueTerm/>
+            <label>Karen languages</label>
+        </item>
+        <item>
+            <value>kas</value>
+            <valueTerm/>
+            <valueTwo>ks</valueTwo>
+            <label>Kashmiri</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kau</value>
+            <valueTerm/>
+            <valueTwo>kr</valueTwo>
+            <label>Kanuri</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kaw</value>
+            <valueTerm/>
+            <label>Kawi</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kaz</value>
+            <valueTerm/>
+            <valueTwo>kk</valueTwo>
+            <label>Kazakh</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kbd</value>
+            <valueTerm/>
+            <label>Kabardian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kha</value>
+            <valueTerm/>
+            <label>Khasi</label>
+        </item>
+        <item>
+            <value>khi</value>
+            <valueTerm/>
+            <label>Khoisan languages</label>
+        </item>
+        <item>
+            <value>khm</value>
+            <valueTerm/>
+            <valueTwo>km</valueTwo>
+            <label>Central Khmer</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kho</value>
+            <valueTerm/>
+            <label>Khotanese<!--; Sakan--></label>
+        </item>
+        <item>
+            <value>kik</value>
+            <valueTerm/>
+            <valueTwo>ki</valueTwo>
+            <label>Kikuyu<!--; Gikuyu--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kin</value>
+            <valueTerm/>
+            <valueTwo>rw</valueTwo>
+            <label>Kinyarwanda</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kir</value>
+            <valueTerm/>
+            <valueTwo>ky</valueTwo>
+            <label>Kirghiz<!--; Kyrgyz--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kmb</value>
+            <valueTerm/>
+            <label>Kimbundu</label>
+        </item>
+        <item>
+            <value>kok</value>
+            <valueTerm/>
+            <label>Konkani</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kom</value>
+            <valueTerm/>
+            <valueTwo>kv</valueTwo>
+            <label>Komi</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kon</value>
+            <valueTerm/>
+            <valueTwo>kg</valueTwo>
+            <label>Kongo</label>
+        </item>
+        <item>
+            <value>kor</value>
+            <valueTerm/>
+            <valueTwo>ko</valueTwo>
+            <label>Korean</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+            <nameOrder>family-given</nameOrder>
+        </item>
+        <item>
+            <value>kos</value>
+            <valueTerm/>
+            <label>Kosraean</label>
+        </item>
+        <item>
+            <value>kpe</value>
+            <valueTerm/>
+            <label>Kpelle</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>krc</value>
+            <valueTerm/>
+            <label>Karachay-Balkar</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>krl</value>
+            <valueTerm/>
+            <label>Karelian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kro</value>
+            <valueTerm/>
+            <label>Kru languages</label>
+        </item>
+        <item>
+            <value>kru</value>
+            <valueTerm/>
+            <label>Kurukh</label>
+        </item>
+        <item>
+            <value>kua</value>
+            <valueTerm/>
+            <valueTwo>kj</valueTwo>
+            <label>Kuanyama<!--; Kwanyama--></label>
+        </item>
+        <item>
+            <value>kum</value>
+            <valueTerm/>
+            <label>Kumyk</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>kur</value>
+            <valueTerm/>
+            <valueTwo>ku</valueTwo>
+            <label>Kurdish</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+        </item>
+        <item>
+            <value>kut</value>
+            <valueTerm/>
+            <label>Kutenai</label>
+        </item>
+        <item>
+            <value>lad</value>
+            <valueTerm/>
+            <label>Ladino</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lah</value>
+            <valueTerm/>
+            <label>Lahnda</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lam</value>
+            <valueTerm/>
+            <label>Lamba</label>
+        </item>
+        <item>
+            <value>lao</value>
+            <valueTerm/>
+            <valueTwo>lo</valueTwo>
+            <label>Lao</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lat</value>
+            <valueTerm/>
+            <valueTwo>la</valueTwo>
+            <label>Latin</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lav</value>
+            <valueTerm/>
+            <valueTwo>lv</valueTwo>
+            <label>Latvian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lez</value>
+            <valueTerm/>
+            <label>Lezghian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lim</value>
+            <valueTerm/>
+            <valueTwo>li</valueTwo>
+            <label>Limburgan<!--; Limburger; Limburgish--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lin</value>
+            <valueTerm/>
+            <valueTwo>ln</valueTwo>
+            <label>Lingala</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lit</value>
+            <valueTerm/>
+            <valueTwo>lt</valueTwo>
+            <label>Lithuanian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lol</value>
+            <valueTerm/>
+            <label>Mongo</label>
+        </item>
+        <item>
+            <value>loz</value>
+            <valueTerm/>
+            <label>Lozi</label>
+        </item>
+        <item>
+            <value>ltz</value>
+            <valueTerm/>
+            <valueTwo>lb</valueTwo>
+            <label>Luxembourgish<!--; Letzeburgesch--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lua</value>
+            <valueTerm/>
+            <label>Luba-Lulua</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lub</value>
+            <valueTerm/>
+            <valueTwo>lu</valueTwo>
+            <label>Luba-Katanga</label>
+        </item>
+        <item>
+            <value>lug</value>
+            <valueTerm/>
+            <valueTwo>lg</valueTwo>
+            <label>Ganda</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lui</value>
+            <valueTerm/>
+            <label>Luiseno</label>
+        </item>
+        <item>
+            <value>lun</value>
+            <valueTerm/>
+            <label>Lunda</label>
+        </item>
+        <item>
+            <value>luo</value>
+            <valueTerm/>
+            <label>Luo<!-- (Kenya and Tanzania)--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>lus</value>
+            <valueTerm/>
+            <label>Lushai</label>
+        </item>
+        <item>
+            <value>mac</value>
+            <valueTerm>mkd</valueTerm>
+            <valueTwo>mk</valueTwo>
+            <label>Macedonian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mad</value>
+            <valueTerm/>
+            <label>Madurese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+        </item>
+        <item>
+            <value>mag</value>
+            <valueTerm/>
+            <label>Magahi</label>
+        </item>
+        <item>
+            <value>mah</value>
+            <valueTerm/>
+            <valueTwo>mh</valueTwo>
+            <label>Marshallese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mai</value>
+            <valueTerm/>
+            <label>Maithili</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mak</value>
+            <valueTerm/>
+            <label>Makasar</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mal</value>
+            <valueTerm/>
+            <valueTwo>ml</valueTwo>
+            <label>Malayalam</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>man</value>
+            <valueTerm/>
+            <label>Mandingo</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mao</value>
+            <valueTerm>mri</valueTerm>
+            <valueTwo>mi</valueTwo>
+            <label>Maori</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>map</value>
+            <valueTerm/>
+            <label>Austronesian languages</label>
+        </item>
+        <item>
+            <value>mar</value>
+            <valueTerm/>
+            <valueTwo>mr</valueTwo>
+            <label>Marathi</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mas</value>
+            <valueTerm/>
+            <label>Masai</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>may</value>
+            <valueTerm>msa</valueTerm>
+            <valueTwo>ms</valueTwo>
+            <label>Malay</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mdf</value>
+            <valueTerm/>
+            <label>Moksha</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mdr</value>
+            <valueTerm/>
+            <label>Mandar</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>men</value>
+            <valueTerm/>
+            <label>Mende</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mga</value>
+            <valueTerm/>
+            <label>Irish, Middle<!-- (900-1200)--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mic</value>
+            <valueTerm/>
+            <label>Mi'kmaq<!--; Micmac--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>min</value>
+            <valueTerm/>
+            <label>Minangkabau</label>
+        </item>
+        <item>
+            <value>mis</value>
+            <valueTerm/>
+            <label>Uncoded languages</label>
+        </item>
+        <item>
+            <value>mkh</value>
+            <valueTerm/>
+            <label>Mon-Khmer languages</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mlg</value>
+            <valueTerm/>
+            <valueTwo>mg</valueTwo>
+            <label>Malagasy</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mlt</value>
+            <valueTerm/>
+            <valueTwo>mt</valueTwo>
+            <label>Maltese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mnc</value>
+            <valueTerm/>
+            <label>Manchu</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mni</value>
+            <valueTerm/>
+            <label>Manipuri</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mno</value>
+            <valueTerm/>
+            <label>Manobo languages</label>
+        </item>
+        <item>
+            <value>moh</value>
+            <valueTerm/>
+            <label>Mohawk</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mon</value>
+            <valueTerm/>
+            <valueTwo>mn</valueTwo>
+            <label>Mongolian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mos</value>
+            <valueTerm/>
+            <label>Mossi</label>
+        </item>
+        <item>
+            <value>mul</value>
+            <valueTerm/>
+            <label>Multiple languages</label>
+            <frequencyClassifier>common</frequencyClassifier>
+        </item>
+        <item>
+            <value>mun</value>
+            <valueTerm/>
+            <label>Munda languages</label>
+        </item>
+        <item>
+            <value>mus</value>
+            <valueTerm/>
+            <label>Creek</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mwl</value>
+            <valueTerm/>
+            <label>Mirandese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>mwr</value>
+            <valueTerm/>
+            <label>Marwari</label>
+        </item>
+        <item>
+            <value>myn</value>
+            <valueTerm/>
+            <label>Mayan languages</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>myv</value>
+            <valueTerm/>
+            <label>Erzya</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nah</value>
+            <valueTerm/>
+            <label>Nahuatl languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nai</value>
+            <valueTerm/>
+            <label>North American Indian languages</label>
+        </item>
+        <item>
+            <value>nap</value>
+            <valueTerm/>
+            <label>Neapolitan</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nau</value>
+            <valueTerm/>
+            <valueTwo>na</valueTwo>
+            <label>Nauru</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nav</value>
+            <valueTerm/>
+            <valueTwo>nv</valueTwo>
+            <label>Navajo<!--; Navaho--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nbl</value>
+            <valueTerm/>
+            <valueTwo>nr</valueTwo>
+            <label>Ndebele, South<!--; South Ndebele--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nde</value>
+            <valueTerm/>
+            <valueTwo>nd</valueTwo>
+            <label>Ndebele, North<!--; North Ndebele--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ndo</value>
+            <valueTerm/>
+            <valueTwo>ng</valueTwo>
+            <label>Ndonga</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nds</value>
+            <valueTerm/>
+            <label>Low German<!--; Low Saxon; German, Low; Saxon, Low--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nep</value>
+            <valueTerm/>
+            <valueTwo>ne</valueTwo>
+            <label>Nepali</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>new</value>
+            <valueTerm/>
+            <label>Nepal Bhasa<!--; Newari--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nia</value>
+            <valueTerm/>
+            <label>Nias</label>
+        </item>
+        <item>
+            <value>nic</value>
+            <valueTerm/>
+            <label>Niger-Kordofanian languages</label>
+        </item>
+        <item>
+            <value>niu</value>
+            <valueTerm/>
+            <label>Niuean</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nno</value>
+            <valueTerm/>
+            <valueTwo>nn</valueTwo>
+            <label>Norwegian Nynorsk<!--; Nynorsk, Norwegian--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nob</value>
+            <valueTerm/>
+            <valueTwo>nb</valueTwo>
+            <label>Bokmål, Norwegian<!--; Norwegian Bokmål--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nog</value>
+            <valueTerm/>
+            <label>Nogai</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>non</value>
+            <valueTerm/>
+            <label>Norse, Old</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nor</value>
+            <valueTerm/>
+            <valueTwo>no</valueTwo>
+            <label>Norwegian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nqo</value>
+            <valueTerm/>
+            <label>N'Ko</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nso</value>
+            <valueTerm/>
+            <label>Pedi<!--; Sepedi; Northern Sotho--></label>
+        </item>
+        <item>
+            <value>nub</value>
+            <valueTerm/>
+            <label>Nubian languages</label>
+        </item>
+        <item>
+            <value>nwc</value>
+            <valueTerm/>
+            <label>Classical Newari<!--; Old Newari; Classical Nepal Bhasa--></label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nya</value>
+            <valueTerm/>
+            <valueTwo>ny</valueTwo>
+            <label>Chichewa<!--; Chewa; Nyanja--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>nym</value>
+            <valueTerm/>
+            <label>Nyamwezi</label>
+        </item>
+        <item>
+            <value>nyn</value>
+            <valueTerm/>
+            <label>Nyankole</label>
+        </item>
+        <item>
+            <value>nyo</value>
+            <valueTerm/>
+            <label>Nyoro</label>
+        </item>
+        <item>
+            <value>nzi</value>
+            <valueTerm/>
+            <label>Nzima</label>
+        </item>
+        <item>
+            <value>oci</value>
+            <valueTerm/>
+            <valueTwo>oc</valueTwo>
+            <label>Occitan<!-- (post 1500)--><!--; Provençal--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>oji</value>
+            <valueTerm/>
+            <valueTwo>oj</valueTwo>
+            <label>Ojibwa</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ori</value>
+            <valueTerm/>
+            <valueTwo>or</valueTwo>
+            <label>Oriya</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>orm</value>
+            <valueTerm/>
+            <valueTwo>om</valueTwo>
+            <label>Oromo</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>osa</value>
+            <valueTerm/>
+            <label>Osage</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>oss</value>
+            <valueTerm/>
+            <valueTwo>os</valueTwo>
+            <label>Ossetian<!--; Ossetic--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ota</value>
+            <valueTerm/>
+            <label>Turkish, Ottoman<!-- (1500-1928)--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>oto</value>
+            <valueTerm/>
+            <label>Otomian languages</label>
+        </item>
+        <item>
+            <value>paa</value>
+            <valueTerm/>
+            <label>Papuan languages</label>
+        </item>
+        <item>
+            <value>pag</value>
+            <valueTerm/>
+            <label>Pangasinan</label>
+        </item>
+        <item>
+            <value>pal</value>
+            <valueTerm/>
+            <label>Pahlavi</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pam</value>
+            <valueTerm/>
+            <label>Pampanga<!--; Kapampangan--></label>
+        </item>
+        <item>
+            <value>pan</value>
+            <valueTerm/>
+            <valueTwo>pa</valueTwo>
+            <label>Panjabi<!--; Punjabi--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pap</value>
+            <valueTerm/>
+            <label>Papiamento</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pau</value>
+            <valueTerm/>
+            <label>Palauan</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>peo</value>
+            <valueTerm/>
+            <label>Persian, Old<!-- (ca.600-400 B.C.)--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>per</value>
+            <valueTerm>fas</valueTerm>
+            <valueTwo>fa</valueTwo>
+            <label>Persian</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>phi</value>
+            <valueTerm/>
+            <label>Philippine languages</label>
+        </item>
+        <item>
+            <value>phn</value>
+            <valueTerm/>
+            <label>Phoenician</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pli</value>
+            <valueTerm/>
+            <valueTwo>pi</valueTwo>
+            <label>Pali</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pol</value>
+            <valueTerm/>
+            <valueTwo>pl</valueTwo>
+            <label>Polish</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pon</value>
+            <valueTerm/>
+            <label>Pohnpeian</label>
+        </item>
+        <item>
+            <value>por</value>
+            <valueTerm/>
+            <valueTwo>pt</valueTwo>
+            <label>Portuguese</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pra</value>
+            <valueTerm/>
+            <label>Prakrit languages</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pro</value>
+            <valueTerm/>
+            <label>Provençal, Old<!-- (to 1500)--></label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>pus</value>
+            <valueTerm/>
+            <valueTwo>ps</valueTwo>
+            <label>Pushto<!--; Pashto--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>qaa-qtz</value>
+            <valueTerm/>
+            <label>Reserved for local use</label>
+        </item>
+        <item>
+            <value>que</value>
+            <valueTerm/>
+            <valueTwo>qu</valueTwo>
+            <label>Quechua</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>raj</value>
+            <valueTerm/>
+            <label>Rajasthani</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rap</value>
+            <valueTerm/>
+            <label>Rapanui</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rar</value>
+            <valueTerm/>
+            <label>Rarotongan<!--; Cook Islands Maori--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>roa</value>
+            <valueTerm/>
+            <label>Romance languages</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>roh</value>
+            <valueTerm/>
+            <valueTwo>rm</valueTwo>
+            <label>Romansh</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rom</value>
+            <valueTerm/>
+            <label>Romany</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rum</value>
+            <valueTerm>ron</valueTerm>
+            <valueTwo>ro</valueTwo>
+            <label>Romanian<!--; Moldavian; Moldovan--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>run</value>
+            <valueTerm/>
+            <valueTwo>rn</valueTwo>
+            <label>Rundi</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rup</value>
+            <valueTerm/>
+            <label>Aromanian<!--; Arumanian; Macedo-Romanian--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>rus</value>
+            <valueTerm/>
+            <valueTwo>ru</valueTwo>
+            <label>Russian</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sad</value>
+            <valueTerm/>
+            <label>Sandawe</label>
+        </item>
+        <item>
+            <value>sag</value>
+            <valueTerm/>
+            <valueTwo>sg</valueTwo>
+            <label>Sango</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sah</value>
+            <valueTerm/>
+            <label>Yakut</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sai</value>
+            <valueTerm/>
+            <label>South American Indian (Other)</label>
+        </item>
+        <item>
+            <value>sal</value>
+            <valueTerm/>
+            <label>Salishan languages</label>
+        </item>
+        <item>
+            <value>sam</value>
+            <valueTerm/>
+            <label>Samaritan Aramaic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>san</value>
+            <valueTerm/>
+            <valueTwo>sa</valueTwo>
+            <label>Sanskrit</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sas</value>
+            <valueTerm/>
+            <label>Sasak</label>
+        </item>
+        <item>
+            <value>sat</value>
+            <valueTerm/>
+            <label>Santali</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>scn</value>
+            <valueTerm/>
+            <label>Sicilian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sco</value>
+            <valueTerm/>
+            <label>Scots</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sel</value>
+            <valueTerm/>
+            <label>Selkup</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sem</value>
+            <valueTerm/>
+            <label>Semitic languages</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sga</value>
+            <valueTerm/>
+            <label>Irish, Old<!-- (to 900)--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sgn</value>
+            <valueTerm/>
+            <label>Sign Languages</label>
+        </item>
+        <item>
+            <value>shn</value>
+            <valueTerm/>
+            <label>Shan</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sid</value>
+            <valueTerm/>
+            <label>Sidamo</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sin</value>
+            <valueTerm/>
+            <valueTwo>si</valueTwo>
+            <label>Sinhalese<!--; Sinhala--></label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sio</value>
+            <valueTerm/>
+            <label>Siouan languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sit</value>
+            <valueTerm/>
+            <label>Sino-Tibetan languages</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sla</value>
+            <valueTerm/>
+            <label>Slavic languages</label>
+        </item>
+        <item>
+            <value>slo</value>
+            <valueTerm>slk</valueTerm>
+            <valueTwo>sk</valueTwo>
+            <label>Slovak</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>slv</value>
+            <valueTerm/>
+            <valueTwo>sl</valueTwo>
+            <label>Slovenian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sma</value>
+            <valueTerm/>
+            <label>Southern Sami</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sme</value>
+            <valueTerm/>
+            <valueTwo>se</valueTwo>
+            <label>Northern Sami</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>smi</value>
+            <valueTerm/>
+            <label>Sami languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>smj</value>
+            <valueTerm/>
+            <label>Lule Sami</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>smn</value>
+            <valueTerm/>
+            <label>Inari Sami</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>smo</value>
+            <valueTerm/>
+            <valueTwo>sm</valueTwo>
+            <label>Samoan</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sms</value>
+            <valueTerm/>
+            <label>Skolt Sami</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sna</value>
+            <valueTerm/>
+            <valueTwo>sn</valueTwo>
+            <label>Shona</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>snd</value>
+            <valueTerm/>
+            <valueTwo>sd</valueTwo>
+            <label>Sindhi</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>snk</value>
+            <valueTerm/>
+            <label>Soninke</label>
+            <scriptClassifier type="added">Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sog</value>
+            <valueTerm/>
+            <label>Sogdian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>som</value>
+            <valueTerm/>
+            <valueTwo>so</valueTwo>
+            <label>Somali</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>son</value>
+            <valueTerm/>
+            <label>Songhai languages</label>
+        </item>
+        <item>
+            <value>sot</value>
+            <valueTerm/>
+            <valueTwo>st</valueTwo>
+            <label>Sotho, Southern</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>spa</value>
+            <valueTerm/>
+            <valueTwo>es</valueTwo>
+            <label>Spanish<!--; Castilian--></label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>srd</value>
+            <valueTerm/>
+            <valueTwo>sc</valueTwo>
+            <label>Sardinian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>srn</value>
+            <valueTerm/>
+            <label>Sranan Tongo</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>srp</value>
+            <valueTerm/>
+            <valueTwo>sr</valueTwo>
+            <label>Serbian</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>srr</value>
+            <valueTerm/>
+            <label>Serer</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ssa</value>
+            <valueTerm/>
+            <label>Nilo-Saharan languages</label>
+        </item>
+        <item>
+            <value>ssw</value>
+            <valueTerm/>
+            <valueTwo>ss</valueTwo>
+            <label>Swati</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>suk</value>
+            <valueTerm/>
+            <label>Sukuma</label>
+        </item>
+        <item>
+            <value>sun</value>
+            <valueTerm/>
+            <valueTwo>su</valueTwo>
+            <label>Sundanese</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>sus</value>
+            <valueTerm/>
+            <label>Susu</label>
+        </item>
+        <item>
+            <value>sux</value>
+            <valueTerm/>
+            <label>Sumerian</label>
+            <scriptClassifier type="added">not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>swa</value>
+            <valueTerm/>
+            <valueTwo>sw</valueTwo>
+            <label>Swahili</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>swe</value>
+            <valueTerm/>
+            <valueTwo>sv</valueTwo>
+            <label>Swedish</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>syc</value>
+            <valueTerm/>
+            <label>Classical Syriac</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>syr</value>
+            <valueTerm/>
+            <label>Syriac</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tah</value>
+            <valueTerm/>
+            <valueTwo>ty</valueTwo>
+            <label>Tahitian</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tai</value>
+            <valueTerm/>
+            <label>Tai languages</label>
+        </item>
+        <item>
+            <value>tam</value>
+            <valueTerm/>
+            <valueTwo>ta</valueTwo>
+            <label>Tamil</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tat</value>
+            <valueTerm/>
+            <valueTwo>tt</valueTwo>
+            <label>Tatar</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tel</value>
+            <valueTerm/>
+            <valueTwo>te</valueTwo>
+            <label>Telugu</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tem</value>
+            <valueTerm/>
+            <label>Timne</label>
+        </item>
+        <item>
+            <value>ter</value>
+            <valueTerm/>
+            <label>Tereno</label>
+        </item>
+        <item>
+            <value>tet</value>
+            <valueTerm/>
+            <label>Tetum</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tgk</value>
+            <valueTerm/>
+            <valueTwo>tg</valueTwo>
+            <label>Tajik</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tgl</value>
+            <valueTerm/>
+            <valueTwo>tl</valueTwo>
+            <label>Tagalog</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tha</value>
+            <valueTerm/>
+            <valueTwo>th</valueTwo>
+            <label>Thai</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tib</value>
+            <valueTerm>bod</valueTerm>
+            <valueTwo>bo</valueTwo>
+            <label>Tibetan</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tig</value>
+            <valueTerm/>
+            <label>Tigre</label>
+        </item>
+        <item>
+            <value>tir</value>
+            <valueTerm/>
+            <valueTwo>ti</valueTwo>
+            <label>Tigrinya</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tiv</value>
+            <valueTerm/>
+            <label>Tiv</label>
+        </item>
+        <item>
+            <value>tkl</value>
+            <valueTerm/>
+            <label>Tokelau</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tlh</value>
+            <valueTerm/>
+            <label>Klingon<!--; tlhIngan-Hol--></label>
+        </item>
+        <item>
+            <value>tli</value>
+            <valueTerm/>
+            <label>Tlingit</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tmh</value>
+            <valueTerm/>
+            <label>Tamashek</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tog</value>
+            <valueTerm/>
+            <label>Tonga (Nyasa)</label>
+        </item>
+        <item>
+            <value>ton</value>
+            <valueTerm/>
+            <valueTwo>to</valueTwo>
+            <label>Tonga (Tonga Islands)</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tpi</value>
+            <valueTerm/>
+            <label>Tok Pisin</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tsi</value>
+            <valueTerm/>
+            <label>Tsimshian</label>
+        </item>
+        <item>
+            <value>tsn</value>
+            <valueTerm/>
+            <valueTwo>tn</valueTwo>
+            <label>Tswana</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tso</value>
+            <valueTerm/>
+            <valueTwo>ts</valueTwo>
+            <label>Tsonga</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tuk</value>
+            <valueTerm/>
+            <valueTwo>tk</valueTwo>
+            <label>Turkmen</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tum</value>
+            <valueTerm/>
+            <label>Tumbuka</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tup</value>
+            <valueTerm/>
+            <label>Tupi languages</label>
+        </item>
+        <item>
+            <value>tur</value>
+            <valueTerm/>
+            <valueTwo>tr</valueTwo>
+            <label>Turkish</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tut</value>
+            <valueTerm/>
+            <label>Altaic languages</label>
+        </item>
+        <item>
+            <value>tvl</value>
+            <valueTerm/>
+            <label>Tuvalu</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>twi</value>
+            <valueTerm/>
+            <valueTwo>tw</valueTwo>
+            <label>Twi</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>tyv</value>
+            <valueTerm/>
+            <label>Tuvinian</label>
+        </item>
+        <item>
+            <value>udm</value>
+            <valueTerm/>
+            <label>Udmurt</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>uga</value>
+            <valueTerm/>
+            <label>Ugaritic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>uig</value>
+            <valueTerm/>
+            <valueTwo>ug</valueTwo>
+            <label>Uighur<!--; Uyghur--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ukr</value>
+            <valueTerm/>
+            <valueTwo>uk</valueTwo>
+            <label>Ukrainian</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>umb</value>
+            <valueTerm/>
+            <label>Umbundu</label>
+        </item>
+        <item>
+            <value>und</value>
+            <valueTerm/>
+            <label>Undetermined</label>
+        </item>
+        <item>
+            <value>urd</value>
+            <valueTerm/>
+            <valueTwo>ur</valueTwo>
+            <label>Urdu</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>uzb</value>
+            <valueTerm/>
+            <valueTwo>uz</valueTwo>
+            <label>Uzbek</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>vai</value>
+            <valueTerm/>
+            <label>Vai</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ven</value>
+            <valueTerm/>
+            <valueTwo>ve</valueTwo>
+            <label>Venda</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>vie</value>
+            <valueTerm/>
+            <valueTwo>vi</valueTwo>
+            <label>Vietnamese</label>
+            <frequencyClassifier>common</frequencyClassifier>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>vol</value>
+            <valueTerm/>
+            <valueTwo>vo</valueTwo>
+            <label>Volapük</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>vot</value>
+            <valueTerm/>
+            <label>Votic</label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>wak</value>
+            <valueTerm/>
+            <label>Wakashan languages</label>
+        </item>
+        <item>
+            <value>wal</value>
+            <valueTerm/>
+            <label>Walamo</label>
+        </item>
+        <item>
+            <value>war</value>
+            <valueTerm/>
+            <label>Waray</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>was</value>
+            <valueTerm/>
+            <label>Washo</label>
+        </item>
+        <item>
+            <value>wel</value>
+            <valueTerm>cym</valueTerm>
+            <valueTwo>cy</valueTwo>
+            <label>Welsh</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>wen</value>
+            <valueTerm/>
+            <label>Sorbian languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>wln</value>
+            <valueTerm/>
+            <valueTwo>wa</valueTwo>
+            <label>Walloon</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>wol</value>
+            <valueTerm/>
+            <valueTwo>wo</valueTwo>
+            <label>Wolof</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>xal</value>
+            <valueTerm/>
+            <label>Kalmyk<!--; Oirat--></label>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>xho</value>
+            <valueTerm/>
+            <valueTwo>xh</valueTwo>
+            <label>Xhosa</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>yao</value>
+            <valueTerm/>
+            <label>Yao</label>
+        </item>
+        <item>
+            <value>yap</value>
+            <valueTerm/>
+            <label>Yapese</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>yid</value>
+            <valueTerm/>
+            <valueTwo>yi</valueTwo>
+            <label>Yiddish</label>
+            <transliterationClassifier>transliteration</transliterationClassifier>
+            <scriptClassifier>not Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>yor</value>
+            <valueTerm/>
+            <valueTwo>yo</valueTwo>
+            <label>Yoruba</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>ypk</value>
+            <valueTerm/>
+            <label>Yupik languages</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>zap</value>
+            <valueTerm/>
+            <label>Zapotec</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>zbl</value>
+            <valueTerm/>
+            <label>Blissymbols<!--; Blissymbolics; Bliss--></label>
+        </item>
+        <item>
+            <value>zen</value>
+            <valueTerm/>
+            <label>Zenaga</label>
+        </item>
+        <item>
+            <value>zha</value>
+            <valueTerm/>
+            <valueTwo>za</valueTwo>
+            <label>Zhuang<!--; Chuang--></label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>znd</value>
+            <valueTerm/>
+            <label>Zande languages</label>
+        </item>
+        <item>
+            <value>zul</value>
+            <valueTerm/>
+            <valueTwo>zu</valueTwo>
+            <label>Zulu</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>zun</value>
+            <valueTerm/>
+            <label>Zuni</label>
+            <scriptClassifier>Latin</scriptClassifier>
+        </item>
+        <item>
+            <value>zxx</value>
+            <valueTerm/>
+            <label>No linguistic content<!--; Not applicable--></label>
+            <frequencyClassifier>common</frequencyClassifier>
+        </item>
+        <item>
+            <value>zza</value>
+            <valueTerm/>
+            <label>Zaza<!--; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki--></label>
+        </item>
+    </items>
+</code-table>

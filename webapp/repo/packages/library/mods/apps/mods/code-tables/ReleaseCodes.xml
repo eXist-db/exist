@@ -1,1 +1,51 @@
-<code-table><code-table-name>ReleaseCode</code-table-name><file-name>ReleaseCodes.xml</file-name><status/><form/><basis/><description>Release Codes</description><notes/><items><item><label>Version 0.1</label><value>0.1-pre-alpha</value><sort>0.1</sort><description>The current release on the development server.</description></item><item><label>Version 0.3</label><value>0.3-alpha</value><sort>0.3</sort><description>An early alpha release for internal testing.  This will be feature complete for 1.0. Target - 3 months after funding.</description></item><item><label>Beta 1 Version 0.5</label><value>0.5-beta</value><sort>0.5</sort><description>An beta release for customers with a special arrangement with the organization.  Target - 6 months after funding.</description></item><item><label>Version 1.0</label><value>1.0</value><sort>0.5</sort><description>The first general release for general customer availability.  Target - 9 months after funding.</description></item><item><label>Version 2.0</label><value>2.0</value><description>The second general release for customers.  Target target 19 months after funding.</description></item><item><label>Future</label><value>10</value><description>A release somewhere in the 10 year time span.  All really advanced "would love to have" features go here.</description></item><item><label>Test</label><value>test</value><description>A release somewhere in the 10 year time span.  All really advanced "would love to have" features go here.</description></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>ReleaseCode</code-table-name>
+    <file-name>ReleaseCodes.xml</file-name>
+    <status/>
+    <form/>
+    <basis/>
+    <description>Release Codes</description>
+    <notes/>
+    <items>
+        <item>
+            <label>Version 0.1</label>
+            <value>0.1-pre-alpha</value>
+            <sort>0.1</sort>
+            <description>The current release on the development server.</description>
+        </item>
+        <item>
+            <label>Version 0.3</label>
+            <value>0.3-alpha</value>
+            <sort>0.3</sort>
+            <description>An early alpha release for internal testing.  This will be feature complete for 1.0. Target - 3 months after funding.</description>
+        </item>
+        <item>
+            <label>Beta 1 Version 0.5</label>
+            <value>0.5-beta</value>
+            <sort>0.5</sort>
+            <description>An beta release for customers with a special arrangement with the organization.  Target - 6 months after funding.</description>
+        </item>
+        <item>
+            <label>Version 1.0</label>
+            <value>1.0</value>
+            <sort>0.5</sort>
+            <description>The first general release for general customer availability.  Target - 9 months after funding.</description>
+        </item>
+        <item>
+            <label>Version 2.0</label>
+            <value>2.0</value>
+            <description>The second general release for customers.  Target target 19 months after funding.</description>
+        </item>
+        <item>
+            <label>Future</label>
+            <value>10</value>
+            <description>A release somewhere in the 10 year time span.  All really advanced "would love to have" features go here.</description>
+        </item>
+        <item>
+            <label>Test</label>
+            <value>test</value>
+            <description>A release somewhere in the 10 year time span.  All really advanced "would love to have" features go here.</description>
+        </item>
+    </items>
+</code-table>

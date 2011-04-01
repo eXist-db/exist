@@ -1,10 +1,63 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="header.xml"/><xi:include href="sidebar.xml"/><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>Search Interface 1</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.13.xml"><div><graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
-                                    &#160;</div></ulink></entry><entry><ulink href="walkthrough.toc.xml"><div class="toc"><graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.14.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
-                                    &#160;</div></ulink></entry></row></tbody></tgroup></table><para><graphic fileref="images/search_interface_1.png" align="center" valign="middle" width="1000px"/></para><para>The search interface has four tabs, one for performing simple search, one for performing advanced search, one that logs the query history, and one where the records marked by the user is collected.</para><para> Tamboti comes with a folder full of sample records of different kinds. These you can edit (and delete and move, though there is probably no good
-            reason to do so): at regular intervals the folder is restored to its original state, so all changes done here will (eventually) be undone. </para><para> If you click on the Samples folder and perform a search with no search term, your will find all of the sample records. If you now click on one of them,
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
+    <link rel="stylesheet" href="docbook.css" type="text/css"/>
+    <chapter>
+        <title>Search Interface 1</title>
+        <table frame="all" width="25%" border="0" class="center">
+            <title/>
+            <tgroup cols="4">
+                <colspec colname="c1" colnum="1" colwidth="25%"/>
+                <colspec colname="c2" colnum="2" colwidth="25%"/>
+                <colspec colname="c3" colnum="3" colwidth="25%"/>
+                <colspec colname="c4" colnum="4" colwidth="25%"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <ulink href="walkthrough.13.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.toc.xml">
+                                <div class="toc">
+                                    <graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.14.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <para>
+            <graphic fileref="images/search_interface_1.png" align="center" valign="middle" width="1000px"/>
+        </para>
+        <para>The search interface has four tabs, one for performing simple search, one for performing advanced search, one that logs the query history, and one where the records marked by the user is collected.</para>
+        <para> Tamboti comes with a folder full of sample records of different kinds. These you can edit (and delete and move, though there is probably no good
+            reason to do so): at regular intervals the folder is restored to its original state, so all changes done here will (eventually) be undone. </para>
+        <para> If you click on the Samples folder and perform a search with no search term, your will find all of the sample records. If you now click on one of them,
             you will find that you now have more options than you had with the records that did not belong to you. The records you did not own you could only save
-            in a list and view as XML, but when you have logged in and are looking at a record that you are allowed to change, you will see a set of new buttons. </para><para> First of all, in addition to the button introduced before, you have now the option to Edit Record&#160;<graphic fileref="../../../resources/images/page_edit.png" align="center" valign="middle"/>&#160;, that is, to open the record displayed inside the editor - to correct mistakes, make additions, add
-        notes and abstracts and so on. If you are sharing records within a group, everybody can participate in adding information to the record in this way.</para><para> Just as you have the option to delete a folder you have created, any file you can edit, you can delete as well, and there of course is a button for that purpose:&#160;<graphic fileref="../../../resources/images/delete.png" align="center" valign="middle"/>&#160;. The record does not get deleted immediately: you are first asked to confirm your intention to delete it and you can cancel if you wish to do so.</para><para> Just as you have the option to move a folder that you own to some other place under your control, you can move any file you can edit to a folder you control, 
-            e.g. to a folder within your own Home folder for finished records, to a folder used for having records checked by someone or to a folder that is common to your group. </para><para> Lastly, when you selected a folder you had write access to, you were able to "Create Stand-Alone Record"; now you are able to "Create Related Record" &#160;<graphic fileref="../../../resources/images/page_add.png" align="center" valign="middle"/>&#160;-
-        the point behind this will be the topic of a later part of this tutorial.</para><para><graphic fileref="images/walk-through.13.png" align="center" valign="middle"/></para><para> Next, we will introduce Tamboti's Basic Input Forms.</para></chapter></book>
+            in a list and view as XML, but when you have logged in and are looking at a record that you are allowed to change, you will see a set of new buttons. </para>
+        <para> First of all, in addition to the button introduced before, you have now the option to Edit Record&#160;<graphic fileref="../../../resources/images/page_edit.png" align="center" valign="middle"/>&#160;, that is, to open the record displayed inside the editor - to correct mistakes, make additions, add
+        notes and abstracts and so on. If you are sharing records within a group, everybody can participate in adding information to the record in this way.</para>
+        <para> Just as you have the option to delete a folder you have created, any file you can edit, you can delete as well, and there of course is a button for that purpose:&#160;<graphic fileref="../../../resources/images/delete.png" align="center" valign="middle"/>&#160;. The record does not get deleted immediately: you are first asked to confirm your intention to delete it and you can cancel if you wish to do so.</para>
+        <para> Just as you have the option to move a folder that you own to some other place under your control, you can move any file you can edit to a folder you control, 
+            e.g. to a folder within your own Home folder for finished records, to a folder used for having records checked by someone or to a folder that is common to your group. </para>
+        <para> Lastly, when you selected a folder you had write access to, you were able to "Create Stand-Alone Record"; now you are able to "Create Related Record" &#160;<graphic fileref="../../../resources/images/page_add.png" align="center" valign="middle"/>&#160;-
+        the point behind this will be the topic of a later part of this tutorial.</para>
+        <para>
+            <graphic fileref="images/walk-through.13.png" align="center" valign="middle"/>
+        </para>
+        <para> Next, we will introduce Tamboti's Basic Input Forms.</para>
+    </chapter>
+</book>

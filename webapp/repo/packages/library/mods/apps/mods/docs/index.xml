@@ -1,15 +1,139 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><bookinfo><graphic fileref="../../../resources/images/tamboti.png"/><graphic fileref="../../../resources/images/logovjc.gif" title="The Cluster of Excellence &#34;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&#34; at Heidelberg University" alt="The Cluster of Excellence &#34;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&#34; at Heidelberg University" width="75" height="69" style="border-style: none"/><productname>Tamboti</productname><title>Tamboti Walkthrough</title><date>March 2011</date><author><firstname>Dulip</firstname><surname>Withanage</surname><affiliation><address format="linespecific"><email>withanage@asia-europe.uni-heidelberg.de</email></address><orgname>Heidelberg Research Architecture</orgname><orgname>"Asia and Europe in a Global Context"</orgname><orgname>Heidelberg University</orgname></affiliation></author><author><firstname>Jens Østergaard</firstname><surname>Petersen</surname><affiliation><address format="linespecific"><email>petersen@asia-europe.uni-heidelberg.de</email></address><orgname>Heidelberg Research Architecture</orgname><orgname>"Asia and Europe in a Global Context"</orgname><orgname>Heidelberg University</orgname></affiliation></author></bookinfo><sidebar xmlns="http://exist-db.org/NS/sidebar" title="Navigation"><group name="Tamboti"><item><link href="">What is Tamboti?</link></item><item><link href="">Who are we?</link></item></group><group name="Documentation"><item><link href="walkthrough.xml">Walkthrough</link></item><item><link href="">Search Functions</link></item><item><link href="">Editor</link></item><item><link href="security-manager.xml">Sharing</link></item></group><group name="MODS"><item><link href="">Overview</link></item><item><link href="">Examples</link></item><item><link href="">Links</link></item></group><group name="Feedback"><item><link href="http://kjc-fs-cluster.kjc.uni-heidelberg.de/helpdesk/" target="blank">Ticket System</link></item></group><group name="Development"><item><link href="">How to Join</link></item><item><link href="">Changelog</link></item></group><banner><link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/></link></banner></sidebar><chapter><title>What is Tamboti?</title><para> Tamboti is the Cluster's new framework for cataloguing bibliographical material and other resource types, such as web sites, images and videos. </para><para> Tamboti has been created by the 
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <bookinfo>
+        <graphic fileref="../../../resources/images/tamboti.png"/>
+        <graphic fileref="../../../resources/images/logovjc.gif" title="The Cluster of Excellence &#34;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&#34; at Heidelberg University" alt="The Cluster of Excellence &#34;Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows&#34; at Heidelberg University" width="75" height="69" style="border-style: none"/>
+        <productname>Tamboti</productname>
+        <title>Tamboti Walkthrough</title>
+        <date>March 2011</date>
+        <author>
+            <firstname>Dulip</firstname>
+            <surname>Withanage</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>withanage@asia-europe.uni-heidelberg.de</email>
+                </address>
+                <orgname>Heidelberg Research Architecture</orgname>
+                <orgname>"Asia and Europe in a Global Context"</orgname>
+                <orgname>Heidelberg University</orgname>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Jens Østergaard</firstname>
+            <surname>Petersen</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>petersen@asia-europe.uni-heidelberg.de</email>
+                </address>
+                <orgname>Heidelberg Research Architecture</orgname>
+                <orgname>"Asia and Europe in a Global Context"</orgname>
+                <orgname>Heidelberg University</orgname>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <sidebar xmlns="http://exist-db.org/NS/sidebar" title="Navigation">
+        <group name="Tamboti">
+            <item>
+                <link href="">What is Tamboti?</link>
+            </item>
+            <item>
+                <link href="">Who are we?</link>
+            </item>
+        </group>
+        <group name="Documentation">
+            <item>
+                <link href="walkthrough.xml">Walkthrough</link>
+            </item>
+            <item>
+                <link href="">Search Functions</link>
+            </item>
+            <item>
+                <link href="">Editor</link>
+            </item>
+            <item>
+                <link href="security-manager.xml">Sharing</link>
+            </item>
+        </group>
+        <group name="MODS">
+            <item>
+                <link href="">Overview</link>
+            </item>
+            <item>
+                <link href="">Examples</link>
+            </item>
+            <item>
+                <link href="">Links</link>
+            </item>
+        </group>
+        <group name="Feedback">
+            <item>
+                <link href="http://kjc-fs-cluster.kjc.uni-heidelberg.de/helpdesk/" target="blank">Ticket System</link>
+            </item>
+        </group>
+        <group name="Development">
+            <item>
+                <link href="">How to Join</link>
+            </item>
+            <item>
+                <link href="">Changelog</link>
+            </item>
+        </group>
+        <banner>
+            <link href="http://exist-db.org">
+                <img alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/>
+            </link>
+        </banner>
+    </sidebar>
+    <chapter>
+        <title>What is Tamboti?</title>
+        <para> Tamboti is the Cluster's new framework for cataloguing bibliographical material and other resource types, such as web sites, images and videos. </para>
+        <para> Tamboti has been created by the 
             <a href="http://www.asia-europe.uni-heidelberg.de/en/research/heidelberg-research-architecture.html" target="_blank">HRA</a> 
             (Heidelberg Research Architecture) at the 
             <a href="http://www.asia-europe.uni-heidelberg.de/en/home.html" target="_blank">The Cluster of Excellence "Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows"</a> at 
             <a href="http://www.uni-heidelberg.de/index_e.html" target="_blank">Heidelberg University</a>, 
             in close cooperation with 
-            <a href="http://www.existsolutions.com/" target="_blank">eXist Solutions GmbH</a>. </para><para>Tamboti is part of the 
-            <a href="http://exist.sourceforge.net/" target="_blank">eXist</a>, an Open Source XML database.</para><para>Tamboti has three main functions. 
-            <itemizedlist><listitem><para>to make it possible to <emphasis role="bold">search</emphasis> for existing metadata records </para></listitem><listitem><para>to make it possible to <emphasis role="bold">create</emphasis> new metadata records and <emphasis role="bold">edit</emphasis>
-                    existing ones. </para></listitem><listitem><para>to make it possible to <emphasis role="bold">annotate</emphasis> and <emphasis role="bold">comment</emphasis> on metadata entries in a manner that facilitates cross-cultural and cross-lingual research. </para></listitem></itemizedlist></para><para> If you follow <ulink href="walkthrough.xml">this walkthrough</ulink>, you will be introduced to the main functionalities of Tamboti, step by step.  
-        </para><para>You can read more about how to share records with others <ulink href="security-manager.xml">here</ulink>.</para><para>More introductions will follow. </para><note><para>Why "Tamboti"? </para><para> In the past, there has been some confusion about what to call the HRA resources. We have decided to adopt the names of exotic trees for
+            <a href="http://www.existsolutions.com/" target="_blank">eXist Solutions GmbH</a>. </para>
+        <para>Tamboti is part of the 
+            <a href="http://exist.sourceforge.net/" target="_blank">eXist</a>, an Open Source XML database.</para>
+        <para>Tamboti has three main functions. 
+            <itemizedlist>
+                <listitem>
+                    <para>to make it possible to <emphasis role="bold">search</emphasis> for existing metadata records </para>
+                </listitem>
+                <listitem>
+                    <para>to make it possible to <emphasis role="bold">create</emphasis> new metadata records and <emphasis role="bold">edit</emphasis>
+                    existing ones. </para>
+                </listitem>
+                <listitem>
+                    <para>to make it possible to <emphasis role="bold">annotate</emphasis> and <emphasis role="bold">comment</emphasis> on metadata entries in a manner that facilitates cross-cultural and cross-lingual research. </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para> If you follow <ulink href="walkthrough.xml">this walkthrough</ulink>, you will be introduced to the main functionalities of Tamboti, step by step.  
+        </para>
+        <para>You can read more about how to share records with others <ulink href="security-manager.xml">here</ulink>.</para>
+        <para>More introductions will follow. </para>
+        <note>
+            <para>Why "Tamboti"? </para>
+            <para> In the past, there has been some confusion about what to call the HRA resources. We have decided to adopt the names of exotic trees for
                 HRA resources. Trees were chosen primarily because the resources employ a database which builds on XML, and XML is a tree-like structure. A
                 tree structure is a hierarchcal structure, which starts with one element (the trunk or root) and then divides into ever finer distinctions
-                (branches and twigs). Also, tree names are fairly neutral - and most people would agree that "trees are nice." </para><para>The Tamboti tree is a tree native to Africa, also known as the African Sandalwood tree. You can find descriptions of the Tamboti tree by
-                following the links below. <itemizedlist><listitem><para><ulink href="http://www.prosono.co.za/en/sandalwood.shtml">Prosono International</ulink></para></listitem><listitem><para><ulink href="http://www.krugerpark.co.za/africa_tamboti.html">Kruger Park</ulink></para></listitem></itemizedlist></para></note></chapter></book>
+                (branches and twigs). Also, tree names are fairly neutral - and most people would agree that "trees are nice." </para>
+            <para>The Tamboti tree is a tree native to Africa, also known as the African Sandalwood tree. You can find descriptions of the Tamboti tree by
+                following the links below. <itemizedlist>
+                    <listitem>
+                        <para>
+                            <ulink href="http://www.prosono.co.za/en/sandalwood.shtml">Prosono International</ulink>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <ulink href="http://www.krugerpark.co.za/africa_tamboti.html">Kruger Park</ulink>
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </note>
+    </chapter>
+</book>

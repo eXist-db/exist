@@ -1,16 +1,70 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="target-audience" tab-id="target-audience"><div class="block-form">
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="target-audience" tab-id="target-audience">
+    <div class="block-form">
         <!--DLF/Aquifer: Recommended if applicable-->
     <!--Cluster: hide-->
-    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one targetAudience element when applicable, and a controlled vocabulary when available. This element is repeatable. --><fieldset class="level-1"><div class="join"><span class="legend"><span class="legend">Target Audiences</span><span class="join-button"><xf:trigger><xf:label>&#160;+</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:targetAudience" at="index('targetAudience-repeat')" position="after"/></xf:action></xf:trigger></span><span class="join-button"><xf:trigger><xf:label>&#160;–</xf:label><xf:action ev:event="DOMActivate"><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:targetAudience" at="index('targetAudience-repeat')"/></xf:action></xf:trigger></span></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p> Use Target Audience to describe a group for which a resource is intended. </p><p> Use this field whenever there is a specific audience for a
+    <!-- The DLF/Aquifer Implementation Guidelines for Shareable MODS Records recommend the use of at least one targetAudience element when applicable, and a controlled vocabulary when available. This element is repeatable. -->
+        <fieldset class="level-1">
+            <div class="join">
+                <span class="legend">
+                    <span class="legend">Target Audiences</span>
+                    <span class="join-button">
+                        <xf:trigger>
+                            <xf:label>&#160;+</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                                <xf:insert nodeset="mods:targetAudience" at="index('targetAudience-repeat')" position="after"/>
+                            </xf:action>
+                        </xf:trigger>
+                    </span>
+                    <span class="join-button">
+                        <xf:trigger>
+                            <xf:label>&#160;–</xf:label>
+                            <xf:action ev:event="DOMActivate">
+                                <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:targetAudience" at="index('targetAudience-repeat')"/>
+                            </xf:action>
+                        </xf:trigger>
+                    </span>
+                </span>
+                <span class="xforms-hint">
+                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
+                    <div class="xforms-hint-value">
+                        <p> Use Target Audience to describe a group for which a resource is intended. </p>
+                        <p> Use this field whenever there is a specific audience for a
                         resource (for example, a text marked up specifically for historians). Do not limit the use of Target Audience to the intellectual level of the
-                        audience (as suggested by the marctarget list). </p><p> If you wish to add an authority file, or wish to add terms to the Local authority file, please
-                        contact <!--contact-->. When more than one target audience is recorded, the field is repeated. </p><p> Use the authority field whenever possible
-                        to indicate the controlled vocabulary used. </p><p> Do not use Target Audience to indicate audiences to whom access or use of the resource is limited;
-                        include this information in the Access Condition field. </p></div></span></div>
+                        audience (as suggested by the marctarget list). </p>
+                        <p> If you wish to add an authority file, or wish to add terms to the Local authority file, please
+                        contact <!--contact-->. When more than one target audience is recorded, the field is repeated. </p>
+                        <p> Use the authority field whenever possible
+                        to indicate the controlled vocabulary used. </p>
+                        <p> Do not use Target Audience to indicate audiences to whom access or use of the resource is limited;
+                        include this information in the Access Condition field. </p>
+                    </div>
+                </span>
+            </div>
             
-        <!--targetAudience repeat begins--><xf:repeat nodeset="instance('save-data')/mods:targetAudience" id="targetAudience-repeat">
+        <!--targetAudience repeat begins-->
+            <xf:repeat nodeset="instance('save-data')/mods:targetAudience" id="targetAudience-repeat">
                 <!--targetAudience node-add begins-->
-                <!--NB: attributes do not work--><xf:group appearance="full" ref=".[not(.)]"><xf:switch><xf:case id="targetAudience-add-node-hide"><div class="node-button"><xf:trigger class="add-button"><xf:label class="xforms-group-label-centered">&gt;</xf:label><xf:toggle case="targetAudience-add-node-unhide" ev:event="DOMActivate"/></xf:trigger></div></xf:case><xf:case id="targetAudience-add-node-unhide"><div class="node-button"><xf:trigger><xf:label class="xforms-group-label-centered">&lt;</xf:label><xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/></xf:trigger></div><div class="node-adds"><xf:group id="targetAudience-add-node-recommended" ref=".[not(.)]" appearance="full">
+                <!--NB: attributes do not work-->
+                <xf:group appearance="full" ref=".[not(.)]">
+                    <xf:switch>
+                        <xf:case id="targetAudience-add-node-hide">
+                            <div class="node-button">
+                                <xf:trigger class="add-button">
+                                    <xf:label class="xforms-group-label-centered">&gt;</xf:label>
+                                    <xf:toggle case="targetAudience-add-node-unhide" ev:event="DOMActivate"/>
+                                </xf:trigger>
+                            </div>
+                        </xf:case>
+                        <xf:case id="targetAudience-add-node-unhide">
+                            <div class="node-button">
+                                <xf:trigger>
+                                    <xf:label class="xforms-group-label-centered">&lt;</xf:label>
+                                    <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/>
+                                </xf:trigger>
+                            </div>
+                            <div class="node-adds">
+                                <xf:group id="targetAudience-add-node-recommended" ref=".[not(.)]" appearance="full">
                                     <!--<xf:label class="xforms-group-label-centered">Recommended Fields</xf:label>-->
                                     <!--                                           
                                         <xf:trigger ref=".[not(@lang)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add Language</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@lang"/> </xf:action> </xf:trigger> 
@@ -20,28 +74,70 @@
                                         <xf:trigger ref=".[not(@authorityURI)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@authorityURI"/> </xf:action> </xf:trigger>
                                         <xf:trigger ref=".[not(@valueURI)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@valueURI"/> </xf:action> </xf:trigger>
                                         <xf:trigger ref=".[not(@altRepGroup)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add Authority</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@altRepGroup"/> </xf:action> </xf:trigger>                        
-                                    --><xf:trigger ref=".[not(mods:targetAudience)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Target Audience</xf:label><xf:action ev:event="DOMActivate"><xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/><xf:insert nodeset="mods:form" at="index('targetAudience-repeat')" position="after" origin="instance('insert-templates')/mods:targetAudience/mods:form"/></xf:action></xf:trigger></xf:group>
+                                    -->
+                                    <xf:trigger ref=".[not(mods:targetAudience)]" class="add-button">
+                                        <xf:label class="xforms-group-label-centered">Add Target Audience</xf:label>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert nodeset="mods:form" at="index('targetAudience-repeat')" position="after" origin="instance('insert-templates')/mods:targetAudience/mods:form"/>
+                                        </xf:action>
+                                    </xf:trigger>
+                                </xf:group>
                                 <!-- <xf:group id="targetAudience-add-node-optional">
                                     <xf:label class="xforms-group-label-centered">Optional Fields</xf:label>
                                     <xf:trigger ref=".[not(@displayLabel)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add Display Label</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@displayLabel"/> </xf:action> </xf:trigger> </xf:group> -->
                                 <!-- <xf:group id="targetAudience-add-node-not-recommended"> <xf:label class="xforms-group-label-centered">Deprecated Fields</xf:label> 
                                     <xf:trigger ref=".[not(@ID)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add ID</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@ID"/> </xf:action> </xf:trigger> 
                                     <xf:trigger ref=".[not(@xlink)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add XLink</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@xlink"/> </xf:action> </xf:trigger> 
-                                    <xf:trigger ref=".[not(@xml:lang)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add xml:lang</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@xml:lang"/> </xf:action> </xf:trigger> </xf:group> </xf:group> --></div></xf:case></xf:switch></xf:group>
+                                    <xf:trigger ref=".[not(@xml:lang)]" class="add-button"> <xf:label class="xforms-group-label-centered">Add xml:lang</xf:label> <xf:action ev:event="DOMActivate"> <xf:toggle case="targetAudience-add-node-hide" ev:event="DOMActivate"/> <xf:insert context="." origin="instance('insert-templates')/mods:targetAudience/@xml:lang"/> </xf:action> </xf:trigger> </xf:group> </xf:group> -->
+                            </div>
+                        </xf:case>
+                    </xf:switch>
+                </xf:group>
                 <!--targetAudience node-add ends-->
                     
-                <!--targetAudience input begins--><xf:group ref=".[@lang]" appearance="full"><xf:select1 ref="./@lang"><xf:label>Language:</xf:label><xf:hint><p> The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. The
-                                        most common languages have been moved to the top of the list. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--targetAudience input begins-->
+                <xf:group ref=".[@lang]" appearance="full">
+                    <xf:select1 ref="./@lang">
+                        <xf:label>Language:</xf:label>
+                        <xf:hint>
+                            <p> The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource. The
+                                        most common languages have been moved to the top of the list. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-3-type-sorted-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                         <!--DLF/Aquifer: NOT RECOMMENDED]-->
-                        <!--Cluster: omit--><xf:group ref=".[@xml:lang]" appearance="full"><xf:select1 ref="./@xml:lang"><xf:label>xml:lang:</xf:label><xf:hint><p>
+                        <!--Cluster: omit-->
+                <xf:group ref=".[@xml:lang]" appearance="full">
+                    <xf:select1 ref="./@xml:lang">
+                        <xf:label>xml:lang:</xf:label>
+                        <xf:hint>
+                            <p>
                                         The language used within Title Information is specified here, if this language is different from the language noted in Language of Resource.
                                         xml:lang is used to specify the language used within a field, using specifications in RFC 3066. 
                                         RFC 3066 uses the two-character ISO 639-1 codes along with three-character ISO 639-2 codes for those languages not given in 639-1.
-                                    </p><p>
+                                    </p>
+                            <p>
                                         The recommendation is not to use xml:lang, but to use the Language.
-                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='language-2-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                         <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                        <!--Cluster: include--><xf:group ref=".[@type='transliterated']" appearance="full"><xf:select1 ref="./@transliteration" selection="open"><xf:label>Transliteration:</xf:label><xf:hint><p>
+                        <!--Cluster: include-->
+                <xf:group ref=".[@type='transliterated']" appearance="full">
+                    <xf:select1 ref="./@transliteration" selection="open">
+                        <xf:label>Transliteration:</xf:label>
+                        <xf:hint>
+                            <p>
                                         Transliteration specifies the transliteration (transcription, romanisation) scheme used within Title Information. 
                                         When specificing the transliteration used, also specify the language employed. 
                                         There is at present no standard list of transliteration schemes available.
@@ -55,30 +151,133 @@
                                         Russian: <!--NB-->
                                         Sanskrit: <!--NB-->
                                         If you employ a different, but recognised, transliteration scheme, you may have it added to the list.                        
-                                    </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                    </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                         <!--DLF/Aquifer: [RECOMMENDED IF APPLICABLE]-->
-                        <!--Cluster: include--><xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full"><xf:select1 ref="./@script"><xf:label>Script:</xf:label><xf:hint><p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
+                        <!--Cluster: include-->
+                <xf:group ref=".[not(@type='transliterated')] and ./@script" appearance="full">
+                    <xf:select1 ref="./@script">
+                        <xf:label>Script:</xf:label>
+                        <xf:hint>
+                            <p> Script specifies the script used within individual fields. The use of Latin script is not noted. "Chinese" is "Han
                                         (Simplified Variant)" or "Han (Traditional Variant)". If the two variants are not considered, it is "Han (Hanzi, Kanji,
-                                        Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                                        Hanja)", also used for Japanese, Korean and Vietnamese written in Chinese. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='script-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                         <!--DLF/Aquifer: OPTIONAL]]-->
-                        <!--Cluster: hide--><xf:group ref=".[@authority]" appearance="full"><xf:input ref="./@authority" class="text_100"><xf:label>Authority: </xf:label><xf:hint>
+                        <!--Cluster: hide-->
+                <xf:group ref=".[@authority]" appearance="full">
+                    <xf:input ref="./@authority" class="text_100">
+                        <xf:label>Authority: </xf:label>
+                        <xf:hint>
                                     Hint
-                                </xf:hint></xf:input></xf:group>
+                                </xf:hint>
+                    </xf:input>
+                </xf:group>
                         <!--DLF/Aquifer: N/A]]-->
-                        <!--Cluster: hide--><xf:group ref=".[@authorityURI]" appearance="full"><xf:select1 ref="./@authorityURI" selection="open"><xf:label>authorityURI: </xf:label><xf:hint> Hint</xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                        <!--Cluster: hide-->
+                <xf:group ref=".[@authorityURI]" appearance="full">
+                    <xf:select1 ref="./@authorityURI" selection="open">
+                        <xf:label>authorityURI: </xf:label>
+                        <xf:hint> Hint</xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='nameTitleGroup-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                         
                         
                         <!--DLF/Aquifer: N/A]]-->
-                        <!--Cluster: hide--><xf:group ref=".[@valueURI]" appearance="full"><xf:select1 ref="./@valueURI"><xf:label>valueURI: </xf:label><xf:hint>
+                        <!--Cluster: hide-->
+                <xf:group ref=".[@valueURI]" appearance="full">
+                    <xf:select1 ref="./@valueURI">
+                        <xf:label>valueURI: </xf:label>
+                        <xf:hint>
                                     Hint
-                                </xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group><xf:group ref=".[@displayLabel]" appearance="full"><xf:input ref="./@displayLabel" class="text_100"><xf:label>Display Label: </xf:label><xf:hint><p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Appropriate cases include titles other than the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p></xf:hint></xf:input></xf:group><xf:group ref=".[@altRepGroup]" appearance="full"><xf:input ref="./@altRepGroup" class="text_100"><xf:label>altRepGroup: </xf:label><xf:hint>
+                                </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='usage-type-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
+                <xf:group ref=".[@displayLabel]" appearance="full">
+                    <xf:input ref="./@displayLabel" class="text_100">
+                        <xf:label>Display Label: </xf:label>
+                        <xf:hint>
+                            <p> Display Label is intended to be used when additional text associated with the title is needed for display. Display Label may be used whenever appropriate to indicate the preferred labeling when displayed. Appropriate cases include titles other than the primary title or subtitle. Include the text preferred and capitalisation, but do not include delimiters such as colons. </p>
+                        </xf:hint>
+                    </xf:input>
+                </xf:group>
+                <xf:group ref=".[@altRepGroup]" appearance="full">
+                    <xf:input ref="./@altRepGroup" class="text_100">
+                        <xf:label>altRepGroup: </xf:label>
+                        <xf:hint>
                             Hint
-                        </xf:hint></xf:input></xf:group>                
+                        </xf:hint>
+                    </xf:input>
+                </xf:group>                
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:input ref=".[string-length(@authority)=0]" class="text_50" selection="open"><xf:label>Target Audience: </xf:label><xf:hint><p> Use Target Audience to describe a group for which a resource is intended. </p></xf:hint></xf:input></xf:group>
+                <!--Cluster: include-->
+                <xf:group ref="." appearance="full">
+                    <xf:input ref=".[string-length(@authority)=0]" class="text_50" selection="open">
+                        <xf:label>Target Audience: </xf:label>
+                        <xf:hint>
+                            <p> Use Target Audience to describe a group for which a resource is intended. </p>
+                        </xf:hint>
+                    </xf:input>
+                </xf:group>
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:select1 ref=".[@authority='marctarget']" selection="open"><xf:label>Target Audience:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-marctarget-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
+                <!--Cluster: include-->
+                <xf:group ref="." appearance="full">
+                    <xf:select1 ref=".[@authority='marctarget']" selection="open">
+                        <xf:label>Target Audience:</xf:label>
+                        <xf:hint>
+                            <p> The name of the authoritative list for a controlled value is recorded here. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-marctarget-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
                 <!--DLF/Aquifer: Recommended if applicable-->
-                <!--Cluster: include--><xf:group ref="." appearance="full"><xf:select1 ref=".[@authority='local']" selection="open"><xf:label>Target Audience:</xf:label><xf:hint><p> The name of the authoritative list for a controlled value is recorded here. </p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-local-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group>
-                <!--targetAudience input ends--></xf:repeat>
-        <!--targetAudience repeat ends--><xf:group id="targetAudience-add-element" ref=".[not(./mods:targetAudience)]" appearance="full"><xf:trigger ref=".[not(mods:targetAudience)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Target Audience</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:form" at="index('targetAudience-repeat')" position="after" origin="instance('new-instance')/mods:targetAudience"/></xf:action></xf:trigger></xf:group></fieldset></div></div>
+                <!--Cluster: include-->
+                <xf:group ref="." appearance="full">
+                    <xf:select1 ref=".[@authority='local']" selection="open">
+                        <xf:label>Target Audience:</xf:label>
+                        <xf:hint>
+                            <p> The name of the authoritative list for a controlled value is recorded here. </p>
+                        </xf:hint>
+                        <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='target-audience-local-code']/items/item">
+                            <xf:label ref="label"/>
+                            <xf:value ref="value"/>
+                        </xf:itemset>
+                    </xf:select1>
+                </xf:group>
+                <!--targetAudience input ends-->
+            </xf:repeat>
+        <!--targetAudience repeat ends-->
+            <xf:group id="targetAudience-add-element" ref=".[not(./mods:targetAudience)]" appearance="full">
+                <xf:trigger ref=".[not(mods:targetAudience)]" class="add-button">
+                    <xf:label class="xforms-group-label-centered">Add Missing Target Audience</xf:label>
+                    <xf:action ev:event="DOMActivate">
+                        <xf:insert nodeset="mods:form" at="index('targetAudience-repeat')" position="after" origin="instance('new-instance')/mods:targetAudience"/>
+                    </xf:action>
+                </xf:trigger>
+            </xf:group>
+        </fieldset>
+    </div>
+</div>

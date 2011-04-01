@@ -1,1 +1,35 @@
-<code-table><code-table-name>title-type-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#titleinfo</basis><description/><notes/><items><item><label>Basic Title Information</label><value/></item><item><label>Abbreviated Title Information</label><value>abbreviated</value></item><item><label>Alternative Title Information</label><value>alternative</value></item><item><label>Translated Title Information</label><value>translated</value></item><item><label>Transliterated Title Information</label><value>transliterated</value></item><item><label>Uniform Title Information</label><value>uniform</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>title-type-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#titleinfo</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>Basic Title Information</label>
+            <value/>
+        </item>
+        <item>
+            <label>Abbreviated Title Information</label>
+            <value>abbreviated</value>
+        </item>
+        <item>
+            <label>Alternative Title Information</label>
+            <value>alternative</value>
+        </item>
+        <item>
+            <label>Translated Title Information</label>
+            <value>translated</value>
+        </item>
+        <item>
+            <label>Transliterated Title Information</label>
+            <value>transliterated</value>
+        </item>
+        <item>
+            <label>Uniform Title Information</label>
+            <value>uniform</value>
+        </item>
+    </items>
+</code-table>

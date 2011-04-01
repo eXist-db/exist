@@ -25,19 +25,19 @@ element {node-name($node)}
 { $node/@*,
 for $element in $node/*
 return
-    if ($element/name() = 'titleInfo') 
+    if ($element instance of element(mods:titleInfo)) 
     then
         if ($element/mods:title/text())
         then $element
         else ()
     else
-        if ($element/name() = 'name')
+        if ($element instance of element(mods:name))
         then
             if ($element/mods:namePart/text())
             then $element
             else ()
         else
-            if ($element/name() = 'relatedItem')
+            if ($element instance of element(mods:relatedItem))
             then
                 if ((string-length($element) > 0) or (string-length($element/@xlink:href) > 0))
                 then $element

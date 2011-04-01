@@ -1,1 +1,80 @@
-<code-table><code-table-name>dct-resource-type-code</code-table-name><status>finished</status><form>closed</form><basis>http://dublincore.org/documents/resource-typelist/</basis><description>Dublin Core list of resource types</description><notes/><items><item><label>(none selected)</label><value/></item><item><label>collection</label><value>collection</value><description>an aggregation of items. The term collection means that the resource is described as a group; its parts may be separately described and navigated.</description></item><item><label>dataset</label><value>dataset</value><description>structured information encoded in lists, tables, databases, etc., which will normally be in a format available for direct machine processing. For example - spreadsheets, databases, GIS data, midi data. Note that unstructured numbers and words will normally be considered to be type text.</description></item><item><label>event</label><value>event</value><description>a non-persistent, time-based occurence. Metadata for an event provides descriptive information that is the basis for discovery of the purpose, location, duration, responsible agents, and links to related events and resources. The resource of type event may not be retrievable if the described instantiation has expired or is yet to occur. Examples - exhibition, web-cast, conference, workshop, open-day, performance, battle, trial, wedding, tea-party, conflagration.</description></item><item><label>image</label><value>image</value><description>the content is primarily symbolic visual representation other than text. For example - images and photographs of physical objects, paintings, prints, drawings, other images and graphics, animations and moving pictures, film, diagrams, maps, musical notation. Note that image may include both electronic and physical representations.</description></item><item><label>interactive resource</label><value>interactive resource</value><description>a resource which requires interaction from the user to be understood, executed, or experienced. For example - forms on web pages, applets, multimedia learning objects, chat services, virtual reality.</description></item><item><label>model</label><value>model</value><description>an abstraction of the real thing, i.e. some generalisation and interpretation. Models could be considered a symbolic representation. Examples include performance models, cost models, mechanical models, etc.</description></item><item><label>party</label><value>party</value><description>a person, organization, cultural group, or institution.</description></item><item><label>physical object</label><value>physical object</value><description>a non-human object or substance. For example - a computer, the great pyramid, a sculpture, wheat. Note that digital representations of, or surrogates for, these things should use image, text or one of the other types.</description></item><item><label>place</label><value>place</value><description>a geographic area.</description></item><item><label>service</label><value>service</value><description>a system that provides one or more functions of value to the end-user. Examples include: a photocopying service, a banking service, an authentication service, interlibrary loans, a Z39.50 or Web server.</description></item><item><label>software</label><value>software</value><description>a computer program in source or compiled form which may be available for installation non-transiently on another machine. For software which exists only to create an interactive environment, use interactive instead.</description></item><item><label>sound</label><value>sound</value><description>a resource whose content is primarily audio or intended to be realized in audio. For example - music, speech, recorded sounds. This category includes musical notation, including score, which is unrealized in sound.</description></item><item><label>text</label><value>text</value><description>a resource whose content is primarily words for reading. For example - books, letters, dissertations, poems, newspapers, articles, archives of mailing lists. Note that facsimiles or images of texts are still of the genre text.</description></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>dct-resource-type-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://dublincore.org/documents/resource-typelist/</basis>
+    <description>Dublin Core list of resource types</description>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>collection</label>
+            <value>collection</value>
+            <description>an aggregation of items. The term collection means that the resource is described as a group; its parts may be separately described and navigated.</description>
+        </item>
+        <item>
+            <label>dataset</label>
+            <value>dataset</value>
+            <description>structured information encoded in lists, tables, databases, etc., which will normally be in a format available for direct machine processing. For example - spreadsheets, databases, GIS data, midi data. Note that unstructured numbers and words will normally be considered to be type text.</description>
+        </item>
+        <item>
+            <label>event</label>
+            <value>event</value>
+            <description>a non-persistent, time-based occurence. Metadata for an event provides descriptive information that is the basis for discovery of the purpose, location, duration, responsible agents, and links to related events and resources. The resource of type event may not be retrievable if the described instantiation has expired or is yet to occur. Examples - exhibition, web-cast, conference, workshop, open-day, performance, battle, trial, wedding, tea-party, conflagration.</description>
+        </item>
+        <item>
+            <label>image</label>
+            <value>image</value>
+            <description>the content is primarily symbolic visual representation other than text. For example - images and photographs of physical objects, paintings, prints, drawings, other images and graphics, animations and moving pictures, film, diagrams, maps, musical notation. Note that image may include both electronic and physical representations.</description>
+        </item>
+        <item>
+            <label>interactive resource</label>
+            <value>interactive resource</value>
+            <description>a resource which requires interaction from the user to be understood, executed, or experienced. For example - forms on web pages, applets, multimedia learning objects, chat services, virtual reality.</description>
+        </item>
+        <item>
+            <label>model</label>
+            <value>model</value>
+            <description>an abstraction of the real thing, i.e. some generalisation and interpretation. Models could be considered a symbolic representation. Examples include performance models, cost models, mechanical models, etc.</description>
+        </item>
+        <item>
+            <label>party</label>
+            <value>party</value>
+            <description>a person, organization, cultural group, or institution.</description>
+        </item>
+        <item>
+            <label>physical object</label>
+            <value>physical object</value>
+            <description>a non-human object or substance. For example - a computer, the great pyramid, a sculpture, wheat. Note that digital representations of, or surrogates for, these things should use image, text or one of the other types.</description>
+        </item>
+        <item>
+            <label>place</label>
+            <value>place</value>
+            <description>a geographic area.</description>
+        </item>
+        <item>
+            <label>service</label>
+            <value>service</value>
+            <description>a system that provides one or more functions of value to the end-user. Examples include: a photocopying service, a banking service, an authentication service, interlibrary loans, a Z39.50 or Web server.</description>
+        </item>
+        <item>
+            <label>software</label>
+            <value>software</value>
+            <description>a computer program in source or compiled form which may be available for installation non-transiently on another machine. For software which exists only to create an interactive environment, use interactive instead.</description>
+        </item>
+        <item>
+            <label>sound</label>
+            <value>sound</value>
+            <description>a resource whose content is primarily audio or intended to be realized in audio. For example - music, speech, recorded sounds. This category includes musical notation, including score, which is unrealized in sound.</description>
+        </item>
+        <item>
+            <label>text</label>
+            <value>text</value>
+            <description>a resource whose content is primarily words for reading. For example - books, letters, dissertations, poems, newspapers, articles, archives of mailing lists. Note that facsimiles or images of texts are still of the genre text.</description>
+        </item>
+    </items>
+</code-table>

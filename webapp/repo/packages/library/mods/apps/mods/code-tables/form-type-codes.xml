@@ -1,1 +1,23 @@
-<code-table><code-table-name>form-type-code</code-table-name><status>finished?</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#form</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>material</label><value>material</value></item><item><label>technique</label><value>technique</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>form-type-code</code-table-name>
+    <status>finished?</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#form</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>material</label>
+            <value>material</value>
+        </item>
+        <item>
+            <label>technique</label>
+            <value>technique</value>
+        </item>
+    </items>
+</code-table>

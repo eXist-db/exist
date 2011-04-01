@@ -1,10 +1,52 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="header.xml"/><xi:include href="sidebar.xml"/><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>Flexibility</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.xml"><div><graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.toc.xml"><div class="toc"><graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.02.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>&#160;
-                                </div></ulink></entry></row></tbody></tgroup></table><para>
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
+    <link rel="stylesheet" href="docbook.css" type="text/css"/>
+    <chapter>
+        <title>Flexibility</title>
+        <table frame="all" width="25%" border="0" class="center">
+            <title/>
+            <tgroup cols="4">
+                <colspec colname="c1" colnum="1" colwidth="25%"/>
+                <colspec colname="c2" colnum="2" colwidth="25%"/>
+                <colspec colname="c3" colnum="3" colwidth="25%"/>
+                <colspec colname="c4" colnum="4" colwidth="25%"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <ulink href="walkthrough.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.toc.xml">
+                                <div class="toc">
+                                    <graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.02.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <para>
                 To provide a framework that allows many users to work on the database at the same time, a flexible user system has been introduced. This allows each user to keep records private, to share records with one or more groups of one's own choice, and to open records to everybody.
-            </para><para>
+            </para>
+        <para>
                 The motto for Tamboti is flexibility - flexibility both in matters of metadata description and in matters of control over who can access one's records. One should not be needlessly restricted in what one wishes to describe by an over-simplified input schema and one should not forced to share one's input unless one chooses to do so.
-            </para><para> Such flexibility comes at a price, for it obviously requires one to make choices, choices that in some circumstances may seem
+            </para>
+        <para> Such flexibility comes at a price, for it obviously requires one to make choices, choices that in some circumstances may seem
                 cumbersome. A lot can still be done to only display this complexity when it is required: in the present version, we recognise that the interface
-                is  too complex in places, but we are working on improving this situation. </para></chapter></book>
+                is  too complex in places, but we are working on improving this situation. </para>
+    </chapter>
+</book>

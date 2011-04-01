@@ -1,4 +1,102 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="header.xml"/><sidebar xmlns="http://exist-db.org/NS/sidebar" title="Navigation"><group name="Tamboti"><item><link href="">What is Tamboti?</link></item><item><link href="">Who are we?</link></item></group><group name="Documentation"><item><link href="walkthrough.xml">Walkthrough</link></item><item><link href="">Search Functions</link></item><item><link href="">Editor</link></item><item><link href="security-manager.xml">Sharing</link></item></group><group name="MODS"><item><link href="">Overview</link></item><item><link href="">Examples</link></item><item><link href="">Links</link></item></group><group name="Feedback"><item><link href="http://kjc-fs-cluster.kjc.uni-heidelberg.de/helpdesk/" target="blank">Ticket System</link></item></group><group name="Development"><item><link href="">How to Join</link></item><item><link href="">Changelog</link></item></group><banner><link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/></link></banner></sidebar><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>Time-out</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.30.xml"><div><graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
-                                    &#160;</div></ulink></entry><entry><ulink href="walkthrough.toc.xml"><div class="toc"><graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.32.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
-                                    &#160;</div></ulink></entry></row></tbody></tgroup></table><para><graphic fileref="images/time_out.png" align="center" valign="middle" width="1000px"/></para><para>If you are have logged in, but not made any changes for 30 minutes, you will be automatically logged out. This means that your work has been lost, so please take care to "Save and Close" your work if you are interupted.</para><para>When you are logged out from the editor you should be returned to the search function, but for the time being you are instead shown the rather cryptic message displayed above.</para><para>(When you are logged out, you revert to the status of 'guest' and '/db/org/library/apps/mods/temp' is where you record is stored until you press "Save and Close" and a guest cannot store records here.)</para><para>For the time being, in order to get out of this fix you have to delete everything that follows "/exist/library/" in the URL and press the Enter key. This returns you to the search function where you have to log in again in order to continue using the editor.</para></chapter></book>
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="header.xml"/>
+    <sidebar xmlns="http://exist-db.org/NS/sidebar" title="Navigation">
+        <group name="Tamboti">
+            <item>
+                <link href="">What is Tamboti?</link>
+            </item>
+            <item>
+                <link href="">Who are we?</link>
+            </item>
+        </group>
+        <group name="Documentation">
+            <item>
+                <link href="walkthrough.xml">Walkthrough</link>
+            </item>
+            <item>
+                <link href="">Search Functions</link>
+            </item>
+            <item>
+                <link href="">Editor</link>
+            </item>
+            <item>
+                <link href="security-manager.xml">Sharing</link>
+            </item>
+        </group>
+        <group name="MODS">
+            <item>
+                <link href="">Overview</link>
+            </item>
+            <item>
+                <link href="">Examples</link>
+            </item>
+            <item>
+                <link href="">Links</link>
+            </item>
+        </group>
+        <group name="Feedback">
+            <item>
+                <link href="http://kjc-fs-cluster.kjc.uni-heidelberg.de/helpdesk/" target="blank">Ticket System</link>
+            </item>
+        </group>
+        <group name="Development">
+            <item>
+                <link href="">How to Join</link>
+            </item>
+            <item>
+                <link href="">Changelog</link>
+            </item>
+        </group>
+        <banner>
+            <link href="http://exist-db.org">
+                <img alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/>
+            </link>
+        </banner>
+    </sidebar>
+    <link rel="stylesheet" href="docbook.css" type="text/css"/>
+    <chapter>
+        <title>Time-out</title>
+        <table frame="all" width="25%" border="0" class="center">
+            <title/>
+            <tgroup cols="4">
+                <colspec colname="c1" colnum="1" colwidth="25%"/>
+                <colspec colname="c2" colnum="2" colwidth="25%"/>
+                <colspec colname="c3" colnum="3" colwidth="25%"/>
+                <colspec colname="c4" colnum="4" colwidth="25%"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <ulink href="walkthrough.30.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.toc.xml">
+                                <div class="toc">
+                                    <graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.32.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <para>
+            <graphic fileref="images/time_out.png" align="center" valign="middle" width="1000px"/>
+        </para>
+        <para>If you are have logged in, but not made any changes for 30 minutes, you will be automatically logged out. This means that your work has been lost, so please take care to "Save and Close" your work if you are interupted.</para>
+        <para>When you are logged out from the editor you should be returned to the search function, but for the time being you are instead shown the rather cryptic message displayed above.</para>
+        <para>(When you are logged out, you revert to the status of 'guest' and '/db/org/library/apps/mods/temp' is where you record is stored until you press "Save and Close" and a guest cannot store records here.)</para>
+        <para>For the time being, in order to get out of this fix you have to delete everything that follows "/exist/library/" in the URL and press the Enter key. This returns you to the search function where you have to log in again in order to continue using the editor.</para>
+    </chapter>
+</book>
