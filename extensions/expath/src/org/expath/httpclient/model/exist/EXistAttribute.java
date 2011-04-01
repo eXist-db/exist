@@ -36,22 +36,22 @@ public class EXistAttribute implements Attribute {
         this.attribute = attribute;
     }
     
-    @Override
+    //@Override
     public String getLocalName() {
         return attribute.getLocalName();
     }
 
-    @Override
+    //@Override
     public String getNamespaceUri() {
         return attribute.getNamespaceURI();
     }
 
-    @Override
+    //@Override
     public String getValue() {
         return attribute.getValue();
     }
 
-    @Override
+    //@Override
     public boolean getBoolean() throws HttpClientException {
         return attribute.getValue().toLowerCase().equals("true");
     }

@@ -23,7 +23,7 @@ public class EXistTreeBuilder implements TreeBuilder {
     }
     
     //TODO this should NOT be in this interface! It should be in the EXPath Caller, otherwise we mix concerns and duplicate code.
-    @Override
+    //@Override
     public void outputHeaders(HeaderSet headers) throws HttpClientException {
         for (Header h : headers ) {
             assert h.getName() != null : "Header name cannot be null";
@@ -36,7 +36,7 @@ public class EXistTreeBuilder implements TreeBuilder {
     }
 
     //TODO EXPath Caller should send QName, otherwise we duplicate code and reduce reuse!
-    @Override
+    //@Override
     public void startElem(String localname) throws HttpClientException {
         
         final String prefix = HttpConstants.HTTP_CLIENT_NS_PREFIX;
@@ -45,17 +45,17 @@ public class EXistTreeBuilder implements TreeBuilder {
         builder.startElement(new QName(localname, uri, prefix), null);
     }
 
-    @Override
+    //@Override
     public void attribute(String localname, CharSequence value) throws HttpClientException {
         builder.addAttribute(new QName(localname), value.toString());
     }
 
-    @Override
+    //@Override
     public void startContent() throws HttpClientException {
         //TODO this is not needed in eXist-db, it is very saxon specific
     }
 
-    @Override
+    //@Override
     public void endElem() throws HttpClientException {
         builder.endElement();
     }
