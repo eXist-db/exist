@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <html xmlns:biblio="http:/exist-db.org/xquery/biblio" xmlns:jquery="http://exist-db.org/xquery/jquery">
     <!-- 
         to change from eXist (eXist-) to Tamboti (Tamboti-), 
@@ -5,16 +6,32 @@
         and open all Tamboti-begin and Tamboti-end.
         Make corresponding change in /db/org/library/modules/style.xqm.
         Until the search works, one should comment out <div id="quicksearch">.
-    --><head>
-        <!--eXist-begin--><title>eXist - Bibliographic Demo</title>
+    -->
+    <head>
+        <!--eXist-begin-->
+        <title>eXist - Bibliographic Demo</title>
             <!--eXist-end-->
         <!--Tamboti-begin
         <title>Tamboti Metadata Framework</title>
-        Tamboti-end--><jquery:header base="libs/scripts/jquery" cssbase="libs/scripts/jquery/css"/><script type="text/javascript" src="libs/scripts/jquery/jquery.dynatree.min.js"/><script type="text/javascript" src="libs/scripts/jquery/jquery.cookie.js"/><script type="text/javascript" src="../../../resources/js/query.js"/><link rel="stylesheet" type="text/css" href="libs/styles/default-style2.css"/><link rel="stylesheet" type="text/css" href="libs/scripts/jquery/skin/ui.dynatree.css"/><link rel="stylesheet" type="text/css" href="../../../resources/css/biblio.css"/><link rel="stylesheet" type="text/css" href="../../../resources/css/customisables.css"/>
+        Tamboti-end-->
+        <jquery:header base="libs/scripts/jquery" cssbase="libs/scripts/jquery/css"/>
+        <script type="text/javascript" src="libs/scripts/jquery/jquery.dynatree.min.js"/>
+        <script type="text/javascript" src="libs/scripts/jquery/jquery.cookie.js"/>
+        <script type="text/javascript" src="../../../resources/js/query.js"/>
+        <link rel="stylesheet" type="text/css" href="libs/styles/default-style2.css"/>
+        <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/skin/ui.dynatree.css"/>
+        <link rel="stylesheet" type="text/css" href="../../../resources/css/biblio.css"/>
+        <link rel="stylesheet" type="text/css" href="../../../resources/css/customisables.css"/>
         <!--Tamboti-begin
         <link rel="stylesheet" type="text/css" href="../../../resources/css/tamboti.css"/>
-        Tamboti-end--></head><body><div id="page-head">
-            <!--eXist-begin--><a href="/exist/" style="text-decoration: none"><img src="../../../resources/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/></a>
+        Tamboti-end-->
+    </head>
+    <body>
+        <div id="page-head">
+            <!--eXist-begin-->
+            <a href="/exist/" style="text-decoration: none">
+                <img src="../../../resources/images/logo.jpg" title="eXist-db: Open Source Native XML Database" style="border-style: none;text-decoration: none"/>
+            </a>
             <!-- 
             <div id="quicksearch">
                 <form action="" method="GET">
@@ -22,7 +39,10 @@
                     <input type="submit" value="Search"/>
                 </form>
             </div>
-            --><div id="navbar"><h1>Open Source Native XML Database</h1></div>
+            -->
+            <div id="navbar">
+                <h1>Open Source Native XML Database</h1>
+            </div>
             <!--eXist-end-->
             <!--Tamboti-begin
             <div id="page-head-left">
@@ -35,26 +55,334 @@
                     <img src="../../../resources/images/logovjc.gif" title="The Cluster of Excellence "Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows" at Heidelberg University" alt="The Cluster of Excellence "Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows" at Heidelberg University" width="75" height="69" style="border-style: none"/>
                 </a>
             </div>
-            Tamboti-end--></div><div id="content1col"><biblio:login/><jquery:tabset id="query-tabs" on-select="searchTabSelected"><jquery:tab id="simple" label="Simple Search"><form id="simple-search-form" class="search-form" action="index.xml" name="simple-search" method="POST"><table><tr><td class="label">Search for </td><td colspan="2"><jquery:input name="input1"><jquery:autocomplete url="autocomplete.xql" width="300" multiple="false" matchContains="false" paramsCallback="autocompleteCallback"/></jquery:input></td></tr><tr><td class="label">inside </td><td><biblio:collection-path/></td><td/></tr><tr><td class="label">Sort results by </td><td class="dropdown"><jquery:select name="sort"><jquery:option value="Score"/><jquery:option value="Author"/><jquery:option value="Title"/><jquery:option value="Date Issued"/></jquery:select><button name="action" id="form-submit" type="submit">Search</button><input type="hidden" name="field1" value="All"/></td></tr></table><input type="hidden" name="query-tabs" value="simple"/><input type="hidden" name="collection-tree" value="hidden"/></form></jquery:tab><jquery:tab id="advanced-search-form" label="Advanced Search"><jquery:form-repeat trigger="#add-field" delete="#remove-field" form=".search-form" on-ready="repeatCallback"/><form class="search-form" action="index.xml" name="advanced-search" method="POST"><table><tr><td/><td colspan="2">Search for</td></tr><biblio:form-from-query/><tr><td class="label">inside </td><td colspan="2"><biblio:collection-path/></td></tr><tr><td class="label"> Sort results by </td><td class="dropdown"><jquery:select name="sort"><jquery:option value="Score"/><jquery:option value="Author"/><jquery:option value="Title"/><jquery:option value="Date Issued"/></jquery:select></td><td/></tr><tr><td/><td class="add-field" align="center" colspan="2"><button class="button" id="add-field"><span>+</span> Add search
-                                        field</button><button class="button" id="remove-field"><span>-</span> Remove selected search
-                                    field</button></td></tr><tr><td/><td colspan="2"><button class="button" name="clear" value="clear" type="submit">Clear All</button><div class="advanced-search"><button class="advanced-search" name="action" id="form-submit" type="submit">Search</button></div></td><td/></tr></table><input type="hidden" name="query-tabs" value="advanced-search-form"/><input type="hidden" name="collection-tree" value="hidden"/></form></jquery:tab><jquery:tab id="query-history" label="Query History"><biblio:query-history/></jquery:tab><jquery:tab id="personal-list" label="My List"><form class="search-form" action="index.xml" name="lists" method="POST"><p>You have <span id="personal-list-size">0</span> items in your list.</p><p><input type="hidden" name="query-tabs" value="personal-list"/><button class="button" name="mylist" type="submit" value="clear">Clear</button><button class="button" name="mylist" type="submit" value="display">Display</button></p></form><p><form action="user.xql" method="POST"><button class="button" id="export" name="export" type="submit" value="export">Export</button> your list items.
-                </form></p></jquery:tab></jquery:tabset><biblio:collection-tree id="collection-tree"><div class="collection-tree-head"><img id="toggle-collection-tree" src="../../../resources/images/tree.gif" title="Folder View"/></div><div id="collection-tree-main"><ul class="collection-tree-toolbar"><li><a href="#" id="collection-expand-all"><img src="../../../resources/images/arrow_out.png" title="Expand All"/></a></li><li><a href="#" id="collection-collapse-all"><img src="../../../resources/images/arrow_in.png" title="Collapse All"/></a></li><li><a href="#" id="collection-reload"><img src="../../../resources/images/arrow_refresh.png" title="Reload Folder View"/></a></li>
-                        <!-- collection writeable --><li><a href="#" id="collection-create-folder"><img src="../../../resources/images/folder_add.png" title="Create Folder"/></a></li><li><a href="#" id="collection-rename-folder"><img src="../../../resources/images/folder_edit.png" title="Rename Folder"/></a></li><li><a href="#" id="collection-move-folder"><img src="../../../resources/images/folder_go.png" title="Move Folder"/></a></li><li><a href="#" id="collection-remove-folder"><img src="../../../resources/images/folder_delete.png" title="Delete Folder"/></a></li>
+            Tamboti-end-->
+        </div>
+        <div id="content1col">
+            <biblio:login/>
+            <jquery:tabset id="query-tabs" on-select="searchTabSelected">
+                <jquery:tab id="simple" label="Simple Search">
+                    <form id="simple-search-form" class="search-form" action="index.xml" name="simple-search" method="POST">
+                        <table>
+                            <tr>
+                                <td class="label">Search for </td>
+                                <td colspan="2">
+                                    <jquery:input name="input1">
+                                        <jquery:autocomplete url="autocomplete.xql" width="300" multiple="false" matchContains="false" paramsCallback="autocompleteCallback"/>
+                                    </jquery:input>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label">inside </td>
+                                <td>
+                                    <biblio:collection-path/>
+                                </td>
+                                <td/>
+                            </tr>
+                            <tr>
+                                <td class="label">Sort results by </td>
+                                <td class="dropdown">
+                                    <jquery:select name="sort">
+                                        <jquery:option value="Score"/>
+                                        <jquery:option value="Author"/>
+                                        <jquery:option value="Title"/>
+                                        <jquery:option value="Date Issued"/>
+                                    </jquery:select>
+                                    <button name="action" id="form-submit" type="submit">Search</button>
+                                    <input type="hidden" name="field1" value="All"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="query-tabs" value="simple"/>
+                        <input type="hidden" name="collection-tree" value="hidden"/>
+                    </form>
+                </jquery:tab>
+                <jquery:tab id="advanced-search-form" label="Advanced Search">
+                    <jquery:form-repeat trigger="#add-field" delete="#remove-field" form=".search-form" on-ready="repeatCallback"/>
+                    <form class="search-form" action="index.xml" name="advanced-search" method="POST">
+                        <table>
+                            <tr>
+                                <td/>
+                                <td colspan="2">Search for</td>
+                            </tr>
+                            <biblio:form-from-query/>
+                            <tr>
+                                <td class="label">inside </td>
+                                <td colspan="2">
+                                    <biblio:collection-path/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"> Sort results by </td>
+                                <td class="dropdown">
+                                    <jquery:select name="sort">
+                                        <jquery:option value="Score"/>
+                                        <jquery:option value="Author"/>
+                                        <jquery:option value="Title"/>
+                                        <jquery:option value="Date Issued"/>
+                                    </jquery:select>
+                                </td>
+                                <td/>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td class="add-field" align="center" colspan="2">
+                                    <button class="button" id="add-field">
+                                        <span>+</span> Add search
+                                        field</button>
+                                    <button class="button" id="remove-field">
+                                        <span>-</span> Remove selected search
+                                    field</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2">
+                                    <button class="button" name="clear" value="clear" type="submit">Clear All</button>
+                                    <div class="advanced-search">
+                                        <button class="advanced-search" name="action" id="form-submit" type="submit">Search</button>
+                                    </div>
+                                </td>
+                                <td/>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="query-tabs" value="advanced-search-form"/>
+                        <input type="hidden" name="collection-tree" value="hidden"/>
+                    </form>
+                </jquery:tab>
+                <jquery:tab id="query-history" label="Query History">
+                    <biblio:query-history/>
+                </jquery:tab>
+                <jquery:tab id="personal-list" label="My List">
+                    <form class="search-form" action="index.xml" name="lists" method="POST">
+                        <p>You have <span id="personal-list-size">0</span> items in your list.</p>
+                        <p>
+                            <input type="hidden" name="query-tabs" value="personal-list"/>
+                            <button class="button" name="mylist" type="submit" value="clear">Clear</button>
+                            <button class="button" name="mylist" type="submit" value="display">Display</button>
+                        </p>
+                    </form>
+                    <p>
+                        <form action="user.xql" method="POST">
+                            <button class="button" id="export" name="export" type="submit" value="export">Export</button> your list items.
+                </form>
+                    </p>
+                </jquery:tab>
+            </jquery:tabset>
+            <biblio:collection-tree id="collection-tree">
+                <div class="collection-tree-head">
+                    <img id="toggle-collection-tree" src="../../../resources/images/tree.gif" title="Folder View"/>
+                </div>
+                <div id="collection-tree-main">
+                    <ul class="collection-tree-toolbar">
+                        <li>
+                            <a href="#" id="collection-expand-all">
+                                <img src="../../../resources/images/arrow_out.png" title="Expand All"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-collapse-all">
+                                <img src="../../../resources/images/arrow_in.png" title="Collapse All"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-reload">
+                                <img src="../../../resources/images/arrow_refresh.png" title="Reload Folder View"/>
+                            </a>
+                        </li>
+                        <!-- collection writeable -->
+                        <li>
+                            <a href="#" id="collection-create-folder">
+                                <img src="../../../resources/images/folder_add.png" title="Create Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-rename-folder">
+                                <img src="../../../resources/images/folder_edit.png" title="Rename Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-move-folder">
+                                <img src="../../../resources/images/folder_go.png" title="Move Folder"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="collection-remove-folder">
+                                <img src="../../../resources/images/folder_delete.png" title="Delete Folder"/>
+                            </a>
+                        </li>
                         <!-- end collection writeable -->
-                        <!-- collection owner --><li><a href="#" id="collection-sharing"><img src="../../../resources/images/user_edit.png" title="Manage Folder Sharing"/></a></li>
+                        <!-- collection owner -->
+                        <li>
+                            <a href="#" id="collection-sharing">
+                                <img src="../../../resources/images/user_edit.png" title="Manage Folder Sharing"/>
+                            </a>
+                        </li>
                         <!-- end collection owner -->
-                        <!-- create new resource --><li><a href="#" id="collection-create-resource"><img src="../../../resources/images/page_add.png" title="Create Stand-Alone Record"/></a></li>
-                        <!-- end create new resource --></ul><div id="collection-tree-tree"/><div class="box"><p> To view all
+                        <!-- create new resource -->
+                        <li>
+                            <a href="#" id="collection-create-resource">
+                                <img src="../../../resources/images/page_add.png" title="Create Stand-Alone Record"/>
+                            </a>
+                        </li>
+                        <!-- end create new resource -->
+                    </ul>
+                    <div id="collection-tree-tree"/>
+                    <div class="box">
+                        <p> To view all
                             records in a folder, select it and perform an empty search.
-                    </p></div></div></biblio:collection-tree><div id="main-content"><div id="results-head"><div id="messages">Found:
-                        <biblio:result-count/></div><biblio:optimize-trigger/><div class="navbar"/></div><div id="result-container"><div id="filters" style="display: none;"><jquery:ajax-accordion id="facets"><jquery:panel id="keywords" title="Title Terms" on-select="loadIndexTerms"><div class="keyword-prefix"><form id="keyword-form"><input type="text" name="input-keyword-prefix" size="8" value="a" title="Change prefix to view more terms."/><input type="submit" value="Show"/></form></div><div id="keywords-result"/></jquery:panel><jquery:panel id="author" title="Author" href="filters.xql?type=author"/><jquery:panel id="date" title="Date" href="filters.xql?type=date"/></jquery:ajax-accordion><div class="banner"><a href="http://exist-db.org"><img xmlns:xi="http://www.w3.org/2001/XInclude" alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/></a></div></div><jquery:paginate id="results" attribute="mods:cached" href="retrieve" navcontainer="#results-head .navbar" on-ready="resultsLoaded"/></div></div><jquery:dialog id="optimize-dialog" modal="true" title="Create Indexes" trigger="#optimize-trigger" width="450"><jquery:button label="Start" function="createIndexes"/><p>Use this dialog to trigger an optimization run on your data
+                    </p>
+                    </div>
+                </div>
+            </biblio:collection-tree>
+            <div id="main-content">
+                <div id="results-head">
+                    <div id="messages">Found:
+                        <biblio:result-count/>
+                    </div>
+                    <biblio:optimize-trigger/>
+                    <div class="navbar"/>
+                </div>
+                <div id="result-container">
+                    <div id="filters">
+                        <jquery:ajax-accordion id="facets">
+                            <jquery:panel id="keywords" title="Title Terms" on-select="loadIndexTerms">
+                                <div class="keyword-prefix">
+                                    <form id="keyword-form">
+                                        <input type="text" name="input-keyword-prefix" size="8" value="a" title="Change prefix to view more terms."/>
+                                        <input type="submit" value="Show"/>
+                                    </form>
+                                </div>
+                                <div id="keywords-result"/>
+                            </jquery:panel>
+                            <jquery:panel id="author" title="Author" href="filters.xql?type=author"/>
+                            <jquery:panel id="date" title="Date" href="filters.xql?type=date"/>
+                        </jquery:ajax-accordion>
+                        <div class="banner">
+                            <a href="http://exist-db.org">
+                                <img xmlns:xi="http://www.w3.org/2001/XInclude" alt="powered by eXist" border="0" src="../../../resources/images/powered.gif"/>
+                            </a>
+                        </div>
+                    </div>
+                    <jquery:paginate id="results" attribute="mods:cached" href="retrieve" navcontainer="#results-head .navbar" on-ready="resultsLoaded"/>
+                </div>
+            </div>
+            <jquery:dialog id="optimize-dialog" modal="true" title="Create Indexes" trigger="#optimize-trigger" width="450">
+                <jquery:button label="Start" function="createIndexes"/>
+                <p>Use this dialog to trigger an optimization run on your data
                     set. This will create custom indexes to speed up sorting and other
-                    functions.</p><p>The process may take some time, depending on the size of the
-                    data set. To start, please enter the admin password for your db below:</p><form action="optimize.xql"><ul><li><label for="password">Admin password: </label><input type="password" size="30" name="password"/></li><li id="optimize-message"/></ul></form></jquery:dialog><jquery:dialog id="login-dialog" modal="true" title="Login" trigger="#login-link" width="450"><jquery:button label="Login" function="login"/><form id="login-form" action="#" method="POST"><table><tr><td id="login-message" colspan="2"/></tr><tr><td>Username:</td><td><input name="user" type="text"/></td></tr><tr><td>Password:</td><td><input name="password" type="password"/></td></tr></table></form></jquery:dialog>
-            <!-- collection writeable --><jquery:dialog id="new-collection-dialog" modal="true" title="Create Folder" trigger="#collection-create-folder" width="450"><jquery:button label="Create" function="createCollection"/><jquery:button id="cancel" label="Cancel"/><form id="create-collection-form" action="operations.xql"><div>Name of new folder: </div><div><input name="name" type="text"/></div></form></jquery:dialog><jquery:dialog id="rename-collection-dialog" modal="true" title="Rename Folder" trigger="#collection-rename-folder" width="450"><jquery:button label="Rename" function="renameCollection"/><jquery:button id="cancel" label="Cancel"/><form id="rename-collection-form" action="operations.xql"><input id="rename-collection-path_" type="hidden" name="collection"/><div>New folder name: </div><div><input name="name" type="text"/></div></form></jquery:dialog><jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder" trigger="#collection-move-folder" width="450"><jquery:button label="Move" function="moveCollection"/><jquery:button id="cancel" label="Cancel"/><form id="move-collection-form" action="operations.xql"><input id="move-collection-path_" type="hidden" name="collection"/><div>Move folder '<span id="move-collection-path_"/>' to
-                            <biblio:form-select-collection name="path"/></div></form></jquery:dialog><jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder" trigger="#collection-remove-folder" width="450"><jquery:button label="Remove" function="removeCollection"/><jquery:button id="cancel" label="Cancel"/><form id="remove-collection-form" action="operations.xql"><input id="remove-collection-path_" type="hidden" name="collection"/><div>Are you sure you wish to remove the folder named "<span id="sharing-collection-path_"/>"? </div></form></jquery:dialog>
+                    functions.</p>
+                <p>The process may take some time, depending on the size of the
+                    data set. To start, please enter the admin password for your db below:</p>
+                <form action="optimize.xql">
+                    <ul>
+                        <li>
+                            <label for="password">Admin password: </label>
+                            <input type="password" size="30" name="password"/>
+                        </li>
+                        <li id="optimize-message"/>
+                    </ul>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="login-dialog" modal="true" title="Login" trigger="#login-link" width="450">
+                <jquery:button label="Login" function="login"/>
+                <form id="login-form" action="#" method="POST">
+                    <table>
+                        <tr>
+                            <td id="login-message" colspan="2"/>
+                        </tr>
+                        <tr>
+                            <td>Username:</td>
+                            <td>
+                                <input name="user" type="text"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Password:</td>
+                            <td>
+                                <input name="password" type="password"/>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </jquery:dialog>
+            <!-- collection writeable -->
+            <jquery:dialog id="new-collection-dialog" modal="true" title="Create Folder" trigger="#collection-create-folder" width="450">
+                <jquery:button label="Create" function="createCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="create-collection-form" action="operations.xql">
+                    <div>Name of new folder: </div>
+                    <div>
+                        <input name="name" type="text"/>
+                    </div>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="rename-collection-dialog" modal="true" title="Rename Folder" trigger="#collection-rename-folder" width="450">
+                <jquery:button label="Rename" function="renameCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="rename-collection-form" action="operations.xql">
+                    <input id="rename-collection-path_" type="hidden" name="collection"/>
+                    <div>New folder name: </div>
+                    <div>
+                        <input name="name" type="text"/>
+                    </div>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="move-collection-dialog" modal="true" title="Move Folder" trigger="#collection-move-folder" width="450">
+                <jquery:button label="Move" function="moveCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="move-collection-form" action="operations.xql">
+                    <input id="move-collection-path_" type="hidden" name="collection"/>
+                    <div>Move folder '<span id="move-collection-path_"/>' to
+                            <biblio:form-select-collection name="path"/>
+                    </div>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="remove-collection-dialog" modal="true" title="Remove Folder" trigger="#collection-remove-folder" width="450">
+                <jquery:button label="Remove" function="removeCollection"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="remove-collection-form" action="operations.xql">
+                    <input id="remove-collection-path_" type="hidden" name="collection"/>
+                    <div>Are you sure you wish to remove the folder named "<span id="sharing-collection-path_"/>"? </div>
+                </form>
+            </jquery:dialog>
             <!-- end collection writeable -->
-            <!-- collection owner --><biblio:form-collection-sharing/><biblio:form-add-member-to-sharing-group/><biblio:form-add-sharing-group/>
-            <!-- end collection owner --><jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" width="450"><jquery:button label="Remove" function="removeResource"/><jquery:button id="cancel" label="Cancel"/><form id="remove-resource-form" action="operations.xql"><div>Are you sure you wish to remove the record?</div><input id="remove-resource-id" name="resource" type="hidden" value=""/></form></jquery:dialog><jquery:dialog id="move-resource-dialog" modal="true" title="Move Record" width="500"><jquery:button label="Move" function="moveResource"/><jquery:button id="cancel" label="Cancel"/><form id="move-resource-form" action="operations.xql"><div>Move record from
-                            '<span><biblio:collection-path/></span>' to
-                            <biblio:form-select-collection name="path"/></div><input id="move-resource-id" name="resource" type="hidden" value=""/></form></jquery:dialog><jquery:dialog id="new-resource-dialog" modal="true" title="Create Stand-Alone Record" trigger="#collection-create-resource" width="550"><jquery:button id="create" label="Create" function="newResource"/><jquery:button id="cancel" label="Cancel"/><biblio:resource-types classifier="stand-alone"/></jquery:dialog><jquery:dialog id="add-related-dialog" modal="true" title="Create Related Record" width="550"><jquery:button id="create" label="Create" function="newRelatedResource"/><jquery:button id="cancel" label="Cancel"/><biblio:resource-types classifier="related-item"/></jquery:dialog></div></body></html>
+            <!-- collection owner -->
+            <biblio:form-collection-sharing/>
+            <biblio:form-add-member-to-sharing-group/>
+            <biblio:form-add-sharing-group/>
+            <!-- end collection owner -->
+            <jquery:dialog id="remove-resource-dialog" modal="true" title="Remove Folder" width="450">
+                <jquery:button label="Remove" function="removeResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="remove-resource-form" action="operations.xql">
+                    <div>Are you sure you wish to remove the record?</div>
+                    <input id="remove-resource-id" name="resource" type="hidden" value=""/>
+                </form>
+            </jquery:dialog>
+            <jquery:dialog id="move-resource-dialog" modal="true" title="Move Record" width="500">
+                <jquery:button label="Move" function="moveResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <form id="move-resource-form" action="operations.xql">
+                    <div>Move record from
+                            '<span>
+                            <biblio:collection-path/>
+                        </span>' to
+                            <biblio:form-select-collection name="path"/>
+                    </div>
+                    <input id="move-resource-id" name="resource" type="hidden" value=""/>
+                </form>
+            </jquery:dialog>
+            <!-- Dialogs are created search-xql lines 532ff. -->
+            <jquery:dialog id="new-resource-dialog" modal="true" title="Create Stand-Alone Record" trigger="#collection-create-resource" width="550">
+                <jquery:button id="create" label="Create" function="newResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <biblio:resource-types classifier="stand-alone"/>
+            </jquery:dialog>
+            <jquery:dialog id="add-related-dialog" modal="true" title="Create Related Record" width="550">
+                <jquery:button id="create" label="Create" function="newRelatedResource"/>
+                <jquery:button id="cancel" label="Cancel"/>
+                <biblio:resource-types classifier="related-item"/>
+            </jquery:dialog>
+        </div>
+    </body>
+</html>

@@ -1,1 +1,27 @@
-<code-table><code-table-name>nameTitleGroup-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#url</basis><description/><notes>primary added in 3.4</notes><items><item><label>(none selected)</label><value/></item><item><label>1</label><value>1</value></item><item><label>2</label><value>2</value></item><item><label>3</label><value>3</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>nameTitleGroup-code</code-table-name>
+    <status>finished</status>
+    <form>open</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#url</basis>
+    <description/>
+    <notes>primary added in 3.4</notes>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>1</label>
+            <value>1</value>
+        </item>
+        <item>
+            <label>2</label>
+            <value>2</value>
+        </item>
+        <item>
+            <label>3</label>
+            <value>3</value>
+        </item>
+    </items>
+</code-table>

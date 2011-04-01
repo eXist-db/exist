@@ -11,83 +11,60 @@ declare namespace ev="http://www.w3.org/2001/xml-events";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 
 declare function xf:get-temp-collection() {
-    let $collection := collection($config:mods-temp-collection)
+    let $temp-collection := collection($config:mods-temp-collection)
     return
         $config:mods-temp-collection
 };
 
 let $title := 'MODS Record Editor'
 
-(: get REST URL parameters :)
-let $id-param := request:get-parameter('id', 'new')
-let $show-all-string := request:get-parameter('show-all', 'false')
-let $show-all := if ($show-all-string = 'true') then true() else false()
-
-(: check if a host is specified for related item :)
+(: Check if a host is specified for related item. :)
 let $host := request:get-parameter('host', ())
 
-(: if no tab is specified, we default to the compact-a tab :)
+(: Get the tab-id parameter. If no tab is specified, default to the compact-a tab. :)
 let $tab-id := request:get-parameter('tab-id', 'compact-a')
-
-(: display the label attached to the tab to the user :)
+(: Display the label attached to the tab to the user :)
 let $tab-data := concat($style:db-path-to-app, '/edit/tab-data.xml')
-let $tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label 
+let $bottom-tab-label := doc($tab-data)/tabs/tab[tab-id=$tab-id]/label 
 
-(: if document type is specified then we will need to use that instance as the template :)
-let $type-data := concat($style:db-path-to-app, '/code-tables/document-type-codes.xml')
+(: If a document type is specified, then we will need to use that instance as the template. :)
 let $record-id := request:get-parameter('id', '')
 let $record-data := concat($style:db-path-to-app, '/temp/', $record-id,'.xml')
+
+(: Get the type parameter which shows the record template. Get the relevant label and hint for this. :)
 let $type-request := request:get-parameter('type', '')
-(:
-let $type-stored := doc($record-data)//mods:extension/*[2]/text()
-let $type-value := if ($type-request) then $type-request else doc($type-data)//item[value = $type-stored]/label
-:)
-let $type-value := $type-request
-let $type-label := doc($type-data)//item[value = $type-value]/label
-let $type-hint := doc($type-data)//item[value = $type-value]/hint
+let $type-data := concat($style:db-path-to-app, '/code-tables/document-type-codes.xml')
+let $type-label := doc($type-data)//item[value = $type-request]/label
+let $type-hint := doc($type-data)//item[value = $type-request]/hint
 
-(: look for an alternate data collection in the URL, else use the default mods data collection :)
-let $user := request:get-parameter('user', '')
+let $target-collection := request:get-parameter('collection', '')
+let $temporary-collection := xf:get-temp-collection()
 
-let $destination := <xf:output value="./mods:extension/*[1]"/>
-
-let $collection := request:get-parameter('collection', '')
-let $tempCollection := xf:get-temp-collection()
-
-let $data-collection :=
-   if ($collection)
-   then $collection
-      else if ($user)
-         then concat('/db/home/', $user, '/apps/mods/data')
-         else '/db/org/library/apps/mods/data'
-
-(: check to see if we have a  :)
-let $new := if ($id-param = '' or $id-param = 'new')
+(: Get id parameter. Default to "new" if empty. :)
+let $id-param := request:get-parameter('id', 'new')
+(: Check to see if we have an id. :)
+let $new-record := 
+        if ($id-param = '' or $id-param = 'new')
         then true()
-        else false()
-        
-(: if we do not have an incomming ID or it the ID is new then create one to use 
-   Note that for testing you can use the first five chars of the UUID substring(util:uuid(), 1, 5)
-:)
+        else false()        
+(: If we do not have an incoming ID or if the record is new, then create an ID with util:uuid(). :)
 let $id :=
-   if ($new)
-        then concat("uuid-", util:uuid())
-        else $id-param
+   if ($new-record)
+   then concat("uuid-", util:uuid())
+   else $id-param
 
-(: if we are creating a new record then we need to call get-instance.xq with new=true to tell it to get the entire template :)
+(: If we are creating a new record, then we need to call get-instance.xq with new=true to tell it to get the entire template :)
 let $create-new-from-template :=
-   if ($new)
+   if ($new-record)
       then (
-         (: copy the template into data and update it with a new UUID :)
-         let $template-path :=
-            if ($type-value='default')
-               then concat($style:db-path-to-app, '/edit/new-instance.xml')
-               else concat($style:db-path-to-app, '/edit/instances/', $type-value, '.xml')
+         (: Copy the template into data and store it with the ID as file name. :)
+         let $template-path := concat($style:db-path-to-app, '/edit/instances/', $type-request, '.xml')
          let $template := doc($template-path)
-         let $new-file-name := concat($id, '.xml')
+         let $new-record-file-name := concat($id, '.xml')
          (: store it in the right location :)
-         let $stored := xmldb:store($tempCollection, $new-file-name, $template)
-         let $new-file-path := concat($data-collection, '/', $new-file-name)
+         let $stored := xmldb:store($temporary-collection, $new-record-file-name, $template)
+         
+         (: Get the remaining parameters. :)
          let $languageOfResource := request:get-parameter("languageOfResource", "")
          let $scriptOfResource := request:get-parameter("scriptOfResource", "")
          let $transliterationOfResource := request:get-parameter("transliterationOfResource", "")
@@ -95,10 +72,12 @@ let $create-new-from-template :=
          let $scriptOfCataloging := request:get-parameter("scriptOfCataloging", "")
          let $scriptTypeOfResource := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfResource]/data(scriptClassifier)
          let $scriptTypeOfCataloging := doc("/db/org/library/apps/mods/code-tables/language-3-type-codes.xml")/code-table/items/item[value = $languageOfCataloging]/data(scriptClassifier)
+         
          let $doc := doc($stored)
          
-         (: note that we can not use "update replace" if we want to keep the default namespace :)
+         (: Note that we can not use "update replace" if we want to keep the default namespace. :)
          return (
+            (: Update record with ID attribute. :)
             update value $doc/mods:mods/@ID with $id
             ,
             (: Save language and script of resource. :)
@@ -137,8 +116,8 @@ let $create-new-from-template :=
             (: Save name of user collection, name of template used, script type and transliteration scheme used into mods:extension. :)
             update insert
                 <extension xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/">
-                    <e:collection>{$data-collection}</e:collection>
-                    <e:template>{$type-value}</e:template>
+                    <e:collection>{$target-collection}</e:collection>
+                    <e:template>{$type-request}</e:template>
                     <e:scriptTypeOfResource>{$scriptTypeOfResource}</e:scriptTypeOfResource>
                     <e:scriptTypeOfCataloging>{$scriptTypeOfCataloging}</e:scriptTypeOfCataloging>
                     <e:transliterationOfResource>{$transliterationOfResource}</e:transliterationOfResource>                    
@@ -154,18 +133,20 @@ let $create-new-from-template :=
             )
             else ()
          )
-      ) else if (not(doc-available(concat($tempCollection, '/', $id, '.xml')))) then
-        xmldb:copy($data-collection, $tempCollection, concat($id, '.xml'))
-      else ()
+      ) else 
+            if (not(doc-available(concat($temporary-collection, '/', $id, '.xml')))) 
+            then xmldb:copy($target-collection, $temporary-collection, concat($id, '.xml'))
+            else ()
 
 (: this is the string we pass to instance id='save-data' src attribute :)
-let $instance-src :=  concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $tempCollection)
+let $instance-src :=  
+    concat('get-instance.xq?tab-id=', $tab-id, '&amp;id=', $id, '&amp;data=', $temporary-collection)
 
 let $user := xmldb:get-current-user()
 
 let $body-collection := concat($style:db-path-to-app, '/edit/body')
 
-(: this is the part of the form that we need for this tab :)
+(: This is the part of the form that belongs to the tab called. :)
 let $form-body := collection($body-collection)/div[@tab-id = $tab-id]
 
 let $style :=
@@ -178,41 +159,37 @@ let $model :=
        
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="{$instance-src}" id="save-data"/>
        
-       (: The full embodiment of the MODS schema, 3.3-3.4. :)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates' readonly="true"/>
+       (: Not used. The more or less full embodiment of the MODS schema, 3.3-3.4. :)
+       (: <xf:instance xmlns="http://www.loc.gov/mods/v3" src="insert-templates.xml" id='insert-templates' readonly="true"/>:)
        
-       (: A selection of elements and attributes from the MODS schema used for default records. :)
-       <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance' readonly="true"/>
+       (: Not used. A selection of elements and attributes from the MODS schema used for default records. :)
+       (: <xf:instance xmlns="http://www.loc.gov/mods/v3" src="new-instance.xml" id='new-instance' readonly="true"/>:)
 
        (: Elements for the compact forms. :)
        <xf:instance xmlns="http://www.loc.gov/mods/v3" src="compact-template.xml" id='compact-template' readonly="true"/> 
        
        <xf:instance xmlns="" id="code-tables" src="codes-for-tab.xq?tab-id={$tab-id}" readonly="true"/>
+       
        <!-- a title should ideally speaking be required, but having this bind will prevent a tab from being saved when clicking on another tab, if the user has not input a title.--> 
        <!--
        <xf:bind nodeset="instance('save-data')/mods:titleInfo/mods:title" required="true()"/>       
        -->
-       <xf:instance xmlns="" id="save-results">
-          <data>
-             <message>Form loaded OK.</message>
-          </data>
-       </xf:instance>
-                  
+       
        <xf:submission id="save-submission" method="post"
           ref="instance('save-data')"
-          action="save.xq?collection={$tempCollection}&amp;action=save" replace="instance"
+          action="save.xq?collection={$temporary-collection}&amp;action=save" replace="instance"
           instance="save-results">
        </xf:submission>
        
        <xf:submission id="save-and-close-submission" method="post"
           ref="instance('save-data')"
-          action="save.xq?collection={$tempCollection}&amp;action=close" replace="instance"
+          action="save.xq?collection={$temporary-collection}&amp;action=close" replace="instance"
           instance="save-results">
        </xf:submission>
        
        <xf:submission id="cancel-submission" method="post"
           ref="instance('save-data')"
-          action="save.xq?collection={$tempCollection}&amp;action=cancel" replace="instance"
+          action="save.xq?collection={$temporary-collection}&amp;action=cancel" replace="instance"
           instance="save-results">
        </xf:submission>
 
@@ -222,7 +199,7 @@ let $content :=
 <div class="content">
     <span class="float-right">
     {
-    if ($type-value) then
+    if ($type-request) then
     ('Editing record of type '
     , 
     <strong>{$type-label}</strong>
@@ -239,15 +216,16 @@ let $content :=
     else
         'Editing record'
     }
-    
-    
+        
     with the title<strong><xf:output value="./mods:titleInfo/mods:title"/></strong>,
-    on the <strong>{$tab-label}</strong> tab,
-    to be saved in<strong>{$destination}</strong>
+    on the <strong>{$bottom-tab-label}</strong> tab,
+    to be saved in <strong>{$target-collection}</strong>.
     </span>
     
-    {mods:tabs($tab-id, $id, $show-all, $tempCollection)}
-    
+    <!--Here values are passed to the URL.-->
+    {mods:tabs($tab-id, $id, 1 (: NB: Not used. :), $target-collection)}
+
+<div class="save-buttons">    
     <xf:submit submission="save-submission">
         <xf:label class="xforms-group-label-centered-general">&#160;Save</xf:label>
     </xf:submit>
@@ -278,10 +256,9 @@ let $content :=
         <p>If you wish to discard what you have input and return to the search function, click &quot;Cancel Editing&quot;.</p>
     </div>
     </span>
-               
-    <br/><br/>
+</div>
     
-    <!-- import the correct form body for this tab -->
+    <!-- Import the correct form body for the tab called. -->
     {$form-body}
     
     

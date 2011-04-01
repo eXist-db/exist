@@ -1,4 +1,65 @@
-<code-table><code-table-name>document-type-code</code-table-name><items><item><label>Edited Volume</label><value>anthology-latin</value><classifier>stand-alone</classifier></item><item><label>Edited Volume with Transliteration</label><value>anthology-transliterated</value><classifier>stand-alone</classifier></item><item><label>Article in Periodical</label><value>article-in-periodical-latin-compact</value><classifier>stand-alone</classifier><hint><p>For an <strong>Article in Periodical</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p><p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p><p>Input the title of the article in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p><p>In case the publication is (also) electronic, input in <strong>URL</strong> the web address of the publication.</p><p>Finally, in <strong>Identifier</strong> input the DOI number of the article, if available.</p><p>&#160;</p><p>Use the <strong>Container</strong> tab to catalogue the periodical that the article occurs and the position of the article inside the periodical.</p><p>Input the title of the periodical in <strong>Periodical Title</strong>. Follow the same guidelines that apply to monograph titles.</p><p>Input the name(s) of the editor(s) of the periodical in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the periodical in question. If the "editor" is personal, select "Given Name" and "Family Name" instead of "(none selected)."</p><p>In <strong>Location of Article in Periodical</strong> note the volume number, issue number and year of publication of the periodical in which the article has appeared. Enter the page numbers of the article in the volume and/or issue it occurs in.</p><p>Finally, in <strong>Identifier</strong> input the ISSN number of the periodical and its DOI, if available.</p></hint></item><item><label>Article in Periodical with Transliteration</label><value>article-in-periodical-transliterated-compact</value><classifier>stand-alone</classifier><hint><p>For an <strong>Article in Periodical</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p><p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p><p>Transliterate the name(s), if necessary.</p><p>Input the title of the article in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p><p>Transliterate and translate the title, if necessary.</p><p>In case the publication is (also) electronic, input in <strong>URL</strong> the web address of the publication.</p><p>Finally, in <strong>Identifier</strong> input the DOI number of the article, if available.</p><p>&#160;</p><p>Use the <strong>Container</strong> tab to catalogue the periodical that the article occurs and the position of the article inside the periodical.</p><p>Input the title of the periodical in <strong>Periodical Title</strong>. Follow the same guidelines that apply to monograph titles.</p><p>Input the name(s) of the editor(s) of the periodical in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the periodical in question. If the "editor" is personal, select "Given Name" and "Family Name" instead of "(none selected)."</p><p>In <strong>Location of Article in Periodical</strong> note the volume number, issue number and year of publication of the periodical in which the article has appeared. Enter the page numbers of the article in the volume and/or issue it occurs in.</p><p>Finally, in <strong>Identifier</strong> input the ISSN number of the periodical and its DOI, if available.</p></hint></item><item><label>Article in Periodical</label><value>article-in-serial</value><classifier>related-item</classifier></item><item><label>Monograph Chapter</label><value>book-chapter</value><classifier>related-item</classifier></item>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>document-type-code</code-table-name>
+    <items>
+        <item>
+            <label>Edited Volume</label>
+            <value>anthology-latin</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Edited Volume with Transliteration</label>
+            <value>anthology-transliterated</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Article in Periodical</label>
+            <value>article-in-periodical-latin-compact</value>
+            <classifier>stand-alone</classifier>
+            <hint>
+                <p>For an <strong>Article in Periodical</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p>
+                <p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p>
+                <p>Input the title of the article in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p>
+                <p>In case the publication is (also) electronic, input in <strong>URL</strong> the web address of the publication.</p>
+                <p>Finally, in <strong>Identifier</strong> input the DOI number of the article, if available.</p>
+                <p>&#160;</p>
+                <p>Use the <strong>Container</strong> tab to catalogue the periodical that the article occurs and the position of the article inside the periodical.</p>
+                <p>Input the title of the periodical in <strong>Periodical Title</strong>. Follow the same guidelines that apply to monograph titles.</p>
+                <p>Input the name(s) of the editor(s) of the periodical in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the periodical in question. If the "editor" is personal, select "Given Name" and "Family Name" instead of "(none selected)."</p>
+                <p>In <strong>Location of Article in Periodical</strong> note the volume number, issue number and year of publication of the periodical in which the article has appeared. Enter the page numbers of the article in the volume and/or issue it occurs in.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISSN number of the periodical and its DOI, if available.</p>
+            </hint>
+        </item>
+        <item>
+            <label>Article in Periodical with Transliteration</label>
+            <value>article-in-periodical-transliterated-compact</value>
+            <classifier>stand-alone</classifier>
+            <hint>
+                <p>For an <strong>Article in Periodical</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p>
+                <p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p>
+                <p>Transliterate the name(s), if necessary.</p>
+                <p>Input the title of the article in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p>
+                <p>Transliterate and translate the title, if necessary.</p>
+                <p>In case the publication is (also) electronic, input in <strong>URL</strong> the web address of the publication.</p>
+                <p>Finally, in <strong>Identifier</strong> input the DOI number of the article, if available.</p>
+                <p>&#160;</p>
+                <p>Use the <strong>Container</strong> tab to catalogue the periodical that the article occurs and the position of the article inside the periodical.</p>
+                <p>Input the title of the periodical in <strong>Periodical Title</strong>. Follow the same guidelines that apply to monograph titles.</p>
+                <p>Input the name(s) of the editor(s) of the periodical in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the periodical in question. If the "editor" is personal, select "Given Name" and "Family Name" instead of "(none selected)."</p>
+                <p>In <strong>Location of Article in Periodical</strong> note the volume number, issue number and year of publication of the periodical in which the article has appeared. Enter the page numbers of the article in the volume and/or issue it occurs in.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISSN number of the periodical and its DOI, if available.</p>
+            </hint>
+        </item>
+        <item>
+            <label>Article in Periodical</label>
+            <value>article-in-serial</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Monograph Chapter</label>
+            <value>book-chapter</value>
+            <classifier>related-item</classifier>
+        </item>
         <!--
             <item>
             <label>Computer File</label>
@@ -14,7 +75,22 @@
             <classifier>stand-alone</classifier>
             
             </item>
-        --><item><label>Contribution to Edited Volume</label><value>contribution-to-anthology-latin</value><classifier>related-item</classifier></item><item><label>Contribution to Edited Volume</label><value>contribution-to-anthology-latin-compact</value><classifier>stand-alone</classifier></item><item><label>Contribution to Edited Volume with Transliteration</label><value>contribution-to-anthology-transliterated-compact</value><classifier>stand-alone</classifier></item>
+        -->
+        <item>
+            <label>Contribution to Edited Volume</label>
+            <value>contribution-to-anthology-latin</value>
+            <classifier>related-item</classifier>
+        </item>
+        <item>
+            <label>Contribution to Edited Volume</label>
+            <value>contribution-to-anthology-latin-compact</value>
+            <classifier>stand-alone</classifier>
+        </item>
+        <item>
+            <label>Contribution to Edited Volume with Transliteration</label>
+            <value>contribution-to-anthology-transliterated-compact</value>
+            <classifier>stand-alone</classifier>
+        </item>
         <!-- 
         <item>
             <label>Contribution to Conference Publication</label>
@@ -38,14 +114,67 @@
             <classifier>stand-alone</classifier>
             
             </item>
-        --><item><label>Monograph</label><value>monograph-latin</value><classifier>stand-alone</classifier><hint><p>For a <strong>Monograph</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p><p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p><p>Input the title of the monograph in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p><p>In <strong>Origin Information</strong>, input the city in which the publisher resides and the name of the publisher. If more than one of these is in evidence, input the main one or the first of them. Finally, input the year of monograph. </p><p>In <strong>Physical Description</strong>, input the extent of the monograph in pages, e.g. "ix, 214 p."</p><p>In case the monograph is (also) electronic, input in <strong>URL</strong> the web address of the monograph.</p><p>Finally, in <strong>Identifier</strong> input the ISBN number of the monograph, preferably a 13-digit ISBN, and a DOI, if available.</p><p>&#160;</p><p>Use the <strong>Container</strong> tab only if the monograph is part of a series.</p><p>Input the title of the series in <strong>Series Title</strong>. Follow the same guidelines that apply to monograph titles.</p><p>Input the name(s) of the editor(s) of the series in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the monograph in question. If the "editor" is not personal, select "(none selected)" instead of "Given Name" and "Family Name."</p><p>In <strong>Location of Monograph in Series</strong> note the volume number of the monograph within the series.</p><p>Finally, in <strong>Identifier</strong> input the ISSN number of the monograph series and a DOI, if available.</p></hint></item><item><label>Monograph with Transliteration</label><value>monograph-transliteration</value><classifier>stand-alone</classifier><hint><p>For a <strong>Monograph</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p><p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p><p>Transliterate the name(s), if necessary.</p><p>Input the title of the monograph in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p><p>Transliterate and translate the title, if necessary.</p><p>In <strong>Origin Information</strong>, input the city in which the publisher resides and the name of the publisher. If more than one of these is in evidence, input the main one or the first of them. Finally, input the year of monograph. </p><p>In <strong>Physical Description</strong>, input the extent of the monograph in pages, e.g. "ix, 214 p."</p><p>Transliterate the city and publisher name, if necessary.</p><p>In case the monograph is (also) electronic, input in <strong>URL</strong> the web address of the monograph.</p><p>Finally, in <strong>Identifier</strong> input the ISBN number of the monograph, preferably a 13-digit ISBN, and a DOI, if available.</p><p>&#160;</p><p>Use the <strong>Container</strong> tab only if the monograph is part of a series.</p><p>Input the title of the series in <strong>Series Title</strong>. Follow the same guidelines that apply to monograph titles.</p><p>Input the name(s) of the editor(s) of the series in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the monograph in question. If the "editor" is not personal, select "(none selected)" instead of "Given Name" and "Family Name."</p><p>In <strong>Location of Monograph in Series</strong> note the volume number of the monograph within the series.</p><p>Finally, in <strong>Identifier</strong> input the ISSN number of the monograph series and a DOI, if available.</p></hint></item><item><label>Book Review</label><value>book-review-latin</value><classifier>stand-alone</classifier></item>
+        -->
+        <item>
+            <label>Monograph</label>
+            <value>monograph-latin</value>
+            <classifier>stand-alone</classifier>
+            <hint>
+                <p>For a <strong>Monograph</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p>
+                <p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p>
+                <p>Input the title of the monograph in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p>
+                <p>In <strong>Origin Information</strong>, input the city in which the publisher resides and the name of the publisher. If more than one of these is in evidence, input the main one or the first of them. Finally, input the year of monograph. </p>
+                <p>In <strong>Physical Description</strong>, input the extent of the monograph in pages, e.g. "ix, 214 p."</p>
+                <p>In case the monograph is (also) electronic, input in <strong>URL</strong> the web address of the monograph.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISBN number of the monograph, preferably a 13-digit ISBN, and a DOI, if available.</p>
+                <p>&#160;</p>
+                <p>Use the <strong>Container</strong> tab only if the monograph is part of a series.</p>
+                <p>Input the title of the series in <strong>Series Title</strong>. Follow the same guidelines that apply to monograph titles.</p>
+                <p>Input the name(s) of the editor(s) of the series in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the monograph in question. If the "editor" is not personal, select "(none selected)" instead of "Given Name" and "Family Name."</p>
+                <p>In <strong>Location of Monograph in Series</strong> note the volume number of the monograph within the series.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISSN number of the monograph series and a DOI, if available.</p>
+            </hint>
+        </item>
+        <item>
+            <label>Monograph with Transliteration</label>
+            <value>monograph-transliteration</value>
+            <classifier>stand-alone</classifier>
+            <hint>
+                <p>For a <strong>Monograph</strong>, on the <strong>Publication</strong> tab, one would normally input the following information:</p>
+                <p>Input the name(s) of the author(s) in <strong>Names and Roles</strong>, selecting "author" as Role. Divide the name into Given Name and Family Name, if possible.</p>
+                <p>Transliterate the name(s), if necessary.</p>
+                <p>Input the title of the monograph in <strong>Title Information</strong>, dividing this into Title and Subtitle, if possible. If the title begins with an article like "A" or "The," remove this from the title and input it in Non Sort.</p>
+                <p>Transliterate and translate the title, if necessary.</p>
+                <p>In <strong>Origin Information</strong>, input the city in which the publisher resides and the name of the publisher. If more than one of these is in evidence, input the main one or the first of them. Finally, input the year of monograph. </p>
+                <p>In <strong>Physical Description</strong>, input the extent of the monograph in pages, e.g. "ix, 214 p."</p>
+                <p>Transliterate the city and publisher name, if necessary.</p>
+                <p>In case the monograph is (also) electronic, input in <strong>URL</strong> the web address of the monograph.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISBN number of the monograph, preferably a 13-digit ISBN, and a DOI, if available.</p>
+                <p>&#160;</p>
+                <p>Use the <strong>Container</strong> tab only if the monograph is part of a series.</p>
+                <p>Input the title of the series in <strong>Series Title</strong>. Follow the same guidelines that apply to monograph titles.</p>
+                <p>Input the name(s) of the editor(s) of the series in <strong>Names and Roles</strong>. Choose "personal," "corporate" or "conference" as Type of Name as applies to the monograph in question. If the "editor" is not personal, select "(none selected)" instead of "Given Name" and "Family Name."</p>
+                <p>In <strong>Location of Monograph in Series</strong> note the volume number of the monograph within the series.</p>
+                <p>Finally, in <strong>Identifier</strong> input the ISSN number of the monograph series and a DOI, if available.</p>
+            </hint>
+        </item>
+        <item>
+            <label>Book Review</label>
+            <value>book-review-latin</value>
+            <classifier>stand-alone</classifier>
+        </item>
         <!-- <item>
             <label>Book Review with Transliteration</label>
             <value>book-review-transliteration</value>
             <classifier>stand-alone</classifier>
             
             </item>
-        --><item><label>SUEBS Tibetan</label><value>suebs-tibetan</value><classifier>stand-alone</classifier></item>
+        -->
+        <item>
+            <label>SUEBS Tibetan</label>
+            <value>suebs-tibetan</value>
+            <classifier>stand-alone</classifier>
+        </item>
         <!--
         <item>
             <label>Motion Picture</label>
@@ -109,4 +238,6 @@
             <classifier>stand-alone</classifier>
             
             </item>
-        --></items></code-table>
+        -->
+    </items>
+</code-table>

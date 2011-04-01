@@ -1,10 +1,32 @@
-<code-table><code-table-name>genre-authority-code</code-table-name><status>finished</status><form/><basis>http://www.loc.gov/standards/sourcelist/genre-form.html</basis><description/><notes>terms with asterix have links. should be called genre-form-authority-code</notes><items><item><label>(none selected)</label><value/></item>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>genre-authority-code</code-table-name>
+    <status>finished</status>
+    <form/>
+    <basis>http://www.loc.gov/standards/sourcelist/genre-form.html</basis>
+    <description/>
+    <notes>terms with asterix have links. should be called genre-form-authority-code</notes>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
         <!--
             <item>
             <label>Audiovisual material glossary</label>
             <value>amg</value>
             </item>
-        --><item><label>*Basic genre terms for cultural heritage materials</label><value>bgtchm</value><link>http://memory.loc.gov/ammem/techdocs/genre.html</link></item><item><label>*Dublin Core list of resources types</label><value>dct</value><link>http://dublincore.org/documents/resource-typelist/</link></item>
+        -->
+        <item>
+            <label>*Basic genre terms for cultural heritage materials</label>
+            <value>bgtchm</value>
+            <link>http://memory.loc.gov/ammem/techdocs/genre.html</link>
+        </item>
+        <item>
+            <label>*Dublin Core list of resources types</label>
+            <value>dct</value>
+            <link>http://dublincore.org/documents/resource-typelist/</link>
+        </item>
         <!--
             <item>
             <label>Eighteenth century short title catalogue</label>
@@ -55,13 +77,23 @@
             <value>marcform</value>
             <link>http://www.loc.gov/standards/valuelist/marcform.html</link>
             </item>
-        --><item><label>*MARC genre terms</label><value>marcgt</value><link>http://www.loc.gov/standards/valuelist/marcgt.html</link></item>
+        -->
+        <item>
+            <label>*MARC genre terms</label>
+            <value>marcgt</value>
+            <link>http://www.loc.gov/standards/valuelist/marcgt.html</link>
+        </item>
         <!-- 
             <item>
             <label>MARC code list for media types</label>
             <value>marcmedia</value>
             </item>
-        --><item><label>*MARC specific material form term list</label><value>marcsmd</value><link>http://www.loc.gov/standards/valuelist/marcsmd.html</link></item>
+        -->
+        <item>
+            <label>*MARC specific material form term list</label>
+            <value>marcsmd</value>
+            <link>http://www.loc.gov/standards/valuelist/marcsmd.html</link>
+        </item>
         <!-- 
             <item>
             <label>*Moving image genre-form guide</label>
@@ -143,4 +175,6 @@
             <label>Svenska genrebeteckningar för periodika</label>
             <value>sgp</value>
             </item>
-        --></items></code-table>
+        -->
+    </items>
+</code-table>

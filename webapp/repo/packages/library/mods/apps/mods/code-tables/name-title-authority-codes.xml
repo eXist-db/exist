@@ -1,7 +1,86 @@
-<code-table><code-table-name>name-title-authority-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/sourcelist/name-title.html</basis><description>Name and Title Sources identifies databases and lists
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>name-title-authority-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/sourcelist/name-title.html</basis>
+    <description>Name and Title Sources identifies databases and lists
         containing standard names of persons, organizations, families, and meetings and standard titles for resources and assigns a code to each database or
         list.
-    </description><notes/><note>
+    </description>
+    <notes/>
+    <note>
         Should this list be split up in title and name authority files or should http://www.loc.gov/standards/sourcelist/subject.html be merged with it?
         "Some subject heading lists also incorporate names and titles. Thus the lists assigned source codes in Subject Heading and Term Source Codes may also be used in the usage elements identified for names and titles if appropriate.  Many of the subject sources that contain names and titles, along with subjects, are repeated on this list with the same source code."
-    </note><items><item><label>(none selected)</label><value/></item><item><label>Local</label><value>local</value></item><item><label>Autoridades de la Biblioteca Nacional de España</label><value>abn</value></item><item><label>Bibliotheca Alexandrina name and subject authority file</label><value>bibalex</value></item><item><label>CONOR.SI name authority file</label><value>conorsi</value></item><item><label>National Library of Medicine Locatorplus</label><value>dnlm</value></item><item><label>HAPI thesaurus and name authority</label><value>hapi</value></item><item><label>Hong Kong Chinese Authority File (Name)</label><value>hkcan</value></item><item><label>HLAS journal abbreviations</label><value>hlasja</value></item><item><label>Library Archives Canada name authority file</label><value>lacnaf</value></item><item><label>NACO name authority file</label><value>naf</value></item><item><label>National Agricultural Library name authority file</label><value>nalnaf</value></item><item><label>National Library of Medicine name authority file</label><value>nlmnaf</value></item><item><label>New Zealand national bibliographic</label><value>nznb</value></item><item><label>South African national bibliography authority file</label><value>sanb</value></item><item><label>Getty union list of artist names</label><value>ulan</value></item><item><label>UNBIS name authority list</label><value>unbisn</value></item></items></code-table>
+    </note>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Local</label>
+            <value>local</value>
+        </item>
+        <item>
+            <label>Autoridades de la Biblioteca Nacional de España</label>
+            <value>abn</value>
+        </item>
+        <item>
+            <label>Bibliotheca Alexandrina name and subject authority file</label>
+            <value>bibalex</value>
+        </item>
+        <item>
+            <label>CONOR.SI name authority file</label>
+            <value>conorsi</value>
+        </item>
+        <item>
+            <label>National Library of Medicine Locatorplus</label>
+            <value>dnlm</value>
+        </item>
+        <item>
+            <label>HAPI thesaurus and name authority</label>
+            <value>hapi</value>
+        </item>
+        <item>
+            <label>Hong Kong Chinese Authority File (Name)</label>
+            <value>hkcan</value>
+        </item>
+        <item>
+            <label>HLAS journal abbreviations</label>
+            <value>hlasja</value>
+        </item>
+        <item>
+            <label>Library Archives Canada name authority file</label>
+            <value>lacnaf</value>
+        </item>
+        <item>
+            <label>NACO name authority file</label>
+            <value>naf</value>
+        </item>
+        <item>
+            <label>National Agricultural Library name authority file</label>
+            <value>nalnaf</value>
+        </item>
+        <item>
+            <label>National Library of Medicine name authority file</label>
+            <value>nlmnaf</value>
+        </item>
+        <item>
+            <label>New Zealand national bibliographic</label>
+            <value>nznb</value>
+        </item>
+        <item>
+            <label>South African national bibliography authority file</label>
+            <value>sanb</value>
+        </item>
+        <item>
+            <label>Getty union list of artist names</label>
+            <value>ulan</value>
+        </item>
+        <item>
+            <label>UNBIS name authority list</label>
+            <value>unbisn</value>
+        </item>
+    </items>
+</code-table>

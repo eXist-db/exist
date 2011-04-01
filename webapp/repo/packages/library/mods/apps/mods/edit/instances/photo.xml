@@ -1,1 +1,59 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID=""><titleInfo lang="" type="" authority="" displayLabel=""><nonSort/><title/><subTitle/></titleInfo><name type="personal" script="Latn"><namePart type="given"/><namePart type="family"/><role><roleTerm authority="marcrelator" type="text">creator</roleTerm></role></name><name type="corporate"><namePart/></name><originInfo script="Latn"><place><placeTerm type="text"/></place><dateIssued encoding="w3cdtf"/><dateCreated encoding="w3cdtf" point="" keyDate="" qualifier=""/><publisher/><issuance>monographic</issuance></originInfo><part/><physicalDescription><form authority="gmd">graphic</form><extent/></physicalDescription><targetAudience authority="marctarget">adult</targetAudience><typeOfResource>still image</typeOfResource><genre authority="marc">graphic</genre><genre authority="lctgm">Photographic prints</genre><subject authority=""><topic authority=""/><geographic/><temporal encoding="w3cdtf" point="" keyDate=""/><titleInfo lang="" type="" script="" transliteration=""><nonSort/><title/><subTitle/></titleInfo><name type="" authority="" lang="" script="" transliteration=""><namePart type=""/></name></subject><classification authority="lcc" displayLabel="" lang=""/><abstract lang="eng" script="" transliteration=""/><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><relatedItem/><identifier type="local"/><location><url displayLabel="" dateLastAccessed="" note="" access="" usage=""/></location><accessCondition type=""/></mods>
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo lang="" type="" authority="" displayLabel="">
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="personal" script="Latn">
+        <namePart type="given"/>
+        <namePart type="family"/>
+        <role>
+            <roleTerm authority="marcrelator" type="text">creator</roleTerm>
+        </role>
+    </name>
+    <name type="corporate">
+        <namePart/>
+    </name>
+    <originInfo script="Latn">
+        <place>
+            <placeTerm type="text"/>
+        </place>
+        <dateIssued encoding="w3cdtf"/>
+        <dateCreated encoding="w3cdtf" point="" keyDate="" qualifier=""/>
+        <publisher/>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <part/>
+    <physicalDescription>
+        <form authority="gmd">graphic</form>
+        <extent/>
+    </physicalDescription>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>still image</typeOfResource>
+    <genre authority="marc">graphic</genre>
+    <genre authority="lctgm">Photographic prints</genre>
+    <subject authority="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" type="" script="" transliteration="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+        </titleInfo>
+        <name type="" authority="" lang="" script="" transliteration="">
+            <namePart type=""/>
+        </name>
+    </subject>
+    <classification authority="lcc" displayLabel="" lang=""/>
+    <abstract lang="eng" script="" transliteration=""/>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <relatedItem/>
+    <identifier type="local"/>
+    <location>
+        <url displayLabel="" dateLastAccessed="" note="" access="" usage=""/>
+    </location>
+    <accessCondition type=""/>
+</mods>

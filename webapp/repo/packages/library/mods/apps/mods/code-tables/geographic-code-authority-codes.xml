@@ -1,1 +1,27 @@
-<code-table><code-table-name>geographic-code-authority-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#geographiccode</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>marcgac</label><value>marcgac</value></item><item><label>marccountry</label><value>marccountry</value></item><item><label>iso3166</label><value>iso3166</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>geographic-code-authority-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#geographiccode</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>marcgac</label>
+            <value>marcgac</value>
+        </item>
+        <item>
+            <label>marccountry</label>
+            <value>marccountry</value>
+        </item>
+        <item>
+            <label>iso3166</label>
+            <value>iso3166</value>
+        </item>
+    </items>
+</code-table>

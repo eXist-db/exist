@@ -1,14 +1,56 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="header.xml"/><xi:include href="sidebar.xml"/><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>The Tabs</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.14.xml"><div><graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
-                                    &#160;</div></ulink></entry><entry><ulink href="walkthrough.toc.xml"><div class="toc"><graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.16.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
-                                    &#160;</div></ulink></entry></row></tbody></tgroup></table><para> Inside the Tamboti editor, the first three tabs are "Basic Input Forms". The first tab is "Publication" and the second "Container"; "Container" also
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
+    <link rel="stylesheet" href="docbook.css" type="text/css"/>
+    <chapter>
+        <title>The Tabs</title>
+        <table frame="all" width="25%" border="0" class="center">
+            <title/>
+            <tgroup cols="4">
+                <colspec colname="c1" colnum="1" colwidth="25%"/>
+                <colspec colname="c2" colnum="2" colwidth="25%"/>
+                <colspec colname="c3" colnum="3" colwidth="25%"/>
+                <colspec colname="c4" colnum="4" colwidth="25%"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <ulink href="walkthrough.14.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.toc.xml">
+                                <div class="toc">
+                                    <graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.16.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>
+                                    &#160;</div>
+                            </ulink>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <para> Inside the Tamboti editor, the first three tabs are "Basic Input Forms". The first tab is "Publication" and the second "Container"; "Container" also
             incorporates "Location in Container." The third tab, "Contents," deals with the description of the contents of the publication and will be discussed
             later. After the first three tabs there are a large number of tabs that open up for more detailed input of bibliographical information. These tabs
-            will also be introduced later.</para><para> The Basic Input Forms are coordinated with the set of templates you choose from in the pre-entry dialog. Records that are not made with these
+            will also be introduced later.</para>
+        <para> The Basic Input Forms are coordinated with the set of templates you choose from in the pre-entry dialog. Records that are not made with these
             templates will not show up as intended, especially on the "Container" tab of the Basic Input Forms. If you wish to edit a record with the Basic Input Forms that
             has not been made with them, you can go to the Extension tab and there set the record type to one of the types listed above. This will ensure that
-            the Container tabs displays the correct view of the record.</para><para> If the forms are "too basic," one can always add input options and contents by using the detailed tabs. 
+            the Container tabs displays the correct view of the record.</para>
+        <para> If the forms are "too basic," one can always add input options and contents by using the detailed tabs. 
             Such contents will generally not
             show up in the Basic Input Forms, but this is no problem: it is still part of the document and will be saved even if you do not see it onthese
             forms.
-            In the tooltips on the Basic Input Forms, it is specified which tabs are relevant if one wishes to add types of information not present on the Basic Input Forms.</para></chapter></book>
+            In the tooltips on the Basic Input Forms, it is specified which tabs are relevant if one wishes to add types of information not present on the Basic Input Forms.</para>
+    </chapter>
+</book>

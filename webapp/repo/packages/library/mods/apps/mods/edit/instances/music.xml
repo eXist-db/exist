@@ -1,1 +1,52 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID=""><titleInfo><nonSort/><title/><subTitle/></titleInfo><name type="personal"><namePart type="family"/><namePart type="given"/><role><roleTerm authority="marcrelator" type="text">composer</roleTerm></role></name><originInfo><place><placeTerm type="text"/></place><publisher/><dateIssued encoding="w3cdtf"/><issuance>monographic</issuance></originInfo><part/><physicalDescription><form authority="marcform">print</form><extent/></physicalDescription><targetAudience authority="marctarget">adult</targetAudience><typeOfResource>notated music</typeOfResource><genre authority=""/><subject authority=""><topic authority=""/><geographic/><temporal encoding="w3cdtf" point="" keyDate=""/><titleInfo lang="" type="" script="" transliteration=""><nonSort/><title/><subTitle/></titleInfo><name type="" authority="" lang="" script="" transliteration=""><namePart type=""/></name></subject><classification authority="lcc" displayLabel="" lang=""/><abstract/><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><relatedItem/><identifier/><location/><accessCondition/></mods>
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo>
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="personal">
+        <namePart type="family"/>
+        <namePart type="given"/>
+        <role>
+            <roleTerm authority="marcrelator" type="text">composer</roleTerm>
+        </role>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text"/>
+        </place>
+        <publisher/>
+        <dateIssued encoding="w3cdtf"/>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <part/>
+    <physicalDescription>
+        <form authority="marcform">print</form>
+        <extent/>
+    </physicalDescription>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>notated music</typeOfResource>
+    <genre authority=""/>
+    <subject authority="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" type="" script="" transliteration="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+        </titleInfo>
+        <name type="" authority="" lang="" script="" transliteration="">
+            <namePart type=""/>
+        </name>
+    </subject>
+    <classification authority="lcc" displayLabel="" lang=""/>
+    <abstract/>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <relatedItem/>
+    <identifier/>
+    <location/>
+    <accessCondition/>
+</mods>

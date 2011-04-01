@@ -1,11 +1,55 @@
-<book xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="header.xml"/><xi:include href="sidebar.xml"/><link rel="stylesheet" href="docbook.css" type="text/css"/><chapter><title>The MODS Format</title><table frame="all" width="25%" border="0" class="center"><title/><tgroup cols="4"><colspec colname="c1" colnum="1" colwidth="25%"/><colspec colname="c2" colnum="2" colwidth="25%"/><colspec colname="c3" colnum="3" colwidth="25%"/><colspec colname="c4" colnum="4" colwidth="25%"/><tbody><row><entry><ulink href="walkthrough.01.xml"><div><graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.toc.xml"><div class="toc"><graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
-                                </div></ulink></entry><entry><ulink href="walkthrough.02.5.xml"><div><graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>&#160;
-                                </div></ulink></entry></row></tbody></tgroup></table><para> The format of the metadata records is the so-called MODS format, a standard for bibliographical description maintained by the US Library of
-                Congress called "MODS" for Metadata Object Description Schema. </para><para> This standard allows one to catalogue many different kinds of material, not just monographs and articles, but web sites, photos, videos, maps,
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="header.xml"/>
+    <xi:include href="sidebar.xml"/>
+    <link rel="stylesheet" href="docbook.css" type="text/css"/>
+    <chapter>
+        <title>The MODS Format</title>
+        <table frame="all" width="25%" border="0" class="center">
+            <title/>
+            <tgroup cols="4">
+                <colspec colname="c1" colnum="1" colwidth="25%"/>
+                <colspec colname="c2" colnum="2" colwidth="25%"/>
+                <colspec colname="c3" colnum="3" colwidth="25%"/>
+                <colspec colname="c4" colnum="4" colwidth="25%"/>
+                <tbody>
+                    <row>
+                        <entry>
+                            <ulink href="walkthrough.01.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_previous.png" align="left" alt="Go To Previous"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.toc.xml">
+                                <div class="toc">
+                                    <graphic fileref="images/text_list_bullets.png" align="center" alt="Table of Contents"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                        <entry>
+                            <ulink href="walkthrough.02.5.xml">
+                                <div>
+                                    <graphic fileref="images/resultset_next.png" align="right" alt="Go To Next"/>&#160;
+                                </div>
+                            </ulink>
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <para> The format of the metadata records is the so-called MODS format, a standard for bibliographical description maintained by the US Library of
+                Congress called "MODS" for Metadata Object Description Schema. </para>
+        <para> This standard allows one to catalogue many different kinds of material, not just monographs and articles, but web sites, photos, videos, maps,
                 computer files and so on. It allows one to catalogue in great detail, but also to catalogue simplly. It allows one to relate one record (say, an
-                entry for a monograph) to another entry (say an entry for a movie) and it allows one to make notes that one can "type" freely. </para><para>You don't have to make acquaintance with this format, but basically all it does is to surround each type of information with a set of tags,
+                entry for a monograph) to another entry (say an entry for a movie) and it allows one to make notes that one can "type" freely. </para>
+        <para>You don't have to make acquaintance with this format, but basically all it does is to surround each type of information with a set of tags,
             like &lt;title&gt;A Midsummer Night's Dream&lt;/title&gt;. The tags tell, more or less clearly, what is inside them, here, a title.
-        </para><para>The MODS format is a "sister" of the MARC format used by most larger libraries. MODS is widely used as an exchange format and when resources from different libraries are aggregated. An good example of a large-scale aggregation project using MODS is <ulink url="http://www.americanhistoryonline.org/" target="_blank">American History Online</ulink>.
-            </para><para>MODS is used as a cataloguing format primarily for "untraditional" library resources, such as images and web pages, but is slowly gaining ground as a fomrat for traditional library resources. MARC records can be coverted, almost losslessly, to and from MODS records. Further information on the MODS format can be found at <ulink url="http://www.loc.gov/standards/mods/" target="_blank">The Library of
-                Congress</ulink>.</para></chapter></book>
+        </para>
+        <para>The MODS format is a "sister" of the MARC format used by most larger libraries. MODS is widely used as an exchange format and when resources from different libraries are aggregated. An good example of a large-scale aggregation project using MODS is <ulink url="http://www.americanhistoryonline.org/" target="_blank">American History Online</ulink>.
+            </para>
+        <para>MODS is used as a cataloguing format primarily for "untraditional" library resources, such as images and web pages, but is slowly gaining ground as a fomrat for traditional library resources. MARC records can be coverted, almost losslessly, to and from MODS records. Further information on the MODS format can be found at <ulink url="http://www.loc.gov/standards/mods/" target="_blank">The Library of
+                Congress</ulink>.</para>
+    </chapter>
+</book>

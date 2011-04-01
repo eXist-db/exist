@@ -1,3 +1,157 @@
-<div xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:e="http://www.asia-europe.uni-heidelberg.de/" xmlns:xf="http://www.w3.org/2002/xforms" class="extension" tab-id="extension"><div class="block-form"><fieldset level="1"><div class="join"><span class="legend">Extension</span><span class="join-button"><xf:trigger><xf:label>&#160;+</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:extension" at="index('extension-repeat')" position="after"/></xf:action></xf:trigger></span><span class="join-button"><xf:trigger><xf:label>&#160;–</xf:label><xf:action ev:event="DOMActivate"><xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:extension" at="index('extension-repeat')"/></xf:action></xf:trigger></span><span class="xforms-hint"><span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/><div class="xforms-hint-value"><p>Here you have access to a number of fields that we have added to the MODS schema.</p><p>If the record you are viewing has not been made with Tamboti, it may not have Extension. You can add an Extension by using the button below.</p></div></span></div><xf:repeat nodeset="instance('save-data')/mods:extension" id="extension-repeat"><xf:group><xf:select1 ref="./*[2]"><xf:label>Publication Type:</xf:label><xf:hint><p>Choose one of the publication types listed below. These publication types are the same as the record templates used in the
-                                pre-entry options. </p><p> If a record has not been made by use of Tamboti, you can assign a publication type to it here. Doing so will make it possible to
-                                use the Basic Input Forms. Otherwise, it is not necessary.</p></xf:hint><xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='document-type-code']/items/item"><xf:label ref="label"/><xf:value ref="value"/></xf:itemset></xf:select1></xf:group></xf:repeat><xf:group id="extension-add-element"><xf:trigger ref=".[not(mods:extension)]" class="add-button"><xf:label class="xforms-group-label-centered">Add Missing Extension</xf:label><xf:action ev:event="DOMActivate"><xf:insert nodeset="mods:extension" at="index('extension-repeat')" position="after" origin="instance('new-instance')/mods:extension"/></xf:action></xf:trigger></xf:group></fieldset></div></div>
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns:e="http://www.asia-europe.uni-heidelberg.de/" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xf="http://www.w3.org/2002/xforms" class="extension" tab-id="extension">
+    <div class="block-form">
+        <fieldset level="1">
+            <div class="join">
+                <span class="legend">Extension</span>
+                <span class="join-button">
+                    <xf:trigger>
+                        <xf:label>&#160;+</xf:label>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:insert nodeset="mods:extension" at="index('extension-repeat')" position="after"/>
+                        </xf:action>
+                    </xf:trigger>
+                </span>
+                <span class="join-button">
+                    <xf:trigger>
+                        <xf:label>&#160;–</xf:label>
+                        <xf:action ev:event="DOMActivate">
+                            <xf:delete ev:event="DOMActivate" nodeset="instance('save-data')/mods:extension" at="index('extension-repeat')"/>
+                        </xf:action>
+                    </xf:trigger>
+                </span>
+                <span class="xforms-hint">
+                    <span onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)" class="xforms-hint-icon"/>
+                    <div class="xforms-hint-value">
+                        <p>Here you have access to a number of fields that we have added to the MODS schema.</p>
+                        <p>If the record you are viewing has not been made with Tamboti, it may not have Extension. If it lacks Exntension, you can add it by
+                            using the button below.</p>
+                        <p>If you change the values of the displayed fields, the Basic Input Forms will display differently.</p>
+                    </div>
+                </span>
+            </div>
+            
+            <!--
+            <xf:repeat nodeset="instance('save-data')/mods:extension" id="extension-repeat">
+            -->
+            <!-- repeat not used. -->
+            <xf:group ref="mods:extension[not(e:template)] | mods:extension[not(e:transliterationOfResource)]">
+                <xf:switch>
+                    <xf:case id="extension-add-node-hide">
+                        <div class="node-button">
+                            <xf:trigger class="add-button">
+                                <xf:label>&#160;&gt;</xf:label>
+                                <xf:toggle case="extension-add-node-unhide" ev:event="DOMActivate"/>
+                            </xf:trigger>
+                        </div>
+                    </xf:case>
+                    <xf:case id="extension-add-node-unhide">
+                        <div class="node-button">
+                            <xf:trigger>
+                                <xf:label>&#160;&lt;</xf:label>
+                                <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                            </xf:trigger>
+                        </div>
+                        <div class="node-adds">
+                            <xf:group ref=".[not(e:template)] | .[not(e:transliterationOfResource)]">
+                                <xf:label class="xforms-group-label-centered">Recommended Fields</xf:label>
+                                <!-- attribute dummy
+                                    <xf:trigger ref=".[not(@type)]" class="add-button">
+                                        <xf:label class="xforms-group-label-centered">Add Type</xf:label>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@type"/>
+                                        </xf:action>
+                                    </xf:trigger>
+                                    -->
+                                <xf:trigger ref=".[not(e:template)]" class="add-button">
+                                    <xf:label class="xforms-group-label-centered">Add Publication Type</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                                        <xf:insert nodeset="e:template" at="index('extension-repeat')" position="after" origin="instance('insert-templates')/e:template"/>
+                                    </xf:action>
+                                </xf:trigger>
+                                <xf:trigger ref=".[not(e:transliterationOfResource)]" class="add-button">
+                                    <xf:label class="xforms-group-label-centered">Add Transliteration Of Resource</xf:label>
+                                    <xf:action ev:event="DOMActivate">
+                                        <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                                        <xf:insert nodeset="e:template" at="index('extension-repeat')" position="after" origin="instance('insert-templates')/e:template"/>
+                                    </xf:action>
+                                </xf:trigger>
+                            </xf:group>
+                            <!--
+                                <xf:group id="extension-add-node-optional">
+                                    <xf:label class="xforms-group-label-centered">Optional Fields</xf:label>
+                                    <xf:trigger ref=".[not(@displayLabel)]" class="add-button">
+                                        <xf:label class="xforms-group-label-centered">Add Display Label</xf:label>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@displayLabel"/>
+                                        </xf:action>
+                                    </xf:trigger>
+                                </xf:group>
+                                <xf:group id="extension-add-node-not-recommended">
+                                    <xf:label class="xforms-group-label-centered">Deprecated Fields</xf:label>
+                                    <xf:trigger ref=".[not(@ID)]" class="add-button">
+                                        <xf:label class="xforms-group-label-centered">Add ID</xf:label>
+                                        <xf:action ev:event="DOMActivate">
+                                            <xf:toggle case="extension-add-node-hide" ev:event="DOMActivate"/>
+                                            <xf:insert context="." origin="instance('insert-templates')/mods:titleInfo/@ID"/>
+                                        </xf:action>
+                                    </xf:trigger>
+                                </xf:group>
+                                -->
+                        </div>
+                    </xf:case>
+                </xf:switch>
+            </xf:group>
+            <xf:group>
+                <xf:select1 ref="mods:extension/e:template">
+                    <xf:label>Publication Type:</xf:label>
+                    <xf:hint>
+                        <p>Choose one of the publication types listed below. These publication types are the same as the record templates used in the pre-entry
+                            options. </p>
+                        <p> If a record has not been made by use of Tamboti, you can assign a publication type to it here.</p>
+                        <p> If you have assign a wrong publication type in the pre-entry dialogue, you can change it here. Changing it here will however not
+                            change the options displayed in the Basic Input Forms.</p>
+                    </xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='document-type-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+            </xf:group>
+            <xf:group>
+                <xf:select1 ref="mods:extension/e:transliterationOfResource">
+                    <xf:label>Transliteration Of Resource:</xf:label>
+                    <xf:hint>
+                        <p> Choose one of the transliteration schemes listed below. The transliteration schemes are the same as those used in the pre-entry
+                            options. </p>
+                        <p> If a record has not been made by use of Tamboti, if will not have this field, but you can assign a transliteration scheme to it
+                            here. Doing so will make it unneccesary to note which transliteration scheme is used for individual fields, i.e. you can set this
+                            value once and for all here. Adding a transliteration scheme here will not cause the Basic Input Forms to display transliteration
+                            fields. If you wish to add transliterations for titles, names, etc., you have to use the Citation Forms.</p>
+                        <p> If you have assigned the wrong transliteration scheme in the pre-entry dialogue, you can change it here. The Basic Input Forms will
+                            still display fields for the transliteration of titles, names, etc.</p>
+                    </xf:hint>
+                    <xf:itemset nodeset="instance('code-tables')/code-table[code-table-name='transliteration-code']/items/item">
+                        <xf:label ref="label"/>
+                        <xf:value ref="value"/>
+                    </xf:itemset>
+                </xf:select1>
+            </xf:group>
+            
+            <!-- 
+            </xf:repeat>
+            -->
+            <xf:group id="extension-add-element">
+                <xf:trigger ref=".[not(mods:extension)]" class="add-button">
+                    <xf:label class="xforms-group-label-centered">Add Missing Extension</xf:label>
+                    <xf:action ev:event="DOMActivate">
+                        <xf:insert nodeset="mods:extension" at="index('extension-repeat')" position="after" origin="instance('new-instance')/mods:extension"/>
+                    </xf:action>
+                </xf:trigger>
+            </xf:group>
+        </fieldset>
+    </div>
+</div>

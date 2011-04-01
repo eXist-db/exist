@@ -1,1 +1,27 @@
-<code-table><code-table-name>location-unittype-code</code-table-name><status>finished</status><form>closed</form><basis>www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><value>about the basic bibliographic unit</value><label>1</label></item><item><value>about supplementary material to the basic unit</value><label>2</label></item><item><value>about index(es) to the basic unit</value><label>3</label></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>location-unittype-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>www.loc.gov/standards/mods/v3/mods-userguide-elements.html#identifier</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <value>about the basic bibliographic unit</value>
+            <label>1</label>
+        </item>
+        <item>
+            <value>about supplementary material to the basic unit</value>
+            <label>2</label>
+        </item>
+        <item>
+            <value>about index(es) to the basic unit</value>
+            <label>3</label>
+        </item>
+    </items>
+</code-table>

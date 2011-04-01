@@ -1,1 +1,31 @@
-<code-table><code-table-name>part-extent-unit-code</code-table-name><status>finished</status><form>open</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#related_extent</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>Pages</label><value>pages</value></item><item><label>Volumes</label><value>volumes</value></item><item><label>Minutes</label><value>minutes</value></item><item><label>Cassettes</label><value>cassettes</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>part-extent-unit-code</code-table-name>
+    <status>finished</status>
+    <form>open</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#related_extent</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Pages</label>
+            <value>pages</value>
+        </item>
+        <item>
+            <label>Volumes</label>
+            <value>volumes</value>
+        </item>
+        <item>
+            <label>Minutes</label>
+            <value>minutes</value>
+        </item>
+        <item>
+            <label>Cassettes</label>
+            <value>cassettes</value>
+        </item>
+    </items>
+</code-table>

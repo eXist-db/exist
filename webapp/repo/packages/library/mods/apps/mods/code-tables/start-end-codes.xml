@@ -1,1 +1,23 @@
-<code-table><code-table-name>start-end-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-generalapp.html</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>Start</label><value>start</value></item><item><label>End</label><value>end</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>start-end-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-generalapp.html</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Start</label>
+            <value>start</value>
+        </item>
+        <item>
+            <label>End</label>
+            <value>end</value>
+        </item>
+    </items>
+</code-table>

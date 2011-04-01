@@ -1,1 +1,73 @@
-<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID=""><titleInfo><nonSort/><title/><subTitle/></titleInfo><name type="conference"><namePart/><namePart/><role><roleTerm type="text">creator</roleTerm><roleTerm type="code">cre</roleTerm></role></name><name type="corporate"><namePart/></name><name type="personal"><namePart type="family"/><namePart type="given"/></name><originInfo><place><placeTerm type="text"/></place><publisher/><dateIssued encoding="w3cdtf"/><issuance>monographic</issuance></originInfo><part/><physicalDescription><form authority="marcform">print</form><extent/></physicalDescription><targetAudience authority="marctarget">adult</targetAudience><typeOfResource>text</typeOfResource><genre authority="marcgt">conference publication</genre><genre type="code" authority="marcgt">book</genre><subject authority=""><topic authority=""/><geographic/><temporal encoding="w3cdtf" point="" keyDate=""/><titleInfo lang="" type="" script="" transliteration=""><nonSort/><title/><subTitle/></titleInfo><name type="" authority="" lang="" script="" transliteration=""><namePart type=""/></name></subject><classification authority="lcc" displayLabel="" lang=""/><abstract lang="eng" script="" transliteration=""/><tableOfContents lang="" script="" xlink=""/><note lang="" type=""/><relatedItem type="host" xlink=""><part type=""><extent unit=""><start/><end/><total/><list/></extent><date encoding="w3cdtf" point="" qualifier=""/><text/></part></relatedItem><identifier type="isbn"/><identifier displayLabel="" type="local"/><location/><accessCondition/></mods>
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" ID="">
+    <titleInfo>
+        <nonSort/>
+        <title/>
+        <subTitle/>
+    </titleInfo>
+    <name type="conference">
+        <namePart/>
+        <namePart/>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+            <roleTerm type="code">cre</roleTerm>
+        </role>
+    </name>
+    <name type="corporate">
+        <namePart/>
+    </name>
+    <name type="personal">
+        <namePart type="family"/>
+        <namePart type="given"/>
+    </name>
+    <originInfo>
+        <place>
+            <placeTerm type="text"/>
+        </place>
+        <publisher/>
+        <dateIssued encoding="w3cdtf"/>
+        <issuance>monographic</issuance>
+    </originInfo>
+    <part/>
+    <physicalDescription>
+        <form authority="marcform">print</form>
+        <extent/>
+    </physicalDescription>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>text</typeOfResource>
+    <genre authority="marcgt">conference publication</genre>
+    <genre type="code" authority="marcgt">book</genre>
+    <subject authority="">
+        <topic authority=""/>
+        <geographic/>
+        <temporal encoding="w3cdtf" point="" keyDate=""/>
+        <titleInfo lang="" type="" script="" transliteration="">
+            <nonSort/>
+            <title/>
+            <subTitle/>
+        </titleInfo>
+        <name type="" authority="" lang="" script="" transliteration="">
+            <namePart type=""/>
+        </name>
+    </subject>
+    <classification authority="lcc" displayLabel="" lang=""/>
+    <abstract lang="eng" script="" transliteration=""/>
+    <tableOfContents lang="" script="" xlink=""/>
+    <note lang="" type=""/>
+    <relatedItem type="host" xlink="">
+        <part type="">
+            <extent unit="">
+                <start/>
+                <end/>
+                <total/>
+                <list/>
+            </extent>
+            <date encoding="w3cdtf" point="" qualifier=""/>
+            <text/>
+        </part>
+    </relatedItem>
+    <identifier type="isbn"/>
+    <identifier displayLabel="" type="local"/>
+    <location/>
+    <accessCondition/>
+</mods>

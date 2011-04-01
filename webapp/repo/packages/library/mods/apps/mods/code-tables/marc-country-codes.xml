@@ -1,1 +1,2005 @@
-<code-table><code-table-name>marc-country-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/marc/countries/countries_name.html</basis><description/><notes/><items><item><label>(none selected)</label><value/></item><item><label>Afghanistan</label><value>af</value></item><item><label>Alabama</label><value>alu</value></item><item><label>Alaska</label><value>aku</value></item><item><label>Albania</label><value>aa</value></item><item><label>Alberta</label><value>abc</value></item><item><label>Algeria</label><value>ae</value></item><item><label>American Samoa</label><value>as</value><useforref1>Eastern Samoa</useforref1><useforref2>Samoa, American</useforref2></item><item><label>Andorra</label><value>an</value></item><item><label>Angola</label><value>ao</value><useforref1>Cabinda</useforref1></item><item><label>Anguilla</label><value>am</value><note>Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985. Code changed from [ai] to [am] in Mar. 1988</note><useforref1>Saint Kitts-Nevis-Anguilla</useforref1><usefforref2>Sombrero Island</usefforref2></item><item><label>Antarctica</label><value>ay</value></item><item><label>Antigua and Barbuda</label><value>aq</value><useforref1>Antigua</useforref1><useforref2>Barbuda</useforref2><useforref2>Redonda</useforref2></item><item><label>Argentina</label><value>ag</value></item><item><label>Arizona</label><value>azu</value></item><item><label>Arkansas</label><value>aru</value></item><item><label>Armenia</label><value>ai</value><note>Coded [air] (Armenian S.S.R.) before June 1992</note><useforref1>Armenian S.S.R.</useforref1></item><item><label>Aruba</label><value>aw</value><note>Coded [na] (Netherlands Antilles) before Mar. 1988</note></item><item><label>Australia</label><value>at</value><useforref1>Ashmore and Cartier Islands</useforref1><useforref2>Macquarie Island</useforref2></item><item><label>Australian Capital Territory</label><value>aca</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Austria</label><value>au</value></item><item><label>Azerbaijan</label><value>aj</value><note>Coded [ajr] (Azerbaijan S.S.R.) before June 1992</note><useforref1>Azerbaijan S.S.R.</useforref1></item><item><label>Bahamas</label><value>bf</value></item><item><label>Bahrain</label><value>ba</value><useforref1>Bahrein</useforref1></item><item><label>Bangladesh</label><value>bg</value><useforref1>East Pakistan</useforref1></item><item><label>Barbados</label><value>bb</value></item><item><label>Belarus</label><value>bw</value><note>Coded [bwr] (Byelorussian S.S.R.) before June 1992</note><useforref1>Byelarus</useforref1><useforref2>Belorussian S.S.R.</useforref2><useforref2>Byeolorussian S.S.R.</useforref2></item><item><label>Belgium</label><value>be</value></item><item><label>Belize</label><value>bh</value><useforref1>British Honduras</useforref1></item><item><label>Benin</label><value>dm</value><useforref1>Dahomey</useforref1></item><item><label>Bermuda Islands</label><value>bm</value></item><item><label>Bhutan</label><value>bt</value></item><item><label>Bolivia</label><value>bo</value></item><item><label>Bosnia and Hercegovina</label><value>bn</value><note>Coded [yu] (Yugoslavia) before Oct. 1992</note><useforref1>Hercegovina</useforref1></item><item><label>Botswana</label><value>bs</value><useforref1>Bechuanaland</useforref1></item><item><label>Bouvet Island</label><value>bv</value></item><item><label>Brazil</label><value>bl</value><useforref1>Fernando de Noronha</useforref1><useforref2>Ilha da Trindade</useforref2><useforref2>Ilhas Martim Vaz</useforref2><useforref2>Martim Vaz, Ilhas</useforref2><useforref2>Penedos de São Pedro e São Paulo</useforref2><useforref2>Rocas</useforref2><useforref2>Trindade, Ilha da</useforref2></item><item><label>British Columbia</label><value>bcc</value></item><item><label>British Indian Ocean Territory</label><value>bi</value><useforref1>Chagos Archipelago</useforref1><useforref2>Diego Garcia Island</useforref2></item><item><label>British Virgin Islands</label><value>vb</value><useforref1>Anegada</useforref1><useforref2>Colony of the Virgin Islands</useforref2><useforref2>Jost Van Dyke</useforref2><useforref2>Tortola</useforref2><useforref2>Virgin Gorda</useforref2><useforref2>Virgin Islands (British)</useforref2></item><item><label>Brunei</label><value>bx</value></item><item><label>Bulgaria</label><value>bu</value></item><item><label>Burkina Faso</label><value>uv</value><useforref1>Upper Volta</useforref1></item><item><label>Burma</label><value>br</value><useforref1>Myanmar</useforref1></item><item><label>Burundi</label><value>bd</value></item><item><label>California</label><value>cau</value></item><item><label>Cambodia</label><value>cb</value><useforref1>Democratic Kampuchea</useforref1><useforref2>Kampuchea</useforref2><useforref2>Khmer Republic</useforref2></item><item><label>Cameroon</label><value>cm</value><useforref1>British Cameroons</useforref1><useforref2>East Cameroon</useforref2><useforref2>French Cameroons</useforref2><useforref2>German Cameroons</useforref2><useforref2>Southern Cameroons</useforref2><useforref2>West Cameroon</useforref2></item><item><label>Canada</label><value>xxc</value><note>Also coded [cn] (Canada) before Mar. 1988</note></item><item><label>Cape Verde</label><value>cv</value><useforref1>Boa Vista</useforref1><useforref2>Brava</useforref2><useforref2>Fogo</useforref2><useforref2>Maio</useforref2><useforref2>Sal</useforref2><useforref2>Santo Antao</useforref2><useforref2>São Nicolau</useforref2><useforref2>São Tiago</useforref2><useforref2>São Vicente</useforref2></item><item><label>Cayman Islands</label><value>cj</value><useforref1>Cayman Brac Island</useforref1><useforref2>Grand Cayman Island</useforref2><useforref2>Little Cayman Island</useforref2></item><item><label>Central African Republic</label><value>cx</value><useforref1>Central African Empire</useforref1><useforref2>Ubangi-Shari</useforref2></item><item><label>Chad</label><value>cd</value></item><item><label>Chile</label><value>cl</value><useforref1>Easter Island</useforref1><useforref2>Isla de Pasqua</useforref2><useforref2>Isla Sala y Gómez</useforref2><useforref2>Islas Juan Fernández</useforref2><useforref2>Juan Fernández, Islas</useforref2><useforref2>Pasqua, Isla de</useforref2><useforref2>Sala y Gómez, Isla</useforref2><useforref2>San Félix</useforref2></item><item><label>China</label><value>cc</value><useforref1>Hainan Island</useforref1><useforref2>Hong Kong</useforref2><useforref2>Inner Mongolia</useforref2><useforref2>Kowloon</useforref2><useforref2>Macao</useforref2><useforref2>Macau</useforref2><useforref2>Manchuria</useforref2><useforref2>Sinkiang</useforref2><useforref2>New Territories</useforref2><useforref2>Taipa</useforref2><useforref2>Tibet</useforref2></item><item><label>China (Republic : 1949- )</label><value>ch</value><useforref1>Formosa Island</useforref1><useforref2>Nationalist China</useforref2><useforref2>P'eng-hu Island</useforref2><useforref2>Pescadores Islands</useforref2><useforref2>Taiwan Island</useforref2></item><item><label>Christmas Island (Indian Ocean)</label><value>xa</value></item><item><label>Cocos (Keeling) Islands</label><value>xb</value><useforref1>Keeling Islands</useforref1></item><item><label>Colombia</label><value>ck</value><useforref1>Isla de Malpelo</useforref1><useforref2>Malpelo, Isla de</useforref2><useforref2>San Andrés y Providencia</useforref2><useforref2>Serrana Bank</useforref2><useforref2>Serranilla Bank</useforref2></item><item><label>Colorado</label><value>cou</value></item><item><label>Comoros</label><value>cq</value><useforref1>Anjouan Island</useforref1><useforref2>Comores</useforref2><useforref2>Grande Comore Island</useforref2><useforref2>Moheli Island</useforref2></item><item><label>Congo (Brazzaville)</label><value>cf</value><useforref1>Middle Congo</useforref1></item><item><label>Congo (Democratic Republic)</label><value>cg</value><useforref1>Belgian Congo</useforref1><useforref2>Congo (Kinshasa)</useforref2><useforref2>Democratic Republic of the Congo</useforref2><useforref2>Zaire</useforref2></item><item><label>Connecticut</label><value>ctu</value></item><item><label>Cook Islands</label><value>cw</value><useforref1>Danger Atoll</useforref1><useforref2>Manihiki Atoll</useforref2><useforref2>Penrhyn Atoll</useforref2><useforref2>Rakahanga Atoll</useforref2></item><item><label>Coral Sea Islands Territory</label><value>xga</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Costa Rica</label><value>cr</value><useforref1>Cocos Island</useforref1></item><item><label>Côte d'Ivoire</label><value>iv</value><useforref1>Ivory Coast</useforref1></item><item><label>Croatia</label><value>ci</value><note>Coded [yu] (Yugoslavia) before Oct. 1992</note></item><item><label>Cuba</label><value>cu</value><useforref1>Isle of Pines (Caribbean)</useforref1><useforref2>Pines, Isle of (Caribbean)</useforref2></item><item><label>Cyprus</label><value>cy</value></item><item><label>Czech Republic</label><value>xr</value><note>Coded [cs] (Czechoslovakia) before May 1993</note><useforref1>Czechoslovakia</useforref1></item><item><label>Delaware</label><value>deu</value></item><item><label>Denmark</label><value>dk</value><useforref1>Bornholm Island</useforref1></item><item><label>District of Columbia</label><value>dcu</value></item><item><label>Djibouti</label><value>ft</value><useforref1>Afars</useforref1><useforref2>French Somaliland</useforref2><useforref2>French Territory of the Afars and Issas</useforref2><useforref2>Issas</useforref2></item><item><label>Dominica</label><value>dq</value></item><item><label>Dominican Republic</label><value>dr</value></item><item><label>East Timor</label><value>em</value></item><item><label>Ecuador</label><value>ec</value><useforref1>Archipiélago de Colón</useforref1><useforref2>Colón, Archipiélago de</useforref2><useforref2>Galapagos Islands</useforref2></item><item><label>Egypt</label><value>ua</value><useforref1>Arab Republic of Egypt</useforref1><useforref2>United Arab Republic</useforref2></item><item><label>El Salvador</label><value>es</value><useforref1>Salvador</useforref1></item><item><label>England</label><value>enk</value></item><item><label>Equatorial Guinea</label><value>eg</value><useforref1>Annobón</useforref1><useforref2>Bioko</useforref2><useforref2>Corisco Island</useforref2><useforref2>Elobey, Great</useforref2><useforref2>Elobey, Small</useforref2><useforref2>Fernando Po Island</useforref2><useforref2>Macias Nguema Biyogo</useforref2><useforref2>Pagalu</useforref2><useforref2>Rio Muni</useforref2></item><item><label>Eritrea</label><value>ea</value><note>Coded [et] (Ethiopia) before Nov. 1993</note></item><item><label>Estonia</label><value>er</value><note>Coded [err] (Estonia) before Oct. 1992</note></item><item><label>Ethiopia</label><value>et</value></item><item><label>Falkland Islands</label><value>fk</value><useforref1>East Falkland Island</useforref1><useforref2>Islas Malvinas</useforref2><useforref2>Malvinas, Islas</useforref2><useforref2>West Falkland Island</useforref2></item><item><label>Faroe Islands</label><value>fa</value><useforref1>Færoe Islands</useforref1></item><item><label>Fiji</label><value>fj</value><useforref1>Rotuma Island</useforref1><useforref2>Vanua Levu Island</useforref2><useforref2>Viti Levu Island</useforref2></item><item><label>Finland</label><value>fi</value><useforref1>Ahvenanmaa</useforref1><useforref2>Åland Islands</useforref2></item><item><label>Florida</label><value>flu</value></item><item><label>France</label><value>fr</value><useforref1>Corsica</useforref1></item><item><label>French Guiana</label><value>fg</value><useforref1>Guiana, French</useforref1></item><item><label>French Polynesia</label><value>fp</value><useforref1>Austral Islands</useforref1><useforref2>Clipperton Island</useforref2><useforref2>Gambier Islands</useforref2><useforref2>Iles Australes</useforref2><useforref2>Iles du Vent</useforref2><useforref2>Iles Sous le Vent</useforref2><useforref2>Marquesas Islands</useforref2><useforref2>Polynesia, French</useforref2><useforref2>Society Islands</useforref2><useforref2>Sous le Vent, Iles</useforref2><useforref2>Tahiti</useforref2><useforref2>Tuamotu Archipelago</useforref2><useforref2>Vent, Iles du</useforref2></item><item><label>Gabon</label><value>go</value></item><item><label>Gambia</label><value>gm</value></item><item><label>Gaza Strip</label><value>gz</value></item><item><label>Georgia</label><value>gau</value></item><item><label>Georgia (Republic)</label><value>gs</value><note>Coded [gsr] (Georgian S.S.R.) before June 1992</note><useforref1>Georgian S.S.R.</useforref1></item><item><label>Germany</label><value>gw</value><useforref1>Berlin, East</useforref1><useforref2>Berlin, West</useforref2><useforref2>East Berlin</useforref2><useforref2>Germany (East)</useforref2><useforref2>Germany (West)</useforref2><useforref2>Germany, Democratic Republic of</useforref2><useforref2>Germany, Federal Republic of</useforref2><useforref2>West Berlin</useforref2></item><item><label>Ghana</label><value>gh</value><useforref1>Ashanti</useforref1><useforref2>Gold Coast</useforref2><useforref2>Northern Territories</useforref2><useforref2>Togoland</useforref2></item><item><label>Gibraltar</label><value>gi</value></item><item><label>Greece</label><value>gr</value><useforref1>Aegean Islands</useforref1><useforref2>Crete</useforref2><useforref2>Dodecanese</useforref2><useforref2>Ionian Islands</useforref2><useforref2>Mount Athos</useforref2></item><item><label>Greenland</label><value>gl</value></item><item><label>Grenada</label><value>gd</value><useforref1>Grenadine Islands, Southern</useforref1></item><item><label>Guadeloupe</label><value>gp</value><useforref1>Basse-Terre</useforref1><useforref2>Grande-Terre</useforref2><useforref2>Ile Saint-Barthélemy</useforref2><useforref2>Iles de la Petite Terre</useforref2><useforref2>Iles des Saintes</useforref2><useforref2>La Désirade</useforref2><useforref2>Marie-Galante</useforref2><useforref2>Petite Terre, Iles de</useforref2><useforref2>Saint-Barthélemy</useforref2><useforref2>Saint Martin, Northern</useforref2><useforref2>Saintes, Iles des</useforref2></item><item><label>Guam</label><value>gu</value></item><item><label>Guatemala</label><value>gt</value></item><item><label>Guinea</label><value>gv</value><useforref1>French Guinea</useforref1></item><item><label>Guinea-Bissau</label><value>pg</value><useforref1>Arquipélago dos Bijagós</useforref1><useforref2>Bijagós, Arquipélago dos</useforref2><useforref2>Bissagos Islands</useforref2><useforref2>Guinea, Portuguese</useforref2><useforref2>Portuguese Guinea</useforref2></item><item><label>Guyana</label><value>gy</value><useforref1>British Guiana</useforref1><useforref2>Guiana, British</useforref2></item><item><label>Haiti</label><value>ht</value></item><item><label>Hawaii</label><value>hiu</value></item><item><label>Heard and McDonald Islands</label><value>hm</value></item><item><label>Honduras</label><value>ho</value><useforref1>Swan Islands</useforref1></item><item><label>Hungary</label><value>hu</value></item><item><label>Iceland</label><value>ic</value></item><item><label>Idaho</label><value>idu</value></item><item><label>Illinois</label><value>ilu</value></item><item><label>India</label><value>ii</value><useforref1>Amindivi Islands</useforref1><useforref2>Andaman Islands</useforref2><useforref2>Daman</useforref2><useforref2>Diu</useforref2><useforref2>Goa</useforref2><useforref2>Laccadive Island</useforref2><useforref2>Minicoy Island</useforref2><useforref2>Nicobar Islands</useforref2><useforref2>Sikkim</useforref2></item><item><label>Indiana</label><value>inu</value></item><item><label>Indonesia</label><value>io</value><useforref1>Atauro, Ilha de</useforref1><useforref2>Ilha de Atauro</useforref2><useforref2>Ilheu de Jaco</useforref2><useforref2>Irian Barat</useforref2><useforref2>Jaco, Ilheu de</useforref2><useforref2>Netherlands New Guinea</useforref2><useforref2>Oe-Cussi</useforref2><useforref2>Portuguese Timor</useforref2><useforref2>West New Guinea</useforref2></item><item><label>Iowa</label><value>iau</value></item><item><label>Iran</label><value>ir</value></item><item><label>Iraq</label><value>iq</value></item><item><label>Iraq-Saudi Arabia Neutral Zone</label><value>iy</value></item><item><label>Ireland</label><value>ie</value><useforref1>Eire</useforref1></item><item><label>Israel</label><value>is</value><useforref1>Israel-Jordan Demilitarized Zones</useforref1><useforref2>Israel-Syria Demilitarized Zones</useforref2></item><item><label>Italy</label><value>it</value><useforref1>Pantelleria</useforref1><useforref2>Sardinia</useforref2><useforref2>Sicily</useforref2></item><item><label>Jamaica</label><value>jm</value><useforref1>Morant Cays</useforref1><useforref2>Pedro Cays</useforref2></item><item><label>Japan</label><value>ja</value><useforref1>Bonin Islands</useforref1><useforref2>Daitojima</useforref2><useforref2>Marcus Island</useforref2><useforref2>Namposhoto (Northern)</useforref2><useforref2>Namposhoto (Southern)</useforref2><useforref2>Nishinoshima Island</useforref2><useforref2>Okinawa</useforref2><useforref2>Parece Vela Island</useforref2><useforref2>Ryukyu Islands, Northern</useforref2><useforref2>Ryukyu Islands, Southern</useforref2><useforref2>Torishima</useforref2><useforref2>Volcano Islands</useforref2></item><item><label>Johnston Atoll</label><value>ji</value><useforref1>Sand Island</useforref1></item><item><label>Jordan</label><value>jo</value></item><item><label>Kansas</label><value>ksu</value></item><item><label>Kazakhstan</label><value>kz</value><note>Coded [kzr] (Kazakh S.S.R.) before June 1992</note><useforref1>Kazakh S.S.R.</useforref1></item><item><label>Kentucky</label><value>kyu</value></item><item><label>Kenya</label><value>ke</value></item><item><label>Kiribati</label><value>gb</value><note>Coded [gn] (Gilbert and Ellice Islands) or [ln] (Central and Southern Line Islands) before Oct. 1978</note><useforref1>Banaba</useforref1><useforref2>Birnie Island</useforref2><useforref2>Canton Island</useforref2><useforref2>Caroline Island</useforref2><useforref2>Central and Southern Line Islands</useforref2><useforref2>Christmas Atoll</useforref2><useforref2>Enderbury Island</useforref2><useforref2>Fanning Atoll</useforref2><useforref2>Flint Island</useforref2><useforref2>Gardner Atoll</useforref2><useforref2>Gilbert and Ellice Islands</useforref2><useforref2>Gilbert Islands</useforref2><useforref2>Hull Atoll</useforref2><useforref2>Kiritimati</useforref2><useforref2>Line Islands (Southern)</useforref2><useforref2>Malden Island</useforref2><useforref2>Manra Atoll</useforref2><useforref2>McKean Atoll</useforref2><useforref2>Nikomaroro Atoll</useforref2><useforref2>Ocean Island</useforref2><useforref2>Orona Atoll</useforref2><useforref2>Phoenix Atoll</useforref2><useforref2>Phoenix Islands</useforref2><useforref2>Rawaki</useforref2><useforref2>Starbuck Island</useforref2><useforref2>Sydney Atoll</useforref2><useforref2>Tabuarean Island</useforref2><useforref2>Vostok Island</useforref2><useforref2>Washington Island</useforref2></item><item><label>Korea (North)</label><value>kn</value><useforref1>Democratic People's Republic of Korea</useforref1><useforref2>North Korea</useforref2></item><item><label>Korea (South)</label><value>ko</value><useforref1>Korea, Republic of</useforref1><useforref2>South Korea</useforref2></item><item><label>Kosovo</label><value>kv</value><note>Coded [rb] for Serbia from February 2007-May 2008. From 1992-April 2007 it was coded [yu] for Serbia and Montenegro</note></item><item><label>Kuwait</label><value>ku</value></item><item><label>Kyrgyzstan</label><value>kg</value><note>Coded [kgr] (Kirghiz S.S.R. before June 1992</note><useforref1>Kirghiz S.S.R.</useforref1><useforref2>Kirghizia</useforref2></item><item><label>Laos</label><value>ls</value></item><item><label>Latvia</label><value>lv</value><note>Coded [lvr] (Latvia) before June 1992</note></item><item><label>Lebanon</label><value>le</value></item><item><label>Lesotho</label><value>lo</value><useforref1>Basutoland</useforref1></item><item><label>Liberia</label><value>lb</value></item><item><label>Libya</label><value>ly</value></item><item><label>Liechtenstein</label><value>lh</value></item><item><label>Lithuania</label><value>li</value><note>Coded [lir] (Lithuania) before June 1992</note></item><item><label>Louisiana</label><value>lau</value></item><item><label>Luxembourg</label><value>lu</value></item><item><label>Macedonia</label><value>xn</value><note>Coded [yu] (Yugoslavia) before Oct. 1992</note></item><item><label>Madagascar</label><value>mg</value><useforref1>Malagasy Republic</useforref1></item><item><label>Maine</label><value>meu</value></item><item><label>Malawi</label><value>mw</value><useforref1>Nyasaland</useforref1></item><item><label>Malaysia</label><value>my</value><useforref1>Borneo, North</useforref1><useforref2>Malaya</useforref2><useforref2>North Borneo</useforref2><useforref2>Sabah</useforref2><useforref2>Sarawak</useforref2></item><item><label>Maldives</label><value>xc</value><useforref1>Maldive Islands</useforref1></item><item><label>Mali</label><value>ml</value><useforref1>French Sudan</useforref1><useforref2>Soudan</useforref2><useforref2>Sudan, French</useforref2></item><item><label>Malta</label><value>mm</value><useforref1>Comino Island</useforref1><useforref2>Gozo Island</useforref2></item><item><label>Manitoba</label><value>mbc</value></item><item><label>Marshall Islands</label><value>xe</value><note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note><useforref1>Ailinglapalap Atoll</useforref1><useforref2>Arno (Atoll)</useforref2><useforref2>Bikini (Atoll)</useforref2><useforref2>Ebon Atoll</useforref2><useforref2>Eniwetok Atoll</useforref2><useforref2>Jaluit Atoll</useforref2><useforref2>Kili Island</useforref2><useforref2>Kwajalein Atoll</useforref2><useforref2>Majuro Atoll</useforref2><useforref2>Maloelap Atoll</useforref2><useforref2>Mili Atoll</useforref2><useforref2>Namorik Atoll</useforref2><useforref2>Pacific Islands (Trust Territory)</useforref2><useforref2>Ralik Chain</useforref2><useforref2>Ratak Chains</useforref2><useforref2>Rongelap Atoll</useforref2><useforref2>Taongi Atoll</useforref2><useforref2>Trust Territory of the Pacific Islands</useforref2><useforref2>Ujelang Atoll</useforref2><useforref2>Utirik Atoll</useforref2><useforref2>Wotje Atoll</useforref2></item><item><label>Martinique</label><value>mq</value></item><item><label>Maryland</label><value>mdu</value></item><item><label>Massachusetts</label><value>mau</value></item><item><label>Mauritania</label><value>mu</value></item><item><label>Mauritius</label><value>mf</value><useforref1>Agalega Islands</useforref1><useforref2>Cargados Carajos Shoals</useforref2><useforref2>Rodrigues Island</useforref2><useforref2>Saint Brandon</useforref2></item><item><label>Mayotte</label><value>ot</value><note>Coded [cq] (Comoros) before July 1987</note></item><item><label>Mexico</label><value>mx</value><useforref1>Islas de Revillagigedo</useforref1><useforref2>Revillagigedo, Islas de</useforref2></item><item><label>Michigan</label><value>miu</value></item><item><label>Micronesia (Federated States)</label><value>fm</value><note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note><useforref1>Ascension Island (Micronesia)</useforref1><useforref2>Eauripik Atoll</useforref2><useforref2>Fais Island</useforref2><useforref2>Faraulep Atoll</useforref2><useforref2>Federated States of Micronesia</useforref2><useforref2>Gaferut Island</useforref2><useforref2>Hall Islands</useforref2><useforref2>Ifalik Atoll</useforref2><useforref2>Kapingamarangi Atoll</useforref2><useforref2>Kosrae (Micronesia)</useforref2><useforref2>Kusaie (Micronesia)</useforref2><useforref2>Mortlock Islands</useforref2><useforref2>Namonuito Atoll</useforref2><useforref2>Ngatik Atoll</useforref2><useforref2>Ngulu Atoll</useforref2><useforref2>Nukuoru Atoll</useforref2><useforref2>Oroluk Atoll</useforref2><useforref2>Pacific Islands (Trust Territory)</useforref2><useforref2>Pingelap Atoll</useforref2><useforref2>Pohnpei</useforref2><useforref2>Ponape (Micronesia)</useforref2><useforref2>Pulap Atoll</useforref2><useforref2>Pulusak Island</useforref2><useforref2>Puluwat Atoll</useforref2><useforref2>Satawal Island</useforref2><useforref2>Senyavin Islands</useforref2><useforref2>Truk (Micronesia)</useforref2><useforref2>Trust Territory of the Pacific Islands</useforref2><useforref2>Ulithi Islands</useforref2><useforref2>West Fayu Atoll</useforref2><useforref2>Woleai Atolls</useforref2><useforref2>Yap (Micronesia)</useforref2></item><item><label>Midway Islands</label><value>xf</value></item><item><label>Minnesota</label><value>mnu</value></item><item><label>Mississippi</label><value>msu</value></item><item><label>Missouri</label><value>mou</value></item><item><label>Moldova</label><value>mv</value><note>Coded [mvr] (Moldavian S.S.R.) before June 1992</note><useforref1>Moldavian S.S.R.</useforref1></item><item><label>Monaco</label><value>mc</value></item><item><label>Mongolia</label><value>mp</value><useforref1>Mongolian People's Republic</useforref1><useforref2>Outer Mongolia</useforref2></item><item><label>Montana</label><value>mtu</value></item><item><label>Montenegro</label><value>mo</value><note>Coded [yu] for Serbia and Montenegro from 1992-April 2007</note><useforref1>Yugoslavia</useforref1></item><item><label>Montserrat</label><value>mj</value></item><item><label>Morocco</label><value>mr</value><useforref1>French Morocco</useforref1><useforref2>Ifni</useforref2><useforref2>Spanish Morocco</useforref2><useforref2>Tangier Zone</useforref2><useforref2>Zona Sur del Protectorado de Marruecos</useforref2></item><item><label>Mozambique</label><value>mz</value></item><item><label>Namibia</label><value>sx</value><useforref1>South-West Africa</useforref1></item><item><label>Nauru</label><value>nu</value></item><item><label>Nebraska</label><value>nbu</value></item><item><label>Nepal</label><value>np</value></item><item><label>Netherlands</label><value>ne</value><useforref1>Holland</useforref1></item><item><label>Netherlands Antilles</label><value>na</value><useforref1>Bonaire</useforref1><useforref2>Curaçao</useforref2><useforref2>Saba</useforref2><useforref2>Saint Martin, Southern</useforref2><useforref2>Sint Eustatius</useforref2></item><item><label>Nevada</label><value>nvu</value></item><item><label>New Brunswick</label><value>nkc</value></item><item><label>New Caledonia</label><value>nl</value><useforref1>Belep Islands</useforref1><useforref2>Chesterfield, Iles</useforref2><useforref2>Huon, Ile</useforref2><useforref2>Ile des Pins</useforref2><useforref2>Ile Huon</useforref2><useforref2>Ile Uvea (New Caledonia)</useforref2><useforref2>Ile Walpole</useforref2><useforref2>Iles Belep</useforref2><useforref2>Iles Chesterfield</useforref2><useforref2>Isle of Pines (Pacific Ocean)</useforref2><useforref2>Loyalty Islands</useforref2><useforref2>Pines, Isle of (Pacific Ocean)</useforref2><useforref2>Pins, Ile des</useforref2><useforref2>Uvea (New Caledonia)</useforref2><useforref2>Walpole, Ile</useforref2></item><item><label>New Hampshire</label><value>nhu</value></item><item><label>New Jersey</label><value>nju</value></item><item><label>New Mexico</label><value>nmu</value></item><item><label>New South Wales</label><value>xna</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>New York (State)</label><value>nyu</value></item><item><label>New Zealand</label><value>nz</value><useforref1>Chatham Islands</useforref1><useforref2>Kermadec Islands</useforref2><useforref2>North Island</useforref2><useforref2>South Island</useforref2><useforref2>Stewart Island</useforref2></item><item><label>Newfoundland and Labrador</label><value>nfc</value><useforref1>Labrador</useforref1><useforref2>Newfoundland</useforref2></item><item><label>Nicaragua</label><value>nq</value><useforref1>Corn Islands</useforref1></item><item><label>Niger</label><value>ng</value></item><item><label>Nigeria</label><value>nr</value><useforref1>British Cameroons, Northern</useforref1></item><item><label>Niue</label><value>xh</value></item><item><label>No place, unknown, or undetermined</label><value>xx</value></item><item><label>Norfolk Island</label><value>nx</value></item><item><label>North Carolina</label><value>ncu</value></item><item><label>North Dakota</label><value>ndu</value></item><item><label>Northern Ireland</label><value>nik</value><useforref1>Ireland, Northern</useforref1></item><item><label>Northern Mariana Islands</label><value>nw</value><note>Coded [tt] (Trust Territory of the Pacific Islands) before Jan. 1985. Code changed from [nm] to [nw] in July 1987</note><useforref1>Agrihan Island</useforref1><useforref2>Aguijan Island</useforref2><useforref2>Alamagan Island</useforref2><useforref2>Anatahan Island</useforref2><useforref2>Asuncion Island</useforref2><useforref2>Farallon de Medinilla Island</useforref2><useforref2>Farallon de Pajaros Island</useforref2><useforref2>Guguan Island</useforref2><useforref2>Mariana Islands</useforref2><useforref2>Maug Islands</useforref2><useforref2>Pacific Islands (Trust Territory)</useforref2><useforref2>Pagan Island</useforref2><useforref2>Rota Island</useforref2><useforref2>Saipan Island</useforref2><useforref2>Sarigan Island</useforref2><useforref2>Tinian Island</useforref2><useforref2>Trust Territory of the Pacific Islands</useforref2></item><item><label>Northern Territory</label><value>xoa</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Northwest Territories</label><value>ntc</value></item><item><label>Norway</label><value>no</value><useforref1>Bear Island</useforref1><useforref2>Jan Mayen</useforref2><useforref2>Spitsbergen</useforref2><useforref2>Svalbard (Norway)</useforref2></item><item><label>Nova Scotia</label><value>nsc</value></item><item><label>Nunavut</label><value>nuc</value></item><item><label>Ohio</label><value>ohu</value></item><item><label>Oklahoma</label><value>oku</value></item><item><label>Oman</label><value>mk</value><useforref1>Kuria Muria Islands</useforref1><useforref2>Muscat and Oman</useforref2></item><item><label>Ontario</label><value>onc</value></item><item><label>Oregon</label><value>oru</value></item><item><label>Pakistan</label><value>pk</value><useforref1>Gwadar</useforref1><useforref2>West Pakistan</useforref2></item><item><label>Palau</label><value>pw</value><note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note><useforref1>Angaur Island</useforref1><useforref2>Babelthuap Island</useforref2><useforref2>Belau</useforref2><useforref2>Helen Island</useforref2><useforref2>Merir Island</useforref2><useforref2>Pacific Islands (Trust Territory)</useforref2><useforref2>Peleliu Island</useforref2><useforref2>Pelew</useforref2><useforref2>Pulo Anna Island</useforref2><useforref2>Sonsoral Islands</useforref2><useforref2>Tobi Island</useforref2><useforref2>Trust Territory of the Pacific Islands</useforref2></item><item><label>Panama</label><value>pn</value><useforref1>Canal Zone</useforref1></item><item><label>Papua New Guinea</label><value>pp</value><useforref1>Admiralty Islands</useforref1><useforref2>Bismarck Archipelago</useforref2><useforref2>D'Entrecasteaux Islands</useforref2><useforref2>Louisiada Archipelago</useforref2><useforref2>New Britain Island</useforref2><useforref2>New Guinea</useforref2><useforref2>New Ireland Island</useforref2><useforref2>North East New Guinea</useforref2><useforref2>Solomon Islands, Northern</useforref2><useforref2>Trobriand Islands</useforref2><useforref2>Woodlark Island</useforref2></item><item><label>Paracel Islands</label><value>pf</value></item><item><label>Paraguay</label><value>py</value></item><item><label>Pennsylvania</label><value>pau</value></item><item><label>Peru</label><value>pe</value></item><item><label>Philippines</label><value>ph</value></item><item><label>Pitcairn Island</label><value>pc</value><useforref1>Ducie Atoll</useforref1><useforref2>Henderson Island</useforref2><useforref2>Oeno Atoll</useforref2></item><item><label>Poland</label><value>pl</value></item><item><label>Portugal</label><value>po</value><useforref1>Azores</useforref1><useforref2>Madeira Island</useforref2></item><item><label>Prince Edward Island</label><value>pic</value></item><item><label>Puerto Rico</label><value>pr</value></item><item><label>Qatar</label><value>qa</value></item><item><label>Québec (Province)</label><value>quc</value></item><item><label>Queensland</label><value>qea</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Réunion</label><value>re</value><useforref1>Bassas da India</useforref1><useforref2>Europa, Ile</useforref2><useforref2>Glorieuses, Iles</useforref2><useforref2>Ile Europa</useforref2><useforref2>Ile Juan de Nova</useforref2><useforref2>Ile Tromelin</useforref2><useforref2>Iles Glorieuses</useforref2><useforref2>Juan de Nova, Ile</useforref2><useforref2>Tromelin, Ile</useforref2></item><item><label>Rhode Island</label><value>riu</value></item><item><label>Romania</label><value>rm</value><useforref1>Rumania</useforref1></item><item><label>Russia (Federation)</label><value>ru</value><note>Coded [rur] (Russian S.F.S.R.) before June 1992</note><useforref1>Franz Josef Land</useforref1><useforref2>Habomai Islands</useforref2><useforref2>Kuril Islands (Southern)</useforref2><useforref2>New Siberian Islands</useforref2><useforref2>Novaya Zemlya</useforref2><useforref2>Russian S.F.S.R.</useforref2><useforref2>Sakhalin (Southern)</useforref2><useforref2>Severnaya Zemlya</useforref2><useforref2>Wrangel Island</useforref2></item><item><label>Rwanda</label><value>rw</value></item><item><label>Saint Helena</label><value>xj</value><useforref1>Ascension Island (Atlantic Ocean)</useforref1><useforref2>Gough Island</useforref2><useforref2>Inaccessible Island</useforref2><useforref2>Nightingale Island</useforref2><useforref2>Tristan da Cunha Island</useforref2></item><item><label>Saint Kitts-Nevis</label><value>xd</value><note>Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985</note><useforref1>Saint Christopher</useforref1><useforref2>Saint Kitts-Nevis-Anguilla</useforref2><useforref2>St. Christopher</useforref2></item><item><label>Saint Lucia</label><value>xk</value></item><item><label>Saint Pierre and Miquelon</label><value>xl</value><useforref1>Miquelon</useforref1></item><item><label>Saint Vincent and the Grenadines</label><value>xm</value><useforref1>Grenadine Islands, Northern</useforref1><useforref2>Saint Vincent</useforref2></item><item><label>Samoa</label><value>ws</value><useforref1>Samoa i Sisifo</useforref1><useforref2>Samoa, Western</useforref2><useforref2>Savai'i</useforref2><useforref2>Upolu</useforref2><useforref2>Western Samoa</useforref2></item><item><label>San Marino</label><value>sm</value></item><item><label>Sao Tome and Principe</label><value>sf</value></item><item><label>Saskatchewan</label><value>snc</value></item><item><label>Saudi Arabia</label><value>su</value></item><item><label>Scotland</label><value>stk</value></item><item><label>Senegal</label><value>sg</value></item><item><label>Serbia</label><value>rb</value><note>Coded [yu] for Serbia and Montenegro from 1992-April 2007</note><useforref1>Yugoslavia</useforref1></item><item><label>Seychelles</label><value>se</value><useforref1>Aldabra Islands</useforref1><useforref2>Alphonse Island</useforref2><useforref2>Amirante Isles</useforref2><useforref2>Bijoutier Island</useforref2><useforref2>Cosmoledo Islands</useforref2><useforref2>Desroches, Ile</useforref2><useforref2>Farquhar Atoll</useforref2><useforref2>François Island</useforref2><useforref2>Ile Desroches</useforref2><useforref2>Saint Francois Island</useforref2><useforref2>Saint Pierre Islet</useforref2></item><item><label>Sierra Leone</label><value>sl</value></item><item><label>Singapore</label><value>si</value></item><item><label>Slovakia</label><value>xo</value><note>Coded [cs] (Czechoslovakia) before June 1993</note><useforref1>Czechoslovakia</useforref1><useforref2>Slovak Socialist Republic</useforref2></item><item><label>Slovenia</label><value>xv</value><note>Coded [yu] (Yugoslavia) before Oct. 1992</note></item><item><label>Solomon Islands</label><value>bp</value><useforref1>British Solomon Islands</useforref1><useforref2>Choiseul</useforref2><useforref2>Guadalcanal</useforref2><useforref2>Malaita</useforref2><useforref2>San Cristóbal</useforref2><useforref2>Santa Isabel</useforref2><useforref2>Solomon Islands Protectorate</useforref2></item><item><label>Somalia</label><value>so</value><useforref1>Somali Republic</useforref1></item><item><label>South Africa</label><value>sa</value><useforref1>Bophuthatswana</useforref1><useforref2>Ciskei</useforref2><useforref2>Lebowa</useforref2><useforref2>Machangana</useforref2><useforref2>Marion Island</useforref2><useforref2>Prince Edward Islands</useforref2><useforref2>South Sotho</useforref2><useforref2>Transkei</useforref2><useforref2>Tswana</useforref2><useforref2>Venda</useforref2><useforref2>Walvis Bay Enclave</useforref2><useforref2>Zulu</useforref2></item><item><label>South Australia</label><value>xra</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>South Carolina</label><value>scu</value></item><item><label>South Dakota</label><value>sdu</value></item><item><label>South Georgia and the South Sandwich Islands</label><value>xs</value><note>Coded [fk] (Falkland Islands) before Jan. 1991</note><useforref1>South Georgia Island</useforref1><useforref2>South Sandwich Islands</useforref2></item><item><label>Spain</label><value>sp</value><useforref1>Balearic Islands</useforref1><useforref2>Canary Islands</useforref2></item><item><label>Spanish North Africa</label><value>sh</value><useforref1>Ceuta</useforref1><useforref2>Chafarinas, Islas</useforref2><useforref2>Islas Chafarinas</useforref2><useforref2>Melilla</useforref2><useforref2>Peñón de Alhucemas</useforref2><useforref2>Peñón de Vélez de la Gomera</useforref2><useforref2>Plazas de Soberania</useforref2><useforref2>Spanish Territories in Northern Morocco</useforref2></item><item><label>Spratly Island</label><value>xp</value></item><item><label>Sri Lanka</label><value>ce</value><useforref1>Ceylon</useforref1></item><item><label>Sudan</label><value>sj</value></item><item><label>Surinam</label><value>sr</value><useforref1>Dutch Guiana</useforref1><useforref2>Guiana, Dutch</useforref2><useforref2>Netherlands Guiana</useforref2></item><item><label>Swaziland</label><value>sq</value></item><item><label>Sweden</label><value>sw</value></item><item><label>Switzerland</label><value>sz</value></item><item><label>Syria</label><value>sy</value><useforref1>Syrian Arab Republic</useforref1></item><item><label>Tajikistan</label><value>ta</value><note>Coded [tar] (Tajik S.S.R.) before June 1992</note><useforref1>Tadzhik S.S.R.</useforref1><useforref2>Tajik S.S.R.</useforref2></item><item><label>Tanzania</label><value>tz</value><useforref1>Pemba</useforref1><useforref2>Tanganyika</useforref2><useforref2>Zanzibar</useforref2></item><item><label>Tasmania</label><value>tma</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Tennessee</label><value>tnu</value></item><item><label>Terres australes et antarctiques françaises</label><value>fs</value><useforref1>Amsterdam Island</useforref1><useforref2>Crozet Island</useforref2><useforref2>French Southern and Antarctic Lands</useforref2><useforref2>Kerguelen Island</useforref2><useforref2>Saint Paul Island</useforref2><useforref2>T.A.A.F.</useforref2></item><item><label>Texas</label><value>txu</value></item><item><label>Thailand</label><value>th</value><useforref1>Siam</useforref1></item><item><label>Togo</label><value>tg</value></item><item><label>Tokelau</label><value>tl</value><useforref1>Atafu Atoll</useforref1><useforref2>Fakaofu Atoll</useforref2><useforref2>Nukunono Atoll</useforref2><useforref2>Union Islands</useforref2></item><item><label>Tonga</label><value>to</value><useforref1>Friendly Islands</useforref1><useforref2>Haapai</useforref2><useforref2>Lulunga</useforref2><useforref2>Nomuka</useforref2><useforref2>Otu Tolu</useforref2><useforref2>Tongatapu</useforref2><useforref2>Vavau</useforref2></item><item><label>Trinidad and Tobago</label><value>tr</value><useforref1>Tobago</useforref1></item><item><label>Tunisia</label><value>ti</value></item><item><label>Turkey</label><value>tu</value></item><item><label>Turkmenistan</label><value>tk</value><note>Coded [tkr] (Turkmen S.S.R.) before June 1992</note><useforref1>Turkmen S.S.R.</useforref1></item><item><label>Turks and Caicos Islands </label><value>tc</value><useforref1>Caicos Islands</useforref1></item><item><label>Tuvalu</label><value>tv</value><note>Coded [gn] (Gilbert and Ellice Islands) before Oct. 1978</note><useforref1>Ellice Islands</useforref1><useforref2>Funafuti Atoll</useforref2><useforref2>Gilbert and Ellice Islands</useforref2><useforref2>Niulakita Island</useforref2><useforref2>Nukufetau Atoll</useforref2><useforref2>Nukulaelae Atoll</useforref2><useforref2>Nukulailai Atoll</useforref2><useforref2>Nurakita Island</useforref2></item><item><label>Uganda</label><value>ug</value></item><item><label>Ukraine</label><value>un</value><note>Coded [unr] (Ukraine) before June 1992</note></item><item><label>United Arab Emirates</label><value>ts</value><useforref1>Abu Dhabi</useforref1><useforref2>Abu Zaby</useforref2><useforref2>`Ajman</useforref2><useforref2>Dubai</useforref2><useforref2>Dubayy</useforref2><useforref2>Fujairah</useforref2><useforref2>Fujayrah</useforref2><useforref2>Kalba</useforref2><useforref2>Oman, Trucial</useforref2><useforref2>Ras al Khaimah</useforref2><useforref2>Ra's al-Khaymah</useforref2><useforref2>Shariqah</useforref2><useforref2>Sharjah</useforref2><useforref2>Trucial Coast</useforref2><useforref2>Trucial Oman</useforref2><useforref2>Trucial Sheikdoms</useforref2><useforref2>Trucial States</useforref2><useforref2>Umm al Qaiwain</useforref2><useforref2>Umm al-Qaywayn</useforref2></item><item><label>United Kingdom</label><value>xxk</value><note>Also coded [uk] (United Kingdom) before Mar. 1988</note><useforref1>Great Britain</useforref1></item><item><label>United Kingdom Misc. Islands</label><value>uik</value><note>Code changed from [ui] to [uik] in Mar. 1988</note><useforref1>Alderney</useforref1><useforref2>Brechou</useforref2><useforref2>Channel Islands</useforref2><useforref2>Guernsey Island</useforref2><useforref2>Herm Island</useforref2><useforref2>Isle of Man</useforref2><useforref2>Jersey (Island)</useforref2><useforref2>Jethou</useforref2><useforref2>Lihou</useforref2><useforref2>Orkney Islands</useforref2><useforref2>Sark Island</useforref2><useforref2>Shetland Islands</useforref2></item><item><label>United States</label><value>xxu</value><note>Also coded [us] (United States before Mar. 1988</note></item><item><label>United States Misc. Caribbean Islands</label><value>uc</value><useforref1>Navassa Island</useforref1><useforref2>Quita Sueno Bank</useforref2><useforref2>Roncador Cay</useforref2></item><item><label>United States Misc. Pacific Islands</label><value>up</value><useforref1>Baker Island</useforref1><useforref2>Howland Island</useforref2><useforref2>Jarvis Island</useforref2><useforref2>Kingman Reef</useforref2><useforref2>Palmyra Atoll</useforref2></item><item><label>Uruguay</label><value>uy</value></item><item><label>Utah</label><value>utu</value></item><item><label>Uzbekistan</label><value>uz</value><note>Coded [uzr] (Uzbek S.S.R.) before June 1992</note><useforref1>Uzbek S.S.R.</useforref1></item><item><label>Vanuatu</label><value>nn</value><useforref1>Banks Islands</useforref1><useforref2>New Hebrides</useforref2><useforref2>Torres Islands</useforref2></item><item><label>Various places</label><value>vp</value></item><item><label>Vatican City</label><value>vc</value><useforref1>Holy See</useforref1></item><item><label>Venezuela</label><value>ve</value></item><item><label>Vermont</label><value>vtu</value></item><item><label>Victoria</label><value>vra</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Vietnam</label><value>vm</value><note>Coded [vn] (Vietnam, North) or [vs] (Vietnam, South) before Jan. 1978</note><useforref1>Democratic People's Republic of Vietnam</useforref1><useforref2>North Vietnam</useforref2><useforref2>South Vietnam</useforref2><useforref2>Vietnam, North</useforref2><useforref2>Vietnam, Republic of</useforref2><useforref2>Vietnam, South</useforref2></item><item><label>Virgin Islands of the United States</label><value>vi</value></item><item><label>Virginia</label><value>vau</value></item><item><label>Wake Island</label><value>wk</value></item><item><label>Wales</label><value>wlk</value></item><item><label>Wallis and Futuna</label><value>wf</value><useforref1>Alofi</useforref1><useforref2>Futuna</useforref2><useforref2>Horne, Iles de</useforref2><useforref2>Ile Uvea (Wallis and Futuna)</useforref2><useforref2>Iles de Horne</useforref2><useforref2>Uvea (Wallis and Futuna)</useforref2></item><item><label>Washington (State)</label><value>wau</value></item><item><label>West Bank of the Jordan River</label><value>wj</value><useforref1>Jordan (Territory under Israeli occupation, 1967- )</useforref1></item><item><label>West Virginia</label><value>wvu</value></item><item><label>Western Australia</label><value>wea</value><note>Coded [at] (Australia) before Sept. 2005</note></item><item><label>Western Sahara</label><value>ss</value><useforref1>Río de Oro</useforref1><useforref2>Saguia el Hamra</useforref2><useforref2>Spanish Sahara</useforref2></item><item><label>Wisconsin</label><value>wiu</value></item><item><label>Wyoming</label><value>wyu</value></item><item><label>Yemen</label><value>ye</value><useforref1>Aden</useforref1><useforref2>Aden (Protectorate)</useforref2><useforref2>Arab Republic of Yemen</useforref2><useforref2>Federation of South Arabia</useforref2><useforref2>Kamaran</useforref2><useforref2>Perim</useforref2><useforref2>Protectorate of South Arabia</useforref2><useforref2>Socotra</useforref2><useforref2>South Arabia</useforref2><useforref2>Southern Yemen</useforref2><useforref2>Yemen (People's Democratic Republic)</useforref2></item><item><label>Yukon Territory</label><value>ykc</value></item><item><label>Zambia</label><value>za</value><useforref1>Northern Rhodesia</useforref1></item><item><label>Zimbabwe</label><value>rh</value><useforref1>Rhodesia</useforref1><useforref2>Southern Rhodesia</useforref2><useforref2>Zimbabwe Rhodesia</useforref2></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>marc-country-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/marc/countries/countries_name.html</basis>
+    <description/>
+    <notes/>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>Afghanistan</label>
+            <value>af</value>
+        </item>
+        <item>
+            <label>Alabama</label>
+            <value>alu</value>
+        </item>
+        <item>
+            <label>Alaska</label>
+            <value>aku</value>
+        </item>
+        <item>
+            <label>Albania</label>
+            <value>aa</value>
+        </item>
+        <item>
+            <label>Alberta</label>
+            <value>abc</value>
+        </item>
+        <item>
+            <label>Algeria</label>
+            <value>ae</value>
+        </item>
+        <item>
+            <label>American Samoa</label>
+            <value>as</value>
+            <useforref1>Eastern Samoa</useforref1>
+            <useforref2>Samoa, American</useforref2>
+        </item>
+        <item>
+            <label>Andorra</label>
+            <value>an</value>
+        </item>
+        <item>
+            <label>Angola</label>
+            <value>ao</value>
+            <useforref1>Cabinda</useforref1>
+        </item>
+        <item>
+            <label>Anguilla</label>
+            <value>am</value>
+            <note>Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985. Code changed from [ai] to [am] in Mar. 1988</note>
+            <useforref1>Saint Kitts-Nevis-Anguilla</useforref1>
+            <usefforref2>Sombrero Island</usefforref2>
+        </item>
+        <item>
+            <label>Antarctica</label>
+            <value>ay</value>
+        </item>
+        <item>
+            <label>Antigua and Barbuda</label>
+            <value>aq</value>
+            <useforref1>Antigua</useforref1>
+            <useforref2>Barbuda</useforref2>
+            <useforref2>Redonda</useforref2>
+        </item>
+        <item>
+            <label>Argentina</label>
+            <value>ag</value>
+        </item>
+        <item>
+            <label>Arizona</label>
+            <value>azu</value>
+        </item>
+        <item>
+            <label>Arkansas</label>
+            <value>aru</value>
+        </item>
+        <item>
+            <label>Armenia</label>
+            <value>ai</value>
+            <note>Coded [air] (Armenian S.S.R.) before June 1992</note>
+            <useforref1>Armenian S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Aruba</label>
+            <value>aw</value>
+            <note>Coded [na] (Netherlands Antilles) before Mar. 1988</note>
+        </item>
+        <item>
+            <label>Australia</label>
+            <value>at</value>
+            <useforref1>Ashmore and Cartier Islands</useforref1>
+            <useforref2>Macquarie Island</useforref2>
+        </item>
+        <item>
+            <label>Australian Capital Territory</label>
+            <value>aca</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Austria</label>
+            <value>au</value>
+        </item>
+        <item>
+            <label>Azerbaijan</label>
+            <value>aj</value>
+            <note>Coded [ajr] (Azerbaijan S.S.R.) before June 1992</note>
+            <useforref1>Azerbaijan S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Bahamas</label>
+            <value>bf</value>
+        </item>
+        <item>
+            <label>Bahrain</label>
+            <value>ba</value>
+            <useforref1>Bahrein</useforref1>
+        </item>
+        <item>
+            <label>Bangladesh</label>
+            <value>bg</value>
+            <useforref1>East Pakistan</useforref1>
+        </item>
+        <item>
+            <label>Barbados</label>
+            <value>bb</value>
+        </item>
+        <item>
+            <label>Belarus</label>
+            <value>bw</value>
+            <note>Coded [bwr] (Byelorussian S.S.R.) before June 1992</note>
+            <useforref1>Byelarus</useforref1>
+            <useforref2>Belorussian S.S.R.</useforref2>
+            <useforref2>Byeolorussian S.S.R.</useforref2>
+        </item>
+        <item>
+            <label>Belgium</label>
+            <value>be</value>
+        </item>
+        <item>
+            <label>Belize</label>
+            <value>bh</value>
+            <useforref1>British Honduras</useforref1>
+        </item>
+        <item>
+            <label>Benin</label>
+            <value>dm</value>
+            <useforref1>Dahomey</useforref1>
+        </item>
+        <item>
+            <label>Bermuda Islands</label>
+            <value>bm</value>
+        </item>
+        <item>
+            <label>Bhutan</label>
+            <value>bt</value>
+        </item>
+        <item>
+            <label>Bolivia</label>
+            <value>bo</value>
+        </item>
+        <item>
+            <label>Bosnia and Hercegovina</label>
+            <value>bn</value>
+            <note>Coded [yu] (Yugoslavia) before Oct. 1992</note>
+            <useforref1>Hercegovina</useforref1>
+        </item>
+        <item>
+            <label>Botswana</label>
+            <value>bs</value>
+            <useforref1>Bechuanaland</useforref1>
+        </item>
+        <item>
+            <label>Bouvet Island</label>
+            <value>bv</value>
+        </item>
+        <item>
+            <label>Brazil</label>
+            <value>bl</value>
+            <useforref1>Fernando de Noronha</useforref1>
+            <useforref2>Ilha da Trindade</useforref2>
+            <useforref2>Ilhas Martim Vaz</useforref2>
+            <useforref2>Martim Vaz, Ilhas</useforref2>
+            <useforref2>Penedos de São Pedro e São Paulo</useforref2>
+            <useforref2>Rocas</useforref2>
+            <useforref2>Trindade, Ilha da</useforref2>
+        </item>
+        <item>
+            <label>British Columbia</label>
+            <value>bcc</value>
+        </item>
+        <item>
+            <label>British Indian Ocean Territory</label>
+            <value>bi</value>
+            <useforref1>Chagos Archipelago</useforref1>
+            <useforref2>Diego Garcia Island</useforref2>
+        </item>
+        <item>
+            <label>British Virgin Islands</label>
+            <value>vb</value>
+            <useforref1>Anegada</useforref1>
+            <useforref2>Colony of the Virgin Islands</useforref2>
+            <useforref2>Jost Van Dyke</useforref2>
+            <useforref2>Tortola</useforref2>
+            <useforref2>Virgin Gorda</useforref2>
+            <useforref2>Virgin Islands (British)</useforref2>
+        </item>
+        <item>
+            <label>Brunei</label>
+            <value>bx</value>
+        </item>
+        <item>
+            <label>Bulgaria</label>
+            <value>bu</value>
+        </item>
+        <item>
+            <label>Burkina Faso</label>
+            <value>uv</value>
+            <useforref1>Upper Volta</useforref1>
+        </item>
+        <item>
+            <label>Burma</label>
+            <value>br</value>
+            <useforref1>Myanmar</useforref1>
+        </item>
+        <item>
+            <label>Burundi</label>
+            <value>bd</value>
+        </item>
+        <item>
+            <label>California</label>
+            <value>cau</value>
+        </item>
+        <item>
+            <label>Cambodia</label>
+            <value>cb</value>
+            <useforref1>Democratic Kampuchea</useforref1>
+            <useforref2>Kampuchea</useforref2>
+            <useforref2>Khmer Republic</useforref2>
+        </item>
+        <item>
+            <label>Cameroon</label>
+            <value>cm</value>
+            <useforref1>British Cameroons</useforref1>
+            <useforref2>East Cameroon</useforref2>
+            <useforref2>French Cameroons</useforref2>
+            <useforref2>German Cameroons</useforref2>
+            <useforref2>Southern Cameroons</useforref2>
+            <useforref2>West Cameroon</useforref2>
+        </item>
+        <item>
+            <label>Canada</label>
+            <value>xxc</value>
+            <note>Also coded [cn] (Canada) before Mar. 1988</note>
+        </item>
+        <item>
+            <label>Cape Verde</label>
+            <value>cv</value>
+            <useforref1>Boa Vista</useforref1>
+            <useforref2>Brava</useforref2>
+            <useforref2>Fogo</useforref2>
+            <useforref2>Maio</useforref2>
+            <useforref2>Sal</useforref2>
+            <useforref2>Santo Antao</useforref2>
+            <useforref2>São Nicolau</useforref2>
+            <useforref2>São Tiago</useforref2>
+            <useforref2>São Vicente</useforref2>
+        </item>
+        <item>
+            <label>Cayman Islands</label>
+            <value>cj</value>
+            <useforref1>Cayman Brac Island</useforref1>
+            <useforref2>Grand Cayman Island</useforref2>
+            <useforref2>Little Cayman Island</useforref2>
+        </item>
+        <item>
+            <label>Central African Republic</label>
+            <value>cx</value>
+            <useforref1>Central African Empire</useforref1>
+            <useforref2>Ubangi-Shari</useforref2>
+        </item>
+        <item>
+            <label>Chad</label>
+            <value>cd</value>
+        </item>
+        <item>
+            <label>Chile</label>
+            <value>cl</value>
+            <useforref1>Easter Island</useforref1>
+            <useforref2>Isla de Pasqua</useforref2>
+            <useforref2>Isla Sala y Gómez</useforref2>
+            <useforref2>Islas Juan Fernández</useforref2>
+            <useforref2>Juan Fernández, Islas</useforref2>
+            <useforref2>Pasqua, Isla de</useforref2>
+            <useforref2>Sala y Gómez, Isla</useforref2>
+            <useforref2>San Félix</useforref2>
+        </item>
+        <item>
+            <label>China</label>
+            <value>cc</value>
+            <useforref1>Hainan Island</useforref1>
+            <useforref2>Hong Kong</useforref2>
+            <useforref2>Inner Mongolia</useforref2>
+            <useforref2>Kowloon</useforref2>
+            <useforref2>Macao</useforref2>
+            <useforref2>Macau</useforref2>
+            <useforref2>Manchuria</useforref2>
+            <useforref2>Sinkiang</useforref2>
+            <useforref2>New Territories</useforref2>
+            <useforref2>Taipa</useforref2>
+            <useforref2>Tibet</useforref2>
+        </item>
+        <item>
+            <label>China (Republic : 1949- )</label>
+            <value>ch</value>
+            <useforref1>Formosa Island</useforref1>
+            <useforref2>Nationalist China</useforref2>
+            <useforref2>P'eng-hu Island</useforref2>
+            <useforref2>Pescadores Islands</useforref2>
+            <useforref2>Taiwan Island</useforref2>
+        </item>
+        <item>
+            <label>Christmas Island (Indian Ocean)</label>
+            <value>xa</value>
+        </item>
+        <item>
+            <label>Cocos (Keeling) Islands</label>
+            <value>xb</value>
+            <useforref1>Keeling Islands</useforref1>
+        </item>
+        <item>
+            <label>Colombia</label>
+            <value>ck</value>
+            <useforref1>Isla de Malpelo</useforref1>
+            <useforref2>Malpelo, Isla de</useforref2>
+            <useforref2>San Andrés y Providencia</useforref2>
+            <useforref2>Serrana Bank</useforref2>
+            <useforref2>Serranilla Bank</useforref2>
+        </item>
+        <item>
+            <label>Colorado</label>
+            <value>cou</value>
+        </item>
+        <item>
+            <label>Comoros</label>
+            <value>cq</value>
+            <useforref1>Anjouan Island</useforref1>
+            <useforref2>Comores</useforref2>
+            <useforref2>Grande Comore Island</useforref2>
+            <useforref2>Moheli Island</useforref2>
+        </item>
+        <item>
+            <label>Congo (Brazzaville)</label>
+            <value>cf</value>
+            <useforref1>Middle Congo</useforref1>
+        </item>
+        <item>
+            <label>Congo (Democratic Republic)</label>
+            <value>cg</value>
+            <useforref1>Belgian Congo</useforref1>
+            <useforref2>Congo (Kinshasa)</useforref2>
+            <useforref2>Democratic Republic of the Congo</useforref2>
+            <useforref2>Zaire</useforref2>
+        </item>
+        <item>
+            <label>Connecticut</label>
+            <value>ctu</value>
+        </item>
+        <item>
+            <label>Cook Islands</label>
+            <value>cw</value>
+            <useforref1>Danger Atoll</useforref1>
+            <useforref2>Manihiki Atoll</useforref2>
+            <useforref2>Penrhyn Atoll</useforref2>
+            <useforref2>Rakahanga Atoll</useforref2>
+        </item>
+        <item>
+            <label>Coral Sea Islands Territory</label>
+            <value>xga</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Costa Rica</label>
+            <value>cr</value>
+            <useforref1>Cocos Island</useforref1>
+        </item>
+        <item>
+            <label>Côte d'Ivoire</label>
+            <value>iv</value>
+            <useforref1>Ivory Coast</useforref1>
+        </item>
+        <item>
+            <label>Croatia</label>
+            <value>ci</value>
+            <note>Coded [yu] (Yugoslavia) before Oct. 1992</note>
+        </item>
+        <item>
+            <label>Cuba</label>
+            <value>cu</value>
+            <useforref1>Isle of Pines (Caribbean)</useforref1>
+            <useforref2>Pines, Isle of (Caribbean)</useforref2>
+        </item>
+        <item>
+            <label>Cyprus</label>
+            <value>cy</value>
+        </item>
+        <item>
+            <label>Czech Republic</label>
+            <value>xr</value>
+            <note>Coded [cs] (Czechoslovakia) before May 1993</note>
+            <useforref1>Czechoslovakia</useforref1>
+        </item>
+        <item>
+            <label>Delaware</label>
+            <value>deu</value>
+        </item>
+        <item>
+            <label>Denmark</label>
+            <value>dk</value>
+            <useforref1>Bornholm Island</useforref1>
+        </item>
+        <item>
+            <label>District of Columbia</label>
+            <value>dcu</value>
+        </item>
+        <item>
+            <label>Djibouti</label>
+            <value>ft</value>
+            <useforref1>Afars</useforref1>
+            <useforref2>French Somaliland</useforref2>
+            <useforref2>French Territory of the Afars and Issas</useforref2>
+            <useforref2>Issas</useforref2>
+        </item>
+        <item>
+            <label>Dominica</label>
+            <value>dq</value>
+        </item>
+        <item>
+            <label>Dominican Republic</label>
+            <value>dr</value>
+        </item>
+        <item>
+            <label>East Timor</label>
+            <value>em</value>
+        </item>
+        <item>
+            <label>Ecuador</label>
+            <value>ec</value>
+            <useforref1>Archipiélago de Colón</useforref1>
+            <useforref2>Colón, Archipiélago de</useforref2>
+            <useforref2>Galapagos Islands</useforref2>
+        </item>
+        <item>
+            <label>Egypt</label>
+            <value>ua</value>
+            <useforref1>Arab Republic of Egypt</useforref1>
+            <useforref2>United Arab Republic</useforref2>
+        </item>
+        <item>
+            <label>El Salvador</label>
+            <value>es</value>
+            <useforref1>Salvador</useforref1>
+        </item>
+        <item>
+            <label>England</label>
+            <value>enk</value>
+        </item>
+        <item>
+            <label>Equatorial Guinea</label>
+            <value>eg</value>
+            <useforref1>Annobón</useforref1>
+            <useforref2>Bioko</useforref2>
+            <useforref2>Corisco Island</useforref2>
+            <useforref2>Elobey, Great</useforref2>
+            <useforref2>Elobey, Small</useforref2>
+            <useforref2>Fernando Po Island</useforref2>
+            <useforref2>Macias Nguema Biyogo</useforref2>
+            <useforref2>Pagalu</useforref2>
+            <useforref2>Rio Muni</useforref2>
+        </item>
+        <item>
+            <label>Eritrea</label>
+            <value>ea</value>
+            <note>Coded [et] (Ethiopia) before Nov. 1993</note>
+        </item>
+        <item>
+            <label>Estonia</label>
+            <value>er</value>
+            <note>Coded [err] (Estonia) before Oct. 1992</note>
+        </item>
+        <item>
+            <label>Ethiopia</label>
+            <value>et</value>
+        </item>
+        <item>
+            <label>Falkland Islands</label>
+            <value>fk</value>
+            <useforref1>East Falkland Island</useforref1>
+            <useforref2>Islas Malvinas</useforref2>
+            <useforref2>Malvinas, Islas</useforref2>
+            <useforref2>West Falkland Island</useforref2>
+        </item>
+        <item>
+            <label>Faroe Islands</label>
+            <value>fa</value>
+            <useforref1>Færoe Islands</useforref1>
+        </item>
+        <item>
+            <label>Fiji</label>
+            <value>fj</value>
+            <useforref1>Rotuma Island</useforref1>
+            <useforref2>Vanua Levu Island</useforref2>
+            <useforref2>Viti Levu Island</useforref2>
+        </item>
+        <item>
+            <label>Finland</label>
+            <value>fi</value>
+            <useforref1>Ahvenanmaa</useforref1>
+            <useforref2>Åland Islands</useforref2>
+        </item>
+        <item>
+            <label>Florida</label>
+            <value>flu</value>
+        </item>
+        <item>
+            <label>France</label>
+            <value>fr</value>
+            <useforref1>Corsica</useforref1>
+        </item>
+        <item>
+            <label>French Guiana</label>
+            <value>fg</value>
+            <useforref1>Guiana, French</useforref1>
+        </item>
+        <item>
+            <label>French Polynesia</label>
+            <value>fp</value>
+            <useforref1>Austral Islands</useforref1>
+            <useforref2>Clipperton Island</useforref2>
+            <useforref2>Gambier Islands</useforref2>
+            <useforref2>Iles Australes</useforref2>
+            <useforref2>Iles du Vent</useforref2>
+            <useforref2>Iles Sous le Vent</useforref2>
+            <useforref2>Marquesas Islands</useforref2>
+            <useforref2>Polynesia, French</useforref2>
+            <useforref2>Society Islands</useforref2>
+            <useforref2>Sous le Vent, Iles</useforref2>
+            <useforref2>Tahiti</useforref2>
+            <useforref2>Tuamotu Archipelago</useforref2>
+            <useforref2>Vent, Iles du</useforref2>
+        </item>
+        <item>
+            <label>Gabon</label>
+            <value>go</value>
+        </item>
+        <item>
+            <label>Gambia</label>
+            <value>gm</value>
+        </item>
+        <item>
+            <label>Gaza Strip</label>
+            <value>gz</value>
+        </item>
+        <item>
+            <label>Georgia</label>
+            <value>gau</value>
+        </item>
+        <item>
+            <label>Georgia (Republic)</label>
+            <value>gs</value>
+            <note>Coded [gsr] (Georgian S.S.R.) before June 1992</note>
+            <useforref1>Georgian S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Germany</label>
+            <value>gw</value>
+            <useforref1>Berlin, East</useforref1>
+            <useforref2>Berlin, West</useforref2>
+            <useforref2>East Berlin</useforref2>
+            <useforref2>Germany (East)</useforref2>
+            <useforref2>Germany (West)</useforref2>
+            <useforref2>Germany, Democratic Republic of</useforref2>
+            <useforref2>Germany, Federal Republic of</useforref2>
+            <useforref2>West Berlin</useforref2>
+        </item>
+        <item>
+            <label>Ghana</label>
+            <value>gh</value>
+            <useforref1>Ashanti</useforref1>
+            <useforref2>Gold Coast</useforref2>
+            <useforref2>Northern Territories</useforref2>
+            <useforref2>Togoland</useforref2>
+        </item>
+        <item>
+            <label>Gibraltar</label>
+            <value>gi</value>
+        </item>
+        <item>
+            <label>Greece</label>
+            <value>gr</value>
+            <useforref1>Aegean Islands</useforref1>
+            <useforref2>Crete</useforref2>
+            <useforref2>Dodecanese</useforref2>
+            <useforref2>Ionian Islands</useforref2>
+            <useforref2>Mount Athos</useforref2>
+        </item>
+        <item>
+            <label>Greenland</label>
+            <value>gl</value>
+        </item>
+        <item>
+            <label>Grenada</label>
+            <value>gd</value>
+            <useforref1>Grenadine Islands, Southern</useforref1>
+        </item>
+        <item>
+            <label>Guadeloupe</label>
+            <value>gp</value>
+            <useforref1>Basse-Terre</useforref1>
+            <useforref2>Grande-Terre</useforref2>
+            <useforref2>Ile Saint-Barthélemy</useforref2>
+            <useforref2>Iles de la Petite Terre</useforref2>
+            <useforref2>Iles des Saintes</useforref2>
+            <useforref2>La Désirade</useforref2>
+            <useforref2>Marie-Galante</useforref2>
+            <useforref2>Petite Terre, Iles de</useforref2>
+            <useforref2>Saint-Barthélemy</useforref2>
+            <useforref2>Saint Martin, Northern</useforref2>
+            <useforref2>Saintes, Iles des</useforref2>
+        </item>
+        <item>
+            <label>Guam</label>
+            <value>gu</value>
+        </item>
+        <item>
+            <label>Guatemala</label>
+            <value>gt</value>
+        </item>
+        <item>
+            <label>Guinea</label>
+            <value>gv</value>
+            <useforref1>French Guinea</useforref1>
+        </item>
+        <item>
+            <label>Guinea-Bissau</label>
+            <value>pg</value>
+            <useforref1>Arquipélago dos Bijagós</useforref1>
+            <useforref2>Bijagós, Arquipélago dos</useforref2>
+            <useforref2>Bissagos Islands</useforref2>
+            <useforref2>Guinea, Portuguese</useforref2>
+            <useforref2>Portuguese Guinea</useforref2>
+        </item>
+        <item>
+            <label>Guyana</label>
+            <value>gy</value>
+            <useforref1>British Guiana</useforref1>
+            <useforref2>Guiana, British</useforref2>
+        </item>
+        <item>
+            <label>Haiti</label>
+            <value>ht</value>
+        </item>
+        <item>
+            <label>Hawaii</label>
+            <value>hiu</value>
+        </item>
+        <item>
+            <label>Heard and McDonald Islands</label>
+            <value>hm</value>
+        </item>
+        <item>
+            <label>Honduras</label>
+            <value>ho</value>
+            <useforref1>Swan Islands</useforref1>
+        </item>
+        <item>
+            <label>Hungary</label>
+            <value>hu</value>
+        </item>
+        <item>
+            <label>Iceland</label>
+            <value>ic</value>
+        </item>
+        <item>
+            <label>Idaho</label>
+            <value>idu</value>
+        </item>
+        <item>
+            <label>Illinois</label>
+            <value>ilu</value>
+        </item>
+        <item>
+            <label>India</label>
+            <value>ii</value>
+            <useforref1>Amindivi Islands</useforref1>
+            <useforref2>Andaman Islands</useforref2>
+            <useforref2>Daman</useforref2>
+            <useforref2>Diu</useforref2>
+            <useforref2>Goa</useforref2>
+            <useforref2>Laccadive Island</useforref2>
+            <useforref2>Minicoy Island</useforref2>
+            <useforref2>Nicobar Islands</useforref2>
+            <useforref2>Sikkim</useforref2>
+        </item>
+        <item>
+            <label>Indiana</label>
+            <value>inu</value>
+        </item>
+        <item>
+            <label>Indonesia</label>
+            <value>io</value>
+            <useforref1>Atauro, Ilha de</useforref1>
+            <useforref2>Ilha de Atauro</useforref2>
+            <useforref2>Ilheu de Jaco</useforref2>
+            <useforref2>Irian Barat</useforref2>
+            <useforref2>Jaco, Ilheu de</useforref2>
+            <useforref2>Netherlands New Guinea</useforref2>
+            <useforref2>Oe-Cussi</useforref2>
+            <useforref2>Portuguese Timor</useforref2>
+            <useforref2>West New Guinea</useforref2>
+        </item>
+        <item>
+            <label>Iowa</label>
+            <value>iau</value>
+        </item>
+        <item>
+            <label>Iran</label>
+            <value>ir</value>
+        </item>
+        <item>
+            <label>Iraq</label>
+            <value>iq</value>
+        </item>
+        <item>
+            <label>Iraq-Saudi Arabia Neutral Zone</label>
+            <value>iy</value>
+        </item>
+        <item>
+            <label>Ireland</label>
+            <value>ie</value>
+            <useforref1>Eire</useforref1>
+        </item>
+        <item>
+            <label>Israel</label>
+            <value>is</value>
+            <useforref1>Israel-Jordan Demilitarized Zones</useforref1>
+            <useforref2>Israel-Syria Demilitarized Zones</useforref2>
+        </item>
+        <item>
+            <label>Italy</label>
+            <value>it</value>
+            <useforref1>Pantelleria</useforref1>
+            <useforref2>Sardinia</useforref2>
+            <useforref2>Sicily</useforref2>
+        </item>
+        <item>
+            <label>Jamaica</label>
+            <value>jm</value>
+            <useforref1>Morant Cays</useforref1>
+            <useforref2>Pedro Cays</useforref2>
+        </item>
+        <item>
+            <label>Japan</label>
+            <value>ja</value>
+            <useforref1>Bonin Islands</useforref1>
+            <useforref2>Daitojima</useforref2>
+            <useforref2>Marcus Island</useforref2>
+            <useforref2>Namposhoto (Northern)</useforref2>
+            <useforref2>Namposhoto (Southern)</useforref2>
+            <useforref2>Nishinoshima Island</useforref2>
+            <useforref2>Okinawa</useforref2>
+            <useforref2>Parece Vela Island</useforref2>
+            <useforref2>Ryukyu Islands, Northern</useforref2>
+            <useforref2>Ryukyu Islands, Southern</useforref2>
+            <useforref2>Torishima</useforref2>
+            <useforref2>Volcano Islands</useforref2>
+        </item>
+        <item>
+            <label>Johnston Atoll</label>
+            <value>ji</value>
+            <useforref1>Sand Island</useforref1>
+        </item>
+        <item>
+            <label>Jordan</label>
+            <value>jo</value>
+        </item>
+        <item>
+            <label>Kansas</label>
+            <value>ksu</value>
+        </item>
+        <item>
+            <label>Kazakhstan</label>
+            <value>kz</value>
+            <note>Coded [kzr] (Kazakh S.S.R.) before June 1992</note>
+            <useforref1>Kazakh S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Kentucky</label>
+            <value>kyu</value>
+        </item>
+        <item>
+            <label>Kenya</label>
+            <value>ke</value>
+        </item>
+        <item>
+            <label>Kiribati</label>
+            <value>gb</value>
+            <note>Coded [gn] (Gilbert and Ellice Islands) or [ln] (Central and Southern Line Islands) before Oct. 1978</note>
+            <useforref1>Banaba</useforref1>
+            <useforref2>Birnie Island</useforref2>
+            <useforref2>Canton Island</useforref2>
+            <useforref2>Caroline Island</useforref2>
+            <useforref2>Central and Southern Line Islands</useforref2>
+            <useforref2>Christmas Atoll</useforref2>
+            <useforref2>Enderbury Island</useforref2>
+            <useforref2>Fanning Atoll</useforref2>
+            <useforref2>Flint Island</useforref2>
+            <useforref2>Gardner Atoll</useforref2>
+            <useforref2>Gilbert and Ellice Islands</useforref2>
+            <useforref2>Gilbert Islands</useforref2>
+            <useforref2>Hull Atoll</useforref2>
+            <useforref2>Kiritimati</useforref2>
+            <useforref2>Line Islands (Southern)</useforref2>
+            <useforref2>Malden Island</useforref2>
+            <useforref2>Manra Atoll</useforref2>
+            <useforref2>McKean Atoll</useforref2>
+            <useforref2>Nikomaroro Atoll</useforref2>
+            <useforref2>Ocean Island</useforref2>
+            <useforref2>Orona Atoll</useforref2>
+            <useforref2>Phoenix Atoll</useforref2>
+            <useforref2>Phoenix Islands</useforref2>
+            <useforref2>Rawaki</useforref2>
+            <useforref2>Starbuck Island</useforref2>
+            <useforref2>Sydney Atoll</useforref2>
+            <useforref2>Tabuarean Island</useforref2>
+            <useforref2>Vostok Island</useforref2>
+            <useforref2>Washington Island</useforref2>
+        </item>
+        <item>
+            <label>Korea (North)</label>
+            <value>kn</value>
+            <useforref1>Democratic People's Republic of Korea</useforref1>
+            <useforref2>North Korea</useforref2>
+        </item>
+        <item>
+            <label>Korea (South)</label>
+            <value>ko</value>
+            <useforref1>Korea, Republic of</useforref1>
+            <useforref2>South Korea</useforref2>
+        </item>
+        <item>
+            <label>Kosovo</label>
+            <value>kv</value>
+            <note>Coded [rb] for Serbia from February 2007-May 2008. From 1992-April 2007 it was coded [yu] for Serbia and Montenegro</note>
+        </item>
+        <item>
+            <label>Kuwait</label>
+            <value>ku</value>
+        </item>
+        <item>
+            <label>Kyrgyzstan</label>
+            <value>kg</value>
+            <note>Coded [kgr] (Kirghiz S.S.R. before June 1992</note>
+            <useforref1>Kirghiz S.S.R.</useforref1>
+            <useforref2>Kirghizia</useforref2>
+        </item>
+        <item>
+            <label>Laos</label>
+            <value>ls</value>
+        </item>
+        <item>
+            <label>Latvia</label>
+            <value>lv</value>
+            <note>Coded [lvr] (Latvia) before June 1992</note>
+        </item>
+        <item>
+            <label>Lebanon</label>
+            <value>le</value>
+        </item>
+        <item>
+            <label>Lesotho</label>
+            <value>lo</value>
+            <useforref1>Basutoland</useforref1>
+        </item>
+        <item>
+            <label>Liberia</label>
+            <value>lb</value>
+        </item>
+        <item>
+            <label>Libya</label>
+            <value>ly</value>
+        </item>
+        <item>
+            <label>Liechtenstein</label>
+            <value>lh</value>
+        </item>
+        <item>
+            <label>Lithuania</label>
+            <value>li</value>
+            <note>Coded [lir] (Lithuania) before June 1992</note>
+        </item>
+        <item>
+            <label>Louisiana</label>
+            <value>lau</value>
+        </item>
+        <item>
+            <label>Luxembourg</label>
+            <value>lu</value>
+        </item>
+        <item>
+            <label>Macedonia</label>
+            <value>xn</value>
+            <note>Coded [yu] (Yugoslavia) before Oct. 1992</note>
+        </item>
+        <item>
+            <label>Madagascar</label>
+            <value>mg</value>
+            <useforref1>Malagasy Republic</useforref1>
+        </item>
+        <item>
+            <label>Maine</label>
+            <value>meu</value>
+        </item>
+        <item>
+            <label>Malawi</label>
+            <value>mw</value>
+            <useforref1>Nyasaland</useforref1>
+        </item>
+        <item>
+            <label>Malaysia</label>
+            <value>my</value>
+            <useforref1>Borneo, North</useforref1>
+            <useforref2>Malaya</useforref2>
+            <useforref2>North Borneo</useforref2>
+            <useforref2>Sabah</useforref2>
+            <useforref2>Sarawak</useforref2>
+        </item>
+        <item>
+            <label>Maldives</label>
+            <value>xc</value>
+            <useforref1>Maldive Islands</useforref1>
+        </item>
+        <item>
+            <label>Mali</label>
+            <value>ml</value>
+            <useforref1>French Sudan</useforref1>
+            <useforref2>Soudan</useforref2>
+            <useforref2>Sudan, French</useforref2>
+        </item>
+        <item>
+            <label>Malta</label>
+            <value>mm</value>
+            <useforref1>Comino Island</useforref1>
+            <useforref2>Gozo Island</useforref2>
+        </item>
+        <item>
+            <label>Manitoba</label>
+            <value>mbc</value>
+        </item>
+        <item>
+            <label>Marshall Islands</label>
+            <value>xe</value>
+            <note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note>
+            <useforref1>Ailinglapalap Atoll</useforref1>
+            <useforref2>Arno (Atoll)</useforref2>
+            <useforref2>Bikini (Atoll)</useforref2>
+            <useforref2>Ebon Atoll</useforref2>
+            <useforref2>Eniwetok Atoll</useforref2>
+            <useforref2>Jaluit Atoll</useforref2>
+            <useforref2>Kili Island</useforref2>
+            <useforref2>Kwajalein Atoll</useforref2>
+            <useforref2>Majuro Atoll</useforref2>
+            <useforref2>Maloelap Atoll</useforref2>
+            <useforref2>Mili Atoll</useforref2>
+            <useforref2>Namorik Atoll</useforref2>
+            <useforref2>Pacific Islands (Trust Territory)</useforref2>
+            <useforref2>Ralik Chain</useforref2>
+            <useforref2>Ratak Chains</useforref2>
+            <useforref2>Rongelap Atoll</useforref2>
+            <useforref2>Taongi Atoll</useforref2>
+            <useforref2>Trust Territory of the Pacific Islands</useforref2>
+            <useforref2>Ujelang Atoll</useforref2>
+            <useforref2>Utirik Atoll</useforref2>
+            <useforref2>Wotje Atoll</useforref2>
+        </item>
+        <item>
+            <label>Martinique</label>
+            <value>mq</value>
+        </item>
+        <item>
+            <label>Maryland</label>
+            <value>mdu</value>
+        </item>
+        <item>
+            <label>Massachusetts</label>
+            <value>mau</value>
+        </item>
+        <item>
+            <label>Mauritania</label>
+            <value>mu</value>
+        </item>
+        <item>
+            <label>Mauritius</label>
+            <value>mf</value>
+            <useforref1>Agalega Islands</useforref1>
+            <useforref2>Cargados Carajos Shoals</useforref2>
+            <useforref2>Rodrigues Island</useforref2>
+            <useforref2>Saint Brandon</useforref2>
+        </item>
+        <item>
+            <label>Mayotte</label>
+            <value>ot</value>
+            <note>Coded [cq] (Comoros) before July 1987</note>
+        </item>
+        <item>
+            <label>Mexico</label>
+            <value>mx</value>
+            <useforref1>Islas de Revillagigedo</useforref1>
+            <useforref2>Revillagigedo, Islas de</useforref2>
+        </item>
+        <item>
+            <label>Michigan</label>
+            <value>miu</value>
+        </item>
+        <item>
+            <label>Micronesia (Federated States)</label>
+            <value>fm</value>
+            <note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note>
+            <useforref1>Ascension Island (Micronesia)</useforref1>
+            <useforref2>Eauripik Atoll</useforref2>
+            <useforref2>Fais Island</useforref2>
+            <useforref2>Faraulep Atoll</useforref2>
+            <useforref2>Federated States of Micronesia</useforref2>
+            <useforref2>Gaferut Island</useforref2>
+            <useforref2>Hall Islands</useforref2>
+            <useforref2>Ifalik Atoll</useforref2>
+            <useforref2>Kapingamarangi Atoll</useforref2>
+            <useforref2>Kosrae (Micronesia)</useforref2>
+            <useforref2>Kusaie (Micronesia)</useforref2>
+            <useforref2>Mortlock Islands</useforref2>
+            <useforref2>Namonuito Atoll</useforref2>
+            <useforref2>Ngatik Atoll</useforref2>
+            <useforref2>Ngulu Atoll</useforref2>
+            <useforref2>Nukuoru Atoll</useforref2>
+            <useforref2>Oroluk Atoll</useforref2>
+            <useforref2>Pacific Islands (Trust Territory)</useforref2>
+            <useforref2>Pingelap Atoll</useforref2>
+            <useforref2>Pohnpei</useforref2>
+            <useforref2>Ponape (Micronesia)</useforref2>
+            <useforref2>Pulap Atoll</useforref2>
+            <useforref2>Pulusak Island</useforref2>
+            <useforref2>Puluwat Atoll</useforref2>
+            <useforref2>Satawal Island</useforref2>
+            <useforref2>Senyavin Islands</useforref2>
+            <useforref2>Truk (Micronesia)</useforref2>
+            <useforref2>Trust Territory of the Pacific Islands</useforref2>
+            <useforref2>Ulithi Islands</useforref2>
+            <useforref2>West Fayu Atoll</useforref2>
+            <useforref2>Woleai Atolls</useforref2>
+            <useforref2>Yap (Micronesia)</useforref2>
+        </item>
+        <item>
+            <label>Midway Islands</label>
+            <value>xf</value>
+        </item>
+        <item>
+            <label>Minnesota</label>
+            <value>mnu</value>
+        </item>
+        <item>
+            <label>Mississippi</label>
+            <value>msu</value>
+        </item>
+        <item>
+            <label>Missouri</label>
+            <value>mou</value>
+        </item>
+        <item>
+            <label>Moldova</label>
+            <value>mv</value>
+            <note>Coded [mvr] (Moldavian S.S.R.) before June 1992</note>
+            <useforref1>Moldavian S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Monaco</label>
+            <value>mc</value>
+        </item>
+        <item>
+            <label>Mongolia</label>
+            <value>mp</value>
+            <useforref1>Mongolian People's Republic</useforref1>
+            <useforref2>Outer Mongolia</useforref2>
+        </item>
+        <item>
+            <label>Montana</label>
+            <value>mtu</value>
+        </item>
+        <item>
+            <label>Montenegro</label>
+            <value>mo</value>
+            <note>Coded [yu] for Serbia and Montenegro from 1992-April 2007</note>
+            <useforref1>Yugoslavia</useforref1>
+        </item>
+        <item>
+            <label>Montserrat</label>
+            <value>mj</value>
+        </item>
+        <item>
+            <label>Morocco</label>
+            <value>mr</value>
+            <useforref1>French Morocco</useforref1>
+            <useforref2>Ifni</useforref2>
+            <useforref2>Spanish Morocco</useforref2>
+            <useforref2>Tangier Zone</useforref2>
+            <useforref2>Zona Sur del Protectorado de Marruecos</useforref2>
+        </item>
+        <item>
+            <label>Mozambique</label>
+            <value>mz</value>
+        </item>
+        <item>
+            <label>Namibia</label>
+            <value>sx</value>
+            <useforref1>South-West Africa</useforref1>
+        </item>
+        <item>
+            <label>Nauru</label>
+            <value>nu</value>
+        </item>
+        <item>
+            <label>Nebraska</label>
+            <value>nbu</value>
+        </item>
+        <item>
+            <label>Nepal</label>
+            <value>np</value>
+        </item>
+        <item>
+            <label>Netherlands</label>
+            <value>ne</value>
+            <useforref1>Holland</useforref1>
+        </item>
+        <item>
+            <label>Netherlands Antilles</label>
+            <value>na</value>
+            <useforref1>Bonaire</useforref1>
+            <useforref2>Curaçao</useforref2>
+            <useforref2>Saba</useforref2>
+            <useforref2>Saint Martin, Southern</useforref2>
+            <useforref2>Sint Eustatius</useforref2>
+        </item>
+        <item>
+            <label>Nevada</label>
+            <value>nvu</value>
+        </item>
+        <item>
+            <label>New Brunswick</label>
+            <value>nkc</value>
+        </item>
+        <item>
+            <label>New Caledonia</label>
+            <value>nl</value>
+            <useforref1>Belep Islands</useforref1>
+            <useforref2>Chesterfield, Iles</useforref2>
+            <useforref2>Huon, Ile</useforref2>
+            <useforref2>Ile des Pins</useforref2>
+            <useforref2>Ile Huon</useforref2>
+            <useforref2>Ile Uvea (New Caledonia)</useforref2>
+            <useforref2>Ile Walpole</useforref2>
+            <useforref2>Iles Belep</useforref2>
+            <useforref2>Iles Chesterfield</useforref2>
+            <useforref2>Isle of Pines (Pacific Ocean)</useforref2>
+            <useforref2>Loyalty Islands</useforref2>
+            <useforref2>Pines, Isle of (Pacific Ocean)</useforref2>
+            <useforref2>Pins, Ile des</useforref2>
+            <useforref2>Uvea (New Caledonia)</useforref2>
+            <useforref2>Walpole, Ile</useforref2>
+        </item>
+        <item>
+            <label>New Hampshire</label>
+            <value>nhu</value>
+        </item>
+        <item>
+            <label>New Jersey</label>
+            <value>nju</value>
+        </item>
+        <item>
+            <label>New Mexico</label>
+            <value>nmu</value>
+        </item>
+        <item>
+            <label>New South Wales</label>
+            <value>xna</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>New York (State)</label>
+            <value>nyu</value>
+        </item>
+        <item>
+            <label>New Zealand</label>
+            <value>nz</value>
+            <useforref1>Chatham Islands</useforref1>
+            <useforref2>Kermadec Islands</useforref2>
+            <useforref2>North Island</useforref2>
+            <useforref2>South Island</useforref2>
+            <useforref2>Stewart Island</useforref2>
+        </item>
+        <item>
+            <label>Newfoundland and Labrador</label>
+            <value>nfc</value>
+            <useforref1>Labrador</useforref1>
+            <useforref2>Newfoundland</useforref2>
+        </item>
+        <item>
+            <label>Nicaragua</label>
+            <value>nq</value>
+            <useforref1>Corn Islands</useforref1>
+        </item>
+        <item>
+            <label>Niger</label>
+            <value>ng</value>
+        </item>
+        <item>
+            <label>Nigeria</label>
+            <value>nr</value>
+            <useforref1>British Cameroons, Northern</useforref1>
+        </item>
+        <item>
+            <label>Niue</label>
+            <value>xh</value>
+        </item>
+        <item>
+            <label>No place, unknown, or undetermined</label>
+            <value>xx</value>
+        </item>
+        <item>
+            <label>Norfolk Island</label>
+            <value>nx</value>
+        </item>
+        <item>
+            <label>North Carolina</label>
+            <value>ncu</value>
+        </item>
+        <item>
+            <label>North Dakota</label>
+            <value>ndu</value>
+        </item>
+        <item>
+            <label>Northern Ireland</label>
+            <value>nik</value>
+            <useforref1>Ireland, Northern</useforref1>
+        </item>
+        <item>
+            <label>Northern Mariana Islands</label>
+            <value>nw</value>
+            <note>Coded [tt] (Trust Territory of the Pacific Islands) before Jan. 1985. Code changed from [nm] to [nw] in July 1987</note>
+            <useforref1>Agrihan Island</useforref1>
+            <useforref2>Aguijan Island</useforref2>
+            <useforref2>Alamagan Island</useforref2>
+            <useforref2>Anatahan Island</useforref2>
+            <useforref2>Asuncion Island</useforref2>
+            <useforref2>Farallon de Medinilla Island</useforref2>
+            <useforref2>Farallon de Pajaros Island</useforref2>
+            <useforref2>Guguan Island</useforref2>
+            <useforref2>Mariana Islands</useforref2>
+            <useforref2>Maug Islands</useforref2>
+            <useforref2>Pacific Islands (Trust Territory)</useforref2>
+            <useforref2>Pagan Island</useforref2>
+            <useforref2>Rota Island</useforref2>
+            <useforref2>Saipan Island</useforref2>
+            <useforref2>Sarigan Island</useforref2>
+            <useforref2>Tinian Island</useforref2>
+            <useforref2>Trust Territory of the Pacific Islands</useforref2>
+        </item>
+        <item>
+            <label>Northern Territory</label>
+            <value>xoa</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Northwest Territories</label>
+            <value>ntc</value>
+        </item>
+        <item>
+            <label>Norway</label>
+            <value>no</value>
+            <useforref1>Bear Island</useforref1>
+            <useforref2>Jan Mayen</useforref2>
+            <useforref2>Spitsbergen</useforref2>
+            <useforref2>Svalbard (Norway)</useforref2>
+        </item>
+        <item>
+            <label>Nova Scotia</label>
+            <value>nsc</value>
+        </item>
+        <item>
+            <label>Nunavut</label>
+            <value>nuc</value>
+        </item>
+        <item>
+            <label>Ohio</label>
+            <value>ohu</value>
+        </item>
+        <item>
+            <label>Oklahoma</label>
+            <value>oku</value>
+        </item>
+        <item>
+            <label>Oman</label>
+            <value>mk</value>
+            <useforref1>Kuria Muria Islands</useforref1>
+            <useforref2>Muscat and Oman</useforref2>
+        </item>
+        <item>
+            <label>Ontario</label>
+            <value>onc</value>
+        </item>
+        <item>
+            <label>Oregon</label>
+            <value>oru</value>
+        </item>
+        <item>
+            <label>Pakistan</label>
+            <value>pk</value>
+            <useforref1>Gwadar</useforref1>
+            <useforref2>West Pakistan</useforref2>
+        </item>
+        <item>
+            <label>Palau</label>
+            <value>pw</value>
+            <note>Coded [tt] (Trust Territory of the Pacific Islands) before Mar. 1988</note>
+            <useforref1>Angaur Island</useforref1>
+            <useforref2>Babelthuap Island</useforref2>
+            <useforref2>Belau</useforref2>
+            <useforref2>Helen Island</useforref2>
+            <useforref2>Merir Island</useforref2>
+            <useforref2>Pacific Islands (Trust Territory)</useforref2>
+            <useforref2>Peleliu Island</useforref2>
+            <useforref2>Pelew</useforref2>
+            <useforref2>Pulo Anna Island</useforref2>
+            <useforref2>Sonsoral Islands</useforref2>
+            <useforref2>Tobi Island</useforref2>
+            <useforref2>Trust Territory of the Pacific Islands</useforref2>
+        </item>
+        <item>
+            <label>Panama</label>
+            <value>pn</value>
+            <useforref1>Canal Zone</useforref1>
+        </item>
+        <item>
+            <label>Papua New Guinea</label>
+            <value>pp</value>
+            <useforref1>Admiralty Islands</useforref1>
+            <useforref2>Bismarck Archipelago</useforref2>
+            <useforref2>D'Entrecasteaux Islands</useforref2>
+            <useforref2>Louisiada Archipelago</useforref2>
+            <useforref2>New Britain Island</useforref2>
+            <useforref2>New Guinea</useforref2>
+            <useforref2>New Ireland Island</useforref2>
+            <useforref2>North East New Guinea</useforref2>
+            <useforref2>Solomon Islands, Northern</useforref2>
+            <useforref2>Trobriand Islands</useforref2>
+            <useforref2>Woodlark Island</useforref2>
+        </item>
+        <item>
+            <label>Paracel Islands</label>
+            <value>pf</value>
+        </item>
+        <item>
+            <label>Paraguay</label>
+            <value>py</value>
+        </item>
+        <item>
+            <label>Pennsylvania</label>
+            <value>pau</value>
+        </item>
+        <item>
+            <label>Peru</label>
+            <value>pe</value>
+        </item>
+        <item>
+            <label>Philippines</label>
+            <value>ph</value>
+        </item>
+        <item>
+            <label>Pitcairn Island</label>
+            <value>pc</value>
+            <useforref1>Ducie Atoll</useforref1>
+            <useforref2>Henderson Island</useforref2>
+            <useforref2>Oeno Atoll</useforref2>
+        </item>
+        <item>
+            <label>Poland</label>
+            <value>pl</value>
+        </item>
+        <item>
+            <label>Portugal</label>
+            <value>po</value>
+            <useforref1>Azores</useforref1>
+            <useforref2>Madeira Island</useforref2>
+        </item>
+        <item>
+            <label>Prince Edward Island</label>
+            <value>pic</value>
+        </item>
+        <item>
+            <label>Puerto Rico</label>
+            <value>pr</value>
+        </item>
+        <item>
+            <label>Qatar</label>
+            <value>qa</value>
+        </item>
+        <item>
+            <label>Québec (Province)</label>
+            <value>quc</value>
+        </item>
+        <item>
+            <label>Queensland</label>
+            <value>qea</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Réunion</label>
+            <value>re</value>
+            <useforref1>Bassas da India</useforref1>
+            <useforref2>Europa, Ile</useforref2>
+            <useforref2>Glorieuses, Iles</useforref2>
+            <useforref2>Ile Europa</useforref2>
+            <useforref2>Ile Juan de Nova</useforref2>
+            <useforref2>Ile Tromelin</useforref2>
+            <useforref2>Iles Glorieuses</useforref2>
+            <useforref2>Juan de Nova, Ile</useforref2>
+            <useforref2>Tromelin, Ile</useforref2>
+        </item>
+        <item>
+            <label>Rhode Island</label>
+            <value>riu</value>
+        </item>
+        <item>
+            <label>Romania</label>
+            <value>rm</value>
+            <useforref1>Rumania</useforref1>
+        </item>
+        <item>
+            <label>Russia (Federation)</label>
+            <value>ru</value>
+            <note>Coded [rur] (Russian S.F.S.R.) before June 1992</note>
+            <useforref1>Franz Josef Land</useforref1>
+            <useforref2>Habomai Islands</useforref2>
+            <useforref2>Kuril Islands (Southern)</useforref2>
+            <useforref2>New Siberian Islands</useforref2>
+            <useforref2>Novaya Zemlya</useforref2>
+            <useforref2>Russian S.F.S.R.</useforref2>
+            <useforref2>Sakhalin (Southern)</useforref2>
+            <useforref2>Severnaya Zemlya</useforref2>
+            <useforref2>Wrangel Island</useforref2>
+        </item>
+        <item>
+            <label>Rwanda</label>
+            <value>rw</value>
+        </item>
+        <item>
+            <label>Saint Helena</label>
+            <value>xj</value>
+            <useforref1>Ascension Island (Atlantic Ocean)</useforref1>
+            <useforref2>Gough Island</useforref2>
+            <useforref2>Inaccessible Island</useforref2>
+            <useforref2>Nightingale Island</useforref2>
+            <useforref2>Tristan da Cunha Island</useforref2>
+        </item>
+        <item>
+            <label>Saint Kitts-Nevis</label>
+            <value>xd</value>
+            <note>Coded [xi] (Saint Kitts-Nevis-Anguilla) before Jan. 1985</note>
+            <useforref1>Saint Christopher</useforref1>
+            <useforref2>Saint Kitts-Nevis-Anguilla</useforref2>
+            <useforref2>St. Christopher</useforref2>
+        </item>
+        <item>
+            <label>Saint Lucia</label>
+            <value>xk</value>
+        </item>
+        <item>
+            <label>Saint Pierre and Miquelon</label>
+            <value>xl</value>
+            <useforref1>Miquelon</useforref1>
+        </item>
+        <item>
+            <label>Saint Vincent and the Grenadines</label>
+            <value>xm</value>
+            <useforref1>Grenadine Islands, Northern</useforref1>
+            <useforref2>Saint Vincent</useforref2>
+        </item>
+        <item>
+            <label>Samoa</label>
+            <value>ws</value>
+            <useforref1>Samoa i Sisifo</useforref1>
+            <useforref2>Samoa, Western</useforref2>
+            <useforref2>Savai'i</useforref2>
+            <useforref2>Upolu</useforref2>
+            <useforref2>Western Samoa</useforref2>
+        </item>
+        <item>
+            <label>San Marino</label>
+            <value>sm</value>
+        </item>
+        <item>
+            <label>Sao Tome and Principe</label>
+            <value>sf</value>
+        </item>
+        <item>
+            <label>Saskatchewan</label>
+            <value>snc</value>
+        </item>
+        <item>
+            <label>Saudi Arabia</label>
+            <value>su</value>
+        </item>
+        <item>
+            <label>Scotland</label>
+            <value>stk</value>
+        </item>
+        <item>
+            <label>Senegal</label>
+            <value>sg</value>
+        </item>
+        <item>
+            <label>Serbia</label>
+            <value>rb</value>
+            <note>Coded [yu] for Serbia and Montenegro from 1992-April 2007</note>
+            <useforref1>Yugoslavia</useforref1>
+        </item>
+        <item>
+            <label>Seychelles</label>
+            <value>se</value>
+            <useforref1>Aldabra Islands</useforref1>
+            <useforref2>Alphonse Island</useforref2>
+            <useforref2>Amirante Isles</useforref2>
+            <useforref2>Bijoutier Island</useforref2>
+            <useforref2>Cosmoledo Islands</useforref2>
+            <useforref2>Desroches, Ile</useforref2>
+            <useforref2>Farquhar Atoll</useforref2>
+            <useforref2>François Island</useforref2>
+            <useforref2>Ile Desroches</useforref2>
+            <useforref2>Saint Francois Island</useforref2>
+            <useforref2>Saint Pierre Islet</useforref2>
+        </item>
+        <item>
+            <label>Sierra Leone</label>
+            <value>sl</value>
+        </item>
+        <item>
+            <label>Singapore</label>
+            <value>si</value>
+        </item>
+        <item>
+            <label>Slovakia</label>
+            <value>xo</value>
+            <note>Coded [cs] (Czechoslovakia) before June 1993</note>
+            <useforref1>Czechoslovakia</useforref1>
+            <useforref2>Slovak Socialist Republic</useforref2>
+        </item>
+        <item>
+            <label>Slovenia</label>
+            <value>xv</value>
+            <note>Coded [yu] (Yugoslavia) before Oct. 1992</note>
+        </item>
+        <item>
+            <label>Solomon Islands</label>
+            <value>bp</value>
+            <useforref1>British Solomon Islands</useforref1>
+            <useforref2>Choiseul</useforref2>
+            <useforref2>Guadalcanal</useforref2>
+            <useforref2>Malaita</useforref2>
+            <useforref2>San Cristóbal</useforref2>
+            <useforref2>Santa Isabel</useforref2>
+            <useforref2>Solomon Islands Protectorate</useforref2>
+        </item>
+        <item>
+            <label>Somalia</label>
+            <value>so</value>
+            <useforref1>Somali Republic</useforref1>
+        </item>
+        <item>
+            <label>South Africa</label>
+            <value>sa</value>
+            <useforref1>Bophuthatswana</useforref1>
+            <useforref2>Ciskei</useforref2>
+            <useforref2>Lebowa</useforref2>
+            <useforref2>Machangana</useforref2>
+            <useforref2>Marion Island</useforref2>
+            <useforref2>Prince Edward Islands</useforref2>
+            <useforref2>South Sotho</useforref2>
+            <useforref2>Transkei</useforref2>
+            <useforref2>Tswana</useforref2>
+            <useforref2>Venda</useforref2>
+            <useforref2>Walvis Bay Enclave</useforref2>
+            <useforref2>Zulu</useforref2>
+        </item>
+        <item>
+            <label>South Australia</label>
+            <value>xra</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>South Carolina</label>
+            <value>scu</value>
+        </item>
+        <item>
+            <label>South Dakota</label>
+            <value>sdu</value>
+        </item>
+        <item>
+            <label>South Georgia and the South Sandwich Islands</label>
+            <value>xs</value>
+            <note>Coded [fk] (Falkland Islands) before Jan. 1991</note>
+            <useforref1>South Georgia Island</useforref1>
+            <useforref2>South Sandwich Islands</useforref2>
+        </item>
+        <item>
+            <label>Spain</label>
+            <value>sp</value>
+            <useforref1>Balearic Islands</useforref1>
+            <useforref2>Canary Islands</useforref2>
+        </item>
+        <item>
+            <label>Spanish North Africa</label>
+            <value>sh</value>
+            <useforref1>Ceuta</useforref1>
+            <useforref2>Chafarinas, Islas</useforref2>
+            <useforref2>Islas Chafarinas</useforref2>
+            <useforref2>Melilla</useforref2>
+            <useforref2>Peñón de Alhucemas</useforref2>
+            <useforref2>Peñón de Vélez de la Gomera</useforref2>
+            <useforref2>Plazas de Soberania</useforref2>
+            <useforref2>Spanish Territories in Northern Morocco</useforref2>
+        </item>
+        <item>
+            <label>Spratly Island</label>
+            <value>xp</value>
+        </item>
+        <item>
+            <label>Sri Lanka</label>
+            <value>ce</value>
+            <useforref1>Ceylon</useforref1>
+        </item>
+        <item>
+            <label>Sudan</label>
+            <value>sj</value>
+        </item>
+        <item>
+            <label>Surinam</label>
+            <value>sr</value>
+            <useforref1>Dutch Guiana</useforref1>
+            <useforref2>Guiana, Dutch</useforref2>
+            <useforref2>Netherlands Guiana</useforref2>
+        </item>
+        <item>
+            <label>Swaziland</label>
+            <value>sq</value>
+        </item>
+        <item>
+            <label>Sweden</label>
+            <value>sw</value>
+        </item>
+        <item>
+            <label>Switzerland</label>
+            <value>sz</value>
+        </item>
+        <item>
+            <label>Syria</label>
+            <value>sy</value>
+            <useforref1>Syrian Arab Republic</useforref1>
+        </item>
+        <item>
+            <label>Tajikistan</label>
+            <value>ta</value>
+            <note>Coded [tar] (Tajik S.S.R.) before June 1992</note>
+            <useforref1>Tadzhik S.S.R.</useforref1>
+            <useforref2>Tajik S.S.R.</useforref2>
+        </item>
+        <item>
+            <label>Tanzania</label>
+            <value>tz</value>
+            <useforref1>Pemba</useforref1>
+            <useforref2>Tanganyika</useforref2>
+            <useforref2>Zanzibar</useforref2>
+        </item>
+        <item>
+            <label>Tasmania</label>
+            <value>tma</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Tennessee</label>
+            <value>tnu</value>
+        </item>
+        <item>
+            <label>Terres australes et antarctiques françaises</label>
+            <value>fs</value>
+            <useforref1>Amsterdam Island</useforref1>
+            <useforref2>Crozet Island</useforref2>
+            <useforref2>French Southern and Antarctic Lands</useforref2>
+            <useforref2>Kerguelen Island</useforref2>
+            <useforref2>Saint Paul Island</useforref2>
+            <useforref2>T.A.A.F.</useforref2>
+        </item>
+        <item>
+            <label>Texas</label>
+            <value>txu</value>
+        </item>
+        <item>
+            <label>Thailand</label>
+            <value>th</value>
+            <useforref1>Siam</useforref1>
+        </item>
+        <item>
+            <label>Togo</label>
+            <value>tg</value>
+        </item>
+        <item>
+            <label>Tokelau</label>
+            <value>tl</value>
+            <useforref1>Atafu Atoll</useforref1>
+            <useforref2>Fakaofu Atoll</useforref2>
+            <useforref2>Nukunono Atoll</useforref2>
+            <useforref2>Union Islands</useforref2>
+        </item>
+        <item>
+            <label>Tonga</label>
+            <value>to</value>
+            <useforref1>Friendly Islands</useforref1>
+            <useforref2>Haapai</useforref2>
+            <useforref2>Lulunga</useforref2>
+            <useforref2>Nomuka</useforref2>
+            <useforref2>Otu Tolu</useforref2>
+            <useforref2>Tongatapu</useforref2>
+            <useforref2>Vavau</useforref2>
+        </item>
+        <item>
+            <label>Trinidad and Tobago</label>
+            <value>tr</value>
+            <useforref1>Tobago</useforref1>
+        </item>
+        <item>
+            <label>Tunisia</label>
+            <value>ti</value>
+        </item>
+        <item>
+            <label>Turkey</label>
+            <value>tu</value>
+        </item>
+        <item>
+            <label>Turkmenistan</label>
+            <value>tk</value>
+            <note>Coded [tkr] (Turkmen S.S.R.) before June 1992</note>
+            <useforref1>Turkmen S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Turks and Caicos Islands </label>
+            <value>tc</value>
+            <useforref1>Caicos Islands</useforref1>
+        </item>
+        <item>
+            <label>Tuvalu</label>
+            <value>tv</value>
+            <note>Coded [gn] (Gilbert and Ellice Islands) before Oct. 1978</note>
+            <useforref1>Ellice Islands</useforref1>
+            <useforref2>Funafuti Atoll</useforref2>
+            <useforref2>Gilbert and Ellice Islands</useforref2>
+            <useforref2>Niulakita Island</useforref2>
+            <useforref2>Nukufetau Atoll</useforref2>
+            <useforref2>Nukulaelae Atoll</useforref2>
+            <useforref2>Nukulailai Atoll</useforref2>
+            <useforref2>Nurakita Island</useforref2>
+        </item>
+        <item>
+            <label>Uganda</label>
+            <value>ug</value>
+        </item>
+        <item>
+            <label>Ukraine</label>
+            <value>un</value>
+            <note>Coded [unr] (Ukraine) before June 1992</note>
+        </item>
+        <item>
+            <label>United Arab Emirates</label>
+            <value>ts</value>
+            <useforref1>Abu Dhabi</useforref1>
+            <useforref2>Abu Zaby</useforref2>
+            <useforref2>`Ajman</useforref2>
+            <useforref2>Dubai</useforref2>
+            <useforref2>Dubayy</useforref2>
+            <useforref2>Fujairah</useforref2>
+            <useforref2>Fujayrah</useforref2>
+            <useforref2>Kalba</useforref2>
+            <useforref2>Oman, Trucial</useforref2>
+            <useforref2>Ras al Khaimah</useforref2>
+            <useforref2>Ra's al-Khaymah</useforref2>
+            <useforref2>Shariqah</useforref2>
+            <useforref2>Sharjah</useforref2>
+            <useforref2>Trucial Coast</useforref2>
+            <useforref2>Trucial Oman</useforref2>
+            <useforref2>Trucial Sheikdoms</useforref2>
+            <useforref2>Trucial States</useforref2>
+            <useforref2>Umm al Qaiwain</useforref2>
+            <useforref2>Umm al-Qaywayn</useforref2>
+        </item>
+        <item>
+            <label>United Kingdom</label>
+            <value>xxk</value>
+            <note>Also coded [uk] (United Kingdom) before Mar. 1988</note>
+            <useforref1>Great Britain</useforref1>
+        </item>
+        <item>
+            <label>United Kingdom Misc. Islands</label>
+            <value>uik</value>
+            <note>Code changed from [ui] to [uik] in Mar. 1988</note>
+            <useforref1>Alderney</useforref1>
+            <useforref2>Brechou</useforref2>
+            <useforref2>Channel Islands</useforref2>
+            <useforref2>Guernsey Island</useforref2>
+            <useforref2>Herm Island</useforref2>
+            <useforref2>Isle of Man</useforref2>
+            <useforref2>Jersey (Island)</useforref2>
+            <useforref2>Jethou</useforref2>
+            <useforref2>Lihou</useforref2>
+            <useforref2>Orkney Islands</useforref2>
+            <useforref2>Sark Island</useforref2>
+            <useforref2>Shetland Islands</useforref2>
+        </item>
+        <item>
+            <label>United States</label>
+            <value>xxu</value>
+            <note>Also coded [us] (United States before Mar. 1988</note>
+        </item>
+        <item>
+            <label>United States Misc. Caribbean Islands</label>
+            <value>uc</value>
+            <useforref1>Navassa Island</useforref1>
+            <useforref2>Quita Sueno Bank</useforref2>
+            <useforref2>Roncador Cay</useforref2>
+        </item>
+        <item>
+            <label>United States Misc. Pacific Islands</label>
+            <value>up</value>
+            <useforref1>Baker Island</useforref1>
+            <useforref2>Howland Island</useforref2>
+            <useforref2>Jarvis Island</useforref2>
+            <useforref2>Kingman Reef</useforref2>
+            <useforref2>Palmyra Atoll</useforref2>
+        </item>
+        <item>
+            <label>Uruguay</label>
+            <value>uy</value>
+        </item>
+        <item>
+            <label>Utah</label>
+            <value>utu</value>
+        </item>
+        <item>
+            <label>Uzbekistan</label>
+            <value>uz</value>
+            <note>Coded [uzr] (Uzbek S.S.R.) before June 1992</note>
+            <useforref1>Uzbek S.S.R.</useforref1>
+        </item>
+        <item>
+            <label>Vanuatu</label>
+            <value>nn</value>
+            <useforref1>Banks Islands</useforref1>
+            <useforref2>New Hebrides</useforref2>
+            <useforref2>Torres Islands</useforref2>
+        </item>
+        <item>
+            <label>Various places</label>
+            <value>vp</value>
+        </item>
+        <item>
+            <label>Vatican City</label>
+            <value>vc</value>
+            <useforref1>Holy See</useforref1>
+        </item>
+        <item>
+            <label>Venezuela</label>
+            <value>ve</value>
+        </item>
+        <item>
+            <label>Vermont</label>
+            <value>vtu</value>
+        </item>
+        <item>
+            <label>Victoria</label>
+            <value>vra</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Vietnam</label>
+            <value>vm</value>
+            <note>Coded [vn] (Vietnam, North) or [vs] (Vietnam, South) before Jan. 1978</note>
+            <useforref1>Democratic People's Republic of Vietnam</useforref1>
+            <useforref2>North Vietnam</useforref2>
+            <useforref2>South Vietnam</useforref2>
+            <useforref2>Vietnam, North</useforref2>
+            <useforref2>Vietnam, Republic of</useforref2>
+            <useforref2>Vietnam, South</useforref2>
+        </item>
+        <item>
+            <label>Virgin Islands of the United States</label>
+            <value>vi</value>
+        </item>
+        <item>
+            <label>Virginia</label>
+            <value>vau</value>
+        </item>
+        <item>
+            <label>Wake Island</label>
+            <value>wk</value>
+        </item>
+        <item>
+            <label>Wales</label>
+            <value>wlk</value>
+        </item>
+        <item>
+            <label>Wallis and Futuna</label>
+            <value>wf</value>
+            <useforref1>Alofi</useforref1>
+            <useforref2>Futuna</useforref2>
+            <useforref2>Horne, Iles de</useforref2>
+            <useforref2>Ile Uvea (Wallis and Futuna)</useforref2>
+            <useforref2>Iles de Horne</useforref2>
+            <useforref2>Uvea (Wallis and Futuna)</useforref2>
+        </item>
+        <item>
+            <label>Washington (State)</label>
+            <value>wau</value>
+        </item>
+        <item>
+            <label>West Bank of the Jordan River</label>
+            <value>wj</value>
+            <useforref1>Jordan (Territory under Israeli occupation, 1967- )</useforref1>
+        </item>
+        <item>
+            <label>West Virginia</label>
+            <value>wvu</value>
+        </item>
+        <item>
+            <label>Western Australia</label>
+            <value>wea</value>
+            <note>Coded [at] (Australia) before Sept. 2005</note>
+        </item>
+        <item>
+            <label>Western Sahara</label>
+            <value>ss</value>
+            <useforref1>Río de Oro</useforref1>
+            <useforref2>Saguia el Hamra</useforref2>
+            <useforref2>Spanish Sahara</useforref2>
+        </item>
+        <item>
+            <label>Wisconsin</label>
+            <value>wiu</value>
+        </item>
+        <item>
+            <label>Wyoming</label>
+            <value>wyu</value>
+        </item>
+        <item>
+            <label>Yemen</label>
+            <value>ye</value>
+            <useforref1>Aden</useforref1>
+            <useforref2>Aden (Protectorate)</useforref2>
+            <useforref2>Arab Republic of Yemen</useforref2>
+            <useforref2>Federation of South Arabia</useforref2>
+            <useforref2>Kamaran</useforref2>
+            <useforref2>Perim</useforref2>
+            <useforref2>Protectorate of South Arabia</useforref2>
+            <useforref2>Socotra</useforref2>
+            <useforref2>South Arabia</useforref2>
+            <useforref2>Southern Yemen</useforref2>
+            <useforref2>Yemen (People's Democratic Republic)</useforref2>
+        </item>
+        <item>
+            <label>Yukon Territory</label>
+            <value>ykc</value>
+        </item>
+        <item>
+            <label>Zambia</label>
+            <value>za</value>
+            <useforref1>Northern Rhodesia</useforref1>
+        </item>
+        <item>
+            <label>Zimbabwe</label>
+            <value>rh</value>
+            <useforref1>Rhodesia</useforref1>
+            <useforref2>Southern Rhodesia</useforref2>
+            <useforref2>Zimbabwe Rhodesia</useforref2>
+        </item>
+    </items>
+</code-table>

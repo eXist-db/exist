@@ -1,1 +1,45 @@
-<code-table><code-table-name>abbreviated-title-authority-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/sourcelist/abbreviated-title.html</basis><description/><notes>items with asterix have web pages</notes><items><item><label>(none selected)</label><value/></item><item><label>local</label><value>local</value></item><item><label>Key Title nach DIN 1430</label><value>din1430</value></item><item><label>Regeln für das Kürzen von Wörtern in Titeln und für das Kürzen der Titel von Veröffentlichungen: DIN 1502</label><value>din1502</value></item><item><label>National Library of Medicine Locatorplus</label><value>dnlm</value></item><item><label>*HLAS journal abbreviations</label><value>hlasja</value><link>http://lcweb2.loc.gov/hlas/journals.html</link></item><item><label>INIS: authority list for journals</label><value>inisaljt</value></item><item><label>*Abbreviated Key Titles</label><value>issnkey</value><link>http://www.issn.org/2-22655-The-ISSN-Portal.php</link></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>abbreviated-title-authority-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/sourcelist/abbreviated-title.html</basis>
+    <description/>
+    <notes>items with asterix have web pages</notes>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>local</label>
+            <value>local</value>
+        </item>
+        <item>
+            <label>Key Title nach DIN 1430</label>
+            <value>din1430</value>
+        </item>
+        <item>
+            <label>Regeln für das Kürzen von Wörtern in Titeln und für das Kürzen der Titel von Veröffentlichungen: DIN 1502</label>
+            <value>din1502</value>
+        </item>
+        <item>
+            <label>National Library of Medicine Locatorplus</label>
+            <value>dnlm</value>
+        </item>
+        <item>
+            <label>*HLAS journal abbreviations</label>
+            <value>hlasja</value>
+            <link>http://lcweb2.loc.gov/hlas/journals.html</link>
+        </item>
+        <item>
+            <label>INIS: authority list for journals</label>
+            <value>inisaljt</value>
+        </item>
+        <item>
+            <label>*Abbreviated Key Titles</label>
+            <value>issnkey</value>
+            <link>http://www.issn.org/2-22655-The-ISSN-Portal.php</link>
+        </item>
+    </items>
+</code-table>

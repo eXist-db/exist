@@ -34,7 +34,7 @@ declare function mods:space-before($node as node()?) as xs:string? {
 };
 
 declare function mods:clean-up-punctuation($input as xs:string) as xs:string? {
-    replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace($input
+    replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace($input
     , ' \.', '.')
     , '\s*,', ',')
     , ' :', ':')
@@ -46,6 +46,7 @@ declare function mods:clean-up-punctuation($input as xs:string) as xs:string? {
     , ',\s*\.', '') (: Fixes mistake in originInfo for periodicals. :)
     , '\?\.', '?')
     , '!\.', '!')
+    ,'\.” \.', '.”')
 };
 
 (: ### general functions end ###:)
@@ -162,28 +163,48 @@ declare function mods:language-of-cataloging($language as element(mods:languageO
 : @param $node A mods element or attribute recording a role term value, in textual or coded form
 : @return The role term label string
 :)
-declare function mods:get-role-label-for-detail-view($roleTerm as xs:string?, $type as xs:string?) as xs:string? {
-        
+declare function mods:get-role-label-for-detail-view($roleTerm as item()?, $type as xs:string?) as item()? {        
+        let $type := $type
         let $roleLabel :=
-            let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($roleTerm)]/label
-            (: Prefer the label proper, since it contains the form presented in the detail view, e.g. "editor" instead of "edited by". :)
-            return
-                if ($roleLabel)
-                then $roleLabel
-                else
-                    let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $roleTerm]/label
-                    return
-                        if ($roleLabel)
-                        then $roleLabel
-                        else 
-                            if ($roleTerm)
-                            then ($roleTerm)
-                            else 
-                                if ($type = 'personal')
-                                (: Default values in absence of $roleTerm. :)
-                                then 'Author'
-                                else 'Corporation'
+            if ($roleTerm)
+            then
+                (: Is the roleTerm a role label? :)
+                let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($roleTerm)]/label
+                (: Prefer the label proper, since it contains the form presented in the detail view, e.g. "Editor" instead of "edited by". :)
+                return
+                    if ($roleLabel)
+                    then $roleLabel
+                    else
+                        (: Is the roleTerm a role term @code? :)
+                        let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $roleTerm]/label
+                        return
+                            if ($roleLabel)
+                            then $roleLabel
+                            else $roleTerm
+            else 
+                if ($type = 'personal')
+                (: Default values in absence of $roleTerm. :)
+                then 'Author'
+                else 'Corporation'
         return  functx:capitalize-first($roleLabel)
+};
+
+declare function mods:get-roles-for-detail-view($name as element()*) as item()* {
+let $roles := $name/mods:role
+    for $role at $pos in $name/mods:role
+    return
+    distinct-values(
+        if ($pos eq 1)
+        then mods:get-role-terms-for-detail-view($role)
+        else ("and", mods:get-role-terms-for-detail-view($role))
+    )
+};
+
+declare function mods:get-role-terms-for-detail-view($role as element()*) as item()* {
+    let $roleTerms := $role/mods:roleTerm
+    for $roleTerm at $pos in distinct-values($roleTerms)
+    return
+        mods:get-role-label-for-detail-view($roleTerm, 'personal')
 };
 
 (:~
@@ -235,19 +256,23 @@ declare function mods:add-part($part, $sep as xs:string) {
     else concat(string-join($part, ' '), $sep)
 };
 
-declare function mods:get-publisher($publishers as element(mods:publisher)?) as xs:string? {
+declare function mods:get-publisher($publishers as element(mods:publisher)*) as xs:string? {
     string-join(
         for $publisher in $publishers
-        let $order := $publisher[@transliteration]
+        let $order := 
+            if ($publisher[@transliteration]) 
+            then 0 
+            else 1
         order by $order
         return
             if ($publisher/mods:name) 
             then
-            (: the encoding of <publisher> with <name> and <namePart> is not standard.:)
-                $publisher/mods:name[1]/mods:namePart
+                for $name at $pos in $publisher/mods:name
+                return
+                    mods:retrieve-primary-name($name, $pos)
             else
                 $publisher,
-        ', '
+        ' '
     )
 };
 
@@ -295,7 +320,7 @@ declare function mods:format-subjects($entry as element()) {
                 else
                     if ($item/name() = 'titleInfo')
                     then 
-                        string-join(mods:get-short-title('', $item/..), '')
+                        string-join(mods:get-short-title('', $item/.., ''), '')
                     else
                         for $subitem in ($item/mods:*)
                         let $authority := 
@@ -432,10 +457,11 @@ declare function mods:get-place($places as element(mods:place)*) as xs:string? {
     string-join(
         for $place in $places
         let $placeTerm := $place/mods:placeTerm
-        (:
-        let $order := $place/mods:placeTerm[@transliteration]
+        let $order := 
+            if ($placeTerm[@transliteration]) 
+            then 0 
+            else 1
         order by $order
-        :)
         return
             if ($placeTerm[@type = 'text']) 
             then string-join((
@@ -545,7 +571,7 @@ declare function mods:get-part-and-origin($entry as element()) {
                 ,
                 if ($publisher/text())
                 then
-                    (': ', mods:get-publisher($publisher[1]))
+                    (': ', mods:get-publisher($publisher))
                 else ()
                 ,
                 if ($dateIssued/text())
@@ -561,7 +587,7 @@ declare function mods:get-part-and-origin($entry as element()) {
                     mods:get-place($place)
                 else ()
                 ,
-                normalize-space(mods:add-part(mods:get-publisher($publisher[1]), ', ')
+                normalize-space(mods:add-part(mods:get-publisher($publisher), ', ')
                 )
                 , 
                 normalize-space(mods:add-part($dateIssued/string(), '.'))
@@ -1249,18 +1275,25 @@ declare function mods:get-title-translated($entry as element(mods:mods), $titleI
 };
 
 (: Constructs the title for the hitlist view. :)
-declare function mods:get-short-title($id as xs:string?, $entry as element()) {
-    let $titleInfo := $entry/mods:titleInfo[not(@type='abbreviated')][not(@type='uniform')][not(@type='alternative')][not(@type='translated')]
-    let $titleInfoTransliteration := $titleInfo[@type='translated'][@transliteration/string()]
-    let $titleInfoTranslation := $titleInfo[@type='translated'][not(@transliteration/string())]
+declare function mods:get-short-title($id as xs:string?, $entry as element(), $type as xs:string?) {
     
-    (: Below is not implemented yet. :)
+    let $relatedItemType := $type
+    
+    let $titleInfo := $entry/mods:titleInfo
+    let $titleInfoTransliteration := $titleInfo[@type='translated' and @transliteration]
+    let $titleInfoTranslation := $titleInfo[@type='translated' and not(@transliteration)]
+    
+    (: NB: Should short title contain the following? :)
     (:
     let $titleInfoUniform := $titleInfo[@type='uniform']
     let $titleInfoAbbreviated := $titleInfo[@type='abbreviated']
     let $titleInfoAlternative := $titleInfo[@type='alternative']
     :)
     
+    (: Repeated assignment of $titleInfo. :)
+    let $titleInfo := $titleInfo[not(@type='abbreviated')][not(@type='uniform')][not(@type='alternative')][not(@type='translated')]
+    
+    (: NB: The string-joins below are not necessary. :)
     let $nonSort := string-join($titleInfo/mods:nonSort, ' ')
     let $title := string-join($titleInfo/mods:title, ' ')
     let $subTitle := string-join($titleInfo/mods:subTitle, ' ')
@@ -1352,24 +1385,27 @@ declare function mods:get-short-title($id as xs:string?, $entry as element()) {
         else ()
         )
     return
-        (
-        if ($titleInfo/../mods:relatedItem[@type = 'host']) 
-        then '“'
-        else ()
+        ( 
+        if ($relatedItemType)
+        (: If it is a related item it has a type, and related items are not enclosed by quotation marks. :)
+        then ()
+        else '“'
         ,
         (
         if ($titleTransliteration) 
         then
-        ($titleTransliterationFormat         
+        (
+        $titleTransliterationFormat         
         ,
-        ' ')
+        ' '
+        )
         else ()
         , 
         $titleFormat
         ,
-        if ($titleInfo/../mods:relatedItem[@type = 'host']) 
-        then '.”'
-        else ()
+        if ($relatedItemType) 
+        then ()
+        else '.”'
         ,
         if ($titleTranslation)
         then ('(', $titleTranslationFormat,')')
@@ -1539,7 +1575,7 @@ declare function mods:format-related-item($relatedItem as element()) {
                 }
                 <span class="title">
                 {
-                mods:get-short-title((), $relatedItem)
+                mods:get-short-title('', $relatedItem, $relatedItem/@type)
                 }
                 </span>,
                 {
@@ -1553,6 +1589,8 @@ declare function mods:format-related-item($relatedItem as element()) {
                                 if ($names/mods:namePart/text())
                                 then
                                     (
+                                    ', '
+                                    ,
                                     mods:get-role-label-for-list-view($roleTerm)
                                     ,
                                     mods:format-multiple-secondary-names($names, 'secondary')
@@ -1592,12 +1630,7 @@ declare function mods:names-full($entry as element()) {
             then
                 <tr><td class="label">
                     {
-                    let $roles := $name/mods:role
-                    for $role in $roles
-                    return
-                    for $roleTerm in $role
-                    return
-                        mods:get-role-label-for-detail-view($roleTerm, 'personal')
+                    mods:get-roles-for-detail-view($name)
                     }
                 </td><td class="record">
                     {       
@@ -1726,13 +1759,13 @@ declare function mods:entry-full($entry as element())
     (: conferences :)
     mods:simple-row(mods:get-conference-detail-view($entry), 'Conference')
     ,
-    
+
     (: place :)
     mods:simple-row(mods:get-place($entry/mods:originInfo/mods:place), 'Place')
     ,
     
     (: publisher :)
-    mods:simple-row(mods:get-publisher($entry/mods:originInfo[1]/mods:publisher[1]), 'Publisher')
+    mods:simple-row(mods:get-publisher($entry/mods:originInfo/mods:publisher), 'Publisher')
     ,
     
     (: dates :)
@@ -1884,7 +1917,7 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
         else ()
         ,
         (: The title of the primary publication. :)
-        mods:get-short-title($id, $entry)
+        mods:get-short-title($id, $entry, '')
         ,
         
         (: The editor, etc. of the primary publication. :)
@@ -1898,6 +1931,8 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
                     if ($names/mods:namePart/text())
                     then
                         (
+                        ', '
+                        ,
                         mods:get-role-label-for-list-view($roleTerm)
                         ,
                         mods:format-multiple-secondary-names($names, 'secondary')
@@ -1931,6 +1966,6 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
         <div class="select">
         {
         mods:clean-up-punctuation(normalize-space(string-join($format,' ')))
-      }
+        }
         </div>
 };

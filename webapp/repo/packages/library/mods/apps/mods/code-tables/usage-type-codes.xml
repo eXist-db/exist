@@ -1,1 +1,19 @@
-<code-table><code-table-name>usage-type-code</code-table-name><status>finished</status><form>closed</form><basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#url</basis><description/><notes>added in 3.4</notes><items><item><label>(none selected)</label><value/></item><item><label>primary</label><value>primary</value></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>usage-type-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://www.loc.gov/standards/mods/v3/mods-userguide-elements.html#url</basis>
+    <description/>
+    <notes>added in 3.4</notes>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>primary</label>
+            <value>primary</value>
+        </item>
+    </items>
+</code-table>

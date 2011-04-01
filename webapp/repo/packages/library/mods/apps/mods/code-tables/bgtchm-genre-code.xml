@@ -1,1 +1,195 @@
-<code-table><code-table-name>bgtchm-genre-code</code-table-name><status>finished</status><form>closed</form><basis>http://memory.loc.gov/ammem/techdocs/genre.html</basis><description>Basic Genre Terms for Cultural Heritage Materials</description><notes>NB: label serves as value!</notes><items><item><label>(none selected)</label><value/></item><item><label>advertisements</label><description>An item printed solely as a means of advertising a product or service, but not an event.</description></item><item><label>albums</label><description>Bound or loose-leaf sets of pages. Includes handmade albums and published volumes of blank pages designed for the addition of images or keepsakes.</description></item><item><label>architecture</label><description>Includes drawings and photos.</description></item><item><label>baseball Cards</label><description>Advertising or collectible cards that feature portraits of baseball players, other people, or topics associated with the game. Introduced in 1886 or 1887 by a tobacco company; also popular with bubble gum manufacturers beginning in the 1930s. Common sizes include 1.5 x 2.5 inches, 2.5 x 3.5 inches, and ca. 5 x 8 inches. The cards may be actual photographs mounted on card stock or photomechanically printed.</description></item><item><label>blank forms</label><description>Forms that have been printed blank, which may or may not have been filled in; the document was typically meant to be returned to the publisher (e.g., subscription lists, petitions).</description></item><item><label>books</label><description>Published non-periodical volumes in bound codex form, usually with 49 or more pages.</description></item><item><label>broadsides</label><description>Single-sheet notices or announcements pinted on one or both sides, intended to be read unfolded.</description></item><item><label>cartoons (Commentary)</label><description>Pictorial images using wit to comment on such things as contemporary events, social habits, or political trends; usually executed in a broad or abbreviated manner.</description></item><item><label>catalogs</label><description>Enumerations of items arranged systematically with descriptive details. May have prices.</description></item><item><label>cityscapes</label><description>General or broad views of cities and towns or sections of them. Usually made from an elevated or distant vantage point, such as a view from a roof or a view of a skyline.</description></item><item><label>clippings</label><description>Objects with physical evidence suggesting extraction from a larger entity (e.g., books, newspapers).</description></item><item><label>correspondence</label><description>Communication by the exchange of letters.</description></item><item><label>diaries</label><description>A daily record, especially a personal record of events, experiences, and observations; a journal.</description></item><item><label>drawings</label><description>Narrower terms include both physical media and genre categories but are limited to those which use drawing in the sense of a specific medium rather than in the everyday sense of graphic representation.</description></item><item><label>ephemera</label><description>Transient everyday items, usually printed and on paper, that are manufactured for a specific limited use, then often discarded. Includes everyday items that are meant to be saved, at least for a while, such as KEEPSAKES and STOCK CERTIFICATES.</description></item><item><label>essays</label><description>A short literary composition on a single subject, usually presenting the personal view of the author.</description></item><item><label>ethnography</label><description>Documentation made for or by anthropologists and others involved in the systematic recording of human cultures.</description></item><item><label>fieldnotes</label><description>Notes, often in books, kept by researchers or surveying parties while on site.</description></item><item><label>illustrations</label><description>Images that explain or elaborate a written or spoken text; may be issued separately from the text.</description></item><item><label>interviews</label><description>A conversation, such as one conducted by a reporter, in which facts or statements are elicited from another.</description></item><item><label>landscapes</label><description>General or broad views of natural scenery, including inland bodies of water; may also include figures or man-made objects, but these are of secondary importance to the composition. Usually made from an elevated or distant vantage point, such as a view from a hill; not ground level close-up view of, for example, a tree.</description></item><item><label>leaflets</label><description>Unbound volumes with fewer than five pages.</description></item><item><label>manuscripts</label><description>A book, document, or other composition written by hand. A typewritten or handwritten version of a book, an article, a document, or other work, especially the author's own copy, prepared and submitted for publication in print. Handwriting.</description></item><item><label>maps</label><description>Graphic delineations at a set scale, of all or part of the earth or another celestial sphere indicating the relative position of selected artificial and natural features.</description></item><item><label>miscellaneous Documents</label><description>A written or printed paper that bears the original, official, or legal form of something and can be used to furnish decisive evidence or information.</description></item><item><label>motion Pictures</label><description>Used for Cinema, Films, Movies, Moving pictures.</description></item><item><label>music</label><description>The art of arranging sounds in time so as to produce a continuous, unified, and evocative composition, as through melody, harmony, rhythm, and timbre.</description></item><item><label>narratives</label><description>A narrated account; a story.</description></item><item><label>paintings</label><description>Color paint applied by hand to a surface (support) such as paper, canvas, wood, glass, or other.</description></item><item><label>pamphlets</label><description>Published non-periodical volumes with no cover or with a paper cover. Usually 5 or more pages and fewer than 49 pages.</description></item><item><label>periodicals</label><description>Serials usually issued at regular intervals and more frequently than annually.</description></item><item><label>petitions</label><description>Includes activities involved in petitioning.</description></item><item><label>photographs</label><description>A general designation for any photographic process. The narrower terms include both physical media and genre categories.</description></item><item><label>physical Objects</label><description>Something perceptible by one or more of the senses, especially by vision or touch; a material thing.</description></item><item><label>poetry</label><description>A piece of literature written in meter; verse.</description></item><item><label>portraits</label><description>Graphic representations, especially of the face, of real persons, usually posed, living or dead. Pictures whose purpose is the portrayal of an individual or several people, not pictures that merely include people as part of an event or scene.</description></item><item><label>postcards</label><description>Cards on which a message may be written or printed for mailing without an envelope; often include a pictorial, comic, or other scene on one side.</description></item><item><label>posters</label><description>Single or multi-sheet notices made to attract attention to events, activities, cuases, goods, or services; also, purely decorative posters. For posting, usually in a public place; chiefly pictorial. Intended to make an immediate impression from a distance.</description></item><item><label>prints</label><description>Images formed by transfer from one surface or source to another. Usually created with ink(s) and produced in multiple impressions.</description></item><item><label>programs</label><description>Lists of the events, pieces, performers, speakers, etc., of an entertainment, ceremony, or the like.</description></item><item><label>recording logs</label><description>Sequential lists or summaries of the contents or events on sound or video recordings.</description></item><item><label>scores</label><description>The written form of a composition for orchestral or vocal parts.</description></item><item><label>sheet Music</label><description>Unbound songs and other pieces of music on eight or fewer pages.</description></item><item><label>timetables</label><description>Items printed solely for use as timetables (e.g., train schedules).</description></item><item><label>transcriptions</label><description>Something that has been transcribed, especially: Music. An adaptation of a composition. A recorded radio or television program. Linguistics. A representation of speech sounds in phonetic symbols.</description></item></items></code-table>
+<?xml version="1.0" encoding="UTF-8"?>
+<code-table>
+    <code-table-name>bgtchm-genre-code</code-table-name>
+    <status>finished</status>
+    <form>closed</form>
+    <basis>http://memory.loc.gov/ammem/techdocs/genre.html</basis>
+    <description>Basic Genre Terms for Cultural Heritage Materials</description>
+    <notes>NB: label serves as value!</notes>
+    <items>
+        <item>
+            <label>(none selected)</label>
+            <value/>
+        </item>
+        <item>
+            <label>advertisements</label>
+            <description>An item printed solely as a means of advertising a product or service, but not an event.</description>
+        </item>
+        <item>
+            <label>albums</label>
+            <description>Bound or loose-leaf sets of pages. Includes handmade albums and published volumes of blank pages designed for the addition of images or keepsakes.</description>
+        </item>
+        <item>
+            <label>architecture</label>
+            <description>Includes drawings and photos.</description>
+        </item>
+        <item>
+            <label>baseball Cards</label>
+            <description>Advertising or collectible cards that feature portraits of baseball players, other people, or topics associated with the game. Introduced in 1886 or 1887 by a tobacco company; also popular with bubble gum manufacturers beginning in the 1930s. Common sizes include 1.5 x 2.5 inches, 2.5 x 3.5 inches, and ca. 5 x 8 inches. The cards may be actual photographs mounted on card stock or photomechanically printed.</description>
+        </item>
+        <item>
+            <label>blank forms</label>
+            <description>Forms that have been printed blank, which may or may not have been filled in; the document was typically meant to be returned to the publisher (e.g., subscription lists, petitions).</description>
+        </item>
+        <item>
+            <label>books</label>
+            <description>Published non-periodical volumes in bound codex form, usually with 49 or more pages.</description>
+        </item>
+        <item>
+            <label>broadsides</label>
+            <description>Single-sheet notices or announcements pinted on one or both sides, intended to be read unfolded.</description>
+        </item>
+        <item>
+            <label>cartoons (Commentary)</label>
+            <description>Pictorial images using wit to comment on such things as contemporary events, social habits, or political trends; usually executed in a broad or abbreviated manner.</description>
+        </item>
+        <item>
+            <label>catalogs</label>
+            <description>Enumerations of items arranged systematically with descriptive details. May have prices.</description>
+        </item>
+        <item>
+            <label>cityscapes</label>
+            <description>General or broad views of cities and towns or sections of them. Usually made from an elevated or distant vantage point, such as a view from a roof or a view of a skyline.</description>
+        </item>
+        <item>
+            <label>clippings</label>
+            <description>Objects with physical evidence suggesting extraction from a larger entity (e.g., books, newspapers).</description>
+        </item>
+        <item>
+            <label>correspondence</label>
+            <description>Communication by the exchange of letters.</description>
+        </item>
+        <item>
+            <label>diaries</label>
+            <description>A daily record, especially a personal record of events, experiences, and observations; a journal.</description>
+        </item>
+        <item>
+            <label>drawings</label>
+            <description>Narrower terms include both physical media and genre categories but are limited to those which use drawing in the sense of a specific medium rather than in the everyday sense of graphic representation.</description>
+        </item>
+        <item>
+            <label>ephemera</label>
+            <description>Transient everyday items, usually printed and on paper, that are manufactured for a specific limited use, then often discarded. Includes everyday items that are meant to be saved, at least for a while, such as KEEPSAKES and STOCK CERTIFICATES.</description>
+        </item>
+        <item>
+            <label>essays</label>
+            <description>A short literary composition on a single subject, usually presenting the personal view of the author.</description>
+        </item>
+        <item>
+            <label>ethnography</label>
+            <description>Documentation made for or by anthropologists and others involved in the systematic recording of human cultures.</description>
+        </item>
+        <item>
+            <label>fieldnotes</label>
+            <description>Notes, often in books, kept by researchers or surveying parties while on site.</description>
+        </item>
+        <item>
+            <label>illustrations</label>
+            <description>Images that explain or elaborate a written or spoken text; may be issued separately from the text.</description>
+        </item>
+        <item>
+            <label>interviews</label>
+            <description>A conversation, such as one conducted by a reporter, in which facts or statements are elicited from another.</description>
+        </item>
+        <item>
+            <label>landscapes</label>
+            <description>General or broad views of natural scenery, including inland bodies of water; may also include figures or man-made objects, but these are of secondary importance to the composition. Usually made from an elevated or distant vantage point, such as a view from a hill; not ground level close-up view of, for example, a tree.</description>
+        </item>
+        <item>
+            <label>leaflets</label>
+            <description>Unbound volumes with fewer than five pages.</description>
+        </item>
+        <item>
+            <label>manuscripts</label>
+            <description>A book, document, or other composition written by hand. A typewritten or handwritten version of a book, an article, a document, or other work, especially the author's own copy, prepared and submitted for publication in print. Handwriting.</description>
+        </item>
+        <item>
+            <label>maps</label>
+            <description>Graphic delineations at a set scale, of all or part of the earth or another celestial sphere indicating the relative position of selected artificial and natural features.</description>
+        </item>
+        <item>
+            <label>miscellaneous Documents</label>
+            <description>A written or printed paper that bears the original, official, or legal form of something and can be used to furnish decisive evidence or information.</description>
+        </item>
+        <item>
+            <label>motion Pictures</label>
+            <description>Used for Cinema, Films, Movies, Moving pictures.</description>
+        </item>
+        <item>
+            <label>music</label>
+            <description>The art of arranging sounds in time so as to produce a continuous, unified, and evocative composition, as through melody, harmony, rhythm, and timbre.</description>
+        </item>
+        <item>
+            <label>narratives</label>
+            <description>A narrated account; a story.</description>
+        </item>
+        <item>
+            <label>paintings</label>
+            <description>Color paint applied by hand to a surface (support) such as paper, canvas, wood, glass, or other.</description>
+        </item>
+        <item>
+            <label>pamphlets</label>
+            <description>Published non-periodical volumes with no cover or with a paper cover. Usually 5 or more pages and fewer than 49 pages.</description>
+        </item>
+        <item>
+            <label>periodicals</label>
+            <description>Serials usually issued at regular intervals and more frequently than annually.</description>
+        </item>
+        <item>
+            <label>petitions</label>
+            <description>Includes activities involved in petitioning.</description>
+        </item>
+        <item>
+            <label>photographs</label>
+            <description>A general designation for any photographic process. The narrower terms include both physical media and genre categories.</description>
+        </item>
+        <item>
+            <label>physical Objects</label>
+            <description>Something perceptible by one or more of the senses, especially by vision or touch; a material thing.</description>
+        </item>
+        <item>
+            <label>poetry</label>
+            <description>A piece of literature written in meter; verse.</description>
+        </item>
+        <item>
+            <label>portraits</label>
+            <description>Graphic representations, especially of the face, of real persons, usually posed, living or dead. Pictures whose purpose is the portrayal of an individual or several people, not pictures that merely include people as part of an event or scene.</description>
+        </item>
+        <item>
+            <label>postcards</label>
+            <description>Cards on which a message may be written or printed for mailing without an envelope; often include a pictorial, comic, or other scene on one side.</description>
+        </item>
+        <item>
+            <label>posters</label>
+            <description>Single or multi-sheet notices made to attract attention to events, activities, cuases, goods, or services; also, purely decorative posters. For posting, usually in a public place; chiefly pictorial. Intended to make an immediate impression from a distance.</description>
+        </item>
+        <item>
+            <label>prints</label>
+            <description>Images formed by transfer from one surface or source to another. Usually created with ink(s) and produced in multiple impressions.</description>
+        </item>
+        <item>
+            <label>programs</label>
+            <description>Lists of the events, pieces, performers, speakers, etc., of an entertainment, ceremony, or the like.</description>
+        </item>
+        <item>
+            <label>recording logs</label>
+            <description>Sequential lists or summaries of the contents or events on sound or video recordings.</description>
+        </item>
+        <item>
+            <label>scores</label>
+            <description>The written form of a composition for orchestral or vocal parts.</description>
+        </item>
+        <item>
+            <label>sheet Music</label>
+            <description>Unbound songs and other pieces of music on eight or fewer pages.</description>
+        </item>
+        <item>
+            <label>timetables</label>
+            <description>Items printed solely for use as timetables (e.g., train schedules).</description>
+        </item>
+        <item>
+            <label>transcriptions</label>
+            <description>Something that has been transcribed, especially: Music. An adaptation of a composition. A recorded radio or television program. Linguistics. A representation of speech sounds in phonetic symbols.</description>
+        </item>
+    </items>
+</code-table>
