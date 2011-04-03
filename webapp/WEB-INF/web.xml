@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--+
     | Configuration file for the web application. 
     |
@@ -7,14 +6,18 @@
     | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
     |
     | $Id$
-    +-->
-
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+    +--><web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
     
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
+    
+   <context-param>
+      <param-name>betterform.configfile</param-name>
+      <param-value>WEB-INF/betterform-config.xml</param-value>
+   </context-param>
 
     <!-- 
         Initialize Log4j using a servlet.
@@ -147,7 +150,19 @@
         </init-param>
     </servlet>
 	
-    <filter>
+    <!--XForms Filter-->
+    
+<filter>
+      <filter-name>XFormsFilter</filter-name>
+      <filter-class>
+      de.betterform.agent.web.filter.XFormsFilter</filter-class>
+      <init-param>
+         <param-name>useragent</param-name>
+         <param-value>dojo</param-value>
+      </init-param>
+   </filter>
+    
+   <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
 
@@ -170,7 +185,7 @@
         <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
     </servlet>
 
-	<!--
+	  <!--
         Configure the Axis servlets. 
         Axis provides eXist's web-services via SOAP.
     -->
@@ -511,6 +526,37 @@
         <servlet-name>jnlp</servlet-name>
         <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
     </servlet>
+   <!--betterFORM servlets-->
+    
+<servlet>
+      <servlet-name>Flux</servlet-name>
+      <servlet-class>
+      org.directwebremoting.servlet.DwrServlet</servlet-class>
+      <init-param>
+         <param-name>debug</param-name>
+         <param-value>true</param-value>
+      </init-param>
+   </servlet>
+   <servlet>
+      <servlet-name>XFormsPostServlet</servlet-name>
+      <servlet-class>
+      de.betterform.agent.web.servlet.XFormsPostServlet</servlet-class>
+   </servlet>
+   <servlet>
+      <servlet-name>FormsServlet</servlet-name>
+      <servlet-class>
+      de.betterform.agent.web.servlet.FormsServlet</servlet-class>
+   </servlet>
+   <servlet>
+      <servlet-name>inspector</servlet-name>
+      <servlet-class>
+      de.betterform.agent.web.servlet.XFormsInspectorServlet</servlet-class>
+   </servlet>
+   <servlet>
+      <servlet-name>ResourceServlet</servlet-name>
+      <servlet-class>
+      de.betterform.agent.web.resources.ResourceServlet</servlet-class>
+   </servlet>
     
     
     <!-- ====================== URL space mappings ======================= -->
@@ -525,9 +571,45 @@
          website will only work if XQueryURLRewrite controls the /rest servlet
          (EXistServlet). -->
     <filter-mapping>
+      <filter-name>XFormsFilter</filter-name>
+      <url-pattern>/rest/db/*</url-pattern>
+   </filter-mapping>
+   <filter-mapping>
+      <filter-name>XFormsFilter</filter-name>
+      <servlet-name>XFormsPostServlet</servlet-name>
+   </filter-mapping>
+    
+   <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    
+   <!--betterFORM Flux Servlet Mapping-->
+    
+<servlet-mapping>
+      <servlet-name>Flux</servlet-name>
+      <url-pattern>/Flux/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>XFormsPostServlet</servlet-name>
+      <url-pattern>/XFormsPost</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>XQueryServlet</servlet-name>
+      <url-pattern>*.xql</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>FormsServlet</servlet-name>
+      <url-pattern>/forms/formslist</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>inspector</servlet-name>
+      <url-pattern>/inspector/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>ResourceServlet</servlet-name>
+      <url-pattern>/bfResources/*</url-pattern>
+   </servlet-mapping>
     
     <!-- XMLRPC -->
     <!--servlet-mapping>
@@ -585,9 +667,9 @@
         servlets) you might have to change this parameter.
     -->
 	<servlet-mapping>
-		<servlet-name>Cocoon</servlet-name>
-		<url-pattern>/cocoon/*</url-pattern>
-	</servlet-mapping>
+		    <servlet-name>Cocoon</servlet-name>
+		    <url-pattern>/cocoon/*</url-pattern>
+	  </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>Jasper</servlet-name>

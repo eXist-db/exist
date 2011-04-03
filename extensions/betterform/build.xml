@@ -78,11 +78,6 @@
 
         <delete dir="${exist.rootdir}/webapp/betterform"/>
 
-        <move file="${betterform.home}/uninstall/ehcache-1.1.jar" tofile="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar"
-              failonerror="false"/>
-        <move file="${betterform.home}/uninstall/commons-lang-2.0-20041007T2305.jar"
-              tofile="${exist.rootdir}/lib/cocoon/commons-lang-2.0-20041007T2305.jar" failonerror="false"/>
-
         <!--delete files from WEB-INF-->
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
@@ -109,10 +104,6 @@
         </echo>
 
         <mkdir dir="${betterform.home}/uninstall"/>
-        <move file="${exist.rootdir}/lib/cocoon/ehcache-1.1.jar" tofile="${betterform.home}/uninstall/ehcache-1.1.jar"
-              failonerror="true"/>
-        <move file="${exist.rootdir}/lib/cocoon/commons-lang-2.0-20041007T2305.jar"
-              tofile="${betterform.home}/uninstall/commons-lang-2.0-20041007T2305.jar" failonerror="true"/>
 
         <echo>
             Copying libraries so start.config finds them
