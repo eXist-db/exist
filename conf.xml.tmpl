@@ -28,14 +28,14 @@
     
     Any unique attributes specified can also be overriden using a Java system property, typically specified on the command line, of the form:
     
-    	org.element.element....attribute
-    	
+        org.element.element....attribute
+        
     where the nesting of the element names follows the structure of the XML configuration document, as was shown above.
-    	
+        
     For example, to override the value of the cache size to be 128MB you could specify:
     
-    	-Dorg.exist.db-connection.cacheSize=128M
-    	
+        -Dorg.exist.db-connection.cacheSize=128M
+        
     on your JVM startup command line or options.  Note that this only works for unique, non-repeating elements, so you can't override things like the transformer attribute element values or the XQuery module builtin definitions,
     since they are not unique.
     
@@ -51,8 +51,7 @@
     $Id$
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
 
     <!-- 
         Configures the cluster configuration.
@@ -95,19 +94,19 @@
             heap size (set by the JVM -Xmx parameter). It can be larger if you have a large-memory JVM (usually a 64bit JVM)
         
         - checkMaxCacheSize:
-        	specifies whether eXist should check the max cache size on startup and reduce it if it is too large.
-        	
-        	This value should normally be set to true.
-        	
-        	Only set this value to false if:
-        	
-        		a) You know what you are doing!
-        		b) You have a JVM with tons of memory (typically using a 64-bit JVM, which is the scenario this setting is intended for).
-        		c) You are really sure you've complied with a) and b) above.
-        		
-        	Setting this value to false may cause memory issues which may lead to database corruptions, since it disables
-        	the automated max cache size checks! You have been warned! ;-)
-        	
+            specifies whether eXist should check the max cache size on startup and reduce it if it is too large.
+            
+            This value should normally be set to true.
+            
+            Only set this value to false if:
+            
+                a) You know what you are doing!
+                b) You have a JVM with tons of memory (typically using a 64-bit JVM, which is the scenario this setting is intended for).
+                c) You are really sure you've complied with a) and b) above.
+                
+            Setting this value to false may cause memory issues which may lead to database corruptions, since it disables
+            the automated max cache size checks! You have been warned! ;-)
+            
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
             Memory calculation is just approximate. If your collections are very 
@@ -127,16 +126,16 @@
             transferred from and to the database files. Should be a multiple of
             the operating system's file system page size (usually 4096).
 
-		- nodesBuffer:
-			size of the temporary buffer used by eXist for caching index
-			data while indexing a document. If set to -1, eXist will use the
-			entire free memory to buffer index entries and will flush the
-			cache once the memory is full.
+        - nodesBuffer:
+            size of the temporary buffer used by eXist for caching index
+            data while indexing a document. If set to -1, eXist will use the
+            entire free memory to buffer index entries and will flush the
+            cache once the memory is full.
 
-			If set to a value > 0, the buffer will be fixed to the given size.
-			The specified number corresponds to the number of nodes the
-			buffer can hold, in thousands. Usually, a good default could be
-			nodesBuffer="1000".
+            If set to a value > 0, the buffer will be fixed to the given size.
+            The specified number corresponds to the number of nodes the
+            buffer can hold, in thousands. Usually, a good default could be
+            nodesBuffer="1000".
     
          - cacheShrinkThreshold:
             The minimum number of pages that must be read from a
@@ -188,36 +187,36 @@
             - wait-before-shutdown:
                 defines how long the database instance will wait for running
                 operations to complete before it forces a shutdown. Forcing
-				a shutdown may leave the db in an unclean state and may
-				trigger a recovery run on restart.
+                a shutdown may leave the db in an unclean state and may
+                trigger a recovery run on restart.
 
-				Setting wait-before-shutdown="-1" means that the server will
-				wait for all threads to return, no matter how long it takes.
-				No thread will be killed.
+                Setting wait-before-shutdown="-1" means that the server will
+                wait for all threads to return, no matter how long it takes.
+                No thread will be killed.
         -->
         <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
 
-        <!--                                                                     	
-    		    Configure the query pool.
-    		    
-    		    - max-stack-size:                                                        
-    		        maximum number of queries in the query-pool.                         
+        <!--                                                                        
+                Configure the query pool.
+                
+                - max-stack-size:                                                        
+                    maximum number of queries in the query-pool.                         
                                                                                          
-    		    - size:                                                                  
-    		        number of copies of the same query kept in the query-pool.           
-    		        Value "-1" effectively disables caching. Queries cannot be shared     
-    		        by threads, each thread needs a private copy of a query.             
+                - size:                                                                  
+                    number of copies of the same query kept in the query-pool.           
+                    Value "-1" effectively disables caching. Queries cannot be shared     
+                    by threads, each thread needs a private copy of a query.             
                                                                                          
-    		    - timeout:                                                               
-    		        amount of time that a query will be cached in the query-pool.        
+                - timeout:                                                               
+                    amount of time that a query will be cached in the query-pool.        
                                                                                          
-    		    - timeout-check-interval:                                                
-    		        time between checking for timed out queries. For value "-1"          
-    		        the time out is switched off, resulting cached queries to remain     
-    		        in the cache forever.                                                
-		    -->
+                - timeout-check-interval:                                                
+                    time between checking for timed out queries. For value "-1"          
+                    the time out is switched off, resulting cached queries to remain     
+                    in the cache forever.                                                
+            -->
         <query-pool max-stack-size="5" size="128" timeout="120000"                
-		            timeout-check-interval="30000"/>
+                    timeout-check-interval="30000"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -268,30 +267,28 @@
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
 
-			- force-restart:
-				Try to restart the db even if crash recovery failed. This is
-				dangerous because there might be corruptions inside the
-				data files. The transaction log will be cleared, all locks removed
-				and the db reindexed.
-				
-				Set this option to "yes" if you need to make sure that the db is
-				online, even after a fatal crash. Errors encountered during recovery 
-				are written to the log files. Scan the log files to see if any problems
-				occurred.
+            - force-restart:
+                Try to restart the db even if crash recovery failed. This is
+                dangerous because there might be corruptions inside the
+                data files. The transaction log will be cleared, all locks removed
+                and the db reindexed.
+                
+                Set this option to "yes" if you need to make sure that the db is
+                online, even after a fatal crash. Errors encountered during recovery 
+                are written to the log files. Scan the log files to see if any problems
+                occurred.
 
-			- consistency-check:
-				If set to "yes", a consistency check will be run on the database
-				if an error was detected during crash recovery. This option requires
-				force-restart to be set to "yes", otherwise it has no effect.
+            - consistency-check:
+                If set to "yes", a consistency check will be run on the database
+                if an error was detected during crash recovery. This option requires
+                force-restart to be set to "yes", otherwise it has no effect.
 
-				The consistency check outputs a report to the directory {files}/sanity
-				and if inconsistencies are found in the db, it writes an emergency
-				backup to the same directory.
+                The consistency check outputs a report to the directory {files}/sanity
+                and if inconsistencies are found in the db, it writes an emergency
+                backup to the same directory.
         -->
-        <recovery enabled="yes" group-commit="no" 
-			journal-dir="@dataDir@" size="100M"
-            sync-on-commit="no" force-restart="no"
-			consistency-check="yes"/>
+        <recovery enabled="yes"  group-commit="no"   journal-dir="@dataDir@" 
+                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
@@ -406,22 +403,19 @@
         tokenizer="org.exist.storage.analysis.SimpleTokenizer" track-term-freq="yes">
 
         <modules>
-            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" 
-                    file="ngram.dbx" n="3"/>
+            <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
                     
             <!--
-            <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
-				connectionTimeout="10000" flushAfter="300" />
+            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/>
             -->
             
-			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
-				buffer="32"/>
+            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
             <!--
                 The following index can be used to speed up 'order by' expressions
                 by pre-ordering a node set.
             -->
-            <module id="sort-index" class="org.exist.indexing.sort.SortIndex"/>
+            <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
 
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
@@ -432,9 +426,8 @@
                  by the query optimizer for additional optimizations. 
             -->
             <!--
-			     <module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
-				           file="stats.dbx"/>
-			     -->
+            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" />
+            -->
         </modules>
 
         <!--
@@ -465,24 +458,24 @@
             The type of the job to schedule. Must be either "startup", "system" 
             or "user".
             
-	            startup - Startup jobs are executed once during the
-	            database startup but before the database becomes available,
-	            these jobs are synchronous.
-	            
-	            system - System jobs require the database to be in a consistent state.
-	            All database operations will be stopped until the method returns or 
-	            throws an exception. Any exception will be caught and a warning written to
-	            the log.
-	            
-	            user - User jobs may be scheduled at any time and may be mutually exclusive
-	            or non-exclusive
+                startup - Startup jobs are executed once during the
+                database startup but before the database becomes available,
+                these jobs are synchronous.
+                
+                system - System jobs require the database to be in a consistent state.
+                All database operations will be stopped until the method returns or 
+                throws an exception. Any exception will be caught and a warning written to
+                the log.
+                
+                user - User jobs may be scheduled at any time and may be mutually exclusive
+                or non-exclusive
             
             - class:
             If the job is written in Java then this should be the name of the
             class that extends either -
-            	org.exist.scheduler.StartupJob
-            	org.exist.storage.SystemTask
-            	org.exist.scheduler.UserJavaJob
+                org.exist.scheduler.StartupJob
+                org.exist.storage.SystemTask
+                org.exist.scheduler.UserJavaJob
             
             - xquery:
             If the job is written in XQuery (not suitable for system jobs) then 
@@ -538,12 +531,12 @@
         <!--
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-        	cron-trigger="0 0 * * * ?">
-			<parameter name="output" value="export"/>
-    		<parameter name="backup" value="yes"/>
-		    <parameter name="incremental" value="no"/>
-			<parameter name="incremental-check" value="no"/>
-			<parameter name="max" value="2"/>
+            cron-trigger="0 0 * * * ?">
+            <parameter name="output" value="export"/>
+            <parameter name="backup" value="yes"/>
+            <parameter name="incremental" value="no"/>
+            <parameter name="incremental-check" value="no"/>
+            <parameter name="max" value="2"/>
         </job>
         -->
         
@@ -552,7 +545,7 @@
             
             Parameters:
             output-dir:
-            	The directory into which the copy will be written
+                The directory into which the copy will be written
         -->
         <!--
         <job type="system" name="databackup" 
@@ -608,8 +601,10 @@
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
-		<!--custom-filter class="org.exist.versioning.VersioningFilter"/-->
-	</serializer>
+        <!--
+        <custom-filter class="org.exist.versioning.VersioningFilter"/>
+        -->
+    </serializer>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
@@ -699,172 +694,129 @@
     <xquery enable-java-binding="no" disable-deprecated-functions="no" 
             enable-query-rewriting="yes" backwardCompatible="no" 
             raise-error-on-failed-retrieval="no">
+        
         <builtin-modules>
-            <!-- Default Modules -->
-            <module class="org.exist.xquery.functions.util.UtilModule"
-                uri="http://exist-db.org/xquery/util"/>
-            <module class="org.exist.xquery.functions.transform.TransformModule"
-                uri="http://exist-db.org/xquery/transform"/>
-            <module class="org.exist.xquery.functions.xmldb.XMLDBModule"
-                uri="http://exist-db.org/xquery/xmldb"/>
-            <module class="org.exist.xquery.functions.request.RequestModule"
-                uri="http://exist-db.org/xquery/request"/>
-            <module class="org.exist.xquery.functions.response.ResponseModule"
-                uri="http://exist-db.org/xquery/response"/>
-            <module class="org.exist.xquery.functions.session.SessionModule"
-                uri="http://exist-db.org/xquery/session"/>
-            <module class="org.exist.xquery.functions.text.TextModule"
-                uri="http://exist-db.org/xquery/text"/>
-            <module class="org.exist.xquery.modules.example.ExampleModule"
-                uri="http://exist-db.org/xquery/examples"/>
-            <module class="org.exist.xquery.functions.validation.ValidationModule"
-                uri="http://exist-db.org/xquery/validation"/>
-            <module class="org.exist.xquery.functions.system.SystemModule"
-                uri="http://exist-db.org/xquery/system"/>
-            <module class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"
-                uri="http://exist-db.org/xquery/securitymanager"/>
-            <module class="org.exist.xquery.modules.mail.MailModule"
-                    uri="http://exist-db.org/xquery/mail" />
-
-	<module class="org.expath.exist.HttpClientModule" uri="http://expath.org/ns/http-client"/>
-        <module class="org.expath.exist.ZipModule" uri="http://expath.org/ns/zip"/>
-
-            <!-- expathrepo module: required for managing external dependencies -->
-            <module class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"
-                uri="http://exist-db.org/xquery/repo" />
-
-            <!-- New Modularized Indexes -->
-            <module class="org.exist.xquery.modules.ngram.NGramModule"
-                uri="http://exist-db.org/xquery/ngram"/>
-            <!--
-            <module class="org.exist.xquery.modules.spatial.SpatialModule"
-                uri="http://exist-db.org/xquery/spatial" />
+            <!-- 
+                Default Modules 
             -->
+            <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />
+            <module uri="http://exist-db.org/xquery/mail"       class="org.exist.xquery.modules.mail.MailModule" />
+            <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
+            <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
+            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
+            <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
+            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
+            <module uri="http://exist-db.org/xquery/text"       class="org.exist.xquery.functions.text.TextModule" />
+            <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
+            <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule" />
+            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
+            <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
 
-			<module class="org.exist.xquery.modules.lucene.LuceneModule"
-                uri="http://exist-db.org/xquery/lucene"/>
 
-            <module class="org.exist.xquery.modules.sort.SortModule"
-                uri="http://exist-db.org/xquery/sort"/>
+            <!-- 
+                EXPath Modules 
+            -->
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" />
+            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" />
+
+            <!-- EXPathrepo module: required for managing external dependencies -->
+            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
             
-            <!-- XQDoc module: required for generating function documentation -->
-            <module class="org.exist.xqdoc.xquery.XQDocModule"
-                uri="http://exist-db.org/xquery/xqdoc"/>
+            <!-- expath module imports (for p:http-request)//-->
+            <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
+            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
+
+
+            <!-- 
+                Modularized Indexes 
+            -->
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
+            <module uri="http://exist-db.org/xquery/ngram" class="org.exist.xquery.modules.ngram.NGramModule" />
+            <module uri="http://exist-db.org/xquery/sort" class="org.exist.xquery.modules.sort.SortModule" />
             
-			<!-- KWIC module -->
-			<module src="resource:org/exist/xquery/lib/kwic.xql"
-				uri="http://exist-db.org/xquery/kwic"/>
+            <!--
+            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
+            -->
             
-            <!-- Sequences module -->
-            <module src="resource:org/exist/xquery/lib/sequences.xq"
-                uri="http://exist-db.org/xquery/sequences"/>
+            <!-- 
+                Modules written in XQuery
+            -->
             
-			<!-- Versioning -->
-			<module src="resource:org/exist/versioning/xquery/versioning.xqm"
-				uri="http://exist-db.org/versioning"/>
+            <!-- Compression module//-->
+            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
+            
+            <!-- KWIC module -->
+            <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
             
             <!-- JSON module -->
-            <module src="resource:org/exist/xquery/lib/json.xq" 
-                uri="http://www.json.org"/>
+            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
 
             <!-- JSONP module -->
-            <module src="resource:org/exist/xquery/lib/jsonp.xq" 
-                uri="http://www.jsonp.org"/>
+            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq" />
+            
+            <!-- Sequences module -->
+            <module uri="http://exist-db.org/xquery/sequences" src="resource:org/exist/xquery/lib/sequences.xq" />
+            
+            <!-- Versioning -->
+            <module uri="http://exist-db.org/versioning" src="resource:org/exist/versioning/xquery/versioning.xqm" />
 
             <!-- Test module -->
-            <module src="resource:org/exist/xquery/lib/test.xq"
-                uri="http://exist-db.org/xquery/testing"/>
+            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />
 
-			<!-- XSL functions -->
-            <module class="org.exist.xslt.functions.XSLModule"
-                uri="http://www.w3.org/1999/XSL/Transform" />
+            <!-- XSL functions -->
+            <module uri="http://www.w3.org/1999/XSL/Transform" class="org.exist.xslt.functions.XSLModule" />
 
-            <!-- expath module imports (for p:http-request)//-->
-            <module class="org.exist.xquery.modules.httpclient.HTTPClientModule" 
-                uri="http://exist-db.org/xquery/httpclient" />
-            <module src="resource:org/expath/www/mod/http-client/http-client.xqm" 
-                uri="http://www.expath.org/mod/http-client"/>
+            <!-- XProc (eXist native ) -->
+            <module uri="http://xproc.net/xproc" src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />
+            
+            <!-- XQDoc module: required for generating function documentation -->
+            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
 
-            <!-- eXist native XProc //-->
-            <module src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm"
-                uri="http://xproc.net/xproc"/>
 
-            <!-- compression module//-->
-            <module class="org.exist.xquery.modules.compression.CompressionModule"
-                    uri="http://exist-db.org/xquery/compression" />
 
-            <!-- Optional Modules -->
-            <!--
-
-            <module class="org.exist.contentextraction.xquery.ContentExtractionModule"
-                uri="http://exist-db.org/xquery/contentextraction"/>
-
-            <module class="org.exist.backup.xquery.BackupModule"
-                    uri="http://exist-db.org/xquery/backups"/>
-
-            <module class="org.exist.xquery.modules.compression.CompressionModule"
-                    uri="http://exist-db.org/xquery/compression" />
-            <module class="org.exist.xquery.modules.datetime.DateTimeModule"
-                    uri="http://exist-db.org/xquery/datetime" />
-            <module class="org.exist.xquery.modules.file.FileModule"
-                    uri="http://exist-db.org/xquery/file" />
-            <module class="org.exist.xquery.modules.example.ExampleModule"
-                    uri="http://exist-db.org/xquery/examples" />
-            <module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
-                    uri="http://exist-db.org/xquery/httpclient" />
-            <module class="org.exist.xquery.modules.image.ImageModule"
-                    uri="http://exist-db.org/xquery/image" />
-            <module class="org.exist.xquery.modules.jndi.JNDIModule"
-                    uri="http://exist-db.org/xquery/jndi" />
-            <module class="org.exist.xquery.modules.mail.MailModule"
-                    uri="http://exist-db.org/xquery/mail" />
-            <module class="org.exist.xquery.modules.math.MathModule"
-                    uri="http://exist-db.org/xquery/math" />
-            <module class="org.exist.xquery.modules.oracle.OracleModule"
-                    uri="http://exist-db.org/xquery/oracle" />
-            <module class="org.exist.xquery.modules.scheduler.SchedulerModule"
-                    uri="http://exist-db.org/xquery/scheduler" />
-            <module class="org.exist.xquery.modules.simpleql.SimpleQLModule"
-                    uri="http://exist-db.org/xquery/simple-ql" />
-            <module class="org.exist.xquery.modules.sql.SQLModule"
-                    uri="http://exist-db.org/xquery/sql" /-->
-
-            <!-- valid processor adapters are -
-                org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
-                org.exist.xquery.modules.xslfo.RenderHouseXepProcessorAdapter for RenderHouse's XEP
+            <!-- 
+                Optional Modules 
             -->
-            <!--module class="org.exist.xquery.modules.xslfo.XSLFOModule"
-                    uri="http://exist-db.org/xquery/xslfo">
+            <!--
+            <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
+            <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
+            <module uri="http://exist-db.org/xquery/compression"        class="org.exist.xquery.modules.compression.CompressionModule" />
+            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
+            <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
+            <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
+            <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
+            <module uri="http://exist-db.org/xquery/examples"           class="org.exist.xquery.modules.example.ExampleModule" />
+            <module uri="http://exist-db.org/xquery/file"               class="org.exist.xquery.modules.file.FileModule" />
+            <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
+            <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
+            <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
+            <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
+            <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
+            <module uri="http://exist-db.org/xquery/math"               class="org.exist.xquery.modules.math.MathModule" />
+            <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
+            <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
+            <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
+            <module uri="http://exist-db.org/xquery/simple-ql"          class="org.exist.xquery.modules.simpleql.SimpleQLModule" />
+            <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
+            <module uri="http://exist-db.org/xquery/svn"                class="org.exist.xquery.modules.svn.SVNModule" />
+            <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
+            <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
+            <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
+            <module uri="http://xmlcalabash.com"                        class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule" />
+
+            -->
+
+            <!-- 
+                XSLFO:
+                valid processor adapters are -
+                - org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
+                - org.exist.xquery.modules.xslfo.RenderHouseXepProcessorAdapter for RenderHouse's XEP
+            -->
+            <!--
+            <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule">
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
-            </module-->
-
-            <module class="org.exist.xquery.modules.xmldiff.XmlDiffModule"
-                    uri="http://exist-db.org/xquery/xmldiff" />
-            <module class="org.exist.xquery.modules.cache.CacheModule"
-                uri="http://exist-db.org/xquery/cache" />
-            <module class="org.exist.xquery.modules.memcached.MemcachedModule"
-                uri="http://exist-db.org/xquery/memcached" />
-             <module class="org.exist.xquery.modules.context.ContextModule"
-                uri="http://exist-db.org/xquery/context" />
-
-            <module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
-                    uri="http://exist-db.org/xquery/jfreechart"/> 
-                    
-            <module class="org.exist.xquery.modules.svn.SVNModule" 
-            		uri="http://exist-db.org/xquery/svn"/>
-
-            <module class="org.exist.versioning.svn.xquery.SVNModule" 
-            		uri="http://exist-db.org/xquery/versioning/svn"/>
-
-            <module class="org.exist.xquery.modules.counter.CounterModule"
-                    uri="http://exist-db.org/xquery/counter"/>
-                    
-            <module class="org.exist.xquery.modules.xmpp.XMPPModule"
-                    uri="http://exist-db.org/xquery/xmpp"/>
-
-            <module class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule"
-                    uri="http://xmlcalabash.com" />
-
+            </module>
+            -->
         </builtin-modules>
     </xquery>
 
