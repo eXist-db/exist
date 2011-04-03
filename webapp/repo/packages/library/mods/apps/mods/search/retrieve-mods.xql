@@ -33,8 +33,25 @@ declare function mods:space-before($node as node()?) as xs:string? {
         ()
 };
 
+(: Function to clean up unintended punctuation. These should ideally be removed at the source. :)
 declare function mods:clean-up-punctuation($input as xs:string) as xs:string? {
-    replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace($input
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+    replace(
+        $input
     , ' \.', '.')
     , '\s*,', ',')
     , ' :', ':')
@@ -47,6 +64,10 @@ declare function mods:clean-up-punctuation($input as xs:string) as xs:string? {
     , '\?\.', '?')
     , '!\.', '!')
     ,'\.” \.', '.”')
+    ,' \)', ')')
+    ,'\( ', '(')
+    ,'\.\.', '.')
+    ,'\.”,', ',”')
 };
 
 (: ### general functions end ###:)
@@ -72,31 +93,45 @@ declare function mods:get-language-term($language as node()?) as xs:string? {
         let $languageTerm :=
             let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[value = $language[@type = 'code']][1]/label
             return
-            if ($languageTerm)
-            then $languageTerm
-            else
-                let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $language[@type = 'code']][1]/label
-                return
                 if ($languageTerm)
                 then $languageTerm
                 else
-                    let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTerm = $language[@type = 'code']][1]/label
+                    let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTwo = $language[@type = 'code']][1]/label
                     return
-                    if ($languageTerm)
-                    then $languageTerm
-                    else
-                        let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = $language[@type = 'text']/upper-case(label)][1]/label
-                        return
                         if ($languageTerm)
                         then $languageTerm
                         else
-                            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = upper-case($language[1])][1]/label
+                            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[valueTerm = $language[@type = 'code']][1]/label
                             return
-                            if ($languageTerm)
-                            then $languageTerm
-                            else ()
+                                if ($languageTerm)
+                                then $languageTerm
+                                else
+                                    let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = $language[@type = 'text']/upper-case(label)][1]/label
+                                    return
+                                        if ($languageTerm)
+                                        then $languageTerm
+                                        else
+                                            let $languageTerm := doc('/db/org/library/apps/mods/code-tables/language-3-type-codes.xml')/code-table/items/item[upper-case(label) = upper-case($language[1])][1]/label
+                                            return
+                                                if ($languageTerm)
+                                                then $languageTerm
+                                                else ()
+        return $languageTerm
+};
+
+declare function mods:get-script-term($language as node()?) as xs:string? {
+        let $scriptTerm :=
+            let $scriptTerm := doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $language/mods:scriptTerm[@authority]]/label
             return
-            $languageTerm
+                if ($scriptTerm)
+                then $scriptTerm
+                else
+                    let $scriptTerm := doc('/db/org/library/apps/mods/code-tables/script-codes.xml')/code-table/items/item[value = $language/mods:scriptTerm]/label
+                    return
+                        if ($scriptTerm)
+                        then $scriptTerm
+                        else ()
+        return $scriptTerm
 };
 
 (:~
@@ -122,6 +157,16 @@ declare function mods:language-of-resource($language as element(mods:language)*)
                 mods:get-language-term($languageTerm)
             else ()
 };
+
+declare function mods:script-of-resource($language as element(mods:language)*) as xs:anyAtomicType? {
+        let $scriptTerm := $language/mods:scriptTerm
+        return
+            if ($scriptTerm) 
+            then
+                mods:get-script-term($language)
+            else ()
+};
+
 
 (:~
 : The <b>mods:language-of-cataloging</b> function returns 
@@ -163,48 +208,52 @@ declare function mods:language-of-cataloging($language as element(mods:languageO
 : @param $node A mods element or attribute recording a role term value, in textual or coded form
 : @return The role term label string
 :)
-declare function mods:get-role-label-for-detail-view($roleTerm as item()?, $type as xs:string?) as item()? {        
-        let $type := $type
+declare function mods:get-role-label-for-detail-view($roleTerm as item()?) as item()? {        
         let $roleLabel :=
-            if ($roleTerm)
-            then
-                (: Is the roleTerm a role label? :)
-                let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($roleTerm)]/label
-                (: Prefer the label proper, since it contains the form presented in the detail view, e.g. "Editor" instead of "edited by". :)
-                return
-                    if ($roleLabel)
-                    then $roleLabel
-                    else
-                        (: Is the roleTerm a role term @code? :)
-                        let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $roleTerm]/label
-                        return
-                            if ($roleLabel)
-                            then $roleLabel
-                            else $roleTerm
-            else 
-                if ($type = 'personal')
-                (: Default values in absence of $roleTerm. :)
-                then 'Author'
-                else 'Corporation'
+            (: Is the roleTerm a role label? :)
+            let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($roleTerm)]/label
+            (: Prefer the label proper, since it contains the form presented in the detail view, e.g. "Editor" instead of "edited by". :)
+            return
+                if ($roleLabel)
+                then $roleLabel
+                else
+                    (: Is the roleTerm a role term @code? :)
+                    let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[value = $roleTerm]/label
+                    return
+                        if ($roleLabel)
+                        then $roleLabel
+                        else $roleTerm
         return  functx:capitalize-first($roleLabel)
 };
 
 declare function mods:get-roles-for-detail-view($name as element()*) as item()* {
-let $roles := $name/mods:role
-    for $role at $pos in $name/mods:role
-    return
-    distinct-values(
-        if ($pos eq 1)
-        then mods:get-role-terms-for-detail-view($role)
-        else ("and", mods:get-role-terms-for-detail-view($role))
-    )
+    if ($name/mods:role/mods:roleTerm/text())
+    then
+        let $roles := $name/mods:role    
+            for $role at $pos in $name/mods:role
+            return
+                distinct-values(
+                    if ($pos eq 1)
+                    then mods:get-role-terms-for-detail-view($role)
+                    else (' and ', mods:get-role-terms-for-detail-view($role))
+                )
+    else
+        (: Default values in the absence of $roleTerm. :)
+        if ($name/@type = 'corporate')
+        then 'Corporation'
+        else 'Author'
 };
 
 declare function mods:get-role-terms-for-detail-view($role as element()*) as item()* {
     let $roleTerms := $role/mods:roleTerm
     for $roleTerm at $pos in distinct-values($roleTerms)
+    
     return
-        mods:get-role-label-for-detail-view($roleTerm, 'personal')
+    if ($roleTerm)
+    then
+        mods:get-role-label-for-detail-view($roleTerm)
+        else ()
+
 };
 
 (:~
@@ -222,7 +271,7 @@ declare function mods:get-role-terms-for-detail-view($role as element()*) as ite
 : @param $node A mods element or attribute recording a role term value, in textual or coded form
 : @return The role term label string
 :)
-declare function mods:get-role-label-for-list-view($roleTerm as xs:string?) as xs:string? {
+declare function mods:get-role-label-for-list-view($roleTerm as xs:string*) as xs:string* {
         let $roleLabel :=
             let $roleLabel := doc('/db/org/library/apps/mods/code-tables/role-codes.xml')/code-table/items/item[upper-case(label) = upper-case($roleTerm)]/labelSecondary
             (: Prefer labelSecondary, since it contains the form presented in the list view output, e.g. "edited by" instead of "editor". :)
@@ -265,15 +314,14 @@ declare function mods:get-publisher($publishers as element(mods:publisher)*) as 
             else 1
         order by $order
         return
-            if ($publisher/mods:name) 
+            if ($publisher/mods:name)
             then
                 for $name at $pos in $publisher/mods:name
                 return
                     mods:retrieve-primary-name($name, $pos)
             else
-                $publisher,
-        ' '
-    )
+                $publisher
+    , ', ')
 };
 
 
@@ -569,12 +617,12 @@ declare function mods:get-part-and-origin($entry as element()) {
                     concat('. ', mods:get-place($place))
                 else ()
                 ,
-                if ($publisher/text())
+                if ($publisher)
                 then
                     (': ', mods:get-publisher($publisher))
                 else ()
                 ,
-                if ($dateIssued/text())
+                if ($dateIssued)
                 then
                 concat(', ', $dateIssued[1], '.')
                 else ()
@@ -582,7 +630,7 @@ declare function mods:get-part-and-origin($entry as element()) {
             (: If not a periodical and not an anthology, we don't know what it is and just try to extract the information. :)
             else
                 (
-                if ($place/text())
+                if ($place)
                 then
                     mods:get-place($place)
                 else ()
@@ -592,7 +640,7 @@ declare function mods:get-part-and-origin($entry as element()) {
                 , 
                 normalize-space(mods:add-part($dateIssued/string(), '.'))
                 ,
-                if ($extent/text())
+                if ($extent)
                 then
                     mods:get-extent($extent[1])            
                 else ()
@@ -803,7 +851,7 @@ declare function mods:format-primary-name($name as element(mods:name), $pos as x
         else
             if ($name/@type = 'corporate') 
             then
-            concat(string-join($name/mods:namePart[@transliteration]/string(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/string(), ' '))
+            concat(string-join($name/mods:namePart[@transliteration]/text(), ' '), ' ', string-join($name/mods:namePart[not(@transliteration)]/text(), ' '))
             (: The assumption is that any sequence of several namePart is meaningfully constructed, e.g. with more general term first. :)
             else
                 if ($name/@type = 'personal')
@@ -1701,7 +1749,7 @@ declare function mods:names-full($entry as element()) {
                         let $roles := $name/mods:role
                         for $role in $roles
                         return
-                            mods:get-role-label-for-detail-view($role, 'corporate')
+                            mods:get-role-label-for-detail-view($role)
                         }
                         </td>
                         <td class="record">
@@ -1731,15 +1779,15 @@ declare function mods:url($entry as element()) as element(tr)* {
     for $url in $entry/mods:location/mods:url
     return
         <tr>
-            <td class="label">URL 
+            <td class="label"> 
             {
-            if ($url[@displayLabel]) 
-            then
-                concat('(',($url/@displayLabel/string()),')')
-            else ()
+                if ($url/@displayLabel)
+                then
+                    $url/@displayLabel/string()
+                else 'URL'
             }
             </td>
-            <td class="record"><a href="{$url}">{$url/string()}</a></td>
+            <td class="record"><a href="{$url}">{$url}</a></td>
         </tr>
 };
         
@@ -1815,14 +1863,16 @@ declare function mods:entry-full($entry as element())
     
     (: language :)
     for $language in $entry/mods:language
-    let $languageTerm := $language/mods:languageTerm 
     return
-    if ($languageTerm)
-    then
     mods:simple-row(mods:language-of-resource($language), 'Language of Resource') 
-    else ()
     ,
-    
+
+    (: script :)
+    for $language in $entry/mods:language
+    return
+    mods:simple-row(mods:script-of-resource($language), 'Script of Resource') 
+    ,
+
     (: languageOfCataloging :)
     for $language in ($entry/mods:recordInfo/mods:languageOfCataloging)
     let $languageTerm := $language/mods:languageTerm 
@@ -1844,7 +1894,7 @@ declare function mods:entry-full($entry as element())
         then
             if ($authority = 'marcgt')
             then
-                concat(' (', doc('/db/org/library/apps/mods/code-tables/genre-authority-codes.xml')/code-table/items/item[value = $authority]/label, ')')
+                concat(' (', replace(doc('/db/org/library/apps/mods/code-tables/genre-authority-codes.xml')/code-table/items/item[value = $authority]/label, '\*', ''), ')')
             else concat(' (', $authority, ')')
         else ()            
         )
@@ -1859,10 +1909,17 @@ declare function mods:entry-full($entry as element())
     
     (: note :)
     for $note in ($entry/mods:note)
-    return
-        if ($note/@type=('refbase', 'clusterPublication')) 
-        then () 
-        else mods:simple-row($note, 'Note')
+    let $displayLabel := $note/@displayLabel
+    return    
+    mods:simple-row($note
+    , 
+    concat('Note', 
+        if ($displayLabel)
+            then
+                concat(' (', $displayLabel, ')')            
+        else ()            
+        )
+    )
     ,
     
     (: subject :)
@@ -1936,7 +1993,7 @@ declare function mods:format-short($id as xs:string, $entry as element(mods:mods
                         mods:get-role-label-for-list-view($roleTerm)
                         ,
                         mods:format-multiple-secondary-names($names, 'secondary')
-                        )
+                        ,'.')
                     else ()
         , ' '
         ,
