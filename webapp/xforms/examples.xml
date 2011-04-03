@@ -25,7 +25,7 @@
                 which is included in the eXist distribution. xsltforms implements the XForms
                 standard within the browser and is thus easy to integrate. However, eXist will also
                 work with other XForms processors like <ulink url="http://www.orbeon.com"
-                    >Orbeon</ulink> or <ulink url="http://chiba-project.org">Chiba</ulink>.</para>
+                    >Orbeon</ulink> or <ulink url="http://www.betterform.de/">betterFORM</ulink>.</para>
             <para>For more information, please have a look at the <ulink url="xforms.xml"
                     >documentation</ulink>.</para>
         </abstract>
