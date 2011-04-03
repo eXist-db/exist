@@ -77,6 +77,11 @@
             <lib dir="extensions/webdav/lib">
                 <include name="*.jar"/>
             </lib>
+            <!-- Include betterform jars  -->
+            <lib dir="extensions/betterform/src/main/lib">
+                <include name="*.jar"/>
+            </lib>
+
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
@@ -104,6 +109,10 @@
                 <exclude name="WEB-INF/data/sanity/**"/>
                 <exclude name="**/*.log*"/>
             </fileset>
+			<!-- Betterform -->
+			<zipfileset dir="extensions/betterform/src/main/xrx/"  prefix="betterform/samples">
+			    <include name="**/*"/>
+			</zipfileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>

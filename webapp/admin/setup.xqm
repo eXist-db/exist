@@ -70,7 +70,18 @@ declare function setup:importLocal() as element()+
         (
             concat($home, $pathSep, "webapp")
 		),
-	$betterform := concat($home, "/extensions/betterform/src/main/xrx/timetracker/")
+	$betterform := if (doc-available(concat("file:///", $home, "/webapp/index.xml"))) then
+		(
+			concat($home, "/extensions/betterform/src/main/xrx/timetracker/")
+		)
+		else if(ends-with($home, "WEB-INF")) then
+        (
+            concat(substring-before($home, "WEB-INF"), "betterform/samples/timetracker/")
+        )
+        else
+        (
+            concat($home, $pathSep, "betterform/samples/timetracker/")
+        )
 	
     return (
                 setup:create-collection("/db/system/config", "db"),
