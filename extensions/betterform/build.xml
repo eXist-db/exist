@@ -63,7 +63,7 @@
         <antcall target="patchWebXml"/>
 
         <echo>
-            Deploy betterFORM resources to eXist webapp (${exist.web.xml}/webapp)
+            Deploy betterFORM resources to eXist webapp (${exist.rootdir}/webapp/WEB-INF/)
         </echo>
 
         <antcall target="deployBFResources"/>
