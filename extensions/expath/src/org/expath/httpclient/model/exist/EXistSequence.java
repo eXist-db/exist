@@ -44,12 +44,14 @@ import org.xml.sax.SAXException;
 public class EXistSequence implements Sequence {
  
     private final org.exist.xquery.value.Sequence sequence;
-    private final SequenceIterator sequenceIterator;
+    private SequenceIterator sequenceIterator = SequenceIterator.EMPTY_ITERATOR;
     private final XQueryContext context;
     
     public EXistSequence(org.exist.xquery.value.Sequence sequence, XQueryContext context) throws XPathException {
         this.sequence = sequence;
-        this.sequenceIterator = sequence.iterate();
+        if(sequence != null) {
+            this.sequenceIterator = sequence.iterate();
+        }
         this.context = context;
     }
     
@@ -70,13 +72,14 @@ public class EXistSequence implements Sequence {
     //@Override
     public void serialize(OutputStream out, Properties params) throws HttpClientException {
         
-        
-        
         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         params.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         
         try {
-            SequenceIterator itSequence = sequence.iterate();
+            SequenceIterator itSequence = SequenceIterator.EMPTY_ITERATOR;
+            if(sequence != null) {
+                itSequence = sequence.iterate();
+            }
             
             String encoding = params.getProperty(OutputKeys.ENCODING, "UTF-8");
             Writer writer = new OutputStreamWriter(out, encoding);
@@ -105,5 +108,4 @@ public class EXistSequence implements Sequence {
             SerializerPool.getInstance().returnObject(sax);
         }
     }
-
 }
