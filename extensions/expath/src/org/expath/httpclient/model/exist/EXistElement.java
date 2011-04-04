@@ -96,8 +96,14 @@ public class EXistElement implements Element {
 
     //@Override
     public String getAttribute(String local_name) throws HttpClientException {
+        String attrValue = null;
         NamedNodeMap attrs = element.getNode().getAttributes();
-        return ((Attr)attrs.getNamedItem(local_name)).getValue();
+        Node attr = attrs.getNamedItem(local_name);
+        if(attr != null) {
+            attrValue = ((Attr)attr).getValue();
+        }
+
+        return attrValue;
     }
 
     //@Override
