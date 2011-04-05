@@ -26,18 +26,23 @@
                     module
             xupdate
     
-    Any unique attributes specified can also be overriden using a Java system property, typically specified on the command line, of the form:
+    Any unique attributes specified can also be overridden using a Java system 
+    property, typically specified on the command line, of the form:
     
         org.element.element....attribute
         
-    where the nesting of the element names follows the structure of the XML configuration document, as was shown above.
+    where the nesting of the element names follows the structure of the 
+    XML configuration document, as was shown above.
         
-    For example, to override the value of the cache size to be 128MB you could specify:
+    For example, to override the value of the cache size to be 128MB you could
+    specify:
     
         -Dorg.exist.db-connection.cacheSize=128M
         
-    on your JVM startup command line or options.  Note that this only works for unique, non-repeating elements, so you can't override things like the transformer attribute element values or the XQuery module builtin definitions,
-    since they are not unique.
+    on your JVM startup command line or options.  Note that this only works 
+    for unique, non-repeating elements, so you can't override things like 
+    the transformer attribute element values or the XQuery module builtin 
+    definitions, since they are not unique.
     
     For detailed and latest information please consult the eXist documentation:
     
@@ -90,22 +95,26 @@
             between all page buffers. It represents an absolute maximum, which
             would be occupied if all page buffers were completely full.
             
-            The cacheSize should typically not be more than half of the size of the JVM 
-            heap size (set by the JVM -Xmx parameter). It can be larger if you have a large-memory JVM (usually a 64bit JVM)
+            The cacheSize should typically not be more than half of the size of 
+            the JVM heap size (set by the JVM -Xmx parameter). It can be larger 
+            if you have a large-memory JVM (usually a 64bit JVM)
         
         - checkMaxCacheSize:
-            specifies whether eXist should check the max cache size on startup and reduce it if it is too large.
+            specifies whether eXist should check the max cache size on startup 
+            and reduce it if it is too large.
             
             This value should normally be set to true.
             
             Only set this value to false if:
             
                 a) You know what you are doing!
-                b) You have a JVM with tons of memory (typically using a 64-bit JVM, which is the scenario this setting is intended for).
+                b) You have a JVM with tons of memory (typically using a 64-bit 
+                   JVM, which is the scenario this setting is intended for).
                 c) You are really sure you've complied with a) and b) above.
                 
-            Setting this value to false may cause memory issues which may lead to database corruptions, since it disables
-            the automated max cache size checks! You have been warned! ;-)
+            Setting this value to false may cause memory issues which may lead to 
+            database corruptions, since it disables the automated max cache size 
+            checks! You have been warned! ;-)
             
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
@@ -417,6 +426,12 @@
             -->
             <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
 
+            <!-- 
+                The full text index is always required and should
+                not be disabled. We still have some dependencies on
+                this index in the database core. These will be removed
+                once the redesign has been completed. 
+            -->
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
             <!-- 
@@ -432,7 +447,7 @@
 
         <!--
             The file for this element points to a file containing a list of 
-            stopwords. Note that stopwords are NOT added to the fullext index.
+            stopwords. Note that stopwords are NOT added to the fulltext index.
         -->
         <stopwords file="stopword"/>
 
@@ -700,8 +715,8 @@
                 Modularized Indexes 
             -->
             <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
-            <module uri="http://exist-db.org/xquery/ngram" class="org.exist.xquery.modules.ngram.NGramModule" />
-            <module uri="http://exist-db.org/xquery/sort" class="org.exist.xquery.modules.sort.SortModule" />
+            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
+            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" />
             
             <!--
             <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
@@ -764,8 +779,16 @@
             <!-- 
                 XProcxq module imports  
             -->
-            <module uri="http://xproc.net/xproc" src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />
-
+            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
+            <!-- DW: to check, midding compared to 1.4.x
+            <module uri="http://xproc.net/xproc/const"     src="resource:net/xproc/xprocxq/src/xquery/const.xqm" />          
+            <module uri="http://xproc.net/xproc/ext"       src="resource:net/xproc/xprocxq/src/xquery/ext.xqm" />    
+            <module uri="http://xproc.net/xproc/functions" src="resource:net/xproc/xprocxq/src/xquery/functions.xqm" />        
+            <module uri="http://xproc.net/xproc/naming"    src="resource:net/xproc/xprocxq/src/xquery/naming.xqm" />
+            <module uri="http://xproc.net/xproc/opt"       src="resource:net/xproc/xprocxq/src/xquery/opt.xqm" /> 
+            <module uri="http://xproc.net/xproc/std"       src="resource:net/xproc/xprocxq/src/xquery/std.xqm" />     
+            <module uri="http://xproc.net/xproc/util"      src="resource:net/xproc/xprocxq/src/xquery/util.xqm"  />
+            -->
 
             <!-- 
                 Optional Modules : 
@@ -776,7 +799,10 @@
                     - build modules with "./build.sh extension-modules"
             -->
             
-            <!-- Compression module//-->
+            <!-- Safe to use, function to be used by DBA only  -->
+            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" />
+            
+            <!-- Compression module-->
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
             
             <!-- XSL functions -->
@@ -788,13 +814,11 @@
             <!--
             <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
             <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
-            <module uri="http://exist-db.org/xquery/compression"        class="org.exist.xquery.modules.compression.CompressionModule" />
             <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
             <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
             <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
             <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
             <module uri="http://exist-db.org/xquery/examples"           class="org.exist.xquery.modules.example.ExampleModule" />
-            <module uri="http://exist-db.org/xquery/file"               class="org.exist.xquery.modules.file.FileModule" />
             <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
             <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
             <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
