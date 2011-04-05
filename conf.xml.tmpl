@@ -101,17 +101,17 @@
             transferred from and to the database files. Should be a multiple of
             the operating system's file system page size (usually 4096).
 
-		- nodesBuffer:
-			size of the temporary buffer used by eXist for caching index
-			data while indexing a document. If set to -1, eXist will use the
-			entire free memory to buffer index entries and will flush the
-			cache once the memory is full.
+        - nodesBuffer:
+            size of the temporary buffer used by eXist for caching index
+            data while indexing a document. If set to -1, eXist will use the
+            entire free memory to buffer index entries and will flush the
+            cache once the memory is full.
 
-			If set to a value > 0, the buffer will be fixed to the given size.
-			The specified number corresponds to the number of nodes the
-			buffer can hold, in thousands. Usually, a good default could be
-			nodesBuffer="1000".
-			
+            If set to a value > 0, the buffer will be fixed to the given size.
+            The specified number corresponds to the number of nodes the
+            buffer can hold, in thousands. Usually, a good default could be
+            nodesBuffer="1000".
+            
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
@@ -155,36 +155,36 @@
             - wait-before-shutdown:
                 defines how long the database instance will wait for running
                 operations to complete before it forces a shutdown. Forcing
-				a shutdown may leave the db in an unclean state and may
-				trigger a recovery run on restart.
+                a shutdown may leave the db in an unclean state and may
+                trigger a recovery run on restart.
 
-				Setting wait-before-shutdown="-1" means that the server will
-				wait for all threads to return, no matter how long it takes.
-				No thread will be killed.
+                Setting wait-before-shutdown="-1" means that the server will
+                wait for all threads to return, no matter how long it takes.
+                No thread will be killed.
         -->
         <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
 
-        <!--                                                                     	
-    		    Configure the query pool.
-    		    
-    		    - max-stack-size:                                                        
-    		        maximum number of queries in the query-pool.                         
+        <!--                                                                        
+                Configure the query pool.
+                
+                - max-stack-size:                                                        
+                    maximum number of queries in the query-pool.                         
                                                                                          
-    		    - size:                                                                  
-    		        number of copies of the same query kept in the query-pool.           
-    		        Value "-1" effectively disables caching. Queries cannot be shared     
-    		        by threads, each thread needs a private copy of a query.             
+                - size:                                                                  
+                    number of copies of the same query kept in the query-pool.           
+                    Value "-1" effectively disables caching. Queries cannot be shared     
+                    by threads, each thread needs a private copy of a query.             
                                                                                          
-    		    - timeout:                                                               
-    		        amount of time that a query will be cached in the query-pool.        
+                - timeout:                                                               
+                    amount of time that a query will be cached in the query-pool.        
                                                                                          
-    		    - timeout-check-interval:                                                
-    		        time between checking for timed out queries. For value "-1"          
-    		        the time out is switched off, resulting cached queries to remain     
-    		        in the cache forever.                                                
-		    -->
+                - timeout-check-interval:                                                
+                    time between checking for timed out queries. For value "-1"          
+                    the time out is switched off, resulting cached queries to remain     
+                    in the cache forever.                                                
+            -->
         <query-pool max-stack-size="5" size="128" timeout="120000"                
-		            timeout-check-interval="30000"/>
+                    timeout-check-interval="30000"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -235,30 +235,30 @@
                 will increase the risk of an already committed 
                 operation being rolled back after a database crash.
 
-			- force-restart:
-				Try to restart the db even if crash recovery failed. This is
-				dangerous because there might be corruptions inside the
-				data files. The transaction log will be cleared, all locks removed
-				and the db reindexed.
-				
-				Set this option to "yes" if you need to make sure that the db is
-				online, even after a fatal crash. Errors encountered during recovery 
-				are written to the log files. Scan the log files to see if any problems
-				occurred.
+            - force-restart:
+                Try to restart the db even if crash recovery failed. This is
+                dangerous because there might be corruptions inside the
+                data files. The transaction log will be cleared, all locks removed
+                and the db reindexed.
+                
+                Set this option to "yes" if you need to make sure that the db is
+                online, even after a fatal crash. Errors encountered during recovery 
+                are written to the log files. Scan the log files to see if any problems
+                occurred.
 
-			- consistency-check:
-				If set to "yes", a consistency check will be run on the database
-				if an error was detected during crash recovery. This option requires
-				force-restart to be set to "yes", otherwise it has no effect.
+            - consistency-check:
+                If set to "yes", a consistency check will be run on the database
+                if an error was detected during crash recovery. This option requires
+                force-restart to be set to "yes", otherwise it has no effect.
 
-				The consistency check outputs a report to the directory {files}/sanity
-				and if inconsistencies are found in the db, it writes an emergency
-				backup to the same directory.
+                The consistency check outputs a report to the directory {files}/sanity
+                and if inconsistencies are found in the db, it writes an emergency
+                backup to the same directory.
         -->
         <recovery enabled="yes" group-commit="no" 
-			journal-dir="@dataDir@" size="100M"
+            journal-dir="@dataDir@" size="100M"
             sync-on-commit="no" force-restart="no"
-			consistency-check="yes"/>
+            consistency-check="yes"/>
 
         <!-- 
             The <security> element in the <db-connection> node is used to select
@@ -380,12 +380,12 @@
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
             -->
             
-			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
-				buffer="32"/>
+            <module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
+                buffer="32"/>
 
-			<!-- 
+            <!-- 
                  The full text index is always required and should
-				         not be disabled. We still have some dependencies on
+                         not be disabled. We still have some dependencies on
                  this index in the database core. These will be removed
                  once the redesign has been completed. 
             -->
@@ -400,7 +400,7 @@
             <!--
             <module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
                   file="stats.dbx"/>
-			 -->
+             -->
         </modules>
 
         <!--
@@ -431,24 +431,24 @@
             The type of the job to schedule. Must be either "startup", "system" 
             or "user".
             
-	            startup - Startup jobs are executed once during the
-	            database startup but before the database becomes available,
-	            these jobs are synchronous.
-	            
-	            system - System jobs require the database to be in a consistent state.
-	            All database operations will be stopped until the method returns or 
-	            throws an exception. Any exception will be caught and a warning written to
-	            the log.
-	            
-	            user - User jobs may be scheduled at any time and may be mutually exclusive
-	            or non-exclusive
+                startup - Startup jobs are executed once during the
+                database startup but before the database becomes available,
+                these jobs are synchronous.
+                
+                system - System jobs require the database to be in a consistent state.
+                All database operations will be stopped until the method returns or 
+                throws an exception. Any exception will be caught and a warning written to
+                the log.
+                
+                user - User jobs may be scheduled at any time and may be mutually exclusive
+                or non-exclusive
             
             - class:
             If the job is written in Java then this should be the name of the
             class that extends either -
-            	org.exist.scheduler.StartupJob
-            	org.exist.storage.SystemTask
-            	org.exist.scheduler.UserJavaJob
+                org.exist.scheduler.StartupJob
+                org.exist.storage.SystemTask
+                org.exist.scheduler.UserJavaJob
             
             - xquery:
             If the job is written in XQuery (not suitable for system jobs) then 
@@ -505,12 +505,12 @@
         <!--
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-        	cron-trigger="0 0 * * * ?">
-			<parameter name="output" value="export"/>
-    		<parameter name="backup" value="yes"/>
-		    <parameter name="incremental" value="no"/>
-			<parameter name="incremental-check" value="no"/>
-			<parameter name="max" value="2"/>
+            cron-trigger="0 0 * * * ?">
+            <parameter name="output" value="export"/>
+            <parameter name="backup" value="yes"/>
+            <parameter name="incremental" value="no"/>
+            <parameter name="incremental-check" value="no"/>
+            <parameter name="max" value="2"/>
         </job>
         -->
         
@@ -519,7 +519,7 @@
             
             Parameters:
             output-dir:
-            	The directory into which the copy will be written
+                The directory into which the copy will be written
         -->
         <!--
         <job type="system" name="databackup" 
@@ -575,10 +575,10 @@
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
-		<!--
-		<custom-filter class="org.exist.versioning.VersioningFilter"/>
-		-->
-	</serializer>
+        <!--
+        <custom-filter class="org.exist.versioning.VersioningFilter"/>
+        -->
+    </serializer>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
@@ -713,7 +713,7 @@
                 resource: loads module from classpath (jar files)
             -->
             
-			<!-- KWIC module -->
+            <!-- KWIC module -->
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
 
             <!-- Test module -->
@@ -722,7 +722,7 @@
             <!-- Sequences module -->
             <module uri="http://exist-db.org/xquery/sequences" src="resource:org/exist/xquery/lib/sequences.xq" />
             
-			<!-- Versioning -->
+            <!-- Versioning -->
             <module uri="http://exist-db.org/versioning" src="resource:org/exist/versioning/xquery/versioning.xqm" />
             
             <!-- JSON module -->
@@ -736,14 +736,14 @@
             <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
             
             <!-- xprocxq module imports //-->
+﻿            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
             <module uri="http://xproc.net/xproc/const"     src="resource:net/xproc/xprocxq/src/xquery/const.xqm" />          
-            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
-            <module uri="http://xproc.net/xproc/util"      src="resource:net/xproc/xprocxq/src/xquery/util.xqm"  />       
-            <module uri="http://xproc.net/xproc/functions" src="resource:net/xproc/xprocxq/src/xquery/functions.xqm" />        
-            <module uri="http://xproc.net/xproc/std"       src="resource:net/xproc/xprocxq/src/xquery/std.xqm" />     
             <module uri="http://xproc.net/xproc/ext"       src="resource:net/xproc/xprocxq/src/xquery/ext.xqm" />    
-            <module uri="http://xproc.net/xproc/opt"       src="resource:net/xproc/xprocxq/src/xquery/opt.xqm" /> 
+            <module uri="http://xproc.net/xproc/functions" src="resource:net/xproc/xprocxq/src/xquery/functions.xqm" />        
             <module uri="http://xproc.net/xproc/naming"    src="resource:net/xproc/xprocxq/src/xquery/naming.xqm" />
+            <module uri="http://xproc.net/xproc/opt"       src="resource:net/xproc/xprocxq/src/xquery/opt.xqm" /> 
+            <module uri="http://xproc.net/xproc/std"       src="resource:net/xproc/xprocxq/src/xquery/std.xqm" />     
+            <module uri="http://xproc.net/xproc/util"      src="resource:net/xproc/xprocxq/src/xquery/util.xqm"  />       
   
   
             <!-- 
