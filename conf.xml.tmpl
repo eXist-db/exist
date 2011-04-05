@@ -697,6 +697,17 @@
         
         <builtin-modules>
             <!-- 
+                Modularized Indexes 
+            -->
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
+            <module uri="http://exist-db.org/xquery/ngram" class="org.exist.xquery.modules.ngram.NGramModule" />
+            <module uri="http://exist-db.org/xquery/sort" class="org.exist.xquery.modules.sort.SortModule" />
+            
+            <!--
+            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
+            -->
+            
+            <!-- 
                 Default Modules 
             -->
             <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />
@@ -726,24 +737,10 @@
             <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
             <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
 
-
-            <!-- 
-                Modularized Indexes 
-            -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
-            <module uri="http://exist-db.org/xquery/ngram" class="org.exist.xquery.modules.ngram.NGramModule" />
-            <module uri="http://exist-db.org/xquery/sort" class="org.exist.xquery.modules.sort.SortModule" />
-            
-            <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
-            -->
             
             <!-- 
                 Modules written in XQuery
-            -->
-            
-            <!-- Compression module//-->
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
+            -->        
             
             <!-- KWIC module -->
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
@@ -763,20 +760,23 @@
             <!-- Test module -->
             <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />
 
-            <!-- XSL functions -->
-            <module uri="http://www.w3.org/1999/XSL/Transform" class="org.exist.xslt.functions.XSLModule" />
-
             <!-- XProc (eXist native ) -->
             <module uri="http://xproc.net/xproc" src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />
-            
-            <!-- XQDoc module: required for generating function documentation -->
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
-
 
 
             <!-- 
                 Optional Modules 
             -->
+            
+            <!-- Compression module//-->
+            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
+            
+            <!-- XSL functions -->
+            <module uri="http://www.w3.org/1999/XSL/Transform" class="org.exist.xslt.functions.XSLModule" />
+            
+            <!-- XQDoc module: required for generating function documentation -->
+            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
+            
             <!--
             <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
             <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
@@ -803,7 +803,6 @@
             <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
             <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
             <module uri="http://xmlcalabash.com"                        class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule" />
-
             -->
 
             <!-- 
