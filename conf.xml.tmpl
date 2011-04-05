@@ -671,6 +671,15 @@
             enable-query-rewriting="yes" backwardCompatible="no" 
             raise-error-on-failed-retrieval="no">
         <builtin-modules>
+            <!-- 
+                New Modularized Indexes 
+            -->
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />          
+            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
+            
+            <!--
+            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
+            -->
             
             <!-- 
                 Default Modules 
@@ -687,17 +696,6 @@
             <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
 
             <!-- 
-                New Modularized Indexes 
-            -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />          
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
-            
-            <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
-            -->
-
-
-            <!-- 
                 Mandatory extention modules (...)
             -->
 
@@ -709,7 +707,7 @@
  
  
             <!-- 
-                Modules coded in XQuery
+                Modules written in XQuery
                 resource: loads module from classpath (jar files)
             -->
             
@@ -728,14 +726,18 @@
             <!-- JSON module -->
             <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
             
-            <!-- Native EXPath HTTPClient Module -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" />
-            
-            <!-- expath module imports (for p:http-request) -->
+            <!-- 
+                EXPath Modules 
+            -->
             <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />        
-            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
-            
-            <!-- xprocxq module imports //-->
+            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />      
+
+            <!-- Native EXPath HTTPClient Module -->
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" /           
+                       
+            <!-- 
+                XProcxq module imports 
+            -->
 ﻿            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
             <module uri="http://xproc.net/xproc/const"     src="resource:net/xproc/xprocxq/src/xquery/const.xqm" />          
             <module uri="http://xproc.net/xproc/ext"       src="resource:net/xproc/xprocxq/src/xquery/ext.xqm" />    
