@@ -672,7 +672,7 @@
             raise-error-on-failed-retrieval="no">
         <builtin-modules>
             <!-- 
-                New Modularized Indexes 
+                Modularized Indexes 
             -->
             <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />          
             <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
@@ -684,7 +684,7 @@
             <!-- 
                 Default Modules 
             -->        
-﻿            <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />           
+            <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />           
             <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />            
             <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />            
             <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />            
@@ -694,18 +694,16 @@
             <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule" />            
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule"/>           
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />            
-
+ 
             <!-- 
-                Mandatory extention modules (...)
+                EXPath Modules 
             -->
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" />        
+            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />      
 
-            <!-- Safe to use, function to be used by DBA only  -->
-            <module uri="http://exist-db.org/xquery/file"  class="org.exist.xquery.modules.file.FileModule" />
+            <!-- Native EXPath HTTPClient Module -->
+            <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
             
-            <!-- XQDoc module: required for generating function documentation -->
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
- 
- 
             <!-- 
                 Modules written in XQuery
                 resource: loads module from classpath (jar files)
@@ -714,8 +712,9 @@
             <!-- KWIC module -->
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
 
-            <!-- Test module -->
-            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />   
+            <!-- JSON module -->
+            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
+            
             
             <!-- Sequences module -->
             <module uri="http://exist-db.org/xquery/sequences" src="resource:org/exist/xquery/lib/sequences.xq" />
@@ -723,22 +722,16 @@
             <!-- Versioning -->
             <module uri="http://exist-db.org/versioning" src="resource:org/exist/versioning/xquery/versioning.xqm" />
             
-            <!-- JSON module -->
-            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
+            <!-- Test module -->
+            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />   
             
-            <!-- 
-                EXPath Modules 
-            -->
-            <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />        
-            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />      
+            
 
-            <!-- Native EXPath HTTPClient Module -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" /           
                        
             <!-- 
                 XProcxq module imports 
             -->
-﻿            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
+            <module uri="http://xproc.net/xproc"           src="resource:net/xproc/xprocxq/src/xquery/xproc.xqm" />         
             <module uri="http://xproc.net/xproc/const"     src="resource:net/xproc/xprocxq/src/xquery/const.xqm" />          
             <module uri="http://xproc.net/xproc/ext"       src="resource:net/xproc/xprocxq/src/xquery/ext.xqm" />    
             <module uri="http://xproc.net/xproc/functions" src="resource:net/xproc/xprocxq/src/xquery/functions.xqm" />        
@@ -756,6 +749,12 @@
                     - edit extensions/local.build.properties
                     - build modules with "./build.sh extension-modules"
             -->
+           
+            <!-- Safe to use, function to be used by DBA only  -->
+            <module uri="http://exist-db.org/xquery/file"  class="org.exist.xquery.modules.file.FileModule" />
+            
+            <!-- XQDoc module: required for generating function documentation -->
+            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
            
             <!--
             <module uri="http://exist-db.org/xquery/backups"     class="org.exist.backup.xquery.BackupModule" />           
