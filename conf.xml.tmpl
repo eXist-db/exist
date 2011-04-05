@@ -728,18 +728,19 @@
                 EXPath Modules 
             -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" />
+            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
+
+            <!-- Native EXPath HTTPClient Module -->
+            <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
+ 
             <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" />
 
             <!-- EXPathrepo module: required for managing external dependencies -->
             <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
-            
-            <!-- expath module imports (for p:http-request)//-->
-            <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
-            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
-
-            
+                        
             <!-- 
                 Modules written in XQuery
+                resource: loads module from classpath (jar files)
             -->        
             
             <!-- KWIC module -->
@@ -765,7 +766,12 @@
 
 
             <!-- 
-                Optional Modules 
+                Optional Modules : 
+                - uncomment for enabling modules
+                - the following steps might be required:
+                    - copy extensions/build.properties to extensions/local.build.properties
+                    - edit extensions/local.build.properties
+                    - build modules with "./build.sh extension-modules"
             -->
             
             <!-- Compression module//-->
