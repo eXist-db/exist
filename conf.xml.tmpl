@@ -79,8 +79,8 @@
             between all page buffers. It represents an absolute maximum, which
             would be occupied if all page buffers were completely full.
             
-            The cacheSize should not be more than half of the size of the JVM 
-            heap size (set by the JVM -Xmx parameter).
+            The cacheSize should typically not be more than half of the size of 
+            the JVM heap size (set by the JVM -Xmx parameter).
         
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
@@ -373,21 +373,19 @@
         tokenizer="org.exist.storage.analysis.SimpleTokenizer" track-term-freq="yes">
 
         <modules>
-            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" 
-                    file="ngram.dbx" n="3"/>
+            <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex" />
                     
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
             -->
             
-            <module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"
-                buffer="32"/>
+            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
             <!-- 
-                 The full text index is always required and should
-                         not be disabled. We still have some dependencies on
-                 this index in the database core. These will be removed
-                 once the redesign has been completed. 
+                The full text index is always required and should
+                not be disabled. We still have some dependencies on
+                this index in the database core. These will be removed
+                once the redesign has been completed. 
             -->
             <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
 
@@ -398,14 +396,13 @@
                  by the query optimizer for additional optimizations. 
             -->
             <!--
-            <module id="index-stats" class="org.exist.storage.statistics.IndexStatistics"
-                  file="stats.dbx"/>
-             -->
+            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" />
+            -->
         </modules>
 
         <!--
             The file for this element points to a file containing a list of 
-            stopwords. Note that stopwords are NOT added to the fullext index.
+            stopwords. Note that stopwords are NOT added to the fulltext index.
         -->
         <stopwords file="stopword"/>
 
@@ -751,7 +748,7 @@
             -->
            
             <!-- Safe to use, function to be used by DBA only  -->
-            <module uri="http://exist-db.org/xquery/file"  class="org.exist.xquery.modules.file.FileModule" />
+            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" />
             
             <!-- XQDoc module: required for generating function documentation -->
             <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
