@@ -212,36 +212,29 @@ public class XQTS_case extends TestCase {
                 }
             }
 
+            DBBroker broker = null;
+
             //compile & evaluate
             File caseScript = new File(XQTS_folder+"Queries/XQuery/"+folder, script+".xq");
             try {
                 XQueryContext context;
                 XQuery xquery;
 
-                DBBroker broker = null;
-                try {
-                    broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                    xquery = broker.getXQueryService();
+                broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                xquery = broker.getXQueryService();
 
-                    broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+                broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-                    context = xquery.newContext(AccessContext.TEST);
+                context = xquery.newContext(AccessContext.TEST);
 
-                    //map modules' namespaces to location 
-                    Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
-                    for (int i = 0; i < modules.getLength(); i++) {
-                        ElementImpl module = (ElementImpl)modules.item(i);
-                        String id = module.getNodeValue();
-                        moduleMap.put(module.getAttribute("namespace"), moduleSources.get(id));
-                    }
-                    broker.getConfiguration().setProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP, moduleMap);
-
-                } catch (Exception e) {
-                    Assert.fail(e.getMessage());
-                    return;
-                } finally {
-                    pool.release(broker);
+                //map modules' namespaces to location 
+                Map<String, String> moduleMap = (Map<String, String>)broker.getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+                for (int i = 0; i < modules.getLength(); i++) {
+                    ElementImpl module = (ElementImpl)modules.item(i);
+                    String id = module.getNodeValue();
+                    moduleMap.put(module.getAttribute("namespace"), moduleSources.get(id));
                 }
+                broker.getConfiguration().setProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP, moduleMap);
 
                 //declare variable
                 for (int i = 0; i < inputFiles.getLength(); i++) {
@@ -418,10 +411,12 @@ public class XQTS_case extends TestCase {
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.toString());
+            } finally {
+            	pool.release(broker);
             }
         } catch (XMLDBException e) {
             Assert.fail(e.toString());
-        }
+        } 
     }
 
     private void fixBrokenTests(XQueryContext context, String group, String test) {
