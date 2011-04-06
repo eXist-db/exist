@@ -1,0 +1,96 @@
+package org.exist.xquery.functions.securitymanager;
+
+import java.util.List;
+import org.exist.dom.QName;
+import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.security.SecurityManager;
+import org.exist.xquery.value.ValueSequence;
+
+
+/**
+ *
+ * @author Adam Retter <adam@existsolutions.com>
+ */
+public class GroupMembershipFunctions  extends BasicFunction {
+
+    private final static QName qnGetGroupManagers = new QName("get-group-managers", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnGetGroupMembers = new QName("get-group-members", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            qnGetGroupManagers,
+            "Gets a list of the group managers. Can only be called by a group manager.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of managers for.")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group managers for the group $group")
+        ),
+        new FunctionSignature(
+            qnGetGroupMembers,
+            "Gets a list of the group members. Can only be called by a group manager.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of members for.")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group members for the group $group")
+        ),
+    };
+
+    public GroupMembershipFunctions(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+
+        String groupName = args[0].itemAt(0).getStringValue();
+
+        SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
+
+        try {
+
+            if(isCalledAs(qnGetGroupManagers.getLocalName())) {
+                Group group = manager.getGroup(context.getSubject(), groupName);
+                ValueSequence seq = new ValueSequence();
+                for(Account groupManager : group.getManagers()) {
+                    seq.add(new StringValue(groupManager.getName()));
+                }
+                result = seq;
+            } else if(isCalledAs(qnGetGroupMembers.getLocalName())) {
+
+                //TODO this assertion should be moved into the security manager once the groups <-> users relationship is inverted
+                Group group = manager.getGroup(context.getSubject(), groupName);
+                if(!group.isManager(context.getSubject())) {
+                    throw new PermissionDeniedException("You must be a manager to list group membership");
+                }
+                //end assertion
+
+                List<Account> groupMembers = manager.getGroupMembers(groupName);
+                ValueSequence seq = new ValueSequence();
+                for(Account groupMember : groupMembers) {
+                    seq.add(new StringValue(groupMember.getName()));
+                }
+                result = seq;
+            }
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException(pde.getMessage(), pde);
+        }
+
+        return result;
+    }
+}
