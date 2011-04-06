@@ -145,40 +145,6 @@ public class XQTS_case extends TestCase {
 //                || testCase.equals("fn-collection-9")
 //                || testCase.equals("fn-collection-10d"))
 //                return;
-//        } else if (testGroup.equals("SeqExprCastSI") && testCase.equals("casthcds9")) {
-//            return;
-//        } else if (testGroup.equals("NotationEQSI")) {
-//            if (testCase.equals("Comp-notation-5")
-//                || testCase.equals("Comp-notation-8")
-//                || testCase.equals("Comp-notation-10")
-//                || testCase.equals("Comp-notation-11")
-//                || testCase.equals("Comp-notation-12")
-//                || testCase.equals("Comp-notation-13")
-//                || testCase.equals("Comp-notation-14")
-//                || testCase.equals("Comp-notation-19")
-//                || testCase.equals("Comp-notation-20")
-//                || testCase.equals("Comp-notation-21"))
-//                return;
-//        } else if (testGroup.equals("SchemaImportProlog")) {
-//            if (testCase.equals("schema-import-1")
-//                || testCase.equals("schema-import-2")
-//                || testCase.equals("schema-import-5")
-//                || testCase.equals("schema-import-9")
-//                || testCase.equals("schema-import-13")
-//                || testCase.equals("schema-import-17")
-//                || testCase.equals("schema-import-25"))
-//                return;
-//        } else if (testGroup.equals("STFLWORExpr")) {
-//            /*UNDERSTAND: why it must throw FORG0006?
-//                The test description: 
-//                    Test 'where' clause with heterogenous sequences. First item is a node
-//                The XQuery 1.0: An XML Query Language (W3C Recommendation 23 January 2007)
-//                2.4.3 Effective Boolean Value
-//                    If its operand is a sequence whose first item is a node, fn:boolean returns true. 
-//            */
-//            if (testCase.equals("ST-WhereExpr001"))
-//                return;
-//        }
 //        if (testCase.equals("K2-NodeTest-11"))
 //            return; //Added by p.b. as a quick attempt to work around current blocking code
 //        if (testCase.equals("Constr-cont-document-3"))
@@ -450,7 +416,7 @@ public class XQTS_case extends TestCase {
                         Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
                 }
             } catch (Exception e) {
-                //e.printStackTrace();
+                e.printStackTrace();
                 Assert.fail(e.toString());
             }
         } catch (XMLDBException e) {
