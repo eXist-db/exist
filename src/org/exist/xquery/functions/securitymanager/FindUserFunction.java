@@ -63,7 +63,7 @@ public class FindUserFunction extends BasicFunction {
             qnFindUsersByName,
             "Finds users whoose personal name starts with a matching string",
             new SequenceType[] {
-                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a persomal name")
+                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a personal name")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matcing usernames")
         )
