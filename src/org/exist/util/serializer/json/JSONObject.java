@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2011 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.util.serializer.json;
 
 import java.io.IOException;
@@ -102,28 +123,40 @@ public class JSONObject extends JSONNode {
 			
 			JSONNode next = firstChild;
 			boolean allowText = false;
+			boolean skipMixedContentText = false;
 			while (next != null) {
 				if (next.getType() == Type.VALUE_TYPE) {
 					// if an element has attributes and text content, the text
-					// node is serialized as property "#text". Text in mixed content nodes
-					// is ignored though.
+					// node is serialized as property "#text". 
+                    // Text in mixed content nodes is ignored though.
 					if (allowText) {
 						writer.write("\"#text\" : ");
 						next.serialize(writer, false);
 						allowText = false;
-					}
+					} else {
+                        //writer.write("\"#mixed-content-text\" : ");
+                        skipMixedContentText = true;
+                    }
 				} else
 					next.serialize(writer, false);
 				if (next.getType() == Type.SIMPLE_PROPERTY_TYPE)
 					allowText = true;
 				next = next.getNext();
-				if (next != null)
+				if (next != null && !skipMixedContentText && !isMixedContentTextLast(next, allowText)) {
 					writer.write(", ");
+                }
+                skipMixedContentText = false;
 			}
 			
 			writer.write(" }");
 		}
 	}
+ 
+   private boolean isMixedContentTextLast(final JSONNode node, final boolean allowText) {
+       if (node.getType() == Type.VALUE_TYPE && !allowText && node.equals(getLastChild()))
+            return true;
+        return false;
+    }
 
 	@Override
 	public String toString() {
