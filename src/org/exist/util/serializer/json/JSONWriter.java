@@ -26,6 +26,8 @@ import org.exist.util.serializer.XMLWriter;
  *	<li>An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</li>
  *	<li>An element with a single text child becomes a property with the value of the text child, i.e.
  *      &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}<li>
+ *  <li>An element with name "json:value" is serialized as a simple value, not an object, i.e.
+ *  	&lt;json:value&gt;value&lt;/json:value&gt; just becomes "value".</li>
  * </ul>
  * 
  * Namespace prefixes will be dropped from element and attribute names by default. If the serialization
@@ -46,7 +48,7 @@ public class JSONWriter extends XMLWriter {
 	
 	public final static String JASON_NS = "http://www.json.org";
 	
-	protected JSONObject root;
+	protected JSONNode root;
 	
 	protected Stack<JSONObject> stack = new Stack<JSONObject>();
 
@@ -91,30 +93,47 @@ public class JSONWriter extends XMLWriter {
 
 	@Override
 	public void startElement(String qname) throws TransformerException {
-		if (useNSPrefix)
-			qname = qname.replace(':', '_');
+		if (qname.equals("json:value"))
+			processStartValue();
+		else if (useNSPrefix)
+			processStartElement(qname.replace(':', '_'), false);
 		else
-			qname = QName.extractLocalName(qname);
-		processStartElement(qname);
+			processStartElement(QName.extractLocalName(qname), false);
 	}
 
 	@Override
 	public void startElement(QName qname) throws TransformerException {
-		if (useNSPrefix)
-			processStartElement(qname.getPrefix() + '_' + qname.getLocalName());
+		if (JASON_NS.equals(qname.getNamespaceURI()) && "value".equals(qname.getLocalName()))
+			processStartValue();
+		else if (useNSPrefix)
+			processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
 		else
-			processStartElement(qname.getLocalName());
+			processStartElement(qname.getLocalName(), false);
 	}
 
-	private void processStartElement(String localName) {
+	private void processStartElement(String localName, boolean simpleValue) {
 		JSONObject obj = new JSONObject(localName);
-		if (root == null)
+		if (root == null) {
 			root = obj;
-		else {
+			stack.push(obj);
+		} else {
 			JSONObject parent = stack.peek();
 			parent.addObject(obj);
+			stack.push(obj);
 		}
-		stack.push(obj);
+	}
+	
+	private void processStartValue() throws TransformerException {
+		// a json:value is stored as an unnamed object
+		JSONObject obj = new JSONObject();
+		if (root == null) {
+			root = obj;
+			stack.push(obj);
+		} else {
+			JSONObject parent = stack.peek();
+			parent.addObject(obj);
+			stack.push(obj);
+		}
 	}
 	
 	@Override
@@ -189,5 +208,4 @@ public class JSONWriter extends XMLWriter {
 			throws TransformerException {
 		// skip
 	}
-	
 }
