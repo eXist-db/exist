@@ -1,5 +1,5 @@
 <project name="spatial-index">    
-    
+<!-- $Id$ -->    
     <import file="../common.xml"/>
     
     <property name="resources.dir" value="./test/resources"/>
@@ -70,7 +70,7 @@
     <available file="${resources.dir}/15385-SS7886-5i1.gml" property="15385-SS7886-5i1.present"/>
     
     <target name="download-15385-SS7886-5i1" unless="15385-SS7886-5i1.present">
-        <get src="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/15385-SS7886-5i1.gz" 
+        <get src="http://www.ordnancesurvey.co.uk/docs/sample-data/os-mastermap-topography-layer-sample-data.gz" 
             dest="${resources.dir}/15385-SS7886-5i1.gz" verbose="true"/>
         <gunzip src="${resources.dir}/15385-SS7886-5i1.gz" 
             dest="${resources.dir}/15385-SS7886-5i1.gml"/>
