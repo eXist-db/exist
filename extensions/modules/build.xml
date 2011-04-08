@@ -49,6 +49,9 @@
     </condition>
     <condition property="include.module.httpclient.config">
         <istrue value="${include.module.httpclient}"/>
+    </condition>        
+    <condition property="include.module.ftpclient.config">
+        <istrue value="${include.module.ftpclient}"/>
     </condition>
     <condition property="include.module.image.config">
         <istrue value="${include.module.image}"/>
