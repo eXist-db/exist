@@ -299,54 +299,6 @@
         <recovery enabled="yes"  group-commit="no"   journal-dir="@dataDir@" 
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
-        <!-- 
-            The <security> element in the <db-connection> node is used to select
-            the security manager Class and control the database of users and
-            groups.
-            
-            - class:
-                this attribute is required, and specifies a Java class name used
-                to implement the org.exist.security.SecurityManager interface, 
-                as in the following example:
-            
-            Example: <security> class Attribute (LDAP)
-            <security class="org.exist.security.ldap.SecurityManagerImpl" />
-            
-            eXist is distributed with the following built-in security manager
-            implementations:
-            
-                - org.exist.security.internal.SecurityManagerImpl
-            
-                stores the user information in the database. This is the 
-                default manager if the <security> element is not included 
-                in <db-connection>.
-            
-                - org.exist.security.ldap.SecurityManagerImpl 
-            
-                retrieves the user and groups from the LDAP database. This
-                requires addition configuration parameters which are 
-                described in the LDAP Security Manager documentation.
-            
-            - password-encoding:
-                password encoding can be set to one of the following types:
-            
-                - plain:
-                    applies plain encryption.
-            
-                - md5: (default)
-                    applies the MD5 algorithm to encrypt passwords.
-            
-                - simple-md5:
-                    applies a simplified MD5 algorithm to encrypt passwords.
-            
-            - password-realm:
-                the realm to use for basic auth or http-digest password 
-                challenges.
-        -->
-        <!--
-        <security class="org.exist.security.ldap.SecurityManagerImpl" />
-        -->
-
         <!--
             This is the global configuration for the query watchdog. The 
             watchdog monitors all query processes, and can terminate any 
