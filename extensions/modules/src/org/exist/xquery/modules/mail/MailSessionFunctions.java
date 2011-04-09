@@ -49,6 +49,7 @@ import org.exist.xquery.value.Type;
  * Get a mail session
  * 
  * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author José María Fernández <josemariafg@gmail.com>
  * @serial 2009-03-12
  * @version 1.3
  *
@@ -99,7 +100,7 @@ public class MailSessionFunctions extends BasicFunction
 			props = ModuleUtils.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
 		}
 		
-		Session session = Session.getDefaultInstance( props, null );
+		Session session = Session.getInstance( props, null );
 		
 		// store the session and return the handle of the session
 			

@@ -38,6 +38,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 
+import javax.activation.DataHandler;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.Transformer;
@@ -54,6 +65,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.system.GetVersion;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.BooleanValue;
@@ -74,11 +86,18 @@ import org.w3c.dom.Node;
  * @author Adam Retter <adam@exist-db.org>
  * @author Robert Walpole <robert.walpole@devon.gov.uk>
  * @author Andrzej Taramina <andrzej@chaeron.com>
- * @serial 2009-11-04
- * @version 1.4
+ * @author José María Fernández <josemariafg@gmail.com>
+ * @serial 2010-03-19
+ * @version 1.5
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
+
+/* TODO according to RFC 821, SMTP commands must end with <CR><LF>,
+Java uses platform native end-of-line characters for .println(...) functions and so
+this function may have issues on non-Windows platforms
+*/
+
 public class SendEmailFunction extends BasicFunction
 {
     protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
@@ -97,14 +116,27 @@ public class SendEmailFunction extends BasicFunction
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE_OR_MORE, "true if the email message was successfully sent")
     );
 
+    public final static FunctionSignature signatures[] = {
+    	new FunctionSignature(
+            new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
+            "Sends an email using javax.mail messaging libraries.",
+            new SequenceType[]
+            {
+				new FunctionParameterSequenceType( "mail-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The JavaMail session handle retrieved from mail:get-mail-session()" ),
+                new FunctionParameterSequenceType( "email", Type.ELEMENT, Cardinality.ONE_OR_MORE, "The email message in the following format: <mail> <from/> <reply-to/> <to/> <cc/> <bcc/> <subject/> <message> <text/> <xhtml/> </message> <attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment> </mail>.")
+            },
+            new SequenceType( Type.ITEM, Cardinality.EMPTY )
+        )
+    };
+
     /**
      * SendEmail Constructor
      *
      * @param context	The Context of the calling XQuery
      */
-    public SendEmailFunction(XQueryContext context)
+    public SendEmailFunction(XQueryContext context, FunctionSignature signature)
     {
-            super( context, deprecated );
+            super( context, signature );
     }
 
     /**
@@ -119,6 +151,58 @@ public class SendEmailFunction extends BasicFunction
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
+    	if(args.length==3) {
+    		return deprecatedSendEmail(args, contextSequence);
+    	} else {
+    		return sendEmail(args, contextSequence);
+    	}
+    }
+    
+	public Sequence sendEmail(Sequence[] args, Sequence contextSequence)
+		throws XPathException
+	{
+		// was a session handle specified?
+		if( args[0].isEmpty() ) {
+			throw( new XPathException( this, "Session handle not specified" ) );
+		}
+
+		// get the Session
+		long sessionHandle = ((IntegerValue)args[0].itemAt(0)).getLong();
+		Session session = MailModule.retrieveSession( context, sessionHandle );
+		if( session == null ) {
+			throw( new XPathException( this, "Invalid Session handle specified" ) );
+		}
+		
+		try {
+            List<Message> messages = parseInputEmails(session,args[1]);
+	    		String proto = session.getProperty("mail.transport.protocol");
+			if(proto==null)
+				proto = "smtp";
+			Transport t = session.getTransport(proto);
+			try {
+				if(session.getProperty("mail."+proto+".auth")!=null)
+					t.connect(session.getProperty("mail."+proto+".user"),session.getProperty("mail."+proto+".password"));
+				for(Message msg: messages) {
+					t.sendMessage(msg,msg.getAllRecipients());
+				}
+			} finally {
+				t.close();
+			}
+			
+			return( Sequence.EMPTY_SEQUENCE );
+		} catch(TransformerException te) {
+			throw new XPathException(this, "Could not Transform XHTML Message Body: " + te.getMessage(), te);
+        } catch(MessagingException smtpe) {
+        	throw new XPathException(this, "Could not send message(s): " + smtpe.getMessage(), smtpe);
+        } catch(IOException ioe) {
+        	throw new XPathException(this, "Attachment in some message could not be prepared: " + ioe.getMessage(), ioe);
+        } catch(Throwable t) {
+		throw new XPathException(this, "Unexpected error from JavaMail layer (Is your message well structured?): " + t.getMessage(), t);
+	}
+	}
+    
+    public Sequence deprecatedSendEmail(Sequence[] args, Sequence contextSequence) throws XPathException
+    {
         try
         {
             //get the charset parameter, default to UTF-8
@@ -131,21 +215,17 @@ public class SendEmailFunction extends BasicFunction
                 charset =  "UTF-8";
             }
 
-            //Parse the XML <mail> into a mail Object
-            List<Element> mailElements = new ArrayList<Element>();
-            if(args[0].getItemCount() > 1 && args[0] instanceof ValueSequence)
-            {
-                for(int i = 0; i < args[0].getItemCount(); i++)
-                {
-                    mailElements.add((Element)args[0].itemAt(i));
+        	//Parse the XML <mail> into a mail Object
+        	List<Element> mailElements = new ArrayList<Element>();
+            if(args[0].getItemCount() > 1 && args[0] instanceof ValueSequence) {
+            	for(int i = 0; i < args[0].getItemCount(); i++) {
+                	mailElements.add((Element)args[0].itemAt(i));
                 }
+            } else {
+            	mailElements.add((Element)args[0].itemAt(0));
             }
-            else
-            {
-                mailElements.add((Element)args[0].itemAt(0));
-            }
-
-            List<Mail> mails = parseMailElement(mailElements);
+            
+            List<Mail> mails =  parseMailElement(mailElements);
 
             ValueSequence results = new ValueSequence();
 
@@ -182,6 +262,22 @@ public class SendEmailFunction extends BasicFunction
         }
     }
 	
+    private List<Message> parseInputEmails(Session session, Sequence arg)
+    	throws IOException, MessagingException, TransformerException
+    {
+    	//Parse the XML <mail> into a mail Object
+    	List<Element> mailElements = new ArrayList<Element>();
+        if(arg.getItemCount() > 1 && arg instanceof ValueSequence) {
+        	for(int i = 0; i < arg.getItemCount(); i++) {
+            	mailElements.add((Element)arg.itemAt(i));
+            }
+        } else {
+        	mailElements.add((Element)arg.itemAt(0));
+        }
+        
+        return parseMessageElement(session, mailElements);
+    }
+    
     /**
      * Sends an email using the Operating Systems sendmail application
      *
@@ -249,7 +345,9 @@ public class SendEmailFunction extends BasicFunction
 
     private class SMTPException extends Exception
     {
-        public SMTPException(String message)
+		private static final long serialVersionUID = 4859093648476395159L;
+
+		public SMTPException(String message)
         {
             super(message);
         }
@@ -743,6 +841,211 @@ public class SendEmailFunction extends BasicFunction
 
                 }
                 mails.add(mail);
+            }
+        }
+
+        return mails;
+    }
+	
+    /**
+     * Constructs a mail Object from an XML representation of an email
+     *
+     * The XML email Representation is expected to look something like this
+     *
+     * <mail>
+     * 	<from></from>
+     * 	<reply-to></reply-to>
+     * 	<to></to>
+     * 	<cc></cc>
+     * 	<bcc></bcc>
+     * 	<subject></subject>
+     * 	<message>
+     * 		<text charset="" encoding=""></text>
+     * 		<xhtml charset="" encoding=""></xhtml>
+     * 		<generic charset="" type="" encoding=""></generic>
+     * 	</message>
+     * 	<attachment mimetype="" filename=""></attachment>
+     * </mail>
+     *
+     * @param mailElements	The XML mail Node
+     * @return		A mail Object representing the XML mail Node
+     */
+    private List<Message> parseMessageElement(Session session, List<Element> mailElements)
+    	throws IOException, MessagingException, TransformerException
+    {
+        List<Message> mails = new ArrayList<Message>();
+
+        for(Element mailElement : mailElements) {
+            //Make sure that message has a Mail node
+            if(mailElement.getLocalName().equals("mail")) {
+                //New message Object
+        	    // create a message
+        	    MimeMessage msg = new MimeMessage(session);
+        	    ArrayList<InternetAddress> replyTo = new ArrayList<InternetAddress>();
+        		boolean fromWasSet=false;
+            	MimeBodyPart body = null;
+            	Multipart multibody = null;
+            	ArrayList<MimeBodyPart> attachments=new ArrayList<MimeBodyPart>();
+		String firstContent = null;
+		String firstContentType = null;
+		String firstCharset = null;
+		String firstEncoding = null;
+        		
+                //Get the First Child
+                Node child = mailElement.getFirstChild();
+                while(child != null) {
+                    //Parse each of the child nodes
+                    if(child.getNodeType() == Node.ELEMENT_NODE && child.hasChildNodes()) {
+                        if(child.getLocalName().equals("from")) {
+                    	    // set the from and to address
+                    	    InternetAddress[] addressFrom = { new InternetAddress(child.getFirstChild().getNodeValue()) };
+                    	    msg.addFrom(addressFrom);
+                    	    
+                    	    fromWasSet=true;
+                        } else if(child.getLocalName().equals("reply-to")) {
+                        	// As we can only set the reply-to, not add them, let's keep
+                        	// all of them in a list
+                        	replyTo.add(new InternetAddress(child.getFirstChild().getNodeValue()));
+                        	msg.setReplyTo(replyTo.toArray(new InternetAddress[0]));
+                        } else if(child.getLocalName().equals("to")) {
+                        	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if(child.getLocalName().equals("cc")) {
+                        	    msg.addRecipient(Message.RecipientType.CC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if(child.getLocalName().equals("bcc")) {
+                        	    msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if(child.getLocalName().equals("subject")) {
+                        		msg.setSubject(child.getFirstChild().getNodeValue());
+                        } else if(child.getLocalName().equals("header")) {
+                    	    // Optional : You can also set your custom headers in the Email if you Want
+                    	    msg.addHeader(((Element)child).getAttribute("name"), child.getFirstChild().getNodeValue());
+                        } else if(child.getLocalName().equals("message")) {
+                            //If the message node, then parse the child text and xhtml nodes
+                            Node bodyPart = child.getFirstChild();
+                            while(bodyPart != null) {
+                            	if(bodyPart.getNodeType() != Node.ELEMENT_NODE)
+                            			continue;
+                            	
+                            	Element elementBodyPart = (Element)bodyPart;
+                            	String content = null;
+                            	String contentType = null;
+                            	
+                                if(bodyPart.getLocalName().equals("text")) {
+                            	    // Setting the Subject and Content Type
+                               		content = bodyPart.getFirstChild().getNodeValue();
+                               		contentType="plain";
+                                } else if(bodyPart.getLocalName().equals("xhtml")) {
+                                    //Convert everything inside <xhtml></xhtml> to text
+                                    TransformerFactory transFactory = TransformerFactory.newInstance();
+                                    Transformer transformer = transFactory.newTransformer();
+                                    DOMSource source = new DOMSource(bodyPart.getFirstChild());
+                                    StringWriter strWriter = new StringWriter();
+                                    StreamResult result = new StreamResult(strWriter);
+                                    transformer.transform(source, result);
+
+                               		content = strWriter.toString();
+                               		contentType="html";
+                                } else if(bodyPart.getLocalName().equals("generic")) {
+                            	    // Setting the Subject and Content Type
+                               		content = elementBodyPart.getFirstChild().getNodeValue();
+                               		contentType=elementBodyPart.getAttribute("type");
+                                }
+                                
+                                // Now, time to store it
+                                if(content!=null && contentType!=null && contentType.length()>0) {
+                                    String charset = elementBodyPart.getAttribute("charset");
+				    String encoding = elementBodyPart.getAttribute("encoding");
+                                    
+                                    if(body!=null && multibody==null) {
+                                    	multibody=new MimeMultipart("alternative");
+                                    	multibody.addBodyPart(body);
+                                    }
+                                    
+                                	if(charset==null || charset.length()==0) {
+                                		charset="UTF-8";
+                                	}
+					
+					if(encoding==null || encoding.length()==0) {
+						encoding="quoted-printable";
+					}
+					
+					if(body==null) {
+						firstContent = content;
+						firstCharset = charset;
+						firstContentType = contentType;
+						firstEncoding = encoding;
+					}
+                                	body= new MimeBodyPart();
+                            		body.setText(content, charset, contentType);
+					if(encoding!=null) {
+						body.setHeader("Content-Transfer-Encoding",encoding);
+					}
+                            		if(multibody!=null)
+                            			multibody.addBodyPart(body);
+                                }
+                                
+                                //next body part
+                                bodyPart = bodyPart.getNextSibling();
+                            }
+
+                        } else if(child.getLocalName().equals("attachment")) {
+                            Element attachment = (Element)child;
+                            MimeBodyPart part=new MimeBodyPart();
+			    StringBuilder content=new StringBuilder();
+			    Node attachChild=attachment.getFirstChild();
+			    while(attachChild!=null) {
+				if(attachChild.getNodeType() == Node.ELEMENT_NODE) {
+                                    TransformerFactory transFactory = TransformerFactory.newInstance();
+                                    Transformer transformer = transFactory.newTransformer();
+                                    DOMSource source = new DOMSource(attachChild);
+                                    StringWriter strWriter = new StringWriter();
+                                    StreamResult result = new StreamResult(strWriter);
+                                    transformer.transform(source, result);
+
+                               		content.append(strWriter.toString());
+				} else {
+					content.append(attachChild.getNodeValue());
+				}
+				attachChild = attachChild.getNextSibling();
+			    }
+                            part.setDataHandler(new DataHandler(new ByteArrayDataSource(content.toString(),attachment.getAttribute("mimetype"))));
+                            part.setFileName(attachment.getAttribute("filename"));
+                            attachments.add(part);
+                        }
+                    }
+
+                    //next node
+                    child = child.getNextSibling();
+
+                }
+                // Lost from
+                if(!fromWasSet)
+                	msg.setFrom();
+                
+                // Preparing content and attachments
+                if(attachments.size()>0) {
+                	if(multibody==null) {
+                		multibody = new MimeMultipart();
+                		if(body!=null) {
+                			multibody.addBodyPart(body);
+                		}
+                	}
+                	for(MimeBodyPart part: attachments) {
+                		multibody.addBodyPart(part);
+                	}
+                }
+                
+                // And now setting-up content
+                if(multibody!=null) {
+                	msg.setContent(multibody);
+                } else if(body!=null){
+                	msg.setText(firstContent,firstCharset,firstContentType);
+			if(firstEncoding!=null) {
+				msg.setHeader("Content-Transfer-Encoding",firstEncoding);
+			}
+                }
+                
+		msg.saveChanges();
+                mails.add(msg);
             }
         }
 
