@@ -59,7 +59,7 @@
         <antcall target="patchWebXml"/>
 
         <echo>
-            Deploy betterFORM resources to eXist webapp (${exist.web.xml}/webapp)
+            Deploy betterFORM resources to eXist webapp (${exist.rootdir}/webapp/WEB-INF/)
         </echo>
 
         <antcall target="deployBFResources"/>
@@ -77,8 +77,6 @@
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
-
-        <delete dir="${exist.rootdir}/webapp/WEB-INF/lib"/>
 
         <!-- restore web.xml -->
         <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
@@ -99,14 +97,6 @@
         </echo>
 
         <mkdir dir="${betterform.home}/uninstall"/>
-
-        <echo>
-            Copying libraries so start.config finds them
-        </echo>
-        <mkdir dir="${exist.rootdir}/webapp/WEB-INF/lib"/>
-        <copy todir="${exist.rootdir}/webapp/WEB-INF/lib" overwrite="true">
-            <fileset dir="${betterform.lib}"/>
-        </copy>
 
         <echo>
             Copying betterFORM configuration files to WEB-INF dir.

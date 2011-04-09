@@ -63,18 +63,31 @@
 			<lib dir="extensions/indexes/lucene/lib">
 				<include name="*.jar"/>
 			</lib>
-                <!-- Include xqdoc jar, needed for xquery function documentation -->
-            <lib dir="extensions/xqdoc/lib">
-                <include name="*.jar"/>
-            </lib>
             <!-- Include spatial jars, when available -->
             <lib dir="extensions/indexes/spatial/lib">
                 <include name="*.jar"/>
             </lib>
-            <!-- Include cocoon jars -->
-            <!-- lib dir="extensions/cocoon/lib">
+            <!-- Include xqdoc jar, needed for xquery function documentation -->
+            <lib dir="extensions/xqdoc/lib">
                 <include name="*.jar"/>
-            </lib -->
+            </lib>
+           
+            <!-- Include cocoon jars -->
+            <!-- 
+            <lib dir="extensions/cocoon/lib">
+                <include name="*.jar"/>
+            </lib>
+            -->
+
+            <!-- Include webdav milton jars  -->
+            <lib dir="extensions/webdav/lib">
+                <include name="*.jar"/>
+            </lib>
+            <!-- Include betterform jars  -->
+            <lib dir="extensions/betterform/src/main/lib">
+                <include name="*.jar"/>
+            </lib>
+
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
@@ -102,6 +115,10 @@
                 <exclude name="WEB-INF/data/sanity/**"/>
                 <exclude name="**/*.log*"/>
             </fileset>
+            <!-- Betterform -->
+			<zipfileset dir="extensions/betterform/src/main/xrx/"  prefix="betterform/samples">
+			    <include name="**/*"/>
+			</zipfileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>
