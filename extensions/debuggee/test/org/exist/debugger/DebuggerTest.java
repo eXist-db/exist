@@ -26,10 +26,19 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.List;
 
+import org.exist.Database;
+import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.debuggee.CommandContinuation;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -397,34 +406,56 @@ public class DebuggerTest implements ResponseListener {
 			DebuggerImpl.shutdownDebugger();
 		} 
 	}
+	
+	String script = "xquery version '1.0';\n" +
+	"(: computes the first 10 fibonacci numbers :)\n" +
+	"\n" +
+	"declare namespace f='http://exist-db.org/NS/fibo';\n" +
+	"\n" +
+	"declare function f:fibo($n as xs:integer) as item() {\n" +
+	"	if ($n = 0)\n" +
+	"	then 0\n" +
+	"	else if ($n = 1)\n" +
+	"	then 1\n" +
+	"	else (f:fibo($n - 1) + f:fibo($n -2))\n" +
+	"};\n" +
+	"\n" +
+	"for $n in 1 to 10\n" +
+	"	return\n" +
+	"		<tr>\n" +
+	"			<td>{$n}</td>\n" +
+	"			<td>{f:fibo($n)}</td>\n" +
+	"		</tr>";
 
 	@Test
 	public void testStoredInDB() throws Exception {
-		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
-		for (int i = 0; i < 10; i++) {
-			Debugger debugger = DebuggerImpl.getDebugger();
-
-			System.out.println("init "+i);
-			DebuggingSource debuggerSource = debugger.init(url);
-
-			System.out.println("send stepInto");
-			debuggerSource.stepInto();
-			//Thread.sleep(1000);
-
-			System.out.println("send getStackFrames");
-			List<Location> stack = debuggerSource.getStackFrames();
-			assertEquals(1, stack.size());
-			assertEquals(8, stack.get(0).getLineBegin());
-			assertEquals(6, stack.get(0).getColumnBegin());
-
-			System.out.println("send stop");
-			debuggerSource.stop();
-			//Thread.sleep(1000);
-			
-			System.out.println("stoped");
-
-			DebuggerImpl.shutdownDebugger();
-		} 
+		store("script.xql", script);
+//		String url = "http://127.0.0.1:8080/exist/rest/db/test/script.xql";
+//		
+//		for (int i = 0; i < 10; i++) {
+//			Debugger debugger = DebuggerImpl.getDebugger();
+//
+//			System.out.println("init "+i);
+//			DebuggingSource debuggerSource = debugger.init(url);
+//
+//			System.out.println("send stepInto");
+//			debuggerSource.stepInto();
+//			//Thread.sleep(1000);
+//
+//			System.out.println("send getStackFrames");
+//			List<Location> stack = debuggerSource.getStackFrames();
+//			assertEquals(1, stack.size());
+//			assertEquals(8, stack.get(0).getLineBegin());
+//			assertEquals(6, stack.get(0).getColumnBegin());
+//
+//			System.out.println("send stop");
+//			debuggerSource.stop();
+//			//Thread.sleep(1000);
+//			
+//			System.out.println("stoped");
+//
+//			DebuggerImpl.shutdownDebugger();
+//		} 
 	}
 
 	static org.exist.start.Main database;
@@ -445,4 +476,36 @@ public class DebuggerTest implements ResponseListener {
 	public void responseEvent(CommandContinuation command, Response response) {
 		System.out.println("getResponse command = "+command);
 	}
+	
+    private void store(String name,  String data) throws EXistException {
+    	Database pool = BrokerPool.getInstance();;
+    	
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+    		broker.saveCollection(transaction, root);
+            assertNotNull(root);
+
+            root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), "application/xquery");
+
+            transact.commit(transaction);
+        } catch (Exception e) {
+            if (transact != null)
+                transact.abort(transaction);
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
 }
