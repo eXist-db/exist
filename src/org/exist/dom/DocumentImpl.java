@@ -502,9 +502,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             }
             ostream.writeInt(docId);
             ostream.writeUTF(fileURI.toString());
-            ostream.writeInt(permissions.getOwner().getId());
-            ostream.writeInt(permissions.getOwnerGroup().getId());
-            ostream.writeInt(permissions.getPermissions());
+            permissions.write(ostream);
             ostream.writeInt(children);
             if (children > 0) {
                 for(int i = 0; i < children; i++) {
@@ -530,10 +528,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         try {
             docId = istream.readInt();
             fileURI = XmldbURI.createInternal(istream.readUTF());
-            permissions.setOwner(istream.readInt());
-            permissions.setGroup(istream.readInt());
-            //TODO : Why such a mask ? -pb
-            permissions.setPermissions(istream.readInt());// & 0777));
+            permissions.read(istream);
             //Should be > 0 ;-)
             children = istream.readInt();
             childAddress = new long[children];

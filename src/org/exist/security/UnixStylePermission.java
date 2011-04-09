@@ -21,7 +21,10 @@
  */
 package org.exist.security;
 
+import java.io.IOException;
 import java.util.StringTokenizer;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 
 import org.exist.util.SyntaxException;
 
@@ -37,8 +40,8 @@ import org.exist.util.SyntaxException;
 public class UnixStylePermission implements Permission {
 
     //owner, default to DBA
-    private Account owner;
-    private Group ownerGroup;
+    protected Account owner;
+    protected Group ownerGroup;
 
     //permissions
     private int permissions = DEFAULT_PERM;
@@ -439,5 +442,25 @@ public class UnixStylePermission implements Permission {
     public void setOwner(String user) {
         setOwner(null, user);
     }
-}
 
+    @Override
+    public void write(VariableByteOutputStream ostream) {
+        ostream.writeInt(getOwner().getId());
+        ostream.writeInt(getOwnerGroup().getId());
+        ostream.writeInt(getPermissions());
+    }
+
+    @Override
+    public void read(VariableByteInput istream) throws IOException {
+        /*final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
+        if (secman == null) {
+            //TODO : load default permissions ? -pb
+            permissions.setOwner(broker.getSubject(), SecurityManager.DBA_USER);
+            permissions.setGroup(broker.getSubject(), SecurityManager.DBA_GROUP);
+        } else {*/
+            this.owner = sm.getAccount(istream.readInt());
+            this.ownerGroup = sm.getGroup(istream.readInt());
+        //}
+        this.permissions = istream.readInt();
+    }
+}

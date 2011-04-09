@@ -21,6 +21,9 @@
  */
 package org.exist.security;
 
+import java.io.IOException;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
 
 
@@ -189,5 +192,9 @@ public interface Permission {
      *@param  perm  The requested permissions
      *@return       true if user has the requested permissions
      */
-    public boolean validate(Subject user, int perm);	
+    public boolean validate(Subject user, int perm);
+
+    public void write(VariableByteOutputStream ostream);
+
+    public void read(VariableByteInput istream) throws IOException;
 }

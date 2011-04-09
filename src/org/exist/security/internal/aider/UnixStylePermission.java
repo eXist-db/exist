@@ -21,6 +21,7 @@
  */
 package org.exist.security.internal.aider;
 
+import java.io.IOException;
 import java.util.StringTokenizer;
 
 import org.exist.security.Group;
@@ -28,6 +29,8 @@ import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
 import org.exist.security.Subject;
+import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
 
 /**
@@ -425,5 +428,15 @@ public class UnixStylePermission implements Permission {
     @Override
     public void setOwner(String user) {
         setOwner(null, user);
+    }
+
+    @Override
+    public void write(VariableByteOutputStream ostream) {
+       throw new UnsupportedOperationException("Serialization of permission Aider is unsupported");
+    }
+
+    @Override
+    public void read(VariableByteInput istream) throws IOException {
+        throw new UnsupportedOperationException("De-Serialization of permission Aider is unsupported");
     }
 }
