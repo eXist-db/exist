@@ -75,6 +75,16 @@ public class DocumentMetadata {
         this.lastModified = other.lastModified;
     }
 
+    /**
+     * Copy all relevant fields from other
+     */
+    public void copyOf(DocumentMetadata other) {
+        setCreated(other.getCreated());
+        setLastModified(other.getLastModified());
+        setMimeType(other.getMimeType());
+        setDocType(other.getDocType());
+    }
+
     public long getCreated() {
         return created;
     }
