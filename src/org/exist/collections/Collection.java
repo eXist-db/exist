@@ -712,25 +712,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         collectionId = istream.readInt();
         final int collLen = istream.readInt();
         subcollections = new ObjectHashSet<XmldbURI>(collLen == 0 ? 19 : collLen);
-        for (int i = 0; i < collLen; i++)
+        for (int i = 0; i < collLen; i++) {
             subcollections.add(XmldbURI.create(istream.readUTF()));
-        final int uid = istream.readInt();
-        final int gid = istream.readInt();
-        final int perm = istream.readInt();
-        created = istream.readLong();
-        final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-        if (secman == null) {
-            //TODO : load default permissions ? -pb
-            permissions.setOwner(broker.getSubject(), SecurityManager.DBA_USER);
-            permissions.setGroup(broker.getSubject(), SecurityManager.DBA_GROUP);
-        } else {
-            permissions.setOwner(broker.getSubject(), secman.getAccount(uid));
-            Group group = secman.getGroup(gid);
-            if (group != null)
-                permissions.setGroup(broker.getSubject(), group.getName());
         }
-        ///TODO : why this mask ? -pb
-        permissions.setPermissions(perm);// & 0777);
+        
+        permissions.read(istream);
+
+        created = istream.readLong();
         broker.getCollectionResources(this);
     }
 
@@ -1523,9 +1511,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             childColl = i.next();
             ostream.writeUTF(childColl.toString());
         }
-        ostream.writeInt(permissions.getOwner().getId());
-        ostream.writeInt(permissions.getOwnerGroup().getId());
-        ostream.writeInt(permissions.getPermissions());
+        permissions.write(ostream);
         ostream.writeLong(created);
     }
 

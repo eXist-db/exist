@@ -23,8 +23,6 @@
 package org.exist.dom;
 
 import org.exist.collections.Collection;
-import org.exist.security.Group;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
@@ -95,10 +93,8 @@ public class BinaryDocument extends DocumentImpl {
         ostream.writeUTF(getFileURI().toString());
         ostream.writeLong(pageNr);
 
-        ostream.writeInt(permissions.getOwner().getId());
-        ostream.writeInt(permissions.getOwnerGroup().getId());
+        permissions.write(ostream);
 
-        ostream.writeByte((byte) permissions.getPermissions());
         ostream.writeLong(realSize);
         getMetadata().write(getBrokerPool(), ostream);
     }
@@ -108,20 +104,9 @@ public class BinaryDocument extends DocumentImpl {
         setDocId(istream.readInt());
         setFileURI(XmldbURI.create(istream.readUTF()));
         pageNr = istream.readLong();
-        final SecurityManager secman = getBrokerPool().getSecurityManager();
-        final int uid = istream.readInt();
-        final int groupId = istream.readInt();
-        final int perm = (istream.readByte() & 0777);
-        if (secman == null) {
-            permissions.setOwner(SecurityManager.DBA_USER);
-            permissions.setGroup(SecurityManager.DBA_GROUP);
-        } else {
-            permissions.setOwner(secman.getAccount(uid));
-            Group group = secman.getGroup(groupId);
-            if (group != null)
-                permissions.setGroup(group.getName());
-        }
-        permissions.setPermissions(perm);
+        
+        permissions.read(istream);
+
         realSize = istream.readLong();
         DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(getBrokerPool(), istream);
