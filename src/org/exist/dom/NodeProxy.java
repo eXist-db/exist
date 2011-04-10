@@ -167,6 +167,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.nodeId = nodeId;
     }
 
+    public void update(ElementImpl element) {
+        this.doc = element.getDocument();
+        this.nodeType = UNKNOWN_NODE_TYPE;
+        this.internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+        this.nodeId = element.getNodeId();
+        
+        match = null;
+        context = null;        
+    }
+
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
@@ -1403,6 +1413,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>String</code> value
      */
     public String toString() {
+    	if (nodeId == NodeId.DOCUMENT_NODE)
+	    return "Document node for " + doc.getDocId();
+    	else
+	    return doc.getNode(nodeId).getNodeName();
+    }
+    
+    public String toStringWithDetails() {
     	if (nodeId == NodeId.DOCUMENT_NODE)
 	    return "Document node for " + doc.getDocId();
     	else
