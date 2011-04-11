@@ -11,6 +11,7 @@
             addEvent($(this));
         });
         $(trigger).click(function(ev) {
+        	ev.preventDefault();
             var last = $('.repeat:last', container);
             var newNode = last.clone();
             last.after(newNode);
@@ -26,7 +27,6 @@
             addEvent(newNode);
             $('.repeat', container).removeClass('repeat-selected');
             options.onReady.call(newNode);
-            ev.preventDefault();
         });
         if (options.deleteTrigger != null)
             $(options.deleteTrigger).click(function(ev) {
