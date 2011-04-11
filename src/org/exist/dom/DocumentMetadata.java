@@ -161,7 +161,8 @@ public class DocumentMetadata {
     public void read(BrokerPool pool, VariableByteInput istream) throws IOException {
         created = istream.readLong();
         lastModified = istream.readLong();
-        mimeType = pool.getSymbols().getMimeType(istream.readInt());
+        final int mimeTypeSymbolsIndex = istream.readInt();
+        mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
         pageCount = istream.readInt();
         userLock = istream.readInt();
 
