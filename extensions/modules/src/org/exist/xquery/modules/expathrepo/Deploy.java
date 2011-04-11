@@ -127,14 +127,15 @@ public class Deploy extends BasicFunction {
 			if (isCalledAs("undeploy")) {
 				ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
 				if (cleanup != null) {
-					runQuery(packageDir, cleanup.getStringValue());
+					runQuery(null, packageDir, cleanup.getStringValue());
 				}
 				return statusReport(null);
 			} else {
 				// if there's a <setup> element, run the query it points to
 				ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
-				if (setup != null) {
-					runQuery(packageDir, setup.getStringValue());
+				String path = setup == null ? null : setup.getStringValue();
+				if (path != null && path.length() > 0) {
+					runQuery(null, packageDir, path);
 					return statusReport(null);
 				} else {
 					// otherwise copy all child directories to the target collection
@@ -167,8 +168,11 @@ public class Deploy extends BasicFunction {
 
 					// run the pre-setup query if present
 					ElementImpl preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
-					if (preSetup != null)
-						runQuery(packageDir, preSetup.getStringValue());
+					if (preSetup != null) {
+						path = preSetup.getStringValue();
+						if (path.length() > 0)
+							runQuery(targetCollection, packageDir, path);
+					}
 
 					// any required users and group should have been created by the pre-setup query.
 					// check for invalid users now.
@@ -179,8 +183,11 @@ public class Deploy extends BasicFunction {
 
 					// run the post-setup query if present
 					ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
-					if (postSetup != null)
-						runQuery(packageDir, postSetup.getStringValue());
+					if (postSetup != null) {
+						path = postSetup.getStringValue();
+						if (path.length() > 0)
+							runQuery(targetCollection, packageDir, path);
+					}
 
 					return statusReport(targetCollection.toString());
 				}
@@ -232,7 +239,7 @@ public class Deploy extends BasicFunction {
 		}
 	}
 
-	private Sequence runQuery(File tempDir, String fileName)
+	private Sequence runQuery(XmldbURI targetCollection, File tempDir, String fileName)
 			throws XPathException, IOException {
 		File xquery = new File(tempDir, fileName);
 		if (!xquery.canRead())
@@ -243,6 +250,10 @@ public class Deploy extends BasicFunction {
 		ctx.declareVariable("dir", tempDir.getAbsolutePath());
 		File home = context.getBroker().getConfiguration().getExistHome();
 		ctx.declareVariable("home", home.getAbsolutePath());
+		if (targetCollection != null)
+			ctx.declareVariable("target", targetCollection.toString());
+		else
+			ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);
 		CompiledXQuery compiled;
 		try {
 			compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
@@ -305,8 +316,8 @@ public class Deploy extends BasicFunction {
 		MimeTable mimeTab = MimeTable.getInstance();
 		TransactionManager mgr = context.getBroker().getBrokerPool().getTransactionManager();
 		for (File file : files) {
-			if ("repo.xml".equals(file.getName()) || "expath-pkg.xml".equals(file.getName()))
-				continue;
+//			if ("repo.xml".equals(file.getName()) || "expath-pkg.xml".equals(file.getName()))
+//				continue;
 			if (!file.isDirectory()) {
 				MimeType mime = mimeTab.getContentTypeFor(file.getName());
 				if (mime == null)
