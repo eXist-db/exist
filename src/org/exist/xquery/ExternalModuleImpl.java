@@ -141,6 +141,10 @@ public class ExternalModuleImpl implements ExternalModule {
 		return signatures.iterator();
 	}
 
+	public Iterator<QName> getGlobalVariables() {
+		return mGlobalVariables.keySet().iterator();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
 	 */

@@ -103,6 +103,15 @@ public interface Module {
     
     public boolean isVarDeclared(QName qname);
     
+    /**
+     * Returns an iterator over all global variables in this modules, which were
+     * either declared with "declare variable" (for external modules) or set in the
+     * module implementation (internal modules).
+     *  
+     * @return
+     */
+    public Iterator<QName> getGlobalVariables();
+    
 	/**
 	 * Reset the module's internal state for being reused.
 	 *
