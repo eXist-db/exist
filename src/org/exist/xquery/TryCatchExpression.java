@@ -21,6 +21,8 @@
  */
 package org.exist.xquery;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
                 
@@ -30,6 +32,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.ErrorCodes.EXistErrorCode;
 
 import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
@@ -126,13 +129,23 @@ public class TryCatchExpression extends AbstractExpression {
             Sequence tryTargetSeq = tryTargetExpr.eval(contextSequence, contextItem);
             return tryTargetSeq;
 
-        } catch (XPathException xpe) {
-            // Get errorcode from exception
-            ErrorCode errorCode = xpe.getErrorCode();
+        } catch (Throwable throwable) { 
 
-            // if no errorcode is found, reconstruct by parsing the error text.
-            if (errorCode == null) {
-                errorCode = extractErrorCode(xpe);
+            ErrorCode errorCode = null;
+
+            if(throwable instanceof XPathException){
+                // Get errorcode from nicely thrown xpathexception
+                XPathException xpe = (XPathException)throwable;
+                errorCode = xpe.getErrorCode();
+
+                // if no errorcode is found, reconstruct by parsing the error text.
+                if (errorCode == null) {
+                    errorCode = extractErrorCode((XPathException)xpe);
+                }
+
+            } else {
+                // Get errorcode from all other errors and exceptions
+                errorCode = new JavaErrorCode(throwable);
             }
 
             // We need the qname in the end
@@ -180,22 +193,33 @@ public class TryCatchExpression extends AbstractExpression {
                                         QNameValue qnv = new QNameValue(context, catchVar);
                                         localVar.setValue(new StringValue(errorCode.getErrorQName().getStringValue()));
                                         break;
+
                                     case 2:
                                         // Error description : optional string
                                         localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
                                         StringValue sv = new StringValue(errorCode.getDescription());
                                         localVar.setValue(sv);
                                         break;
+
                                     case 3:
                                         // Error value : optional item
                                         localVar.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
-                                        Sequence sequence = xpe.getErrorVal();
-                                        if (sequence == null) {
-                                            // TODO setting an empty sequence does not work, it does
-                                            // not make the variable visible
-                                            sequence = Sequence.EMPTY_SEQUENCE;
+                                        if (throwable instanceof XPathException) {
+                                            // Get errorcode from exception
+                                            XPathException xpe = (XPathException) throwable;
+                                            Sequence sequence = xpe.getErrorVal();
+                                            if (sequence == null) {
+                                                // TODO setting an empty sequence does not work, it does
+                                                // not make the variable visible
+                                                sequence = Sequence.EMPTY_SEQUENCE;
+                                            }
+                                            localVar.setValue(sequence);
+
+                                        } else {
+                                            // fill data from throwable object
+                                            StringValue value = new StringValue(getStackTrace(throwable));
+                                            localVar.setValue(value);
                                         }
-                                        localVar.setValue(sequence);
                                         break;
                                 }
                                 context.declareVariableBinding(localVar);
@@ -218,7 +242,8 @@ public class TryCatchExpression extends AbstractExpression {
 
                 // If an error hasn't been catched, throw new one
                 if (!errorMatched) {
-                    throw xpe;
+                    LOG.error(throwable);
+                    throw new XPathException(throwable);
                 }
 
 
@@ -349,6 +374,16 @@ public class TryCatchExpression extends AbstractExpression {
         }
 
         return new String[]{errorText.substring(0, p).trim(), errorText.substring(p + 1).trim()};
+    }
+
+    private String getStackTrace(Throwable t){
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        t.printStackTrace(pw);
+        pw.flush();
+        return sw.toString();
+
     }
 
     /**
