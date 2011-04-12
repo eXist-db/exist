@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2010 The eXist Project
+ * Copyright (C) 2000-2011 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -1631,6 +1631,8 @@ reservedKeywords returns [String name]
 	"unordered" { name = "unordered"; }
 	|
 	"typeswitch" { name = "typeswitch"; }
+	|
+	"switch" { name = "switch"; }
 	|
 	"encoding" { name = "encoding"; }
 	|
