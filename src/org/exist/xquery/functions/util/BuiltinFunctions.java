@@ -67,6 +67,13 @@ public class BuiltinFunctions extends BasicFunction {
 			"currently known to the system, including functions in imported and built-in modules.",
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
+		new FunctionSignature(
+				new QName("declared-variables", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Returns a sequence containing the QNames of all functions " +
+				"declared in the module identified by the specified namespace URI. " +
+				"An error is raised if no module is found for the specified URI.",
+				new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 	};
 
 	public BuiltinFunctions(XQueryContext context, FunctionSignature signature) {
@@ -85,7 +92,11 @@ public class BuiltinFunctions extends BasicFunction {
 			Module module = context.getModule(uri);
 			if(module == null)
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
-			addFunctionsFromModule(resultSeq, module);
+			if (isCalledAs("declared-variables")) {
+				addVariablesFromModule(resultSeq, module);
+			} else {
+				addFunctionsFromModule(resultSeq, module);
+			}
 		} else {
 			for(Iterator<Module> i = context.getModules(); i.hasNext(); ) {
 				Module module = i.next();
@@ -114,4 +125,9 @@ public class BuiltinFunctions extends BasicFunction {
 		}
 	}
 
+	private void addVariablesFromModule(ValueSequence resultSeq, Module module) {
+		for (Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
+			resultSeq.add(new QNameValue(context, i.next()));
+		}
+	}
 }
