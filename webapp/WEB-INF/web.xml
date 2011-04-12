@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--+
-    | Configuration file for the web application. 
+    | Configuration file for the web application.
     |
     | The URL mapping for rest, xmlrpc, soap etc are handled now by the
     | XQueryURLRewrite servlet filter. See for details below.
@@ -22,15 +22,15 @@
             <param-name>resource.factory.class</param-name>
             <param-value>org.exist.webdav.ExistResourceFactory</param-value>
         </init-param>
-        <!-- 
+        <!--
         <init-param>
              <param-name>filter_0</param-name>
              <param-value>com.bradmcevoy.http.DebugFilter</param-value>
-         </init-param> 
+         </init-param>
          -->
     </servlet>
 
-    <!-- 
+    <!--
         Log4jInit initializes Log4j.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
     -->
@@ -67,17 +67,17 @@
         </init-param>
     </servlet>
 
-    <!-- 
+    <!--
         EXistServlet is a helper servlet that is used to ensure that
-        eXist is running in the background. 
-        Set the start-parameter to true and load-on-startup a low value e.g. 2. 
+        eXist is running in the background.
+        Set the start-parameter to true and load-on-startup a low value e.g. 2.
     -->
     <servlet>
         <servlet-name>EXistServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
 
         <!--
-            Location of eXist's configuration file relative to the basedir 
+            Location of eXist's configuration file relative to the basedir
             of the web-application.
         -->
         <init-param>
@@ -85,8 +85,8 @@
             <param-value>conf.xml</param-value>
         </init-param>
 
-        <!-- 
-            eXist's home directory. All file names in the configuration file 
+        <!--
+            eXist's home directory. All file names in the configuration file
             will be relative to this directory.
         -->
         <init-param>
@@ -100,7 +100,7 @@
         </init-param>
 
 		<!--
-			If parameter "hidden" is set to true, direct access to the 
+			If parameter "hidden" is set to true, direct access to the
 			REST interface will be denied. Only requests coming from the
 			URL rewriting will be processed.
 
@@ -123,7 +123,7 @@
       <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
     </servlet>
 
-    <!-- 
+    <!--
         WebDAVServlet provides WebDAV access.
     -->
     <servlet>
@@ -136,8 +136,8 @@
         </init-param>
     </servlet>
 
-    <!-- 
-        XQueryServlet generates HTML from an XQuery file. 
+    <!--
+        XQueryServlet generates HTML from an XQuery file.
     -->
     <servlet>
         <servlet-name>XQueryServlet</servlet-name>
@@ -164,14 +164,14 @@
         </init-param>
     </servlet>
 
-    <!-- 
+    <!--
         XQueryURLRewrite, servlet filter for URL rewriting and redirection.
     -->
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
 
-        <!-- Defines the location of the controller-config.xml file, 
+        <!-- Defines the location of the controller-config.xml file,
              which defines the root mappings. -->
         <init-param>
             <param-name>config</param-name>
@@ -195,7 +195,7 @@
     </filter>
 
     <!--
-        XSLTServlet applies an XSLT transformation to its input stream.        
+        XSLTServlet applies an XSLT transformation to its input stream.
     -->
     <servlet>
         <servlet-name>XSLTServlet</servlet-name>
@@ -216,7 +216,7 @@
         <load-on-startup>100</load-on-startup>
     </servlet>
 
-    <!-- 
+    <!--
         Atom Publishing Protocol.
     -->
     <servlet>
@@ -233,23 +233,23 @@
     </servlet>
 
 
-    <!-- 
-        ====================== URL space mappings ======================= 
+    <!--
+        ====================== URL space mappings =======================
     -->
 
-    <!-- 
+    <!--
          IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
-         entry point into the web application. All eXist-related URL  mappings are 
+         entry point into the web application. All eXist-related URL  mappings are
          handled by XQueryURLRewrite (see controller-config.xml).
-         
-         The servlet mappings below are thus commented out. We keep them here 
-         for documentation purposes. If you need to switch to the old setup, 
-         you can re-enable the mappings below and disable them in controller-config.xml. 
-         
-         However, please note that some features of the website will only work if 
-         XQueryURLRewrite controls the /rest servlet  (EXistServlet). 
+
+         The servlet mappings below are thus commented out. We keep them here
+         for documentation purposes. If you need to switch to the old setup,
+         you can re-enable the mappings below and disable them in controller-config.xml.
+
+         However, please note that some features of the website will only work if
+         XQueryURLRewrite controls the /rest servlet  (EXistServlet).
     -->
-    
+
     <!-- XQuery URL rewriter -->
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
@@ -294,25 +294,25 @@
         <servlet-name>AxisServlet</servlet-name>
         <url-pattern>/axis-servlet/AxisServlet</url-pattern>
     </servlet-mapping>
-    
+
     <servlet-mapping>
         <servlet-name>AxisServlet</servlet-name>
         <url-pattern>*.jws</url-pattern>
     </servlet-mapping>
-    
+
     <servlet-mapping>
         <servlet-name>AxisServlet</servlet-name>
         <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
-    
+
     <servlet-mapping>
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/axis-servlet/AdminServlet</url-pattern>
     </servlet-mapping>
     -->
 
-    <!-- 
-        ==================== various MIME type mappings ================== 
+    <!--
+        ==================== various MIME type mappings ==================
     -->
 
     <mime-mapping>
@@ -377,7 +377,7 @@
         A more flexible approach can be gained by using org.eclipse.jetty.servlets.IncludableGzipFilter,
         the javadoc can be found here - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/IncludableGzipFilter.html
     -->
-    <!-- 
+    <!--
     <filter>
         <filter-name>GzipFilter</filter-name>
 
