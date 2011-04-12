@@ -177,6 +177,21 @@ $ pfexec chown -R exist:exist /opt/eXist
             <title>Web Deployments</title>
             <para>eXist like any Web Application Server (Tomcat, WebLogic, GlassFish, etc) should not be directly exposed to the Web. Instead, we would strongly recommend proxying your eXist powered Web Application through a Web Server such as <ulink url="http://wiki.nginx.org/Main">Nginx</ulink> or <ulink url="http://httpd.apache.org/">Apache HTTPD</ulink>. See <ulink url="production_web_proxying.xml">here</ulink> for futher details.</para>
             <para>If you proxy eXist through a Web Server, then you may also configure your firewall to only allow external access directly to the Web Server. If done correctly this also means that web users will not be able to access any eXist services except your application which is proxyied into the Web Servers namespace.</para>
+            <section>
+                    <title>Enable GZip Compression</title>
+                    <para>eXist-db by default operates inside the Jetty Application Server, Jetty
+                    (and most other Java Application Servers) provides a mechanism for enabling
+                    dynamic GZip compression of resources. This is to say that Jetty can be
+                    configured to dynamically GZip compress any resource received from the Server by
+                    HTTP. Potentially for large resources, or even for frequently used resources.
+                    Enabling dynamic GZip compression can reduce the size of transfers, and as such
+                    reduce the transfer time of resources from the server to the client, hopefully
+                    resulting in a faster experience for the end-user.</para>
+                <para>GZip Compression can be enabled in web.xml, which can be found in either
+                    $EXIST_HOME/webapp/WEB-INF/web.xml for default deployments or
+                    $EXIST_HOME/tools/jetty/etc/standalone/WEB-INF/web.xml for standalone
+                    deployments.</para>
+            </section>
         </section>
     </chapter>
 </book>

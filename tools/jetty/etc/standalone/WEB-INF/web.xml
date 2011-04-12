@@ -148,8 +148,15 @@
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
 
-    <!-- Dynamic GZip filter, for Jetty 7
-         make sure you have the classes available before enabling -->
+    <!-- Enabled dynamic GZip of server responses
+
+        Standard approach is to use org.eclipse.jetty.servlets.GZipFilter, the
+        javadoc describes the init-params and the conditions under which gzip encoding
+        is applied - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/GzipFilter.html
+
+        A more flexible approach can be gained by using org.eclipse.jetty.servlets.IncludableGzipFilter,
+        the javadoc can be found here - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/IncludableGzipFilter.html
+    -->
     <!--
     <filter>
       <filter-name>GzipFilter</filter-name>

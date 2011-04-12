@@ -368,11 +368,23 @@
         </form-login-config>
     </login-config>
 
+    <!-- Enable dynamic GZip of server responses
+
+        Standard approach is to use org.eclipse.jetty.servlets.GZipFilter, the
+        javadoc describes the init-params and the conditions under which gzip encoding
+        is applied - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/GzipFilter.html
+
+        A more flexible approach can be gained by using org.eclipse.jetty.servlets.IncludableGzipFilter,
+        the javadoc can be found here - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/IncludableGzipFilter.html
+    -->
     <!-- 
     <filter>
         <filter-name>GzipFilter</filter-name>
-        <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
+
+
         <filter-class>org.eclipse.jetty.servlets.IncludableGzipFilter</filter-class>
+        <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
+
         <!- <async-support>true</async-support> -!>
         <init-param>
             <param-name>bufferSize</param-name>
