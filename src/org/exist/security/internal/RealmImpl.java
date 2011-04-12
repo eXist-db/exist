@@ -258,6 +258,31 @@ public class RealmImpl extends AbstractRealm {
         return userNames;
     }
 
+    @Override
+    public List<String> findAllGroupNames(Subject invokingUser) {
+        List<String> groupNames = new ArrayList<String>();
+
+        for(Group group : getGroups()) {
+            groupNames.add(group.getName());
+        }
+
+        return groupNames;
+    }
+
+    @Override
+    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+        List<String> groupMembers = new ArrayList<String>();
+        for(Account account : getAccounts()) {
+            if(account.hasGroup(groupName)) {
+                groupMembers.add(account.getName());
+            }
+        }
+
+        return groupMembers;
+    }
+
+
+
 
 
 //    @Override

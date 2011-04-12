@@ -40,7 +40,7 @@ public class GroupMembershipFunctions  extends BasicFunction {
         ),
         new FunctionSignature(
             qnGetGroupMembers,
-            "Gets a list of the group members. Can only be called by a group manager.",
+            "Gets a list of the group members.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of members for.")
             },
@@ -73,17 +73,11 @@ public class GroupMembershipFunctions  extends BasicFunction {
                 result = seq;
             } else if(isCalledAs(qnGetGroupMembers.getLocalName())) {
 
-                //TODO this assertion should be moved into the security manager once the groups <-> users relationship is inverted
-                Group group = manager.getGroup(context.getSubject(), groupName);
-                if(!group.isManager(context.getSubject())) {
-                    throw new PermissionDeniedException("You must be a manager to list group membership");
-                }
-                //end assertion
+                List<String> groupMembers = manager.findAllGroupMembers(context.getSubject(), groupName);
 
-                List<Account> groupMembers = manager.getGroupMembers(groupName);
                 ValueSequence seq = new ValueSequence();
-                for(Account groupMember : groupMembers) {
-                    seq.add(new StringValue(groupMember.getName()));
+                for(String groupMember : groupMembers) {
+                    seq.add(new StringValue(groupMember));
                 }
                 result = seq;
             }

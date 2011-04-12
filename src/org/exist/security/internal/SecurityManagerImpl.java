@@ -444,6 +444,15 @@ public class SecurityManagerImpl implements SecurityManager {
         return groupMembers;
     }
 
+    @Override
+    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+        List<String> userNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            userNames.addAll(realm.findAllGroupMembers(invokingUser, groupName));
+        }
+        return userNames;
+    }
+
     @Deprecated
 	@Override
 	public <A extends Account> java.util.Collection<A> getUsers() {
@@ -678,6 +687,15 @@ public class SecurityManagerImpl implements SecurityManager {
             userNames.addAll(realm.findUsernamesWhereUsernameStarts(invokingUser, startsWith));
         }
         return userNames;
+    }
+
+    @Override
+    public List<String> findAllGroupNames(Subject invokingUser) {
+        List<String> groupNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            groupNames.addAll(realm.findAllGroupNames(invokingUser));
+        }
+        return groupNames;
     }
 
 	@Override

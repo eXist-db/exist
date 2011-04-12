@@ -58,6 +58,10 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm,
 
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
+    public List<String> findAllGroupNames(Subject invokingUser);
+    public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
 
     public SecurityManager getSecurityManager();
+
+
 }

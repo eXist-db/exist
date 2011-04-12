@@ -65,7 +65,9 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
     }
 
     public enum LDAPSearchAttributeKey {
-        NAME("name");
+        NAME("name"),
+        DN("dn"),
+        MEMBER_OF("memberOf");
 
         private final String key;
         LDAPSearchAttributeKey(String key) {
@@ -77,7 +79,7 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
         }
 
         public static LDAPSearchAttributeKey valueOfKey(String key) {
-            for(LDAPSearchAttributeKey ldapSearchAttributeKey :LDAPSearchAttributeKey.values()) {
+            for(LDAPSearchAttributeKey ldapSearchAttributeKey : LDAPSearchAttributeKey.values()) {
                 if(ldapSearchAttributeKey.getKey().equals(key)){
                     return ldapSearchAttributeKey;
                 }

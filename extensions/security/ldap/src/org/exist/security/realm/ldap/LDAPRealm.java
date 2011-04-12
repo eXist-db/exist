@@ -330,7 +330,6 @@ public class LDAPRealm extends AbstractRealm {
 
     private SearchResult findGroupByGroupName(DirContext ctx, String groupName) throws NamingException {
 
-
         LDAPSearchContext search = ensureContextFactory().getSearch();
         String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), groupName);
 
@@ -389,7 +388,24 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     private String buildSearchFilter(String searchPrefix, String attrName, String attrValue) {
-        return "(&(" + searchPrefix + ")(" + attrName + "=" + attrValue + "))";
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("(");
+        builder.append(buildSearchCriteria(searchPrefix));
+
+        if(attrName != null && attrValue != null) {
+            builder.append("(");
+            builder.append(attrName);
+            builder.append("=");
+            builder.append(attrValue);
+            builder.append(")");
+        }
+        builder.append(")");
+        return builder.toString();
+    }
+
+    private String buildSearchCriteria(String searchPrefix) {
+        return "&(" + searchPrefix + ")";
     }
 
     @Override
@@ -458,6 +474,76 @@ public class LDAPRealm extends AbstractRealm {
         }
 
         return usernames;
+    }
+
+    @Override
+    public List<String> findAllGroupNames(Subject invokingUser) {
+        List<String> groupNames = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), null, null);
+
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+            SearchResult searchResult = null;
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                groupNames.add((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+            }
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return groupNames;
+    }
+
+    @Override
+    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+        List<String> groupMembers = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            //find the dn of the group
+            SearchResult searchResult = findGroupByGroupName(ctx, removeDomainPostfix(groupName));
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            String dnGroup = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
+
+            //find all accounts that are a member of the group
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.MEMBER_OF), dnGroup);
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                groupMembers.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+            }
+
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return groupMembers;
     }
 
 //    @Override
