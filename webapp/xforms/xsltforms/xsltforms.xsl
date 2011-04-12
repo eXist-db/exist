@@ -144,7 +144,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<link type="text/css" href="{$resourcesdir}xsltforms.css" rel="stylesheet"/>
 					<xsl:apply-templates select="xhtml:head/xhtml:*[local-name() != 'script' and local-name() != 'style' and local-name() != 'link' and local-name() != 'meta'] | xhtml:head/comment() | head/title | head/comment()" mode="nons"/>
 					<xsl:apply-templates select="xhtml:head/xhtml:style | xhtml:head/xhtml:link | head/style | head/link"/>
-					<script src="{$resourcesdir}xsltforms.optimisd.js" type="text/javascript">/* */</script>
+					<script src="{$resourcesdir}xsltforms.optimised.js" type="text/javascript">/* */</script>
 					<xsl:if test="not($config/extensions/beforeInit) and not($config/extensions/onBeginInit) and not($config/extensions/onEndInit) and not($config/extensions/afterInit)">
 						<xsl:copy-of select="$config/extensions/*"/>
 					</xsl:if>
