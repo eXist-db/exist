@@ -140,6 +140,16 @@ public interface SecurityManager extends Configurable {
    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
 
    /**
+    * Find all groups visible to the invokingUser
+    */
+   public List<String> findAllGroupNames(Subject invokingUser);
+
+   /**
+    * Find all members of a group
+    */
+   public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
+
+   /**
     * Process document, possible new sub-instance.
     *  
     * @param document

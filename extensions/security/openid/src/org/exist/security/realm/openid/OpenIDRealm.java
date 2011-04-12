@@ -76,6 +76,19 @@ public class OpenIDRealm extends AbstractRealm {
 		return null;
 	}
 
+        @Override
+        public List<String> findAllGroupNames(Subject invokingUser) {
+            return null;
+        }
+
+        @Override
+        public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+            return null;
+        }
+
+
+
+
 	@Override
 	public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
 		// TODO Auto-generated method stub

@@ -51,6 +51,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
         new FunctionDef(GroupMembershipFunctions.signatures[0], GroupMembershipFunctions.class),
         new FunctionDef(GroupMembershipFunctions.signatures[1], GroupMembershipFunctions.class),
+        new FunctionDef(FindGroupFunction.signatures[0], FindGroupFunction.class)
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
