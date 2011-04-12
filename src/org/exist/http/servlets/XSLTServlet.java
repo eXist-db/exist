@@ -243,8 +243,10 @@ public class XSLTServlet extends HttpServlet {
                 String moduleLoadPath;
 
                 String base = (String) request.getAttribute(REQ_ATTRIBUTE_BASE);
-                if (base != null){
+                if (base != null) {
                     moduleLoadPath = getServletContext().getRealPath(base);
+                } else if (stylesheet.startsWith("xmldb:exist://")) {
+                	moduleLoadPath = XmldbURI.xmldbUriFor(stylesheet).getCollectionPath();
                 } else {
                     moduleLoadPath = getCurrentDir(request).getAbsolutePath();
                 }
