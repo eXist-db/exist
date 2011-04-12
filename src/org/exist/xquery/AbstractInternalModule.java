@@ -160,6 +160,10 @@ public abstract class AbstractInternalModule implements InternalModule {
         return funcs;
     }
 
+    public Iterator<QName> getGlobalVariables() {
+		return mGlobalVariables.keySet().iterator();
+	}
+    
     @Override
     public Variable declareVariable(QName qname, Object value) throws XPathException {
         Sequence val = XPathUtil.javaObjectToXPath(value, null);
