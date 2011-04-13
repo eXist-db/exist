@@ -316,6 +316,7 @@
         <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.jetty"/>
         </typedef>
 
         <echo message="Shutting down the server ..."/>
