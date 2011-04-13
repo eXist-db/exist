@@ -1,10 +1,11 @@
 <TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
     <testName>tests for differences in structual queries on persistent vs in-memory nodes</testName>
     <description>
-        <p>These tests test for differences when structural aspects are queried, for persistent nodes vs. in-memory nodes. Two phenomena are investigated for both types:
+        <p>These tests test for differences when structural aspects are queried, for persistent nodes vs. in-memory nodes. Different phenomena are investigated for both types:
             <ul>
                 <li>the use of a variable (bound to a sequence of nodes) in a location step</li>
                 <li>behaviour of last() either as single predicate, or refining another predicate</li>
+                <li>behaviour of tokenize() inside a predicate</li>
             </ul>
         </p>
         <author>Ron Van den Branden</author>
@@ -56,6 +57,29 @@
             <el>test3</el>
         </expected>
     </test>
+    <test output="xml" ignore="yes">
+        <task>[persistent] tokenize inside predicate</task>
+        <code><![CDATA[
+            let $persistent := collection('/db/coll')/test
+            let $els := $persistent//el
+            return $els[tokenize(@n, '\s+')]
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>[persistent] compare tokenized sequence inside predicate</task>
+        <code><![CDATA[
+            let $persistent := collection('/db/coll')/test
+            let $els := $persistent//el
+            return $els[tokenize(@n, '\s+') = '1']
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+        </expected>
+    </test>    
     <test output="xml" ignore="yes">
         <task>[in-memory] variable in location step</task>
         <code><![CDATA[
@@ -199,6 +223,27 @@
             ]]></code>
         <expected>
             <el n="2">test2</el>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[in-memory] tokenize inside predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $els[tokenize(@n, '\s+')]
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
+            <el n="2">test2</el>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[in-memory] compare tokenized sequence inside predicate</task>
+        <code><![CDATA[
+            let $els := $in-memory//el
+            return $els[tokenize(@n, '\s+') = '1']
+            ]]></code>
+        <expected>
+            <el n="1">test1</el>
         </expected>
     </test>    
 </TestSet>
