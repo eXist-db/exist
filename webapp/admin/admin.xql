@@ -1,6 +1,7 @@
-xquery version "1.0";
-(: $Id$ :)
-(:
+xquery version "3.0";
+(: 
+    $Id$ 
+
     Main module of the database administration interface.
 :)
 
@@ -43,69 +44,83 @@ declare function admin:info-header() as element()
     </div>
 };
 
+(: 
+    Display the menu on left side 
+:)
+declare function admin:menu-panel() as element()
+{
+    let $link := session:encode-url(request:get-uri())
+    return
+    <div>
+     <div class="guide-title">Select a Page</div>
+     <div>
+          <ul>
+              <li>Browse
+                  <ul>
+                      <li><a href="{$link}?panel=browse">Collections</a></li>
+                      <li><a href="{$link}?panel=indexes">Indexes</a></li>
+                  </ul>
+              </li>
+              <li>Install
+                  <ul>
+                      <li><a href="{$link}?panel=fundocs">Documentation</a></li>
+                      <li><a href="{$link}?panel=setup">Examples</a></li>
+                      <!--li><a href="{$link}?panel=install">Tools</a></li-->
+                  </ul>
+              </li>
+             
+              <li>System
+                 <ul>
+                      <li><a href="{$link}?panel=shutdown">Shutdown</a></li>
+                      <li><a href="{$link}?panel=status">Status</a></li>																		
+                 </ul>
+              </li>
+              
+              <li>Tooling
+                  <ul>
+                      <li><a href="{$link}?panel=backup">Backups</a></li>
+                      <li><a href="{$link}?panel=repo">Package Repository</a></li>
+                      <li><a href="{$link}?panel=trace">Query Profiling</a></li>
+                      <li><a href="{$link}?panel=users">User Management</a></li>
+                  </ul>
+              </li>
+              
+              <li>View
+                  <ul>
+                      <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
+                      <li><a href="{$link}?panel=xqueries">Running Jobs</a></li>
+                  </ul>
+              </li>
+          </ul>
+          <ul>
+              <li><a href="..">Home</a></li>
+              <li><a href="{$link}?logout=yes">Logout</a></li>
+          </ul>
+     </div>
+    </div>
+};
+
 (:
     Select the page to show. Every page is defined in its own module 
 :)
 declare function admin:panel() as element()
 {
     let $panel := request:get-parameter("panel", "status")[1] return
-        if($panel eq "browse") then
-        (
-            browse:main()
-        )
-        else if($panel eq "users") then
-        (
-            users:main()
-        )
-         else if($panel eq "xqueries") then
-        (
-            xqueries:main()
-        )
-        else if($panel eq "shutdown") then
-        (
-            shut:main()
-        )
-        else if($panel eq "setup") then
-        (
-            setup:main()
-        )
-        else if ($panel eq "fundocs") then
-        (
-            fundocs:main()
-        )
-		else if ($panel eq "repo") then
-		(
-			repomanager:main()
-		)
-		else if ($panel eq "revisions") then
-		(
-			rev:main()
-		)
-
-		else if ($panel eq "backup") then
-		(
-		    backup:main()
-		)
-	    else if ($panel eq "trace") then
-	    (
-	        prof:main()
-        )
-        else if ($panel eq "grammar") then
-	    (
-	        grammar:main()
-        )
-        else if ($panel eq "install") then
-        (
-            install:main()
-        )
-        else if ($panel eq "indexes") then
-        (
-            indexes:main()
-        )
-        else
-        (
-            status:main()
-        )
+        switch ($panel)
+            case "browse"    return  browse:main()
+            case "users"     return  users:main()
+            case "xqueries"  return  xqueries:main()
+            case "shutdown"  return  shut:main()
+            case "setup"     return  setup:main()
+            case "fundocs"   return  fundocs:main()
+    		case "repo"      return  repomanager:main()
+    		case "revisions" return  rev:main()
+    		case "backup"    return  backup:main()
+    	    case "trace"     return  prof:main()
+            case "grammar"   return  grammar:main()    
+            case "install"   return  install:main()
+            case "indexes"   return  indexes:main()
+            default          return  status:main()
 };
 
 declare function admin:panel-header() {
@@ -159,7 +174,7 @@ declare function admin:display-login-form() as element()
 (: main entry point :)
 let $userParam := request:get-parameter("user", ())[1]
 let $passwdParam := request:get-parameter("pass", ())[1]
-let $isLoggedIn :=  if(xdb:get-current-user() eq "guest")then
+let $isLoggedIn :=  if(xdb:get-current-user() eq "guest") then
     (
         (: is this a login attempt? :)
         if($userParam and not(empty($passwdParam)))then
@@ -214,60 +229,18 @@ return (
         </head>
         <body class="yui-skin-sam">
             <div class="header">
-                {admin:info-header()}
+                { admin:info-header() }
                 <img src="logo.jpg"/>
             </div>
             
             <div class="content">
                 <div class="guide">
-                    <div class="guide-title">Select a Page</div>
+                    
                     {
-                        let $link := session:encode-url(request:get-uri())
-                        return
-                        <div>
-                            <ul>
-                                <li>Browse
-                                    <ul>
-                                        <li><a href="{$link}?panel=browse">Collections</a></li>
-                                        <li><a href="{$link}?panel=indexes">Indexes</a></li>
-                                    </ul>
-                                </li>
-                                <li>Install
-                                    <ul>
-                                        <li><a href="{$link}?panel=fundocs">Documentation</a></li>
-                                        <li><a href="{$link}?panel=setup">Examples</a></li>
-                                        <!--li><a href="{$link}?panel=install">Tools</a></li-->
-                                    </ul>
-                                </li>
-                               
-																<li>System
-                                    <ul>
-																			<li><a href="{$link}?panel=shutdown">Shutdown</a></li>
-																			<li><a href="{$link}?panel=status">Status</a></li>																		
-																		</ul>
-																</li>
-                                
-                                <li>Tooling
-                                    <ul>
-                                        <li><a href="{$link}?panel=backup">Backups</a></li>
-                                        <li><a href="{$link}?panel=repo">Package Repository</a></li>
-                                        <li><a href="{$link}?panel=trace">Query Profiling</a></li>
-                                        <li><a href="{$link}?panel=users">User Management</a></li>
-                                    </ul>
-                                </li>
-                                
-                                <li>View
-                                    <ul>
-                                        <li><a href="{$link}?panel=grammar">Grammar cache</a></li>
-                                        <li><a href="{$link}?panel=xqueries">Running Jobs</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                            <ul>
-                                <li><a href="..">Home</a></li>
-                                <li><a href="{$link}?logout=yes">Logout</a></li>
-                            </ul>
-                            </div>
+                        if($isLoggedIn) then
+                            admin:menu-panel()
+                        else
+                        ()
                     }
                     <div class="userinfo">
                         Logged in as: {xdb:get-current-user()}
