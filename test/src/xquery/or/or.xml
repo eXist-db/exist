@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>Range indexing tests</testName>
+    <description>
+        <p>Or construction tests</p>
+        <author>Csaba Dery</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="text1.xml">
+			<group id="group2">
+    			<msg id="msg1">
+        			<text>Context</text>
+    			</msg>
+    			<msg id="msg2" owner="owner">
+        			<text>Object.</text>
+    			</msg>
+			</group>
+        </store>
+        <store collection="/db/test" name="text2.xml">
+			<group id="group1">
+    			<msg id="msg1">
+        			<text>Context</text>
+    			</msg>
+    			<msg id="msg2" owner="owner1">
+        			<text>Object.</text>
+    			</msg>
+			</group>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+    </tearDown>
+    <test output="text">
+        <task>| construction</task>
+        <code>count((collection("/db/test")/group[@id="group1"] | collection("/db/test")/group[@id="group2"])/msg[@owner="owner" or not(@owner)])</code>
+        <expected>3</expected>
+    </test>
+    <!-- 
+    <test output="text">
+        <task>or construction</task>
+        <code>count(collection("/db/test")/group[@id="group1" or @id="group2"]/msg[@owner="owner" or not(@owner)])</code>
+        <expected>3</expected>
+    </test>
+     -->
+</TestSet>
