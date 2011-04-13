@@ -17,21 +17,6 @@
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
 
-    <servlet>
-	    <servlet-name>milton</servlet-name>
-	    <servlet-class>com.bradmcevoy.http.MiltonServlet</servlet-class>
-        <init-param>
-            <param-name>resource.factory.class</param-name>
-            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
-        </init-param>
-        <!--
-        <init-param>
-             <param-name>filter_0</param-name>
-             <param-value>com.bradmcevoy.http.DebugFilter</param-value>
-         </init-param>
-         -->
-    </servlet>
-
     <!--
         Log4jInit initializes Log4j.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
@@ -120,14 +105,39 @@
         <load-on-startup>2</load-on-startup>
     </servlet>
 
+    <!--
+        JMXservlet is a servlet to monitor the database. It returns status information 
+        for the database based on the JMX interface.
+    -->
 	<servlet>
-      <servlet-name>JMXServlet</servlet-name>
-      <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+	    <servlet-name>JMXServlet</servlet-name>
+        <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+	</servlet>
+    
+    <!--
+        Milton provides the WebDAV interface
+    -->
+    <servlet>
+        <servlet-name>milton</servlet-name>
+        <servlet-class>com.bradmcevoy.http.MiltonServlet</servlet-class>
+        <init-param>
+            <param-name>resource.factory.class</param-name>
+            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
+        </init-param>
+        <!-- Uncomment to enable debugging -->
+        <!--
+            <init-param>
+            <param-name>filter_0</param-name>
+            <param-value>com.bradmcevoy.http.DebugFilter</param-value>
+            </init-param>
+        -->
     </servlet>
 
     <!--
-        WebDAVServlet provides WebDAV access.
+        WebDAVServlet provides the old WebDAV interface. 
+        This interface is deprecatedand should not be used anymore.
     -->
+    <!-- 
     <servlet>
         <servlet-name>WebDAVServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
@@ -137,6 +147,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    -->
 
     <!--
         XQueryServlet generates HTML from an XQuery file.
@@ -370,7 +381,8 @@
         </form-login-config>
     </login-config>
 
-    <!-- Enable dynamic GZip of server responses
+    <!-- 
+        Enable dynamic GZip of server responses
 
         Standard approach is to use org.eclipse.jetty.servlets.GZipFilter, the
         javadoc describes the init-params and the conditions under which gzip encoding
@@ -382,7 +394,6 @@
     <!--
     <filter>
         <filter-name>GzipFilter</filter-name>
-
 
         <filter-class>org.eclipse.jetty.servlets.IncludableGzipFilter</filter-class>
         <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
@@ -413,5 +424,5 @@
         <filter-name>GzipFilter</filter-name>
         <url-pattern>*</url-pattern>
     </filter-mapping>
- -->
+    -->
 </web-app>
