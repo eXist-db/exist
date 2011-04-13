@@ -1186,15 +1186,15 @@ public class XQueryURLRewrite implements Filter {
 
         @Override
         public String getHeader(String s) {
-            if (s.equals("If-Modified-Since"))
-                return null;
+            /*if (s.equals("If-Modified-Since"))
+                return null;*/
             return super.getHeader(s);
         }
 
         @Override
         public long getDateHeader(String s) {
-            if (s.equals("If-Modified-Since"))
-                return -1;
+            /*if (s.equals("If-Modified-Since"))
+                return -1;*/
             return super.getDateHeader(s);
         }
 

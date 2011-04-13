@@ -518,8 +518,7 @@ public class RESTServer {
 				//	response.setContentLength(resource.getContentLength());
 				// must be set so
 				response.addHeader("Content-Length", Long.toString(resource.getContentLength()));
-				response.addDateHeader("Last-Modified", metadata.getLastModified());
-				response.addDateHeader("Created", metadata.getCreated());
+				setCreatedAndLastModifiedHeaders(response, metadata.getCreated(), metadata.getLastModified());
 			}
 			else
 			{
@@ -537,8 +536,7 @@ public class RESTServer {
 							"Permission to read resource " + path + " denied");
 				}
 				response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
-	            response.addDateHeader("Last-Modified", col.getCreationTime());
-				response.addDateHeader("Created", col.getCreationTime());
+                                setCreatedAndLastModifiedHeaders(response, col.getCreationTime(), col.getCreationTime());
 			}
 		}
 		finally
@@ -1466,6 +1464,26 @@ public class RESTServer {
 		}
 	}
 
+        public void setCreatedAndLastModifiedHeaders(HttpServletResponse response, long created, long lastModified){
+
+            /**
+             * Jetty ignores the milliseconds component - https://bugs.eclipse.org/bugs/show_bug.cgi?id=342712
+             * So lets work around this by rounding up to the nearest whole second
+             */
+
+            long lastModifiedMillisComp = lastModified % 1000;
+            if(lastModifiedMillisComp > 0) {
+                lastModified += 1000 - lastModifiedMillisComp;
+            }
+            long createdMillisComp = created % 1000;
+            if(createdMillisComp > 0) {
+                created += 1000 - createdMillisComp;
+            }
+
+            response.addDateHeader("Last-Modified", lastModified);
+            response.addDateHeader("Created", created);
+        }
+
 	// writes out a resource, uses asMimeType as the specified mime-type or if
 	// null uses the type of the resource
 	private void writeResourceAs(DocumentImpl resource, DBBroker broker,
@@ -1477,10 +1495,45 @@ public class RESTServer {
 		if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
 			throw new PermissionDeniedException("Not allowed to read resource");
 		}
+                
+                //get the document metadata
+                DocumentMetadata metadata = resource.getMetadata();
+                long lastModified = metadata.getLastModified();
+                setCreatedAndLastModifiedHeaders(response, metadata.getCreated(), lastModified);
 
-		DocumentMetadata metadata = resource.getMetadata();
-        response.addDateHeader("Last-Modified", metadata.getLastModified());
-		response.addDateHeader("Created", metadata.getCreated());
+
+                /** HTTP 1.1 RFC 2616 Section 14.25 **/
+                //handle If-Modified-Since request header
+                try {
+                    long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+                    if(ifModifiedSince > -1 ) {
+                        
+                        /*
+                         a) A date which is later than the server's
+                         current time is invalid.
+                         */
+                        if(ifModifiedSince <= System.currentTimeMillis()) {
+
+                            /*
+                             b) If the variant has been modified since the If-Modified-Since
+                             date, the response is exactly the same as for a normal GET.
+                            */
+                            if(lastModified <= ifModifiedSince) {
+
+                                /*
+                                 c) If the variant has not been modified since a valid If-
+                                 Modified-Since date, the server SHOULD return a 304 (Not
+                                 Modified) response.
+                                */
+                                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                                return;
+                            }
+                        }
+                    }
+                } catch(IllegalArgumentException iae) {
+                    LOG.warn("Illegal If-Modified-Since HTTP Header sent on request, ignoring. " + iae.getMessage(), iae);
+                }
+		
 		if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary resource
 
@@ -1696,8 +1749,8 @@ public class RESTServer {
 			throws IOException {
 
 		response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
-        response.addDateHeader("Last-Modified", collection.getCreationTime());
-		response.addDateHeader("Created", collection.getCreationTime());
+
+                setCreatedAndLastModifiedHeaders(response, collection.getCreationTime(), collection.getCreationTime());
 
 		OutputStreamWriter writer = 
 			new OutputStreamWriter(response.getOutputStream(), encoding);
