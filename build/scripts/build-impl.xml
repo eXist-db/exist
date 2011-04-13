@@ -163,6 +163,9 @@
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml"/>
+        
+        <copy file="${src.webapp}/WEB-INF/web.xml.tmpl" tofile="${src.webapp}/WEB-INF/web.xml"
+            filtering="true" overwrite="true"/>
 
         <!-- <ant antfile="build.xml" dir="extensions/indexes" target="prepare"/> -->
     </target>
@@ -636,6 +639,7 @@
         <delete failonerror="no" file="descriptor.xml"/>
         <delete failonerror="no" file="mime-types.xml"/>
         <delete failonerror="no" file="server.xml"/>
+        <delete failonerror="no" file="${src.webapp}/WEB-INF/web.xml"/>
 
         <delete>
             <fileset dir="installer" includes="install.xml"/>
