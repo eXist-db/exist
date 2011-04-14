@@ -9,10 +9,10 @@
 
 case "$0" in
 	/*)
-		SCRIPTPATH=$(dirname "$0")
+		SCRIPTPATH="$(dirname "$0")"
 		;;
 	*)
-		SCRIPTPATH=$(dirname "$PWD/$0")
+		SCRIPTPATH="$(dirname "$PWD/$0")"
 		;;
 esac
 
@@ -28,5 +28,7 @@ set_exist_options;
 # set java options
 set_java_options;
 
+echo "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" \
+	shutdown "$@"
 "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} -jar "$EXIST_HOME/start.jar" \
-	shutdown $*
+	shutdown "$@"
