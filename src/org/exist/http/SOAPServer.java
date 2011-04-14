@@ -561,12 +561,12 @@ public class SOAPServer
 		catch(SAXException saxe)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
+			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
 		}
 		catch(TransformerConfigurationException tce)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
+			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
 		}
     }
 	
@@ -606,7 +606,7 @@ public class SOAPServer
 		catch(Exception e)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			writeResponse(response, formatXPathException(null, path, new XPathException(null, "Unable to construct an XML document from the SOAP Request, probably an invalid request: " + e.getMessage(), e)), "text/html", ENCODING);
+			writeResponse(response, formatXPathException(null, path, new XPathException("Unable to construct an XML document from the SOAP Request, probably an invalid request: " + e.getMessage(), e)), "text/html", ENCODING);
 			return;
 		}
 		
@@ -708,12 +708,12 @@ public class SOAPServer
 		catch(SAXException saxe)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
+			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
 		}
 		catch(TransformerConfigurationException tce)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
+			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
 		}
     }
 	
