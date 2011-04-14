@@ -522,10 +522,15 @@ public abstract class AbstractRemoteResource
 			params.add(properties);
 			try {
 				Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
-				if(table.containsKey("content-length")) {
-					retval=((Integer)table.get("content-length")).intValue();
+				if(table.containsKey("content-length-64bit")) {
+					Object o = table.get("content-length-64bit");
+					if(o instanceof Long) {
+						retval = ((Long)o).longValue();
+					} else {
+						retval = Long.parseLong((String)o);
+					}
 				} else {
-					retval=((Long)table.get("content-length-64bit")).longValue();
+					retval=((Integer)table.get("content-length")).intValue();
 				}
 			} catch (XmlRpcException xre) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);

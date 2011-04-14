@@ -662,7 +662,7 @@ public class RpcConnection implements RpcAPI {
                     : "XMLResource");
             long resourceLength = doc.getContentLength();
             hash.put("content-length", new Integer((resourceLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)resourceLength));
-            hash.put("content-length-64bit", new Long(resourceLength));
+            hash.put("content-length-64bit", new Long(resourceLength).toString());
             hash.put("mime-type", doc.getMetadata().getMimeType());
             hash.put("created", new Date(doc.getMetadata().getCreated()));
             hash.put("modified", new Date(doc.getMetadata().getLastModified()));
@@ -5098,6 +5098,11 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean shutdown() throws PermissionDeniedException {
         return shutdown(0);
+    }
+
+    @Override
+    public boolean shutdown(String delay) throws PermissionDeniedException {
+        return shutdown(Long.parseLong(delay));
     }
 
     @Override

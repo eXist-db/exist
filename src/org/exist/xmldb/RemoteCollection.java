@@ -349,9 +349,14 @@ public class RemoteCollection implements CollectionImpl {
 				((Integer) hash.get("permissions")).intValue());
 		String type = (String)hash.get("type");
 		long contentLen = 0;
-		if(hash.containsKey("content-length-64bit"))
-			contentLen = ((Long)hash.get("content-length-64bit")).longValue();
-		else if(hash.containsKey("content-length"))
+		if(hash.containsKey("content-length-64bit")) {
+			Object o = hash.get("content-length-64bit");
+			if(o instanceof Long) {
+				contentLen = ((Long)o).longValue();
+			} else {
+				contentLen = Long.parseLong((String)o);
+			}
+		} else if(hash.containsKey("content-length"))
 			contentLen = ((Integer)hash.get("content-length")).intValue();
 		
 		if(type == null || type.equals("XMLResource")) {
