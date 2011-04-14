@@ -3,10 +3,10 @@
     
     NOTE - XSLT Processor dependency 
     
-    Xalan and Saxon <8.2 uses distinct() from EXSLT
+    Xalan and Saxon <8.2 uses set:distinct() from EXSLT
     Saxon 8.2+ uses distinct-values() from XSLT 2.0
     
-    We default to Xalan here as that is the default eXist XSLT Processor
+    We default to Saxon here as that is the default eXist XSLT Processor
     
     Version 20070413
     
@@ -33,7 +33,7 @@
             <types>
                 <xs:schema elementFormDefault="qualified" targetNamespace="{$webserviceURL}">
                     <!-- creates array types for parameters and returns -->
-                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality &gt;= 4]/type | functions/function/return[cardinality &gt;= 4]/type)">
+                    <xsl:for-each select="distinct-values(functions/function/parameters/parameter[cardinality &gt;= 4]/type | functions/function/return[cardinality &gt;= 4]/type)">
                         <xsl:call-template name="dumptype"/>
                     </xsl:for-each>
                     <xsl:for-each select="functions/function">
