@@ -25,7 +25,7 @@ The SOAP Server expects the requisite XSLT files to be found in the /db/system/w
  
 2) Store the .xslt files found in $EXIST_HOME/tools/SOAPServer into the /db/system/webservice collection
 
-3) If you are using Saxon instead of Xalan, you will need to make a small change to soap.response.xslt, details are in the file.
+3) If you are using Xalan instead of Saxon, you will need to make a small change to wsdl.xslt, details are in the file.
 
 
 Thats it :-)
