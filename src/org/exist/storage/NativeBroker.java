@@ -1617,6 +1617,10 @@ public class NativeBroker extends DBBroker {
     private File getCollectionFile(File dir,XmldbURI uri,boolean create) throws IOException {
        return getCollectionFile(dir,null,uri,create);
     }
+    
+    public File getCollectionBinaryFileFsPath(XmldbURI uri) {
+        return new File(fsDir, uri.getURI().toString());
+    }
 
     private File getCollectionFile(File dir,Txn transaction,XmldbURI uri,boolean create)
             throws IOException {
