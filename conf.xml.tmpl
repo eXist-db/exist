@@ -792,6 +792,19 @@
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
             </module>
             -->
+
+            <!--
+                exiftool:
+                - perl-path - file system path to the perl executable
+                - exiftool-path - file system path to the exiftool perl script
+            -->
+            <!--
+            <module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
+                <parameter name="perl-path" value="/usr/bin/perl"/>
+                <parameter name="exiftool-path" value="/usr/bin/exiftool"/>
+            </module>
+            -->
+
         </builtin-modules>
     </xquery>
 

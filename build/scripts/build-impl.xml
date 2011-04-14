@@ -391,7 +391,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extensions-xar,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -621,6 +621,7 @@
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/contentextraction" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/exiftool" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
         <antcall target="extensions-xslt"/>
     </target>
@@ -746,6 +747,10 @@
 
     <target name="extension-contentextraction" depends="jar">
         <ant antfile="build.xml" dir="extensions/contentextraction" inheritall="false"/>
+    </target>
+
+     <target name="extension-exiftool" depends="jar">
+        <ant antfile="build.xml" dir="extensions/exiftool" inheritall="false"/>
     </target>
 
     <target name="extensions-xar" depends="jar">
