@@ -72,6 +72,14 @@ public interface RpcAPI {
 	 * @return true if the shutdown succeeded, false otherwise
 	 * @throws PermissionDeniedException
 	 */
+	public boolean shutdown(String delay) throws PermissionDeniedException;
+	
+	/**
+	 * Shut down the database after the specified delay (in milliseconds).
+	 * 
+	 * @return true if the shutdown succeeded, false otherwise
+	 * @throws PermissionDeniedException
+	 */
 	public boolean shutdown(long delay) throws PermissionDeniedException;
 	
 	public boolean sync();

@@ -33,7 +33,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 	public void shutdown(long delay) throws XMLDBException {
         List<Object> params = new ArrayList<Object>(1);
 		if(delay > 0)
-			params.add(new Long(delay));
+			params.add(new Long(delay).toString());
 		try {
 			client.execute("shutdown", params);
 		} catch(XmlRpcException e) {
