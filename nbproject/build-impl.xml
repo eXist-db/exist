@@ -55,14 +55,7 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property" name="-do-init">
         <available file="${manifest.file}" property="manifest.available"/>
-        <condition property="splashscreen.available">
-            <and>
-                <not>
-                    <equals arg1="${application.splash}" arg2="" trim="true"/>
-                </not>
-                <available file="${application.splash}"/>
-            </and>
-        </condition>
+        <available file="${application.splash}" property="splashscreen.available"/>
         <condition property="main.class.available">
             <and>
                 <isset property="main.class"/>
@@ -137,6 +130,7 @@ is divided into following sections:
         <condition property="have.sources">
             <or>
                 <available file="${src.dir}"/>
+                <available file="${src.src14.dir}"/>
                 <available file="${src.src2.dir}"/>
                 <available file="${src.src4.dir}"/>
                 <available file="${src.src9.dir}"/>
@@ -200,7 +194,6 @@ is divided into following sections:
         </condition>
         <property name="javac.fork" value="false"/>
         <property name="jar.index" value="false"/>
-        <property name="jar.index.metainf" value="${jar.index}"/>
         <available file="${meta.inf.dir}/persistence.xml" property="has.persistence.xml"/>
     </target>
     <target name="-post-init">
@@ -209,6 +202,7 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="src.src14.dir">Must set src.src14.dir</fail>
         <fail unless="src.src2.dir">Must set src.src2.dir</fail>
         <fail unless="src.src4.dir">Must set src.src4.dir</fail>
         <fail unless="src.src9.dir">Must set src.src9.dir</fail>
@@ -248,7 +242,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -288,7 +282,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -320,7 +314,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -335,18 +329,15 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="destdir"/>
             <sequential>
                 <fail unless="javac.includes">Must set javac.includes</fail>
-                <pathconvert pathsep="${line.separator}" property="javac.includes.binary">
+                <pathconvert pathsep="," property="javac.includes.binary">
                     <path>
                         <filelist dir="@{destdir}" files="${javac.includes}"/>
                     </path>
                     <globmapper from="*.java" to="*.class"/>
                 </pathconvert>
-                <tempfile deleteonexit="true" property="javac.includesfile.binary"/>
-                <echo file="${javac.includesfile.binary}" message="${javac.includes.binary}"/>
                 <delete>
-                    <files includesfile="${javac.includesfile.binary}"/>
+                    <files includes="${javac.includes.binary}"/>
                 </delete>
-                <delete file="${javac.includesfile.binary}"/>
             </sequential>
         </macrodef>
     </target>
@@ -356,8 +347,7 @@ is divided into following sections:
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="**" name="testincludes"/>
             <sequential>
-                <property name="junit.forkmode" value="perTest"/>
-                <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" forkmode="${junit.forkmode}" showoutput="true" tempdir="${build.dir}">
+                <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true" tempdir="${build.dir}">
                     <batchtest todir="${build.test.results.dir}">
                         <fileset dir="${test.src.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
@@ -382,55 +372,10 @@ is divided into following sections:
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                     <jvmarg line="${endorsed.classpath.cmd.line.arg}"/>
-                    <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs}"/>
                 </junit>
             </sequential>
         </macrodef>
-    </target>
-    <target depends="-profile-pre-init, init, -profile-post-init, -profile-init-macrodef-profile, -profile-init-check" name="profile-init"/>
-    <target name="-profile-pre-init">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="-profile-post-init">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="-profile-init-macrodef-profile">
-        <macrodef name="resolve">
-            <attribute name="name"/>
-            <attribute name="value"/>
-            <sequential>
-                <property name="@{name}" value="${env.@{value}}"/>
-            </sequential>
-        </macrodef>
-        <macrodef name="profile">
-            <attribute default="${main.class}" name="classname"/>
-            <element name="customize" optional="true"/>
-            <sequential>
-                <property environment="env"/>
-                <resolve name="profiler.current.path" value="${profiler.info.pathvar}"/>
-                <java classname="@{classname}" dir="${profiler.info.dir}" fork="true" jvm="${profiler.info.jvm}">
-                    <jvmarg value="${profiler.info.jvmargs.agent}"/>
-                    <jvmarg line="${profiler.info.jvmargs}"/>
-                    <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
-                    <arg line="${application.args}"/>
-                    <classpath>
-                        <path path="${run.classpath}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper from="run-sys-prop.*" to="*" type="glob"/>
-                    </syspropertyset>
-                    <customize/>
-                </java>
-            </sequential>
-        </macrodef>
-    </target>
-    <target depends="-profile-pre-init, init, -profile-post-init, -profile-init-macrodef-profile" name="-profile-init-check">
-        <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
-        <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
     </target>
     <target depends="-init-debug-args" name="-init-macrodef-nbjpda">
         <macrodef name="nbjpdastart" uri="http://www.netbeans.org/ns/j2se-project/1">
@@ -526,7 +471,6 @@ is divided into following sections:
     </target>
     <target name="-init-macrodef-copylibs">
         <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${manifest.file}" name="manifest"/>
             <element name="customize" optional="true"/>
             <sequential>
                 <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
@@ -542,7 +486,7 @@ is divided into following sections:
                     </chainedmapper>
                 </pathconvert>
                 <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
-                <copylibs compress="${jar.compress}" index="${jar.index}" indexMetaInf="${jar.index.metainf}" jarfile="${dist.jar}" manifest="@{manifest}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
                     <fileset dir="${build.classes.dir}"/>
                     <manifest>
                         <attribute name="Class-Path" value="${jar.classpath}"/>
@@ -625,12 +569,13 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.src14.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src2.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src4.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src9.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -666,7 +611,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -801,72 +746,6 @@ is divided into following sections:
     </target>
     <target depends="init,-pre-debug-fix,-do-debug-fix" if="netbeans.home" name="debug-fix"/>
     <!--
-                =================
-                PROFILING SECTION
-                =================
-            -->
-    <target depends="profile-init,compile" description="Profile a project in the IDE." if="netbeans.home" name="profile">
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <profile/>
-    </target>
-    <target depends="profile-init,compile-single" description="Profile a selected class in the IDE." if="netbeans.home" name="profile-single">
-        <fail unless="profile.class">Must select one file in the IDE or set profile.class</fail>
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <profile classname="${profile.class}"/>
-    </target>
-    <!--
-                =========================
-                APPLET PROFILING  SECTION
-                =========================
-            -->
-    <target depends="profile-init,compile-single" if="netbeans.home" name="profile-applet">
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <profile classname="sun.applet.AppletViewer">
-            <customize>
-                <arg value="${applet.url}"/>
-            </customize>
-        </profile>
-    </target>
-    <!--
-                =========================
-                TESTS PROFILING  SECTION
-                =========================
-            -->
-    <target depends="profile-init,compile-test-single" if="netbeans.home" name="profile-test-single">
-        <nbprofiledirect>
-            <classpath>
-                <path path="${run.test.classpath}"/>
-            </classpath>
-        </nbprofiledirect>
-        <junit dir="${profiler.info.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" jvm="${profiler.info.jvm}" showoutput="true">
-            <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
-            <jvmarg value="${profiler.info.jvmargs.agent}"/>
-            <jvmarg line="${profiler.info.jvmargs}"/>
-            <test name="${profile.class}"/>
-            <classpath>
-                <path path="${run.test.classpath}"/>
-            </classpath>
-            <syspropertyset>
-                <propertyref prefix="test-sys-prop."/>
-                <mapper from="test-sys-prop.*" to="*" type="glob"/>
-            </syspropertyset>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-    </target>
-    <!--
                 ===============
                 JAVADOC SECTION
                 ===============
@@ -878,6 +757,9 @@ is divided into following sections:
                 <path path="${javac.classpath}"/>
             </classpath>
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${src.src14.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${src.src2.dir}" excludes="${excludes}" includes="${includes}">
@@ -931,6 +813,9 @@ is divided into following sections:
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/doc-files/**"/>
+            </fileset>
+            <fileset dir="${src.src14.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.src2.dir}" excludes="${excludes}" includes="${includes}">

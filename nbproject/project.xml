@@ -7,6 +7,7 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir" name="Core"/>
+                <root id="src.src14.dir" name="Extensions Exiftool"/>
                 <root id="src.src2.dir" name="Index NGram"/>
                 <root id="src.src4.dir" name="Index Lucene"/>
                 <root id="src.src9.dir" name="Index Sort"/>
