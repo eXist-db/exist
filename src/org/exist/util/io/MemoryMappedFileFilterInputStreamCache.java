@@ -17,7 +17,8 @@ import java.nio.channels.FileChannel;
  */
 public class MemoryMappedFileFilterInputStreamCache implements FilterInputStreamCache {
 
-    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024; //64KB
+    //private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024; //64KB
+    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
 
     private final FileChannel channel;
     private MappedByteBuffer buf;
@@ -55,7 +56,6 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
         buf.position(position); //setting the position in the map() call above does not seem to work!
-
         //bufAccessor.refresh();
     }
 
