@@ -1,4 +1,4 @@
-/* Rev. 480
+/* Rev. 499
 
 Copyright (C) 2008-2011 <agenceXML> - Alain COUTHURES
 Contact at : <info@agencexml.com>
@@ -34,7 +34,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 
 var Core = {
-    fileName : "jsCore.js",
+    fileName : "xsltforms.js",
+	fileVersion : "Rev. 499",
+	fileVersionNumber: 499,
 
 		
 
@@ -44,7 +46,7 @@ var Core = {
 		isIE6 : navigator.userAgent.match(/\bMSIE 6.0/) != null,
     isMozilla : navigator.userAgent.match(/\bGecko\b/) != null,
 		isFF2 : navigator.userAgent.match(/\bFirefox[\/\s]2.\b/) != null,
-		isXhtml : document.documentElement.namespaceURI == "http://www.w3.org/1999/xhtml-false",
+		isXhtml : false, // document.documentElement.namespaceURI == "http://www.w3.org/1999/xhtml",
     setClass : function(element, className, value) {
         assert(element && className);
 
@@ -113,16 +115,6 @@ var Core = {
 		
 
     loadProperties : function(name) {
-			if (!this.ROOT) {
-				var scripts = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "script") : document.getElementsByTagName("script");
-				for (var i = 0, len = scripts.length; i < len; i++) {
-					var src = scripts[i].src;
-					if (src.indexOf(Core.fileName) != -1) {
-						this.ROOT = src.replace(Core.fileName, "");
-						break;
-					}
-				}
-			}
 			var uri = this.ROOT + name;
 			var req = Core.openRequest("GET", uri, false);
 			if (req.overrideMimeType) {
@@ -300,13 +292,68 @@ if (Core.isIE) {
 				xsltProcessor.setParameter(null, "xsltforms_caller", "true");
 			}
 			xsltProcessor.setParameter(null, "xsltforms_config", document.getElementById("xf-instance-config").xfElement.srcXML);
-			xsltProcessor.setParameter(null, "xsltforms_debug", DebugMode+"");
+			xsltProcessor.setParameter(null, "xsltforms_debug", xforms.debugMode+"");
 			xsltProcessor.setParameter(null, "xsltforms_lang", Language);
 			xsltProcessor.importStylesheet(xsltDoc);
 			var resultDocument = xsltProcessor.transformToDocument(xmlDoc);
 			return serializer.serializeToString(resultDocument);
     };
 }
+
+		
+
+var __scripts = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "script") : document.getElementsByTagName("script");
+for (var __i = 0, __len = __scripts.length; __i < __len; __i++) {
+	var __src = __scripts[__i].src;
+	if (__src.indexOf(Core.fileName) != -1) {
+		Core.ROOT = __src.replace(Core.fileName, "");
+		break;
+	}
+}
+Core.loadapplet = function() {
+	appelt = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "applet") : document.createElement("applet");
+	appelt.setAttribute("style", "position:absolute;left:-1px");
+	appelt.setAttribute("name", "xsltforms");
+	appelt.setAttribute("code", "xsltforms.class");
+	appelt.setAttribute("archive", Core.ROOT + "xsltforms.jar");
+	appelt.setAttribute("width", "1");
+	appelt.setAttribute("height", "1");
+	body = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body")[0] : document.getElementsByTagName("body")[0];
+	body.insertBefore(appelt, body.firstChild);
+};
+
+		
+
+Core.javaReadFile = function(fname, encoding, xsdtype, title) {
+	if (document.applets["xsltforms"] || (Core.loadapplet(),document.applets["xsltforms"])) {
+		return document.applets["xsltforms"].readFile(fname, encoding, xsdtype, title) || "";
+	}
+	return "";
+};
+
+		
+
+Core.javaWriteFile = function(fname, encoding, xsdtype, title, content) {
+	if (document.applets["xsltforms"] || (Core.loadapplet(),document.applets["xsltforms"])) {
+		if (fname == "") {
+			fname = document.applets["xsltforms"].lastChosenFileName;
+		}
+		return document.applets["xsltforms"].writeFile(fname, encoding, xsdtype, title, content) == 1;
+	}
+	return false;
+};
+
+		
+
+Core.readFile = function(fname, encoding, xsdtype, title) {
+	return Core.javaReadFile(fname, encoding, xsdtype, title);
+};
+
+		
+
+Core.writeFile = function(fname, encoding, xsdtype, title, content) {
+	return Core.javaWriteFile(fname, encoding, xsdtype, title, content);
+};
 
 Core.xsltsrc =
  '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">'
@@ -477,6 +524,8 @@ Core.getType = function(node) {
 				return null;
 			}
 		}
+	} else if (node.nodeType == NodeType.DOCUMENT) {
+		return null;
 	} else {
 		if (node.ownerElement) {
 			return node.ownerElement.getAttribute("xsltforms_"+(node.localName ? node.localName : node.baseName)+"_type");
@@ -572,7 +621,7 @@ var DebugConsole = {
     isInit_ : false,
     time_ : 0,
     init_ : function() {
-        this.element_ = document.getElementById("console");
+        this.element_ = document.getElementById("xsltforms_console");
         this.isInit_ = true;
         this.time_ = new Date().getTime();
     },
@@ -880,7 +929,7 @@ if (Core.isIE) {
 var I8N = {
     messages : null,
     lang : null,
-    langs : ["cz", "de", "el", "en", "en_us", "es", "fr" , "gl", "it", "ja", "nb_no", "nl", "nn_no", "pt", "ro", "ru", "si", "sk"],
+    langs : ["cz", "de", "el", "en", "en_us", "es", "fr" , "gl", "ko", "it", "ja", "nb_no", "nl", "nn_no", "pt", "ro", "ru", "si", "sk", "zh", "zh_cn", "zh_tw"],
 
 		
 
@@ -1354,39 +1403,142 @@ var xforms = {
 	building : false,
 	posibleBlur : false,
 	bindErrMsgs : [],		// binding-error messages gathered during refreshing
-	loadingtime: 0,
+	creatingtime: 0,
+	inittime: 0,
 	refreshtime: 0,
 	refreshcount: 0,
+	debugMode: false,
+	debugButtons: [
+		{label: "Profiler", action: "xforms.profiling();"}
+		/*
+		,{label: "Instance Viewer"}
+		,{label: "Validator"},
+		,{label: "XPath Evaluator"}
+		*/
+	],
+
+		
+
+	debugging : function() {
+		var body = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body")[0] : document.getElementsByTagName("body")[0];
+		if (this.debugMode) {
+			var dbg = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "div") : document.createElement("div");
+			dbg.setAttribute("style", "border-bottom: thin solid #888888;");
+			dbg.setAttribute("id", "xsltforms_debug");
+			var img = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "img") : document.createElement("img");
+			img.setAttribute("src", Core.ROOT+"magnify.png");
+			img.setAttribute("style", "vertical-align:middle;border:0;");
+			dbg.appendChild(img);
+			var spn = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "span") : document.createElement("span");
+			spn.setAttribute("style", "font-size:16pt");
+			var txt = document.createTextNode(" Debug Mode");
+			spn.appendChild(txt);
+			dbg.appendChild(spn);
+			var spn2 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "span") : document.createElement("span");
+			spn2.setAttribute("style", "font-size:11pt");
+			var txt2 = document.createTextNode(" ("+Core.fileVersion+") \xA0\xA0\xA0");
+			spn2.appendChild(txt2);
+			dbg.appendChild(spn2);
+			var a = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "a") : document.createElement("a");
+			a.setAttribute("href", "http://www.w3.org/TR/xforms11/");
+			a.setAttribute("style", "text-decoration:none;");
+			var img2 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "img") : document.createElement("img");
+			img2.setAttribute("src", Core.ROOT+"valid-xforms11.png");
+			img2.setAttribute("style", "vertical-align:middle;border:0;");
+			a.appendChild(img2);
+			dbg.appendChild(a);
+			var a2 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "a") : document.createElement("a");
+			a2.setAttribute("href", "http://www.agencexml.com/xsltforms");
+			a2.setAttribute("style", "text-decoration:none;");
+			var img3 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "img") : document.createElement("img");
+			img3.setAttribute("src", Core.ROOT+"poweredbyXSLTForms.png");
+			img3.setAttribute("style", "vertical-align:middle;border:0;");
+			a2.appendChild(img3);
+			dbg.appendChild(a2);
+			var spn3 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "span") : document.createElement("span");
+			spn3.setAttribute("style", "font-size:11pt");
+			var txt3 = document.createTextNode(" Press ");
+			spn3.appendChild(txt3);
+			dbg.appendChild(spn3);
+			var a3 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "a") : document.createElement("a");
+			a3.setAttribute("onClick", "xforms.debugMode=false;xforms.debugging();return false;");
+			a3.setAttribute("style", "text-decoration:none;");
+			a3.setAttribute("href", "#");
+			var img4 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "img") : document.createElement("img");
+			img4.setAttribute("src", Core.ROOT+"F1.png");
+			img4.setAttribute("style", "vertical-align:middle;border:0;");
+			a3.appendChild(img4);
+			dbg.appendChild(a3);
+			var spn4 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "span") : document.createElement("span");
+			spn4.setAttribute("style", "font-size:11pt");
+			var txt4 = document.createTextNode(" to toggle mode ");
+			spn4.appendChild(txt4);
+			dbg.appendChild(spn4);
+			var br = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "br") : document.createElement("br");
+			dbg.appendChild(br);
+			var txt5 = document.createTextNode(" \xA0\xA0\xA0\xA0\xA0\xA0");
+			dbg.appendChild(txt5);
+			for (var i = 0, len = xforms.debugButtons.length; i < len; i++) {
+				if (xforms.debugButtons[i].action) {
+					var btn = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "button") : document.createElement("button");
+					btn.setAttribute("onClick", xforms.debugButtons[i].action);
+					var txt6 = document.createTextNode(" "+xforms.debugButtons[i].label+" ");
+					btn.appendChild(txt6);
+					dbg.appendChild(btn);
+				} else {
+					var a4 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "a") : document.createElement("a");
+					a4.setAttribute("href", "http://www.agencexml.com/xsltforms");
+					var txt7 = document.createTextNode(" Debugging extensions can be downloaded! ");
+					a4.appendChild(txt7);
+					dbg.appendChild(a4);
+					break;
+				}
+			}
+			var br2 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "br") : document.createElement("br");
+			dbg.appendChild(br2);
+			var ifr = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "iframe") : document.createElement("iframe");
+			ifr.setAttribute("src", "http://www.agencexml.com/direct/banner.htm");
+			ifr.setAttribute("style", "width:100%;height:90px;border:none;margin:0;");
+			ifr.setAttribute("frameborder", "0");
+			dbg.appendChild(ifr);
+			body.insertBefore(dbg, body.firstChild);
+			document.getElementById('xsltforms_console').style.display = "block";
+		} else {
+			body.removeChild(document.getElementById("xsltforms_debug"));
+			document.getElementById('xsltforms_console').style.display = "none";
+		}
+	},
 
 		
 
 	profiling : function() {
-		var s = "XSLTForms Version Id: Rev. 480\n";
-		s += "\nLoading Time: " + this.loadingtime + "ms";
+		var s = "XSLTForms Profiler:\n";
+		s += "\nCreating Time: " + this.creatingtime + "ms";
+		s += "\nInit Time: " + this.inittime + "ms";
 		s += "\nRefresh Counter: " + this.refreshcount;
 		s += "\nCumulative Refresh Time: " + this.refreshtime + "ms";
-		s += "\nXPath Evaluation:";
 		var exprtab = [];
 		for (var expr in XPath.expressions) {
 			exprtab[exprtab.length] = {expr: expr, evaltime: XPath.expressions[expr].evaltime};
 		}
 		exprtab.sort(function(a,b) { return b.evaltime - a.evaltime; });
 		var top = 0;
-		for (var i = 0; i < exprtab.length && i < 20; i++) {
-			s += "\n   \"" + (exprtab[i].expr.length > 60 ? exprtab[i].expr.substring(0,60)+"..." : exprtab[i].expr) + "\": " + exprtab[i].evaltime + "ms";
-			top += exprtab[i].evaltime;
-		}
-		if (exprtab.length > 20) {
-			var others = 0;
-			for (var i = 20; i < exprtab.length; i++) {
-				others += exprtab[i].evaltime;
+		if (exprtab.length > 0) {
+			s += "\nXPath Evaluation:";
+			for (var i = 0; i < exprtab.length && i < 20; i++) {
+				s += "\n   \"" + (exprtab[i].expr.length > 60 ? exprtab[i].expr.substring(0,60)+"..." : exprtab[i].expr) + "\": " + exprtab[i].evaltime + "ms";
+				top += exprtab[i].evaltime;
 			}
-			s += "\n   Others (" + (exprtab.length - 20) + " expr.): " + others + "ms";
-			top += others;
-			s += "\n   Total: " + top + "ms";
+			if (exprtab.length > 20) {
+				var others = 0;
+				for (var i = 20; i < exprtab.length; i++) {
+					others += exprtab[i].evaltime;
+				}
+				s += "\n   Others (" + (exprtab.length - 20) + " expr.): " + others + "ms";
+				top += others;
+				s += "\n   Total: " + top + "ms";
+			}
 		}
-		s += "\n\n(c) Alain Couthures - agenceXML - 2011   http://www.agencexml.com/xsltforms";
-		s += "\nPlease donate at http://sourceforge.net/projects/xsltforms/";
 		alert(s);
 	},
 
@@ -1402,9 +1554,14 @@ var xforms = {
 		window.onhelp = new Function("return false;");
 		XSLTFormsEvent.attach(document, "keydown", function(evt) {
 			if (evt.keyCode == 112) {
-				xforms.profiling();
-				evt.stopPropagation();
-				evt.preventDefault();
+				xforms.debugMode = !xforms.debugMode;
+				xforms.debugging();
+				if (evt.stopPropagation) {
+					evt.stopPropagation();
+					evt.preventDefault();
+				} else {
+					evt.cancelBubble = true;
+				}
 				return false;
 			}
 		});
@@ -1444,7 +1601,6 @@ var xforms = {
 
 		this.openAction();
 		XMLEvents.dispatchList(this.models, "xforms-model-construct");
-		XMLEvents.dispatchList(this.models, "xforms-ready");
 		this.refresh();
 		this.closeAction();
 		this.ready = true;
@@ -1456,7 +1612,10 @@ var xforms = {
 	close : function() {
 		if (xforms.body) {
 			xforms.openAction();
-			XMLEvents.dispatchList(xforms.models, "xforms-model-destruct");
+			//XMLEvents.dispatchList(xforms.models, "xforms-model-destruct");
+			for (var i = 0, len = Listener.destructs.length; i < len; i++) {
+				Listener.destructs[i].callback({target: Listener.destructs[i].observer});
+			}
 			xforms.closeAction();
 			IdManager.clear();
 			xforms.defaultModel = null;
@@ -1466,13 +1625,14 @@ var xforms = {
 			xforms.cont = 0;
 			xforms.dispose(document.documentElement);
 			//XSLTFormsEvent.flush_();
-	    if (XSLTFormsEvent.cache) 
+			if (XSLTFormsEvent.cache) {
 
-	        for (var i = XSLTFormsEvent.cache.length - 1; i >= 0; i--) {
-	            var item = XSLTFormsEvent.cache[i];
-	            XSLTFormsEvent.detach(item[0], item[1], item[2], item[3]);
-	        }
-
+				for (var i = XSLTFormsEvent.cache.length - 1; i >= 0; i--) {
+					var item = XSLTFormsEvent.cache[i];
+					XSLTFormsEvent.detach(item[0], item[1], item[2], item[3]);
+				}
+			}
+			Listener.destructs = [];
 			Schema.all = {};
 			TypeDefs.initAll();
 			xforms.ready = false;
@@ -1592,7 +1752,7 @@ var xforms = {
 
 	build : function(element, ctx, selected) {
 		if (   element.nodeType != NodeType.ELEMENT
-			|| element.id == "console" || element.hasXFElement == false) { return; }
+			|| element.id == "xsltforms_console" || element.hasXFElement == false) { return; }
 		var xf = element.xfElement;
 		var hasXFElement = !!xf;
 		
@@ -1652,7 +1812,7 @@ var xforms = {
 		
 
 	dispose : function(element) {
-		if (element.nodeType != NodeType.ELEMENT || element.id == "console") { return; }
+		if (element.nodeType != NodeType.ELEMENT || element.id == "xsltforms_console") { return; }
 
 		element.listeners = null;
 		element.node = null;
@@ -1954,6 +2114,9 @@ XFModel.prototype.construct = function() {
 	}
 	XMLEvents.dispatch(this, "xforms-rebuild");
 	XMLEvents.dispatch(this, "xforms-model-construct-done");
+	if (this == xforms.models[xforms.models.length - 1]) {
+		window.setTimeout("XMLEvents.dispatchList(xforms.models, \"xforms-ready\")", 1);
+	}
 };
 
 
@@ -2086,7 +2249,7 @@ XFInstance.prototype.construct = function() {
 				this.setDoc('<dummy xmlns=""/>');
 				jsoninstobj = this;
 				var scriptelt = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "script") : document.createElement("script");
-				scriptelt.setAttribute("src", this.src+"&callback=jsoninst");
+				scriptelt.setAttribute("src", this.src+((this.src.indexOf("?") == -1) ? "?" : "&")+"callback=jsoninst");
 				scriptelt.setAttribute("id", "jsoninst");
 				scriptelt.setAttribute("type", "text/javascript");
 				var body = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body")[0] : document.getElementsByTagName("body")[0];
@@ -2096,7 +2259,7 @@ XFInstance.prototype.construct = function() {
 					var req = Core.openRequest("GET", this.src, false);
 					DebugConsole.write("Loading " + this.src);
 					req.send(null);
-					if (req.status != 200 && req.status != 0) {
+					if (req.status != 0 && (req.status < 200 || req.status >= 300)) {
 						throw "Request error: " + req.status;
 					}
 					this.setDoc(req.responseText);
@@ -2184,33 +2347,44 @@ XFInstance.prototype.validation_ = function(node, readonly, notrelevant) {
 };
 
 XFInstance.prototype.validate_ = function(node, readonly, notrelevant) {
-	var bindid = Core.getMeta(node, "bind");
+	var bindids = Core.getMeta(node, "bind");
 	var value = xmlValue(node);
 	var schtyp = Schema.getType(Core.getType(node) || "xsd_:string");
-	if (bindid) {
-		var bind = document.getElementById(bindid).xfElement;
-		var nodes = bind.nodes;
-		var i = 0;
-		for (var len = nodes.length; i < len; i++) {
-			if (nodes[i] == node) {
-				break;
+	if (bindids) {
+		var binds = bindids.split(" ");
+		var relevantfound = false;
+		var readonlyfound = false;
+		for (var i = 0, len = binds.length; i < len; i++) {
+			var bind = document.getElementById(binds[i]).xfElement;
+			var nodes = bind.nodes;
+			var i2 = 0;
+			for (var len2 = nodes.length; i2 < len2; i2++) {
+				if (nodes[i2] == node) {
+					break;
+				}
 			}
+			for (var j = 0, len2 = bind.depsNodes.length; j < len2; j++) {
+				Core.setFalseBoolMeta(bind.depsNodes[j], "depfor_"+bind.depsId);
+			}
+			bind.depsNodes.length = 0;
+			var ctx = new ExprContext(node, i2, nodes, null, null, null, [], bind.depsId);
+			if (bind.required) {
+				this.setProperty_(node, "required", booleanValue(bind.required.evaluate(ctx)));
+			}
+			if (notrelevant || !relevantfound || bind.relevant != undefined) {
+				this.setProperty_(node, "notrelevant", notrelevant || !(bind.relevant? booleanValue(bind.relevant.evaluate(ctx)) : true));
+				relevantfound = relevantfound || bind.relevant != undefined;
+			}
+			if (readonly || !readonlyfound || bind.readonly != undefined) {
+				this.setProperty_(node, "readonly", readonly || (bind.readonly? booleanValue(bind.readonly.evaluate(ctx)) : bind.calculate ? true : false));
+				readonlyfound = readonlyfound || bind.readonly != undefined;
+			}
+			this.setProperty_(node, "notvalid",
+				!Core.getBoolMeta(node, "notrelevant") && !(!(Core.getBoolMeta(node, "required") && (!value || value == ""))
+				&& (!schtyp || schtyp.validate(value))
+				&& (!bind.constraint || booleanValue(bind.constraint.evaluate(ctx)))));
+			copyArray(ctx.depsNodes, bind.depsNodes);
 		}
-		for (var j = 0, len = bind.depsNodes.length; j < len; j++) {
-			Core.setFalseBoolMeta(bind.depsNodes[j], "depfor_"+bind.depsId);
-		}
-		bind.depsNodes.length = 0;
-		var ctx = new ExprContext(node, i, nodes, null, null, null, [], bind.depsId);
-		if (bind.required) {
-			this.setProperty_(node, "required", booleanValue(bind.required.evaluate(ctx)));
-		}
-		this.setProperty_(node, "notrelevant", notrelevant || !(bind.relevant? booleanValue(bind.relevant.evaluate(ctx)) : true));
-		this.setProperty_(node, "readonly", readonly || (bind.readonly? booleanValue(bind.readonly.evaluate(ctx)) : bind.calculate ? true : false));
-		this.setProperty_(node, "notvalid",
-			!Core.getBoolMeta(node, "notrelevant") && !(!(Core.getBoolMeta(node, "required") && (!value || value == ""))
-			&& (!schtyp || schtyp.validate(value))
-			&& (!bind.constraint || booleanValue(bind.constraint.evaluate(ctx)))));
-		copyArray(ctx.depsNodes, bind.depsNodes);
 	} else {
 		this.setProperty_(node, "notrelevant", notrelevant);
 		this.setProperty_(node, "readonly", readonly);
@@ -2343,26 +2517,29 @@ XFBind.prototype.refresh = function(ctx, index) {
 
 	for (var i = 0, len = this.nodes.length; i < len; i++) {
 		var node = this.nodes[i];
-		var bindid = Core.getMeta(node, "bind");
-		if (bindid && this.element.id != bindid) {
-			XFProcessor.error(el, "xforms-binding-exception", "Two binds affect one node");
-		} else {
+		var bindids = Core.getMeta(node, "bind");
+		if (!bindids) {
 			Core.setMeta(node, "bind", this.element.id);
+		} else {
+			var bindids2 = " "+bindids+" ";
+			if (bindids.indexOf(" "+this.element.id+" ") == -1) {
+				Core.setMeta(node, "bind", bindids+" "+this.element.id);
+			}
+		}
 
-			if (this.type) {
-				if (Core.getMeta(node, "schemaType")) {
-					XFProcessor.error(el, "xforms-binding-exception", "Type especified in xsi:type attribute");
-				} else {
-					var name = this.type.name;
-					var ns = this.type.nsuri;
-					for (var key in Schema.prefixes) {
-						if (Schema.prefixes[key] == ns) {
-							name = key + ":" + name;
-							break;
-						}
+		if (this.type) {
+			if (Core.getMeta(node, "schemaType")) {
+				XFProcessor.error(el, "xforms-binding-exception", "Type especified in xsi:type attribute");
+			} else {
+				var name = this.type.name;
+				var ns = this.type.nsuri;
+				for (var key in Schema.prefixes) {
+					if (Schema.prefixes[key] == ns) {
+						name = key + ":" + name;
+						break;
 					}
-					Core.setType(node, name);
 				}
+				Core.setType(node, name);
 			}
 		}
 
@@ -2409,6 +2586,9 @@ function XFSubmission(id, model, ref, bind, action, method, version, indent,
 		model.defaultSubmission = this;
 	}
 	this.action = action;
+	if (action.substr && action.substr(0,7) == "file://" && !document.applets["xsltforms"]) {
+		Core.loadapplet();
+	}
 	this.method = method;
 	this.replace = replace;
 	this.version = version;
@@ -2432,7 +2612,7 @@ function XFSubmission(id, model, ref, bind, action, method, version, indent,
 		}
 	}
     
-	this.encoding = encoding;
+	this.encoding = encoding || "UTF-8";
 	this.omitXmlDeclaration = omitXmlDeclaration;
 	this.cdataSectionElements = cdataSectionElements;
 	this.instance = instance;
@@ -2500,13 +2680,25 @@ XFSubmission.prototype.submit = function() {
 	XMLEvents.dispatch(this, "xforms-submit-serialize");
 	var ser = node ? Core.saveXML(node) : "";
 	if (action.substr(0,7) == "file://") {
-		alert('XSLTForms Submission\n---------------------------\n\n'+action+'\n\nfile:// is not supported for security reasons.\n\nContents copied instead in clipboard if possible\nand displayed by the browser.');
-		if (window.clipboardData) {
-			window.clipboardData.setData('Text', ser);
+		var subm = this;
+		if (method == "put") {
+			if (!Core.writeFile(action.substr(7), subm.encoding, "string", "XSLTForms Java Saver", ser)) {
+				XMLEvents.dispatch(subm, "xforms-submit-error");
+			}
+			XMLEvents.dispatch(subm, "xforms-submit-done");
+		} else if (method == "get") {
+			ser = Core.readFile(action.substr(7), subm.encoding, "string", "XSLTForms Java Loader");
+			if (ser != "" && subm.replace == "instance") {
+				var inst = instance == null? (node ? document.getElementById(Core.getMeta(node.documentElement ? node.documentElement : node.ownerDocument.documentElement, "instance")).xfElement : subm.model.getInstance()) : document.getElementById(instance).xfElement;
+				inst.setDoc(ser, false, true);
+				xforms.addChange(subm.model);
+				XMLEvents.dispatch(subm.model, "xforms-rebuild");
+				xforms.refresh();
+				XMLEvents.dispatch(subm, "xforms-submit-done");
+			} else {
+				XMLEvents.dispatch(subm, "xforms-submit-error");
+			}
 		}
-		w = window.open("about:blank","_blank");
-		w.document.write(ser);
-		w.document.close();
 		xforms.closeAction();
 		return;
 	}
@@ -2545,7 +2737,7 @@ XFSubmission.prototype.submit = function() {
 		if (cross) {
 			jsoninstobj = instance == null? (node ? document.getElementById(Core.getMeta(node.documentElement ? node.documentElement : node.ownerDocument.documentElement, "instance")).xfElement : this.model.getInstance()) : document.getElementById(instance).xfElement;
 			var scriptelt = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "script") : document.createElement("script");
-			scriptelt.setAttribute("src", action.replace(/&amp;/g, "&")+"&callback=jsoninst");
+			scriptelt.setAttribute("src", action.replace(/&amp;/g, "&")+((action.indexOf("?") == -1) ? "?" : "&")+"callback=jsoninst");
 			scriptelt.setAttribute("id", "jsoninst");
 			scriptelt.setAttribute("type", "text/javascript");
 			var body = Core.isXhtml ? document.getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "body")[0] : document.getElementsByTagName("body")[0];
@@ -2570,7 +2762,7 @@ XFSubmission.prototype.submit = function() {
 					if (!synchr && req.readyState != 4) { return; }
 					
 					try {
-						if (req.status != 200 && req.status != 0) {
+						if (req.status != 0 && (req.status < 200 || req.status >= 300)) {
 							evcontext["error-type"] = "resource-error";
 							subm.issueSubmitException_(evcontext, req, null);
 							xforms.closeAction();
@@ -2766,9 +2958,9 @@ XFSubmission.prototype.requesteventlog = function(evcontext, req) {
 		}
 	}
 	if (req.responseXML) {
-		evcontext["response-body"] = Core.createXMLDocument(req.responseText);
+		evcontext["response-body"] = [Core.createXMLDocument(req.responseText)];
 	} else {
-		evcontext["response-body"] = req.responseText;
+		evcontext["response-body"] = req.responseText || "";
 	}
 };
 
@@ -3802,7 +3994,7 @@ XFElement.prototype.evaluateBinding = function(binding, ctx) {
 	
 	assert(errmsg);
 	
-	if (xforms.building && DebugMode) {
+	if (xforms.building && xforms.debugMode) {
 		//
 		// Do not fail here, to keep on searching for more errors.
 		
@@ -6118,7 +6310,7 @@ TypeDefs.Default = {
 		"class" : "date",
 		"displayLength" : 10,
 		"format" : function(value) {
-			return I8N.formatDate(I8N.parse(value, "yyyy-MM-dd"));
+			return I8N.formatDate(I8N.parse(value, "yyyy-MM-dd"), null, true);
 		},
 		"parse" : function(value) {
 			return I8N.format(I8N.parseDate(value), "yyyy-MM-dd", true);
@@ -6204,7 +6396,7 @@ TypeDefs.Default = {
 	"negativeInteger" : {
 		"nsuri" : "http://www.w3.org/2001/XMLSchema",
 		"base" : "xsd_:integer",
-		"patterns" : [ "^[\\-][0-9]+$" ]
+		"patterns" : [ "^[\\-]0*[1-9][0-9]*$" ]
 	},
 
 		
@@ -6466,10 +6658,10 @@ TypeDefs.XForms = {
 		"class" : "date",
 		"displayLength" : 10,
 		"format" : function(value) {
-			return I8N.formatDate(I8N.parse(value, "yyyy-MM-dd"));
+			return I8N.formatDate(I8N.parse(value, "yyyy-MM-dd"), null, true);
 		},
 		"parse" : function(value) {
-			return I8N.format(I8N.parseDate(value), "yyyy-MM-dd");
+			return I8N.format(I8N.parseDate(value), "yyyy-MM-dd", true);
 		}
 	},
 
@@ -7020,8 +7212,13 @@ function Listener(observer, name, phase, handler) {
 
 		
 
+Listener.destructs = [];
+
 Listener.prototype.attach = function() {
     XSLTFormsEvent.attach(this.observer, this.evtName, this.callback, this.phase == "capture");
+	if (this.evtName == "xforms-model-destruct") {
+		Listener.destructs.push({observer: this.observer, callback: this.callback});
+	}
 };
 
 
@@ -7673,7 +7870,10 @@ function LocationExpr(absolute) {
 
 LocationExpr.prototype.evaluate = function(ctx) {
 	var start = this.absolute? ctx.root : ctx.node;
-	ctx.addDepElement(document.getElementById(Core.getMeta((start.documentElement ? start.documentElement : start.ownerDocument.documentElement), "model")).xfElement);
+	var m = Core.getMeta((start.documentElement ? start.documentElement : start.ownerDocument.documentElement), "model");
+	if (m) {
+		ctx.addDepElement(document.getElementById(m).xfElement);
+	}
 
 	var nodes = [];
 	this.xPathStep(nodes, this.steps, 0, start, ctx);
@@ -7709,7 +7909,8 @@ function NodeTestAny() {
 		
 
 NodeTestAny.prototype.evaluate = function(node) {
-    return true;
+	var n = node.localName || node.baseName;
+    return !n || (n.substr(0, 10) != "xsltforms_" && node.namespaceURI != "http://www.w3.org/2000/xmlns/");
 };
     
 	
@@ -8093,7 +8294,7 @@ if (Core.isIE) {
 	};
 } else {
 	xmlValue = function(node) {
-		var ret = node.textContent;
+		var ret = node.text != undefined ? node.text : node.textContent != undefined ? node.textContent : node.documentElement.text != undefined ? node.documentElement.text : node.documentElement.textContent;
 		var schtyp = Schema.getType(Core.getType(node) || "xsd_:string");
 		if (schtyp.eval) {
 			try {
