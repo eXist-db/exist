@@ -473,12 +473,12 @@
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>lib/core/slf4j-api-X.X.X.jar</filename>
+                                <filename>lib/optional/slf4j-api-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>lib/core/slf4j-log4j12-X.X.X.jar</filename>
+                                <filename>lib/optional/slf4j-log4j12-X.X.X.jar</filename>
                             </para>
                         </listitem>
                         <listitem>
