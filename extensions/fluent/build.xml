@@ -29,6 +29,9 @@
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
         <fileset dir="${top.dir}/${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
