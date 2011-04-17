@@ -22,6 +22,7 @@
 package org.exist.backup;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,9 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.StoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
+import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -51,6 +54,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class ConsistencyCheck {
@@ -195,6 +199,11 @@ public class ConsistencyCheck {
         }
     }
 
+    public ErrorReport checkDocument(String path) throws PermissionDeniedException, URISyntaxException {
+    	DocumentImpl doc = (DocumentImpl) broker.getXMLResource(XmldbURI.xmldbUriFor(path));
+    	return checkXMLTree(doc);
+    }
+    
     /**
      * Check the persistent DOM of a document. The method traverses the entire
      * node tree and checks it for consistency, including node relationships,
@@ -263,7 +272,8 @@ public class ConsistencyCheck {
                                         if (v == null)
                                             return new ErrorReport.IndexError(ErrorReport.DOM_INDEX, "Failed to access node "
                                                     + nodeId + " through dom.dbx index. Wrong storage address. Expected: " + p
-                                                    + "; got: " + reader.getCurrentPosition() + " - ", doc.getDocId());
+                                                    + "; got: " + reader.getCurrentPosition() + " - " + doc.getFileURI().toString(),
+                                                    doc.getDocId());
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
