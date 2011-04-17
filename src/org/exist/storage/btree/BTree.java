@@ -1237,6 +1237,9 @@ public class BTree extends Paged {
             rightNode.saved = false;
             cache.add(rightNode);
             
+            this.saved = false;
+            cache.add(this);
+            
 //            if (transaction != null && isTransactional) {
 //                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), prefix, keys, nKeys, ptrs, nPtrs);
 //                writeToLog(log, this);
