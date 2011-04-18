@@ -10,8 +10,8 @@
     <target name="xar" depends="xar-math,xar-functx,xar-json,xar-myapp,xar-admin,xar-mobiledocs,xar-library"/>
     
     <target name="xar-math">
-        <echo message="Creating math.xar example for package manager ..."/>
-        <jar basedir="${classes}" jarfile="packages/math-example/math/math.jar"
+        <echo message="Creating exist-math.xar example for package manager ..."/>
+        <jar basedir="${classes}" jarfile="packages/math-example/exist-math/math.jar"
             includes="org/exist/xquery/modules/math/**">
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
@@ -19,7 +19,7 @@
                 <attribute name="Class-Path" value="exist.jar xmldb.jar"/>
             </manifest>
         </jar>
-        <zip destfile="packages/math-1.0.xar"
+        <zip destfile="packages/exist-math-1.0.xar"
             basedir="packages/math-example"/>
     </target>
     

@@ -151,7 +151,7 @@ functx/
 </para>
 
 <para>
-The <a href="packages/math-example/math" target="math"><filename>math.jar</filename></a> referenced here needs to contain the correct <filename>MANIFEST.MF</filename>, which lists any other
+The <a href="packages/math-example/exist-math" target="math"><filename>math.jar</filename></a> referenced here needs to contain the correct <filename>MANIFEST.MF</filename>, which lists any other
     dependent jars (<filename>exist.jar</filename> and <filename>xmldb.jar</filename>), as shown below.
 
 <example>
@@ -172,7 +172,7 @@ Class-Path: exist.jar xmldb.jar
 <para>
 Then it's just a matter of including all of the extension module's classes in the jar.
 <example>
-        <title>The "xar-math" target in extensions/modules/build.xml creates the math.jar which ships inside math-1.0.xar </title>
+        <title>The "xar-math" target in extensions/modules/build.xml creates the math.jar which ships inside exist-math-1.0.xar </title>
         <programlisting>
         <markup>
 drwxr-xr-x         0  31-Jul-2010  22:09:40  META-INF/
@@ -194,10 +194,10 @@ drwxr-xr-x         0  31-Jul-2010  14:03:46  org/exist/xquery/modules/math/
 
 <para>
 We will probably be repackaging all of the current extensions to take advantage of this.  For now you can test deploying
-    eXist's own extensions using the <a href="packages/math-example" target="math">Math-1.0.xar</a>, which is eXist's own math module
+    eXist's own extensions using the <a href="packages/math-example" target="math">exist-math-1.0.xar</a>, which is eXist's own math module
     repackaged up using the .xar format.
     <ul>
-        <li>Math-1.0 <a href="packages/math-1.0.xar?install=true" target="install">install</a> | <a href="packages/math-1.0.xar?remove=true" target="remove">remove</a> </li>
+        <li>exist-math-1.0 <a href="packages/exist-math-1.0.xar?install=true" target="install">install</a> | <a href="packages/exist-math-1.0.xar?remove=true" target="remove">remove</a> </li>
     </ul>
 
 Once you have installed and restarted eXist you should now be able to use the math functions.    
