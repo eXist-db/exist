@@ -2300,7 +2300,7 @@ public class BTree extends Paged {
          * @return
          */
         private int searchKey(Value key) {
-            if (ph.getStatus() == BRANCH && prefix != null) {
+            if (ph.getStatus() == BRANCH && prefix != null && prefix.getLength() > 0) {
                 // if this is a leaf page, check the common prefix first
                 if (key.getLength() < prefix.getLength())
                     return key.compareTo(prefix) <= 0 ? -1 : -(nKeys + 1);
