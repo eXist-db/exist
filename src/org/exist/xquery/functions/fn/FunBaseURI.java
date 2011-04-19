@@ -32,6 +32,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -109,12 +110,12 @@ public class FunBaseURI extends BasicFunction {
             if (args.length == 0) {
                 if (contextSequence == null || contextSequence.isEmpty()) {
                     logger.error("err:XPDY0002: context sequence is empty and no argument specified");
-                    throw new XPathException(this, "err:XPDY0002: context sequence is empty and no argument specified");
+                    throw new XPathException(this, ErrorCodes.XPDY0002, "context sequence is empty and no argument specified");
                 }
                 Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {
                     logger.error("err:XPTY0004: context item is not a node");
-                    throw new XPathException(this, "err:XPTY0004: context item is not a node");
+                    throw new XPathException(this, ErrorCodes.XPTY0004, "context item is not a node");
                 }
                 node = (NodeValue) item;
             } else {
@@ -148,7 +149,7 @@ public class FunBaseURI extends BasicFunction {
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
                         logger.error(e.getMessage());
-                        throw new XPathException(this, e.getMessage(), e);
+                        throw new XPathException(this, e);
                     }
                     if (!(("".equals(relativeURI.toString()) || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
                         if (relativeURI.isAbsolute()) {
@@ -176,7 +177,7 @@ public class FunBaseURI extends BasicFunction {
                         baseURI = new URI(context.getBaseURI() + "/");
                     } catch (URISyntaxException e) {
                         logger.error(e.getMessage());
-                        throw new XPathException(this, e.getMessage(), e);
+                        throw new XPathException(this, e);
                     }
                     if (relativeURI.isAbsolute()) {
                         result = new AnyURIValue(relativeURI);
