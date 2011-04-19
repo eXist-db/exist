@@ -29,10 +29,10 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 
 import org.xmldb.api.DatabaseManager;
@@ -85,7 +85,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 
         registerDatabase();
         //try {
-        int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
+        int p = uri.indexOf(XmldbURI.ROOT_COLLECTION);
         if(p == Constants.STRING_NOT_FOUND) {
             throw new BuildException("invalid uri: '" + uri + "'");
         }
@@ -101,8 +101,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
         Collection root = null;
         try {
             if(createCollection) {
-                root = DatabaseManager.getCollection(baseURI + DBBroker.ROOT_COLLECTION, user, password);
-                root = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION, path);
+                root = DatabaseManager.getCollection(baseURI + XmldbURI.ROOT_COLLECTION, user, password);
+                root = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION, path);
             } else {
                 root = DatabaseManager.getCollection(uri, user, password);
             }
@@ -211,12 +211,12 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
 		                            relDir = relDir.replace(File.separatorChar, '/');
 		                            if(createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
 		                                //TODO : use dedicated function in XmldbURI
-		                                col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
+		                                col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir);
 		                                prevDir = relDir;
 		                            }
 		
 		                        } else {
-	                                col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, included);
+	                                col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, included);
 		                        }
 	                        } catch(XMLDBException e) {
 	                            String msg = "XMLDB exception caught: " + e.getMessage();
@@ -244,7 +244,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                                 relDir = relDir.replace(File.separatorChar, '/');
                                 if(createSubcollections && (prevDir == null || (!relDir.equals(prevDir)))) {
                                     //TODO : use dedicated function in XmldbURI
-                                    col = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION + path, relDir);
+                                    col = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION + path, relDir);
                                     prevDir = relDir;
                                 }
 
