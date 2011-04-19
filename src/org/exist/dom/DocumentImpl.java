@@ -329,8 +329,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public void copyOf(DocumentImpl other) {
 	childAddress = null;
 	children = 0;
-	if (metadata == null)
+
+        metadata = getMetadata();
+        if(metadata == null) {
 	    metadata = new DocumentMetadata();
+        }
 	metadata.setLastModified(other.getMetadata().getLastModified());
 	// reset pageCount: will be updated during storage
 	metadata.setPageCount(0);
