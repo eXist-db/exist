@@ -26,12 +26,14 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.debuggee.dbgp.packets.AbstractCommandContinuation;
 import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -458,37 +460,45 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 	@Override
 	public String evalution(String script) throws Exception {
 		
-		XQueryContext context = compiledXQuery.getContext().copyContext();
-		context.setDebuggeeJoint(null);
-		context.undeclareGlobalVariable(Debuggee.SESSION);
-		context.undeclareGlobalVariable(Debuggee.IDEKEY);
-		
-		XQuery service = context.getBroker().getXQueryService();
-		CompiledXQuery compiled = service.compile(context, script);
-		
-		Sequence resultSequence = service.execute(compiled, null);
+		Database db = compiledXQuery.getContext().getDatabase();
+		DBBroker broker = null;
+		try {
+			broker = db.get(null); //TODO: account required
 
-        SAXSerializer sax = null;
-        Serializer serializer = context.getBroker().getSerializer();
-		serializer.reset();
-        try {
-            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-            Properties outputProps = new Properties();
-            StringWriter writer = new StringWriter();
-            sax.setOutput(writer, outputProps);
-            serializer.setSAXHandlers(sax, sax);
-            for (SequenceIterator i = resultSequence.iterate(); i.hasNext();) {
-                Item next = i.nextItem();
-                if (Type.subTypeOf(next.getType(), Type.NODE))
-                    serializer.toSAX((NodeValue) next);
-                else
-                    writer.write(next.getStringValue());
-            }
-            return writer.toString();
-        } finally {
-            if (sax != null) {
-                SerializerPool.getInstance().returnObject(sax);
-            }
-        }
+			XQueryContext context = compiledXQuery.getContext().copyContext();
+			context.setDebuggeeJoint(null);
+			context.undeclareGlobalVariable(Debuggee.SESSION);
+			context.undeclareGlobalVariable(Debuggee.IDEKEY);
+			
+			XQuery service = context.getBroker().getXQueryService();
+			CompiledXQuery compiled = service.compile(context, script);
+			
+			Sequence resultSequence = service.execute(compiled, null);
+	
+	        SAXSerializer sax = null;
+	        Serializer serializer = context.getBroker().getSerializer();
+			serializer.reset();
+	        try {
+	            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+	            Properties outputProps = new Properties();
+	            StringWriter writer = new StringWriter();
+	            sax.setOutput(writer, outputProps);
+	            serializer.setSAXHandlers(sax, sax);
+	            for (SequenceIterator i = resultSequence.iterate(); i.hasNext();) {
+	                Item next = i.nextItem();
+	                if (Type.subTypeOf(next.getType(), Type.NODE))
+	                    serializer.toSAX((NodeValue) next);
+	                else
+	                    writer.write(next.getStringValue());
+	            }
+	            return writer.toString();
+	        } finally {
+	            if (sax != null) {
+	                SerializerPool.getInstance().returnObject(sax);
+	            }
+	        }
+		} finally {
+			db.release(broker);
+		}
 	}
 }
