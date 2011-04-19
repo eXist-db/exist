@@ -334,7 +334,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         if(metadata == null) {
 	    metadata = new DocumentMetadata();
         }
-	metadata.setLastModified(other.getMetadata().getLastModified());
+
+        //copy metadata
+        metadata.copyOf(other.getMetadata());
+
+        //update timestamp
+        long timestamp = System.currentTimeMillis();
+        metadata.setCreated(timestamp);
+        metadata.setLastModified(timestamp);
+
 	// reset pageCount: will be updated during storage
 	metadata.setPageCount(0);
     }
