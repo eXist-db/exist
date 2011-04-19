@@ -101,7 +101,7 @@ public class ConsistencyCheck
      */
     public List<ErrorReport> checkCollectionTree( ProgressCallback callback ) throws TerminatedException
     {
-        AccountImpl.enablePasswordChecks( false );
+        AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
         try {
             List<ErrorReport> errors = new ArrayList<ErrorReport>();
@@ -110,7 +110,7 @@ public class ConsistencyCheck
             return( errors );
         }
         finally {
-            AccountImpl.enablePasswordChecks( true );
+            AccountImpl.getSecurityProperties().enableCheckPasswords(true);
         }
     }
 
@@ -150,7 +150,7 @@ public class ConsistencyCheck
     public int getDocumentCount() throws TerminatedException
     {
         if( documentCount == -1 ) {
-            AccountImpl.enablePasswordChecks( false );
+            AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
             try {
                 DocumentCallback cb = new DocumentCallback( null, null, false );
@@ -158,7 +158,7 @@ public class ConsistencyCheck
                 documentCount = cb.docCount;
             }
             finally {
-                AccountImpl.enablePasswordChecks( true );
+                AccountImpl.getSecurityProperties().enableCheckPasswords(true);
             }
         }
         return( documentCount );
@@ -194,14 +194,14 @@ public class ConsistencyCheck
      */
     public void checkDocuments( ProgressCallback progress, List<ErrorReport> errorList ) throws TerminatedException
     {
-        AccountImpl.enablePasswordChecks( false );
+        AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
         try {
             DocumentCallback cb = new DocumentCallback( errorList, progress, true );
             broker.getResourcesFailsafe( cb, directAccess );
         }
         finally {
-            AccountImpl.enablePasswordChecks( true );
+            AccountImpl.getSecurityProperties().enableCheckPasswords(true);
         }
     }
 

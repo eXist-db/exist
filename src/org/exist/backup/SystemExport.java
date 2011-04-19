@@ -671,7 +671,7 @@ public class SystemExport
     public int getCollectionCount() throws TerminatedException
     {
         if( collectionCount == -1 ) {
-            AccountImpl.enablePasswordChecks( false );
+            AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
             try {
                 CollectionCallback cb = new CollectionCallback( null, null, null, null, false );
@@ -679,7 +679,7 @@ public class SystemExport
                 collectionCount = cb.collectionCount;
             }
             finally {
-                AccountImpl.enablePasswordChecks( true );
+                AccountImpl.getSecurityProperties().enableCheckPasswords(true);
             }
         }
         return( collectionCount );
