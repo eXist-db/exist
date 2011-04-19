@@ -2019,7 +2019,9 @@ public class NativeBroker extends DBBroker {
             lock.acquire(Lock.READ_LOCK);
             Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             VariableByteInput istream = collectionsDb.getAsStream(key);
-            document.readDocumentMeta(istream);
+            if(istream != null) {
+                document.readDocumentMeta(istream);
+            }
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {
