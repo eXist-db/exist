@@ -18,7 +18,7 @@
 
         <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
 
-        <property name="error.page" value="betterfrom/xquery/xferror.xql"
+        <property name="error.page" value="betterform/xquery/xferror.xql"
                   description="location of error-page relative to context"/>
         
 		<!-- DEPRECATED -->
