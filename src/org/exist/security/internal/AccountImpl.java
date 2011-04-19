@@ -40,6 +40,7 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -62,6 +63,13 @@ public class AccountImpl extends AbstractAccount {
     public static int PASSWORD_ENCODING;
     public static boolean CHECK_PASSWORDS = true;
 
+    private final static SecurityProperties securityProperties = new SecurityProperties();
+
+    public static SecurityProperties getSecurityProperties() {
+        return securityProperties;
+    }
+
+    /*
     static {
         Properties props = new Properties();
         try {
@@ -91,7 +99,7 @@ public class AccountImpl extends AbstractAccount {
                 PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
             }
         }
-    }
+    }*/
 
     static public Subject getUserFromServletRequest(HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
@@ -379,5 +387,80 @@ public class AccountImpl extends AbstractAccount {
             return false;
         }
         return digest(passwd).equals(digestPassword);
+    }
+
+    public final static class SecurityProperties {
+
+        private final static int DEFAULT_PASSWORD_ENCODING = MD5_ENCODING;
+        private final static boolean DEFAULT_CHECK_PASSWORDS = true;
+
+        private final static String PROP_PASSWORDS_ENCODING = "passwords.encoding";
+        private final static String PROP_CHECK_PASSWORDS = "passwords.check";
+
+        private Properties loadedSecurityProperties = null;
+        private Integer passwordEncoding = null;
+        private Boolean checkPasswords = null;
+
+        public synchronized int getPasswordEncoding() {
+            if(passwordEncoding == null) {
+                String property = getProperty(PROP_PASSWORDS_ENCODING);
+                if(property == null || property.length() == 0) {
+                    passwordEncoding = DEFAULT_PASSWORD_ENCODING;
+                } else {
+                    setPasswordEncoding(property);
+                }
+            }
+            return passwordEncoding.intValue();
+        }
+
+        public synchronized void setPasswordEncoding(String encoding) {
+            if(encoding != null) {
+                LOG.info("Setting password encoding to " + encoding);
+                if(encoding.equalsIgnoreCase("plain")) {
+                    PASSWORD_ENCODING = PLAIN_ENCODING;
+                } else if(encoding.equalsIgnoreCase("md5")) {
+                    PASSWORD_ENCODING = MD5_ENCODING;
+                } else {
+                    PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
+                }
+            }
+        }
+
+        public synchronized boolean isCheckPasswords() {
+            if(checkPasswords == null) {
+                String property = getProperty(PROP_CHECK_PASSWORDS);
+                if(property == null || property.length() == 0) {
+                    checkPasswords = DEFAULT_CHECK_PASSWORDS;
+                } else {
+                    checkPasswords = property.equalsIgnoreCase("yes") || property.equalsIgnoreCase("true");
+                }
+            }
+            return checkPasswords.booleanValue();
+        }
+
+        public synchronized void enableCheckPasswords(boolean enable) {
+            this.checkPasswords = enable;
+        }
+
+        private synchronized String getProperty(String propertyName) {
+            if(loadedSecurityProperties == null) {
+                loadedSecurityProperties = new Properties();
+
+                InputStream is = null;
+                try {
+                    is = AccountImpl.class.getResourceAsStream("security.properties");
+                    if(is != null) {
+                        loadedSecurityProperties.load(is);
+                    }
+                } catch(IOException ioe) {
+                    LOG.error("Unable to load security.properties, using defaults. " + ioe.getMessage(), ioe);
+                } finally {
+                    if(is != null) {
+                        try { is.close(); } catch(IOException ioe) { };
+                    }
+                }
+            }
+            return loadedSecurityProperties.getProperty(propertyName);
+        }
     }
 }

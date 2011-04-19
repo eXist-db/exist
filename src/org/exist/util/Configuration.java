@@ -997,7 +997,7 @@ public class Configuration implements ErrorHandler
 
             if( encoding != null ) {
                 LOG.info( "db-connection.security.password-encoding: " + config.get( "db-connection.security.password-encoding" ) );
-                AccountImpl.setPasswordEncoding( encoding );
+                AccountImpl.getSecurityProperties().setPasswordEncoding( encoding );
 
             } else {
                 LOG.info( "No password encoding set, defaulting." );
