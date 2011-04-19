@@ -91,6 +91,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.xml.transform.OutputKeys;
+import org.exist.SystemProperties;
 
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
@@ -1464,20 +1465,7 @@ public class ClientFrame extends JFrame
     }
     
     private void AboutAction() {
-        
-        Properties sysProperties = InteractiveClient.getSystemProperties();
-        
-        // Original text eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier
-        JOptionPane.showMessageDialog(this, 
-                sysProperties.getProperty("product-name") + " version " 
-                + sysProperties.getProperty("product-version")
-                + " (revision " + sysProperties.getProperty("svn-revision") + ") \n\n"
-                + "Copyright (C) 2001-2009 Wolfgang Meier\n\n"
-                + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
-                + "This is free software, and you are welcome to\n"
-                + "redistribute it under certain conditions;\n"
-                + "for details read the license file."  );
-        return;
+        JOptionPane.showMessageDialog(this, client.getNotice());
     }
     
     class TableMouseListener extends MouseAdapter {
@@ -1657,13 +1645,11 @@ public class ClientFrame extends JFrame
      */
     
     protected static Properties getLoginData(Properties properties) {
-        
-        Properties sysProperties = InteractiveClient.getSystemProperties();
 
         LoginPanel login = new LoginPanel(properties);
         if (JOptionPane.showOptionDialog(null, login, 
-                sysProperties.getProperty("product-name") + " " 
-                + sysProperties.getProperty("product-version") + " Database Login" , 
+                SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " "
+                + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login" ,
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.OK_OPTION) {
             return login.getProperties();

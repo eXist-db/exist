@@ -22,10 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,37 +39,24 @@ import org.exist.xquery.value.Type;
  * 
  * @author Dannes Wessels
  */
-public class GetRevision extends BasicFunction
-{
+public class GetRevision extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(GetRevision.class);
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("get-revision", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+        "Returns the SubVersion (SVN) revision ID of eXist running this query.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the revision ID.")
+    );
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-revision", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the SubVersion (SVN) revision ID of eXist running this query.",
-			FunctionSignature.NO_ARGS,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the revision ID."));
+    public GetRevision(XQueryContext context) {
+        super(context, signature);
+    }
 
-	public GetRevision(XQueryContext context)
-	{
-		super(context, signature);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			LOG.debug("Unable to load system.properties from class loader");
-		}
-		return new StringValue(sysProperties.getProperty("svn-revision", "unknown revision"));
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        return new StringValue(SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown revision"));
+    }
 }
