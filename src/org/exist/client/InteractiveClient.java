@@ -80,6 +80,7 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
@@ -2620,16 +2621,18 @@ public class InteractiveClient {
     }
     
     public void printNotice() {
-        
-        Properties sysProperties = getSystemProperties();
-        
-        messageln(sysProperties.getProperty("product-name") + " version " 
-                + sysProperties.getProperty("product-version") 
-                +", Copyright (C) 2001-2011 Wolfgang Meier");
-        messageln("eXist comes with ABSOLUTELY NO WARRANTY.");
-        messageln("This is free software, and you are welcome to "
-                + "redistribute it\nunder certain conditions; "
-                + "for details read the license file.\n");
+        messageln(getNotice());
+    }
+
+    public String getNotice() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
+        builder.append(" version ");
+        builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
+        builder.append(", Copyright (C) 2001-2011 Wolfgang Meier\n");
+        builder.append("eXist comes with ABSOLUTELY NO WARRANTY.\n");
+        builder.append("This is free software, and you are welcome to redistribute it\nunder certain conditions; for details read the license file.\n");
+        return builder.toString();
     }
     
     private final void message(String msg) {

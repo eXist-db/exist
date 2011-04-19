@@ -23,11 +23,9 @@ package org.exist.jetty;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 import java.util.Observer;
-import java.util.Properties;
 
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
@@ -57,8 +55,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.servlet.Servlet;
 import org.apache.log4j.Logger;
-
-import org.exist.xquery.functions.system.GetVersion;
+import org.exist.SystemProperties;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -110,16 +107,6 @@ public class JettyStart implements LifeCycle.Listener {
         String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = shutdownHookOption.equals("true");
 
-        Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-
         // configure database
         logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
         logger.info("");
@@ -131,13 +118,13 @@ public class JettyStart implements LifeCycle.Listener {
         logger.info("");
 
         String msg;
-        msg = "[eXist Version : " + sysProperties.get("product-version") + "]";
+        msg = "[eXist Version : " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]";
         logger.info(msg);
-        msg = "[eXist Build : " + sysProperties.get("product-build") + "]";
+        msg = "[eXist Build : " + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]";
         logger.info(msg);
-        msg = "[eXist Home : " + System.getProperty("exist.home") + "]";
+        msg = "[eXist Home : " + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]";
         logger.info(msg);
-        msg = "[SVN Revision : " + sysProperties.get("svn-revision") + "]";
+        msg = "[SVN Revision : " + SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown") + "]";
         logger.info(msg);
         msg = "[Operating System : " +
         		System.getProperty("os.name") +

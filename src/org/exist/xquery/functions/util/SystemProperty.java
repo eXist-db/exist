@@ -21,10 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -45,45 +42,36 @@ import org.exist.xquery.value.Type;
  */
 public class SystemProperty extends BasicFunction {
 
-	private static final Logger logger = Logger.getLogger(SystemProperty.class);
-
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("system-property", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the value of a system property. Similar to the corresponding XSLT function. " +
-			"Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
-			"system properties.",
-			new SequenceType[] { new FunctionParameterSequenceType("property-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the system property to retrieve the value of.") },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the value of the named system property"));
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("system-property", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+        "Returns the value of a system property. Similar to the corresponding XSLT function. " +
+        "Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
+        "system properties.",
+        new SequenceType[] { 
+            new FunctionParameterSequenceType("property-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the system property to retrieve the value of.")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the value of the named system property")
+    );
 	
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public SystemProperty(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    /**
+     * @param context
+     * @param signature
+     */
+    public SystemProperty(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
-	{ 
-		
-		Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(SystemProperty.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			logger.debug("Unable to load system.properties from class loader");
-		}
-		
-		String key = args[0].getStringValue();
-		String value = sysProperties.getProperty(key);
-		if(value == null)
-			value = System.getProperty(key);
-		return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+
+        String key = args[0].getStringValue();
+        String value = SystemProperties.getInstance().getSystemProperty(key, null);
+        if(value == null) {
+                value = System.getProperty(key);
+        }
+        return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
+    }
 }

@@ -21,13 +21,10 @@
  */
 package org.exist.management.impl;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
-import java.util.Properties;
 
-import org.apache.log4j.Logger;
-import org.exist.storage.BrokerPool;
+import org.exist.SystemProperties;
 
 /**
  * Class SystemInfo
@@ -36,30 +33,22 @@ import org.exist.storage.BrokerPool;
  */
 public class SystemInfo implements SystemInfoMBean {
 
-    private final static Logger LOG = Logger.getLogger(SystemInfo.class);
-    private Properties sysProperties = new Properties();
-
     public SystemInfo() {
-        try {
-            sysProperties.load(SystemInfo.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-        } catch (IOException e) {
-            LOG.debug("Unable to load system.properties from class loader");
-        }
     }
 
     @Override
     public String getExistVersion() {
-        return sysProperties.getProperty("product-version","unknown");
+        return SystemProperties.getInstance().getSystemProperty("product-version","unknown");
     }
 
     @Override
     public String getExistBuild() {
-        return sysProperties.getProperty("product-build","unknown");
+        return SystemProperties.getInstance().getSystemProperty("product-build","unknown");
     }
 
     @Override
     public String getSvnRevision() {
-        return sysProperties.getProperty("svn-revision","unknown");
+        return SystemProperties.getInstance().getSystemProperty("svn-revision","unknown");
     }
 
     @Override

@@ -22,10 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,38 +39,24 @@ import org.exist.xquery.value.Type;
  * 
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
-public class GetBuild extends BasicFunction
-{
+public class GetBuild extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(GetBuild.class);
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("get-build", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+        "Returns the build of eXist running this query.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the build number")
+    );
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-build", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the build of eXist running this query.",
-			FunctionSignature.NO_ARGS,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the build number"));
+    public GetBuild(XQueryContext context) {
+        super(context, signature);
+    }
 
-	public GetBuild(XQueryContext context)
-	{
-		super(context, signature);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-		Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			logger.debug("Unable to load system.properties from class loader");
-		}
-		StringValue stringValue = new StringValue(sysProperties.getProperty("product-build", "unknown build"));
-		return stringValue;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        return new StringValue(SystemProperties.getInstance().getSystemProperty("product-build", "unknown build"));
+    }
 }

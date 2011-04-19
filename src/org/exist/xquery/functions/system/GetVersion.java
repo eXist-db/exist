@@ -22,10 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import org.apache.log4j.Logger;
+import org.exist.SystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,38 +39,24 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class GetVersion extends BasicFunction
-{
+public class GetVersion extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(GetVersion.class);
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("get-version", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+        "Returns the version of eXist running this query.",
+        FunctionSignature.NO_ARGS,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string")
+    );
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-version", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the version of eXist running this query.",
-			FunctionSignature.NO_ARGS,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the version string"));
-	
-	public GetVersion(XQueryContext context)
-	{
-		super(context, signature);
-	}
+    public GetVersion(XQueryContext context) {
+        super(context, signature);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-	{
-    	logger.debug("Entering the " + SystemModule.PREFIX + ":get-version XQuery function");
-		Properties sysProperties = new Properties();
-		try
-		{
-			sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		}
-		catch (IOException e)
-		{
-			logger.debug("Unable to load system.properties from class loader");
-		}
-		return new StringValue(sysProperties.getProperty("product-version", "unknown version"));
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     */
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        return new StringValue(SystemProperties.getInstance().getSystemProperty("product-version", "unknown version"));
+    }
 }
