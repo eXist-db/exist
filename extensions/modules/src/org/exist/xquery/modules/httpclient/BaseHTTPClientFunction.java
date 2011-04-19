@@ -337,8 +337,10 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             byte[]   body             = outstream.toByteArray();
 
             // determine the type of the response document
-            MimeType responseMimeType = getResponseMimeType( method.getResponseHeader( "Content-Type" ) );
-            builder.addAttribute( new QName( "mimetype", null, null ), method.getResponseHeader( "Content-Type" ).getValue() );
+            Header responseContentType = method.getResponseHeader( "Content-Type" );
+            MimeType responseMimeType = getResponseMimeType( responseContentType );
+            if (responseContentType != null)
+            	builder.addAttribute( new QName( "mimetype", null, null ), responseContentType.getValue() );
 
             //try and parse the response as XML
             try {
