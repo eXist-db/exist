@@ -49,13 +49,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 
 /**
  * A Scheduler to trigger Startup, System and User defined jobs.
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam@existsolutions.com>
  * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
 public class Scheduler
@@ -80,14 +79,13 @@ public class Scheduler
     private final static Logger         LOG                                      = Logger.getLogger( Scheduler.class ); //Logger
 
     //the scheduler
-    private org.quartz.Scheduler        scheduler                                = null;
+    private final org.quartz.Scheduler scheduler;
 
     //startup jobs
-    private Vector<JobExecutionContext> startupJobs                              = new Vector<JobExecutionContext>();
+    private final List<JobExecutionContext> startupJobs = new ArrayList<JobExecutionContext>();
 
-    private BrokerPool                  brokerpool                               = null;
-    private Configuration               config                                   = null;
-
+    private final BrokerPool brokerpool;
+    private final Configuration config;
 
     /**
      * Create and Start a new Scheduler.
@@ -97,30 +95,69 @@ public class Scheduler
      *
      * @throws  EXistException  DOCUMENT ME!
      */
-    public Scheduler( BrokerPool brokerpool, Configuration config ) throws EXistException
-    {
+    public Scheduler( BrokerPool brokerpool, Configuration config ) throws EXistException {
         this.brokerpool = brokerpool;
         this.config     = config;
 
         try {
-
-            //load the properties for quartz
-            InputStream is         = Scheduler.class.getResourceAsStream( "quartz.properties" );
-            Properties  properties = new Properties();
-
-            try {
-                properties.load( is );
-            }
-            catch( IOException e ) {
-                throw( new EXistException( "Failed to load scheduler settings from org/exist/scheduler/quartz.properties" ) );
-            }
-            properties.setProperty( StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, brokerpool.getId() + "_QuartzScheduler" );
-            SchedulerFactory schedulerFactory = new StdSchedulerFactory( properties );
+            SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
             scheduler = schedulerFactory.getScheduler();
         }
-        catch( SchedulerException se ) {
-            throw( new EXistException( "Unable to create Scheduler", se ) );
+        catch(SchedulerException se) {
+            throw(new EXistException("Unable to create Scheduler: " + se.getMessage(), se));
         }
+    }
+    
+    private final static Properties defaultQuartzProperties = new Properties();
+    static {
+        defaultQuartzProperties.setProperty("org.quartz.scheduler.instanceName", "DefaultQuartzScheduler");
+        defaultQuartzProperties.setProperty("org.quartz.scheduler.rmi.export", "false");
+        defaultQuartzProperties.setProperty("org.quartz.scheduler.rmi.proxy", "false");
+        defaultQuartzProperties.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
+        defaultQuartzProperties.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.class", "org.quartz.threadPool.class");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.threadCount", "4");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.threadPriority", "5");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
+        defaultQuartzProperties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
+        defaultQuartzProperties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
+    }
+
+    private Properties getQuartzProperties() {
+        //try and load the properties for quartz
+        InputStream is = null;
+        Properties properties = new Properties();
+
+        try {
+            is = Scheduler.class.getResourceAsStream("quartz.properties");
+            if(is != null) {
+                properties.load(is);
+                LOG.info("Succesfully loaded quartz.properties");
+            } else {
+                LOG.warn("Could not load quartz.properties, will use defaults.");
+            }
+        } catch(IOException ioe) {
+            LOG.warn("Could not load quartz.properties, will defaults. " + ioe.getMessage(), ioe);
+        } finally {
+            if(is != null) {
+                try { is.close(); } catch(IOException ioe) { }
+            }
+        }
+
+        if(properties == null || properties.size() == 0) {
+            LOG.warn("Using default properties for Quartz scheduler");
+            properties.putAll(defaultQuartzProperties);
+        }
+
+        if(!properties.containsKey(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME)) {
+            properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, brokerpool.getId() + "_QuartzScheduler" );
+        }
+
+        return properties;
+    }
+
+    private org.quartz.Scheduler getScheduler() {
+        return scheduler;
     }
 
     public void run()
@@ -130,7 +167,7 @@ public class Scheduler
 
             executeStartupJobs();
 
-            scheduler.start();
+            getScheduler().start();
         }
         catch( SchedulerException se ) {
             LOG.error( se );
@@ -148,7 +185,7 @@ public class Scheduler
     public void shutdown( boolean waitForJobsToComplete )
     {
         try {
-            scheduler.shutdown( waitForJobsToComplete );
+            getScheduler().shutdown( waitForJobsToComplete );
         }
         catch( SchedulerException se ) {
             LOG.warn( se );
@@ -158,13 +195,15 @@ public class Scheduler
 
     public boolean isShutdown()
     {
+        boolean isShutdown = false;
+
         try {
-            return( scheduler.isShutdown() );
-        }
-        catch( SchedulerException se ) {
+            isShutdown = getScheduler().isShutdown();
+        } catch( SchedulerException se ) {
             LOG.warn( se );
-            return( false );
         }
+
+        return isShutdown;
     }
 
 
@@ -195,22 +234,19 @@ public class Scheduler
     /**
      * Executes all startup jobs.
      */
-    public void executeStartupJobs()
-    {
-        for( JobExecutionContext jec : startupJobs ) {
+    public void executeStartupJobs() {
+        for(JobExecutionContext jec : startupJobs) {
             org.quartz.Job j = jec.getJobInstance();
 
-            if( LOG.isInfoEnabled() ) {
-                LOG.info( "Running startup job '" + jec.getJobDetail().getName() + "'" );
+            if(LOG.isInfoEnabled()) {
+                LOG.info("Running startup job '" + jec.getJobDetail().getName() + "'");
             }
 
             try {
-
                 //execute the job
-                j.execute( jec );
-            }
-            catch( SchedulerException se ) {
-                LOG.error( "Unable to run startup job '" + jec.getJobDetail().getName() + "'", se );
+                j.execute(jec);
+            } catch( SchedulerException se ) {
+                LOG.error("Unable to run startup job '" + jec.getJobDetail().getName() + "'", se);
             }
         }
     }
@@ -309,7 +345,7 @@ public class Scheduler
 
         //schedule the job
         try {
-            scheduler.scheduleJob( jobDetail, trigger );
+            getScheduler().scheduleJob( jobDetail, trigger );
         }
         catch( SchedulerException se ) {
 
@@ -377,7 +413,7 @@ public class Scheduler
             CronTrigger trigger = new CronTrigger( job.getName() + " Trigger", job.getGroup(), cronExpression );
 
             //schedule the job
-            scheduler.scheduleJob( jobDetail, trigger );
+            getScheduler().scheduleJob( jobDetail, trigger );
         }
         catch( ParseException pe ) {
 
@@ -407,13 +443,16 @@ public class Scheduler
      */
     public boolean deleteJob( String jobName, String jobGroup )
     {
+        boolean deletedJob = false;
+
         try {
-            return( scheduler.deleteJob( jobName, jobGroup ) );
+            deletedJob = getScheduler().deleteJob(jobName, jobGroup);
         }
         catch( SchedulerException se ) {
             LOG.error( "Failed to delete job '" + jobName + "'", se );
-            return( false );
         }
+
+        return deletedJob;
     }
 
 
@@ -427,14 +466,16 @@ public class Scheduler
      */
     public boolean pauseJob( String jobName, String jobGroup )
     {
+        boolean pausedJob = false;
+
         try {
-            scheduler.pauseJob( jobName, jobGroup );
-            return( true );
-        }
-        catch( SchedulerException se ) {
+            getScheduler().pauseJob( jobName, jobGroup );
+            pausedJob = true;
+        } catch( SchedulerException se ) {
             LOG.error( "Failed to pause job '" + jobName + "'", se );
-            return( false );
         }
+
+        return pausedJob;
     }
 
 
@@ -448,14 +489,16 @@ public class Scheduler
      */
     public boolean resumeJob( String jobName, String jobGroup )
     {
+        boolean resumedJob = false;
+
         try {
-            scheduler.resumeJob( jobName, jobGroup );
-            return( true );
-        }
-        catch( SchedulerException se ) {
+            getScheduler().resumeJob(jobName, jobGroup);
+            resumedJob = true;
+        } catch( SchedulerException se ) {
             LOG.error( "Failed to resume job '" + jobName + "'", se );
-            return( false );
         }
+
+        return resumedJob;
     }
 
 
@@ -466,13 +509,15 @@ public class Scheduler
      */
     public String[] getJobGroupNames()
     {
+        String jobNames[] = null;
+
         try {
-            return( scheduler.getJobGroupNames() );
-        }
-        catch( SchedulerException se ) {
+            jobNames =  getScheduler().getJobGroupNames();
+        } catch( SchedulerException se ) {
             LOG.error( "Failed to get job group names", se );
-            return( null );
         }
+
+        return jobNames;
     }
 
 
@@ -481,38 +526,31 @@ public class Scheduler
      *
      * @return  An array of ScheduledJobInfo
      */
-    public ScheduledJobInfo[] getScheduledJobs()
-    {
-        ArrayList<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
+    public ScheduledJobInfo[] getScheduledJobs() {
+
+        ScheduledJobInfo result[] = null;
 
         try {
 
-            //get the trigger groups
-            String[] trigGroups = scheduler.getTriggerGroupNames();
+            List<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
 
-            for( int tg = 0; tg < trigGroups.length; tg++ ) {
+            //get the trigger groups
+            for(String triggerGroupName : getScheduler().getTriggerGroupNames()) {
 
                 //get the trigger names for the trigger group
-                String[] trigNames = scheduler.getTriggerNames( trigGroups[tg] );
-
-                for( int tn = 0; tn < trigNames.length; tn++ ) {
-
+                for(String triggerGroupTriggerName : getScheduler().getTriggerNames(triggerGroupName)) {
                     //add information about the job to the result
-                    jobs.add( new ScheduledJobInfo( scheduler, scheduler.getTrigger( trigNames[tn], trigGroups[tg] ) ) );
+                    jobs.add( new ScheduledJobInfo(getScheduler(), getScheduler().getTrigger(triggerGroupTriggerName, triggerGroupName)));
                 }
             }
-        }
-        catch( SchedulerException se ) {
+
+            result = new ScheduledJobInfo[jobs.size()];
+            jobs.toArray(result);
+        } catch( SchedulerException se ) {
             LOG.error( "Failed to get scheduled jobs", se );
-            return( null );
         }
 
-        //copy the array list to a correctly typed array
-        Object[]           oJobsArray = jobs.toArray();
-        ScheduledJobInfo[] jobsArray  = new ScheduledJobInfo[oJobsArray.length];
-        System.arraycopy( oJobsArray, 0, jobsArray, 0, oJobsArray.length );
-
-        return( jobsArray );
+        return result;
     }
 
 
@@ -521,26 +559,24 @@ public class Scheduler
      *
      * @return  An array of ScheduledJobInfo
      */
-    public ScheduledJobInfo[] getExecutingJobs()
-    {
-        List<JobExecutionContext> executingJobs = null;
+    public ScheduledJobInfo[] getExecutingJobs() {
+
+        ScheduledJobInfo result[] = null;
 
         try {
-            executingJobs = scheduler.getCurrentlyExecutingJobs();
-        }
-        catch( SchedulerException se ) {
+            List<ScheduledJobInfo> jobs = new ArrayList<ScheduledJobInfo>();
+
+            for(JobExecutionContext jobExecutionCtx : (List<JobExecutionContext>)getScheduler().getCurrentlyExecutingJobs()) {
+                jobs.add(new ScheduledJobInfo(getScheduler(), jobExecutionCtx.getTrigger()));
+            }
+
+            result = new ScheduledJobInfo[jobs.size()];
+            jobs.toArray(result);
+        } catch(SchedulerException se) {
             LOG.error( "Failed to get executing jobs", se );
-            return( null );
         }
 
-        ScheduledJobInfo[] jobs = new ScheduledJobInfo[executingJobs.size()];
-
-        for( int i = 0; i < executingJobs.size(); i++ ) {
-            JobExecutionContext jec = executingJobs.get( i );
-            jobs[i] = new ScheduledJobInfo( scheduler, jec.getTrigger() );
-        }
-
-        return( jobs );
+        return result;
     }
 
 
@@ -551,13 +587,13 @@ public class Scheduler
     {
         Configuration.JobConfig[] jobList = ( Configuration.JobConfig[] )config.getProperty( Scheduler.PROPERTY_SCHEDULER_JOBS );
 
-        if( jobList == null ) {
+        if(jobList == null) {
             return;
         }
 
-        for( int i = 0; i < jobList.length; i++ ) {
-            Configuration.JobConfig jobConfig = jobList[i];
-            JobDescription          job       = null;
+        for(Configuration.JobConfig jobConfig : jobList) {
+            
+            JobDescription job = null;
 
             if( jobConfig.getResourceName().startsWith( "/db/" ) || ( jobConfig.getResourceName().indexOf( ':' ) > 0 ) ) {
 
@@ -572,7 +608,7 @@ public class Scheduler
                     try {
 
                         // check if a job with the same name is already registered
-                        if( scheduler.getJobDetail( job.getName(), UserJob.JOB_GROUP ) != null ) {
+                        if(getScheduler().getJobDetail( job.getName(), UserJob.JOB_GROUP ) != null ) {
 
                             // yes, try to make the job's name unique
                             ( ( UserXQueryJob )job ).setName( job.getName() + job.hashCode() );
@@ -665,7 +701,7 @@ public class Scheduler
             jobDataMap.put( "params", params );
         }
 		
-		//Store the value of the unschedule setting
-		jobDataMap.put( "unschedule", new Boolean( unschedule ) );
+        //Store the value of the unschedule setting
+        jobDataMap.put( "unschedule", new Boolean( unschedule ) );
     }
 }
