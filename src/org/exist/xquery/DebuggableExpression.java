@@ -99,6 +99,10 @@ public class DebuggableExpression implements Expression {
         expression.setContextDocSet(contextSet);
     }
 
+    public void setContextId(int contextId) {
+        expression.setContextId(contextId);
+    }
+
     public int getContextId() {
         return expression.getContextId();
     }
