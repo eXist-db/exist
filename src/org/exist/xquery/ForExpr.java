@@ -234,11 +234,14 @@ public class ForExpr extends BindingExpression {
 			
 			// If possible, apply the where expression ahead of the iteration
 			if(fastExec) {
-				if(!in.isCached())
+				if(!in.isCached()) {
 					setContext(getExpressionId(), in);
+					if(whereExpr != null) whereExpr.setContextId(getExpressionId());
+				}
 				in = applyWhereExpression(in);
 				if(!in.isCached())
 					clearContext(getExpressionId(), in);
+					//clearContext for whereExpr?
 			}
 			
 			// PreorderedValueSequence applies the order specs to all items
