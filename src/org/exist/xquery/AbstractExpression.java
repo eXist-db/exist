@@ -56,6 +56,11 @@ public abstract class AbstractExpression implements Expression {
     }
 
     @Override
+    public void setContextId(int contextId) {
+        this.contextId = contextId;
+    }
+
+    @Override
     public int getContextId() {
         return contextId;
     }

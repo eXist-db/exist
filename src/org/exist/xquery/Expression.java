@@ -203,6 +203,8 @@ public interface Expression {
 
     public void setContextDocSet(DocumentSet contextSet);
 
+    public void setContextId(int contextId);
+
     public int getContextId();
 
     public DocumentSet getContextDocSet();
