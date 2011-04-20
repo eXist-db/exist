@@ -63,7 +63,7 @@
                                                         <xsl:when test="type = 'element'">
                                                             <xsl:value-of select="'xs:anyType'"/>
                                                         </xsl:when>
-                                                        <xsl:when test="type = 'node'">
+                                                        <xsl:when test="type = ('node', 'node()')">
                                                             <xsl:value-of select="'xs:anyType'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
@@ -108,7 +108,7 @@
                                         <xsl:when test="return/type = 'element'">
                                             <xsl:value-of select="'xs:anyType'"/>
                                         </xsl:when>
-                                        <xsl:when test="return/type = 'node'">
+                                        <xsl:when test="return/type = ('node', 'node()')">
                                             <xsl:value-of select="'xs:anyType'"/>
                                         </xsl:when>
                                         <xsl:otherwise>
