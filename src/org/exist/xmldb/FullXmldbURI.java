@@ -38,8 +38,13 @@ public class FullXmldbURI extends XmldbURI {
 	 * @throws URISyntaxException If the given string is not a valid xmldb URI.
 	 */
 	protected FullXmldbURI(URI xmldbURI) throws URISyntaxException {
-    	super(xmldbURI);
+    	this(xmldbURI, true);
 	}
+	
+	protected FullXmldbURI(URI xmldbURI, boolean mustHaveXMLDB) throws URISyntaxException {
+    	super(xmldbURI, mustHaveXMLDB);
+	}
+	
     /** Feeds private members
      * @throws URISyntaxException
      */
@@ -258,7 +263,10 @@ public class FullXmldbURI extends XmldbURI {
 
 
     public String toString() {
-        return XMLDB_URI_PREFIX + wrappedURI.toString();
+    	//if (hadXmldbPrefix)
+    		return XMLDB_URI_PREFIX + wrappedURI.toString();
+    	//else
+    	//	return wrappedURI.toString();
     }
 
     /* (non-Javadoc)
