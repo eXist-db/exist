@@ -103,8 +103,15 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
+
+                /*
+                 Errata - the permissions should be read/written as an int and not a byte
+                 however changing this in 1.4.x would break .dbx
+                 backward compatibility in the 1.4 line.
+                 */
 		ostream.writeByte((byte) permissions.getPermissions());
-        ostream.writeInt(realSize);
+
+                ostream.writeInt(realSize);
 		getMetadata().write(getBrokerPool(), ostream);
 	}
 
@@ -116,8 +123,15 @@ public class BinaryDocument extends DocumentImpl {
 		final SecurityManager secman = getBrokerPool().getSecurityManager();
 		final int uid = istream.readInt();
 		final int groupId = istream.readInt();
+
+                /*
+                 Errata - the permissions should be read/written as an int and not a byte
+                 however changing this in 1.4.x would break .dbx
+                 backward compatibility in the 1.4 line.
+                 */
 		final int perm = (istream.readByte() & 0777);
-		if (secman == null) {
+
+                if (secman == null) {
 			permissions.setOwner(SecurityManager.DBA_USER);
 			permissions.setGroup(SecurityManager.DBA_GROUP);
 		} else {
