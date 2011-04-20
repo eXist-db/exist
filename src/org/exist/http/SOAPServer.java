@@ -276,9 +276,11 @@ public class SOAPServer
         	}
         }
 	
+	/*
 	if(j!=xqwsSOAPFunctionParams.getLength()) {
 		throw new XPathException("Input parameters number mismatch for "+functionName+": expected="+xqwsSOAPFunctionParams.getLength()+" got="+j);
 	}
+	*/
         
         //remove last superflurous seperator
 		if(query.charAt(query.length()-1) == ',')
