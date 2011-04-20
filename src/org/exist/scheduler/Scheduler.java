@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist team
+ *  Copyright (C) 2001-2011 The eXist-db team
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -57,8 +57,8 @@ import java.util.Properties;
  * @author  Adam Retter <adam@existsolutions.com>
  * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
-public class Scheduler
-{
+public class Scheduler {
+    
     public static final String          CONFIGURATION_ELEMENT_NAME               = "scheduler";
     public static final String          CONFIGURATION_JOB_ELEMENT_NAME           = "job";
     public static final String          JOB_TYPE_ATTRIBUTE                       = "type";
@@ -76,7 +76,7 @@ public class Scheduler
     public static final String          JOB_NAME_ATTRIBUTE                       = "name";
     public static final String          JOB_UNSCHEDULE_ON_EXCEPTION              = "unschedule-on-exception";
 
-    private final static Logger         LOG                                      = Logger.getLogger( Scheduler.class ); //Logger
+    private final static Logger LOG = Logger.getLogger(Scheduler.class); //Logger
 
     //the scheduler
     private final org.quartz.Scheduler scheduler;
@@ -84,7 +84,7 @@ public class Scheduler
     //startup jobs
     private final List<JobExecutionContext> startupJobs = new ArrayList<JobExecutionContext>();
 
-    private final BrokerPool brokerpool;
+    private final BrokerPool brokerPool;
     private final Configuration config;
 
     /**
@@ -95,9 +95,9 @@ public class Scheduler
      *
      * @throws  EXistException  DOCUMENT ME!
      */
-    public Scheduler( BrokerPool brokerpool, Configuration config ) throws EXistException {
-        this.brokerpool = brokerpool;
-        this.config     = config;
+    public Scheduler(BrokerPool brokerpool, Configuration config) throws EXistException {
+        this.brokerPool = brokerpool;
+        this.config = config;
 
         try {
             SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
@@ -150,7 +150,7 @@ public class Scheduler
         }
 
         if(!properties.containsKey(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME)) {
-            properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, brokerpool.getId() + "_QuartzScheduler" );
+            properties.setProperty(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, brokerPool.getId() + "_QuartzScheduler" );
         }
 
         return properties;
@@ -160,52 +160,42 @@ public class Scheduler
         return scheduler;
     }
 
-    public void run()
-    {
+    public void run() {
         try {
             setupConfiguredJobs();
-
             executeStartupJobs();
-
             getScheduler().start();
-        }
-        catch( SchedulerException se ) {
-            LOG.error( se );
+        } catch(SchedulerException se) {
+            LOG.error("Unable to start the Scheduler: " + se.getMessage(), se);
         }
     }
-
 
     /**
      * Shutdown the running Scheduler.
      *
      * <p>Asynchronous method. use isShutdown() to determine if the Scheduler has Shutdown</p>
      *
-     * @param  waitForJobsToComplete  DOCUMENT ME!
+     * @param  waitForJobsToComplete Should we wait for currently executing jobs to complete before shutting down?
      */
-    public void shutdown( boolean waitForJobsToComplete )
-    {
+    public void shutdown(boolean waitForJobsToComplete) {
         try {
-            getScheduler().shutdown( waitForJobsToComplete );
-        }
-        catch( SchedulerException se ) {
-            LOG.warn( se );
+            getScheduler().shutdown(waitForJobsToComplete);
+        } catch(SchedulerException se) {
+            LOG.warn("Unable to shutdown the Scheduler:" + se.getMessage(), se);
         }
     }
 
-
-    public boolean isShutdown()
-    {
+    public boolean isShutdown() {
         boolean isShutdown = false;
 
         try {
             isShutdown = getScheduler().isShutdown();
-        } catch( SchedulerException se ) {
-            LOG.warn( se );
+        } catch(SchedulerException se) {
+            LOG.warn("Unable to determine the status of the Scheuler: " + se.getMessage(), se);
         }
 
         return isShutdown;
     }
-
 
     /**
      * Creates a startup job.
@@ -213,23 +203,21 @@ public class Scheduler
      * @param  job     The job to trigger at startup
      * @param  params  Any parameters to pass to the job
      */
-    private void createStartupJob( UserJob job, Properties params )
-    {
+    private void createStartupJob(UserJob job, Properties params) {
         //Create the job details
-        JobDetail  jobDetail  = new JobDetail( job.getName(), job.getGroup(), job.getClass() );
+        JobDetail  jobDetail  = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params, true );
+        setupJobDataMap(job, jobDataMap, params, true);
 
         //create the minimum quartz supporting classes to execute a job
         SimpleTrigger trig = new SimpleTrigger();
-        trig.setJobDataMap( jobDataMap );
-        JobExecutionContext jec = new JobExecutionContext( null, new org.quartz.spi.TriggerFiredBundle( jobDetail, trig, null, false, null, null, null, null ), job );
+        trig.setJobDataMap(jobDataMap);
+        JobExecutionContext jec = new JobExecutionContext(null, new org.quartz.spi.TriggerFiredBundle(jobDetail, trig, null, false, null, null, null, null), job);
 
-        startupJobs.add( jec );
+        startupJobs.add(jec);
     }
-
 
     /**
      * Executes all startup jobs.
@@ -245,12 +233,11 @@ public class Scheduler
             try {
                 //execute the job
                 j.execute(jec);
-            } catch( SchedulerException se ) {
-                LOG.error("Unable to run startup job '" + jec.getJobDetail().getName() + "'", se);
+            } catch(SchedulerException se) {
+                LOG.error("Unable to run startup job '" + jec.getJobDetail().getName() + "': " + se.getMessage(), se);
             }
         }
     }
-
 
     /**
      * Create Periodic Job
@@ -261,11 +248,9 @@ public class Scheduler
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob( long period, JobDescription job, long delay )
-    {
-        return( createPeriodicJob( period, job, delay, null, SimpleTrigger.REPEAT_INDEFINITELY ) );
+    public boolean createPeriodicJob(long period, JobDescription job, long delay) {
+        return createPeriodicJob(period, job, delay, null, SimpleTrigger.REPEAT_INDEFINITELY);
     }
-
 
     /**
      * Create Periodic Job
@@ -277,13 +262,11 @@ public class Scheduler
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob( long period, JobDescription job, long delay, Properties params )
-    {
-        return( createPeriodicJob( period, job, delay, params, SimpleTrigger.REPEAT_INDEFINITELY ) );
+    public boolean createPeriodicJob(long period, JobDescription job, long delay, Properties params) {
+        return createPeriodicJob(period, job, delay, params, SimpleTrigger.REPEAT_INDEFINITELY);
     }
-
 	
-	  /**
+    /**
      * Create Periodic Job
      *
      * @param   period       The period, in milliseconds.
@@ -294,11 +277,9 @@ public class Scheduler
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob( long period, JobDescription job, long delay, Properties params, int repeatCount )
-    {
-		return( createPeriodicJob( period, job, delay, params, repeatCount, true ) );
-	}
-	
+    public boolean createPeriodicJob(long period, JobDescription job, long delay, Properties params, int repeatCount) {
+        return createPeriodicJob(period, job, delay, params, repeatCount, true);
+    }
 
     /**
      * Create Periodic Job
@@ -312,52 +293,46 @@ public class Scheduler
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createPeriodicJob( long period, JobDescription job, long delay, Properties params, int repeatCount, boolean unschedule )
-    {
+    public boolean createPeriodicJob(long period, JobDescription job, long delay, Properties params, int repeatCount, boolean unschedule) {
         //Create the job details
-        JobDetail  jobDetail  = new JobDetail( job.getName(), job.getGroup(), job.getClass() );
+        JobDetail  jobDetail  = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params, unschedule );
+        setupJobDataMap(job, jobDataMap, params, unschedule);
 
         //setup a trigger for the job, millisecond based
         SimpleTrigger trigger = new SimpleTrigger();
 
-        trigger.setRepeatInterval( period );
-        trigger.setRepeatCount( repeatCount );
+        trigger.setRepeatInterval(period);
+        trigger.setRepeatCount(repeatCount);
 
         //when should the trigger start
-        if( delay <= 0 ) {
-
+        if(delay <= 0) {
             //start now
-            trigger.setStartTime( new Date() );
+            trigger.setStartTime(new Date());
         } else {
-
             //start after period
             Calendar start = Calendar.getInstance();
-            start.add( Calendar.MILLISECOND, ( int )delay );
-            trigger.setStartTime( start.getTime() );
+            start.add(Calendar.MILLISECOND, (int)delay);
+            trigger.setStartTime(start.getTime());
         }
 
         //set the trigger's name
-        trigger.setName( job.getName() + " Trigger" );
+        trigger.setName(job.getName() + " Trigger");
 
         //schedule the job
         try {
-            getScheduler().scheduleJob( jobDetail, trigger );
-        }
-        catch( SchedulerException se ) {
-
+            getScheduler().scheduleJob(jobDetail, trigger);
+        } catch(SchedulerException se) {
             //Failed to schedule Job
-            LOG.error( "Failed to schedule periodic job '" + job.getName() + "'", se );
-            return( false );
+            LOG.error("Failed to schedule periodic job '" + job.getName() + "': " + se.getMessage(), se);
+            return false ;
         }
 
         //Successfully scheduled Job
-        return( true );
+        return true;
     }
-
 
     /**
      * Create Cron Job
@@ -367,71 +342,61 @@ public class Scheduler
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createCronJob( String cronExpression, JobDescription job )
-    {
-        return( createCronJob( cronExpression, job, null ) );
+    public boolean createCronJob(String cronExpression, JobDescription job) {
+        return createCronJob(cronExpression, job, null);
     }
 
-
-	 /**
-     * Create Cron Job
-     *
-     * @param   cronExpression  The Cron scheduling expression
-     * @param   job             The job to trigger after each period
-     * @param   params          Any parameters to pass to the job
-     *
-     * @return  true if the job was successfully scheduled, false otherwise
-     */
-    public boolean createCronJob( String cronExpression, JobDescription job, Properties params )
-    {
-		return( createCronJob( cronExpression, job, params, true ) );
-	}
-	
-	
     /**
      * Create Cron Job
      *
      * @param   cronExpression  The Cron scheduling expression
      * @param   job             The job to trigger after each period
      * @param   params          Any parameters to pass to the job
-	 * @param   unschedule   Unschedule job on XPathException?.
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
-    public boolean createCronJob( String cronExpression, JobDescription job, Properties params, boolean unschedule )
-    {
+    public boolean createCronJob(String cronExpression, JobDescription job, Properties params) {
+        return createCronJob(cronExpression, job, params, true);
+    }
+
+    /**
+     * Create Cron Job
+     *
+     * @param   cronExpression  The Cron scheduling expression
+     * @param   job             The job to trigger after each period
+     * @param   params          Any parameters to pass to the job
+     * @param   unschedule   Unschedule job on XPathException?.
+     *
+     * @return  true if the job was successfully scheduled, false otherwise
+     */
+    public boolean createCronJob(String cronExpression, JobDescription job, Properties params, boolean unschedule) {
         //Create the job details
-        JobDetail  jobDetail  = new JobDetail( job.getName(), job.getGroup(), job.getClass() );
+        JobDetail  jobDetail  = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 
         //Setup the job's data map
         JobDataMap jobDataMap = jobDetail.getJobDataMap();
-        setupJobDataMap( job, jobDataMap, params, unschedule );
+        setupJobDataMap(job, jobDataMap, params, unschedule);
 
         try {
 
             //setup a trigger for the job, Cron based
-            CronTrigger trigger = new CronTrigger( job.getName() + " Trigger", job.getGroup(), cronExpression );
+            CronTrigger trigger = new CronTrigger(job.getName() + " Trigger", job.getGroup(), cronExpression);
 
             //schedule the job
-            getScheduler().scheduleJob( jobDetail, trigger );
-        }
-        catch( ParseException pe ) {
-
+            getScheduler().scheduleJob(jobDetail, trigger);
+        } catch(ParseException pe) {
             //Failed to schedule Job
-            LOG.error( "Failed to schedule cron job '" + job.getName() + "'", pe );
-            return( false );
-        }
-        catch( SchedulerException se ) {
-
+            LOG.error("Failed to schedule cron job '" + job.getName() + "': " + pe.getMessage(), pe);
+            return false;
+        } catch(SchedulerException se) {
             //Failed to schedule Job
-            LOG.error( "Failed to schedule cron job '" + job.getName() + "'", se );
-            return( false );
+            LOG.error("Failed to schedule cron job '" + job.getName() + "': " + se.getMessage(), se);
+            return false;
         }
 
         //Successfully scheduled Job
-        return( true );
+        return true;
     }
-
 
     /**
      * Removes a Job from the Scheduler.
@@ -441,20 +406,17 @@ public class Scheduler
      *
      * @return  true if the job was deleted, false otherwise
      */
-    public boolean deleteJob( String jobName, String jobGroup )
-    {
+    public boolean deleteJob(String jobName, String jobGroup) {
         boolean deletedJob = false;
 
         try {
             deletedJob = getScheduler().deleteJob(jobName, jobGroup);
-        }
-        catch( SchedulerException se ) {
-            LOG.error( "Failed to delete job '" + jobName + "'", se );
+        } catch(SchedulerException se) {
+            LOG.error("Failed to delete job '" + jobName + "': " + se.getMessage(), se);
         }
 
         return deletedJob;
     }
-
 
     /**
      * Pauses a Job with the Scheduler.
@@ -462,22 +424,20 @@ public class Scheduler
      * @param   jobName   The name of the Job
      * @param   jobGroup  The group that the Job was Scheduled in
      *
-     * @return  DOCUMENT ME!
+     * @return  true if the job was paused, false otherwise
      */
-    public boolean pauseJob( String jobName, String jobGroup )
-    {
+    public boolean pauseJob(String jobName, String jobGroup) {
         boolean pausedJob = false;
 
         try {
-            getScheduler().pauseJob( jobName, jobGroup );
+            getScheduler().pauseJob(jobName, jobGroup);
             pausedJob = true;
-        } catch( SchedulerException se ) {
-            LOG.error( "Failed to pause job '" + jobName + "'", se );
+        } catch(SchedulerException se) {
+            LOG.error( "Failed to pause job '" + jobName + "': " + se.getMessage(), se);
         }
 
         return pausedJob;
     }
-
 
     /**
      * Resume a Job with the Scheduler.
@@ -485,41 +445,37 @@ public class Scheduler
      * @param   jobName   The name of the Job
      * @param   jobGroup  The group that the Job was Scheduled in
      *
-     * @return  DOCUMENT ME!
+     * @return  true if the job was resumed, false otherwise
      */
-    public boolean resumeJob( String jobName, String jobGroup )
-    {
+    public boolean resumeJob(String jobName, String jobGroup) {
         boolean resumedJob = false;
 
         try {
             getScheduler().resumeJob(jobName, jobGroup);
             resumedJob = true;
-        } catch( SchedulerException se ) {
-            LOG.error( "Failed to resume job '" + jobName + "'", se );
+        } catch(SchedulerException se) {
+            LOG.error("Failed to resume job '" + jobName + "': " + se.getMessage(), se);
         }
 
         return resumedJob;
     }
-
 
     /**
      * Gets the names of the Job groups.
      *
      * @return  String array of the Job group names
      */
-    public String[] getJobGroupNames()
-    {
+    public String[] getJobGroupNames() {
         String jobNames[] = null;
 
         try {
             jobNames =  getScheduler().getJobGroupNames();
-        } catch( SchedulerException se ) {
-            LOG.error( "Failed to get job group names", se );
+        } catch(SchedulerException se) {
+            LOG.error( "Failed to get job group names: " + se.getMessage(), se );
         }
 
         return jobNames;
     }
-
 
     /**
      * Gets information about currently Scheduled Jobs.
@@ -540,19 +496,18 @@ public class Scheduler
                 //get the trigger names for the trigger group
                 for(String triggerGroupTriggerName : getScheduler().getTriggerNames(triggerGroupName)) {
                     //add information about the job to the result
-                    jobs.add( new ScheduledJobInfo(getScheduler(), getScheduler().getTrigger(triggerGroupTriggerName, triggerGroupName)));
+                    jobs.add(new ScheduledJobInfo(getScheduler(), getScheduler().getTrigger(triggerGroupTriggerName, triggerGroupName)));
                 }
             }
 
             result = new ScheduledJobInfo[jobs.size()];
             jobs.toArray(result);
-        } catch( SchedulerException se ) {
-            LOG.error( "Failed to get scheduled jobs", se );
+        } catch(SchedulerException se) {
+            LOG.error("Failed to get scheduled jobs: " + se.getMessage(), se);
         }
 
         return result;
     }
-
 
     /**
      * Gets information about currently Executing Jobs.
@@ -573,19 +528,17 @@ public class Scheduler
             result = new ScheduledJobInfo[jobs.size()];
             jobs.toArray(result);
         } catch(SchedulerException se) {
-            LOG.error( "Failed to get executing jobs", se );
+            LOG.error("Failed to get executing jobs: " + se.getMessage(), se);
         }
 
         return result;
     }
 
-
     /**
      * Set's up all the jobs that are listed in conf.xml and loaded through org.exist.util.Configuration.
      */
-    public void setupConfiguredJobs()
-    {
-        Configuration.JobConfig[] jobList = ( Configuration.JobConfig[] )config.getProperty( Scheduler.PROPERTY_SCHEDULER_JOBS );
+    public void setupConfiguredJobs() {
+        Configuration.JobConfig[] jobList = (Configuration.JobConfig[])config.getProperty(Scheduler.PROPERTY_SCHEDULER_JOBS);
 
         if(jobList == null) {
             return;
@@ -595,83 +548,78 @@ public class Scheduler
             
             JobDescription job = null;
 
-            if( jobConfig.getResourceName().startsWith( "/db/" ) || ( jobConfig.getResourceName().indexOf( ':' ) > 0 ) ) {
+            if(jobConfig.getResourceName().startsWith("/db/") || jobConfig.getResourceName().indexOf(':') > 0) {
 
-                if( jobConfig.getType().equals( JOB_TYPE_SYSTEM ) ) {
-                    LOG.error( "System jobs may only be written in Java" );
+                if(jobConfig.getType().equals(JOB_TYPE_SYSTEM)) {
+                    LOG.error("System jobs may only be written in Java");
                 } else {
 
                     //create an XQuery job
-                    Subject guestUser = brokerpool.getSecurityManager().getGuestSubject();
-                    job = new UserXQueryJob( jobConfig.getJobName(), jobConfig.getResourceName(), guestUser );
+                    Subject guestUser = brokerPool.getSecurityManager().getGuestSubject();
+                    job = new UserXQueryJob(jobConfig.getJobName(), jobConfig.getResourceName(), guestUser);
 
                     try {
-
                         // check if a job with the same name is already registered
-                        if(getScheduler().getJobDetail( job.getName(), UserJob.JOB_GROUP ) != null ) {
+                        if(getScheduler().getJobDetail(job.getName(), UserJob.JOB_GROUP) != null) {
 
                             // yes, try to make the job's name unique
-                            ( ( UserXQueryJob )job ).setName( job.getName() + job.hashCode() );
+                            ((UserXQueryJob)job).setName(job.getName() + job.hashCode());
                         }
-                    }
-                    catch( SchedulerException e ) {
-                        LOG.error( e.getMessage(), e );
+                    } catch(SchedulerException e) {
+                        LOG.error("Unable to set job name: " + e.getMessage(), e);
                     }
                 }
             } else {
 
                 //create a Java job
                 try {
-                    Class<?> jobClass  = Class.forName( jobConfig.getResourceName() );
-                    Object   jobObject = jobClass.newInstance();
+                    Class<?> jobClass = Class.forName(jobConfig.getResourceName());
+                    Object jobObject = jobClass.newInstance();
 
-                    if( jobConfig.getType().equals( JOB_TYPE_SYSTEM ) ) {
+                    if(jobConfig.getType().equals(JOB_TYPE_SYSTEM)) {
 
-                        if( jobObject instanceof SystemTask ) {
-                            SystemTask task = ( SystemTask )jobObject;
-                            task.configure( config, jobConfig.getParameters() );
-                            job = new SystemTaskJob( jobConfig.getJobName(), task );
+                        if(jobObject instanceof SystemTask) {
+                            SystemTask task = (SystemTask)jobObject;
+                            task.configure(config, jobConfig.getParameters());
+                            job = new SystemTaskJob(jobConfig.getJobName(), task);
                         } else {
-                            LOG.error( "System jobs must extend SystemTask" );
+                            LOG.error("System jobs must extend SystemTask");
                         }
                     } else {
-                        job = ( JobDescription )jobObject;
+                        job = (JobDescription)jobObject;
 
-                        if( jobConfig.getJobName() != null ) {
-                            job.setName( jobConfig.getJobName() );
+                        if(jobConfig.getJobName() != null) {
+                            job.setName(jobConfig.getJobName());
                         }
                     }
-                }
-                catch( Exception e ) {
-                    LOG.error( "Unable to schedule '" + jobConfig.getType() + "' job " + jobConfig.getResourceName(), e );
+                } catch(Exception e) {
+                    LOG.error("Unable to schedule '" + jobConfig.getType() + "' job " + jobConfig.getResourceName() + ": " + e.getMessage(), e);
                 }
             }
 
             //if there is a job, schedule it
-            if( job != null ) {
-
-                if( jobConfig.getType().equals( JOB_TYPE_STARTUP ) ) {
+            if(job != null) {
+                if(jobConfig.getType().equals(JOB_TYPE_STARTUP)) {
 
                     //startup job - one off execution - no period, delay or repeat
-                    createStartupJob( ( UserJob )job, jobConfig.getParameters() );
+                    createStartupJob((UserJob)job, jobConfig.getParameters());
                 } else {
                     //timed job
 
                     //trigger is Cron or period?
-                    if( jobConfig.getSchedule().indexOf( ' ' ) > -1 ) {
+                    if(jobConfig.getSchedule().indexOf(' ') > -1) {
 
                         //schedule job with Cron trigger
-                        createCronJob( jobConfig.getSchedule(), job, jobConfig.getParameters() );
+                        createCronJob(jobConfig.getSchedule(), job, jobConfig.getParameters());
                     } else {
 
                         //schedule job with periodic trigger
-                        createPeriodicJob( Long.parseLong( jobConfig.getSchedule() ), job, jobConfig.getDelay(), jobConfig.getParameters(), jobConfig.getRepeat(), jobConfig.unscheduleOnException() );
+                        createPeriodicJob(Long.parseLong(jobConfig.getSchedule()), job, jobConfig.getDelay(), jobConfig.getParameters(), jobConfig.getRepeat(), jobConfig.unscheduleOnException());
                     }
                 }
             }
         }
     }
-
 
     /**
      * Sets up the Job's Data Map.
@@ -680,28 +628,27 @@ public class Scheduler
      * @param  jobDataMap  The Job's Data Map
      * @param  params      Any parameters for the job
      */
-    private void setupJobDataMap( JobDescription job, JobDataMap jobDataMap, Properties params, boolean unschedule )
-    {
+    private void setupJobDataMap(JobDescription job, JobDataMap jobDataMap, Properties params, boolean unschedule) {
         //if this is a system job, store the BrokerPool in the job's data map
-        jobDataMap.put( "brokerpool", brokerpool );
+        jobDataMap.put("brokerpool", brokerPool);
 
         //if this is a system task job, store the SystemTask in the job's data map
-        if( job instanceof SystemTaskJob ) {
-            jobDataMap.put( "systemtask", ( ( SystemTaskJob )job ).getSystemTask() );
+        if(job instanceof SystemTaskJob) {
+            jobDataMap.put("systemtask", ((SystemTaskJob)job).getSystemTask());
         }
 
         //if this is a users XQuery job, store the XQuery resource and user in the job's data map
-        if( job instanceof UserXQueryJob ) {
-            jobDataMap.put( "xqueryresource", ( ( UserXQueryJob )job ).getXQueryResource() );
-            jobDataMap.put( "user", ( ( UserXQueryJob )job ).getUser() );
+        if(job instanceof UserXQueryJob) {
+            jobDataMap.put("xqueryresource", ((UserXQueryJob)job).getXQueryResource());
+            jobDataMap.put("user", ((UserXQueryJob)job).getUser());
         }
 
         //copy any parameters into the job's data map
-        if( params != null ) {
-            jobDataMap.put( "params", params );
+        if(params != null) {
+            jobDataMap.put("params", params);
         }
 		
         //Store the value of the unschedule setting
-        jobDataMap.put( "unschedule", new Boolean( unschedule ) );
+        jobDataMap.put("unschedule", new Boolean(unschedule));
     }
 }
