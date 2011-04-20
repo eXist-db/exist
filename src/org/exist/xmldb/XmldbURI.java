@@ -123,8 +123,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             }
             xmldbURI = new URI(xmldbURI.toString().substring(XMLDB_URI_PREFIX.length()));
             hadXmldbPrefix = true;
-        } else if (mustHaveXMLDB) {
-        	hadXmldbPrefix = true;
+        //} else if (mustHaveXMLDB) {
+        //	hadXmldbPrefix = true;
         }
         parseURI(xmldbURI, hadXmldbPrefix);
     }
