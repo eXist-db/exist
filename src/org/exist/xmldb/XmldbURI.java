@@ -93,7 +93,13 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public final static String API_WEBDAV = "webdav";
     public final static String API_REST = "rest-style";
     public final static String API_LOCAL = "local";
+    
     private String encodedCollectionPath;
+    private boolean hadXmldbPrefix = false;
+
+    protected XmldbURI(URI xmldbURI) throws URISyntaxException {
+    	this(xmldbURI, true);
+    }
 
     /**
      * Contructs an XmldbURI from given URI. The provided URI must have the XMLDB_SCHEME ("xmldb")
@@ -102,7 +108,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      *
      * @throws  URISyntaxException  If the given string is not a valid xmldb URI.
      */
-    protected XmldbURI(URI xmldbURI) throws URISyntaxException {
+    protected XmldbURI(URI xmldbURI, boolean mustHaveXMLDB) throws URISyntaxException {
         String uriStr = xmldbURI.toString().trim();
 
         if (!uriStr.equals(".") && !uriStr.equals("..") && !uriStr.endsWith("/.") && !uriStr.endsWith("/..")) {
@@ -110,15 +116,15 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             xmldbURI = xmldbURI.normalize();
         }
 
-        boolean hadXmldbPrefix = false;
-
-        if (xmldbURI.getScheme() != null) {
+        if (xmldbURI.getScheme() != null && mustHaveXMLDB) {
 
             if (!XMLDB_SCHEME.equals(xmldbURI.getScheme())) {
                 throw (new URISyntaxException(xmldbURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX));
             }
             xmldbURI = new URI(xmldbURI.toString().substring(XMLDB_URI_PREFIX.length()));
             hadXmldbPrefix = true;
+        } else if (mustHaveXMLDB) {
+        	hadXmldbPrefix = true;
         }
         parseURI(xmldbURI, hadXmldbPrefix);
     }
@@ -143,6 +149,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return (getXmldbURI(uri));
     }
 
+    public static XmldbURI xmldbUriFor(String xmldbURI, boolean escape, boolean mustHaveXMLDB) throws URISyntaxException {
+        if (xmldbURI == null) {
+            return (null);
+        }
+        URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
+        return (getXmldbURI(uri, mustHaveXMLDB));
+    }
+
     public static XmldbURI xmldbUriFor(String accessURI, String collectionPath) throws URISyntaxException {
         if (collectionPath == null) {
             return (null);
@@ -162,6 +176,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static XmldbURI create(String uri) {
         try {
             return (xmldbUriFor(uri));
+        } catch (URISyntaxException e) {
+            throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
+        }
+    }
+
+    public static XmldbURI create(String uri, boolean mustHaveXMLDB) {
+        try {
+            return (xmldbUriFor(uri, true, mustHaveXMLDB));
         } catch (URISyntaxException e) {
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
@@ -197,6 +219,13 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return false;
         }
          */
+    }
+
+    private static XmldbURI getXmldbURI(URI uri, boolean mustHaveXMLDB) throws URISyntaxException {
+        if ((uri.getScheme() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+            return (new FullXmldbURI(uri, mustHaveXMLDB));
+        }
+        return (new XmldbURI(uri, mustHaveXMLDB));
     }
 
     /**
