@@ -44,7 +44,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -128,8 +127,8 @@ public class SerializeToFile extends BasicFunction
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-    		if (!context.getUser().hasDbaRole()) {
-    			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+    		if (!context.getSubject().hasDbaRole()) {
+    			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
     			logger.error("Invalid user", xPathException);
     			throw xPathException;
     		}
