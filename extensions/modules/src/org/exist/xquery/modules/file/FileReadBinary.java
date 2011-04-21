@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,8 +75,8 @@ public class FileReadBinary extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		if (!context.getUser().hasDbaRole()) {
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+		if (!context.getSubject().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}
@@ -95,21 +94,16 @@ public class FileReadBinary extends BasicFunction {
 			
 			//in.readFully( buffer );
 
-                        new FileInputStream(file).getFD();
-                        
-                        return(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(),file));
-		} 
-		
-		catch( MalformedURLException e ) {
-			throw( new XPathException(this, e.getMessage() ) );	
-		} 
-		
-		catch( URISyntaxException e ) {
-			throw( new XPathException(this, e.getMessage() ) );	
-		} 
-		
-		catch( IOException e ) {
-			throw( new XPathException(this, e.getMessage() ) );	
+            new FileInputStream(file).getFD();
+
+            return(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(),file));
+            
+		} catch( MalformedURLException e ) {
+			throw new XPathException(this, e );	
+		} catch( URISyntaxException e ) {
+			throw new XPathException(this, e );	
+		} catch( IOException e ) {
+			throw new XPathException(this, e );	
 		}
 	}
 }

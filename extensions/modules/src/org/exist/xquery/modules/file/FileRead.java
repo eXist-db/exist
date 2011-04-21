@@ -84,8 +84,8 @@ public class FileRead extends BasicFunction {
 	 */
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		if (!context.getUser().hasDbaRole()) {
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+		if (!context.getSubject().hasDbaRole()) {
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}
@@ -111,18 +111,14 @@ public class FileRead extends BasicFunction {
 			}
 			reader.close();
 			sw.close();
-		} 
-		
-		catch( MalformedURLException e ) {
-			throw(new XPathException(this, e.getMessage()));	
-		} 
-		
-		catch( IOException e ) {
-			throw(new XPathException(this, e.getMessage()));	
+		} catch( MalformedURLException e ) {
+			throw new XPathException(this, e);	
+		} catch( IOException e ) {
+			throw new XPathException(this, e);	
 		}
 		
 		//TODO : return an *Item* built with sw.toString()
 		
-		return( new StringValue( sw.toString() ) );
+		return new StringValue( sw.toString() );
 	}
 }
