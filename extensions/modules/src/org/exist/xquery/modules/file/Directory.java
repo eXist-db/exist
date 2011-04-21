@@ -86,9 +86,9 @@ public class Directory extends BasicFunction {
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (!context.getUser().hasDbaRole()) {
+        if (!context.getSubject().hasDbaRole()) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '"
-                    + context.getUser().getName() + "' must be a DBA to call this function.");
+                    + context.getSubject().getName() + "' must be a DBA to call this function.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
@@ -120,10 +120,10 @@ public class Directory extends BasicFunction {
                 entryType="file";
 
             } else if(entry.isDirectory()){
-                entryType="directroy";
+                entryType="directory";
             }
 
-            builder.startElement(new QName(entryType, null, null), null);
+            builder.startElement(new QName(entryType, NAMESPACE_URI, PREFIX), null);
 
             builder.addAttribute(new QName("name", null, null), entry.getName());
 
