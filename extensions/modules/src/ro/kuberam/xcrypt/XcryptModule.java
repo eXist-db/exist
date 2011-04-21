@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import java.util.List;
+import java.util.Map;
 import org.exist.xquery.XPathException;
-
 /**
  * Cryptographic module for eXist.
  *
@@ -20,17 +21,19 @@ import org.exist.xquery.XPathException;
  */
 public class XcryptModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://kuberam.ro/x-crypt";
+	public final static String NAMESPACE_URI = "http://kuberam.ro/ns/x-crypt";
 	public final static String PREFIX = "x-crypt";
     	public final static String INCLUSION_DATE = "2010-12-17";
     	public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
 	public final static FunctionDef[] functions = {
-		new FunctionDef(GenerateSignatureFunction.signatures[0], GenerateSignatureFunction.class),
-                new FunctionDef(GenerateSignatureFunction.signatures[1], GenerateSignatureFunction.class),
-                new FunctionDef(GenerateSignatureFunction.signatures[2], GenerateSignatureFunction.class),
-                new FunctionDef(GenerateSignatureFunction.signatures[3], GenerateSignatureFunction.class),
-                new FunctionDef(ValidateSignatureFunction.signature, ValidateSignatureFunction.class)
+		new FunctionDef(GenerateXMLSignatureFunction.signatures[0], GenerateXMLSignatureFunction.class),
+                new FunctionDef(GenerateXMLSignatureFunction.signatures[1], GenerateXMLSignatureFunction.class),
+                new FunctionDef(GenerateXMLSignatureFunction.signatures[2], GenerateXMLSignatureFunction.class),
+                new FunctionDef(GenerateXMLSignatureFunction.signatures[3], GenerateXMLSignatureFunction.class),
+                new FunctionDef(ValidateSignatureFunction.signature, ValidateSignatureFunction.class),
+                new FunctionDef(EncryptionFunctions.signatures[0], EncryptionFunctions.class),
+                new FunctionDef(EncryptionFunctions.signatures[1], EncryptionFunctions.class)
 	};
 	
 	public XcryptModule(Map<String, List<? extends Object>> parameters) throws XPathException {
@@ -46,7 +49,7 @@ public class XcryptModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "A module comprising cryptographic functions.";
+		return "A module with cryptographic functions.";
 	}
 
     public String getReleaseVersion() {
