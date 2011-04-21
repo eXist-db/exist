@@ -271,7 +271,7 @@ public class ScheduleFunctions extends BasicFunction
             repeatValue = ( ( IntegerValue )args[5].itemAt( 0 ) ).getInt();
         }
 		
-        Subject user = context.getUser();
+        Subject user = context.getSubject();
 
         //Check if the user is a DBA
         if( !user.hasDbaRole() ) {
@@ -301,6 +301,7 @@ public class ScheduleFunctions extends BasicFunction
 
             if( isCalledAs( SCHEDULE_JAVA_PERIODIC_JOB ) ) {
                 periodicValue = ( ( IntegerValue )args[1].itemAt( 0 ) ).getLong();
+                isCron = false;
             }
 
             try {
