@@ -425,7 +425,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     else
                         result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
                 } catch (EXistException e) {
-                    throw new XPathException(this, e.getMessage(), e);
+                    throw new XPathException(this, e);
                 }
             }
         } else {
