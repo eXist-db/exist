@@ -6,14 +6,17 @@
         <javaversion>1.5</javaversion>
         <run-privileged condition="izpack.windowsinstall.vista"/>
     </info>
+
     <guiprefs height="450" resizable="yes" width="640">
         <laf name="looks">
             <os family="unix"/>
         </laf>
     </guiprefs>
+
     <locale>
         <langpack iso3="eng"/>
     </locale>
+
     <resources>
         <res id="Installer.image" src="installer/ilogo.jpg"/>
         <res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
@@ -21,49 +24,50 @@
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
         <res id="userInputSpec.xml" src="installer/userInput.xml"/>
         <res id="ProcessPanel.Spec.xml" src="installer/jobs.xml"/>
-
-	<res id="HTMLInfoPanel.start" src="installer/start.html"/>
-	<res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
-	<res id="customicons.xml" src="installer/custom.icons.xml"/>
+        <res id="HTMLInfoPanel.start" src="installer/start.html"/>
+        <res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
+        <res id="customicons.xml" src="installer/custom.icons.xml"/>
     </resources>
 
     <jar src="tools/izpack/clinstaller.jar" stage="install"/>
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
     <native type="izpack" name="ShellLink.dll"/>
-	<native type="izpack" name="ShellLink_x64.dll"/>
+    <native type="izpack" name="ShellLink_x64.dll"/>
 
     <variables>
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>
         <variable name="JDKPathPanel.minVersion" value="1.5"/>
-        <variable name="dataDir" value="webapp/WEB-INF/data" />
-	<variable name="ShowCreateDirectoryMessage" value="false"/>
+        <variable name="dataDir" value="webapp/WEB-INF/data"/>
+        <variable name="ShowCreateDirectoryMessage" value="false"/>
     </variables>
 
     <!-- Determine suggested data directory -->
     <dynamicvariables>
-      <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME/eXist/data"/>
-      <variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist/data"/>
-      <variable name="DATA_DIR" condition="!izpack.macinstall+!izpack.windowsinstall" 
-		value="$INSTALL_PATH/webapp/WEB-INF/data"/>
+        <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME/eXist/data"/>
+        <variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist/data"/>
+        <variable name="DATA_DIR" condition="!izpack.macinstall+!izpack.windowsinstall"
+            value="$INSTALL_PATH/webapp/WEB-INF/data"/>
     </dynamicvariables>
 
     <panels>
-	<panel classname="HTMLInfoPanel" id="start" />
+        <panel classname="HTMLInfoPanel" id="start"/>
         <panel classname="JDKPathPanel"/>
         <panel classname="TargetPanel"/>
-	<panel classname="UserInputPanel" id="UserInputPanel.0" />
+        <panel classname="UserInputPanel" id="UserInputPanel.0"/>
         <panel classname="PacksPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ProcessPanel"/>
         <panel classname="ShortcutPanel"/>
-        <panel classname="HTMLInfoPanel" id="info" />
+        <panel classname="HTMLInfoPanel" id="info"/>
         <!--panel classname="FinishPanel"/-->
     </panels>
+
     <packs>
         <pack name="core" required="yes">
-            <description>Everything needed for the database core, including Jetty + Cocoon</description>
+            <description>Everything needed for the database core, including Jetty +
+                Cocoon</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
                 <include name="client.properties.tmpl"/>
                 <include name="client.properties"/>
@@ -156,6 +160,7 @@
                 <include name="setup.sh"/>
                 <include name="setup.bat"/>
             </fileset>
+
             <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
                 <include name="client.sh"/>
                 <include name="startup.sh"/>
@@ -168,14 +173,18 @@
                 <include name="shutdown.bat"/>
                 <include name="backup.bat"/>
             </fileset>
+
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
                 <include name="*.sh"/>
             </fileset>
+
             <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
                 <include name="*.bat"/>
             </fileset>
+
             <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH"/>
+
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
@@ -183,6 +192,7 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/setup.sh"/>
+
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
@@ -192,7 +202,6 @@
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
 
             <parsable type="xml" targetfile="$INSTALL_PATH/conf.xml"/>
-
 
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
@@ -214,6 +223,7 @@
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never"
                 os="unix"/>
         </pack>
+
         <pack name="sources" required="no">
             <description>Java source files</description>
             <fileset targetdir="$INSTALL_PATH/src" dir="src">
@@ -252,6 +262,7 @@
             </fileset>
             <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
         </pack>
+
         <pack name="javadoc" required="no">
             <description>Generated Javadocs</description>
             <fileset targetdir="$INSTALL_PATH/webapp/api" dir="webapp/api">
