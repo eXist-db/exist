@@ -1324,7 +1324,7 @@ public class LuceneIndexTest {
             assertNotNull(transaction);
 
             Collection collConfig = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
+                XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
             assertNotNull(collConfig);
             broker.removeCollection(transaction, collConfig);
 
