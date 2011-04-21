@@ -78,7 +78,10 @@ public class CollectionConfigurationManager {
     public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException {
 		this.pool = broker.getBrokerPool();
         this.latch = pool.getCollectionsCache();
-        checkConfigCollection(broker);
+        
+        checkCreateCollection(broker, XmldbURI.CONFIG_COLLECTION_URI);
+        checkCreateCollection(broker, XmldbURI.ROOT_COLLECTION_CONFIG_URI);
+        
         loadAllConfigurations(broker);
         defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
         defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
@@ -310,60 +313,36 @@ public class CollectionConfigurationManager {
     }
     
 	/**
-	 * Check if the config collection exists below the system collection. If not, create it.
+	 * Check if the collection exists below the system collection. If not, create it.
 	 * 
 	 * @param broker
+	 * @param uri
 	 * @throws EXistException
 	 */
-    private void checkConfigCollection(DBBroker broker) throws EXistException {
+    private void checkCreateCollection(DBBroker broker, XmldbURI uri) throws EXistException {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
     	try {
-    		Collection root = broker.getCollection(XmldbURI.CONFIG_COLLECTION_URI);
-    		if(root == null) {
+    		Collection collection = broker.getCollection(uri);
+    		if(collection == null) {
     			txn = transact.beginTransaction();
-    			root = broker.getOrCreateCollection(txn, XmldbURI.CONFIG_COLLECTION_URI);
-                SanityCheck.THROW_ASSERT(root != null);
-    			broker.saveCollection(txn, root);
-                transact.commit(txn);
-    		}
-    	} catch (IOException e) {
-    		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
-    	} catch (PermissionDeniedException e) {
-    		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
-    	} catch (TriggerException e) {
-    		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
-		}
-    }
-
-    public void checkRootCollectionConfigCollection(DBBroker broker) throws EXistException {
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = null;
-    	try {
-    		//Create a configuration collection for the root collection
-    		Collection rootCollectionConfiguration = broker.getCollection(XmldbURI.ROOT_COLLECTION_CONFIG_URI);
-    		if(rootCollectionConfiguration == null) {
-    			txn = transact.beginTransaction();
-    			rootCollectionConfiguration = broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_CONFIG_URI);
-                SanityCheck.THROW_ASSERT(rootCollectionConfiguration != null);
-    			broker.saveCollection(txn, rootCollectionConfiguration);    			
+    			collection = broker.getOrCreateCollection(txn, uri);
+                SanityCheck.THROW_ASSERT(collection != null);
+    			broker.saveCollection(txn, collection);    			
                 transact.commit(txn);
     		}    		
     	} catch (IOException e) {
     		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+    		throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
     	} catch (PermissionDeniedException e) {
     		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+    		throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
     	} catch (TriggerException e) {
     		transact.abort(txn);
-    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+    		throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
 		}
     }
-    
+
     /** Create a stored default configuration document for the root collection 
      * @param broker The broker which will do the operation
      * @throws EXistException
