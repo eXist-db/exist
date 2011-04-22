@@ -150,8 +150,20 @@ public class DocUtils {
 			try
 			{
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
-				// relative collection Path: add the current base URI
-				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+				
+				XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+				if (!(baseURI.equals("") || baseURI.equals("/db"))) {
+					// relative collection Path: add the current base URI
+					pathUri = baseURI.resolveCollectionPath(pathUri);
+				}
+
+				// relative collection Path: add the current module call URI
+				try {
+					pathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath()).resolveCollectionPath(pathUri);
+				} catch (Exception e) {
+					//workaround: ignore Windows issue
+				}
+
 				// try to open the document and acquire a lock
 				doc = context.getBroker().getXMLResource(pathUri, lockType);
 				if(doc != null)

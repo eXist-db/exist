@@ -34,12 +34,14 @@ import org.exist.storage.DBBroker;
  */
 public class FileSource extends AbstractSource {
 
-    private String filePath;
+	private File file;
+	private String filePath;
     private long lastModified;
     private String encoding;
     private boolean checkEncoding = false;
     
     public FileSource(File file, String encoding, boolean checkXQEncoding) {
+    	this.file = file;
         this.filePath = file.getAbsolutePath();
         this.lastModified = file.lastModified();
         this.encoding = encoding;
@@ -55,6 +57,10 @@ public class FileSource extends AbstractSource {
     
     public String getFilePath() {
     	return filePath;
+    }
+    
+    public File getFile() {
+    	return file;
     }
 
     /* (non-Javadoc)
