@@ -54,6 +54,8 @@ public class JnlpJarFiles {
         "jEdit-syntax",
         "jline-%latest%",
         "log4j-%latest%",
+        "slf4j-api-%latest%",
+        "slf4j-log4j12-%latest%",
         "sunxacml-%latest%"
     };
     
