@@ -52,8 +52,6 @@
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-xsp-block.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/commons-jexl-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/commons-jxpath-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon/commons-lang-2.0-20041007T2305.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon/ehcache-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/excalibur-component-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/excalibur-datasource-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/excalibur-i18n-1.1.jar"/>
@@ -125,5 +123,7 @@
 	<classpathentry kind="lib" path="lib/optional/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.0.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/optional/ehcache-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-lang-2.4.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
