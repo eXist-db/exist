@@ -44,6 +44,7 @@ import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
+import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
@@ -244,6 +245,20 @@ public class Eval extends BasicFunction {
 			innerContext = context.copyContext();
             innerContext.setShared(true);
             //innerContext = context;
+        }
+        if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
+        	String uri = null;
+        	Object key = querySource.getKey();
+        	if (key instanceof XmldbURI) {
+        		uri = ((XmldbURI) key).removeLastSegment().toString();
+//			} else if (key instanceof URL) {
+//        		TODO: uri = ((URL) key).getParent()
+			} else if (key instanceof String && querySource instanceof FileSource) {
+        		uri = ((FileSource) querySource).getFile().getParent();
+			}
+        	
+        	if (uri != null)
+        		innerContext.setModuleLoadPath(uri);
         }
 
         //bind external vars?
