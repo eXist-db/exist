@@ -26,9 +26,7 @@ import org.apache.log4j.Logger;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -103,6 +101,11 @@ public class FunBaseURI extends BasicFunction {
         if (isCalledAs("static-base-uri")) {
             if (context.isBaseURIDeclared()) {
                 result = context.getBaseURI();
+
+            	
+            	if ( !((AnyURIValue) result).toURI().isAbsolute() )
+            		throw new XPathException(this, ErrorCodes.XPST0001, "");
+
             } else {
                 result = Sequence.EMPTY_SEQUENCE;
             }
@@ -127,66 +130,50 @@ public class FunBaseURI extends BasicFunction {
             }
         }
         if (result == null && node != null) {
+        	
+        	result = Sequence.EMPTY_SEQUENCE;
+        	
             // This is implemented to be a recursive ascent according to
             // section 2.5 in www.w3.org/TR/xpath-functions 
             // see memtree/ElementImpl and dom/ElementImpl. /ljo
-            if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-                NodeImpl domNode = (NodeImpl) node.getNode();
-                short type = domNode.getNodeType();
-                //A direct processing instruction constructor creates a processing instruction node 
-                //whose target property is PITarget and whose content property is DirPIContents. 
-                //The base-uri property of the node is empty. 
-                //The parent property of the node is empty.
-                if (type == Node.PROCESSING_INSTRUCTION_NODE) {
-                	result = Sequence.EMPTY_SEQUENCE;
-                } else if (type == Node.ATTRIBUTE_NODE || type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE) {
-                	//Only elements, document nodes have a base-uri
-                	//attributes have it too -shabanovd
-                    URI relativeURI;
-                    URI baseURI;
-                    try {
-                        relativeURI = new URI(domNode.getBaseURI());
-                        baseURI = new URI(context.getBaseURI() + "/");
-                    } catch (URISyntaxException e) {
-                        logger.error(e.getMessage());
-                        throw new XPathException(this, e);
-                    }
-                    if (!(("".equals(relativeURI.toString()) || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
-                        if (relativeURI.isAbsolute()) {
-                            result = new AnyURIValue(relativeURI);
-                        } else {
-                            result = new AnyURIValue(baseURI.resolve(relativeURI));
-                        }
-                    } else {
-                        result = Sequence.EMPTY_SEQUENCE;
-                    }
 
-                } else
-                	result = Sequence.EMPTY_SEQUENCE;
-            } else {
-                NodeProxy proxy = (NodeProxy) node;
-                short type = proxy.getNodeType();
-                // Only elements, document nodes and processing instructions have a base-uri
-                if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
-                    type == Node.PROCESSING_INSTRUCTION_NODE) {
-                    URI relativeURI;
-                    URI baseURI;
-                    try {
-                       org.exist.dom.NodeImpl baseNode = (org.exist.dom.NodeImpl) proxy.getNode();
-                        relativeURI = new URI(baseNode.getBaseURI());
-                        baseURI = new URI(context.getBaseURI() + "/");
-                    } catch (URISyntaxException e) {
-                        logger.error(e.getMessage());
-                        throw new XPathException(this, e);
-                    }
-                    if (relativeURI.isAbsolute()) {
-                        result = new AnyURIValue(relativeURI);
-                    } else {
-                        result = new AnyURIValue(baseURI.resolve(relativeURI));
-                    }
-                } else {
-                    result = Sequence.EMPTY_SEQUENCE;
+            Node domNode = node.getNode();
+            short type = domNode.getNodeType();
+            //A direct processing instruction constructor creates a processing instruction node 
+            //whose target property is PITarget and whose content property is DirPIContents. 
+            //The base-uri property of the node is empty. 
+            //The parent property of the node is empty.
+            if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null )
+            	;
+            
+            else if ((type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) 
+            		&& (domNode.getParentNode() != null && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
+            	;
+            	
+            } else if (type == Node.ATTRIBUTE_NODE || type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE || type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {
+                URI relativeURI = null;
+                URI baseURI = null;
+                try {
+                	String uri = domNode.getBaseURI();
+                	if (uri != null) { 
+                		relativeURI = new URI(uri);
+                		baseURI = new URI(context.getBaseURI() + "/");
+                	}
+                } catch (URISyntaxException e) {
+                    logger.error(e.getMessage());
+                    throw new XPathException(this, e);
                 }
+                if (relativeURI != null) {
+                	if (!(("".equals(relativeURI.toString()) || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
+                		if (relativeURI.isAbsolute()) {
+                			result = new AnyURIValue(relativeURI);
+                		} else {
+                			result = new AnyURIValue(baseURI.resolve(relativeURI));
+                		}
+                	} else {
+                		result = new AnyURIValue(baseURI);
+                	}
+            	}
             }
         }
         

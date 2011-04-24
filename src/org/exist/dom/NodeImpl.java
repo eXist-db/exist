@@ -2,6 +2,7 @@ package org.exist.dom;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -203,6 +204,10 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
 	 */
 	public String getBaseURI() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getBaseURI() not implemented on class " + getClass().getName());
+	}
+	
+	protected XmldbURI calculateBaseURI() {
+		return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)

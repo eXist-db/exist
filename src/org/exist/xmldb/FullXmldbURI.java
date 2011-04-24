@@ -263,10 +263,10 @@ public class FullXmldbURI extends XmldbURI {
 
 
     public String toString() {
-    	//if (hadXmldbPrefix)
+    	if (hadXmldbPrefix)
     		return XMLDB_URI_PREFIX + wrappedURI.toString();
-    	//else
-    	//	return wrappedURI.toString();
+    	else
+    		return wrappedURI.toString();
     }
 
     /* (non-Javadoc)

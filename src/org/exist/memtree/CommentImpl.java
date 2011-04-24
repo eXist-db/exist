@@ -26,6 +26,7 @@ import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -190,4 +191,12 @@ public class CommentImpl extends NodeImpl implements Comment
         
     }
 
+    @Override
+    public String getBaseURI() {
+    	Node parent = getParentNode();
+    	
+    	if (parent == null) return null;
+    	
+    	return parent.getBaseURI();
+    }
 }

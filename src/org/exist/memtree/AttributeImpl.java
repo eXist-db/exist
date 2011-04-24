@@ -118,11 +118,11 @@ public class AttributeImpl extends NodeImpl implements Attr {
 
     @Override
     public String getBaseURI() {
-        Node e = document.getNode( document.attrParent[nodeNumber] );
-        if( e != null ) {
-            return( e.getBaseURI() );
-        }
-        return( null );
+        Node parent = document.getNode( document.attrParent[nodeNumber] );
+
+        if ( parent == null ) return null;
+            
+        return parent.getBaseURI();
     }
 
     @Override
