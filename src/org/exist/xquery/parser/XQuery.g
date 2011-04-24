@@ -389,10 +389,15 @@ functionDecl throws XPathException
 	}
 	exception catch [RecognitionException e]
 	{ 
-		#lp.setLine(e.getLine());
-		#lp.setColumn(e.getColumn());
-		throw new XPathException(#lp, "Syntax error within user defined function " + 
-			name + ": " + e.getMessage());
+		if (#lp == null) {
+			throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within user defined function " + 
+				name + ": " + e.getMessage());
+		} else {
+			#lp.setLine(e.getLine());
+			#lp.setColumn(e.getColumn());
+			throw new XPathException(#lp, "Syntax error within user defined function " + 
+				name + ": " + e.getMessage());
+		}
 	}
 	;
 
