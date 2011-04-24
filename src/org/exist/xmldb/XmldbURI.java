@@ -95,7 +95,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public final static String API_LOCAL = "local";
     
     private String encodedCollectionPath;
-    private boolean hadXmldbPrefix = false;
+    protected boolean hadXmldbPrefix = false;
 
     protected XmldbURI(URI xmldbURI) throws URISyntaxException {
     	this(xmldbURI, true);
@@ -123,10 +123,11 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             }
             xmldbURI = new URI(xmldbURI.toString().substring(XMLDB_URI_PREFIX.length()));
             hadXmldbPrefix = true;
-        //} else if (mustHaveXMLDB) {
-        //	hadXmldbPrefix = true;
         }
+        
         parseURI(xmldbURI, hadXmldbPrefix);
+
+        if (mustHaveXMLDB) hadXmldbPrefix = true;
     }
 
     protected XmldbURI(String collectionPath) {
@@ -548,7 +549,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             uri = uri.substring(0, last);
             last = uri.lastIndexOf('/');
         }
-        return ((last <= 0) ? XmldbURI.EMPTY_URI : XmldbURI.create(uri.substring(0, last)));
+        return ((last <= 0) ? XmldbURI.EMPTY_URI : XmldbURI.create(uri.substring(0, last), hadXmldbPrefix));
     }
 
     public XmldbURI append(String uri) {
@@ -568,9 +569,9 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         }
 
         if (!(prepend.charAt(prepend.length() - 1) == '/') && !(toAppend.charAt(0) == '/')) {
-            return (XmldbURI.create(prepend + "/" + toAppend));
+            return (XmldbURI.create(prepend + "/" + toAppend, hadXmldbPrefix));
         } else {
-            return (XmldbURI.create(prepend + toAppend));
+            return (XmldbURI.create(prepend + toAppend, hadXmldbPrefix));
         }
     }
 

@@ -54,6 +54,7 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
@@ -699,6 +700,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     public String getAttributeNS(String namespaceURI, String localName) {
         Attr attr = findAttribute(new QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : "";
+        //XXX: if not present must return null
+    }
+
+    @Deprecated //move as soon as getAttributeNS null issue resolved 
+    public String _getAttributeNS(String namespaceURI, String localName) {
+        Attr attr = findAttribute(new QName(localName, namespaceURI));
+        return attr != null ? attr.getValue() : null;
     }
 
     /**
@@ -1659,30 +1667,80 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setIdAttributeNode(Attr idAttr, boolean isId) not implemented on class " + getClass().getName());	
     }
 
-    /** ? @see org.w3c.dom.Node#getBaseURI()
-     */
+//    @Override
+//    public String getBaseURI() {
+//        String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
+//        if ( baseURI == null || "".equals(baseURI)) {
+//            StoredNode parent = getParentStoredNode();
+//            if (parent != null)
+//                return parent.getBaseURI();
+//        }
+//
+//        baseURI = "";
+//        StoredNode parent = getParentStoredNode();
+//        while (parent != null && parent.getBaseURI() != null) {
+//            if ("".equals(baseURI)) {
+//                baseURI = parent.getBaseURI();
+//            } else {
+//                baseURI = parent.getBaseURI() + "/" + baseURI;
+//            }
+//            parent = parent.getParentStoredNode();
+//            if (parent == null) return baseURI;
+//        }
+//        if ("".equals(baseURI)) {
+//            baseURI = getDocument().getBaseURI();
+//        }
+//        return baseURI;
+//    }
+    
     @Override
     public String getBaseURI() {
-        String baseURI = getAttributeNS(Namespaces.XML_NS, "base");
-        if ( baseURI == null || "".equals(baseURI)) {
-            StoredNode parent = getParentStoredNode();
-            if (parent != null)
-                return parent.getBaseURI();
-        }
+    	XmldbURI baseURI = calculateBaseURI();
+    	if (baseURI != null)
+    		return baseURI.toString();
+    	
+    	return "";//UNDERSTAND: is it ok?
+    }
 
-        baseURI = "";
-        StoredNode parent = getParentStoredNode();
-        while (parent != null && parent.getBaseURI() != null) {
-            if ("".equals(baseURI)) {
-                baseURI = parent.getBaseURI();
-            } else {
-                baseURI = parent.getBaseURI() + "/" + baseURI;
-            }
-            parent = parent.getParentStoredNode();
-            if (parent == null) return baseURI;
+    //please, keep in sync with org.exist.memtree.ElementImpl
+    protected XmldbURI calculateBaseURI() {
+    	XmldbURI baseURI = null;
+    	
+        String nodeBaseURI = _getAttributeNS( Namespaces.XML_NS, "base" );
+        if( nodeBaseURI != null ) {
+        	baseURI = XmldbURI.create(nodeBaseURI, false);
+        	if (baseURI.isAbsolute())
+        		return baseURI;
         }
-        if ("".equals(baseURI)) {
-            baseURI = getDocument().getBaseURI();
+        
+        StoredNode parent = getParentStoredNode();
+        
+        if (parent != null) {
+            if( nodeBaseURI == null ) {
+                baseURI = parent.calculateBaseURI();
+            } else {
+                XmldbURI parentsBaseURI = parent.calculateBaseURI();
+
+                if (nodeBaseURI.isEmpty())
+                	baseURI = parentsBaseURI;
+                else {
+                	baseURI = parentsBaseURI.append(baseURI);
+                }
+            }
+        } else {
+        	if (nodeBaseURI == null)
+        		return XmldbURI.create(getDocument().getBaseURI(), false);
+        	else {
+        		String docBaseURI = getDocument().getBaseURI();
+                if (docBaseURI.endsWith("/")) {
+                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI.append(baseURI);
+                } else {
+                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI = baseURI.removeLastSegment();
+                	baseURI.append(baseURI);
+                }
+        	}
         }
         return baseURI;
     }

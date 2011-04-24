@@ -32,13 +32,11 @@ import org.w3c.dom.TypeInfo;
 import org.exist.Namespaces;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.NamedNodeMapImpl;
-import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
-import org.exist.xquery.NameTest;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -534,40 +532,65 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         return( Type.ELEMENT );
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#getBaseURI()
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
     public String getBaseURI() {
-        String baseURI = getAttributeNS( Namespaces.XML_NS, "base" );
-        if( baseURI == null ) {
-            baseURI = "";
+    	XmldbURI baseURI = calculateBaseURI();
+    	if (baseURI != null)
+    		return baseURI.toString();
+    	
+    	return "";//UNDERSTAND: is it ok?
+    }
+
+    //please, keep in sync with org.exist.dom.ElementImpl
+    protected XmldbURI calculateBaseURI() {
+    	XmldbURI baseURI = null;
+    	
+        String nodeBaseURI = getAttributeNS( Namespaces.XML_NS, "base" );
+        if( nodeBaseURI != null ) {
+        	baseURI = XmldbURI.create(nodeBaseURI, false);
+        	if (baseURI.isAbsolute())
+        		return baseURI;
         }
+        
         int parent = -1;
         int test   = -1;
         test = document.getParentNodeFor( nodeNumber );
         if( document.nodeKind[test] != Node.DOCUMENT_NODE ) {
             parent = test;
         }
-        // fixme! UNDEFINED instead of all the -1s in this file./ljo
-        while( ( parent != -1 ) && ( document.getNode( parent ).getBaseURI() != null ) ) {
-            if( "".equals( baseURI ) ) {
-                baseURI = document.getNode( parent ).getBaseURI();
+        
+        if (parent != -1) {
+            if( nodeBaseURI == null ) {
+                baseURI = document.getNode( parent )
+                	.calculateBaseURI();
             } else {
-                baseURI = document.getNode( parent ).getBaseURI() + "/" + baseURI;
+                XmldbURI parentsBaseURI = document.getNode( parent )
+                	.calculateBaseURI();
+
+                if (nodeBaseURI.isEmpty())
+                	baseURI = parentsBaseURI;
+                else {
+                	baseURI = parentsBaseURI.append(baseURI);
+                }
             }
-            test = document.getParentNodeFor( parent );
-            if( document.nodeKind[test] == Node.DOCUMENT_NODE ) {
-                return( baseURI );
-            }
-            parent = test;
+        } else {
+        	if (nodeBaseURI == null)
+        		return XmldbURI.create(getDocument().getBaseURI(), false);
+        	else if (nodeNumber == 1) {
+        		;
+        	} else {
+        		String docBaseURI = getDocument().getBaseURI();
+                if (docBaseURI.endsWith("/")) {
+                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI.append(baseURI);
+                } else {
+                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI = baseURI.removeLastSegment();
+                	baseURI.append(baseURI);
+                }
+        	}
         }
-        if( "".equals( baseURI ) ) {
-            baseURI = getDocument().getBaseURI();
-        }
-        return( baseURI );
+        return baseURI;
     }
 
     /**

@@ -46,6 +46,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.NodeTest;
@@ -793,13 +794,12 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         // do nothing: this is a single node
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#getBaseURI()
-     *
-     * @return  DOCUMENT ME!
-     */
     public String getBaseURI() {
         return( null );
+    }
+    
+    protected XmldbURI calculateBaseURI() {
+    	return null;
     }
 
     public abstract void selectAttributes( NodeTest test, Sequence result ) throws XPathException;
