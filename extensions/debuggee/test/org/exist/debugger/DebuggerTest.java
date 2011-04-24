@@ -430,32 +430,32 @@ public class DebuggerTest implements ResponseListener {
 	@Test
 	public void testStoredInDB() throws Exception {
 		store("script.xql", script);
-//		String url = "http://127.0.0.1:8080/exist/rest/db/test/script.xql";
-//		
-//		for (int i = 0; i < 10; i++) {
-//			Debugger debugger = DebuggerImpl.getDebugger();
-//
-//			System.out.println("init "+i);
-//			DebuggingSource debuggerSource = debugger.init(url);
-//
-//			System.out.println("send stepInto");
-//			debuggerSource.stepInto();
-//			//Thread.sleep(1000);
-//
-//			System.out.println("send getStackFrames");
-//			List<Location> stack = debuggerSource.getStackFrames();
-//			assertEquals(1, stack.size());
-//			assertEquals(8, stack.get(0).getLineBegin());
-//			assertEquals(6, stack.get(0).getColumnBegin());
-//
-//			System.out.println("send stop");
-//			debuggerSource.stop();
-//			//Thread.sleep(1000);
-//			
-//			System.out.println("stoped");
-//
-//			DebuggerImpl.shutdownDebugger();
-//		} 
+		String url = "http://127.0.0.1:8080/exist/rest/db/test/script.xql";
+		
+		for (int i = 0; i < 10; i++) {
+			Debugger debugger = DebuggerImpl.getDebugger();
+
+			System.out.println("init "+i);
+			DebuggingSource debuggerSource = debugger.init(url);
+
+			System.out.println("send stepInto");
+			debuggerSource.stepInto();
+			//Thread.sleep(1000);
+
+			System.out.println("send getStackFrames");
+			List<Location> stack = debuggerSource.getStackFrames();
+			assertEquals(1, stack.size());
+			assertEquals(16, stack.get(0).getLineBegin());
+			assertEquals(18, stack.get(0).getColumnBegin());
+
+			System.out.println("send stop");
+			debuggerSource.stop();
+			//Thread.sleep(1000);
+			
+			System.out.println("stoped");
+
+			DebuggerImpl.shutdownDebugger();
+		} 
 	}
 
 	static org.exist.start.Main database;
