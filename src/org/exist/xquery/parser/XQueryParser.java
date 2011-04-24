@@ -1527,10 +1527,15 @@ inputState.guessing--;
 		catch (RecognitionException e) {
 			if (inputState.guessing==0) {
 				
-						lp_AST.setLine(e.getLine());
-						lp_AST.setColumn(e.getColumn());
-						throw new XPathException(lp_AST, "Syntax error within user defined function " + 
-							name + ": " + e.getMessage());
+						if (lp_AST == null) {
+							throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within user defined function " + 
+								name + ": " + e.getMessage());
+						} else {
+							lp_AST.setLine(e.getLine());
+							lp_AST.setColumn(e.getColumn());
+							throw new XPathException(lp_AST, "Syntax error within user defined function " + 
+								name + ": " + e.getMessage());
+						}
 					
 			} else {
 				throw e;
