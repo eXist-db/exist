@@ -32,7 +32,6 @@ import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debuggee.dbgp.packets.Init;
 import org.exist.debugger.model.Breakpoint;
 import org.exist.dom.QName;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -463,20 +462,20 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 		Database db = compiledXQuery.getContext().getDatabase();
 		DBBroker broker = null;
 		try {
-			broker = db.get(null); //TODO: account required
+			broker = db.getBroker(); //TODO: account required
 
 			XQueryContext context = compiledXQuery.getContext().copyContext();
 			context.setDebuggeeJoint(null);
 			context.undeclareGlobalVariable(Debuggee.SESSION);
 			context.undeclareGlobalVariable(Debuggee.IDEKEY);
 			
-			XQuery service = context.getBroker().getXQueryService();
+			XQuery service = broker.getXQueryService();
 			CompiledXQuery compiled = service.compile(context, script);
 			
 			Sequence resultSequence = service.execute(compiled, null);
 	
 	        SAXSerializer sax = null;
-	        Serializer serializer = context.getBroker().getSerializer();
+	        Serializer serializer = broker.getSerializer();
 			serializer.reset();
 	        try {
 	            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);

@@ -23,6 +23,7 @@ package org.exist.debuggee.dbgp.packets;
 
 import org.apache.mina.core.session.IoSession;
 import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.debuggee.dbgp.Errors;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -108,7 +109,7 @@ public class Source extends Command {
 	        		Database db = getJoint().getContext().getDatabase();
 	        		DBBroker broker = null;
 	        		try {
-		        		broker = getJoint().getContext().getBroker();
+		        		broker = db.getBroker();
 		    			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 		
 		    			if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -117,7 +118,9 @@ public class Source extends Command {
 		    				//TODO: xml source???
 		    				return;
 		    			}
-	        		} finally {
+	        		} catch (EXistException e) {
+	                    exception = e;
+					} finally {
 	        			db.release(broker);
 	        		}
         		}
