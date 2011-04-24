@@ -41,7 +41,7 @@ import org.xmldb.api.modules.XPathQueryService;
 /**
  * JUnit tests generator from XQTS Catalog.
  * 
- * @author @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class XQTS_To_junit {

@@ -339,75 +339,14 @@ public class XQTS_case extends TestCase {
                     ;
                 else if (expectedError.equals("*"))
                     ;
-                else if (expectedError.equals("FOER0000"))
-                    ;
-                else if (expectedError.equals("FOCH0002"))
-                    ;
-                else if (expectedError.equals("FOCA0002"))
-                    ;
-                else if (expectedError.equals("FORX0002"))
-                    ;
-                else if (expectedError.equals("XPST0017")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.indexOf("FODC0002") != -1)
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
-                else if (expectedError.equals("FORG0006")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.indexOf("XPTY0004") != -1)
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
-                else if (expectedError.equals("XPDY0002")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.indexOf("XPTY0002") != -1)
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
-                else if (expectedError.equals("XPTY0020")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.indexOf("cannot convert ") != -1)
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
-                else if (expectedError.equals("XPTY0004")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.indexOf("FOTY0011") != -1)
-                        ;
-                    else if (error.indexOf("Cannot cast ") != -1)
-                        ;
-                    else if (error.indexOf(" is not a sub-type of ") != -1)
-                        ;
-                    else if (error.indexOf("Type error: ") != -1)
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
-                else if (expectedError.equals("XPST0003")) {
-                    if (error.indexOf(expectedError) != -1)
-                        ;
-                    else if (error.startsWith("expecting "))
-                        ;
-                    else if (error.startsWith("unexpected char: "))
-                        ;
-                    else
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                } else {
-                    if (error.startsWith("err:")) error = error.substring(4);
-
-                    if (error.indexOf(expectedError) == -1)
-                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
-                }
+//                else if (error.indexOf(expectedError) != -1)
+//                    ;
+//                else {
+//                    if (error.startsWith("err:")) error = error.substring(4);
+//
+//                    if (error.indexOf(expectedError) == -1)
+//                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.toString());
