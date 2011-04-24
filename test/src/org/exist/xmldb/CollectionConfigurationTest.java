@@ -2,7 +2,6 @@ package org.exist.xmldb;
 
 import junit.framework.TestCase;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.storage.DBBroker;
 import org.exist.test.TestConstants;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
@@ -144,13 +143,13 @@ public class CollectionConfigurationTest extends TestCase {
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-            CollectionManagementService service = (CollectionManagementService) root
-                    .getService("CollectionManagementService", "1.0");
+            Collection root = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
+            CollectionManagementService service = 
+            	(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION.toString());
             assertNotNull(testCollection);
 
-            Collection configColl = DatabaseManager.getCollection(URI + CONF_COLL_URI.toString(), "admin", null);
+            Collection configColl = DatabaseManager.getCollection(URI + CONF_COLL_URI.toString(), "admin", "");
          	if(configColl == null) {
            	  System.out.println("creating collection '" + CONF_COLL_URI + "'");
            	  CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
@@ -168,14 +167,14 @@ public class CollectionConfigurationTest extends TestCase {
     protected void tearDown() {
         try {
            
-            Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
             service.removeCollection(TEST_COLLECTION.toString());
             testCollection = null;
             
             //Removes the collection config collection *manually*
-            Collection confCol = DatabaseManager.getCollection(URI + CONF_COLL_URI, "admin", null);
+            Collection confCol = DatabaseManager.getCollection(URI + CONF_COLL_URI, "admin", "");
             if (confCol != null)
                 service.removeCollection(CONF_COLL_URI.toString());
             
