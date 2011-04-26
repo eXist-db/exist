@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -15,6 +16,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.ElementImpl;
 import org.exist.memtree.InMemoryNodeSet;
@@ -35,6 +37,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.serializer.AttrList;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -46,6 +49,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.DocUtils;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -54,7 +58,9 @@ import org.exist.xquery.value.Type;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.Packages;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class Deploy extends BasicFunction {
@@ -123,7 +129,7 @@ public class Deploy extends BasicFunction {
 			if (!repoFile.canRead())
 				return Sequence.EMPTY_SEQUENCE;
 			DocumentImpl repoXML = DocUtils.parse(context, new FileInputStream(repoFile));
-	
+			
 			if (isCalledAs("undeploy")) {
 				ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
 				if (cleanup != null) {
@@ -188,12 +194,54 @@ public class Deploy extends BasicFunction {
 						if (path.length() > 0)
 							runQuery(targetCollection, packageDir, path);
 					}
-
+					
+					storeRepoXML(repoXML, targetCollection);
+					
 					return statusReport(targetCollection.toString());
 				}
+				
 			}
 		} catch (IOException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
+		}
+	}
+
+	/**
+	 * Store repo.xml into the db. Adds the time of deployment to the descriptor.
+	 * 
+	 * @param repoXML
+	 * @param targetCollection
+	 * @throws XPathException
+	 */
+	private void storeRepoXML(DocumentImpl repoXML, XmldbURI targetCollection)
+			throws XPathException {
+		// Store repo.xml
+		DateTimeValue time = new DateTimeValue(new Date());
+		MemTreeBuilder builder = new MemTreeBuilder(context);
+		builder.startDocument();
+		UpdatingDocumentReceiver receiver = new UpdatingDocumentReceiver(builder, time.getStringValue());
+		try {
+			repoXML.copyTo(context.getBroker(), receiver);
+		} catch (SAXException e) {
+			throw new XPathException(this, "Error while updating repo.xml: " + e.getMessage());
+		}
+		builder.endDocument();
+		DocumentImpl updatedXML = builder.getDocument();
+		
+		TransactionManager mgr = context.getBroker().getBrokerPool().getTransactionManager();
+		Txn txn = mgr.beginTransaction();
+		try {
+			Collection collection = context.getBroker().getOrCreateCollection(txn, targetCollection);
+			XmldbURI name = XmldbURI.createInternal("repo.xml");
+			IndexInfo info = collection.validateXMLResource(txn, context.getBroker(), name, updatedXML);
+			Permission permission = info.getDocument().getPermissions();
+			setPermissions(MimeType.XML_TYPE, permission);
+			
+			collection.store(txn, context.getBroker(), info, updatedXML, false);
+			
+			mgr.commit(txn);
+		} catch (Exception e) {
+			mgr.abort(txn);
 		}
 	}
 
@@ -316,9 +364,7 @@ public class Deploy extends BasicFunction {
 		MimeTable mimeTab = MimeTable.getInstance();
 		TransactionManager mgr = context.getBroker().getBrokerPool().getTransactionManager();
 		for (File file : files) {
-//			if ("repo.xml".equals(file.getName()) || "expath-pkg.xml".equals(file.getName()))
-//				continue;
-			if (!file.isDirectory()) {
+			if (!file.isDirectory() && !file.getName().equals("repo.xml")) {
 				MimeType mime = mimeTab.getContentTypeFor(file.getName());
 				if (mime == null)
 					mime = MimeType.BINARY_TYPE;
@@ -433,6 +479,64 @@ public class Deploy extends BasicFunction {
 			user = null;
 			group = null;
 			perms = -1;
+		}
+	}
+	
+	/**
+	 * Update repo.xml while copying it.
+	 */
+	private class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
+
+		private String time;
+		
+		public UpdatingDocumentReceiver( MemTreeBuilder builder, String time )
+	    {
+	        super( builder, false );
+	        this.time = time;
+	    }
+		
+		@Override
+		public void startElement(QName qname, AttrList attribs) {
+			if (qname.getLocalName().equals("deployed"))
+				return;
+			super.startElement(qname, attribs);
+		}
+		
+		@Override
+		public void startElement(String namespaceURI, String localName,
+				String qName, Attributes attrs) throws SAXException {
+			if (localName.equals("deployed"))
+				return;
+			super.startElement(namespaceURI, localName, qName, attrs);
+		}
+		
+		@Override
+		public void endElement(QName qname) throws SAXException {
+			if (qname.getLocalName().equals("deployed")) {
+				return;
+			}
+			if (qname.getLocalName().equals("meta")) {
+				addTime(qname.getPrefix());
+			}
+			super.endElement(qname);
+		}
+		
+		@Override
+		public void endElement(String uri, String localName, String qName)
+				throws SAXException {
+			if (localName.equals("deployed"))
+				return;
+			if (localName.equals("meta")) {
+				addTime(QName.extractPrefix(qName));
+			}
+			super.endElement(uri, localName, qName);
+		}
+		
+		private void addTime(String prefix) throws SAXException {
+			QName timeQName = new QName("deployed", "http://exist-db.org/xquery/repo", prefix);
+			super.startElement(timeQName, null);
+			super.characters(time);
+			super.endElement(timeQName);
 		}
 	}
 }
