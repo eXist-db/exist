@@ -4,7 +4,7 @@ import module namespace session="http://exist-db.org/xquery/session";
 
 declare option exist:serialize "method=html media-type=text/html";
 
-let $exceptionMessage := session:get-attribute("betterform.exception")
+let $exceptionMessage := session:get-attribute("betterform.exception.message")
 let $message1 := substring-before($exceptionMessage,"::")
 
 let $message2 := if ( string-length(substring-after($exceptionMessage,"::")) != 0)
