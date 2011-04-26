@@ -128,9 +128,7 @@ declare function admin:panel-header() {
     return
         if ($panel[1] eq "install") then
             install:header()
-        else
-            <xf:model xmlns:xf="http://www.w3.org/2002/xforms">
-            </xf:model>
+        else()
 };
 
 (:~  
