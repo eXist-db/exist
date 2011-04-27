@@ -1,10 +1,10 @@
-/* Rev. 499
+/* Rev. 501
 
-Copyright (C) 2008-2011 <agenceXML> - Alain COUTHURES
-Contact at : <info@agencexml.com>
+Copyright (C) 2008-2011 agenceXML - Alain COUTHURES
+Contact at : xsltforms@agencexml.com
 
 Copyright (C) 2006 AJAXForms S.L.
-Contact at: <info@ajaxforms.com>
+Contact at: info@ajaxforms.com
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -35,8 +35,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 var Core = {
     fileName : "xsltforms.js",
-	fileVersion : "Rev. 499",
-	fileVersionNumber: 499,
 
 		
 
@@ -1197,6 +1195,10 @@ function forEach(object, block) {
 
 function assert(condition, message) {
     if (!condition && DebugConsole.isOpen()) {
+		if (!xforms.debugMode) {
+			xforms.debugMode = true;
+			xforms.debugging();
+		}
         DebugConsole.write("Assertion failed: " + message);
         var callstack = null;
 
@@ -1403,10 +1405,26 @@ var xforms = {
 	building : false,
 	posibleBlur : false,
 	bindErrMsgs : [],		// binding-error messages gathered during refreshing
+	htmltime: 0,
 	creatingtime: 0,
 	inittime: 0,
 	refreshtime: 0,
 	refreshcount: 0,
+	counters: {
+		group: 0,
+		input: 0,
+		item: 0,
+		itemset: 0,
+		label: 0,
+		output: 0,
+		repeat: 0,
+		select: 0,
+		trigger: 0
+	},
+
+	fileVersion : "501",
+	fileVersionNumber: 501,
+
 	debugMode: false,
 	debugButtons: [
 		{label: "Profiler", action: "xforms.profiling();"}
@@ -1436,7 +1454,7 @@ var xforms = {
 			dbg.appendChild(spn);
 			var spn2 = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "span") : document.createElement("span");
 			spn2.setAttribute("style", "font-size:11pt");
-			var txt2 = document.createTextNode(" ("+Core.fileVersion+") \xA0\xA0\xA0");
+			var txt2 = document.createTextNode(" ("+this.fileVersion+") \xA0\xA0\xA0");
 			spn2.appendChild(txt2);
 			dbg.appendChild(spn2);
 			var a = Core.isXhtml ? document.createElementNS("http://www.w3.org/1999/xhtml", "a") : document.createElement("a");
@@ -1513,6 +1531,27 @@ var xforms = {
 
 	profiling : function() {
 		var s = "XSLTForms Profiler:\n";
+		s += "\nXForms Instances:";
+		var pos = 0;
+		for (var m = 0, mlen = xforms.models.length; m < mlen; m++) {
+			if (xforms.models[m].element.id != "xf-model-config") {
+				for (var i in xforms.models[m].instances) {
+					var count = Core.selectNodesLength("descendant::node() | descendant::*/@*[not(starts-with(local-name(),'xsltforms_'))]", xforms.models[m].instances[i].doc);
+					s += (pos % 3 == 0 ? "\n   " : ", ") + "\"" + i + "\": " + count + " node" + (count > 1? "s" : "");
+					pos++;
+				}
+			}
+		}
+		s += "\nXForms Controls:";
+		s += "\n   " + xforms.counters.group + " group" + (xforms.counters.group > 1? "s" : "");
+		s += ", " + xforms.counters.input + " input" + (xforms.counters.input > 1? "s" : "");
+		s += ", " + xforms.counters.item + " item" + (xforms.counters.item > 1? "s" : "");
+		s += ", " + xforms.counters.itemset + " itemset" + (xforms.counters.itemset > 1? "s" : "");
+		s += "\n   " + xforms.counters.output + " output" + (xforms.counters.output > 1? "s" : "");
+		s += ", " + xforms.counters.repeat + " repeat" + (xforms.counters.repeat > 1? "s" : "");
+		s += ", " + xforms.counters.select + " select" + (xforms.counters.select > 1? "s" : "");
+		s += ", " + xforms.counters.trigger + " trigger" + (xforms.counters.trigger > 1? "s" : "");
+		s += "\nHTML Time: " + this.htmltime + "ms";
 		s += "\nCreating Time: " + this.creatingtime + "ms";
 		s += "\nInit Time: " + this.inittime + "ms";
 		s += "\nRefresh Counter: " + this.refreshcount;
@@ -1635,6 +1674,7 @@ var xforms = {
 			Listener.destructs = [];
 			Schema.all = {};
 			TypeDefs.initAll();
+			Calendar.INSTANCE = null;
 			xforms.ready = false;
 			xforms.building = false;
 			xforms.posibleBlur = false;
@@ -1816,6 +1856,7 @@ var xforms = {
 
 		element.listeners = null;
 		element.node = null;
+		element.hasXFElement = null;
 		var xf = element.xfElement;
         
 		if (xf) {
@@ -1899,6 +1940,7 @@ if(s!="")alert(s);
 }
 */
 	}
+	assert(this.isvalue || result == null || typeof result == "object", "Binding evaluation didn't returned a nodeset but '"+(typeof result == "object" ? "" : result)+"' for " + (this.bind ? "bind: " + this.bind : "XPath expression: " + this.xpath.expression));
 	return this.isvalue ? stringValue(result) : result;
 };
     
@@ -3882,6 +3924,7 @@ XFElement.prototype.init = function(id) {
 XFElement.prototype.dispose = function() {
 	if(this.element) {
 		this.element.xfElement = null;
+		this.element.hasXFElement = null;
 		this.element = null;
 	}
 	this.depsElements = null;
@@ -4242,6 +4285,7 @@ XFControl.blurHandler = function() {
 		
 		
 function XFGroup(id, binding) {
+	xforms.counters.group++;
 	this.init(id);
 
 	if (binding) {
@@ -4253,6 +4297,14 @@ function XFGroup(id, binding) {
 }
 
 XFGroup.prototype = new XFElement();
+
+
+		
+
+XFGroup.prototype.dispose = function() {
+	xforms.counters.group--;
+	XFElement.prototype.dispose.call(this);
+};
 
 
 		
@@ -4300,6 +4352,7 @@ XFGroup.prototype.refresh = function() {
 		
 		
 function XFInput(id, itype, binding, inputmode, incremental, delay, aidButton, clone) {
+	xforms.counters.input++;
 	this.init(id);
 	this.binding = binding;
 	this.inputmode = typeof inputmode == "string"? XFInput.InputMode[inputmode] : inputmode;
@@ -4338,6 +4391,7 @@ XFInput.prototype.clone = function(id) {
 XFInput.prototype.dispose = function() {
 	this.cell = null;
 	this.calendarButton = null;
+	xforms.counters.input--;
 	XFControl.prototype.dispose.call(this);
 };
 
@@ -4590,6 +4644,7 @@ XFInput.InputMode = {
 		
 		
 function XFItem(id, bindingL, bindingV) {
+	xforms.counters.item++;
 	this.init(id);
 
 	if (bindingL || bindingV) {
@@ -4626,6 +4681,7 @@ XFItem.prototype.clone = function(id) {
 XFItem.prototype.dispose = function() {
 	this.input = null;
 	this.label = null;
+	xforms.counters.item--;
 	XFElement.prototype.dispose.call(this);
 };
 
@@ -4707,6 +4763,7 @@ XFItem.prototype.click = function (target) {
 		
 		
 function XFItemset(id, nodesetBinding, labelBinding, valueBinding) {
+	xforms.counters.itemset++;
 	this.init(id);
 	this.nodesetBinding = nodesetBinding;
 	this.labelBinding = labelBinding;
@@ -4793,6 +4850,14 @@ XFItemset.prototype.clone = function(id) {
 
 		
 
+XFItemset.prototype.dispose = function() {
+	xforms.counters.itemset--;
+	XFElement.prototype.dispose.call(this);
+};
+
+
+		
+
 XFItemset.prototype.refresh_ = function(element, cont) {
 	var ctx = this.nodes[cont];
 	var nodeLabel = this.evaluateBinding(this.labelBinding, ctx)[0];
@@ -4815,6 +4880,7 @@ XFItemset.prototype.refresh_ = function(element, cont) {
 		
 		
 function XFLabel(id, binding) {
+	xforms.counters.label++;
 	this.init(id);
 
 	if (binding) {
@@ -4830,6 +4896,14 @@ XFLabel.prototype = new XFElement();
 
 XFLabel.prototype.clone = function(id) { 
 	return new XFLabel(id, this.binding);
+};
+
+
+		
+
+XFLabel.prototype.dispose = function() {
+	xforms.counters.label--;
+	XFElement.prototype.dispose.call(this);
 };
 
 
@@ -4855,6 +4929,7 @@ XFLabel.prototype.refresh = function() {
 		
 		
 function XFOutput(id, binding, mediatype) {
+	xforms.counters.output++;
 	this.init(id);
 
 	if (this.element.firstChild.firstChild) {
@@ -4894,6 +4969,7 @@ XFOutput.prototype.clone = function(id) {
 
 XFOutput.prototype.dispose = function() {
 	this.valueElement = null;
+	xforms.counters.output--;
 	XFControl.prototype.dispose.call(this);
 };
 
@@ -4983,6 +5059,7 @@ XFOutput.prototype.getValue = function(format) {
 		
 		
 function XFRepeat(id, binding, clone) {
+	xforms.counters.repeat++;
 	this.init(id);
 	this.binding = binding;
 	this.index = 1;
@@ -5000,6 +5077,7 @@ XFRepeat.prototype = new XFElement();
 
 XFRepeat.prototype.dispose = function() {
 	this.root = null;
+	xforms.counters.repeat--;
 	XFElement.prototype.dispose.call(this);
 };
 
@@ -5210,6 +5288,7 @@ XFRepeat.selectItem = function(element) {
 		
 		
 function XFSelect(id, multiple, full, binding, incremental, clone) {
+	xforms.counters.select++;
 	this.init(id);
 	this.binding = binding;
 	this.multiple = multiple;
@@ -5242,6 +5321,7 @@ XFSelect.prototype.clone = function(id) {
 XFSelect.prototype.dispose = function() {
 	this.select = null;
 	this.selectedOptions = null;
+	xforms.counters.select--;
 	XFControl.prototype.dispose.call(this);
 };
 
@@ -5488,6 +5568,7 @@ XFSelect.prototype.getSelected = function() {
 		
 		
 function XFTrigger(id, binding, clone) {
+	xforms.counters.trigger++;
 	this.init(id);
 	this.binding = binding;
 	this.hasBinding = !!binding;
@@ -5511,6 +5592,14 @@ XFTrigger.prototype.setValue = function () { };
 
 XFTrigger.prototype.clone = function (id) {
 	return new XFTrigger(id, this.binding, true);
+};
+
+
+		
+
+XFTrigger.prototype.dispose = function() {
+	xforms.counters.trigger--;
+	XFElement.prototype.dispose.call(this);
 };
 
 
