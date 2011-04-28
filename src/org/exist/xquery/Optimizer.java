@@ -130,7 +130,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             // enclose it in an (#exist:optimize#) pragma.
             Expression parent = filtered.getParent();
             if (!(parent instanceof PathExpr)) {
-                LOG.warn("Parent expression of step is not a PathExpr: " + parent);
+            	if (LOG.isTraceEnabled())
+            		LOG.trace("Parent expression of step is not a PathExpr: " + parent);
                 return;
             }
             if (LOG.isTraceEnabled())
