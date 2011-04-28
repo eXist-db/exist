@@ -167,14 +167,21 @@ public class RpcConnection implements RpcAPI {
         Txn transaction = transact.beginTransaction();
         try {
             broker = factory.getBrokerPool().get(user);
-            Collection current = broker.getOrCreateCollection(transaction, collUri);
+            Collection current = broker.getCollection(collUri);
+            if (current != null)
+            	return true;
+
+            current = broker.getOrCreateCollection(transaction, collUri);
+            
             //TODO : register a lock (wich one ?) within the transaction ?
             if (created != null)
                 current.setCreationTime( created.getTime());
             LOG.debug("creating collection " + collUri);
+            
             broker.saveCollection(transaction, current);
             transact.commit(transaction);
             broker.flush();
+            
             //broker.sync();
             LOG.info("collection " + collUri + " has been created");
             return true;
