@@ -89,7 +89,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             // enclose it in an (#exist:optimize#) pragma.
             Expression parent = locationStep.getParentExpression();
             if (!(parent instanceof PathExpr)) {
-                LOG.warn("Parent expression of step is not a PathExpr: " + parent);
+            	if (LOG.isTraceEnabled())
+            		LOG.trace("Parent expression of step is not a PathExpr: " + parent);
                 return;
             }
             if (LOG.isTraceEnabled())
@@ -155,7 +156,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         if (predicates > 0) {
             Expression parent = and.getParent();
             if (!(parent instanceof PathExpr)) {
-                LOG.warn("Parent expression of boolean operator is not a PathExpr: " + parent);
+            	if (LOG.isTraceEnabled())
+            		LOG.trace("Parent expression of boolean operator is not a PathExpr: " + parent);
                 return;
             }
             PathExpr path;
