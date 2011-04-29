@@ -633,11 +633,15 @@ public class NativeBroker extends DBBroker {
                 if (current == null) {
                     LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
                     current = new Collection(XmldbURI.ROOT_COLLECTION_URI);
-                    current.getPermissions().setPermissions(0777);
-                    current.getPermissions().setOwner(getSubject());
-                    current.getPermissions().setGroup(getSubject().getPrimaryGroup());
+                    
+                    Permission perm = current.getPermissions();
+                    perm.setPermissions(0777);
+                    perm.setOwner(getSubject());
+                    perm.setGroup(getSubject().getPrimaryGroup());
+                    
                     current.setId(getNextCollectionId(transaction));
                     current.setCreationTime(System.currentTimeMillis());
+                    
                     if (transaction != null)
                         transaction.acquireLock(current.getLock(), Lock.WRITE_LOCK);
                     //TODO : acquire lock manually if transaction is null ?
@@ -666,9 +670,17 @@ public class NativeBroker extends DBBroker {
             	        }
             	        
                         sub = new Collection(path);
+
+                        Permission perm = current.getPermissions();
+                        perm.setPermissions(0777);
+                        perm.setOwner(getSubject());
+                        perm.setGroup(getSubject().getPrimaryGroup());
+
                         sub.setId(getNextCollectionId(transaction));
+                        
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
+                        
                         //TODO : acquire lock manually if transaction is null ?
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);

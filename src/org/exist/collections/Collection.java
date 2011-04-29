@@ -41,7 +41,6 @@ import org.exist.Indexer;
 import org.exist.collections.triggers.*;
 import org.exist.dom.*;
 import org.exist.security.Account;
-import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
