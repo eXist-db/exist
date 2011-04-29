@@ -23,6 +23,8 @@ package org.exist.security;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
+
+import org.apache.log4j.Logger;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
@@ -34,12 +36,14 @@ import org.exist.util.SyntaxException;
  *  for user, group and others. Permissions are encoded in a single byte
  *  according to common unix conventions.
  *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * @author     Wolfgang Meier <wolfgang@exist-db.org>
  */
 
 public class UnixStylePermission implements Permission {
 
-    //owner, default to DBA
+	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
+
+	//owner, default to DBA
     protected Account owner;
     protected Group ownerGroup;
 
@@ -452,15 +456,19 @@ public class UnixStylePermission implements Permission {
 
     @Override
     public void read(VariableByteInput istream) throws IOException {
-        /*final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
-        if (secman == null) {
-            //TODO : load default permissions ? -pb
-            permissions.setOwner(broker.getSubject(), SecurityManager.DBA_USER);
-            permissions.setGroup(broker.getSubject(), SecurityManager.DBA_GROUP);
-        } else {*/
-            this.owner = sm.getAccount(istream.readInt());
-            this.ownerGroup = sm.getGroup(istream.readInt());
-        //}
+    	int id = istream.readInt();
+        owner = sm.getAccount(id);
+        if (owner == null) {
+        	LOG.error("Account id = "+id+" do not found, set to SYSTEM.");
+        	owner = sm.getSystemSubject();
+        }
+    	
+        id = istream.readInt();
+        ownerGroup = sm.getGroup(id);
+        if (ownerGroup == null) {
+        	LOG.error("Group id = "+id+" do not found, set to DBA.");
+        	ownerGroup = sm.getDBAGroup();
+        }
         this.permissions = istream.readInt();
     }
 }
