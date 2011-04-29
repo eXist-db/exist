@@ -7,7 +7,7 @@
     <property name="top.dir" value="../.."/>
     <property name="classes" value="${top.dir}/extensions/modules/classes"/>
     
-    <target name="xar" depends="xar-math,xar-functx,xar-json,xar-myapp,xar-admin,xar-mobiledocs,xar-library"/>
+    <target name="xar" depends="xar-math,xar-functx,xar-json,xar-myapp,xar-admin,xar-mobiledocs"/>
     
     <target name="xar-math">
         <echo message="Creating exist-math.xar example for package manager ..."/>
@@ -51,10 +51,6 @@
         <echo message="Creating mobiledocs-0.1.xar example for package manager ..."/>
         <zip destfile="packages/mobiledocs-0.1.xar"
             basedir="packages/mobile-function-doc"/>
-    </target>
-    
-    <target name="xar-library">
-        <ant antfile="build.xml" dir="packages/library" inheritall="false"/>
     </target>
     
     <target name="clean">
