@@ -197,3 +197,82 @@
     }
 
 })(jQuery);
+
+(function($) {
+    $.fn.form = function(opts) {
+    	var options = $.extend({
+            done: function() { },
+            cancel: function () { }
+        }, opts || {});
+    	var container = this;
+    	var pages = container.find("fieldset");
+    	var currentPage = 0;
+    	
+    	// append back and next buttons to container
+    	var panel = document.createElement("div");
+    	panel.className = "eXist_wizard_buttons";
+    	panel.style.position = "absolute";
+    	panel.style.bottom = "0";
+    	panel.style.right = "0";
+    	
+    	var btn = document.createElement("button");
+    	btn.className = "eXist_wizard_back";
+    	btn.appendChild(document.createTextNode("Back"));
+    	panel.appendChild(btn);
+    	
+    	btn = document.createElement("button");
+    	btn.className = "eXist_wizard_next";
+    	btn.appendChild(document.createTextNode("Next"));
+    	panel.appendChild(btn);
+    	
+    	btn = document.createElement("button");
+    	btn.className = "eXist_wizard_cancel";
+    	btn.appendChild(document.createTextNode("Cancel"));
+    	panel.appendChild(btn);
+    	
+    	btn = document.createElement("button");
+    	btn.className = "eXist_wizard_done";
+    	btn.appendChild(document.createTextNode("Done"));
+    	panel.appendChild(btn);
+    	container.append(panel);
+    	
+    	$("button", container).button();
+    	
+    	for (var i = 1; i < pages.length; i++) {
+    		$(pages[i]).css("display", "none");
+    	}
+    	$(".eXist_wizard_back", container).button("disable");
+    	
+    	$(".eXist_wizard_next", container).click(function () {
+    		if (currentPage == pages.length - 1)
+    			return;
+    		$(pages[currentPage]).css("display", "none");
+    		$(pages[++currentPage]).css("display", "");
+    		if (currentPage == 1) {
+    			$(".eXist_wizard_back", container).button("enable");
+    		} else if (currentPage == pages.length - 1) {
+    			$(this).button("disable");
+    		}
+    	});
+    	$(".eXist_wizard_back", container).click(function () {
+    		if (currentPage == 0)
+    			return;
+    		if (currentPage == pages.length - 1) {
+    			$(".eXist_wizard_next", container).button("enable");
+    		}
+    		$(pages[currentPage]).css("display", "none");
+    		$(pages[--currentPage]).css("display", "");
+    		if (currentPage == 0) {
+    			$(this).button("disable");
+    		}
+    	});
+    	$(".eXist_wizard_cancel", container).click(function () {
+    		// Cancel.
+    		options.cancel.call(container);
+    	});
+    	$(".eXist_wizard_done", container).click(function () {
+    		options.done.call(container);
+    	});
+    	return container;
+    }
+})(jQuery);
