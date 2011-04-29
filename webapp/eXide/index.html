@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>eXide</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css"
+      href="libs/scripts/jquery/css/smoothness/jquery.ui.all.css" />
+    <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/skin/ui.dynatree.css" />
+    <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/css/jquery.pnotify.default.css" />
+    <link rel="stylesheet" type="text/css" href="scripts/jquery/jquery.layout-latest.css" />
+    <link rel="stylesheet" type="text/css" href="eXide.css" />
+    
+    <script type="text/javascript" src="libs/scripts/jquery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="libs/scripts/jquery/jquery-ui-1.8.custom.min.js"></script>
+    <script type="text/javascript" src="libs/scripts/jquery/jquery.dynatree.min.js"></script>
+    <script type="text/javascript" src="libs/scripts/jquery/jquery.pnotify.min.js"></script>
+    <script type="text/javascript" src="libs/scripts/jquery/jquery-utils.js"></script>
+    <script type="text/javascript" src="scripts/jquery/jquery.layout-latest.min.js"></script>
+    <script src="scripts/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/theme-pastel_on_dark.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/theme-dawn.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/theme-cobalt.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/theme-eclipse.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/mode-xml.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/mode-html.js" type="text/javascript" charset="utf-8"></script>
+    <script src="scripts/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
+
+    <!--  Uncompressed Javascript files. Uncomment for development/debugging. -->
+    <!-- script src="src/mode-xquery.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="src/util.js"></script>
+    <script type="text/javascript" src="src/commands.js"></script>
+    <script type="text/javascript" src="src/keybinding.js"></script>
+    <script type="text/javascript" src="src/outline.js"></script>
+    <script type="text/javascript" src="src/editor.js"></script>
+    <script type="text/javascript" src="src/deployment.js"></script>
+    <script type="text/javascript" src="src/eXide.js"></script>
+    <script type="text/javascript" src="src/templates.js"></script>
+    <script type="text/javascript" src="src/resources.js"></script-->
+    
+    <!-- Compressed version -->
+    <script type="text/javascript" src="scripts/eXide-1.0.min.js"></script>
+  </head>
+  <body>
+    <div class="ui-layout-north">
+      <div id="header">
+		<div id="login-info"><span id="user"></span> <a id="login"
+			href="#">Login</a></div>
+	</div>
+    </div>
+
+    <div class="ui-layout-center">
+      <div class="editor-header">
+        <div class="menu">
+          <ul>
+            <li>
+              <a href="#">File</a>
+              <ul>
+                <li><a href="#" id="menu-file-new">New</a></li>
+                <li><a href="#" id="menu-file-open">Open</a></li>
+                <li><a href="#" id="menu-file-save">Save</a></li>
+                <li><a href="#" id="menu-file-download">Download</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#">Edit</a>
+              <ul>
+                <li><a href="#" id="menu-edit-undo">Undo</a></li>
+                <li><a href="#" id="menu-edit-redo">Redo</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#">Application</a>
+              <ul>
+                <li><a href="#" id="menu-deploy-new">New application</a></li>
+                <li><a href="#" id="menu-deploy-edit">Edit descriptors</a></li>
+                <li><a href="#" id="menu-deploy-run">Run app source</a></li>
+                <li><a href="#" id="menu-deploy-deploy">Deploy</a></li>
+                <li><a href="#" id="menu-deploy-sync">Synchronize</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <span id="toolbar">
+          <span class="options">
+            <label for="syntax">Syntax: </label>
+            <select id="syntax">
+              <option value="xml">XML</option>
+              <option value="html">HTML</option>
+              <option value="xquery">XQuery</option>
+              <option value="javascript">Javascript</option>
+              <option value="css">CSS</option>
+            </select>
+            <label for="theme">Theme: </label>
+            <select id="theme">
+              <option value="ace/theme/dawn">Dawn</option>
+              <option value="ace/theme/eclipse">Eclipse</option>
+              <option value="ace/theme/cobalt">Cobalt</option>
+              <option value="ace/theme/pastel_on_dark">Pastel on dark</option>
+            </select>
+            <span>Help: <a href="#" id="help-shortcuts">Shortcuts</a></span>
+          </span>
+          <button id="new">New</button>
+          <button id="open">Open</button>
+          <button id="save">Save</button>
+          <button id="close">Close</button>
+          <button id="run">Run</button>
+          <button id="validate">Check</button>
+        </span>
+        <ul id="tabs"> </ul>
+      </div>
+      <pre class="content" id="editor"></pre>
+      <div id="status-bar"><a href="#" id="error-status"></a></div>
+    </div>
+
+    <div id="outline-container" class="ui-layout-west">
+      <h3>Outline</h3>
+      <ul id="outline" class="content">
+      	<li></li>
+      </ul>
+    </div>
+
+    <div id="results-container" class="ui-layout-south">
+      <div class="navbar">
+        <a class="previous" href="#">&lt;&lt;</a>
+        <a class="next" href="#">&gt;&gt;</a>
+        <div class="current"></div>
+      </div>
+      <div class="results"></div>
+    </div>
+
+    <div id="open-dialog">
+    </div>
+    <div id="login-dialog">
+      <form id="login-form">
+        <table>
+          <tr>
+            <td>User: </td>
+            <td><input type="text" name="user" size="20" /></td>
+          </tr>
+          <tr>
+            <td>Password: </td>
+            <td><input type="password" name="password" size="20" /></td>
+          </tr>
+          <tr>
+          	<td id="login-error" colspan="2">
+          	</td>
+    		</tr>
+        </table>
+      </form>
+    </div>
+    <div id="dialog-confirm-close" title="Close Editor">
+      <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>There
+        are unsaved changes in this document which will be lost if you close it. Do you want to
+        continue?</p>
+    </div>
+    <div id="autocomplete-box" tabindex="100"></div>
+    <div id="autocomplete-help"></div>
+    <div id="keyboard-help">
+      <table id="keybindings"></table>
+    </div>
+    <div id="synchronize-dialog">
+      <p>Synchronize the current application to a directory on the server. Compares last modification times
+      to determine the files to be synchronized. If a start time is given, only resources updated since
+      that time stamp are taken into account.</p> 
+      <form>
+        <fieldset>
+          <ol>
+            <li>
+              <div class="hint">Start date/time in xs:dateTime notation. Only resources modified after this date will
+              be synchronized. This field is filled automatically from the application descriptor
+              (if available).</div>
+              <input type="dateTime" name="date" size="40"/>
+              <label for="date">Start time:</label>
+            </li>
+            <li>
+              <div class="hint">Path to a directory <b>on the server</b>.</div>
+              <input type="text" name="dir" size="40"/>
+              <label for="dir">Target directory:</label>
+            </li>
+          </ol>
+        </fieldset>
+        <div id="synchronize-report"></div>
+      </form>
+    </div>
+    <div id="dialog-store">
+    	<p>
+    		<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    		Storing resource <span id="dialog-store-resource"></span>
+   		</p>
+   		<p id="dialog-error"></p>
+   		<button id="dialog-store-close">Close</button>
+    </div>
+  </body>
+</html>
