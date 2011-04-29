@@ -1,0 +1,458 @@
+@CHARSET "UTF-8";
+
+@import url(xml2html.css);
+
+.ui-widget {
+	font-size: 75%;
+}
+
+a:link,a:visited {
+	color: #666;
+}
+
+.ui-layout-north {
+	padding: 0;
+	background-color: #F3F3F3;
+	height: 75px;
+}
+
+.ui-layout-center {
+    padding: 0;
+    border: 0;
+}
+
+#header {
+	position: relative;
+	height: 75px;
+	margin: 0 0 0 8px; text-align : right;
+	background-image: url("logo.png");
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+
+#login-info {
+	position: absolute;
+	right: 8px;
+	bottom: 10px;
+}
+
+#login-error {
+	color: red;
+	text-align: center;
+}
+
+#login-form table {
+	width: 100%;
+}
+
+#editor {
+	height: 200px;
+	margin: 0 4px;
+	background-color: #E8E8E8;
+	padding: 0 0 0 0;
+	border-left: 1px solid #bbb;
+}
+
+.menu {
+	height: 24px;
+	background: #F7F7F7;
+	width: 100%;
+	margin-bottom: 4px;
+}
+
+.menu ul {
+	margin: 0 0 4px 0;
+	padding: 0;
+	list-style: none;
+}
+
+.menu ul li {
+	position: relative;
+	float: left;
+}
+
+/*Top level menu link items style*/
+.menu ul li a {
+	font-size: 75%;
+	display: block;
+	padding: 4px 8px;
+	text-decoration: none;
+}
+
+* html .menu ul li a {
+	/*IE6 hack to get sub menu links to behave correctly*/
+	display: inline-block;
+}
+
+.menu ul li a:hover {
+	background: black; /*tab link background during hover state*/
+	color: white;
+}
+
+/*1st sub level menu*/
+.menu ul li ul {
+	position: absolute;
+	left: 0;
+	display: none;
+	z-index: 1000;
+	border: 1px solid #AAA;
+	-moz-box-shadow: 10px 10px 5px #888;
+	-webkit-box-shadow: 10px 10px 5px #888;
+	box-shadow: 10px 10px 5px #888;
+}
+
+/*.menu ul li:hover ul {
+    visibility: visible;
+}
+Sub level menu list items (undo style from Top level List Items)
+*/
+.menu ul li ul li {
+	display: block;
+	float: none;
+}
+
+/* Sub level menu links style */
+.menu ul li ul li a {
+	font-size: 75%;
+	padding: 5px;
+	margin: 0;
+	background: #F0F0F0;
+	width: 160px; /*width of sub menus*/
+}
+
+.menu ul li ul li a:hover { /*sub menus hover style*/
+	background: black;
+	color: white;
+}
+
+#toolbar {
+	padding: 6px 4px;
+	margin: 0;
+}
+
+#status-bar {
+	margin: 0 4px;
+	padding: 4px;
+	height: 20px;
+	background: #E8E8E8;
+	overflow: hidden;
+	border-left: 1px solid #bbb;
+}
+
+#error-status {
+	font-size: 85%;
+	color: red;
+}
+
+#toolbar .options {
+	float: right;
+	font-size: 75%;
+	color: #666;
+	padding-right: 4px;
+}
+
+#tabs {
+	list-style: none;
+	margin: 4px 4px 0 4px;
+	padding: 4px 0;
+}
+
+#tabs li {
+	display: inline;
+}
+
+#tabs .tab {
+	font:normal 12px "Courier New", Courier, monospace;
+	font-style:normal;
+	color:#6e6e6e;
+	background: #C8C8C8;
+	border:1px solid #bbb;
+	box-shadow:7px 1px 10px #d1cfd1;
+	-moz-box-shadow:7px 1px 10px #d1cfd1;
+	-webkit-box-shadow:7px 1px 10px #d1cfd1;
+	border-radius:10px 10px 0px 0px;
+	-moz-border-radius:10px 10px 0px 0px;
+	-webkit-border-radius:10px 10px 0px 0px;
+	/*width:72px;
+	*/padding:6px 20px;
+	cursor:pointer;
+	margin:0 auto;
+}
+#tabs .active {
+	background: #E8E8E8;
+	color: #6e6e6e;
+}
+
+#open-dialog {
+	height: 100%;
+}
+
+#eXide-dialog-message img {
+	float: left;
+	margin: 0 10px 4px 0;
+}
+
+.eXide-browse-collections {
+    margin: 0;
+    padding: 0;
+}
+
+.eXide-browse-toolbar {
+    background-color: #CCC;
+}
+
+.eXide-browse-resources {
+    padding: 0;
+    margin: 0;
+}
+
+.eXide-browse-resources table {
+	width: 100%;
+	border: 0;
+}
+
+.eXide-browse-resources th {
+  text-align: left;
+  background-color: #CCC;
+  border: 0;
+  margin: 0;
+  padding: 6px 6px;
+}
+
+.eXide-browse-form {
+	text-align: left;
+}
+
+.eXide-browse-form label {
+	font-weight: bold;
+}
+
+.eXide-browse-form input {
+	width: 40em;
+	margin-left: 1em;
+	z-index: 100;
+}
+
+.eXide-browser-active {
+	background-color: #3169C6 !important;
+	color: white;
+}
+	
+ul.dynatree-container {
+	height: 200px;
+	border: 0;
+}
+
+.resource-view thead th {
+	text-align: left;
+	border-bottom: 1px solid black;
+}
+
+.resource-view td,.resource-view th {
+	padding: 4px;
+	cursor: pointer;
+}
+
+.name {
+	font-weight: bold;
+}
+
+.resource-view .even {
+	background-color: #F0F0F0;
+}
+
+#results-container {
+	font-size: 85%;
+	padding: 0;
+}
+
+#results-container .results {
+	background-color: white;
+	margin: 0 15px;
+}
+
+.navbar {
+	background-color: #F0F0F0;
+	padding: 2px 4px;
+	height: 20px;
+}
+
+.previous {
+	float: left;
+}
+
+.current {
+	text-align: center;
+	font-weight: bold;
+}
+
+.next {
+	float: right;
+}
+
+.item {
+	min-height: 2.5em;
+}
+
+/* Hack for internet explorer */
+/*\*/
+* html .item {
+	height: 2.5em;
+}
+
+.even {
+	background-color: #F0F0F0;
+}
+
+.pos {
+	float: left;
+	background-color: #ECF;
+	font-size: 1.25em;
+	padding: 2px;
+	margin-right: 5px;
+}
+
+/* Auto-complete box */
+#autocomplete-box {
+	display: none;
+	z-index: 1000;
+	width: 320px;
+	height: 160px;
+	overflow: hidden;
+	position: absolute;
+	background-color: #F0F0F0;
+	font-size: 85%;
+}
+
+#autocomplete-box ul {
+	list-style: none;
+	margin: 0;
+	padding: 8px;
+}
+
+#autocomplete-box .selection {
+	background-color: #C0C0C0;
+}
+
+#autocomplete-help {
+	display: none;
+	z-index: 1000;
+	width: 320px;
+	height: 152px;
+	overflow: auto;
+	position: absolute;
+	background-color: #F0F0F0;
+	font-size: 85%;
+	padding: 4px 8px;
+}
+
+#autocomplete-box .tooltip {
+	display: none;
+}
+
+#outline-container {
+	padding: 0;
+	font-size: 85%;
+}
+
+#outline-container h3 {
+	margin: 0;
+	padding: 4px 8px;
+	background-color: #F3F3F3;
+	color: #606060;
+	font-weight: normal;
+}
+
+#outline {
+	overflow: auto;
+	list-style: none;
+	margin: 8px 4px;
+	padding: 0;
+}
+
+#outline li {
+	margin: 0px 0px 8px 0px;
+}
+
+.ui-pnotify.stack-bottomright {
+	/* These are just CSS default values to reset the pnotify CSS. */
+	right: auto;
+	top: auto;
+}
+
+fieldset {
+	padding: 0;
+	border: 0;
+}
+
+fieldset legend {
+	font-size: 133%;
+	padding-bottom: 1em;
+}
+
+fieldset ol {
+	padding: 8px 4px 0 4px;
+	list-style: none;
+}
+
+.author-repeat {
+	list-style: none;
+	margin: 0;
+	margin-left: 130px;
+	padding: 0;
+}
+
+fieldset li {
+	padding-bottom: 8px;
+	position: relative;
+}
+
+fieldset label {
+	float: left;
+	display: block;
+	width: 120px;
+	margin-right: 10px;
+	text-align: right;
+	padding-top: .25em;
+}
+
+fieldset .hint {
+	position: absolute;
+	right: 0;
+	top: 50px;
+	z-index: 1000;
+	width: 240px;
+	display: none;
+	padding: 4px 8px;
+	background-color: #333333;
+	color: white;
+	border: 1px solid black;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+}
+
+fieldset li:hover .hint {
+	display: block;
+}
+
+.eXist_wizard_buttons {
+	padding: 8px;
+	text-align: right;
+}
+
+.eXist_wizard_cancel {
+	margin-left: 10px;
+}
+
+#synchronize-report {
+	heigth: 200px;
+	overflow: auto;
+}
+
+#synchronize-report table {
+	width: 100%;
+}
+
+#synchronize-report td {
+  margin-left: 8px;
+}

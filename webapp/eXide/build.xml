@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="compress" name="sandbox">
+
+    <property name="src" value="./src"/>
+    <property name="tools" value="./tools"/>
+    <property name="scripts" value="./scripts"/>
+    <property name="top.dir" value="../.."/>
+
+    <property name="closure.compiler.url"
+        value="http://closure-compiler.googlecode.com/files/compiler-latest.zip"/>
+
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${tools}/compiler.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+
+    <!-- 
+        existdb-contrib fetch task import used for downloading and extracting jar/class from zip
+    -->
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"
+        classpathref="classpath.core"/>
+
+    <target name="prepare">
+        <mkdir dir="${tools}"/>
+
+        <fetch classpathref="classpath.core" dest="${tools}" url="${closure.compiler.url}"
+            classname="com.google.javascript.jscomp.CommandLineRunner"/>
+        <unzip dest="${tools}">
+            <fileset dir="${tools}">
+                <include name="*.zip"/>
+            </fileset>
+        </unzip>
+        <delete file="${tools}/compiler-latest.zip"/>
+
+        <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
+            classpath="${tools}/compiler.jar"/>
+    </target>
+    
+    <target name="compress" depends="prepare">
+        <jscomp compilationLevel="simple" debug="false" output="${scripts}/eXide-1.0.min.js">
+            <sources dir="${basedir}/src">
+                <file name="util.js"/>
+                <file name="commands.js"/>
+                <file name="outline.js"/>
+                <file name="keybinding.js"/>
+                <file name="mode-xquery.js"/>
+                <file name="editor.js"/>
+                <file name="eXide.js"/>
+                <file name="deployment.js"/>
+                <file name="templates.js"/>
+                <file name="resources.js"/>
+            </sources>
+        </jscomp>
+    </target>
+</project>
