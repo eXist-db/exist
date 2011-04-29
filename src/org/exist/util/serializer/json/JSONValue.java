@@ -60,6 +60,9 @@ public class JSONValue extends JSONNode {
 				break;
 			case '\r':
 				break;
+			case '\t':
+				builder.append("\\t");
+				break;
 			case '"':
 				builder.append("\\\"");
 				break;
