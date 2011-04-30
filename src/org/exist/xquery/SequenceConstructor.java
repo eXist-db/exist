@@ -138,6 +138,11 @@ public class SequenceConstructor extends PathExpr {
 		return Cardinality.ZERO_OR_MORE;
 	}
 
+	@Override
+	public boolean allowMixNodesInReturn() {
+		return true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
