@@ -3606,7 +3606,7 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
-     * The method <code>setUser</code>
+     * The method <code>addAccount</code>
      *
      * @param name a <code>String</code> value
      * @param passwd a <code>String</code> value
