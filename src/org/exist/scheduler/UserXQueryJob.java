@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
+ *  Copyright (C) 2001-2011 The eXist-db team
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -51,7 +51,7 @@ import java.io.IOException;
 
 import java.net.MalformedURLException;
 
-import java.util.Enumeration;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 
@@ -61,214 +61,211 @@ import java.util.Properties;
  * @author  Adam Retter <adam@exist-db.org>
  * @author  Andrzej Taramina <andrzej@chaeron.com>
  */
-public class UserXQueryJob extends UserJob
-{
-    protected final static Logger LOG            = Logger.getLogger( UserXQueryJob.class );
+public class UserXQueryJob extends UserJob {
+    
+    protected final static Logger LOG = Logger.getLogger(UserXQueryJob.class);
 
-    private String                JOB_NAME       = "XQuery";
+    private final String DEFAULT_JOB_NAME_PREFIX = "XQuery";
 
-    private String                XQueryResource = null;
-    private Subject               user           = null;
+    private String jobName;
+    private final String xqueryResource;
+    private final Subject user;
 
     /**
      * Default Constructor for Quartz.
      */
-    public UserXQueryJob()
-    {
+    public UserXQueryJob(){
+        xqueryResource = null;
+        user = null;
     }
 
 
     /**
      * Constructor for Creating a new XQuery User Job.
      *
-     * @param  jobName         DOCUMENT ME!
-     * @param  XQueryResource  DOCUMENT ME!
-     * @param  user            DOCUMENT ME!
+     * @param  jobName         The name of the job
+     * @param  xqueryResource  The XQuery itself
+     * @param  user            The user under which the xquery should be executed
      */
-    public UserXQueryJob( String jobName, String XQueryResource, Subject user )
-    {
-        this.XQueryResource = XQueryResource;
-        this.user           = user;
+    public UserXQueryJob(String jobName, String xqueryResource, Subject user) {
+        this.xqueryResource = xqueryResource;
+        this.user = user;
 
-        if( jobName == null ) {
-            this.JOB_NAME += ": " + XQueryResource;
+        if(jobName == null) {
+            this.jobName = DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource;
         } else {
-            this.JOB_NAME = jobName;
+            this.jobName = jobName;
         }
     }
 
-    public final String getName()
-    {
-        return( JOB_NAME );
+    @Override
+    public final String getName() {
+        return jobName ;
     }
 
-
-    public void setName( String name )
-    {
-        JOB_NAME = name;
+    @Override
+    public void setName(String jobName) {
+        this.jobName = jobName;
     }
-
 
     /**
      * Returns the XQuery Resource for this Job.
      *
      * @return  The XQuery Resource for this Job
      */
-    protected String getXQueryResource()
-    {
-        return( XQueryResource );
+    protected String getXQueryResource() {
+        return xqueryResource;
     }
-
 
     /**
      * Returns the User for this Job.
      *
      * @return  The User for this Job
      */
-    protected Subject getUser()
-    {
-        return( user );
+    protected Subject getUser() {
+        return user;
     }
 
-
-    public final void execute( JobExecutionContext jec ) throws JobExecutionException
-    {
-        JobDataMap jobDataMap     = jec.getJobDetail().getJobDataMap();
-        BrokerPool pool           = (BrokerPool)jobDataMap.get( "brokerpool" );
-        DBBroker   broker         = null;
-        String     xqueryresource = (String)jobDataMap.get( "xqueryresource" );
-        Subject    user           = (Subject)jobDataMap.get( "user" );
-        Properties params         = (Properties)jobDataMap.get( "params" );
-		boolean	   unschedule	  = ((Boolean)jobDataMap.get( "unschedule" )).booleanValue();
+    @Override
+    public final void execute(JobExecutionContext jec) throws JobExecutionException {
+        
+        final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+        
+        //TODO why are these values not used from the class members?
+        final String xqueryresource = (String)jobDataMap.get("xqueryresource");
+        final Subject user = (Subject)jobDataMap.get("user");
+        
+        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
+        final Properties params = (Properties)jobDataMap.get("params");
+        final boolean unschedule = ((Boolean)jobDataMap.get("unschedule")).booleanValue();
 
         //if invalid arguments then abort
-        if( ( pool == null ) || ( xqueryresource == null ) || ( user == null ) ) {
-            abort( "BrokerPool or XQueryResource or User was null!" );
+        if((pool == null) || (xqueryresource == null) || (user == null)) {
+            abort("BrokerPool or XQueryResource or User was null!");
         }
 
-        DocumentImpl   resource = null;
-        Source         source   = null;
-        XQueryPool     xqPool   = null;
+        DBBroker broker = null;
+        DocumentImpl resource = null;
+        Source source = null;
+        XQueryPool xqPool  = null;
         CompiledXQuery compiled = null;
 
         try {
 
             //get the xquery
-            broker = pool.get( user );
+            broker = pool.get(user);
 
-            if( xqueryresource.indexOf( ':' ) > 0 ) {
-                source = SourceFactory.getSource( broker, "", xqueryresource, true );
+            if(xqueryresource.indexOf(':') > 0) {
+                source = SourceFactory.getSource(broker, "", xqueryresource, true);
             } else {
-                XmldbURI pathUri = XmldbURI.create( xqueryresource );
-                resource = broker.getXMLResource( pathUri, Lock.READ_LOCK );
+                XmldbURI pathUri = XmldbURI.create(xqueryresource);
+                resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-                if( resource != null ) {
-                    source = new DBSource( broker, ( BinaryDocument )resource, true );
+                if(resource != null) {
+                    source = new DBSource(broker, (BinaryDocument)resource, true);
                 }
             }
 
-            if( source != null ) {
+            if(source != null) {
 
                 //execute the xquery
-                XQuery xquery = broker.getXQueryService();
+                final XQuery xquery = broker.getXQueryService();
                 xqPool = xquery.getXQueryPool();
-                XQueryContext context;
+                final XQueryContext context;
 
                 //try and get a pre-compiled query from the pool
-                compiled = xqPool.borrowCompiledXQuery( broker, source );
+                compiled = xqPool.borrowCompiledXQuery(broker, source);
 
-                if( compiled == null ) {
-                    context = xquery.newContext( AccessContext.REST );
+                if(compiled == null) {
+                    context = xquery.newContext(AccessContext.REST); //TODO should probably have its own AccessContext.SCHEDULER
                 } else {
                     context = compiled.getContext();
                 }
 
                 //TODO: don't hardcode this?
-                if( resource != null ) {
-                    context.setModuleLoadPath( XmldbURI.EMBEDDED_SERVER_URI.append( resource.getCollection().getURI() ).toString() );
-                    context.setStaticallyKnownDocuments( new XmldbURI[] { resource.getCollection().getURI() } );
+                if(resource != null) {
+                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
+                    context.setStaticallyKnownDocuments(new XmldbURI[] {
+                        resource.getCollection().getURI()
+                    });
                 }
 
-                if( compiled == null ) {
+                if(compiled == null) {
 
                     try {
-                        compiled = xquery.compile( context, source );
+                        compiled = xquery.compile(context, source);
                     }
-                    catch( IOException e ) {
-                        abort( "Failed to read query from " + xqueryresource );
+                    catch(IOException e) {
+                        abort("Failed to read query from " + xqueryresource);
                     }
                 }
 
                 //declare any parameters as external variables
-                if( params != null ) {
-                    String bindingPrefix = params.getProperty( "bindingPrefix" );
+                if(params != null) {
+                    String bindingPrefix = params.getProperty("bindingPrefix");
 
-                    if( bindingPrefix == null ) {
+                    if(bindingPrefix == null) {
                         bindingPrefix = "local";
                     }
-                    Enumeration paramNames = params.keys();
+                    
 
-                    while( paramNames.hasMoreElements() ) {
-                        String name  = ( String )paramNames.nextElement();
-                        String value = params.getProperty( name );
-                        context.declareVariable( bindingPrefix + ":" + name, new StringValue( value ) );
+                    for (Entry param : params.entrySet()) {
+                        String key = (String)param.getKey();
+                        String value = (String)param.getValue();
+                        context.declareVariable( bindingPrefix + ":" + key, new StringValue(value));
                     }
                 }
 
-                xquery.execute( compiled, null );
+                xquery.execute(compiled, null);
 
             } else {
-                LOG.warn( "XQuery User Job not found: " + xqueryresource + ", job not scheduled" );
+                LOG.warn("XQuery User Job not found: " + xqueryresource + ", job not scheduled");
             }
+        } catch(EXistException ee) {
+            abort("Could not get DBBroker!");
         }
-        catch( EXistException ee ) {
-            abort( "Could not get DBBroker!" );
+        catch(PermissionDeniedException pde) {
+            abort("Permission denied for the scheduling user: " + user.getName() + "!");
         }
-        catch( PermissionDeniedException pde ) {
-            abort( "Permission denied for the scheduling user: " + user.getName() + "!" );
+        catch(XPathException xpe) {
+            abort("XPathException in the Job: " + xpe.getMessage() + "!", unschedule);
         }
-        catch( XPathException xpe ) {
-            abort( "XPathException in the Job: " + xpe.getMessage() + "!", unschedule );
+        catch(MalformedURLException e) {
+            abort("Could not load XQuery: " + e.getMessage());
         }
-        catch( MalformedURLException e ) {
-            abort( "Could not load XQuery: " + e.getMessage() );
-        }
-        catch( IOException e ) {
-            abort( "Could not load XQuery: " + e.getMessage() );
-        }
-        finally {
+        catch(IOException e) {
+            abort("Could not load XQuery: " + e.getMessage());
+        } finally {
 
             //return the compiled query to the pool
-            if( ( xqPool != null ) && ( source != null ) && ( compiled != null ) ) {
-                xqPool.returnCompiledXQuery( source, compiled );
+            if(xqPool != null && source != null && compiled != null) {
+                xqPool.returnCompiledXQuery(source, compiled);
             }
 
             //release the lock on the xquery resource
-            if( resource != null ) {
-                resource.getUpdateLock().release( Lock.READ_LOCK );
+            if(resource != null) {
+                resource.getUpdateLock().release(Lock.READ_LOCK);
             }
 
             // Release the DBBroker
-            if( ( pool != null ) && ( broker != null ) ) {
-                pool.release( broker );
+            if(pool != null && broker != null) {
+                pool.release(broker);
             }
         }
 
     }
 
-	private void abort( String message ) throws JobExecutionException
-    {
-		abort( message, true );
-	}
+    private void abort(String message) throws JobExecutionException {
+        abort(message, true);
+    }
 	
 
-    private void abort( String message, boolean unschedule ) throws JobExecutionException
-    {
-        JobExecutionException jaa = new JobExecutionException( "UserXQueryJob Failed: " + message + ( unschedule ? " Unscheduling UserXQueryJob." : "" ), false );
+    private void abort(String message, boolean unschedule) throws JobExecutionException {
+        JobExecutionException jaa = new JobExecutionException("UserXQueryJob Failed: " + message + (unschedule ? " Unscheduling UserXQueryJob." : ""), false);
 		
-		//abort all triggers for this job if specified that we should unschedule the job
-        jaa.setUnscheduleAllTriggers( unschedule );
+        //abort all triggers for this job if specified that we should unschedule the job
+        jaa.setUnscheduleAllTriggers(unschedule);
 
-        throw( jaa );
+        throw jaa;
     }
 }
