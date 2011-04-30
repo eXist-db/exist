@@ -3625,29 +3625,19 @@ public class RpcConnection implements RpcAPI {
             passwd = null;
         
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-        Account u;
-        if (!manager.hasAccount(name)) {
-            if (!manager.hasAdminPrivileges(user))
-                throw new PermissionDeniedException(
-                        "not allowed to create user");
-            u = new UserAider(name);
-            ((UserAider)u).setEncodedPassword(passwd);
-            ((UserAider)u).setPasswordDigest(passwdDigest);
-        } else {
-            u = manager.getAccount(user, name);
-            if (!(u.getName().equals(user.getName()) || manager
-                    .hasAdminPrivileges(user)))
-                throw new PermissionDeniedException(
-                        "you are not allowed to change this user");
-            ((AccountImpl)u).setEncodedPassword(passwd);
-            ((AccountImpl)u).setPasswordDigest(passwdDigest);
-        }
+
+    	if (manager.hasAccount(name))
+            throw new PermissionDeniedException("Account '"+name+"' exist");
+
+        if (!manager.hasAdminPrivileges(user))
+            throw new PermissionDeniedException("Account '"+user.getName()+"' not allowed to create new account");
+
+        UserAider u = new UserAider(name);
+        u.setEncodedPassword(passwd);
+        u.setPasswordDigest(passwdDigest);
 
         for (String g : groups) {
             if (!u.hasGroup(g)) {
-                if(!manager.hasAdminPrivileges(user))
-                    throw new PermissionDeniedException(
-                            "User is not allowed to add groups");
                 u.addGroup(g);
             }
         }
