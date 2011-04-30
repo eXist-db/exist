@@ -1318,6 +1318,10 @@ public class XQueryURLRewrite implements Filter {
         }
         
         public void flush() throws IOException {
+        	if (cache) {
+        		if (contentType != null)
+        			super.setContentType(contentType);
+        	}
         	if (sos != null) {
             	ServletOutputStream out = super.getOutputStream();
             	out.write(sos.getData());
