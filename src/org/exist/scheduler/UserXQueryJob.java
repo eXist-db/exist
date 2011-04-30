@@ -149,6 +149,7 @@ public class UserXQueryJob extends UserJob {
         Source source = null;
         XQueryPool xqPool  = null;
         CompiledXQuery compiled = null;
+        XQueryContext context = null;
 
         try {
 
@@ -171,7 +172,6 @@ public class UserXQueryJob extends UserJob {
                 //execute the xquery
                 final XQuery xquery = broker.getXQueryService();
                 xqPool = xquery.getXQueryPool();
-                final XQueryContext context;
 
                 //try and get a pre-compiled query from the pool
                 compiled = xqPool.borrowCompiledXQuery(broker, source);
@@ -240,6 +240,10 @@ public class UserXQueryJob extends UserJob {
             //return the compiled query to the pool
             if(xqPool != null && source != null && compiled != null) {
                 xqPool.returnCompiledXQuery(source, compiled);
+            }
+
+            if(context != null) {
+                context.cleanupBinaryValueInstances();
             }
 
             //release the lock on the xquery resource
