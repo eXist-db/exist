@@ -237,13 +237,13 @@ public class UserXQueryJob extends UserJob {
             abort("Could not load XQuery: " + e.getMessage());
         } finally {
 
+            if(context != null) {
+                context.cleanupBinaryValueInstances();
+            }
+            
             //return the compiled query to the pool
             if(xqPool != null && source != null && compiled != null) {
                 xqPool.returnCompiledXQuery(source, compiled);
-            }
-
-            if(context != null) {
-                context.cleanupBinaryValueInstances();
             }
 
             //release the lock on the xquery resource
