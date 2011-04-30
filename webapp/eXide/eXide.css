@@ -314,20 +314,35 @@ ul.dynatree-container {
 
 /* Auto-complete box */
 #autocomplete-box {
+	position: relative;
+	width: 320px;
 	display: none;
 	z-index: 1000;
-	width: 320px;
-	height: 160px;
-	overflow: hidden;
-	position: absolute;
 	background-color: #F0F0F0;
 	font-size: 85%;
 }
 
 #autocomplete-box ul {
+	position: absolute;
+	background-color: #F0F0F0;
 	list-style: none;
+	width: 304px;
 	margin: 0;
 	padding: 8px;
+	height: 160px;
+	overflow: auto;
+}
+#autocomplete-box li {
+	cursor: pointer;
+}
+
+#autocomplete-box .popup-close {
+	display: block;
+	font-size: 85%;
+	padding: 4px;
+	text-align: right;
+	background-color: #404040;
+	color: white;
 }
 
 #autocomplete-box .selection {
@@ -338,7 +353,7 @@ ul.dynatree-container {
 	display: none;
 	z-index: 1000;
 	width: 320px;
-	height: 152px;
+	height: 168px;
 	overflow: auto;
 	position: absolute;
 	background-color: #F0F0F0;

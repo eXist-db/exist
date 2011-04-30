@@ -136,6 +136,7 @@ var oop = require("pilot/oop");
 var TextMode = require("ace/mode/text").Mode;
 var Tokenizer = require("ace/tokenizer").Tokenizer;
 var XQueryHighlightRules = require("ace/mode/xquery_highlight_rules").XQueryHighlightRules;
+var Range = require("ace/range").Range;
 
 var Mode = function() {
     this.$tokenizer = new Tokenizer(new XQueryHighlightRules().getRules());
@@ -147,12 +148,42 @@ oop.inherits(Mode, TextMode);
 
     this.getNextLineIndent = function(state, line, tab) {
     	var indent = this.$getIndent(line);
-    	var match = line.match(/\s*(?:then|else|return)\s*$/);
+    	var match = line.match(/\s*(?:then|else|return|[{\(]|<\w+>)\s*$/);
     	if (match)
     		indent += tab;
         return indent;
     };
+    
+    this.checkOutdent = function(state, line, input) {
+    	if (! /^\s+$/.test(line))
+            return false;
 
+        return /^\s*[\}\)]/.test(input);
+    };
+    
+    this.autoOutdent = function(state, doc, row) {
+    	var line = doc.getLine(row);
+        var match = line.match(/^(\s*[\}\)])/);
+
+        if (!match) return 0;
+
+        var column = match[1].length;
+        var openBracePos = doc.findMatchingBracket({row: row, column: column});
+
+        if (!openBracePos || openBracePos.row == row) return 0;
+
+        var indent = this.$getIndent(doc.getLine(openBracePos.row));
+        doc.replace(new Range(row, 0, row, column-1), indent);
+    };
+
+    this.$getIndent = function(line) {
+        var match = line.match(/^(\s+)/);
+        if (match) {
+            return match[1];
+        }
+
+        return "";
+    };
 }).call(Mode.prototype);
 
 exports.Mode = Mode;

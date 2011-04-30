@@ -64,6 +64,7 @@ eXide.util = (function () {
 		popup: function (div, tooltipDiv, data, onSelect) {
 			var container = $(div);
 			var tooltips = tooltipDiv ? $(tooltipDiv) : null;
+			var selection = null;
 			
 			function updateTooltip(node) {
 				if (tooltips) {
@@ -80,10 +81,26 @@ eXide.util = (function () {
 			
 			data.sort(compareLabels);
 			
-			container.css("display", "block").focus();
+			container.empty().css("display", "block").focus();
+			var closeLink = document.createElement("a");
+			closeLink.href = "#";
+			closeLink.className = "popup-close";
+			closeLink.appendChild(document.createTextNode("Close"));
+			container.append(closeLink);
+			$(closeLink).click(function (ev) {
+				ev.preventDefault();
+				// close container and unbind event
+				container.css("display", "none");
+				if (tooltips)
+					tooltips.css("display", "none");
+			});
+			
 			var ul = document.createElement("ul");
 			for (var i = 0; i < data.length; i++) {
 				var li = document.createElement("li");
+				if (i == 0) {
+					li.className = "first";
+				}
 				li.appendChild(document.createTextNode(data[i].label));
 				if (data[i].tooltip) {
 					var help = document.createElement("span");
@@ -93,29 +110,48 @@ eXide.util = (function () {
 					li.appendChild(help);
 				}
 				ul.appendChild(li);
+				
+				$(li).click(function () {
+					selection.removeClass("selection");
+					$(this).addClass("selection");
+					selection = $(this);
+					updateTooltip(selection);
+				});
+				$(li).dblclick(function () {
+					var pos = container.find("li").index(selection);
+					
+					// close container and unbind event
+					container.css("display", "none");
+					if (tooltips)
+						tooltips.css("display", "none");
+					
+					// pass content to callback function
+					onSelect.call(null, data[pos]);
+				});
 			}
-			container.html(ul);
+			container.append(ul);
 			
-			if (tooltips) {
-				tooltips.css("display", "block");
-			}
 			
 			var selection = container.find("ul li:first").addClass('selection');
 			updateTooltip(selection);
 			
-			var ch = container.height();
+			var list = $(ul).css("position", "absolute").scrollTop(0);
+			if (tooltips) {
+				tooltips.css({ display: "block", top: list.offset().top + "px" });
+			}
+			var ch = list.innerHeight();
 
-			container.keydown(function (ev) {
+			$(container).keydown(function (ev) {
+				ev.preventDefault();
 				if (ev.which == 40) {
 					var next = selection.next();
 					if (next.length > 0) {
 						selection.removeClass("selection");
 						next.addClass("selection");
 						selection = next;
-
-						if (next.position().top > ch)
+						if (next.position().top + next.height() >= ch) {
 							next.get(0).scrollIntoView();
-						
+						}
 						updateTooltip(next);
 					}
 				} else if (ev.which == 38) {
@@ -124,10 +160,12 @@ eXide.util = (function () {
 						selection.removeClass("selection");
 						prev.addClass("selection");
 						selection = prev;
-
-						if (prev.position().top < 0)
+						if (prev.hasClass("first")) {
+							list.scrollTop(0);
+						} else if (prev.position().top < 0) {
+//							list.scrollTop((list.scrollTop() + prev.position().top) - prev.height());
 							prev.get(0).scrollIntoView();
-						
+						}
 						updateTooltip(prev);
 					}
 				} else if (ev.which == 13) {
@@ -137,7 +175,7 @@ eXide.util = (function () {
 					container.css("display", "none");
 					if (tooltips)
 						tooltips.css("display", "none");
-					container.unbind(ev);
+					$(container).unbind(ev);
 					
 					// pass content to callback function
 					onSelect.call(null, data[pos]);
@@ -147,7 +185,7 @@ eXide.util = (function () {
 					container.css("display", "none");
 					if (tooltips)
 						tooltips.css("display", "none");
-					container.unbind(ev);
+					$(container).unbind(ev);
 					
 					// apply callback with null argument 
 					onSelect.call(null, null);
