@@ -308,6 +308,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public int getSubExpressionCount() {
     	return steps.size();
     }
+
+    @Override
+    public boolean allowMixNodesInReturn() {
+    	if (steps.size() == 1)
+    		return steps.get(0).allowMixNodesInReturn();
+    	return super.allowMixNodesInReturn();
+    }
     
     public void setUseStaticContext(boolean staticContext) {
         this.staticContext = staticContext;
