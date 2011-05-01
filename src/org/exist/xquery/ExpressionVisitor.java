@@ -54,6 +54,8 @@ public interface ExpressionVisitor {
 
     public void visitConditional(ConditionalExpression conditional);
 
+    public void visitDocumentConstructor(DocumentConstructor constructor);
+    
     public void visitElementConstructor(ElementConstructor constructor);
 
     public void visitTextConstructor(DynamicTextConstructor constructor);
