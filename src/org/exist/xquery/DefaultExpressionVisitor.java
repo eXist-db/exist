@@ -84,6 +84,10 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         predicate.getExpression(0).accept(this);
     }
 
+    public void visitDocumentConstructor(DocumentConstructor constructor) {
+    	constructor.getContent().accept(this);
+    }
+    
     public void visitElementConstructor(ElementConstructor constructor) {
         constructor.getNameExpr().accept(this);
         if (constructor.getContent() != null)

@@ -167,6 +167,10 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visitDocumentConstructor(DocumentConstructor constructor) {
+    	// Nothing to do
+    }
+    
     public void visitElementConstructor(ElementConstructor constructor) {
         //Nothing to do
     }
