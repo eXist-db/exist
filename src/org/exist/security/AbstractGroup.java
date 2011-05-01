@@ -91,9 +91,9 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public void assertCanModifyGroup(Account user) throws PermissionDeniedException {
         if(user == null) {
-            throw new PermissionDeniedException("Unspecified User is not allowed to modify group '" + getName() + "'");
+            throw new PermissionDeniedException("Unspecified Account is not allowed to modify group '" + getName() + "'");
         } else if(!user.hasDbaRole() && !isManager(user)) {
-            throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to modify group '" + getName() + "'");
+            throw new PermissionDeniedException("Account '" + user.getName() + "' is not allowed to modify group '" + getName() + "'");
         }
     }
 
