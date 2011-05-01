@@ -125,6 +125,10 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     public void visitConditional(ConditionalExpression conditional) {
     }
 
+    public void visitDocumentConstructor(DocumentConstructor constructor) {
+    	
+    }
+    
     public void visitElementConstructor(ElementConstructor constructor) {
     }
 
