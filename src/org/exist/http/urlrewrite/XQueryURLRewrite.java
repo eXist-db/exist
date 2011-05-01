@@ -1266,6 +1266,8 @@ public class XQueryURLRewrite implements Filter {
 
         @Override
 		public void setContentType(String type) {
+        	if (contentType != null)
+        		return;
         	if (cache)
         		this.contentType = type;
         	else
@@ -1277,6 +1279,14 @@ public class XQueryURLRewrite implements Filter {
 			return contentType != null ? contentType : super.getContentType();
 		}
 
+		@Override
+		public void setHeader(String name, String value) {
+			if ("Content-Type".equals(name))
+				setContentType(value);
+			else
+				super.setHeader(name, value);
+		}
+		
 		public int getStatus() {
             return status;
         }
