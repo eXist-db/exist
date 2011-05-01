@@ -56,6 +56,8 @@ public interface ExpressionVisitor {
 
     public void visitTryCatch(TryCatchExpression tryCatch);
 
+    public void visitDocumentConstructor(DocumentConstructor constructor);
+    
     public void visitElementConstructor(ElementConstructor constructor);
 
     public void visitTextConstructor(DynamicTextConstructor constructor);

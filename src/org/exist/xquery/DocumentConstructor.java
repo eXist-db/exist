@@ -188,6 +188,10 @@ public class DocumentConstructor extends NodeConstructor {
         return node;
     }
     
+    public Expression getContent() {
+    	return content;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
@@ -212,5 +216,10 @@ public class DocumentConstructor extends NodeConstructor {
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);
     	content.resetState(postOptimization);
+    }
+    
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+    	visitor.visitDocumentConstructor(this);
     }
 }
