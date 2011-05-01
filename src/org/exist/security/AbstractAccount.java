@@ -118,7 +118,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         if(!groups.contains(group)) {
             groups.add(group);
 
-            if(SecurityManager.DBA_GROUP.equals(name)) {
+            if(SecurityManager.DBA_GROUP.equals(group.getName())) {
                 hasDbaRole = true;
             }
         }
@@ -143,7 +143,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         }
 
         if(SecurityManager.DBA_GROUP.equals(name)){
-                hasDbaRole = false;
+            hasDbaRole = false;
         }
     }
 
