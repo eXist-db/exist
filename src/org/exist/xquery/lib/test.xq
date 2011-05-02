@@ -104,7 +104,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         else string-join(($ops2, $highlight-option), ' ')      
     let $queryOutput :=
 		util:catch("*",
-			util:eval(concat($context, $test/code/string())),
+			util:eval(concat($context, $test/code/string()), false()),
 			<error>Compilation error: {$util:exception-message}</error>
 		)
 	let $output := if ($test/@trace eq 'yes') then system:trace() else $queryOutput
