@@ -54,7 +54,7 @@ public class EncryptionFunctions extends BasicFunction {
                             },
                             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the decrypted string.")
                     )
-            };
+   };
 
 	public EncryptionFunctions(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
