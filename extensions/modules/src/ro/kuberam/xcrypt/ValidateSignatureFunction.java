@@ -96,9 +96,9 @@ public class ValidateSignatureFunction extends BasicFunction {
 
             //System.out.println( "inputNodeSerialized: " + inputNodeSerialized + "\n" );
 
-            try {
-                System.out.println("inputDOMDoc for validating: " + serializer.serialize( (NodeValue)args[0].itemAt(0) ) + "\n");
-            } catch (SAXException ex) {}
+            /*try {
+            System.out.println("inputDOMDoc for validating: " + serializer.serialize( (NodeValue)args[0].itemAt(0) ) + "\n");
+            } catch (SAXException ex) {}*/
 
             //initialize the document builder
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
