@@ -33,7 +33,9 @@ public class XcryptModule extends AbstractInternalModule {
                 new FunctionDef(GenerateXMLSignatureFunction.signatures[3], GenerateXMLSignatureFunction.class),
                 new FunctionDef(ValidateSignatureFunction.signature, ValidateSignatureFunction.class),
                 new FunctionDef(EncryptionFunctions.signatures[0], EncryptionFunctions.class),
-                new FunctionDef(EncryptionFunctions.signatures[1], EncryptionFunctions.class)
+                new FunctionDef(EncryptionFunctions.signatures[1], EncryptionFunctions.class),
+                new FunctionDef(HmacFunctions.signatures[0], HmacFunctions.class),
+                new FunctionDef(HmacFunctions.signatures[1], HmacFunctions.class)
 	};
 	
 	public XcryptModule(Map<String, List<? extends Object>> parameters) throws XPathException {
