@@ -301,4 +301,9 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 	public XmldbURI getURI() {
 		return getProxyObject().getURI();
 	}
+
+	@Override
+	public int getDocId() {
+		return getProxyObject().getDocId();
+	}
 }
