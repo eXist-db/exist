@@ -1628,4 +1628,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         // TODO Auto-generated method stub
         
     }
+
+	@Override
+	public int getDocId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

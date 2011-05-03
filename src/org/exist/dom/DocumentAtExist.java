@@ -58,7 +58,10 @@ public interface DocumentAtExist extends NodeAtExist, Document {
 	
 //	public Collection getCollection();
 	
-    public XmldbURI getURI();
+	public int getDocId();
+
+	public XmldbURI getURI();
     
     public Database getDatabase();
+
 }
