@@ -63,10 +63,10 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#startElement(java.lang.String)
      */
     @Override
-    public void startElement(String qname) throws TransformerException {
+    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
         if(afterTag)
             indent();
-        super.startElement(qname);
+        super.startElement(namespaceURI, localName, qname);
         level++;
         afterTag = true;
         sameline = true;
@@ -89,10 +89,10 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#endElement()
      */
     @Override
-    public void endElement(String qname) throws TransformerException {
+    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
         level--;
         if (afterTag && !sameline) indent();
-        super.endElement(qname);
+        super.endElement(namespaceURI, localName, qname);
         sameline = false;
         afterTag = true;
     }
@@ -190,7 +190,7 @@ public class IndentingXMLWriter extends XMLWriter {
         sameline = false;
     }
 
-    protected final static boolean isWhiteSpace(char ch) {
+    protected static boolean isWhiteSpace(char ch) {
         return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
     }
 }

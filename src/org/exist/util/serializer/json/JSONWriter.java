@@ -92,7 +92,7 @@ public class JSONWriter extends XMLWriter {
 	}
 
 	@Override
-	public void startElement(String qname) throws TransformerException {
+	public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
 		if (qname.equals("json:value"))
 			processStartValue();
 		else if (useNSPrefix)
@@ -137,7 +137,7 @@ public class JSONWriter extends XMLWriter {
 	}
 	
 	@Override
-	public void endElement(String qname) throws TransformerException {
+	public void endElement(String namespaceUri, String localName, String qname) throws TransformerException {
 		stack.pop();
 	}
 

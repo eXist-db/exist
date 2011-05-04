@@ -68,4 +68,6 @@ public interface Namespaces {
 	public final static String SAX_NAMESPACES_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";	
 	public final static String SAX_VALIDATION = "http://xml.org/sax/features/validation";	
 	public final static String SAX_VALIDATION_DYNAMIC =  "http://apache.org/xml/features/validation/dynamic";
+        
+        public final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
 }

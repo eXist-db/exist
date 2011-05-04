@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import javax.xml.transform.TransformerException;
+import org.exist.Namespaces;
 
 import org.exist.dom.QName;
 import org.exist.util.hashtable.ObjectHashSet;
@@ -75,14 +76,55 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void startElement(QName qname) throws TransformerException {
-        super.startElement(qname);
-        currentTag = qname.getStringValue();
+        
+        final QName xhtmlQName = removeXhtmlPrefix(qname);
+        
+        super.startElement(xhtmlQName);
+        currentTag = xhtmlQName.getStringValue();
     }
     
     @Override
-    public void startElement(String qname) throws TransformerException {
-        super.startElement(qname);
-        currentTag = qname;
+    public void endElement(QName qname) throws TransformerException {
+        final QName xhtmlQName = removeXhtmlPrefix(qname);
+        
+        super.endElement(xhtmlQName);
+    }
+    
+    private QName removeXhtmlPrefix(QName qname) {
+        String prefix = qname.getPrefix();
+        String namespaceURI = qname.getNamespaceURI();
+        if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+            return new QName(qname.getLocalName(), namespaceURI);   
+        }
+        
+        return qname;
+    }
+
+    @Override
+    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
+        
+        final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
+        
+        super.startElement(namespaceURI, localName, xhtmlQName);
+        currentTag = xhtmlQName;
+    }
+    
+    @Override
+    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
+        
+        final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
+        
+        super.endElement(namespaceURI, localName, xhtmlQName);
+    }
+    
+    private String removeXhtmlPrefix(String namespaceURI, String qname) {
+        
+        int pos = qname.indexOf(':');
+        if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+            return qname.substring(pos+1);
+        }
+        
+        return qname;
     }
     
     @Override
