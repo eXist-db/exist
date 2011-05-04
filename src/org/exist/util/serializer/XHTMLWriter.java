@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@ import org.exist.util.hashtable.ObjectHashSet;
  */
 public class XHTMLWriter extends IndentingXMLWriter {
 
-    private static ObjectHashSet<String> emptyTags = new ObjectHashSet<String>(31);
+    private final static ObjectHashSet<String> emptyTags = new ObjectHashSet<String>(31);
     
     static {
         emptyTags.add("area");
@@ -73,16 +73,19 @@ public class XHTMLWriter extends IndentingXMLWriter {
         super(writer);
     }
 
+    @Override
     public void startElement(QName qname) throws TransformerException {
         super.startElement(qname);
         currentTag = qname.getStringValue();
     }
     
+    @Override
     public void startElement(String qname) throws TransformerException {
         super.startElement(qname);
         currentTag = qname;
     }
     
+    @Override
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
