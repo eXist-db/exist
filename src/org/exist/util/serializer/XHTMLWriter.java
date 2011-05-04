@@ -73,6 +73,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
     public XHTMLWriter(Writer writer) {
         super(writer);
     }
+    
+    boolean haveCollapsedXhtmlPrefix = false;
 
     @Override
     public void startElement(QName qname) throws TransformerException {
@@ -88,12 +90,15 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final QName xhtmlQName = removeXhtmlPrefix(qname);
         
         super.endElement(xhtmlQName);
+        
+        haveCollapsedXhtmlPrefix = false;
     }
     
     private QName removeXhtmlPrefix(QName qname) {
         String prefix = qname.getPrefix();
         String namespaceURI = qname.getNamespaceURI();
         if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+            haveCollapsedXhtmlPrefix = true;
             return new QName(qname.getLocalName(), namespaceURI);   
         }
         
@@ -115,17 +120,31 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
         
         super.endElement(namespaceURI, localName, xhtmlQName);
+        
+        haveCollapsedXhtmlPrefix = false;
     }
     
     private String removeXhtmlPrefix(String namespaceURI, String qname) {
         
         int pos = qname.indexOf(':');
         if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+            haveCollapsedXhtmlPrefix = true;
             return qname.substring(pos+1);
+            
         }
         
         return qname;
     }
+
+    @Override
+    public void namespace(String prefix, String nsURI) throws TransformerException {
+        if(haveCollapsedXhtmlPrefix && prefix != null && prefix.length() > 0 && nsURI.equals(Namespaces.XHTML_NS)) {
+            return; //dont output the xmlns:prefix for the collapsed nodes prefix
+        }
+        
+        super.namespace(prefix, nsURI);
+    }
+    
     
     @Override
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
