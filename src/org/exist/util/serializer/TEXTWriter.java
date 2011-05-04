@@ -62,6 +62,7 @@ public class TEXTWriter extends XMLWriter {
         this.writer = writer;
     }
     
+    @Override
     protected void reset() {
         super.reset();
         writer = null;
@@ -72,6 +73,7 @@ public class TEXTWriter extends XMLWriter {
      *
      * @param properties outputProperties
      */
+    @Override
     public void setOutputProperties(Properties properties) {
         if (properties == null)
             outputProperties = defaultProperties;
@@ -87,47 +89,59 @@ public class TEXTWriter extends XMLWriter {
      *
      * @param writer
      */
+    @Override
     public void setWriter(Writer writer) {
         this.writer = writer;
         
     }
     
+    @Override
     public void startDocument() throws TransformerException {
         // empty
     }
     
+    @Override
     public void endDocument() throws TransformerException {
         // empty
     }
     
-    public void startElement(String qname) throws TransformerException {
+    
+    @Override
+    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
         // empty
     }
     
+    @Override
     public void startElement(QName qname) throws TransformerException {
         // empty
     }
     
-    public void endElement(String qname) throws TransformerException {
+    @Override
+    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
         // empty
     }
     
+    @Override
     public void endElement(QName qname) throws TransformerException {
         // empty
     }
     
+    @Override
     public void namespace(String prefix, String nsURI) throws TransformerException {
         // empty
     }
     
+    @Override
     public void attribute(String qname, String value) throws TransformerException {
         // empty
     }
     
+    @Override
     public void attribute(QName qname, String value) throws TransformerException {
         // empty
     }
     
+    @Override
     public void characters(CharSequence chars) throws TransformerException {
         
         try {
@@ -137,6 +151,7 @@ public class TEXTWriter extends XMLWriter {
         }
     }
     
+    @Override
     public void characters(char[] ch, int start, int len) throws TransformerException {
         
         XMLString s = new XMLString(ch, start, len);
@@ -144,14 +159,17 @@ public class TEXTWriter extends XMLWriter {
         s.release();
     }
     
+    @Override
     public void processingInstruction(String target, String data) throws TransformerException {
         // empty
     }
     
+    @Override
     public void comment(CharSequence data) throws TransformerException {
         // empty
     }
     
+    @Override
     public void cdataSection(char[] ch, int start, int len) throws TransformerException {
         
         try {
@@ -162,23 +180,27 @@ public class TEXTWriter extends XMLWriter {
         }
     }
     
+    @Override
     public void documentType(String name, String publicId, String systemId) throws TransformerException {
         // empty
     }
     
+    @Override
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
         // empty
     }
     
+    @Override
     protected void writeDeclaration() throws TransformerException {
         // empty
     }
     
+    @Override
     protected void writeDoctype(String rootElement) throws TransformerException {
         // empty
     }
     
-    private final void writeChars(CharSequence s, boolean inAttribute) throws IOException {
+    private void writeChars(CharSequence s, boolean inAttribute) throws IOException {
         
         final int len = s.length();
         writeCharSeq(s, 0, len);
@@ -190,6 +212,7 @@ public class TEXTWriter extends XMLWriter {
         }
     }
     
+    @Override
     protected void writeCharacterReference(char charval) throws IOException {
         int o = 0;
         charref[o++] = '&';

@@ -153,7 +153,7 @@ public class XMLWriter {
 	public void endDocument() throws TransformerException {
 	}
 
-	public void startElement(String qname) throws TransformerException {
+	public void startElement(String namespaceUri, String localName, String qname) throws TransformerException {
 		if (!declarationWritten)
 			writeDeclaration();
         if (!doctypeWritten)
@@ -189,7 +189,7 @@ public class XMLWriter {
 		}
 	}
 
-	public void endElement(String qname) throws TransformerException {
+	public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
 		try {
 			if (tagIsOpen)
 				closeStartTag(true);

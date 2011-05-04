@@ -60,7 +60,7 @@ public class DOMSerializer {
     
     protected XMLWriter receiver;
     protected NamespaceSupport nsSupport = new NamespaceSupport();
-    protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
+    protected Map<String, String> namespaceDecls = new HashMap<String, String>();
     protected Properties outputProperties;
 
     public DOMSerializer() {
@@ -138,7 +138,7 @@ public class DOMSerializer {
         case Node.ELEMENT_NODE :
             namespaceDecls.clear();
             nsSupport.pushContext();
-            receiver.startElement(node.getNodeName());
+            receiver.startElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
             if (uri == null)
@@ -221,7 +221,7 @@ public class DOMSerializer {
             return;
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             nsSupport.popContext();
-            receiver.endElement(node.getNodeName());
+            receiver.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
         }
     }
 }

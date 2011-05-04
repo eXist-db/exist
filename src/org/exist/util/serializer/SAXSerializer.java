@@ -186,7 +186,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
         try {
             namespaceDecls.clear();
             nsSupport.pushContext();
-            receiver.startElement(qname);
+            receiver.startElement(namespaceURI, localName, qname);
             String elemPrefix = "";
             int p = qname.indexOf(':');
             if (p > 0)
@@ -357,7 +357,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
         try {
             nsSupport.popContext();
-            receiver.endElement(qname);
+            receiver.endElement(namespaceURI, localName, qname);
             receiver.setDefaultNamespace(nsSupport.getURI(""));
         } catch (TransformerException e) {
             throw new SAXException(e.getMessage(), e);
