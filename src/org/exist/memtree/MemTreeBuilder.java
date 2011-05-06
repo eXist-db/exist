@@ -48,6 +48,8 @@ public class MemTreeBuilder
     protected int[]         prevNodeInLevel;
     protected XQueryContext context         = null;
     
+    private String defaultNamespaceURI = "";
+    
     public MemTreeBuilder()
     {
         this( null );
@@ -129,7 +131,7 @@ public class MemTreeBuilder
         int    p      = qname.indexOf( ':' );
         String prefix = null;
 
-        if( context != null ) {
+        if(context != null && !getDefaultNamespace().equals(namespaceURI == null ? "" : namespaceURI)) {
             prefix = context.getPrefixForURI( namespaceURI );
         }
 
@@ -484,4 +486,12 @@ public class MemTreeBuilder
 	public void setReplaceAttributeFlag(boolean replaceAttribute) {
 		doc.replaceAttribute = replaceAttribute;
 	}
+
+    public void setDefaultNamespace(String defaultNamespaceURI) {
+        this.defaultNamespaceURI = defaultNamespaceURI;
+    }
+    
+    private String getDefaultNamespace() {
+        return defaultNamespaceURI == null ? "" : defaultNamespaceURI; //guard against someone setting null as the defaultNamespaceURI
+    }
 }

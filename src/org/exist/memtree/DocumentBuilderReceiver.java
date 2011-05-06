@@ -108,7 +108,12 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
      */
     @Override
-    public void startPrefixMapping(String prefix, String namespace) throws SAXException {
+    public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
+        
+        if(prefix == null || prefix.length() == 0) {
+            builder.setDefaultNamespace(namespaceURI);
+        }
+        
         if(!explicitNSDecl) {
             return;
         }
@@ -117,7 +122,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
             namespaces = new HashMap<String, String>();
         }
         
-        namespaces.put(prefix, namespace);
+        namespaces.put(prefix, namespaceURI);
     }
 
     /* (non-Javadoc)
@@ -125,6 +130,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      */
     @Override
     public void endPrefixMapping(String prefix) throws SAXException {
+        if(prefix == null || prefix.length() == 0) {
+            builder.setDefaultNamespace("");
+        }
     }
 
     /* (non-Javadoc)
