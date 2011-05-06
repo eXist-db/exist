@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-10 The eXist-db project
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -47,333 +47,293 @@ import java.util.Map;
  *
  * @author  Wolfgang <wolfgang@exist-db.org>
  */
-public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver
-{
-    private MemTreeBuilder      builder        = null;
+public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
+    private MemTreeBuilder builder = null;
 
-    private Map<String, String> namespaces     = null;
-    private boolean             explicitNSDecl = false;
+    private Map<String, String> namespaces = null;
+    private boolean explicitNSDecl = false;
     
     public boolean checkNS = false;
     
-    public DocumentBuilderReceiver()
-    {
+    public DocumentBuilderReceiver() {
         super();
     }
 
-
-    public DocumentBuilderReceiver( MemTreeBuilder builder )
-    {
-        this( builder, false );
+    public DocumentBuilderReceiver(MemTreeBuilder builder) {
+        this(builder, false);
     }
 
-
-    public DocumentBuilderReceiver( MemTreeBuilder builder, boolean declareNamespaces )
-    {
+    public DocumentBuilderReceiver(MemTreeBuilder builder, boolean declareNamespaces) {
         super();
         this.builder        = builder;
         this.explicitNSDecl = declareNamespaces;
     }
 
-    public Document getDocument()
-    {
-        return( builder.getDocument() );
+    @Override
+    public Document getDocument() {
+        return builder.getDocument();
     }
 
-
-    public XQueryContext getContext()
-    {
-        return( builder.getContext() );
+    public XQueryContext getContext() {
+        return builder.getContext();
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
      */
-    public void setDocumentLocator( Locator arg0 )
-    {
+    @Override
+    public void setDocumentLocator(Locator locator) {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startDocument()
      */
-    public void startDocument() throws SAXException
-    {
-        if( builder == null ) {
+    @Override
+    public void startDocument() throws SAXException {
+        if(builder == null) {
             builder = new MemTreeBuilder();
             builder.startDocument();
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endDocument()
      */
-    public void endDocument() throws SAXException
-    {
+    @Override
+    public void endDocument() throws SAXException {
         builder.endDocument();
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
      */
-    public void startPrefixMapping( String prefix, String namespace ) throws SAXException
-    {
-        if( !explicitNSDecl ) {
+    @Override
+    public void startPrefixMapping(String prefix, String namespace) throws SAXException {
+        if(!explicitNSDecl) {
             return;
         }
 
-        if( namespaces == null ) {
+        if(namespaces == null) {
             namespaces = new HashMap<String, String>();
         }
-        namespaces.put( prefix, namespace );
+        
+        namespaces.put(prefix, namespace);
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
      */
-    public void endPrefixMapping( String arg0 ) throws SAXException
-    {
+    @Override
+    public void endPrefixMapping(String prefix) throws SAXException {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
-    public void startElement( String namespaceURI, String localName, String qName, Attributes attrs ) throws SAXException
-    {
-        builder.startElement( namespaceURI, localName, qName, attrs );
+    @Override
+    public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
+        builder.startElement(namespaceURI, localName, qName, attrs);
         declareNamespaces();
     }
 
+    private void declareNamespaces() {
+        if(explicitNSDecl && namespaces != null) {
 
-    private void declareNamespaces()
-    {
-        if( explicitNSDecl && ( namespaces != null ) ) {
-
-            for( Map.Entry<String, String> entry : namespaces.entrySet() ) {
-                builder.namespaceNode( entry.getKey(), entry.getValue() );
+            for(Map.Entry<String, String> entry : namespaces.entrySet()) {
+                builder.namespaceNode(entry.getKey(), entry.getValue());
             }
             namespaces.clear();
         }
     }
 
-
-    public void startElement( QName qname, AttrList attribs )
-    {
+    @Override
+    public void startElement(QName qname, AttrList attribs) {
     	qname = checkNS(qname);
 
-    	builder.startElement( qname, null );
+    	builder.startElement(qname, null);
         
     	declareNamespaces();
 
-        if( attribs != null ) {
-
-            for( int i = 0; i < attribs.getLength(); i++ ) {
-                builder.addAttribute( attribs.getQName( i ), attribs.getValue( i ) );
+        if(attribs != null) {
+            for(int i = 0; i < attribs.getLength(); i++) {
+                builder.addAttribute( attribs.getQName(i), attribs.getValue(i));
             }
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void endElement( String arg0, String arg1, String arg2 ) throws SAXException
-    {
+    @Override
+    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
         builder.endElement();
     }
 
-
-    public void endElement( QName qname ) throws SAXException
-    {
+    @Override
+    public void endElement(QName qname) throws SAXException {
         builder.endElement();
     }
 
-
-    public void addReferenceNode( NodeProxy proxy ) throws SAXException
-    {
-        builder.addReferenceNode( proxy );
+    public void addReferenceNode(NodeProxy proxy) throws SAXException {
+        builder.addReferenceNode(proxy);
     }
 
-
-    public void addNamespaceNode( QName qname ) throws SAXException
-    {
-        builder.namespaceNode( qname );
+    public void addNamespaceNode(QName qname) throws SAXException {
+        builder.namespaceNode(qname);
     }
 
-
-    public void characters( CharSequence seq ) throws SAXException
-    {
-        builder.characters( seq );
+    @Override
+    public void characters(CharSequence seq) throws SAXException {
+        builder.characters(seq);
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#characters(char[], int, int)
      */
-    public void characters( char[] ch, int start, int len ) throws SAXException
-    {
+    @Override
+    public void characters(char[] ch, int start, int len) throws SAXException {
         builder.characters( ch, start, len );
     }
 
-
-    public void attribute( QName qname, String value ) throws SAXException
-    {
+    @Override
+    public void attribute(QName qname, String value) throws SAXException {
         try {
         	qname = checkNS(qname);
-            builder.addAttribute( qname, value );
-        }
-        catch( DOMException e ) {
-            throw( new SAXException( e.getMessage() ) );
+            builder.addAttribute(qname, value);
+        } catch(DOMException e) {
+            throw new SAXException(e.getMessage());
         }
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
      */
-    public void ignorableWhitespace( char[] arg0, int arg1, int arg2 ) throws SAXException
-    {
+    @Override
+    public void ignorableWhitespace(char[] ch, int start, int len) throws SAXException {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
      */
-    public void processingInstruction( String target, String data ) throws SAXException
-    {
-        builder.processingInstruction( target, data );
+    @Override
+    public void processingInstruction(String target, String data) throws SAXException {
+        builder.processingInstruction(target, data);
     }
-
 
     /* (non-Javadoc)
      * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
      */
-    public void cdataSection( char[] ch, int start, int len ) throws SAXException
-    {
-        builder.cdataSection( new String( ch, start, len ) );
+    @Override
+    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+        builder.cdataSection(new String(ch, start, len));
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
      */
-    public void skippedEntity( String arg0 ) throws SAXException
-    {
+    @Override
+    public void skippedEntity(String arg0) throws SAXException {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endCDATA()
      */
-    public void endCDATA() throws SAXException
-    {
+    @Override
+    public void endCDATA() throws SAXException {
         // TODO ignored
-
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endDTD()
      */
-    public void endDTD() throws SAXException
-    {
+    @Override
+    public void endDTD() throws SAXException {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startCDATA()
      */
-    public void startCDATA() throws SAXException
-    {
+    @Override
+    public void startCDATA() throws SAXException {
         // TODO Ignored
     }
 
-
-    public void documentType( String name, String publicId, String systemId ) throws SAXException
-    {
-        builder.documentType( name, publicId, systemId );
+    @Override
+    public void documentType(String name, String publicId, String systemId) throws SAXException {
+        builder.documentType(name, publicId, systemId);
     }
-
-
+    
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
      */
-    public void comment( char[] ch, int start, int length ) throws SAXException
-    {
-        builder.comment( ch, start, length );
+    @Override
+    public void comment(char[] ch, int start, int length) throws SAXException {
+        builder.comment(ch, start, length);
     }
-
-
+    
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
      */
-    public void endEntity( String name ) throws SAXException
-    {
+    @Override
+    public void endEntity(String name) throws SAXException{
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
      */
-    public void startEntity( String name ) throws SAXException
-    {
+    @Override
+    public void startEntity(String name) throws SAXException {
     }
-
 
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void startDTD( String name, String publicId, String systemId ) throws SAXException
-    {
+    @Override
+    public void startDTD(String name, String publicId, String systemId) throws SAXException {
     }
 
-
-    public void highlightText( CharSequence seq )
-    {
+    @Override
+    public void highlightText(CharSequence seq) {
         // not supported with this receiver
     }
 
-
-    public void setCurrentNode( StoredNode node )
-    {
+    @Override
+    public void setCurrentNode(StoredNode node) {
         // ignored
     }
     
-    public QName checkNS( QName qname ) {
-		if (checkNS) {
-			
-			if (qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null)
-				return qname;
-			
-			XQueryContext context = builder.getContext();
-			
-			String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
-			
-			if (inScopeNamespace == null) {
-				context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
+    public QName checkNS(QName qname) {
+        if(checkNS) {
+            if(qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null) {
+                return qname;
+            }
 
-			} else if (inScopeNamespace != qname.getNamespaceURI()) {
-				String prefix = context.getInScopePrefix(qname.getNamespaceURI());
-				
-				int i = 0;
-				while (prefix == null) {
-					prefix = "XXX";
-					if (i > 0) prefix += String.valueOf(i);
-					if (context.getInScopeNamespace(prefix) != null) {
-						prefix = null;
-						i++;
-					}
-				}
-				context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
-				
-				qname.setPrefix(prefix);
-			}
-		}
-		return qname;
+            XQueryContext context = builder.getContext();
+
+            String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
+
+            if(inScopeNamespace == null) {
+                    context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
+            } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
+                String prefix = context.getInScopePrefix(qname.getNamespaceURI());
+
+                int i = 0;
+                while(prefix == null) {
+                    prefix = "XXX";
+                    if(i > 0) {
+                        prefix += String.valueOf(i);
+                    }
+
+                    if(context.getInScopeNamespace(prefix) != null) {
+                        prefix = null;
+                        i++;
+                    }
+                }
+                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
+
+                qname.setPrefix(prefix);
+            }
+        }
+        return qname;
     }
 }
