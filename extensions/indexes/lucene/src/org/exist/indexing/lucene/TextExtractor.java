@@ -37,6 +37,8 @@ public interface TextExtractor {
 
     public int endElement(QName name);
 
+    public int beforeCharacters();
+    
     public int characters(XMLString value);
 
     public LuceneIndexConfig getIndexConfig();
