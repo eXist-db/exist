@@ -340,6 +340,7 @@ public class XQueryURLRewrite implements Filter {
                 	else
                 		modelView.getModel().setAbsolutePath(modifiedRequest);
                 }
+                modifiedRequest.allowCaching(!modelView.hasViews());
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse, filterChain);
 
                 int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
@@ -391,6 +392,7 @@ public class XQueryURLRewrite implements Filter {
 			URLRewrite view = (URLRewrite) views.get(i);
 			
 			RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
+			wrappedReq.allowCaching(false);
 			wrappedReq.setMethod("POST");
 			wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
 			wrappedReq.setContentType(wrappedResponse.getContentType());
@@ -983,6 +985,7 @@ public class XQueryURLRewrite implements Filter {
         String inContextPath = null;
         String servletPath;
         String basePath = null;
+        boolean allowCaching = true;
 
         private void addNameValue(String name, String value, Map<String, List<String>> map) {
             List<String> values = map.get(name);
@@ -1012,6 +1015,10 @@ public class XQueryURLRewrite implements Filter {
             contentType = request.getContentType();
         }
 
+        protected void allowCaching(boolean cache) {
+        	this.allowCaching = cache;
+        }
+        
         @Override
         public String getRequestURI() {
             return inContextPath == null ? super.getRequestURI() : getContextPath() + inContextPath;
@@ -1186,15 +1193,15 @@ public class XQueryURLRewrite implements Filter {
 
         @Override
         public String getHeader(String s) {
-            /*if (s.equals("If-Modified-Since"))
-                return null;*/
+            if (s.equals("If-Modified-Since") && !allowCaching)
+                return null;
             return super.getHeader(s);
         }
 
         @Override
         public long getDateHeader(String s) {
-            /*if (s.equals("If-Modified-Since"))
-                return -1;*/
+            if (s.equals("If-Modified-Since") && !allowCaching)
+                return -1;
             return super.getDateHeader(s);
         }
 
