@@ -42,6 +42,23 @@ public class LuceneConfig {
         parseConfig(configNodes, namespaces);
     }
 
+    /**
+     * Copy constructor. LuceneConfig is only configured once by database instance,
+     * so to avoid concurrency issues when using e.g. iterator, we create a copy.
+     * 
+     * @param other
+     */
+    public LuceneConfig(LuceneConfig other) {
+    	this.paths = other.paths;
+    	this.wildcardPaths = other.wildcardPaths;
+    	this.namedIndexes = other.namedIndexes;
+    	this.fieldTypes = other.fieldTypes;
+    	this.inlineNodes = other.inlineNodes;
+    	this.ignoreNodes = other.ignoreNodes;
+    	this.boost = other.boost;
+    	this.analyzers = other.analyzers;
+    }
+    
     public boolean matches(NodePath path) {
         LuceneIndexConfig idxConf = paths.get(path.getLastComponent());
         while (idxConf != null) {

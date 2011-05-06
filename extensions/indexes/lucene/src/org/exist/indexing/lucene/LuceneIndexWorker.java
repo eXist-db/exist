@@ -127,7 +127,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
-        LOG.debug("Configuring lucene index");
+        LOG.debug("Configuring lucene index...");
         config = new LuceneConfig(configNodes, namespaces);
         return config;
     }
@@ -156,8 +156,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         //config = null;
         contentStack = null;
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
-        if (indexConf != null)
+        if (indexConf != null) {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
+            if (config != null)
+            	// Create a copy of the original LuceneConfig (there's only one per db instance), 
+            	// so we can safely work with it.
+            	config = new LuceneConfig(config);
+        }
         mode = newMode;
     }
 
