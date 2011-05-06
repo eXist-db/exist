@@ -88,27 +88,31 @@ public class SwitchExpression extends AbstractExpression {
 
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
-        Item opItem = operand.eval(contextSequence).itemAt(0);
-        AtomicValue opVal = opItem.atomize();
+        Sequence opSeq = operand.eval(contextSequence);
         Sequence result = null;
-        if (opVal.hasMany()) {
-            throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opVal);
+        if (opSeq.isEmpty()) {
+        	result = defaultClause.returnClause.eval(contextSequence);
+        } else {
+	        Item opItem = opSeq.itemAt(0);
+	        AtomicValue opVal = opItem.atomize();
+	        if (opVal.hasMany()) {
+	            throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opVal);
+	        }
+	        Collator defaultCollator = context.getDefaultCollator();
+	        for (Case next : cases) {
+	            for (Expression caseOperand : next.operands) {
+	                Item caseItem = caseOperand.eval(contextSequence, contextItem).itemAt(0);
+	                AtomicValue caseVal = caseItem.atomize();
+	                if (caseVal.hasMany()) {
+	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseVal);
+	                }
+	                if (FunDeepEqual.deepEquals(caseItem, opItem, defaultCollator)) {
+	                    result = next.returnClause.eval(contextSequence);
+	                    break;
+	                }
+	            }
+	        }
         }
-        Collator defaultCollator = context.getDefaultCollator();
-        for (Case next : cases) {
-            for (Expression caseOperand : next.operands) {
-                Item caseItem = caseOperand.eval(contextSequence, contextItem).itemAt(0);
-                AtomicValue caseVal = caseItem.atomize();
-                if (caseVal.hasMany()) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseVal);
-                }
-                if (FunDeepEqual.deepEquals(caseItem, opItem, defaultCollator)) {
-                    result = next.returnClause.eval(contextSequence);
-                    break;
-                }
-            }
-        }
-        
         if (result == null) {
             result = defaultClause.returnClause.eval(contextSequence);
         }

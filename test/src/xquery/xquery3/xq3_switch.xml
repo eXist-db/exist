@@ -79,4 +79,18 @@
         </code>
         <expected>Moo</expected>
     </test>
+    <test output="text">
+        <task>A switch with an empty operand expression
+        </task>
+        <code><![CDATA[
+	xquery version "3.0";
+        let $animal := ()
+        return
+	  switch ($animal)
+	    case "Cow" case "Calf" return "Moo"
+	    default return "No Bull?"
+]]>
+        </code>
+        <expected>No Bull?</expected>
+    </test>
 </TestSet>
