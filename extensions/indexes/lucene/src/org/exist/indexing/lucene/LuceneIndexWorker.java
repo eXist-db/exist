@@ -1082,6 +1082,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextExtractor extractor : contentStack) {
+                	extractor.beforeCharacters();
                     extractor.characters(text.getXMLString());
                 }
             }

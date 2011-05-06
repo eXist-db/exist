@@ -32,7 +32,8 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     public int startElement(QName name) {
         if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack++;
-        else if (!isInlineNode(name)) {
+        else if (!isInlineNode(name) && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
+        	// separate the current element's text from preceding text
             buffer.append(' ');
             return 1;
         }
@@ -47,17 +48,23 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
         if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
             stack--;
         else if (!isInlineNode(name)) {
+        	// add space before following text
         	addSpaceBeforeNext = true;
-            return 1;
         }
         return 0;
     }
 
-    public int characters(XMLString text) {
-    	if (addSpaceBeforeNext) {
+    public int beforeCharacters() {
+    	if (addSpaceBeforeNext && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
+    		// separate the previous element's text from following text
     		buffer.append(' ');
     		addSpaceBeforeNext = false;
+    		return 1;
     	}
+    	return 0;
+    }
+    
+    public int characters(XMLString text) {
         if (stack == 0) {
             buffer.append(text);
             return text.length();
