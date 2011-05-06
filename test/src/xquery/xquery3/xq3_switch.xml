@@ -93,4 +93,18 @@
         </code>
         <expected>No Bull?</expected>
     </test>
+    <test output="text">
+        <task>A switch with an empty operand expression
+        </task>
+        <code><![CDATA[
+xquery version "3.0";
+let $product := collection("/db/xquery3")//product[name = "toaster"]
+return
+    switch ($product/name)
+	    case "toaster" return $product/price/string()
+	    default return "No toaster"
+]]>
+        </code>
+        <expected>30</expected>
+    </test>
 </TestSet>
