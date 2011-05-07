@@ -36,6 +36,8 @@ public class MimeType {
     //    new MimeType("application/xml", XML);
     public final static MimeType XML_CONTENT_TYPE =
         new MimeType("application/xml; charset=UTF-8", XML);
+    public final static MimeType XML_LEGACY_TYPE =
+    	new MimeType("text/xml", XML);
     public final static MimeType XSL_TYPE =
         new MimeType("text/xsl", XML); 
     public final static MimeType XSLT_TYPE =

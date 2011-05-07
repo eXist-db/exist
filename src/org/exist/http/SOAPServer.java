@@ -56,6 +56,7 @@ import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.ElementImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
@@ -611,6 +612,14 @@ public class SOAPServer
 			writeResponse(response, formatXPathException(null, path, new XPathException("Unable to construct an XML document from the SOAP Request, probably an invalid request: " + e.getMessage(), e)), "text/html", ENCODING);
 			return;
 		}
+		try {
+			StringWriter out = new StringWriter();
+			broker.getSerializer().serialize((ElementImpl)soapRequest.getDocumentElement(), out);
+			System.out.println(out.toString());
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// 3) Validate the SOAP Request 
 		//TODO: validate the SOAP Request
@@ -695,7 +704,7 @@ public class SOAPServer
         	byte[] result = description.getSOAPResponse(funcName, xqwsResult, request,isRpcEncoded);
 
         	// 7) Send the SOAP Response to the http servlet response
-        	response.setContentType(MimeType.XML_TYPE.getName());
+        	response.setContentType(MimeType.XML_LEGACY_TYPE.getName());
 			ServletOutputStream os = response.getOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(os);
 			bos.write(result);
