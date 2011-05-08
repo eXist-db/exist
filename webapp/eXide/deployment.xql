@@ -145,8 +145,7 @@ declare function local:store-templates($collection as xs:string?) {
     let $modulesCol := concat($collection, "/modules")
     let $resourcesCol := concat($collection, "/resources")
     return (
-        local:mkcol($colConfig),
-        xmldb:store($colConfig, "collection.xconf", local:get-template("collection.xconf.tmpl"), "application/xml"),
+        xmldb:store($collection, "collection.xconf", local:get-template("collection.xconf.tmpl"), "application/xml"),
         local:mkcol($modulesCol),
         xmldb:store($modulesCol, "view.xql", local:get-template("view.xql.tmpl"), "application/xquery"),
         xmldb:store($modulesCol, "config.xqm", local:get-template("config.xqm.tmpl"), "application/xquery"),

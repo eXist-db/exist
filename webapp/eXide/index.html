@@ -16,6 +16,8 @@
     <script type="text/javascript" src="libs/scripts/jquery/jquery.pnotify.min.js"></script>
     <script type="text/javascript" src="libs/scripts/jquery/jquery-utils.js"></script>
     <script type="text/javascript" src="scripts/jquery/jquery.layout-latest.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery/jquery.fileupload.js"></script>
+    <script type="text/javascript" src="scripts/jquery/jquery.fileupload-ui.js"></script>
     <script src="scripts/ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="scripts/ace/theme-pastel_on_dark.js" type="text/javascript" charset="utf-8"></script>
     <script src="scripts/ace/theme-dawn.js" type="text/javascript" charset="utf-8"></script>
@@ -27,7 +29,7 @@
     <script src="scripts/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
 
     <!--  Uncompressed Javascript files. Uncomment for development/debugging. -->
-    <!-- script src="src/mode-xquery.js" type="text/javascript" charset="utf-8"></script>
+    <script src="src/mode-xquery.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" src="src/util.js"></script>
     <script type="text/javascript" src="src/commands.js"></script>
     <script type="text/javascript" src="src/keybinding.js"></script>
@@ -36,10 +38,10 @@
     <script type="text/javascript" src="src/deployment.js"></script>
     <script type="text/javascript" src="src/eXide.js"></script>
     <script type="text/javascript" src="src/templates.js"></script>
-    <script type="text/javascript" src="src/resources.js"></script-->
+    <script type="text/javascript" src="src/resources.js"></script>
     
     <!-- Compressed version -->
-    <script type="text/javascript" src="scripts/eXide-1.0.min.js"></script>
+    <!--script type="text/javascript" src="scripts/eXide-1.0.min.js"></script-->
   </head>
   <body>
     <div class="ui-layout-north">
@@ -60,6 +62,7 @@
                 <li><a href="#" id="menu-file-open">Open</a></li>
                 <li><a href="#" id="menu-file-save">Save</a></li>
                 <li><a href="#" id="menu-file-download">Download</a></li>
+                <li><a href="#" id="menu-file-manager">Manage</a></li>
               </ul>
             </li>
             <li>
@@ -67,6 +70,7 @@
               <ul>
                 <li><a href="#" id="menu-edit-undo">Undo</a></li>
                 <li><a href="#" id="menu-edit-redo">Redo</a></li>
+                <li><a href="#" id="menu-edit-preferences">Preferences</a></li>
               </ul>
             </li>
             <li>
@@ -90,13 +94,6 @@
               <option value="xquery">XQuery</option>
               <option value="javascript">Javascript</option>
               <option value="css">CSS</option>
-            </select>
-            <label for="theme">Theme: </label>
-            <select id="theme">
-              <option value="ace/theme/dawn">Dawn</option>
-              <option value="ace/theme/eclipse">Eclipse</option>
-              <option value="ace/theme/cobalt">Cobalt</option>
-              <option value="ace/theme/pastel_on_dark">Pastel on dark</option>
             </select>
             <span>Help: <a href="#" id="help-shortcuts">Shortcuts</a></span>
           </span>
@@ -130,6 +127,31 @@
     </div>
 
     <div id="open-dialog">
+    	<div class="eXide-browse-panel">
+    		<div class="eXide-browse-toolbar ui-layout-north"></div>
+    		<div class="eXide-browse-collections ui-layout-west"></div>
+    		<div class="eXide-browse-main ui-layout-center">
+    			<div class="eXide-browse-resources">
+    			</div>
+    			<div id="file_upload" class="eXide-browse-upload">
+    			  <p>Drop files here or click on the button below to upload them to the selected collection.
+    			    Maximum file size is 100MB.</p>
+    			  <form class="file_upload" action="upload.xql" method="POST" enctype="multipart/form-data">
+    				  <input type="hidden" name="collection" value=""/>
+					    <input type="file" name="file[]" multiple="multiple"/>
+					    <button>Upload</button>
+					    <div class="file_upload_label">Upload files</div>
+					   </form>
+				   <table id="files"></table>
+    			   <button id="eXide-browse-upload-done">Done</button>
+    			</div>
+    		</div>
+    		<div class="eXide-browse-upload ui-layout-center"></div>
+    	</div>
+    	<div class="eXide-browse-form">
+   			<label>Selection: </label>
+   			<input name="resource" type="text"/>
+   		</div>
     </div>
     <div id="login-dialog">
       <form id="login-form">
@@ -190,6 +212,43 @@
    		</p>
    		<p id="dialog-error"></p>
    		<button id="dialog-store-close">Close</button>
+    </div>
+    <div id="preferences-dialog">
+      <form>
+        <fieldset>
+        <ol>
+          <li>
+            <select id="theme" name="theme">
+              <option value="ace/theme/dawn">Dawn</option>
+              <option value="ace/theme/eclipse">Eclipse</option>
+              <option value="ace/theme/cobalt">Cobalt</option>
+              <option value="ace/theme/pastel_on_dark">Pastel on dark</option>
+            </select>
+            <label for="theme">Theme: </label>
+          </li>
+          <li>
+            <select name="font-size">
+              <option>10px</option>
+              <option>11px</option>
+              <option>12px</option>
+              <option>13px</option>
+              <option>14px</option>
+              <option>16px</option>
+              <option>20px</option>
+            </select>
+            <label for="font-size">Font Size</label>
+          </li>
+          <li>
+            <input type="checkbox" name="print-margin" checked="checked"/>
+            <label for="print-margin">Show Print Margin:</label>
+          </li>
+          <li>
+            <input type="checkbox" name="show-invisibles"/>
+            <label for="show-invisibles">Show Invisibles:</label>
+          </li>
+        </ol>
+        </fieldset>
+      </form>
     </div>
   </body>
 </html>

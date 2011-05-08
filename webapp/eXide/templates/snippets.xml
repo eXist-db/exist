@@ -22,10 +22,7 @@
     </snippet>
     <snippet abbrev="fun">
         <description>Function declaration</description>
-        <code><![CDATA[(:~
- :
- :)
-declare function $name($param) {
+        <code><![CDATA[declare function $name($param) {
     $body
 };]]></code>
     </snippet>

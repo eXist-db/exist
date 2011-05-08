@@ -134,12 +134,6 @@ eXide.edit.Editor = (function () {
 	    	}
 	    });
 	    
-//	    $("#dialog-store").dialog({
-//	    	modal: true,
-//			autoOpen: false,
-//			closeOnEscape: false
-//	    });
-	    
 	    this.lastChangeEvent = new Date().getTime();
 		this.validateTimeout = null;
 	};
@@ -310,7 +304,7 @@ eXide.edit.Editor = (function () {
 				data: params,
 				dataType: "json",
 				success: function (data) {
-					if (data) {
+				    if (data.status == "error") {
 						if (errorHandler) {
 							errorHandler.apply($this.activeDoc, [data.message]);
 						} else {
@@ -380,8 +374,13 @@ eXide.edit.Editor = (function () {
 			var range = new Range(lead.row, start, lead.row, end);
 
 			var pos = this.editor.renderer.textToScreenCoordinates(lead.row, lead.column);
-			$("#autocomplete-box").css({ left: pos.pageX + "px", top: (pos.pageY + 20) + "px" });
-			$("#autocomplete-help").css({ left: (pos.pageX + 324) + "px", top: (pos.pageY + 20) + "px" });
+			var editorHeight = $(this.container).height();
+			if (pos.pageY + 150 > editorHeight) {
+				pos.pageY = editorHeight - 150;
+				$.log("window height: %i, pageY: %i", editorHeight, pos.pageY);
+			}
+			$("#autocomplete-box").css({ left: pos.pageX + "px", top: (pos.pageY + 10) + "px" });
+			$("#autocomplete-help").css({ left: (pos.pageX + 324) + "px", top: (pos.pageY + 10) + "px" });
 			
 			if (token.length == 0) {
 				this.templateLookup(this.activeDoc, token, range, true);
