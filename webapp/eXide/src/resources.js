@@ -233,6 +233,7 @@ eXide.browse.Upload = (function () {
 		};
 		
 		$("#file_upload").fileUploadUI({
+			sequentialUploads: true,
 	        uploadTable: $('#files'),
 	        buildUploadRow: function (files, index, handler) {
 	            return $('<tr><td>' + files[index].name + '<\/td>' +
