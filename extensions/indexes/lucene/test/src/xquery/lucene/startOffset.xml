@@ -116,7 +116,7 @@
             </el>
         </expected>
     </test>    
-    <test output="xml" ignore="yes">
+    <test output="xml" ignore="no">
         <task>nested match preceded by complex element, first word</task>
         <code><![CDATA[
             doc('/db/coll/test2.xml')//el[ft:query(., 'strong')]/util:expand(.)
@@ -127,7 +127,7 @@
             </el>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml" ignore="no">
         <task>nested match preceded by complex element, second word</task>
         <code><![CDATA[
             doc('/db/coll/test2.xml')//el[ft:query(., 'string')]/util:expand(.)
@@ -138,7 +138,7 @@
             </el>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml" ignore="no">
         <task>nested match preceded by complex element (with empty child), first word</task>
         <code><![CDATA[
             doc('/db/coll/test4.xml')//el[ft:query(., 'strong')]/util:expand(.)
@@ -149,7 +149,7 @@
             </el>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml" ignore="no">
         <task>nested match preceded by complex element (with empty child), second word</task>
         <code><![CDATA[
             doc('/db/coll/test4.xml')//el[ft:query(., 'string')]/util:expand(.)
