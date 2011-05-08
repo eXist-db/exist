@@ -39,14 +39,14 @@ return
             else
                 xmldb:store($collection, $resource, $data)
         return
-            (),
+            <message status="ok"/>,
         let $message :=
             replace(
                 replace($util:exception-message, "^.*XMLDBException:", ""),
                 "\[at.*\]$", ""
             )
         return
-            <error>
+            <error status="error">
                 <message>{$message}</message>
             </error>
     )

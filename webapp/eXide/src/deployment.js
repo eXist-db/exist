@@ -40,7 +40,7 @@ eXide.edit.PackageEditor = (function () {
 			title: "Deployment Editor",
 			modal: true,
 			autoOpen: false,
-			width: 480,
+			width: 520,
 			height: 600
 		});
 		
@@ -163,11 +163,11 @@ eXide.edit.PackageEditor = (function () {
 			runApp: function (collection) {
 				var $this = this;
 				$.getJSON("deployment.xql", { info: collection }, function (data) {
-					if (!data.isAdmin) {
-						eXide.util.error("You need to be logged in as an admin user with dba role " +
-								"to use this feature.");
-						return;
-					}
+//					if (!data.isAdmin) {
+//						eXide.util.error("You need to be logged in as an admin user with dba role " +
+//								"to use this feature.");
+//						return;
+//					}
 					var link = "/exist/apps/" + data.root.replace(/^\/db\//, "") + "/";
 					eXide.util.Dialog.message("Run Application", "<p>Click on the following link to open your application:</p>" +
 							"<center><a href=\"" + link + "\" target=\"_new\">" + link + "</a></center>");

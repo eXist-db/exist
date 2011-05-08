@@ -131,9 +131,6 @@ else if (ends-with($exist:path, ".xql")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         { local:set-user() }
         <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
-        <error-handler>
-            <forward url="error-handler.xql"/>
-        </error-handler>
     </dispatch>
     
 else if (starts-with($exist:path, "/libs/")) then

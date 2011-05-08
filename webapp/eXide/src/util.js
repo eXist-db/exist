@@ -294,6 +294,8 @@ eXide.util.Dialog = (function () {
 	var warnIcon = "images/error.png";
 	var infoIcon = "images/information.png";
 	
+	var callback = null;
+	
 	$(document).ready(function() {
 		$(document.body).append(
 				"<div id=\"eXide-dialog-message\">" +
@@ -310,11 +312,38 @@ eXide.util.Dialog = (function () {
 				"OK": function () { $(this).dialog("close"); }
 			}
 		});
+		
+		$(document.body).append(
+				"<div id=\"eXide-dialog-input\">" +
+				"	<img id=\"eXide-dialog-input-icon\" src=\"images/information.png\"/>" +
+				"	<div id=\"eXide-dialog-input-body\"></div>" +
+				"</div>"
+		);
+		inputDialog = $("#eXide-dialog-input");
+		
+		inputDialog.dialog({
+			modal: true,
+			autoOpen: false,
+			buttons: {
+				"OK": function () { 
+					$(this).dialog("close");
+					if (callback != null) {
+						callback.apply($("eXide-dialog-input-body"), []);
+					}
+				},
+				"Cancel": function () {
+					$(this).dialog("close"); 
+				}
+			}
+		});
 	});
 	
 	return {
 		
 		message: function (title, msg) {
+		    if (msg == null) {
+			msg = "";
+		    }
 			messageDialog.dialog("option", "title", title);
 			$("#eXide-dialog-message-body").html(msg);
 			$("#eXide-dialog-message-icon").attr("src", infoIcon);
@@ -322,10 +351,20 @@ eXide.util.Dialog = (function () {
 		},
 		
 		warning: function (title, msg) {
+		    if (msg == null) {
+		    	msg = "";
+		    }
 			messageDialog.dialog("option", "title", title);
 			$("#eXide-dialog-message-body").html(msg);
 			$("#eXide-dialog-message-icon").attr("src", warnIcon);
 			messageDialog.dialog("open");
+		},
+		
+		input: function (title, msg, okCallback) {
+			callback = okCallback;
+			inputDialog.dialog("option", "title", title);
+			$("#eXide-dialog-input-body").html(msg);
+			inputDialog.dialog("open");
 		}
 	}
 }());

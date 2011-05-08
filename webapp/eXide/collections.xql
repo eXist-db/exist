@@ -32,6 +32,7 @@ declare function local:sub-collections($root as xs:string, $children as xs:strin
 		let $processChild := 
 			local:collections(concat($root, '/', $child), $child, $user)
 		where exists($processChild)
+		order by $child ascending
         return
             <children json:array="true">
 			{ $processChild }
@@ -124,12 +125,28 @@ declare function local:resources($collection as xs:string, $user as xs:string) {
     </json:value>
 };
 
+declare function local:create-collection($collName as xs:string, $user as xs:string) {
+    let $parent := request:get-parameter("collection", "/db")
+    return
+        if (local:canWrite($parent, $user)) then
+            let $null := xmldb:create-collection($parent, $collName)
+            return
+                <response status="ok"/>
+        else
+            <response status="fail">
+                <message>You are not allowed to write to collection {$parent}</message>
+            </response>
+};
+
+let $createCollection := request:get-parameter("create", ())
 let $view := request:get-parameter("view", "c")
 let $collection := request:get-parameter("root", "/db")
 let $collName := replace($collection, "^.*/([^/]+$)", "$1")
 let $user := if (session:get-attribute('myapp.user')) then session:get-attribute('myapp.user') else "guest"
 return
-    if ($view eq "c") then
+    if ($createCollection) then
+        local:create-collection($createCollection, $user)
+    else if ($view eq "c") then
         <collection json:array="true">
         {local:collections($collection, $collName, $user)}
         </collection>

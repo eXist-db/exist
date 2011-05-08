@@ -17,14 +17,15 @@ a:link,a:visited {
 }
 
 .ui-layout-center {
-    padding: 0;
-    border: 0;
+	padding: 0;
+	border: 0;
 }
 
 #header {
 	position: relative;
 	height: 75px;
-	margin: 0 0 0 8px; text-align : right;
+	margin: 0 0 0 8px;
+	text-align: right;
 	background-image: url("logo.png");
 	background-repeat: no-repeat;
 	background-position: center left;
@@ -162,22 +163,24 @@ Sub level menu list items (undo style from Top level List Items)
 }
 
 #tabs .tab {
-	font:normal 12px "Courier New", Courier, monospace;
-	font-style:normal;
-	color:#6e6e6e;
+	font: normal 12px "Courier New", Courier, monospace;
+	font-style: normal;
+	color: #6e6e6e;
 	background: #C8C8C8;
-	border:1px solid #bbb;
-	box-shadow:7px 1px 10px #d1cfd1;
-	-moz-box-shadow:7px 1px 10px #d1cfd1;
-	-webkit-box-shadow:7px 1px 10px #d1cfd1;
-	border-radius:10px 10px 0px 0px;
-	-moz-border-radius:10px 10px 0px 0px;
-	-webkit-border-radius:10px 10px 0px 0px;
+	border: 1px solid #bbb;
+	box-shadow: 7px 1px 10px #d1cfd1;
+	-moz-box-shadow: 7px 1px 10px #d1cfd1;
+	-webkit-box-shadow: 7px 1px 10px #d1cfd1;
+	border-radius: 10px 10px 0px 0px;
+	-moz-border-radius: 10px 10px 0px 0px;
+	-webkit-border-radius: 10px 10px 0px 0px;
 	/*width:72px;
-	*/padding:6px 20px;
-	cursor:pointer;
-	margin:0 auto;
+	*/
+	padding: 6px 20px;
+	cursor: pointer;
+	margin: 0 auto;
 }
+
 #tabs .active {
 	background: #E8E8E8;
 	color: #6e6e6e;
@@ -187,23 +190,23 @@ Sub level menu list items (undo style from Top level List Items)
 	height: 100%;
 }
 
-#eXide-dialog-message img {
+#eXide-dialog-message img, #eXide-dialog-input img {
 	float: left;
 	margin: 0 10px 4px 0;
 }
 
 .eXide-browse-collections {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .eXide-browse-toolbar {
-    background-color: #CCC;
+	background-color: #CCC;
 }
 
 .eXide-browse-resources {
-    padding: 0;
-    margin: 0;
+	padding: 0;
+	margin: 0;
 }
 
 .eXide-browse-resources table {
@@ -212,15 +215,16 @@ Sub level menu list items (undo style from Top level List Items)
 }
 
 .eXide-browse-resources th {
-  text-align: left;
-  background-color: #CCC;
-  border: 0;
-  margin: 0;
-  padding: 6px 6px;
+	text-align: left;
+	background-color: #CCC;
+	border: 0;
+	margin: 0;
+	padding: 6px 6px;
 }
 
 .eXide-browse-form {
 	text-align: left;
+	padding-top: 10px;
 }
 
 .eXide-browse-form label {
@@ -237,7 +241,7 @@ Sub level menu list items (undo style from Top level List Items)
 	background-color: #3169C6 !important;
 	color: white;
 }
-	
+
 ul.dynatree-container {
 	height: 200px;
 	border: 0;
@@ -332,6 +336,7 @@ ul.dynatree-container {
 	height: 160px;
 	overflow: auto;
 }
+
 #autocomplete-box li {
 	cursor: pointer;
 }
@@ -469,5 +474,153 @@ fieldset li:hover .hint {
 }
 
 #synchronize-report td {
-  margin-left: 8px;
+	margin-left: 8px;
+}
+
+/* File Upload Form */
+#files {
+	margin-top: 10px;
+}
+
+.eXide-browse-upload {
+	padding: 10px;
+}
+
+#eXide-browse-upload-done {
+	margin-top: 20px;
+}
+
+form.file_upload {
+	position: relative;
+	overflow: hidden;
+	direction: ltr;
+	cursor: pointer;
+	text-align: center;
+	color: #555;
+	font-weight: bold;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	width: 15em;
+	height: 2.5em;
+	line-height: 2.5em;
+	background: #E6E6E6;
+	border: 1px solid lightGrey;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+form.file_upload_small {
+	width: 15em;
+	height: 2.5em;
+	line-height: 2.5em;
+	font-size: 100%;
+	background: palegreen;
+	border: 1px solid limegreen;
+}
+
+form.file_upload_large {
+	width: 100%;
+	height: 7em;
+	line-height: 7em;
+	font-size: 2em;
+	background: palegreen;
+	border: 1px solid limegreen;
+}
+
+form.file_upload_highlight,form.file_upload:hover {
+	background: lawngreen;
+}
+
+form.file_upload input {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
+	border: 300px solid transparent;
+	opacity: 0;
+	-ms-filter: 'alpha(opacity=0)';
+	filter: alpha(opacity = 0);
+	-o-transform: translate(-300px, -300px) scale(10);
+	-moz-transform: translate(-800px, 0) scale(10);
+	cursor: pointer;
+	height: 100%;
+}
+
+:root form.file_upload input {
+	height: auto;
+}
+
+form.file_upload button,.no-js .file_upload_label,.no-js .file_upload_overall_progress,.no-js .file_upload_buttons
+	{
+	display: none;
+}
+
+.file_upload .file_upload_label,.file_upload .file_upload_overall_progress,.file_upload .file_upload_buttons
+	{
+	display: block;
+}
+
+.file_upload img {
+	border: none;
+}
+
+.progressbar,.progressbar div {
+	border: 1px solid #aaa;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.progressbar div {
+	width: 100%;
+	height: 100%;
+	margin: -1px;
+}
+
+.file_upload_progress .ui-progressbar-value,.file_upload_overall_progress .ui-progressbar-value,.progressbar div
+	{
+	background: url(images/pbar-ani.gif);
+}
+
+.file_upload_progress div {
+	width: 150px;
+	height: 17px;
+}
+
+.file_upload_overall_progress div {
+	width: 350px;
+	height: 17px;
+}
+
+.file_upload .file_name {
+	padding: 0 10px;
+	font-size: 1.1em;
+}
+
+.file_upload .file_size {
+	padding: 0 10px 0 0;
+	text-align: right;
+	white-space: nowrap;
+	font-size: 1.1em;
+}
+
+.file_upload .files,.file_upload_overall_progress {
+	margin: 10px 0;
+}
+
+.file_upload_error .ui-progressbar,.file_upload_error .progressbar,.file_upload_error .file_upload_start button
+	{
+	display: none;
+}
+
+.file_upload_error .error {
+	width: 100%;
+	height: 100%;
+	color: #CD0A0A;
+	font-size: 1.1em;
+}
+
+.file_upload .ui-widget {
+	font-size: 1em;
 }

@@ -44,6 +44,14 @@ eXide.app = (function() {
 	
 	var login = null;
 	
+	var preferences = {
+			theme: "ace/theme/dawn",
+			fontSize: "12px",
+			showInvisibles: false,
+			showPrintMargin: true,
+			showHScroll: false
+	};
+	
 	return {
 
 		init: function() {
@@ -136,7 +144,8 @@ eXide.app = (function() {
 		},
 		
 		openDocument: function() {
-			dbBrowser.reload();
+			dbBrowser.reload(["reload"], true);
+			$("#open-dialog").dialog("option", "title", "Open Document");
 			$("#open-dialog").dialog("option", "buttons", { 
 				"cancel": function() { $(this).dialog("close"); },
 				"open": eXide.app.openSelectedDocument
@@ -146,8 +155,10 @@ eXide.app = (function() {
 
 		openSelectedDocument: function() {
 			var resource = dbBrowser.getSelection();
-			eXide.app.$doOpenDocument(resource);
-			$(this).dialog("close");
+			if (resource) {
+				eXide.app.$doOpenDocument(resource);
+			}
+			$("#open-dialog").dialog("close");
 		},
 
 		$doOpenDocument: function(resource, callback) {
@@ -192,6 +203,8 @@ eXide.app = (function() {
 		
 		saveDocument: function() {
 			if (editor.getActiveDocument().getPath().match('^__new__')) {
+				dbBrowser.reload(["reload", "create"], true);
+				$("#open-dialog").dialog("option", "title", "Save Document");
 				$("#open-dialog").dialog("option", "buttons", { 
 					"Cancel": function() { $(this).dialog("close"); },
 					"Save": function() {
@@ -320,6 +333,17 @@ eXide.app = (function() {
 			return false;
 		},
 		
+		manage: function() {
+			if (!eXide.app.$checkLogin())
+				return;
+			dbBrowser.reload(["reload", "create", "upload", "open"], false);
+			$("#open-dialog").dialog("option", "title", "DB Manager");
+			$("#open-dialog").dialog("option", "buttons", { 
+				"Close": function() { $(this).dialog("close"); }
+			});
+			$("#open-dialog").dialog("open");
+		},
+		
 		/** Open deployment settings for current app */
 		deploymentSettings: function() {
 			var path = editor.getActiveDocument().getPath();
@@ -367,14 +391,41 @@ eXide.app = (function() {
 			deploymentEditor.runApp(collection[1]);
 		},
 		
+		preferences: function () {
+			var form = $("#preferences-dialog form");
+			$("select[name=theme]", form).val(preferences.theme);
+			$("select[name=font-size]", form).val(preferences.fontSize);
+			$("input[name=show-invisibles]", form).attr("checked", preferences.showInvisibles);
+			$("input[name=print-margin]", form).attr("checked", preferences.showPrintMargin);
+			$("#preferences-dialog").dialog("open");
+		},
+		
+		applyPreferences: function () {
+			$.log("preferences: %o", preferences);
+			editor.setTheme(preferences.theme);
+			editor.editor.setShowInvisibles(preferences.showInvisibles);
+			editor.editor.renderer.setShowPrintMargin(preferences.showPrintMargin);
+//			editor.editor.renderer.setHScrollBarAlwaysVisible(preferences.showHScroll);
+			$("#editor").css("font-size", preferences.fontSize);
+			editor.resize();
+		},
+		
 		restoreState: function() {
 			if (!eXide.util.supportsHtml5Storage)
 				return false;
-			var theme = localStorage["eXide.theme"];
-			if (theme) {
-				$("#theme").val(theme);
-				editor.setTheme(theme);
+			for (conf in preferences) {
+				var key = "eXide.preferences." + conf;
+				if (localStorage[key]) {
+					if (localStorage[key] == "true")
+						preferences[conf] = true;
+					else if (localStorage[key] == "false")
+						preferences[conf] = false;
+					else
+						preferences[conf] = localStorage[key];
+				}
 			}
+			eXide.app.applyPreferences();
+			
 			var docCount = localStorage["eXide.documents"];
 			if (!docCount)
 				docCount = 0;
@@ -399,7 +450,9 @@ eXide.app = (function() {
 			if (!eXide.util.supportsHtml5Storage)
 				return;
 			localStorage.clear();
-			localStorage["eXide.theme"] = $("#theme").val();
+			for (conf in preferences) {
+				localStorage["eXide.preferences." + conf] = preferences[conf];
+			}
 			
 			editor.saveState();
 			deploymentEditor.saveState();
@@ -417,6 +470,8 @@ eXide.app = (function() {
 				enableCursorHotkey: false,
 				north__size: 78,
 				north__resizable: false,
+				north__closable: false,
+				north__spacing_open: 0,
 				south__minSize: 200,
 				south__initClosed: true,
 				west__size: 200,
@@ -435,11 +490,32 @@ eXide.app = (function() {
 			
 			$("#open-dialog").dialog({
 				title: "Open File",
-				modal: true,
+				modal: false,
 		        autoOpen: false,
 		        height: 400,
 		        width: 700,
-				open: function() { dbBrowser.init(); }
+				open: function() { dbBrowser.init(); },
+				resize: function() { dbBrowser.resize(); }
+			});
+			$("#preferences-dialog").dialog({
+				title: "Preferences",
+				modal: true,
+				autoOpen: false,
+				height: 400,
+				width: 600,
+				buttons: {
+					"Cancel": function () { $(this).dialog("close"); },
+					"Save": function () {
+						var form = $("form", this);
+						preferences.theme = $("select[name=theme]", form).val();
+						preferences.fontSize = $("select[name=font-size]", form).val();
+						preferences.showInvisibles = $("input[name=show-invisibles]", form).is(":checked");
+						preferences.showPrintMargin = $("input[name=print-margin]", form).is(":checked");
+						eXide.app.applyPreferences();
+						
+						$(this).dialog("close");
+					}
+				}
 			});
 			$("#login-dialog").dialog({
 				title: "Login",
@@ -547,7 +623,7 @@ eXide.app = (function() {
 			});
 			button.click(eXide.app.download);
 			$("#menu-file-download").click(eXide.app.download);
-
+			$("#menu-file-manager").click(eXide.app.manage);
 			// menu-only events
 			$("#menu-deploy-new").click(eXide.app.newDeployment);
 			$("#menu-deploy-edit").click(eXide.app.deploymentSettings);
@@ -561,12 +637,10 @@ eXide.app = (function() {
 				ev.preventDefault();
 				editor.editor.redo();
 			});
+			$("#menu-edit-preferences").click(eXide.app.preferences);
+			
 			$("#menu-deploy-run").click(eXide.app.openApp);
 			
-			// theme drop down
-			$("#theme").change(function () {
-				editor.setTheme($(this).val());
-			});
 			// syntax drop down
 			$("#syntax").change(function () {
 				editor.setMode($(this).val());
