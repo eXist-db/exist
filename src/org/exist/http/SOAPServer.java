@@ -31,9 +31,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -47,12 +44,25 @@ import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
@@ -85,19 +95,8 @@ import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.exist.xquery.value.Type;
 import org.exist.xslt.TransformerFactoryAllocator;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
