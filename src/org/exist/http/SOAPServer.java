@@ -47,6 +47,8 @@ import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
+
 import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -88,9 +90,11 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.xquery.value.Type;
 import org.exist.xslt.TransformerFactoryAllocator;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -115,6 +119,8 @@ import org.xml.sax.XMLReader;
  */
 public class SOAPServer
 {
+    protected final static Logger LOG = Logger.getLogger(SOAPServer.class);
+    
 	private String formEncoding;			//TODO: we may be able to remove this eventually, in favour of HttpServletRequestWrapper being setup in EXistServlet, currently used for doPost() but perhaps could be used for other Request Methods? - deliriumsky
 	private String containerEncoding;
 	
@@ -214,6 +220,7 @@ public class SOAPServer
             }
             catch (IOException e)
             {
+                LOG.debug(e.getMessage());
                 throw new XPathException("Failed to compile query: " + xqSource.toString() , e);
             }
         }
@@ -241,10 +248,14 @@ public class SOAPServer
      */
     private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, Node xqwsSOAPFunction, XQWSDescription xqwsDescription, HttpServletRequest request, HttpServletResponse response) throws XPathException, PermissionDeniedException
     {	
-    	StringBuffer query = new StringBuffer();
-    	query.append("xquery version \"1.0\";" + SEPERATOR);
+    	StringBuilder query = new StringBuilder();
+    	query.append("xquery version \"1.0\";").append(SEPERATOR);
     	query.append(SEPERATOR);
-        query.append("import module namespace " + xqwsDescription.getNamespace().getLocalName() + "=\"" + xqwsDescription.getNamespace().getNamespaceURI() + "\" at \"" + xqwsDescription.getFileURI().toString() + "\";" + SEPERATOR);
+        query.append("import module namespace ").append(xqwsDescription.getNamespace()
+                .getLocalName()).append("=\"").append(xqwsDescription.getNamespace()
+                .getNamespaceURI()).append("\" at \"")
+                .append(xqwsDescription.getFileURI().toString())
+                .append("\";").append(SEPERATOR);
         query.append(SEPERATOR);
         
         //add the function call to the xquery
@@ -253,7 +264,8 @@ public class SOAPServer
         {
         	functionName = xqwsSOAPFunction.getNodeName();
         }
-        query.append(xqwsDescription.getNamespace().getLocalName() + ":" + functionName + "(");
+        query.append(xqwsDescription.getNamespace().getLocalName())
+                .append(":").append(functionName).append("(");
         
         //add the arguments for the function call if any
         NodeList xqwsSOAPFunctionParams = xqwsSOAPFunction.getChildNodes();
@@ -261,20 +273,20 @@ public class SOAPServer
         NodeList nlInternalFunctionParams = xqwsDescription.getFunctionParameters(nInternalFunction);
         
         int j = 0;
-        for(int i = 0; i < xqwsSOAPFunctionParams.getLength(); i++)
-        {
-        	Node nSOAPFunctionParam = xqwsSOAPFunctionParams.item(i);
-        	if(nSOAPFunctionParam.getNodeType() == Node.ELEMENT_NODE)
-        	{
-			// Did we reached the length?
-			if(j == nlInternalFunctionParams.getLength()) {
-				throw new XPathException("Too many input parameters for "+functionName+": expected="+xqwsSOAPFunctionParams.getLength());
-			}
-	        	query.append(writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam));
-        		query.append(","); //add function seperator
-	        	
-	        	j++;
-        	}
+        for (int i = 0; i < xqwsSOAPFunctionParams.getLength(); i++) {
+            Node nSOAPFunctionParam = xqwsSOAPFunctionParams.item(i);
+            if (nSOAPFunctionParam.getNodeType() == Node.ELEMENT_NODE) {
+                // Did we reached the length?
+                if (j == nlInternalFunctionParams.getLength()) {
+                    throw new XPathException("Too many input parameters for " 
+                            + functionName + ": expected=" 
+                            + xqwsSOAPFunctionParams.getLength());
+                }
+                query.append(writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam));
+                query.append(","); //add function seperator
+
+                j++;
+            }
         }
 	
 	/*
@@ -384,6 +396,7 @@ public class SOAPServer
 		}
 		catch(Exception e)
 		{
+            LOG.debug(e.getMessage());
 			throw new XPathException(e.getMessage());
 		}
 	}
@@ -558,16 +571,19 @@ public class SOAPServer
 		}
 		catch(XPathException xpe)
 		{
+            LOG.debug(xpe.getMessage());
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			writeResponse(response, formatXPathException(null, path, xpe), "text/html", ENCODING);
 		}
 		catch(SAXException saxe)
 		{
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			LOG.debug(saxe.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
 		}
 		catch(TransformerConfigurationException tce)
 		{
+            LOG.debug(tce.getMessage());
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			writeResponse(response, formatXPathException(null, path, new XPathException("SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
 		}
@@ -608,17 +624,19 @@ public class SOAPServer
 		}
 		catch(Exception e)
 		{
+            LOG.debug(e.getMessage());
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			writeResponse(response, formatXPathException(null, path, new XPathException("Unable to construct an XML document from the SOAP Request, probably an invalid request: " + e.getMessage(), e)), "text/html", ENCODING);
 			return;
 		}
+        
 		try {
 			StringWriter out = new StringWriter();
 			broker.getSerializer().serialize((ElementImpl)soapRequest.getDocumentElement(), out);
-			System.out.println(out.toString());
+			//System.out.println(out.toString());
+            
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Error during serialization.", e);
 		}
 		
 		// 3) Validate the SOAP Request 
@@ -923,7 +941,7 @@ public class SOAPServer
     		}
     		catch(PermissionDeniedException e)
     		{
-    			//TODO: log message
+    			LOG.debug(e.getMessage());
     			return false;
     		}
     		finally
@@ -1333,20 +1351,20 @@ public class SOAPServer
          * 
          * @return	byte array containing the content of the XQWS Binary document
          */
-        private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS)
-        {
-           try {
-               InputStream is = broker.getBinaryResource(docXQWS);
-               byte [] data = new byte[(int)broker.getBinaryResourceSize(docXQWS)];
-               is.read(data);
-               is.close();
+        private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS) {
+            
+            try {
+                InputStream is = broker.getBinaryResource(docXQWS);
+                byte[] data = new byte[(int) broker.getBinaryResourceSize(docXQWS)];
+                is.read(data);
+                is.close();
+                return data;
 
-                   return data;
-           } catch (IOException ex) {
-              // TODO: where should this go?
-              ex.printStackTrace();
-           }
-           return null;
+            } catch (IOException ex) {
+                LOG.error(ex);
+            }
+            
+            return null;
         }
         
         /**
@@ -1359,7 +1377,7 @@ public class SOAPServer
         private QName getXQWSNamespace(byte[] xqwsData)
         {   
         	//move through the xqws char by char checking if a line contains the module namespace declaration     
-            StringBuffer sbNamespace = new StringBuffer();
+            StringBuilder sbNamespace = new StringBuilder();
             ByteArrayInputStream bis = new ByteArrayInputStream(xqwsData);
             while(bis.available() > 0)
             {
