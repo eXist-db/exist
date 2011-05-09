@@ -642,8 +642,12 @@ public class SOAPServer
 		//TODO: validate the SOAP Request
 		
 		// 4) Extract the function call from the SOAP Request
-		NodeList nlBody = soapRequest.getDocumentElement().getElementsByTagNameNS(Namespaces.SOAP_ENVELOPE, "Body");
-		Node nSOAPBody = nlBody.item(0);
+		NodeList nlBody = soapRequest.getDocumentElement().getElementsByTagNameNS(Namespaces.SOAP_ENVELOPE, "Body");       
+        if(nlBody==null){
+            LOG.error("Style Parameter wrapped not supported yet");
+        } 
+        
+		Node nSOAPBody = nlBody.item(0); // DW: can return NULL ! case: style ParameterWrapped
 		NodeList nlBodyChildren = nSOAPBody.getChildNodes();
 		Node nSOAPFunction = null;
 		for(int i = 0; i < nlBodyChildren.getLength(); i++)
