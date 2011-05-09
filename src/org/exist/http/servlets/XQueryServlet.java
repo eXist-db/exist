@@ -588,10 +588,12 @@ public class XQueryServlet extends HttpServlet {
         if (t instanceof XPathException) {
             XPathException xe = (XPathException) t;
             out.println(xe.getMessageAsHTML());
+            
         } else {
-            out.print("<h2>Message:");
+            out.print("<h2>Message:</h2>");
+            out.print("<pre>");
             out.print(message);
-            out.print("</h2>");
+            out.print("</pre>");
         }
         
         if(t!=null){
@@ -621,7 +623,9 @@ public class XQueryServlet extends HttpServlet {
         out.print("<div class='message'><b>Message: </b>");
         out.print(message);
         out.print("</div><div class='description'>");
+        out.print("<pre>");
         out.print(description);
+        out.print("</pre>");
         out.print("</div></body></html>");
         out.flush();
     }
