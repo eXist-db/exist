@@ -148,6 +148,7 @@ public class XQueryServlet extends HttpServlet {
             Database database = (Database)driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
+            
         } catch(Exception e) {
             String errorMessage="Failed to initialize database driver";
             LOG.error(errorMessage,e);
@@ -171,6 +172,7 @@ public class XQueryServlet extends HttpServlet {
 				user = pool.getSecurityManager().authenticate(username, password);
 	        	if (user != null && user.isAuthenticated())
 	        		defaultUser = user;
+                
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+"), using default user.");
 			}
@@ -178,9 +180,11 @@ public class XQueryServlet extends HttpServlet {
         String confCollectionURI = config.getInitParameter("uri");
         if(confCollectionURI == null) {
             collectionURI = DEFAULT_URI;
+            
         } else {
             try {
                 collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
+                
             } catch (URISyntaxException e) {
                 throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
             }
@@ -228,6 +232,7 @@ public class XQueryServlet extends HttpServlet {
             } else {
                 request = req;
             }
+            
         } else {
             request = req;
         }
@@ -259,6 +264,7 @@ public class XQueryServlet extends HttpServlet {
             } else {
                 request = req;
             }
+            
         } else {
             request = req;
         }
@@ -340,12 +346,14 @@ public class XQueryServlet extends HttpServlet {
                 username = getSessionAttribute(session, "user");
                 password = getSessionAttribute(session, "password");
             }
+            
 			try {
 				if( username != null && password != null ) {
 					Subject newUser = pool.getSecurityManager().authenticate(username, password);
 		        	if (newUser != null && newUser.isAuthenticated())
 		        		user = newUser;
 				}
+                
 			} catch (AuthenticationException e) {
 				LOG.error("User can not be authenticated ("+username+").");
 			}
@@ -376,7 +384,9 @@ public class XQueryServlet extends HttpServlet {
                 }
             else
                 s = sourceAttrib.toString();
+            
             source = new StringSource(s);
+            
         } else if (urlAttrib != null) {
             DBBroker broker = null;
             try {
@@ -389,6 +399,7 @@ public class XQueryServlet extends HttpServlet {
             } finally {
                 pool.release(broker);
             }
+            
         } else {
             File f = new File(path);
             if(!f.canRead()) {
@@ -398,10 +409,12 @@ public class XQueryServlet extends HttpServlet {
             }
             source = new FileSource(f, encoding, true);
         }
+        
         if (source == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             sendError(output, "Source not found", path);
         }
+        
         boolean reportErrors = false;
         String errorOpt = (String) request.getAttribute(ATTR_XQUERY_REPORT_ERRORS);
         if (errorOpt != null)
@@ -472,11 +485,14 @@ public class XQueryServlet extends HttpServlet {
                context.setModuleLoadPath(moduleLoadPath);
                try {
             	   query = xquery.compile(context, source);
+                   
                } catch (XPathException ex) {
                   throw new EXistException("Cannot compile xquery: "+ ex.getMessage(), ex);
+                  
                } catch (IOException ex) {
                   throw new EXistException("I/O exception while compiling xquery: " + ex.getMessage() ,ex);
                }
+               
             } else {
                context = query.getContext();
                context.setModuleLoadPath(moduleLoadPath);
@@ -494,6 +510,7 @@ public class XQueryServlet extends HttpServlet {
             Sequence resultSequence;
             try {
                 resultSequence = xquery.execute(query, null, outputProperties);
+                
             } finally {
                 xquery.getXQueryPool().returnCompiledXQuery(source, query);
             }
@@ -505,14 +522,17 @@ public class XQueryServlet extends HttpServlet {
                 		response.setContentType(mediaType + "; charset=" + formEncoding);
                 	else
                 		response.setContentType(mediaType);
+                
             } else {
 	            String contentType = this.contentType;
 	            try {
 	                contentType = getServletContext().getMimeType(path);
 	                if (contentType == null)
 	                    contentType = this.contentType;
+                    
 	            } catch (Throwable e) {
 	                contentType = this.contentType;
+                    
 	            } finally {
 	                if (MimeTable.getInstance().isTextContent(contentType))
 	                    contentType += "; charset=" + formEncoding;
@@ -522,6 +542,7 @@ public class XQueryServlet extends HttpServlet {
             
             if (requestAttr != null && (XmldbURI.API_LOCAL.equals(collectionURI.getApiName())) ) {
                 request.setAttribute(requestAttr, resultSequence);
+                
             } else {
             	Serializer serializer = broker.getSerializer();
             	serializer.reset();
@@ -533,12 +554,13 @@ public class XQueryServlet extends HttpServlet {
 	            	sax.setOutput(output, outputProperties);
 	            	serializer.setProperties(outputProperties);
 	            	serializer.setSAXHandlers(sax, sax);
-	            	
 	            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false, false);
+                    
             	} finally {
             		serializerPool.returnObject(sax);
             	}
             }
+            
 		} catch (PermissionDeniedException e) {
 			if (defaultUser.equals(user)) {
 				authenticator.sendChallenge(request, response);
@@ -546,6 +568,7 @@ public class XQueryServlet extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + path + " denied.");
 			}
 			return;
+            
         } catch (Throwable e){
             LOG.error(e.getMessage(), e);
             if (reportErrors)
@@ -554,6 +577,7 @@ public class XQueryServlet extends HttpServlet {
             	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             	sendError(output, "Error", e.getMessage());
             }
+            
         } finally {
             pool.release(broker);
         }
@@ -570,6 +594,7 @@ public class XQueryServlet extends HttpServlet {
     private String getValue(Object obj) {
         if(obj == null)
             return null;
+        
         if(obj instanceof Sequence)
             try {
                 return ((Sequence)obj).getStringValue();
