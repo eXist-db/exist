@@ -74,7 +74,16 @@ return
                 <para><a href="examples/unit-test-example.xql" target="_example">run
                         unit-test-example.xql</a></para>
             </section>
-
+			
+			<section>
+				<title>Running an XQuery test from the command line</title>
+				
+				<para>
+					If you would like to run your tests in the test/src/xquery directory from the command line use the following command (without the database running):
+				</para>
+				<para><b>java -jar start.jar xquery.TestRunnerMain test/src/xquery/your/test.xml</b></para>
+				<para><b>Note:</b> if your database admin password is not empty you'll need to go into TestRunnerMain.java and set your password on line 100, then rebuild.</para>
+			</section>
             <section>
                 <title>TestSet Schema</title>
 
