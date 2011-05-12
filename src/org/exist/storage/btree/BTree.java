@@ -769,6 +769,8 @@ public class BTree extends Paged {
         /** the computed raw data size required by this node */
 		private int currentDataLen = -1;
 		
+		private boolean allowUnload = true;
+		
 		public BTreeNode(Page page, boolean newPage) {
 			this.page = page;
 			ph = (BTreePageHeader) page.getPageHeader();
@@ -838,7 +840,7 @@ public class BTree extends Paged {
          * @see org.exist.storage.cache.Cacheable#allowUnload()
          */
         public boolean allowUnload() {
-            return true;
+            return allowUnload;
         }
         
 		/**
@@ -1140,19 +1142,24 @@ public class BTree extends Paged {
 					if (idx < 0)
 						return KEY_NOT_FOUND;
 					else {
-                        if (transaction != null && isTransactional) {
-                            RemoveValueLoggable log = 
-                                new RemoveValueLoggable(transaction, fileId, page.getPageNum(), idx,
-                                        keys[idx], ptrs[idx]);
-                            writeToLog(log, this);
-                        }
-                        
-						long oldPtr = ptrs[idx];
+                        try {
+                        	allowUnload = false;
+							if (transaction != null && isTransactional) {
+							    RemoveValueLoggable log = 
+							        new RemoveValueLoggable(transaction, fileId, page.getPageNum(), idx,
+							                keys[idx], ptrs[idx]);
+							    writeToLog(log, this);
+							}
+							
+							long oldPtr = ptrs[idx];
 
-                        removeKey(idx);
-                        removePointer(idx);
-						recalculateDataLen();
-						return oldPtr;
+							removeKey(idx);
+							removePointer(idx);
+							recalculateDataLen();
+							return oldPtr;
+						} finally {
+							allowUnload = true;
+						}
 					}
 
 				default :
@@ -1173,6 +1180,8 @@ public class BTree extends Paged {
                     idx = idx < 0 ? - (idx + 1) : idx + 1;
 					return getChildNode(idx).addValue(transaction, value, pointer);
 				case LEAF :
+				try {
+					allowUnload = false;
 					if (idx >= 0) {
 						// Value was found... Overwrite
                         long oldPtr = ptrs[idx];
@@ -1206,6 +1215,9 @@ public class BTree extends Paged {
                         }
 					}
 					return -1;
+				} finally {
+					allowUnload = true;
+				}
 				default :
 					throw new BTreeException("Invalid Page Type In addValue: " + ph.getStatus() + "; " +
 							page.getPageInfo());
@@ -1907,6 +1919,8 @@ public class BTree extends Paged {
 						}
 						break;
 					case LEAF :
+					try {
+						allowUnload = false;
 						switch (query.getOperator()) {
 							case IndexQuery.EQ :
 								if (leftIdx >= 0) {
@@ -2086,6 +2100,9 @@ public class BTree extends Paged {
 
 								break;
 						}
+					} finally {
+						allowUnload = true;
+					}
 						break;
 					default :
 						throw new BTreeException("Invalid Page Type In query");
@@ -2112,6 +2129,8 @@ public class BTree extends Paged {
 						}
 						break;
 					case LEAF :
+					try {
+						allowUnload = false;
 						for (int i = 0; i < nKeys; i++)
 							if (query.getOperator() != IndexQuery.TRUNC_LEFT
 								|| query.testValue(keys[i])) {
@@ -2129,6 +2148,9 @@ public class BTree extends Paged {
                                 recalculateDataLen();
                                 --i;
 							}
+					} finally {
+						allowUnload = true;
+					}
 						break;
 					default :
 						throw new BTreeException("Invalid Page Type In query");
