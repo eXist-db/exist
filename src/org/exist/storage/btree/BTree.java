@@ -239,6 +239,7 @@ public class BTree extends Paged {
 //            growthThreshold, CacheManager.BTREE_CACHE);
         cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
             0, CacheManager.BTREE_CACHE);
+
         cache.setFileName(getFile().getName());
         cacheManager.registerCache(cache);
 	}
@@ -788,6 +789,8 @@ public class BTree extends Paged {
         /** the computed raw data size required by this node */
 		private int currentDataLen = -1;
 		
+		private boolean allowUnload = true;
+		
 		public BTreeNode(Page page, boolean newPage) {
 			this.page = page;
 			ph = (BTreePageHeader) page.getPageHeader();
@@ -857,7 +860,7 @@ public class BTree extends Paged {
          * @see org.exist.storage.cache.Cacheable#allowUnload()
          */
         public boolean allowUnload() {
-            return true;
+            return allowUnload;
         }
         
 		/**
@@ -1168,19 +1171,25 @@ public class BTree extends Paged {
 					if (idx < 0)
 						return KEY_NOT_FOUND;
 					else {
-                        if (transaction != null && isTransactional) {
-                            RemoveValueLoggable log = 
-                                new RemoveValueLoggable(transaction, fileId, page.getPageNum(), idx,
-                                        keys[idx], ptrs[idx]);
-                            writeToLog(log, this);
-                        }
-                        
-						long oldPtr = ptrs[idx];
-
-                        removeKey(idx);
-                        removePointer(idx);
-						recalculateDataLen();
-						return oldPtr;
+						try {
+							allowUnload = false;
+							
+	                        if (transaction != null && isTransactional) {
+	                            RemoveValueLoggable log = 
+	                                new RemoveValueLoggable(transaction, fileId, page.getPageNum(), idx,
+	                                        keys[idx], ptrs[idx]);
+	                            writeToLog(log, this);
+	                        }
+	                        
+							long oldPtr = ptrs[idx];
+	
+	                        removeKey(idx);
+	                        removePointer(idx);
+							recalculateDataLen();
+							return oldPtr;
+						} finally {
+							allowUnload = true;
+						}
 					}
 
 				default :
@@ -1201,45 +1210,50 @@ public class BTree extends Paged {
                     idx = idx < 0 ? - (idx + 1) : idx + 1;
 					return getChildNode(idx).addValue(transaction, value, pointer);
 				case LEAF :
-					if (idx >= 0) {
-						// Value was found... Overwrite
-                        long oldPtr = ptrs[idx];
-                        if (transaction != null && isTransactional) {
-                            UpdateValueLoggable loggable = new UpdateValueLoggable(transaction, fileId, page.getPageNum(), idx,
-                                    value, pointer, oldPtr);
-                            writeToLog(loggable, this);
-                        }
-                        
-						ptrs[idx] = pointer;
-						saved = false;
-						//write();
-						//cache.add(this);
-						return oldPtr;
-					} else {
-						// Value was not found
-						idx = - (idx + 1);
-
-                        if (transaction != null && isTransactional) {
-                            InsertValueLoggable loggable = 
-                                new InsertValueLoggable(transaction, fileId, page.getPageNum(), idx,
-                                    value, idx, pointer);
-                            writeToLog(loggable, this);
-                        }
-                        insertKey(value, idx);
-                        insertPointer(pointer, idx);
-						adjustDataLen(idx);
-						//recalculateDataLen();
-						if (mustSplit()) {
-                            // we normally split a node at its median value.
-                            // however, if the inserted key is in the upper or lower
-                            // section of the node, we split directly at the key. this
-                            // has advantages if keys are inserted in ascending order
-                            if (splitFactor > 0 && idx > (nKeys * splitFactor))
-						        split(transaction, idx == 0 ? 1 : idx);
-                            else {
-                                split(transaction);
-                            }
-                        }
+					try {
+						allowUnload = false;
+						if (idx >= 0) {
+							// Value was found... Overwrite
+	                        long oldPtr = ptrs[idx];
+	                        if (transaction != null && isTransactional) {
+	                            UpdateValueLoggable loggable = new UpdateValueLoggable(transaction, fileId, page.getPageNum(), idx,
+	                                    value, pointer, oldPtr);
+	                            writeToLog(loggable, this);
+	                        }
+	                        
+							ptrs[idx] = pointer;
+							saved = false;
+							//write();
+							//cache.add(this);
+							return oldPtr;
+						} else {
+							// Value was not found
+							idx = - (idx + 1);
+	
+	                        if (transaction != null && isTransactional) {
+	                            InsertValueLoggable loggable = 
+	                                new InsertValueLoggable(transaction, fileId, page.getPageNum(), idx,
+	                                    value, idx, pointer);
+	                            writeToLog(loggable, this);
+	                        }
+	                        insertKey(value, idx);
+	                        insertPointer(pointer, idx);
+							adjustDataLen(idx);
+							//recalculateDataLen();
+							if (mustSplit()) {
+	                            // we normally split a node at its median value.
+	                            // however, if the inserted key is in the upper or lower
+	                            // section of the node, we split directly at the key. this
+	                            // has advantages if keys are inserted in ascending order
+	                            if (splitFactor > 0 && idx > (nKeys * splitFactor))
+							        split(transaction, idx == 0 ? 1 : idx);
+	                            else {
+	                                split(transaction);
+	                            }
+	                        }
+						}
+					} finally {
+						allowUnload = true;
 					}
 					return -1;
 				default :
@@ -1951,6 +1965,8 @@ public class BTree extends Paged {
 						}
 						break;
 					case LEAF :
+					try {
+						allowUnload = false;
 						switch (query.getOperator()) {
 							case IndexQuery.EQ :
 								if (leftIdx >= 0) {
@@ -2131,6 +2147,9 @@ public class BTree extends Paged {
 
 								break;
 						}
+					} finally {
+						allowUnload = true;
+					}
 						break;
 					default :
 						throw new BTreeException("Invalid Page Type In query");
