@@ -26,10 +26,12 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
+
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.AnyUriResolver;
@@ -44,6 +46,7 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import java.io.InputStream;
 
 /**
@@ -157,9 +160,9 @@ public class Validator {
             // Validate XML instance
             driver.validate(new InputSource(stream));
 
-        } catch(ExistIOException ex) {
-            logger.error(ex.getCause());
-            report.setThrowable(ex.getCause());
+        } catch(IOException ex) {
+            logger.error(ex);
+            report.setThrowable(ex);
 
         } catch(Exception ex) {
             logger.debug(ex);
@@ -243,9 +246,9 @@ public class Validator {
                 logger.debug("Document is not valid.");
             }
 
-        } catch(ExistIOException ex) {
-            logger.error(ex.getCause());
-            report.setThrowable(ex.getCause());
+        } catch(IOException ex) {
+            logger.error(ex);
+            report.setThrowable(ex);
 
         } catch(Exception ex) {
             logger.error(ex);

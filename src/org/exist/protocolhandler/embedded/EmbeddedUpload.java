@@ -36,7 +36,6 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.io.ExistIOException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -146,7 +145,7 @@ public class EmbeddedUpload {
                     user=EmbeddedUser.authenticate(xmldbURL, pool);
                     if(user==null){
                         LOG.debug("Unauthorized user "+xmldbURL.getUsername());
-                        throw new ExistIOException("Unauthorized user "+xmldbURL.getUsername());
+                        throw new IOException("Unauthorized user "+xmldbURL.getUsername());
                     }
                 } else {
                     user=EmbeddedUser.getUserGuest(pool);
@@ -161,10 +160,10 @@ public class EmbeddedUpload {
             collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
             
             if(collection == null)
-                throw new ExistIOException("Resource "+collectionUri.toString()+" is not a collection.");
+                throw new IOException("Resource "+collectionUri.toString()+" is not a collection.");
             
             if(collection.hasChildCollection(documentUri))
-                throw new ExistIOException("Resource "+documentUri.toString()+" is a collection.");
+                throw new IOException("Resource "+documentUri.toString()+" is a collection.");
             
             MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
             String contentType=null;
@@ -226,7 +225,7 @@ public class EmbeddedUpload {
             }
             //ex.printStackTrace();
             LOG.debug(ex);
-            throw new ExistIOException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
             
         } finally {
             LOG.debug("Done.");

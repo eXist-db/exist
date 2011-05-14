@@ -48,6 +48,7 @@ public class EmbeddedUploadThread extends Thread {
     /**
      * Start Thread.
      */
+    @Override
     public void run() {
         logger.debug("Thread started." );
         IOException exception=null;

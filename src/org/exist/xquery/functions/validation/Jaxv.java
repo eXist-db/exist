@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.xml.XMLConstants;
@@ -32,7 +33,6 @@ import javax.xml.validation.Validator;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -159,8 +159,8 @@ public class Jaxv extends BasicFunction  {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (ExistIOException ex) {
-            LOG.error(ex.getCause());
+        } catch (IOException ex) {
+            LOG.error(ex);
             report.setException(ex);
 
         } catch (Throwable ex) {

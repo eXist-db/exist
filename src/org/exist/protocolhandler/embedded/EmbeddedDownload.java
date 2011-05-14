@@ -36,7 +36,6 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.io.ExistIOException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
@@ -100,7 +99,7 @@ public class EmbeddedDownload {
                 if(xmldbURL.hasUserInfo()){
                     user=EmbeddedUser.authenticate(xmldbURL, pool);
                     if(user==null){
-                        throw new ExistIOException("Unauthorized user "+xmldbURL.getUsername());
+                        throw new IOException("Unauthorized user "+xmldbURL.getUsername());
                     }
                     
                 } else {
@@ -116,11 +115,11 @@ public class EmbeddedDownload {
                 collection = broker.openCollection(path, Lock.READ_LOCK);
                 if(collection == null){
                     // No collection, no document
-                    throw new ExistIOException("Resource "+xmldbURL.getPath()+" not found.");
+                    throw new IOException("Resource "+xmldbURL.getPath()+" not found.");
                     
                 } else {
                     // Collection
-                    throw new ExistIOException("Resource "+xmldbURL.getPath()+" is a collection.");
+                    throw new IOException("Resource "+xmldbURL.getPath()+" is a collection.");
                 }
                 
             } else {
@@ -146,7 +145,7 @@ public class EmbeddedDownload {
         } catch (Exception ex) {
             //ex.printStackTrace();
             LOG.error(ex);
-            throw new ExistIOException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
             
         } finally {
             if(resource != null){

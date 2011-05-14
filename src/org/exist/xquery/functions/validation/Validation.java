@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 
@@ -28,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.xquery.BasicFunction;
@@ -174,8 +174,8 @@ public class Validation extends BasicFunction  {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (ExistIOException ex) {
-            LOG.error(ex.getCause());
+        } catch (IOException ex) {
+            LOG.error(ex);
             report.setException(ex);
 
         } catch (Throwable ex) {

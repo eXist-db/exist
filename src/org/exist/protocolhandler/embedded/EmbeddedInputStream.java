@@ -78,31 +78,38 @@ public class EmbeddedInputStream extends InputStream {
     }
     
     
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         return bis.read(b, off, len);
     }
     
+    @Override
     public int read(byte[] b) throws IOException {
         return bis.read(b, 0, b.length);
     }
     
+    @Override
     public long skip(long n) throws IOException {
         return bis.skip(n);
     }
     
+    @Override
     public void reset() throws IOException {
         bis.reset();
     }
     
+    @Override
     public int read() throws IOException {
         
         return bis.read();
     }
 
+    @Override
     public void close() throws IOException {
         bis.close();
     }
 
+    @Override
     public int available() throws IOException {
         return bis.available();
     }

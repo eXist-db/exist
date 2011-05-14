@@ -26,6 +26,7 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
+import java.io.IOException;
 
 import java.net.MalformedURLException;
 
@@ -33,7 +34,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.ExistIOException;
+
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.unstable.ExistResolver;
 import org.exist.xquery.BasicFunction;
@@ -166,8 +167,8 @@ public class Jing extends BasicFunction  {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (ExistIOException ex) {
-            LOG.error(ex.getCause());
+        } catch (IOException ex) {
+            LOG.error(ex);
             report.setException(ex);
 
         } catch (Throwable ex) {

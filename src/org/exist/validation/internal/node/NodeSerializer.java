@@ -30,7 +30,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
-import org.exist.storage.io.ExistIOException;
+
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -72,7 +72,7 @@ public class NodeSerializer {
         } catch(Exception e) {
             String txt = "A problem occurred while serializing the node set";
             LOG.debug(txt+".", e);
-            throw new ExistIOException(txt+": " + e.getMessage(), e);
+            throw new IOException(txt+": " + e.getMessage(), e);
         
         } finally {
             LOG.debug("Serializing done.");
