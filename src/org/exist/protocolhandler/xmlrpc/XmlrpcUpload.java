@@ -31,8 +31,8 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.storage.io.ExistIOException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 
@@ -113,7 +113,7 @@ public class XmlrpcUpload {
                 LOG.debug("Document stored.");
             } else {
                 LOG.debug("Could not store document.");
-                throw new ExistIOException("Could not store document.");
+                throw new IOException("Could not store document.");
             }
             
         } catch (IOException ex) {
@@ -122,7 +122,7 @@ public class XmlrpcUpload {
             
         } catch (Exception ex) {
             LOG.debug(ex);
-            throw new ExistIOException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
             
         } finally {
            LOG.debug("Finished document upload");

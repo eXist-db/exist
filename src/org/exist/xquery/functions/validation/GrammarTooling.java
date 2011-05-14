@@ -22,6 +22,7 @@
 
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,7 +39,6 @@ import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
@@ -202,9 +202,9 @@ public class GrammarTooling extends BasicFunction  {
                         throw new XPathException(this, "Only XMLSchemas can be preparsed.");
                     }
 
-                } catch(ExistIOException ex) {
-                    LOG.debug(ex.getCause());
-                    throw new XPathException(this, ex.getCause());
+                } catch(IOException ex) {
+                    LOG.debug(ex);
+                    throw new XPathException(this, ex);
                     
                 } catch(Exception ex) {
                     LOG.debug(ex);

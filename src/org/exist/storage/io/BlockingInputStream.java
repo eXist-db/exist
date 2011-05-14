@@ -122,7 +122,7 @@ public class BlockingInputStream extends InputStream {
         int count = EOS;
         try {
             while (empty() && !closed()) wait();
-            if (outException != null) throw new ExistIOException(
+            if (outException != null) throw new IOException(
               "BlockingOutputStream closed with an exception.", outException);
             else if (!closed()) {
                 count = Math.min(len, available());
@@ -136,7 +136,7 @@ public class BlockingInputStream extends InputStream {
                 if (empty()) head = tail = 0; // Reset to optimal situation.
             }
         } catch (InterruptedException e) {
-            throw new ExistIOException("Read operation interrupted.", e);
+            throw new IOException("Read operation interrupted.", e);
         } finally {
             notifyAll();
         }
@@ -239,9 +239,9 @@ public class BlockingInputStream extends InputStream {
             int count;
             try {
                 while (full() && !closed()) wait();
-            if (inException != null) throw new ExistIOException(
+            if (inException != null) throw new IOException(
               "BlockingInputStream closed with exception.", inException);
-            else if (closed()) throw new ExistIOException(
+            else if (closed()) throw new IOException(
                     "Writing to closed stream", inException);
                 count = Math.min(len, free());
                 int count1 = Math.min(count, freePart1());
@@ -252,7 +252,7 @@ public class BlockingInputStream extends InputStream {
                 }
                 tail = next(tail, count);
             } catch (InterruptedException e) {
-                throw new ExistIOException("Write operation interrupted.", e);
+                throw new IOException("Write operation interrupted.", e);
             } finally {
                 notifyAll();
             }
@@ -279,12 +279,12 @@ public class BlockingInputStream extends InputStream {
         notifyAll();
         try {
             while(!inClosed) wait();
-            if (inException != null) throw new ExistIOException(
+            if (inException != null) throw new IOException(
                 "BlockingInputStream closed with an exception.", inException);
-            else if (!empty()) throw new ExistIOException(
+            else if (!empty()) throw new IOException(
                 "Closing non empty closed stream.", inException);
         } catch (InterruptedException e) {
-            throw new ExistIOException(
+            throw new IOException(
                 "Close OutputStream operation interrupted.", e);
         }
     }
@@ -315,12 +315,12 @@ public class BlockingInputStream extends InputStream {
     synchronized void flushOutputStream() throws IOException {
         try {
             while(!empty() && !closed()) wait();
-            if (inException != null) throw new ExistIOException(
+            if (inException != null) throw new IOException(
                 "BlockingInputStream closed with an exception.", inException);
-            else if (!empty()) throw new ExistIOException(
+            else if (!empty()) throw new IOException(
                 "Flushing non empty closed stream.", inException);
         } catch (InterruptedException e) {
-            throw new ExistIOException("Flush operation interrupted.", e);
+            throw new IOException("Flush operation interrupted.", e);
         } finally {
             notifyAll();
         }

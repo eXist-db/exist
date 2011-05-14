@@ -21,6 +21,7 @@
  */
 package org.exist.validation;
 
+import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,13 +37,13 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.io.ExistIOException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -137,10 +138,6 @@ public class DatabaseInsertResources_WithValidation_Test {
             is.close();
             os.close();
             
-        } catch (ExistIOException ex) {
-            ex.getCause().printStackTrace();
-            logger.error(ex.getCause());
-            fail(ex.getCause().getMessage());
             
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -186,9 +183,10 @@ public class DatabaseInsertResources_WithValidation_Test {
             TestTools.copyStream(is, os);
             
             is.close();
+            os.flush();
             os.close();
             
-        } catch (ExistIOException ex) {
+        } catch (IOException ex) {
             if(!ex.getCause().getMessage().matches(".*Element type \"INVALIDTITLE\" must be declared.*")){
                 ex.getCause().printStackTrace();
                 logger.error(ex.getCause());

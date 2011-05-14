@@ -46,7 +46,6 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.DocumentImpl;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
@@ -258,8 +257,8 @@ public class Jaxp extends BasicFunction {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (ExistIOException ex) {
-            LOG.error(ex.getCause());
+        } catch (IOException ex) {
+            LOG.error(ex);
             report.setException(ex);
 
         } catch (Throwable ex) {

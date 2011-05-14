@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.io.ExistIOException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -143,12 +142,6 @@ public class DatabaseInsertResources_NoValidation_Test {
                 "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_nodoctype.xml");
             TestTools.insertDocumentToURL(hamlet+"/hamlet_wrongdoctype.xml",
                 "xmldb:exist://"+TestTools.VALIDATION_HOME+"/hamlet_wrongdoctype.xml");
-
-        } catch (ExistIOException ex) {
-
-            ex.getCause().printStackTrace();
-            logger.error(ex.getCause());
-            fail(ex.getCause().getMessage());
 
         } catch (Exception ex) {
             ex.printStackTrace();

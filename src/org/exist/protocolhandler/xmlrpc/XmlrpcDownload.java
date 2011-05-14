@@ -31,8 +31,9 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
 import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.storage.io.ExistIOException;
+
 
 /**
  *  Read document from using XMLRPC from remote database and write the data 
@@ -105,7 +106,7 @@ public class XmlrpcDownload {
             
         } catch (Exception ex) {
             LOG.error(ex);
-            throw new ExistIOException(ex.getMessage(), ex);
+            throw new IOException(ex.getMessage(), ex);
                        
         } finally {
             LOG.debug("Finished document download"); 

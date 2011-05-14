@@ -47,7 +47,7 @@ public class EmbeddedOutputStream  extends OutputStream {
      *  Constructor of EmbeddedOutputStream. 
      * 
      * @param xmldbURL Location of document in database.
-     * @throws MalformedURLException Thrown for illegalillegal URLs.
+     * @throws MalformedURLException Thrown for illegal URLs.
      */
     public EmbeddedOutputStream(XmldbURL xmldbURL) {
         
@@ -63,22 +63,27 @@ public class EmbeddedOutputStream  extends OutputStream {
     }
 
     
+    @Override
     public void write(int b) throws IOException {
         bos.write(b);
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         bos.write(b,0,b.length);
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         bos.write(b,off,len);
     }
 
+    @Override
     public void close() throws IOException {
         bos.close();
     }
 
+    @Override
     public void flush() throws IOException {
         bos.flush();
     }
