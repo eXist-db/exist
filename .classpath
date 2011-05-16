@@ -116,18 +116,18 @@
 	<classpathentry kind="lib" path="lib/user/icu4j-4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/saxon9he.jar"/>
 	<classpathentry kind="lib" path="lib/user/svnkit-cli.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-security-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-server-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlet-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlets-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-websocket-7.3.1.v20110307.jar"/>
-	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-7.3.1.v20110307.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-io-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-plus-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-security-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-server-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlet-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-servlets-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-util-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-webapp-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-websocket-7.4.1.v20110513.jar"/>
+	<classpathentry kind="lib" path="tools/jetty/lib/jetty-xml-7.4.1.v20110513.jar"/>
 	<classpathentry kind="lib" path="lib/user/memcached-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/user/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
