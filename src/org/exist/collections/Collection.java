@@ -170,7 +170,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             String group = user.getPrimaryGroup();
             if (config != null){
                 group = config.getDefCollGroup(user);
-                child.permissions.setPermissions(config.getDefCollPermissions());
+                child.permissions.setMode(config.getDefCollPermissions());
             }
             child.permissions.setGroup(broker.getSubject(), group);
         }
@@ -1467,7 +1467,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public void setPermissions(int mode) throws LockException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
-            permissions.setPermissions(mode);
+            permissions.setMode(mode);
         } finally {
             getLock().release(Lock.WRITE_LOCK);
         }
@@ -1476,7 +1476,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public void setPermissions(String mode) throws SyntaxException, LockException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
-            permissions.setPermissions(mode);
+            permissions.setMode(mode);
         } finally {
             getLock().release(Lock.WRITE_LOCK);
         }

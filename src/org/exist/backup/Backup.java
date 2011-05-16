@@ -278,8 +278,8 @@ public class Backup
         //The name should have come from an XmldbURI.toString() call
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName() );
         attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", currentPerms.getOwner().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getOwnerGroup().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( currentPerms.getPermissions() ) );
+        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getGroup().getName() );
+        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( currentPerms.getMode() ) );
         attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue( cur.getCreationTime() ) );
         attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
         serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
@@ -348,8 +348,8 @@ public class Backup
                 attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType() );
                 attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
                 attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner().getName() );
-                attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getOwnerGroup().getName() );
-                attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( perms[i].getPermissions() ) );
+                attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getGroup().getName() );
+                attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( perms[i].getMode() ) );
                 Date date = ris.getCreationTime();
 
                 if( date != null ) {

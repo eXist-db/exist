@@ -70,7 +70,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 	        if (ums != null) {
 	
 	            Permission p = PermissionFactory.getPermission();
-	            p.setPermissions(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
+	            p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
 	            ums.setPermissions(adminCollection, p);
 	
 	            Collection guestCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest",

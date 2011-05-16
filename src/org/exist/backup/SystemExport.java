@@ -378,8 +378,8 @@ public class SystemExport
             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", uri.toString() );
             attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
             attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", current.getPermissions().getOwner().getName() );
-            attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", current.getPermissions().getOwnerGroup().getName() );
-            attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( current.getPermissions().getPermissions() ) );
+            attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", current.getPermissions().getGroup().getName() );
+            attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( current.getPermissions().getMode() ) );
 
             try {
                 attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue( new Date( current.getCreationTime() ) ).getStringValue() );
@@ -499,8 +499,8 @@ public class SystemExport
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString() );
         attr.addAttribute( Namespaces.EXIST_NS, "skip", "skip", "CDATA", ( needsBackup ? "no" : "yes" ) );
         attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", doc.getPermissions().getOwner().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getOwnerGroup().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( doc.getPermissions().getPermissions() ) );
+        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getGroup().getName() );
+        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( doc.getPermissions().getMode() ) );
 
         // be careful when accessing document metadata: it is stored in a
         // different place than the

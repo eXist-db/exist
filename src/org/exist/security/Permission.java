@@ -29,18 +29,18 @@ import org.exist.util.SyntaxException;
 
 public interface Permission {
 	
-	public final static int DEFAULT_PERM = 0755;
+    public final static int DEFAULT_PERM = 0755;
+
+    public final static int READ = 4;
+    public final static int WRITE = 2;
+    public final static int UPDATE = 1;
+    public final static int EXECUTE = 1;
 	
-	public final static int READ = 4;
-	public final static int WRITE = 2;
-	public final static int UPDATE = 1;
-	public final static int EXECUTE = 1;
-	
-	public final static String USER_STRING = "user";
+    public final static String USER_STRING = "user";
     public final static String GROUP_STRING = "group";
     public final static String OTHER_STRING = "other";
 	
-	public int getGroupPermissions();
+    public int getGroupMode();
 
     /**
      * Gets the user who owns this resource
@@ -52,30 +52,30 @@ public interface Permission {
     /**
      * Gets the group 
      *
-     * @return The ownerGroup value
+     * @return The group value
      */
-    public Group getOwnerGroup();
+    public Group getGroup();
 
     /**
-     * Get the permissions
+     * Get the mode
      *
-     * @return The permissions value
+     * @return The mode value
      */
-    public int getPermissions();
+    public int getMode();
 
     /**
-     * Get the active permissions for others
+     * Get the active mode for others
      *
-     * @return The publicPermissions value
+     * @return The mode value
      */
-    public int getPublicPermissions();
+    public int getOtherMode();
 
     /**
-     * Get the active permissions for the owner
+     * Get the active mode for the owner
      *
-     * @return The userPermissions value
+     * @return The mode value
      */
-    public int getUserPermissions();
+    public int getOwnerMode();
     
     /**
      * Set the owner group by group id
@@ -105,11 +105,11 @@ public interface Permission {
     public void setGroup(Subject invokingUser, String name);
 
     /**
-     * Sets permissions for group
+     * Sets mode for group
      *
-     * @param  perm  The new groupPermissions value
+     * @param  perm  The new group mode value
      */
-    public void setGroupPermissions(int perm);
+    public void setGroupMode(int perm);
 
     /**
      * Set the owner passed as account id
@@ -139,46 +139,46 @@ public interface Permission {
     public void setOwner(Subject invokingUser, String user);
 
     /**
-     *  Set permissions using a string. The string has the
+     *  Set mode using a string. The string has the
      * following syntax:
      * 
      * [user|group|other]=[+|-][read|write|update]
      * 
-     * For example, to set read and write permissions for the group, but
+     * For example, to set read and write mode for the group, but
      * not for others:
      * 
      * group=+read,+write,other=-read,-write
      * 
      * The new settings are or'ed with the existing settings.
      * 
-     *@param  str                  The new permissions
+     *@param  modeStr                  The new mode
      *@exception  SyntaxException  Description of the Exception
      */
-    public void setPermissions(String str) throws SyntaxException;
+    public void setMode(String modeStr) throws SyntaxException;
 
     /**
-     *  Set permissions
+     *  Set mode
      *
-     *@param  perm  The new permissions value
+     *@param  mode  The new mode value
      */
-    public void setPermissions( int perm );
+    public void setMode( int mode );
 
     /**
-     *  Set permissions for others
+     *  Set mode for others
      *
-     *@param  perm  The new publicPermissions value
+     *@param  mode  The new mode value
      */
-    public void setPublicPermissions( int perm );
+    public void setOtherMode( int mode );
 
     /**
-     *  Set permissions for the owner
+     *  Set mode for the owner
      *
-     *@param  perm  The new userPermissions value
+     *@param  mode  The new mode value
      */
-    public void setUserPermissions( int perm );
+    public void setOwnerMode( int mode );
 
     /**
-     *  Format permissions 
+     *  Format mode
      *
      *@return    Description of the Return Value
      */
@@ -186,13 +186,13 @@ public interface Permission {
     public String toString();
 
     /**
-     *  Check  if user has the requested permissions for this resource.
+     *  Check  if user has the requested mode for this resource.
      *
      *@param  user  The user
-     *@param  perm  The requested permissions
-     *@return       true if user has the requested permissions
+     *@param  mode  The requested mode
+     *@return       true if user has the requested mode
      */
-    public boolean validate(Subject user, int perm);
+    public boolean validate(Subject user, int mode);
 
     public void write(VariableByteOutputStream ostream);
 

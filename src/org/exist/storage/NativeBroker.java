@@ -635,7 +635,7 @@ public class NativeBroker extends DBBroker {
                     current = new Collection(XmldbURI.ROOT_COLLECTION_URI);
                     
                     Permission perm = current.getPermissions();
-                    perm.setPermissions(0777);
+                    perm.setMode(0777);
                     perm.setOwner(getSubject());
                     perm.setGroup(getSubject().getPrimaryGroup());
                     
@@ -672,7 +672,7 @@ public class NativeBroker extends DBBroker {
                         sub = new Collection(path);
 
                         Permission perm = current.getPermissions();
-                        perm.setPermissions(0777);
+                        perm.setMode(0777);
                         perm.setOwner(getSubject());
                         perm.setGroup(getSubject().getPrimaryGroup());
 
@@ -1797,7 +1797,7 @@ public class NativeBroker extends DBBroker {
                 //LOG.debug("document '" + fileName + "' not found!");
                 return null;
             }
-            //if (!doc.getPermissions().validate(getUser(), Permission.READ))
+            //if (!doc.getMode().validate(getUser(), Permission.READ))
                 //throw new PermissionDeniedException("not allowed to read document");
              if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                  BinaryDocument bin = (BinaryDocument)doc;

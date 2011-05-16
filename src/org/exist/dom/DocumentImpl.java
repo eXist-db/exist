@@ -260,7 +260,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     }
     
     /**
-     * The method <code>getPermissions</code>
+     * The method <code>getMode</code>
      *
      * @return a <code>Permission</code> value
      */
@@ -269,26 +269,26 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     }
     
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param mode an <code>int</code> value
      */
     public void setPermissions(int mode) {
-        permissions.setPermissions(mode);
+        permissions.setMode(mode);
     }
 
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param mode a <code>String</code> value
      * @exception SyntaxException if an error occurs
      */
     public void setPermissions(String mode) throws SyntaxException {
-        permissions.setPermissions(mode);
+        permissions.setMode(mode);
     }
 
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param perm a <code>Permission</code> value
      */

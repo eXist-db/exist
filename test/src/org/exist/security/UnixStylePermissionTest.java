@@ -63,8 +63,8 @@ public class UnixStylePermissionTest {
 
         //test read(...) set values
         assertEquals(permission.getOwner(), mockOwner2);
-        assertEquals(permission.getOwnerGroup(), mockOwnerGroup2);
-        assertEquals(permission.getPermissions(), mode2);
+        assertEquals(permission.getGroup(), mockOwnerGroup2);
+        assertEquals(permission.getMode(), mode2);
 
     }
 
@@ -76,7 +76,7 @@ public class UnixStylePermissionTest {
             //set values directly
             this.owner = owner;
             this.ownerGroup = ownerGroup;
-            setPermissions(mode);
+            setMode(mode);
         }
     }
 }

@@ -110,7 +110,7 @@ public class ExistCollection extends ExistResource {
             lastModified = creationTime; // Collection does not have more information.
 
             ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getOwnerGroup().getName();
+            ownerGroup = permissions.getGroup().getName();
 
 
         } catch (EXistException e) {
