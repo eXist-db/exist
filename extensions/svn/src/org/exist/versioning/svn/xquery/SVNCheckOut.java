@@ -79,7 +79,13 @@ public class SVNCheckOut extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        WorkingCopy wc = new WorkingCopy("", "");
+		String login = "";
+		String password = "";
+		if (args.length == 4) {
+			login = args[2].getStringValue();
+			password = args[3].getStringValue();
+		}
+        WorkingCopy wc = new WorkingCopy(login, password);
         String uri = args[0].getStringValue();
         String destPath = args[1].getStringValue();
         
