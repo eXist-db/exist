@@ -51,10 +51,10 @@ public class SVNCommit extends BasicFunction {
 			new QName("commit", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Commits files or directories into repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("login", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user login."),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user password."),
                 new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
-                new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message.")
+                new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message."),
+                new FunctionParameterSequenceType("login", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user login."),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user password.")
             },
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the revision number the repository was committed to"));
 
@@ -76,10 +76,10 @@ public class SVNCommit extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        String user = args[0].getStringValue();
-        String password = args[1].getStringValue();
-        String wcDir = args[2].getStringValue();
-        String comment = args[3].getStringValue();
+        String wcDir = args[0].getStringValue();
+        String comment = args[2].getStringValue();
+        String user = args[3].getStringValue();
+        String password = args[4].getStringValue();
         
         SVNCommitInfo info = null;
         
