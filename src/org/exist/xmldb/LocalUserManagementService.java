@@ -131,8 +131,8 @@ public class LocalUserManagementService implements UserManagementService {
 						+ document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
-            if (!manager.hasGroup(perm.getOwnerGroup()))
-                manager.addGroup(perm.getOwnerGroup());
+            if (!manager.hasGroup(perm.getGroup()))
+                manager.addGroup(perm.getGroup());
             broker.storeXMLResource(transaction, document);
         
             transact.commit(transaction);
@@ -174,8 +174,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this collection");
             }
-            if (!manager.hasGroup(perm.getOwnerGroup()))
-                manager.addGroup(perm.getOwnerGroup());
+            if (!manager.hasGroup(perm.getGroup()))
+                manager.addGroup(perm.getGroup());
 			coll.setPermissions(perm);
 			broker.saveCollection(transaction, coll);
             transact.commit(transaction);

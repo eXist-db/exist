@@ -589,8 +589,8 @@ public class RpcConnection implements RpcAPI {
                 	HashMap<String, Object> hash = new HashMap<String, Object>(4);
                     hash.put("name", doc.getFileURI().toString());
                     hash.put("owner", perms.getOwner().getName());
-                    hash.put("group", perms.getOwnerGroup().getName());
-                    hash.put("permissions", new Integer(perms.getPermissions()));
+                    hash.put("group", perms.getGroup().getName());
+                    hash.put("permissions", new Integer(perms.getMode()));
                     hash.put("type",
                             doc.getResourceType() == DocumentImpl.BINARY_FILE
                             ? "BinaryResource"
@@ -606,8 +606,8 @@ public class RpcConnection implements RpcAPI {
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
             desc.put("owner", perms.getOwner().getName());
-            desc.put("group", perms.getOwnerGroup().getName());
-            desc.put("permissions", Integer.valueOf(perms.getPermissions()));
+            desc.put("group", perms.getGroup().getName());
+            desc.put("permissions", Integer.valueOf(perms.getMode()));
             return desc;
         } finally {
             if(collection != null)
@@ -661,8 +661,8 @@ public class RpcConnection implements RpcAPI {
             Permission perms = doc.getPermissions();
             hash.put("name", resourceUri.toString());
             hash.put("owner", perms.getOwner().getName());
-            hash.put("group", perms.getOwnerGroup().getName());
-            hash.put("permissions", new Integer(perms.getPermissions()));
+            hash.put("group", perms.getGroup().getName());
+            hash.put("permissions", new Integer(perms.getMode()));
             hash.put("type",
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
@@ -725,8 +725,8 @@ public class RpcConnection implements RpcAPI {
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
             desc.put("owner", perms.getOwner().getName());
-            desc.put("group", perms.getOwnerGroup().getName());
-            desc.put("permissions", Integer.valueOf(perms.getPermissions()));
+            desc.put("group", perms.getGroup().getName());
+            desc.put("permissions", Integer.valueOf(perms.getMode()));
             return desc;
         } finally {
             if(collection != null)
@@ -1468,8 +1468,8 @@ public class RpcConnection implements RpcAPI {
             	Permission perm = doc.getPermissions();
             	List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
-                tmp.add(perm.getOwnerGroup().getName());
-                tmp.add(Integer.valueOf(perm.getPermissions()));
+                tmp.add(perm.getGroup().getName());
+                tmp.add(Integer.valueOf(perm.getMode()));
                 result.put(doc.getFileURI().toString(), tmp);
             }
             return result;
@@ -1522,8 +1522,8 @@ public class RpcConnection implements RpcAPI {
                 Permission perm = childColl.getPermissions();
                 List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
-                tmp.add(perm.getOwnerGroup().getName());
-                tmp.add(Integer.valueOf(perm.getPermissions()));
+                tmp.add(perm.getGroup().getName());
+                tmp.add(Integer.valueOf(perm.getMode()));
                 result.put(child, tmp);
             }
             return result;
@@ -1553,7 +1553,7 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
-     * The method <code>getPermissions</code>
+     * The method <code>getMode</code>
      *
      * @param name a <code>String</code> value
      * @return a <code>HashMap</code> value
@@ -1568,7 +1568,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     /**
-     * The method <code>getPermissions</code>
+     * The method <code>getMode</code>
      *
      * @param uri a <code>XmldbURI</code> value
      * @return a <code>HashMap</code> value
@@ -1599,8 +1599,8 @@ public class RpcConnection implements RpcAPI {
             }
             HashMap<String, Object> result = new HashMap<String, Object>();
             result.put("owner", perm.getOwner().getName());
-            result.put("group", perm.getOwnerGroup().getName());
-            result.put("permissions", Integer.valueOf(perm.getPermissions()));
+            result.put("group", perm.getGroup().getName());
+            result.put("permissions", Integer.valueOf(perm.getMode()));
             return result;
         } finally {
         	if (collection != null)
@@ -3379,7 +3379,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param resource a <code>String</code> value
      * @param owner a <code>String</code> value
@@ -3398,7 +3398,7 @@ public class RpcConnection implements RpcAPI {
     }    
 
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param uri a <code>XmldbURI</code> value
      * @param owner a <code>String</code> value
@@ -3441,7 +3441,7 @@ public class RpcConnection implements RpcAPI {
                         perm.setGroup(ownerGroup);
                     }
                     if (permissions != null && permissions.length() > 0)
-                        perm.setPermissions(permissions);
+                        perm.setMode(permissions);
                     broker.storeXMLResource(transaction, doc);
                     transact.commit(transaction);
                     broker.flush();
@@ -3457,7 +3457,7 @@ public class RpcConnection implements RpcAPI {
                 if (perm.validate(user, Permission.WRITE)
                 || manager.hasAdminPrivileges(user)) {
                     if (permissions != null)
-                        perm.setPermissions(permissions);
+                        perm.setMode(permissions);
                     if (owner != null) {
                         if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
                             throw new PermissionDeniedException("not allowed to change permissions");
@@ -3497,7 +3497,7 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param resource a <code>String</code> value
      * @param owner a <code>String</code> value
@@ -3516,7 +3516,7 @@ public class RpcConnection implements RpcAPI {
     }    
 
     /**
-     * The method <code>setPermissions</code>
+     * The method <code>setMode</code>
      *
      * @param uri a <code>XmldbURI</code> value
      * @param owner a <code>String</code> value
@@ -3556,7 +3556,7 @@ public class RpcConnection implements RpcAPI {
                             manager.addGroup(ownerGroup);
                         perm.setGroup(ownerGroup);
                     }
-                    perm.setPermissions(permissions);
+                    perm.setMode(permissions);
                     broker.storeXMLResource(transaction, doc);
                     transact.commit(transaction);
                     broker.flush();
@@ -3570,7 +3570,7 @@ public class RpcConnection implements RpcAPI {
             LOG.debug("changing permissions on collection " + uri);
             Permission perm = collection.getPermissions();
             if (perm.validate(user, Permission.WRITE) || manager.hasAdminPrivileges(user)) {
-                perm.setPermissions(permissions);
+                perm.setMode(permissions);
                 if (owner != null) {
                     if (!(user.equals(perm.getOwner()) || manager.hasAdminPrivileges(user)))
                         throw new PermissionDeniedException("not allowed to change permissions");

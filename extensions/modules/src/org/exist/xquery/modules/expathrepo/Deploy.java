@@ -415,10 +415,10 @@ public class Deploy extends BasicFunction {
 		if (perms > -1)
 			mode = perms;
 		else
-			mode = permission.getPermissions();
+			mode = permission.getMode();
 		if (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))
 			mode = mode | 0111;
-		permission.setPermissions(mode);
+		permission.setMode(mode);
 	}
 	
 	private ElementImpl findElement(NodeImpl root, QName qname) throws XPathException {

@@ -84,7 +84,7 @@ public class UnixStylePermission implements Permission {
      * @return The groupPermissions value
      */
     @Override
-    public int getGroupPermissions() {
+    public int getGroupMode() {
         return ( permissions & 0x38 ) >> 3;
     }
 
@@ -106,7 +106,7 @@ public class UnixStylePermission implements Permission {
      * @return    The ownerGroup value
      */
     @Override
-    public Group getOwnerGroup() {
+    public Group getGroup() {
         return ownerGroup;
     }
 
@@ -117,7 +117,7 @@ public class UnixStylePermission implements Permission {
      * @return    The permissions value
      */
     @Override
-    public int getPermissions() {
+    public int getMode() {
         return permissions;
     }
 
@@ -128,7 +128,7 @@ public class UnixStylePermission implements Permission {
      * @return    The publicPermissions value
      */
     @Override
-    public int getPublicPermissions() {
+    public int getOtherMode() {
         return permissions & 0x7;
     }
 
@@ -139,7 +139,7 @@ public class UnixStylePermission implements Permission {
      * @return    The userPermissions value
      */
     @Override
-    public int getUserPermissions() {
+    public int getOwnerMode() {
         return ( permissions & 0x1c0 ) >> 6;
     }
 
@@ -170,7 +170,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The new groupPermissions value
      */
     @Override
-    public void setGroupPermissions( int perm ) {
+    public void setGroupMode( int perm ) {
         permissions = permissions | ( perm << 3 );
     }
 
@@ -213,7 +213,7 @@ public class UnixStylePermission implements Permission {
      *@exception  SyntaxException  Description of the Exception
      */
     @Override
-    public void setPermissions( String str ) throws SyntaxException {
+    public void setMode( String str ) throws SyntaxException {
         StringTokenizer tokenizer = new StringTokenizer( str, ",= " );
         String token;
         int shift = -1;
@@ -260,7 +260,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The new permissions value
      */
     @Override
-    public void setPermissions( int perm ) {
+    public void setMode( int perm ) {
         this.permissions = perm;
     }
 
@@ -271,7 +271,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The new publicPermissions value
      */
     @Override
-    public void setPublicPermissions( int perm ) {
+    public void setOtherMode( int perm ) {
         permissions = permissions | perm;
     }
 
@@ -282,7 +282,7 @@ public class UnixStylePermission implements Permission {
      *@param  perm  The new userPermissions value
      */
     @Override
-    public void setUserPermissions( int perm ) {
+    public void setOwnerMode( int perm ) {
         permissions = permissions | ( perm << 6 );
     }
 

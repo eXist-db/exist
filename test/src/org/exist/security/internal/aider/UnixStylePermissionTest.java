@@ -42,7 +42,7 @@ public class UnixStylePermissionTest {
 
         for(SecurityTestPair sec : securityTestPairs) {
             UnixStylePermission perm = UnixStylePermission.fromString(sec.permissionString);
-            assertEquals(sec.permission, perm.getPermissions());
+            assertEquals(sec.permission, perm.getMode());
             assertEquals(sec.permissionString, perm.toString());
         }
     }

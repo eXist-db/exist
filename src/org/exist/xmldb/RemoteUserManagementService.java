@@ -72,8 +72,8 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(1);
 			params.add(path);
 			params.add(perms.getOwner().getName());
-			params.add(perms.getOwnerGroup().getName());
-			params.add(new Integer(perms.getPermissions()));
+			params.add(perms.getGroup().getName());
+			params.add(new Integer(perms.getMode()));
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -89,8 +89,8 @@ public class RemoteUserManagementService implements UserManagementService {
             List<Object> params = new ArrayList<Object>(4);
 			params.add(path);
 			params.add(perms.getOwner().getName());
-			params.add(perms.getOwnerGroup().getName());
-			params.add(new Integer(perms.getPermissions()));
+			params.add(perms.getGroup().getName());
+			params.add(new Integer(perms.getMode()));
 			parent.getClient().execute("setPermissions", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -331,7 +331,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				perm[i] = new UnixStylePermission();
 				perm[i].setOwner((String) t[0]);
 				perm[i].setGroup((String) t[1]);
-				perm[i].setPermissions(((Integer) t[2]).intValue());
+				perm[i].setMode(((Integer) t[2]).intValue());
 			}
 			return perm;
 		} catch (XmlRpcException e) {
@@ -353,7 +353,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				perm[i] = new UnixStylePermission();
 				perm[i].setOwner((String) t[0]);
 				perm[i].setGroup((String) t[1]);
-				perm[i].setPermissions(((Integer) t[2]).intValue());
+				perm[i].setMode(((Integer) t[2]).intValue());
 			}
 			return perm;
 		} catch (XmlRpcException e) {

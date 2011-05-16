@@ -373,7 +373,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
     
 	/* (non-Javadoc)
-	 * @see org.exist.xmldb.EXistResource#getPermissions()
+	 * @see org.exist.xmldb.EXistResource#getMode()
 	 */
 	public Permission getPermissions() throws XMLDBException {
         if (isNewResource)

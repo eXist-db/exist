@@ -520,8 +520,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 //                    hash = new Hashtable(4);
                     dd.setName(doc.getFileURI().toString());
                     dd.setOwner(perms.getOwner().getName());
-                    dd.setGroup(perms.getOwnerGroup().getName());
-                    dd.setPermissions(perms.getPermissions());
+                    dd.setGroup(perms.getGroup().getName());
+                    dd.setPermissions(perms.getMode());
                     dd.setType(doc.getResourceType() == DocumentImpl.BINARY_FILE
                             ? DocumentType.BinaryResource
                             : DocumentType.XMLResource);
@@ -536,8 +536,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             desc.setName(collection.getURI().toString());
             desc.setCreated(collection.getCreationTime());
             desc.setOwner(perms.getOwner().getName());
-            desc.setGroup(perms.getOwnerGroup().getName());
-            desc.setPermissions(perms.getPermissions());
+            desc.setGroup(perms.getGroup().getName());
+            desc.setPermissions(perms.getMode());
             return desc;
         } catch (Exception ex){
             throw new RemoteException(ex.getMessage());
@@ -581,7 +581,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                         perm.setOwner(owner);
                         perm.setGroup(ownerGroup);
                     }
-                    perm.setPermissions(permissions);
+                    perm.setMode(permissions);
 // TODO check XML/Binary resource
 //                    broker.storeDocument(transaction, doc);
                     broker.storeXMLResource(transaction, doc);
@@ -597,7 +597,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             Permission perm = collection.getPermissions();
             if (perm.getOwner().equals(session.getUser())
             || manager.hasAdminPrivileges(session.getUser())) {
-                perm.setPermissions(permissions);
+                perm.setMode(permissions);
                 if (owner != null) {
                     perm.setOwner(owner);
                     perm.setGroup(ownerGroup);
@@ -1119,8 +1119,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	            }
 	            Permissions p = new Permissions();
 	            p.setOwner(perm.getOwner().getName());
-	            p.setGroup(perm.getOwnerGroup().getName());
-	            p.setPermissions(perm.getPermissions());
+	            p.setGroup(perm.getGroup().getName());
+	            p.setPermissions(perm.getMode());
 	            return p;
             } finally {
             	if (collection != null)
@@ -1167,8 +1167,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 result[cnt] = new EntityPermissions();
                 result[cnt].setName(child.toString());
                 result[cnt].setOwner(perm.getOwner().getName());
-                result[cnt].setGroup(perm.getOwnerGroup().getName());
-                result[cnt].setPermissions(perm.getPermissions());
+                result[cnt].setGroup(perm.getGroup().getName());
+                result[cnt].setPermissions(perm.getMode());
                 cnt++;
             }
             return new EntityPermissionsList(result);
@@ -1212,8 +1212,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 result[cnt] = new EntityPermissions();
                 result[cnt].setName(doc.getFileURI().toString());
                 result[cnt].setOwner(perm.getOwner().getName());
-                result[cnt].setGroup(perm.getOwnerGroup().getName());
-                result[cnt].setPermissions(perm.getPermissions());
+                result[cnt].setGroup(perm.getGroup().getName());
+                result[cnt].setPermissions(perm.getMode());
                 cnt++;
             }
             return new EntityPermissionsList(result);

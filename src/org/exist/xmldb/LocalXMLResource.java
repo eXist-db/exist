@@ -466,7 +466,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xmldb.EXistResource#getPermissions()
+	 * @see org.exist.xmldb.EXistResource#getMode()
 	 */
 	public Permission getPermissions() throws XMLDBException {
 	    DBBroker broker = null;

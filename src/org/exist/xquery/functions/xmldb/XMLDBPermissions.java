@@ -78,7 +78,7 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 		throws XPathException {
 		try {
 			Permission perm = getPermissions(collection, args);
-			return new IntegerValue(perm.getPermissions(), Type.INT);
+			return new IntegerValue(perm.getMode(), Type.INT);
         } catch (XMLDBException xe) {
             logger.error("Unable to retrieve resource permissions");
             throw new XPathException(this, "Unable to retrieve resource permissions", xe);

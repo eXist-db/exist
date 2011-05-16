@@ -221,7 +221,7 @@ public class ResourcePropertyDialog extends JDialog {
 		for (int i = 0; i < allGroups.length; i++)
 			gl.addElement(allGroups[i]);
 		groups = new JComboBox(gl);
-		groups.setSelectedItem(permissions.getOwnerGroup().getName());
+		groups.setSelectedItem(permissions.getGroup().getName());
 		c.gridx = 1;
 		c.gridy = 5;
 		c.anchor = GridBagConstraints.EAST;
@@ -277,15 +277,15 @@ public class ResourcePropertyDialog extends JDialog {
 				"Permissions"));
 
 		userPerms = new JCheckBox[3];
-		JComponent c = getPermissionsBox("user", userPerms, permissions.getUserPermissions());
+		JComponent c = getPermissionsBox("user", userPerms, permissions.getOwnerMode());
 		hbox.add(c);
 
 		groupPerms = new JCheckBox[3];
-		c = getPermissionsBox("group", groupPerms, permissions.getGroupPermissions());
+		c = getPermissionsBox("group", groupPerms, permissions.getGroupMode());
 		hbox.add(c);
 
 		worldPerms = new JCheckBox[3];
-		c = getPermissionsBox("world", worldPerms, permissions.getPublicPermissions());
+		c = getPermissionsBox("world", worldPerms, permissions.getOtherMode());
 		hbox.add(c);
 		return hbox;
 	}
@@ -327,7 +327,7 @@ public class ResourcePropertyDialog extends JDialog {
 			(checkPermissions(userPerms) << 6)
 				| (checkPermissions(groupPerms) << 3)
 				| checkPermissions(worldPerms);
-		permissions.setPermissions(perms);
+		permissions.setMode(perms);
 		this.setVisible(false);
 		result = APPLY_OPTION;
 	}

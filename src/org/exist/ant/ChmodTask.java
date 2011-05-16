@@ -54,9 +54,9 @@ public class ChmodTask extends UserTask {
         		Permission perm = UnixStylePermission.fromString(mode);
         		if (resource != null) {
                     Resource res = base.getResource(resource);
-                    service.chmod(res, perm.getPermissions());
+                    service.chmod(res, perm.getMode());
                 } else {
-                    service.chmod(perm.getPermissions());
+                    service.chmod(perm.getMode());
                 }
         	} else {
 	            if (resource != null) {

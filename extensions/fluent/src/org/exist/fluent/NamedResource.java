@@ -55,7 +55,7 @@ public abstract class NamedResource extends Resource {
 		 * 
 		 * @return the owning group of this resource
 		 */
-		public String group() {return permissions.getOwnerGroup().getName();}
+		public String group() {return permissions.getGroup().getName();}
 		
 		/**
 		 * Set the group that will have privileged access to this resource for purposes of permission management.
@@ -89,7 +89,7 @@ public abstract class NamedResource extends Resource {
 				case 'o': break;
 				default: throw new IllegalArgumentException("illegal permission \"who\" code '" + who + "'");
 			}
-			return (permissions.getPermissions() & mask) == mask;
+			return (permissions.getMode() & mask) == mask;
 		}
 		
 		private int convertPermissionBit(char what) {
@@ -148,18 +148,18 @@ public abstract class NamedResource extends Resource {
 				int newPerms;
 				switch(matcher.group(2).charAt(0)) {
 					case '=': newPerms = mask; break;
-					case '+': newPerms = permissions.getPermissions() | mask;
-					case '-': newPerms = permissions.getPermissions() & ~mask;
+					case '+': newPerms = permissions.getMode() | mask;
+					case '-': newPerms = permissions.getMode() & ~mask;
 					default: throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
 				}
-				permissions.setPermissions(newPerms);
+				permissions.setMode(newPerms);
 			}
 		}
 		
 		public String toString() {
 			StringBuilder buf = new StringBuilder();
-			if (permissions.getUserPermissions() == permissions.getGroupPermissions()
-					&& permissions.getUserPermissions() == permissions.getPublicPermissions()) {
+			if (permissions.getOwnerMode() == permissions.getGroupMode()
+					&& permissions.getOwnerMode() == permissions.getOtherMode()) {
 				appendPermissions('a', 'u', buf); buf.append(' ');
 			} else {
 				appendPermissions('u', 'u', buf);  buf.append(',');

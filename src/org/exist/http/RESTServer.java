@@ -1874,7 +1874,7 @@ public class RESTServer {
 
 	protected void addPermissionAttributes(AttributesImpl attrs, Permission perm) {
 		attrs.addAttribute("", "owner", "owner", "CDATA", perm.getOwner().getName());
-		attrs.addAttribute("", "group", "group", "CDATA", perm.getOwnerGroup().getName());
+		attrs.addAttribute("", "group", "group", "CDATA", perm.getGroup().getName());
 		attrs.addAttribute("", "permissions", "permissions", "CDATA", perm.toString());
 	}
 

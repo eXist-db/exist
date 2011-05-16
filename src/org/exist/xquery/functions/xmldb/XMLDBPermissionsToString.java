@@ -95,7 +95,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
             String permissionsString = args[0].itemAt(0).getStringValue();
             try {
                 Permission perm = UnixStylePermission.fromString(permissionsString);
-                return new IntegerValue(perm.getPermissions());
+                return new IntegerValue(perm.getMode());
             } catch(SyntaxException se) {
                 throw new XPathException(se.getMessage(), se);
             }

@@ -110,7 +110,7 @@ public class ExistDocument extends ExistResource {
 
 
             ownerUser = permissions.getOwner().getUsername();
-            ownerGroup = permissions.getOwnerGroup().getName();
+            ownerGroup = permissions.getGroup().getName();
 
             // Get (estimated) file size
             contentLength = document.getContentLength();

@@ -359,7 +359,7 @@ public class InteractiveClient {
             if (properties.getProperty("permissions").equals("true")) {
                 cols[0] = perm.toString();
                 cols[1] = perm.getOwner().getName();
-                cols[2] = perm.getOwnerGroup().getName();
+                cols[2] = perm.getGroup().getName();
                 cols[3] = URIUtils.urlDecodeUtf8(childCollections[i]);
                 resources[i] = 'd' + formatString(cols, colSizes);
             } else {
@@ -372,7 +372,7 @@ public class InteractiveClient {
                 tableData.add( new ResourceDescriptor.Collection(
                         XmldbURI.create(childCollections[i]),
                         perm.getOwner().getName(),
-                        perm.getOwnerGroup().getName(),
+                        perm.getGroup().getName(),
                         perm.toString(), created ) );
             }
             completitions.add(childCollections[i]);
@@ -385,7 +385,7 @@ public class InteractiveClient {
                 System.out.println("null");
             if (properties.getProperty("permissions").equals("true")) {
                 resources[i] = '-' + perm.toString() + '\t' + perm.getOwner()
-                + '\t' + perm.getOwnerGroup() + '\t'
+                + '\t' + perm.getGroup() + '\t'
                         + URIUtils.urlDecodeUtf8(childResources[j]);
             } else
                 resources[i] = URIUtils.urlDecodeUtf8(childResources[j]);
@@ -397,7 +397,7 @@ public class InteractiveClient {
                 tableData.add(new ResourceDescriptor.Document(
                         XmldbURI.create(childResources[j]),
                         perm.getOwner().getName(),
-                        perm.getOwnerGroup().getName(),
+                        perm.getGroup().getName(),
                         perm.toString(),
                         lastModificationTime ) );
             }
