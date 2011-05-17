@@ -7,7 +7,7 @@
         version="1.0">
 
     <xsl:param name="xslt.exist.version"/>
-    
+
   <!-- used by multi-form pages -->
     <xsl:param name="page"/>
 
@@ -169,7 +169,7 @@
 	</xsl:template>
 	
     <xsl:template match="link|sidebar:link">
-        <a href="{@href}"><xsl:apply-templates/></a>
+        <a><xsl:copy-of select="@*"/><xsl:apply-templates/></a>
     </xsl:template>
 
     <xsl:template match="author">

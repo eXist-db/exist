@@ -39,6 +39,8 @@ else if ($exist:resource = ('search.xql', 'functions.xql', 'svnlog.xql')) then
 				    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
 				<set-attribute name="xslt.output.doctype-system"
 				    value="resources/xhtml1-transitional.dtd"/>
+				<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
+				<set-attribute name="xslt.base" value="{$exist:root}"/>
 			</forward>
 		</view>
 		<cache-control cache="no"/>
@@ -54,6 +56,7 @@ else if ($exist:resource eq 'acronyms.xql') then
 					value="model"/>
 				<set-attribute name="xslt.stylesheet"
 					value="stylesheets/acronyms.xsl"/>
+			    <set-attribute name="xslt.base" value="{$exist:root}"/>
 			</forward>
 			<forward servlet="XSLTServlet">
 				<set-attribute name="xslt.input"
@@ -66,42 +69,10 @@ else if ($exist:resource eq 'acronyms.xql') then
 				    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
 				<set-attribute name="xslt.output.doctype-system"
 				    value="resources/xhtml1-transitional.dtd"/>
+				<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
 			</forward>
 		</view>
 	</dispatch>
-else if ($exist:resource = 'biblio.xml') then
-	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<view>
-			<forward servlet="XSLTServlet">
-				<set-attribute name="xslt.stylesheet"
-					value="stylesheets/doc2html-2.xsl"/>
-			</forward>
-		</view>
-		<cache-control cache="yes"/>
-	</dispatch>
-else if ($exist:resource eq 'biblio.xql') then
-	let $display := request:get-parameter("display", "overview")
-	let $xsl := 
-		if ($display eq "details") then "detailed.xsl" else "overview.xsl"
-	return
-		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<set-attribute name="xquery.attribute" value="model"/>
-			<view>
-			<forward servlet="XSLTServlet">
-				<set-attribute name="xslt.input"
-					value="model"/>
-				<set-attribute name="xslt.stylesheet" 
-					value="xquery/stylesheets/{$xsl}"/>
-			</forward>
-			<forward servlet="XSLTServlet">
-				<set-attribute name="xslt.input"
-					value=""/>
-				<set-attribute name="xslt.stylesheet" 
-					value="stylesheets/doc2html-2.xsl"/>
-			</forward>
-
-			</view>
-		</dispatch>
 else if ($exist:resource eq 'twitter.xql') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
        <forward url="twitter.xql"/>

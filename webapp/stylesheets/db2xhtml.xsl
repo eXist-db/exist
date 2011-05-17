@@ -6,6 +6,8 @@
 
     <xsl:param name="xslt.table-of-contents" select="'yes'"/>
     <xsl:param name="xslt.syntax-highlight" select="'yes'"/>
+
+    <xsl:param name="xslt.root" select="''"/>
     
     <xsl:param name="path" select="''"/>
 
@@ -496,11 +498,13 @@
         <xsl:choose>
             <xsl:when test="starts-with(@href, 'http://') or starts-with(@url, 'http://')">
                 <a href="{@href|@url}">
+                    <xsl:copy-of select="@*[name(.) != 'href' and name(.) != 'url']"/>
                     <xsl:apply-templates/>
                 </a>
             </xsl:when>
             <xsl:otherwise>
-                <a href="{$pathToWebapp}{@href|@url}">
+                <a href="{$xslt.root}/{@href|@url}">
+                    <xsl:copy-of select="@*[name(.) != 'href' and name(.) != 'url']"/>
                     <xsl:apply-templates/>
                 </a>
             </xsl:otherwise>
