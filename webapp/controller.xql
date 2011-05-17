@@ -119,6 +119,7 @@ return
     					    <set-attribute name="xslt.highlight-matches"
     					        value="all"/>
     				        <set-attribute name="xslt.xinclude-path" value=".."/>
+    				        <set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
     					</forward>
     				</view>
 				</dispatch>
@@ -134,6 +135,7 @@ return
 						    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
 						<set-attribute name="xslt.output.doctype-system"
 						    value="resources/xhtml1-transitional.dtd"/>
+						<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
 					    {
 					        if ($exist:resource eq 'download.xml') then
 					            <set-attribute name="xslt.table-of-contents"
