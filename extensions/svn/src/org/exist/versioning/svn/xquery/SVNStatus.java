@@ -229,7 +229,7 @@ public class SVNStatus extends BasicFunction {
     private final static QName STATUS_ATTRIBUTE = new QName("status", "", "");
     private final static QName LOCKED_ATTRIBUTE = new QName("locked", "", "");
     private final static QName WORKING_REVISION_ATTRIBUTE = new QName("last-changed-revision", "", "");
-    private final static QName LAST_CHANGED_REVISION_ATTRIBUTE = new QName("locked", "", "");
+    private final static QName LAST_CHANGED_REVISION_ATTRIBUTE = new QName("last-changed-revision", "", "");
     private final static QName AUTHOR_ATTRIBUTE = new QName("author", "", "");
     private final static QName PATH_ATTRIBUTE = new QName("path", "", "");
 }
