@@ -29,6 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -65,10 +66,9 @@ public class SVNAdd extends BasicFunction {
        
         Resource wcURI = new Resource(uri);
     	try {
-			wc.addEntry(wcURI);;
+			wc.addEntry(wcURI);
 		} catch (SVNException svne) {
-			throw new XPathException(this,
-					"error while adding location '" + uri + "'", svne);
+			throw new XPathException(this, "error while adding location '" + uri + "'", svne);
 		}
 		
 		return Sequence.EMPTY_SEQUENCE;

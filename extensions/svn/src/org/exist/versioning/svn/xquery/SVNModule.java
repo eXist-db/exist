@@ -43,7 +43,7 @@ public class SVNModule extends AbstractInternalModule {
 
 
 	private final static FunctionDef[] functions = {
-        	new FunctionDef(SVNAdd.signature, SVNCleanup.class),
+        	new FunctionDef(SVNAdd.signature, SVNAdd.class),
             new FunctionDef(SVNCleanup.signature, SVNCleanup.class),
             new FunctionDef(SVNCheckOut.signature[0], SVNCheckOut.class),
             new FunctionDef(SVNCheckOut.signature[1], SVNCheckOut.class),
@@ -53,7 +53,6 @@ public class SVNModule extends AbstractInternalModule {
             new FunctionDef(SVNList.signature, SVNList.class),
             new FunctionDef(SVNLock.signature, SVNLock.class),
             new FunctionDef(SVNLog.signature, SVNLog.class),
-            new FunctionDef(SVNSynchronize.signature, SVNSynchronize.class),
             new FunctionDef(SVNStatus.signature, SVNStatus.class),
             new FunctionDef(SVNUnlock.signature, SVNUnlock.class),
             new FunctionDef(SVNUpdate.signature, SVNUpdate.class)
@@ -78,5 +77,4 @@ public class SVNModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
 }
