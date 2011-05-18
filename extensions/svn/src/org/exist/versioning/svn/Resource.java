@@ -655,17 +655,21 @@ public class Resource extends File {
     }
     
     public long length() {
-		try {
-			init();
-		} catch (IOException e) {
-			return 0;
-		}
-
-    	if (resource != null)
-    		return resource.getContentLength();
-    	
     	return 0;
+    	
+//		try {
+//			init();
+//		} catch (IOException e) {
+//			return 0;
+//		}
+//
+//    	if (resource != null)
+//    		return resource.getContentLength();
+//    	
+//    	return 0;
     }
-
-
+    
+    public String getPath() {
+    	return uri.toString();
+    }
 }
