@@ -50,7 +50,7 @@
         <echo>-------------------------</echo>
         <echo>Downloading XML data: this may take a few minutes ...</echo>
         <mkdir dir="${benchmark.data}"/>
-        <get src="http://demo.exist-db.org/jgoethe-tei.zip"
+        <get src="http://data.exist-db.org/testdata/jgoethe-tei.zip"
             dest="${benchmark.data}/jgoethe-tei.zip" verbose="on"/>
         <unzip src="${benchmark.data}/jgoethe-tei.zip"
             dest="${benchmark.data}"/>
