@@ -301,7 +301,7 @@ public class XBot extends PircBot {
                     root.getService("UserManagementService", "1.0");
 				collection = mgr.createCollection(COLLECTION);
                 Permission perms = umgr.getPermissions(collection);
-                perms.setPermissions(0744);
+                perms.setMode(0744);
                 umgr.setPermissions(collection, perms);
 			}
 		} catch (Exception e) {
