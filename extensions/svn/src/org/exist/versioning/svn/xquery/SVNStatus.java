@@ -213,15 +213,16 @@ public class SVNStatus extends BasicFunction {
 //            + remoteChangeType
 
 
-	        int nodeNr = builder.startElement(ENTRY_ELEMENT, null);
+	        builder.startElement(ENTRY_ELEMENT, null);
+	        
 	        builder.addAttribute(STATUS_ATTRIBUTE, status.getContentsStatus().toString());
 	        builder.addAttribute(LOCKED_ATTRIBUTE, status.isLocked() ? "true" : "false");
 	        builder.addAttribute(WORKING_REVISION_ATTRIBUTE, String.valueOf(status.getRevision().getNumber()));
 	        builder.addAttribute(LAST_CHANGED_REVISION_ATTRIBUTE, lastChangedRevision >= 0 ? String.valueOf(lastChangedRevision) : "?");
 	        builder.addAttribute(AUTHOR_ATTRIBUTE, status.getAuthor() != null ? status.getAuthor() : "?");
 	        builder.addAttribute(PATH_ATTRIBUTE, status.getFile().getPath());
-
-			System.out.println(status.getFile()+" = "+status.getContentsStatus()+" / "+status.getRemoteContentsStatus());
+	        
+	        builder.endElement();
         }
     }
 
