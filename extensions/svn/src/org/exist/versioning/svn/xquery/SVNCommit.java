@@ -77,9 +77,9 @@ public class SVNCommit extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         String wcDir = args[0].getStringValue();
-        String comment = args[2].getStringValue();
-        String user = args[3].getStringValue();
-        String password = args[4].getStringValue();
+        String comment = args[1].getStringValue();
+        String user = args[2].getStringValue();
+        String password = args[3].getStringValue();
         
         SVNCommitInfo info = null;
         
