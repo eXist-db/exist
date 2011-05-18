@@ -2188,12 +2188,12 @@ public class NativeBroker extends DBBroker {
             removeResourceMetadata(transaction, doc);
             
             doc.setFileURI(newName);
-            doc.setCollection(destination);
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
                 if (!renameOnly) {
                     dropIndex(transaction, doc);
                     saveCollection(transaction, collection);
                 }
+                doc.setCollection(destination);
                 destination.addDocument(transaction, this, doc);
 
                 if (!renameOnly) {
@@ -2202,6 +2202,7 @@ public class NativeBroker extends DBBroker {
                 }
             } else {
                 // binary resource
+            	doc.setCollection(destination);
                 destination.addDocument(transaction, this, doc);             
                 
                 File colDir = getCollectionFile(fsDir,destination.getURI(),true);
