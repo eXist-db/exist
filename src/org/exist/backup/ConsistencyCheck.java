@@ -138,7 +138,8 @@ public class ConsistencyCheck {
                     callback.error(error);
                     continue;
                 }
-                checkCollection(child, errors, callback);
+                if (child.getId() != collection.getId())
+                	checkCollection(child, errors, callback);
             } catch (Exception e) {
                 ErrorReport.CollectionError error = new ErrorReport.CollectionError(org.exist.backup.ErrorReport.CHILD_COLLECTION,
                         "Error while loading child collection: " + childUri + ", parent is " + uri);
