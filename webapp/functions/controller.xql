@@ -112,18 +112,11 @@ return
               			value="model"/>
     			</forward>
           		<view>
-          		    <!-- Fix sidebar links -->
-          		    <forward url="{$exist:controller}/filter.xql">
-          		        <set-attribute name="xquery.attribute"
-              			   value="model"/>
-              		   <set-attribute name="base" value="{$context}"/>
-              	    </forward>
               	    <!-- Apply db2xhtml stylesheet -->
           			<forward servlet="XSLTServlet">
           				<set-attribute name="xslt.input"
           					value="model"/>
-          			    <set-attribute name="xslt.base"
-          			        value="{$exist:root}{$exist:controller}"/>
+          				<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
           				<set-attribute name="xslt.stylesheet" 
           					value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
           				<set-attribute name="xslt.output.media-type"
