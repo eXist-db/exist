@@ -1,21 +1,20 @@
 <?xml version="1.0"?>
 <project basedir="../.." default="static-docs" name="StaticDocs">
-    <description>Create a static version of the documentation for
-    deployment on http://exist-db.org</description>
-    
+    <description>Create a static version of the documentation for deployment on http://exist-db.org</description>
+
     <import file="../../build.xml"/>
-    
+
     <property name="url" value="http://localhost:8080/exist"/>
     <property name="demo.host" value="http://demo.exist-db.org/exist"/>
     <property name="webstart.host" value="http://demo.exist-db.org:8098/exist"/>
     <property name="sf.host" value="http://exist-db.org"/>
-    
+
     <target name="prepare-html-docs">
         <delete dir="${build.docs}" failonerror="false"/>
         <mkdir dir="${build.docs}"/>
         <mkdir dir="${build.docs.src}"/>
         <mkdir dir="${build.docs.html}"/>
-        
+
         <copy todir="${build.docs.html}/styles">
             <fileset dir="${src.webapp}/styles"/>
         </copy>
@@ -31,39 +30,41 @@
             </fileset>
         </copy>
     </target>
-    
+
     <target name="fix-html-links">
         <echo message="Fixing links in dir ${dir}"/>
         <replaceregexp flags="g">
-            <regexp pattern='href="(?!http)([^"]*)\.xml'/>
-            <substitution expression='href="\1.html'/>
+            <regexp pattern="href=&quot;(?!http)([^&quot;]*)\.xml"/>
+            <substitution expression="href=&quot;\1.html"/>
             <fileset dir="${dir}">
                 <include name="**/*.html"/>
-            </fileset>      
+            </fileset>
         </replaceregexp>
-        <replace dir="${dir}" summary="true"
-            includes="**/*.html">
-            <replacefilter token="../examples.html" value="${demo.host}/examples.xml"/>
-            <replacefilter token="examples.html" value="${demo.host}/examples.xml"/>
+        <replace dir="${dir}" summary="true" includes="**/*.html">
+            <!--replacefilter token="../examples.html" value="${demo.host}/examples.xml"/>
+            <replacefilter token="examples.html" value="${demo.host}/examples.xml"/-->
+            <replacefilter token="examples\.html" value="${demo.host}/examples.xml"/>
             <replacefilter token="../webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
-            <replacefilter token='href="webstart/exist.jnlp' value='href="${webstart.host}/webstart/exist.jnlp'/>
-            <replacefilter token='href="articles"' value='href="${demo.host}/articles"'/>
-            <replacefilter token='href="../articles"' value='href="${demo.host}/articles"'/>
+            <replacefilter token="href=&quot;webstart/exist.jnlp" value="href=&quot;${webstart.host}/webstart/exist.jnlp"/>
+            <replacefilter token="href=&quot;articles&quot;" value="href=&quot;${demo.host}/articles&quot;"/>
+            <replacefilter token="href=&quot;../articles&quot;" value="href=&quot;${demo.host}/articles&quot;"/>
+            <replacefilter token="repo/repo.html" value="${demo.host}/repo/repo.xml"/>
+            <replacefilter token="repo/public" value="${demo.host}/repo/public"/>
         </replace>
         <replace file="${dir}/scripts/main.js">
             <replacefilter token="xquery/twitter.xql" value="${demo.host}/xquery/twitter.xql"/>
             <replacefilter token="feed.xql" value="${demo.host}/feed.xql"/>
         </replace>
         <replaceregexp flags="g">
-            <regexp pattern='action="(.*)\.xql'/>
-            <substitution expression='action="${demo.host}/\1.xql'/>
+            <regexp pattern="action=&quot;(.*)\.xql"/>
+            <substitution expression="action=&quot;${demo.host}/\1.xql"/>
             <fileset dir="${dir}">
                 <include name="*.html"/>
-            </fileset>      
+            </fileset>
         </replaceregexp>
         <replaceregexp flags="g">
-            <regexp pattern='href="(?!http)([^"]*\.xql?)'/>
-            <substitution expression='href="${demo.host}/\1'/>
+            <regexp pattern="href=&quot;(?!http)([^&quot;]*\.xql?)"/>
+            <substitution expression="href=&quot;${demo.host}/\1"/>
             <fileset dir="${dir}">
                 <include name="*.html"/>
             </fileset>
@@ -77,31 +78,38 @@
             <replacefilter token="styles/" value="../styles/"/>
         </replace-->
         <replaceregexp flags="g">
-            <regexp pattern='href="(?!http)../([^"]*\.xql?)'/>
-            <substitution expression='href="${demo.host}/\1'/>
+            <regexp pattern="href=&quot;(?!http)../([^&quot;]*\.xql?)"/>
+            <substitution expression="href=&quot;${demo.host}/\1"/>
             <fileset dir="${dir}/xforms">
                 <include name="*.html"/>
             </fileset>
             <fileset dir="${dir}/xproc">
                 <include name="*.html"/>
             </fileset>
+            <!--fileset dir="${dir}/repo">
+                <include name="*.html"/>
+            </fileset-->
         </replaceregexp>
+        <!--replace file="${dir}/repo/repo.html">
+            <replacefilter token="/\.\./" value="../"/>
+            <replacefilter token="scripts/" value="../scripts/"/>
+            <replacefilter token="styles/" value="../styles/"/>
+        </replace-->
     </target>
-    
+
     <target name="fix-xml-links">
         <replaceregexp flags="g">
-            <regexp pattern='href="(?!http|examples)([^"]*)\.xml'/>
-            <substitution expression='href="${sf.host}/\1.html'/>
+            <regexp pattern="href=&quot;(?!http|examples)([^&quot;]*)\.xml"/>
+            <substitution expression="href=&quot;${sf.host}/\1.html"/>
             <fileset dir="${dir}">
                 <include name="**/sidebar.xml"/>
             </fileset>
         </replaceregexp>
-        <replace dir="${dir}" summary="true"
-            includes="sidebar.xml">
+        <replace dir="${dir}" summary="true" includes="sidebar.xml">
             <replacefilter token="webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
         </replace>
     </target>
-    
+
     <target name="static-docs" depends="prepare-html-docs,to-html">
         <antcall target="fix-html-links">
             <param name="dir" value="${build.docs.html}"/>
@@ -112,7 +120,7 @@
             </fileset>
         </zip>
     </target>
-    
+
     <target name="demoserver">
         <echo message="Copying docs to temporary location ${build.docs.src}"/>
         <copy todir="${build.docs.src}">
@@ -126,100 +134,98 @@
             <param name="dir" value="${build.docs.src}"/>
         </antcall>
     </target>
-    
-    <target name="to-html">
-        <get src='${url}/acknowledge.xml' dest='${build.docs.html}/acknowledge.html'/>
-        <get src='${url}/ant-tasks.xml' dest='${build.docs.html}/ant-tasks.html'/>
-        <get src='${url}/atompub.xml' dest='${build.docs.html}/atompub.html'/>
-        <get src='${url}/backup.xml' dest='${build.docs.html}/backup.html'/>
-        <get src='${url}/beginners-guide-to-xrx-v4.xml' dest='${build.docs.html}/beginners-guide-to-xrx-v4.html'/>
-        <get src='${url}/building.xml' dest='${build.docs.html}/building.html'/>
-        <get src='${url}/client.xml' dest='${build.docs.html}/client.html'/>
-        <get src='${url}/cluster.xml' dest='${build.docs.html}/cluster.html'/>
-        <get src='${url}/configuration.xml' dest='${build.docs.html}/configuration.html'/>
-        <get src='${url}/config-cache.xml' dest='${build.docs.html}/config-cache.html'/>
-        <get src='${url}/config-compression.xml'  dest='${build.docs.html}/config-compression.html'/>
-        <get src='${url}/config-context.xml' dest='${build.docs.html}/config-context.html'/>
-        <get src='${url}/config-counter.xml' dest='${build.docs.html}/config-counter.html'/>
-        <get src='${url}/config-datetime.xml' dest='${build.docs.html}/config-datetime.html'/>
-        <get src='${url}/config-example.xml' dest='${build.docs.html}/config-example.html'/>
-        <get src='${url}/config-file.xml' dest='${build.docs.html}/config-file.html'/>
-        <get src='${url}/config-fluent.xml' dest='${build.docs.html}/config-fluent.html'/>
-        <get src='${url}/config-openid.xml' dest='${build.docs.html}/config-openid.html'/>
-        <get src='${url}/config-versioning.xml' dest='${build.docs.html}/config-versioning.html'/>
-        <get src='${url}/config-xqdoc.xml' dest='${build.docs.html}/config-xqdoc.html'/>
-        <get src='${url}/config-xslt.xml' dest='${build.docs.html}/config-xslt.html'/>
-        <get src='${url}/credits.xml' dest='${build.docs.html}/credits.html'/>
-        <get src='${url}/debugger.xml' dest='${build.docs.html}/debugger.html'/>
-        <get src='${url}/deployment.xml' dest='${build.docs.html}/deployment.html'/>
-        <get src='${url}/devguide_codereview.xml' dest='${build.docs.html}/devguide_codereview.html'/>
-        <get src='${url}/devguide_indexes.xml' dest='${build.docs.html}/devguide_indexes.html'/>
-        <get src='${url}/devguide_log4j.xml' dest='${build.docs.html}/devguide_log4j.html'/>
-        <get src='${url}/devguide_manifesto.xml' dest='${build.docs.html}/devguide_manifesto.html'/>
-        
-        <get src='${url}/devguide_rest.xml' dest='${build.docs.html}/devguide_rest.html'/>
-        <get src='${url}/devguide_soap.xml' dest='${build.docs.html}/devguide_soap.html'/>
-        <get src='${url}/devguide.xml' dest='${build.docs.html}/devguide.html'/>
-        <get src='${url}/devguide_xmldb.xml' dest='${build.docs.html}/devguide_xmldb.html'/>
-        <get src='${url}/devguide_xmlrpc.xml' dest='${build.docs.html}/devguide_xmlrpc.html'/>
-        <get src='${url}/devguide_xquery.xml' dest='${build.docs.html}/devguide_xquery.html'/>
-        <get src='${url}/documentation.xml' dest='${build.docs.html}/documentation.html'/>
-        <get src='${url}/download.xml' dest='${build.docs.html}/download.html'/>
-        <get src='${url}/eclipse.xml' dest='${build.docs.html}/eclipse.html'/>
-        <get src='${url}/examples.xml' dest='${build.docs.html}/examples.html'/>
-        <get src='${url}/exist-stack.xml' dest='${build.docs.html}/exist-stack.html'/>
-        <get src='${url}/extensions.xml' dest='${build.docs.html}/extensions.html'/>
-        <get src='${url}/facts.xml' dest='${build.docs.html}/facts.html'/>
-        <get src='${url}/ftlegacy.xml' dest='${build.docs.html}/ftlegacy.html'/>
-        <get src='${url}/function_modules.xml' dest='${build.docs.html}/function_modules.xml.html'/>
-        <get src='${url}/header.xml' dest='${build.docs.html}/header.html'/>
-        <get src='${url}/indexing.xml' dest='${build.docs.html}/indexing.html'/>
-        <get src='${url}/index.xml' dest='${build.docs.html}/index.html'/>
-        <get src='${url}/installing-exist-on-amazon-ec2.xml' dest='${build.docs.html}/installing-exist-on-amazon-ec2.html'/>
-        <get src='${url}/jmx.xml' dest='${build.docs.html}/jmx.html'/>
-        <get src='${url}/journal.xml' dest='${build.docs.html}/journal.html'/>
-        <get src='${url}/kwic.xml' dest='${build.docs.html}/kwic.html'/>
-        <get src='${url}/ldap-security.xml' dest='${build.docs.html}/ldap-security.html'/>
-        <get src='${url}/lucene.xml' dest='${build.docs.html}/lucene.html'/>
-        <get src='${url}/ngram.xml' dest='${build.docs.html}/ngram.html'/>
-        
-        <get src='${url}/production_good_practice.xml' dest='${build.docs.html}/production_good_practice.html'/>
-        <get src='${url}/production_web_proxying.xml' dest='${build.docs.html}/production_web_proxying.html'/>
 
-        <get src='${url}/quickstart.xml' dest='${build.docs.html}/quickstart.html'/>
-        <get src='${url}/readying-centos-for-exist.xml' dest='${build.docs.html}/readying-centos-for-exist.html'/>
-        <get src='${url}/roadmap.xml' dest='${build.docs.html}/roadmap.html'/>
-        <get src='${url}/scheduler.xml' dest='${build.docs.html}/scheduler.html'/>
-        <get src='${url}/security.xml' dest='${build.docs.html}/security.html'/>
-        <get src='${url}/sidebar.xml' dest='${build.docs.html}/sidebar.html'/>
-        <get src='${url}/template.xml' dest='${build.docs.html}/template.html'/>
-        <get src='${url}/triggers.xml' dest='${build.docs.html}/triggers.html'/>
-        <get src='${url}/tuning.xml' dest='${build.docs.html}/tuning.html'/>
-        <get src='${url}/ubuntu-server.xml' dest='${build.docs.html}/ubuntu-server.html'/>
-        <get src='${url}/update_ext.xml' dest='${build.docs.html}/update_ext.html'/>
-        <get src='${url}/upgrading.xml' dest='${build.docs.html}/upgrading.html'/>
-        <get src='${url}/urlrewrite.xml' dest='${build.docs.html}/urlrewrite.html'/>
-        <get src='${url}/validation.xml' dest='${build.docs.html}/validation.html'/>
-        <get src='${url}/versioning.xml' dest='${build.docs.html}/versioning.html'/>
-        <get src='${url}/webdav.xml' dest='${build.docs.html}/webdav.html'/>
-        <get src='${url}/xacml-dev.xml' dest='${build.docs.html}/xacml-dev.html'/>
-        <get src='${url}/xacml-features.xml' dest='${build.docs.html}/xacml-features.html'/>
-        <get src='${url}/xacml-intro.xml' dest='${build.docs.html}/xacml-intro.html'/>
-        <get src='${url}/xacml-usage.xml' dest='${build.docs.html}/xacml-usage.html'/>
-        <get src='${url}/xacml.xml' dest='${build.docs.html}/xacml.html'/>
-        <get src='${url}/xinclude.xml' dest='${build.docs.html}/xinclude.html'/>
-        <get src='${url}/xmlprague06.xml' dest='${build.docs.html}/xmlprague06.html'/>
-        <get src='${url}/xquery.xml' dest='${build.docs.html}/xquery.html'/>
-        
-        <get src='${url}/production_good_practice.xml' dest='${build.docs.html}/production_good_practice.html'/>
-        <get src='${url}/production_web_proxying.xml' dest='${build.docs.html}/production_web_proxying.html'/>
-        
+    <target name="to-html">
+        <get src="${url}/acknowledge.xml" dest="${build.docs.html}/acknowledge.html"/>
+        <get src="${url}/ant-tasks.xml" dest="${build.docs.html}/ant-tasks.html"/>
+        <get src="${url}/atompub.xml" dest="${build.docs.html}/atompub.html"/>
+        <get src="${url}/backup.xml" dest="${build.docs.html}/backup.html"/>
+        <get src="${url}/beginners-guide-to-xrx-v4.xml" dest="${build.docs.html}/beginners-guide-to-xrx-v4.html"/>
+        <get src="${url}/building.xml" dest="${build.docs.html}/building.html"/>
+        <get src="${url}/client.xml" dest="${build.docs.html}/client.html"/>
+        <get src="${url}/cluster.xml" dest="${build.docs.html}/cluster.html"/>
+        <get src="${url}/configuration.xml" dest="${build.docs.html}/configuration.html"/>
+        <get src="${url}/config-cache.xml" dest="${build.docs.html}/config-cache.html"/>
+        <get src="${url}/config-compression.xml" dest="${build.docs.html}/config-compression.html"/>
+        <get src="${url}/config-context.xml" dest="${build.docs.html}/config-context.html"/>
+        <get src="${url}/config-counter.xml" dest="${build.docs.html}/config-counter.html"/>
+        <get src="${url}/config-datetime.xml" dest="${build.docs.html}/config-datetime.html"/>
+        <get src="${url}/config-example.xml" dest="${build.docs.html}/config-example.html"/>
+        <get src="${url}/config-file.xml" dest="${build.docs.html}/config-file.html"/>
+        <get src="${url}/config-fluent.xml" dest="${build.docs.html}/config-fluent.html"/>
+        <get src="${url}/config-openid.xml" dest="${build.docs.html}/config-openid.html"/>
+        <get src="${url}/config-versioning.xml" dest="${build.docs.html}/config-versioning.html"/>
+        <get src="${url}/config-xqdoc.xml" dest="${build.docs.html}/config-xqdoc.html"/>
+        <get src="${url}/config-xslt.xml" dest="${build.docs.html}/config-xslt.html"/>
+        <get src="${url}/credits.xml" dest="${build.docs.html}/credits.html"/>
+        <get src="${url}/debugger.xml" dest="${build.docs.html}/debugger.html"/>
+        <get src="${url}/deployment.xml" dest="${build.docs.html}/deployment.html"/>
+        <get src="${url}/devguide_codereview.xml" dest="${build.docs.html}/devguide_codereview.html"/>
+        <get src="${url}/devguide_indexes.xml" dest="${build.docs.html}/devguide_indexes.html"/>
+        <get src="${url}/devguide_log4j.xml" dest="${build.docs.html}/devguide_log4j.html"/>
+        <get src="${url}/devguide_manifesto.xml" dest="${build.docs.html}/devguide_manifesto.html"/>
+        <get src="${url}/devguide_rest.xml" dest="${build.docs.html}/devguide_rest.html"/>
+        <get src="${url}/devguide_soap.xml" dest="${build.docs.html}/devguide_soap.html"/>
+        <get src="${url}/devguide.xml" dest="${build.docs.html}/devguide.html"/>
+        <get src="${url}/devguide_xmldb.xml" dest="${build.docs.html}/devguide_xmldb.html"/>
+        <get src="${url}/devguide_xmlrpc.xml" dest="${build.docs.html}/devguide_xmlrpc.html"/>
+        <get src="${url}/devguide_xquery.xml" dest="${build.docs.html}/devguide_xquery.html"/>
+        <get src="${url}/documentation.xml" dest="${build.docs.html}/documentation.html"/>
+        <get src="${url}/download.xml" dest="${build.docs.html}/download.html"/>
+        <get src="${url}/eclipse.xml" dest="${build.docs.html}/eclipse.html"/>
+        <get src="${url}/examples.xml" dest="${build.docs.html}/examples.html"/>
+        <get src="${url}/exist-stack.xml" dest="${build.docs.html}/exist-stack.html"/>
+        <get src="${url}/extensions.xml" dest="${build.docs.html}/extensions.html"/>
+        <get src="${url}/facts.xml" dest="${build.docs.html}/facts.html"/>
+        <get src="${url}/ftlegacy.xml" dest="${build.docs.html}/ftlegacy.html"/>
+        <get src="${url}/function_modules.xml" dest="${build.docs.html}/function_modules.xml.html"/>
+        <get src="${url}/header.xml" dest="${build.docs.html}/header.html"/>
+        <get src="${url}/indexing.xml" dest="${build.docs.html}/indexing.html"/>
+        <get src="${url}/index.xml" dest="${build.docs.html}/index.html"/>
+        <get src="${url}/installing-exist-on-amazon-ec2.xml" dest="${build.docs.html}/installing-exist-on-amazon-ec2.html"/>
+        <get src="${url}/jmx.xml" dest="${build.docs.html}/jmx.html"/>
+        <get src="${url}/journal.xml" dest="${build.docs.html}/journal.html"/>
+        <get src="${url}/kwic.xml" dest="${build.docs.html}/kwic.html"/>
+        <get src="${url}/ldap-security.xml" dest="${build.docs.html}/ldap-security.html"/>
+        <get src="${url}/lucene.xml" dest="${build.docs.html}/lucene.html"/>
+        <get src="${url}/ngram.xml" dest="${build.docs.html}/ngram.html"/>
+        <get src="${url}/production_good_practice.xml" dest="${build.docs.html}/production_good_practice.html"/>
+        <get src="${url}/production_web_proxying.xml" dest="${build.docs.html}/production_web_proxying.html"/>
+        <get src="${url}/quickstart.xml" dest="${build.docs.html}/quickstart.html"/>
+        <get src="${url}/readying-centos-for-exist.xml" dest="${build.docs.html}/readying-centos-for-exist.html"/>
+        <get src="${url}/roadmap.xml" dest="${build.docs.html}/roadmap.html"/>
+        <get src="${url}/scheduler.xml" dest="${build.docs.html}/scheduler.html"/>
+        <get src="${url}/security.xml" dest="${build.docs.html}/security.html"/>
+        <get src="${url}/sidebar.xml" dest="${build.docs.html}/sidebar.html"/>
+        <get src="${url}/template.xml" dest="${build.docs.html}/template.html"/>
+        <get src="${url}/triggers.xml" dest="${build.docs.html}/triggers.html"/>
+        <get src="${url}/tuning.xml" dest="${build.docs.html}/tuning.html"/>
+        <get src="${url}/ubuntu-server.xml" dest="${build.docs.html}/ubuntu-server.html"/>
+        <get src="${url}/update_ext.xml" dest="${build.docs.html}/update_ext.html"/>
+        <get src="${url}/upgrading.xml" dest="${build.docs.html}/upgrading.html"/>
+        <get src="${url}/urlrewrite.xml" dest="${build.docs.html}/urlrewrite.html"/>
+        <get src="${url}/validation.xml" dest="${build.docs.html}/validation.html"/>
+        <get src="${url}/versioning.xml" dest="${build.docs.html}/versioning.html"/>
+        <get src="${url}/webdav.xml" dest="${build.docs.html}/webdav.html"/>
+        <get src="${url}/xacml-dev.xml" dest="${build.docs.html}/xacml-dev.html"/>
+        <get src="${url}/xacml-features.xml" dest="${build.docs.html}/xacml-features.html"/>
+        <get src="${url}/xacml-intro.xml" dest="${build.docs.html}/xacml-intro.html"/>
+        <get src="${url}/xacml-usage.xml" dest="${build.docs.html}/xacml-usage.html"/>
+        <get src="${url}/xacml.xml" dest="${build.docs.html}/xacml.html"/>
+        <get src="${url}/xinclude.xml" dest="${build.docs.html}/xinclude.html"/>
+        <get src="${url}/xmlprague06.xml" dest="${build.docs.html}/xmlprague06.html"/>
+        <get src="${url}/xquery.xml" dest="${build.docs.html}/xquery.html"/>
+
+
         <mkdir dir="${build.docs.html}/xforms"/>
-        <get src='${url}/xforms/xforms.xml' dest='${build.docs.html}/xforms/xforms.html'/>
+        <get src="${url}/xforms/xforms.xml" dest="${build.docs.html}/xforms/xforms.html"/>
         <mkdir dir="${build.docs.html}/xproc"/>
         <!--get src='${url}/xproc/xproc.xml' dest='${build.docs.html}/xproc/xproc.html'/-->
         <!--mkdir dir="${build.docs.html}/gsoc"/>
         <mkdir dir="${build.docs.html}/gsoc/2008"/>
         <get src='${url}/gsoc/2008/summer.xml' dest='${build.docs.html}/gsoc/2008/summer.html'/-->
+        
+        <mkdir dir="${build.docs.html}/repo"/>
+        <get src="${url}/repo/repo.xml" dest="${build.docs.html}/repo/repo.html"/>
     </target>
 </project>
