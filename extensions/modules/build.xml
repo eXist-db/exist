@@ -89,9 +89,6 @@
     <condition property="include.module.sql.config">
         <istrue value="${include.module.sql}"/>
     </condition>
-    <condition property="include.module.svn.config">
-        <istrue value="${include.module.svn}"/>
-    </condition>
     <condition property="include.module.xmldiff.config">
         <istrue value="${include.module.xmldiff}"/>
     </condition>
@@ -213,23 +210,6 @@
     </target>
 
     <!-- 
-        Special targets for svn module 
-    -->
-    <target name="prepare-svn" if="include.module.svn.config">
-        <echo message="-------------------------------------------------------"/>
-        <echo message="Downloading libraries required by the subversion module"/>
-        <echo message="-------------------------------------------------------"/>
-        
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
-                     url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
-             <patternset>
-                <include name="**/svnkit.jar"/>
-                <include name="**/svnkit-cli.jar"/>
-         </patternset>
-       </fetch>
-    </target>
-
-    <!-- 
         Special targets for jfreechart module unless="jfreechart-present"
     -->
     <target name="prepare-jfreechart" if="include.module.jfreechart.config">
@@ -284,7 +264,7 @@
         ========================================
     -->
 
-    <target name="prepare" depends="prepare-svn,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
+    <target name="prepare" depends="prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
         <mkdir dir="${classes}"/>
     </target>
 
@@ -322,7 +302,6 @@
 			<exclude name="org/exist/xquery/modules/scheduler/**" unless="include.module.scheduler.config"/>
             <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
             <exclude name="org/exist/xquery/modules/sql/**" unless="include.module.sql.config"/>
-            <exclude name="org/exist/xquery/modules/svn/**" unless="include.module.svn.config"/>
             <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
             <exclude name="org/exist/xquery/modules/xmpp/**" unless="include.module.xmpp.config"/>
             <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
@@ -331,15 +310,7 @@
         </javac>
     </target>
 
-    <target name="svn.resources" if="include.module.svn.config">
-        <copy todir="${classes}/org/exist/xquery/modules/svn/">
-            <fileset dir="${src}/org/exist/xquery/modules/svn/">
-                <include name="*.xql"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="jar" depends="compile,svn.resources">
+    <target name="jar" depends="compile">
         <echo message="Creating exist-modules.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
             <manifest>
