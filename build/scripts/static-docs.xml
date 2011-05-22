@@ -227,5 +227,8 @@
         
         <mkdir dir="${build.docs.html}/repo"/>
         <get src="${url}/repo/repo.xml" dest="${build.docs.html}/repo/repo.html"/>
+        
+        <mkdir dir="${build.docs.html}/testing"/>
+        <get src="${url}/testing/testing.xml" dest="${build.docs.html}/testing/testing.html"/>
     </target>
 </project>
