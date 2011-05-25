@@ -78,7 +78,7 @@ public abstract class DBBroker extends Observable {
 	public final static String TEMP_COLLECTION_NAME = "temp";
 	
 	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
-
+	
 	//TODO : move elsewhere
 	public static final String CONFIGURATION_ELEMENT_NAME = "xupdate";
     
@@ -367,8 +367,9 @@ public abstract class DBBroker extends Observable {
 
 	/**
 	 * Get a new document id that does not yet exist within the collection.
+	 * @throws EXistException If the system has run out of document ids.
 	 */
-	public abstract int getNextResourceId(Txn transaction, Collection collection);
+	public abstract int getNextResourceId(Txn transaction, Collection collection) throws EXistException;
 
 	/**
 	 * Get the string value of the specified node.
@@ -604,10 +605,11 @@ public abstract class DBBroker extends Observable {
 	 * @throws PermissionDeniedException
 	 * @throws LockException
 	 * @throws IOException
+	 * @throws EXistException 
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, IOException;
+			throws PermissionDeniedException, LockException, IOException, EXistException;
 
 	/**
 	 * Copy a resource to the destination collection and rename it.

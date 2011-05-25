@@ -767,6 +767,11 @@ public class Configuration implements ErrorHandler
                 LOG.warn(nfe);
             }
         }
+        
+        String docIds = con.getAttribute(BrokerPool.DOC_ID_MODE_ATTRIBUTE);
+        if (docIds != null) {
+        	config.put(BrokerPool.DOC_ID_MODE_PROPERTY, docIds);
+        }
 
         //Unused !
         String buffers = con.getAttribute("buffers");
