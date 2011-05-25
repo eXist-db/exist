@@ -111,6 +111,20 @@
             The specified number corresponds to the number of nodes the
             buffer can hold, in thousands. Usually, a good default could be
             nodesBuffer="1000".
+
+		- doc-ids:
+			how document ids are managed by eXist. Takes the values
+			"default" or "incremental".
+			
+			eXist assigns a unique, 32bit integer document id to every 
+			document. When a document is deleted, its id will be freed 
+			and reused for the next document stored. The disadvantage 
+			of this approach is that document ids
+			are not stable, i.e. one cannot be sure that the same document
+			id will always identify the same document.
+
+			If you need stable, incremental ids, set the option doc-ids to
+			"incremental".
             
         =====================================================================
         
@@ -122,7 +136,8 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
-        files="@dataDir@" pageSize="4096" nodesBuffer="-1">
+        files="@dataDir@" pageSize="4096" nodesBuffer="1000"
+	doc-ids="default">
 
         <!--
             Specifies the default permissions for all resources and collections
@@ -328,7 +343,7 @@
                 milliseconds) that the query can take before it is killed..
             
         -->
-        <watchdog output-size-limit="1000000" query-timeout="-1"/>
+        <watchdog output-size-limit="-1" query-timeout="-1"/>
 
     </db-connection>
 

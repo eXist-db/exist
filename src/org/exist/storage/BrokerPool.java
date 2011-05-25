@@ -123,6 +123,10 @@ public class BrokerPool extends Observable {
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
 	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
     public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
+    
+    public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
+	
+	public static final String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -779,9 +783,8 @@ public class BrokerPool extends Observable {
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
 		DBBroker broker = inactiveBrokers.peek();
         
-        if (broker.isReadOnly()) {
+        if (isReadOnly()) {
             transactionManager.setEnabled(false);
-            isReadOnly = true;
         }
         
 		//Run the recovery process
@@ -1095,6 +1098,10 @@ public class BrokerPool extends Observable {
         return isReadOnly;
     }
 
+    public void setReadOnly() {
+    	isReadOnly = true;
+    }
+    
     public boolean isInServiceMode() {
         return inServiceMode;
     }

@@ -9,6 +9,7 @@ import java.util.HashSet;
 
 import junit.framework.TestCase;
 
+import org.exist.TestUtils;
 import org.exist.dom.XMLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
@@ -49,6 +50,7 @@ public class CreateCollectionsTest extends TestCase {
 	}
 
     protected void tearDown() throws Exception {
+    	TestUtils.cleanupDB();
         root = null;
     }
     
