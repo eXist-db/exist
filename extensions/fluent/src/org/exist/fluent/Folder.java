@@ -893,6 +893,8 @@ public class Folder extends NamedResource implements Cloneable {
 				throw new DatabaseException(e);
 			} catch (IOException e) {
 				throw new DatabaseException(e);
+			} catch (EXistException e) {
+				throw new DatabaseException(e);
 			} finally {
 				destination.release();
 			}
