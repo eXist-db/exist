@@ -208,7 +208,7 @@ public class Copy extends AbstractWebDAVMethod {
     
     private void copyCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response,
             Collection collection, XmldbURI destination)
-            throws ServletException, IOException {
+            throws ServletException, IOException, EXistException {
 
         XmldbURI newCollectionName = destination.lastSegment();
         if(newCollectionName==null) {
