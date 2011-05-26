@@ -1295,7 +1295,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             String group; 
             CollectionConfiguration config = getConfiguration(broker);
             if (config != null) {
-                document.setPermissions(config.getDefResPermissions());
+                document.getPermissions().setMode(config.getDefResPermissions());
                 group = config.getDefResGroup(user);
             } else {
                 group = user.getPrimaryGroup();
