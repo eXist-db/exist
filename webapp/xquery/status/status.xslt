@@ -8,7 +8,7 @@
                 <graphic fileref="logo.jpg"/>
                 
                 <productname>Open Source Native XML Database</productname>
-                <title>Server Status from JMX</title>
+                <title>Server Status (via JMX)</title>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/jquery-1.4.2.min.js"></script>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.min.js"></script>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.stack.min.js"></script>

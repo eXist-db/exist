@@ -972,7 +972,7 @@ public class Configurator {
             IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            doc.getPermissions().setMode(0770);
+            doc.setPermissions(0770);
             
             fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
 
