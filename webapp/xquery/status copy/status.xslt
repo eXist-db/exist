@@ -8,124 +8,14 @@
                 <graphic fileref="logo.jpg"/>
                 
                 <productname>Open Source Native XML Database</productname>
-                <title>Server Status from JMX</title>
+                <title>Server Status (via JMX)</title>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/jquery-1.4.2.min.js"></script>
-                <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.min.js"></script>
-                <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.stack.min.js"></script>
-                <script id="source" language="javascript" type="text/javascript">
-                <![CDATA[
-                
-                    var plots = [];
-                
-                    $(function () {
-                        $(document).ready(fetchData);
-                    });
-                    
-                    //recursive function
-                    function fetchData() {
-                        
-                        $.ajax({
-                            url: "http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=all",
-                            method: 'GET',
-                            dataType: 'json',
-                            success: onDataReceived
-                        });
-                        
-                        function onDataReceived(charts) {
-                            
-                            $(charts.chart).each(function(index){
-                                
-                                var options;
-                                var data;
-                                
-                                if(this.type == "stack") {
-                                    options = getStackOptions(this.xaxis.ticks);
-                                    data = this.series;
-                                } else if(this.type == "time") {
-                                    options = getTimeOptions(this.yaxis.max);
-                                    
-                                    /**
-                                    time series data needs to be merged if
-                                    this is not the first instance of the data
-                                    */
-                                    
-                                    if(plots.length <= index) {
-                                        data = this.series;
-                                    } else {
-                                        var plotdata = plots[index].getData();
-                                        var data = [];
-                                        
-                                        //extract just the labels and data from the plotdata
-                                        $(plotdata).each(function(index){
-                                            data[index] = { "label":this.label, "data":this.data };
-                                        });
-                                        
-                                        //merge the new data (series) with the old plot data (data)
-                                        var series = this.series;
-                                        $(data).each(function(index){
-                                            $.merge(this.data, series[index].data)
-                                        });
-                                    }
-                                }
-                                
-                                var placeHolder = this.name;
-                                
-                                plots[index] = $.plot(
-                                    $("#" + placeHolder),
-                                    data,
-                                    options
-                                );
-                            });
-                        }
-                        
-                        //recursive
-                        setTimeout(fetchData, 5000);
-                    }
-                    
-                    function getStackOptions(xaxisTicks) {
-                        var options = {
-                            series: {
-                                stack: 0,
-                                lines: { show: false, steps: false },
-                                bars: { show: true, barWidth: 0.5}
-                            },
-                            grid: {
-                                tickColor: "rgb(255,255,255)"
-                            },
-                            xaxis: {
-                                ticks: xaxisTicks
-                            }
-                        };
-                        
-                        return options;
-                    }
-                    
-                    function getTimeOptions(yMax) {
-                            var options = {
-                                lines: { show: true, fill: false },
-                                points: { show: false },
-                                
-                                xaxis: {
-                                    mode: "time",
-                                    timeformat: "%H:%M:%S"
-                                },
-                                
-                                yaxis: {
-                                }
-                            };
-                            
-                            if(yMax != null) {
-                                options.yaxis.max = yMax;
-                            }
-                            
-                            return options;
-                    }
-            ]]>
-            </script> 
+                <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.js"></script>
+                <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.stack.js"></script>
                 <source>status.xslt/source</source>
             </bookinfo>
             
-            <!-- xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml" /-->
+            <!-- xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/ -->
             
             <chapter>
                 <title>Server Status</title>
@@ -159,16 +49,13 @@
                 <listitem>
                     <para>Instance ID: <xsl:value-of select="jmx:InstanceId"/></para>
                 </listitem>
-                <listitem>
-                    <para>eXist Home: <xsl:value-of select="jmx:ExistHome"/></para>
-                </listitem>
-                <listitem>
-                    <para>Uptime: <xsl:value-of select="xs:dayTimeDuration(concat('PT',  xs:integer(jmx:Uptime div 1000), 'S'))"/></para>
-                </listitem>
             </itemizedlist>
             <para>
                 <xsl:call-template name="flot-chart">
                     <xsl:with-param name="id" select="'brokerUseChart'"/>
+                    <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=brokerUse')"/>
+                    <xsl:with-param name="type" select="'stack'"/>
+                    <xsl:with-param name="xaxis-ticks">[1, "Brokers"]</xsl:with-param>
                 </xsl:call-template>
             </para>
         </section>
@@ -301,6 +188,9 @@
                 <para>
                     <xsl:call-template name="flot-chart">
                         <xsl:with-param name="id" select="'heapMemoryUseChart'"/>
+                        <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=heapMemoryUse')"/>
+                        <xsl:with-param name="type" select="'time'"/>
+                        <xsl:with-param name="y-max" select="jmx:HeapMemoryUsage/jmx:max div (1024 * 1024)"/>
                     </xsl:call-template>
                 </para>
             </section>
@@ -309,6 +199,9 @@
                 <para>
                     <xsl:call-template name="flot-chart">
                         <xsl:with-param name="id" select="'nonHeapMemoryUseChart'"/>
+                        <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=nonHeapMemoryUse')"/>
+                        <xsl:with-param name="type" select="'time'"/>
+                        <xsl:with-param name="y-max" select="jmx:NonHeapMemoryUsage/jmx:max div (1024 * 1024)"/>
                     </xsl:call-template>
                 </para>
             </section>
@@ -330,6 +223,9 @@
                     <para>
                         <xsl:call-template name="flot-chart">
                             <xsl:with-param name="id" select="'btreeCacheUseChart'"/>
+                            <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=btreeCacheUse')"/>
+                            <xsl:with-param name="type" select="'stack'"/>
+                            <xsl:with-param name="xaxis-ticks" select="l:cache-ticks-json(../jmx:Cache[jmx:Type eq 'BTREE'], 1)"/>
                         </xsl:call-template>
                     </para>
                 </section>
@@ -338,6 +234,8 @@
                     <para>
                         <xsl:call-template name="flot-chart">
                             <xsl:with-param name="id" select="'btreeCacheEfficiencyChart'"/>
+                            <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=btreeCacheEfficiency')"/>
+                            <xsl:with-param name="type" select="'time'"/>
                         </xsl:call-template>
                     </para>
                 </section>
@@ -348,7 +246,10 @@
                     <title>Cache Useage</title>
                     <para>
                         <xsl:call-template name="flot-chart">
-                            <xsl:with-param name="id" select="'dataCacheUseChart'"/>
+                            <xsl:with-param name="id" select="'dataCacheChart'"/>
+                            <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=dataCacheUse')"/>
+                            <xsl:with-param name="type" select="'stack'"/>
+                            <xsl:with-param name="xaxis-ticks" select="l:cache-ticks-json(../jmx:Cache[jmx:Type eq 'DATA'], 1)"/>
                         </xsl:call-template>
                     </para>
                 </section>
@@ -357,6 +258,8 @@
                     <para>
                         <xsl:call-template name="flot-chart">
                             <xsl:with-param name="id" select="'dataCacheEfficiencyChart'"/>
+                            <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=dataCacheEfficiency')"/>
+                            <xsl:with-param name="type" select="'time'"/>
                         </xsl:call-template>
                     </para>
                 </section>
@@ -384,6 +287,9 @@
                 <para>
                     <xsl:call-template name="flot-chart">
                         <xsl:with-param name="id" select="'diskUseChart'"/>
+                        <xsl:with-param name="json-data-uri" select="xs:anyURI('http://localhost:8080/exist/xquery/status/status-to-json.xql?ds=diskUse')"/>
+                        <xsl:with-param name="type" select="'stack'"/>
+                        <xsl:with-param name="xaxis-ticks">[1, "Data"],[2, "Journal"]</xsl:with-param>
                     </xsl:call-template>
                 </para>
             </section>
@@ -392,11 +298,144 @@
     
     <xsl:template name="flot-chart">
         <xsl:param name="id" as="xs:string" required="yes"/>
+        <xsl:param name="json-data-uri" as="xs:anyURI" required="yes"/>
+        <xsl:param name="type" as="xs:string" required="yes"/>
+        <xsl:param name="xaxis-ticks"/>
+        <xsl:param name="y-max"/>
+        
         <div id="{$id}" style="width: 600px; height: 300px; position: relative;"/>
+        <script id="source" language="javascript" type="text/javascript">
+                <![CDATA[
+                $(function () {
+                
+                    var placeholder = $("#]]><xsl:value-of select="$id"/><![CDATA[");
+                    
+                    var updateInterval = 5000;
+                    ]]>
+                    <xsl:choose>
+                        <xsl:when test="$type eq 'stack'">
+                            <![CDATA[
+                            var stack = 0, bars = true, lines = false, steps = false;
+                            var options = {
+                                series: {
+                                    stack: stack,
+                                    lines: { show: lines, steps: steps },
+                                    bars: { show: bars, barWidth: 0.5}
+                                },
+                                grid: {
+                                    tickColor: "rgb(255,255,255)"
+                                },
+                                xaxis: {
+                                    ticks: [ ]]><xsl:value-of select="$xaxis-ticks"/><![CDATA[
+                                ]}
+                            };
+                            ]]>
+                        </xsl:when>
+                        <xsl:when test="$type eq 'time'">
+                            <![CDATA[
+                            var options = {
+                                lines: { show: true, fill: false },
+                                points: { show: false },
+                                
+                                xaxis: {
+                                    mode: "time",
+                                    timeformat: "%H:%M:%S"
+                                } ]]>
+                                <xsl:if test="$y-max">
+                                    <![CDATA[
+                                    , yaxis: {
+                                        max: ]]><xsl:value-of select="$y-max"/><![CDATA[
+                                    }
+                                    ]]>
+                                </xsl:if>
+                                <![CDATA[
+                            };
+                            ]]>
+                        </xsl:when>
+                    </xsl:choose>
+            
+                    <![CDATA[
+                    
+                    var data = [];
+                    
+                    $.plot(placeholder, data, options);
+                 
+                    // fetch one series, adding to what we got
+                    var alreadyFetched = {};
+                 
+                    // initiate a recurring data update
+                    $(document).ready(function () {
+                        // reset data
+                        data = [];
+                        alreadyFetched = {};
+                        
+                        $.plot(placeholder, data, options);
+                        
+                        function fetchData() {
+                 
+                            function onDataReceived(series) {
+                                // we get all the data in one go, if we only got partial
+                                // data, we could merge it with what we already got
+                                ]]>
+                                <xsl:choose>
+                                    <xsl:when test="$type eq 'stack'">
+                                        <![CDATA[
+                                        data = series;
+                                        ]]>
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'time'">
+                                        <![CDATA[
+                                        if(data.length == 0){
+                                            data = series;
+                                        } else {
+                                        
+                                            //merge data
+                                            $(data).each(function(index){
+                                                $.merge(this.data, series[index].data)
+                                            });
+                                        }
+                                        ]]>
+                                    </xsl:when>
+                                </xsl:choose>
+                                <![CDATA[
+                                $.plot(placeholder, data, options);
+                                
+                            }
+                        
+                            $.ajax({
+                                // usually, we'll just call the same URL, a script
+                                // connected to a database, but in this case we only
+                                // have static example files so we need to modify the
+                                // URL
+                                url: "]]><xsl:value-of select="$json-data-uri"/><![CDATA[",
+                                method: 'GET',
+                                dataType: 'json',
+                                success: onDataReceived
+                            });
+                            
+                            
+                            setTimeout(fetchData, updateInterval);
+                        }
+                 
+                        setTimeout(fetchData, updateInterval);
+                    });
+                });
+                ]]>
+            </script> 
     </xsl:template>
     
     
     <xsl:template match="jmx:*" priority="-1"/>
+    
+    <xsl:function name="l:cache-ticks-json">
+        <xsl:param name="cache" as="element(jmx:Cache)*"/>
+        <xsl:param name="pos"/>
+        <xsl:value-of select='concat("[", $pos, ",", """", $cache[$pos]/jmx:FileName, """","]", if($cache[$pos+1])then(",")else(""))'/>
+        <xsl:if test="$cache[$pos+1]">
+            <xsl:value-of select="l:cache-ticks-json($cache, $pos+1)"/>
+        </xsl:if>
+    </xsl:function>
+    
     
     <xsl:template name="jmx-children-to-table-rows">
         <xsl:param name="seq"/>

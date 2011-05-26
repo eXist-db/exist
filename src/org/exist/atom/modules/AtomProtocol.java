@@ -966,10 +966,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          String mode = element.getAttribute("mode");
          try {
             int permissions = Integer.parseInt(mode, 8);
-            resource.setPermissions(permissions);
+            resource.getPermissions().setMode(permissions);
          } catch (NumberFormatException e) {
             try {
-               resource.setPermissions(mode);
+               resource.getPermissions().setMode(mode);
             } catch (SyntaxException e1) {
                throw new PermissionDeniedException("syntax error for mode attribute in exist:permissions element");
             }
