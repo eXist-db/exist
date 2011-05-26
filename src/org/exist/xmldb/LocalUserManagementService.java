@@ -293,7 +293,7 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this resource");
             }
-			document.setPermissions(mode);
+			document.getPermissions().setMode(mode);
 			broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
 		} catch (EXistException e) {
@@ -385,7 +385,7 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this resource");
             }
-			document.setPermissions(modeStr);
+			document.getPermissions().setMode(modeStr);
 			broker.storeXMLResource(transaction, document);
 		} catch (EXistException e) {
             transact.abort(transaction);

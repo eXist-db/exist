@@ -1523,7 +1523,7 @@ public class NativeBroker extends DBBroker {
             }
             //create a temporary document
             DocumentImpl targetDoc = new DocumentImpl(pool, temp, docName);
-            targetDoc.setPermissions(0771);
+            targetDoc.getPermissions().setMode(0771);
             long now = System.currentTimeMillis();
             DocumentMetadata metadata = new DocumentMetadata();
             metadata.setLastModified(now);
