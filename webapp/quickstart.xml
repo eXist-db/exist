@@ -60,12 +60,16 @@
             <para>After the installer is launched, follow the prompts to complete the installation. </para>
             <para>During installation, you are asked to supply a password for the eXist administrator account (the "admin" password). You are strongly encouraged to set the admin password on all installations of eXist, even those without internet access; otherwise the eXist
             security manager will be disabled. The admin password asked for during the install procedure is not the admin password of your operating system, but the password to be used for the eXist admin account.</para>
-            <para>eXist by default uses port 8080. There may be other services on your system using this port. To see whether this is the case, enter <ulink url="http://localhost:8080/">http://localhost:8080/</ulink> in your browser. If another service occupies this port, you cannot start up eXist unless you shut down the service in question or make eXist use another port. To make eXist use another port, open the file <filename moreinfo="none">/tools/jetty/etc/jetty.xml</filename> inside your eXist installation in a text or XML editor and change the value "8080" in</para>
+            <para>eXist, through Jetty, by default uses port 8080. There may be other services on your system using this port. To see whether this is the case, enter <ulink url="http://localhost:8080/">http://localhost:8080/</ulink> in your browser. If another service occupies this port, you cannot start up eXist unless you shut down the service in question or make eXist use another port. To make eXist use another port, open the file <filename moreinfo="none">/tools/jetty/etc/jetty.xml</filename> inside your eXist installation in a text or XML editor and change the value "8080" in</para>
             
             <synopsis format="linespecific">&lt;Set name=&quot;port&quot;&gt;&lt;SystemProperty name=&quot;jetty.port&quot; default=&quot;8080&quot;/&gt;&lt;/Set&gt;</synopsis>
             <para>to a port that is not used, e.g. "8899":</para>
             <synopsis format="linespecific">&lt;Set name=&quot;port&quot;&gt;&lt;SystemProperty name=&quot;jetty.port&quot; default=&quot;8899&quot;/&gt;&lt;/Set&gt;</synopsis>
-            
+            <para>eXist uses port 8443 for confidential communication. Another service may also be using this port.  To make eXist use another port, open the file <filename moreinfo="none">/tools/jetty/etc/jetty.xml</filename> and change the value "8443" in</para>
+            <synopsis format="linespecific">&lt;Set name=&quot;confidentialPort&quot;&gt;8443&lt;/Set&gt;</synopsis>
+            <para>and</para>
+            <synopsis format="linespecific">&lt;Set name=&quot;Port&quot;&gt;8443&lt;/Set&gt;</synopsis>
+            <para>to a port that is not used, e.g. "8444".</para>
             <!-- Installation on a headless system does not belong in a quick start. Jens Petersen. 
             <note>
                 <para>The eXist installer requires a graphical desktop in order to launch. However, If you wish to install eXist on a headless system, use the
