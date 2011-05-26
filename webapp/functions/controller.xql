@@ -108,23 +108,17 @@ return
             	    <add-parameter name="module" value="{$module}"/>,
             	    <add-parameter name="function" value="{$function}"/>
             	    <!-- query results are passed to XSLT servlet via request attribute -->
-              		<set-attribute name="xquery.attribute"
-              			value="model"/>
+              		<set-attribute name="xquery.attribute" value="model"/>
     			</forward>
           		<view>
               	    <!-- Apply db2xhtml stylesheet -->
           			<forward servlet="XSLTServlet">
-          				<set-attribute name="xslt.input"
-          					value="model"/>
+          				<set-attribute name="xslt.input" value="model"/>
           				<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
-          				<set-attribute name="xslt.stylesheet" 
-          					value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
-          				<set-attribute name="xslt.output.media-type"
-          				        value="text/html"/>
-          				<set-attribute name="xslt.output.doctype-public"
-          				    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
-          				<set-attribute name="xslt.output.doctype-system"
-          				    value="resources/xhtml1-transitional.dtd"/>
+          				<set-attribute name="xslt.stylesheet" value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+          				<set-attribute name="xslt.output.media-type" value="text/html"/>
+          				<set-attribute name="xslt.output.doctype-public" value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+          				<set-attribute name="xslt.output.doctype-system" value="resources/xhtml1-transitional.dtd"/>
           			</forward>
           		</view>
     		</dispatch>

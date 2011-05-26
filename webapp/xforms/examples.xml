@@ -16,7 +16,7 @@
             <surname>Meier</surname>
         </author>
     </bookinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     <chapter>
         <title>XForms Examples</title>
         <abstract>
