@@ -58,18 +58,16 @@ return
          <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
  			<view>
  				<forward servlet="XSLTServlet">
- 				    <set-attribute name="xslt.output.media-type"
-                        value="text/html"/>
-                	<set-attribute name="xslt.output.doctype-public"
-                	    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
-                	<set-attribute name="xslt.output.doctype-system"
-                	    value="resources/xhtml1-transitional.dtd"/>
- 					<set-attribute name="xslt.stylesheet"
- 						value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+ 				    <set-attribute name="xslt.output.media-type" value="text/html"/>
+                	<set-attribute name="xslt.output.doctype-public" value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+                	<set-attribute name="xslt.output.doctype-system" value="resources/xhtml1-transitional.dtd"/>
+ 					<set-attribute name="xslt.stylesheet" value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+ 					<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
  				</forward>
  			</view>
              <cache-control cache="yes"/>
  		</dispatch>
+ 		
     (:  for the following examples, the xsltforms.xsl stylesheet is applied
         on the *server*, not the client :)
     else if ($exist:resource = ('todo-list.xml', 'shakespeare.xml')) then
@@ -78,15 +76,12 @@ return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     			<view>
     			    <forward servlet="XSLTServlet">
-    					<set-attribute name="xslt.stylesheet"
-    						value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
-    				    <set-attribute name="xslt.syntax-highlight"
-    				        value="no"/>
+    					<set-attribute name="xslt.stylesheet" value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
+    				    <set-attribute name="xslt.syntax-highlight" value="no"/>
     				</forward>
     			    <forward servlet="XSLTServlet">
     			        (: Apply xsltforms.xsl stylesheet :)
-    					<set-attribute name="xslt.stylesheet"
-    						value="{$relPath}xsltforms/xsltforms.xsl"/>
+    					<set-attribute name="xslt.stylesheet" value="{$relPath}xsltforms/xsltforms.xsl"/>
     				    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
     				    <set-attribute name="xslt.output.indent" value="no"/>
     				    <set-attribute name="xslt.output.media-type" value="text/html"/>
@@ -97,13 +92,13 @@ return
     			</view>
     			<cache-control cache="yes"/>
     		</dispatch>
+    		
     else if ($exist:resource eq 'test.xql') then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<view>
     		    <forward servlet="XSLTServlet">
     		        (: Apply xsltforms.xsl stylesheet :)
-    				<set-attribute name="xslt.stylesheet"
-    					value="xsltforms/xsltforms.xsl"/>
+    				<set-attribute name="xslt.stylesheet" value="xsltforms/xsltforms.xsl"/>
     			    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
     			    <set-attribute name="xslt.output.indent" value="no"/>
     			    <set-attribute name="xslt.output.media-type" value="text/html"/>
@@ -114,6 +109,7 @@ return
     		</view>
     		<cache-control cache="yes"/>
     	</dispatch>
+    	
     (: make sure the global css and js files are resolved :)
     else if (matches($exist:path, '(resources/|styles/syntax/|scripts/syntax/|logo.jpg|default-style2.css|curvycorners.js)')) then
         let $newPath := replace($exist:path, '^.*((resources/|styles/|scripts/|logo).*)$', '/$1')
@@ -122,6 +118,7 @@ return
         		<forward url="{$newPath}"/>
         		<cache-control cache="yes"/>
         	</dispatch>
+        	
     else
         (: everything else is passed through :)
         <ignore xmlns="http://exist.sourceforge.net/NS/exist">

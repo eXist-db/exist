@@ -73,8 +73,8 @@ else if ($exist:resource eq 'twitter.xql') then
         </view>
     </dispatch>
     
-else if (matches($exist:path, '(styles/syntax|scripts/syntax/|logo.jpg|default-style2.css|curvycorners.js)')) then
-    let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo).*)$', '/$1')
+else if (matches($exist:path, '(styles/syntax|scripts/syntax/|resources|logo.jpg|default-style2.css|curvycorners.js)')) then
+    let $newPath := replace($exist:path, '^.*((styles/|scripts/|logo|resources).*)$', '/$1')
     return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     		<forward url="{$newPath}"/>
