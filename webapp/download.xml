@@ -46,9 +46,9 @@
                     <emphasis>consulting</emphasis>, <emphasis>training</emphasis> or
                     <emphasis>first-hand support</emphasis> on a flexible basis. If interested,
                 please send an email to <ulink url="mailto:info@exist-db.org"
-                    >info@exist-db.org</ulink> and we will coordinate the requests. We are also
-                working on a commercial support option, which should be available in early 2010 and
-                will be backed by large parts of the active development team (in cooperation with
+                    >info@exist-db.org</ulink> and we will coordinate the requests.</para>
+            <para>A commercial support plan is provided by <ulink url="http://www.existsolutions.com">eXist Solutions GmbH</ulink> since 2010. 
+                The company is backed by large parts of the active development team (in cooperation with
                 all interested parties).</para>
         </section>
         <section id="download">
