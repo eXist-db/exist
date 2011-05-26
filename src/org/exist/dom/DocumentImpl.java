@@ -267,6 +267,25 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public Permission getPermissions() {
         return permissions;
     }
+    
+    /**
+     * The method <code>setMode</code>
+     *
+     * @param mode an <code>int</code> value
+     */
+    public void setPermissions(int mode) {
+        permissions.setMode(mode);
+    }
+
+    /**
+     * The method <code>setMode</code>
+     *
+     * @param mode a <code>String</code> value
+     * @exception SyntaxException if an error occurs
+     */
+    public void setPermissions(String mode) throws SyntaxException {
+        permissions.setMode(mode);
+    }
 
     /**
      * The method <code>setMode</code>
