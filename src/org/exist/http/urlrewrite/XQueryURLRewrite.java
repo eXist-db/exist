@@ -103,6 +103,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import org.exist.http.urlrewrite.expath.http.SendRequest;
 
 /**
  * A filter to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
@@ -540,6 +541,8 @@ public class XQueryURLRewrite implements Filter {
         URLRewrite rewrite = null;
         if ("forward".equals(action.getLocalName())) {
             rewrite = new PathForward(config, action, request.getRequestURI());
+        } else if("send-request".equals(action.getLocalName()) && "http://expath.org/ns/http-client".equals(action.getNamespaceURI())) {
+            rewrite = new SendRequest(action, request);
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, request.getRequestURI());
 //        } else if ("call".equals(action.getLocalName())) {
