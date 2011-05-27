@@ -39,6 +39,7 @@ import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -302,6 +303,12 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         }
     }
 
+    public NodeImpl getFirstChild(NodeTest test) throws XPathException {
+    	ValueSequence seq = new ValueSequence();
+    	selectChildren(test, seq);
+    	return seq.isEmpty() ? null : seq.get(0);
+    }
+    
     @Override
     public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) 
             throws XPathException {
