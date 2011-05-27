@@ -92,6 +92,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						<xsl:with-param name="config" select="exslt:node-set($config0)/*"/>
 					</xsl:call-template>
 				</xsl:when>
+				<xsl:when test="function-available('unparsed-text')">
+					<xsl:call-template name="html">
+						<xsl:with-param name="config" select="($config0)/*"/>
+					</xsl:call-template>
+				</xsl:when>
 				<xsl:otherwise>
 					<xsl:call-template name="html">
 						<xsl:with-param name="config" select="msxsl:node-set($config0)/*"/>
@@ -272,6 +277,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							<xsl:when test="function-available('exslt:node-set')">
 								<xsl:call-template name="xps">
 									<xsl:with-param name="ps" select="exslt:node-set($xexprs)/xexprs"/>
+								</xsl:call-template>
+							</xsl:when>
+							<xsl:when test="function-available('unparsed-text')">
+								<xsl:call-template name="xps">
+									<xsl:with-param name="ps" select="($xexprs)/xexprs"/>
 								</xsl:call-template>
 							</xsl:when>
 							<xsl:otherwise>
