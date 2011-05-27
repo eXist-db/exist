@@ -313,4 +313,8 @@ public class QName implements Comparable {
 			return false;
 		return true;
 	}
+	
+	public static QName fromJavaQName(javax.xml.namespace.QName jQn) {
+        return new QName(jQn.getLocalPart(), jQn.getNamespaceURI(), jQn.getPrefix());
+    }
 }

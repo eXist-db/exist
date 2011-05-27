@@ -43,9 +43,11 @@ import java.util.Properties;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -62,11 +64,13 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.memtree.ElementImpl;
+import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -91,8 +95,10 @@ import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xqj.Marshaller;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
+import org.exist.xquery.NameTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -102,6 +108,9 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -258,7 +267,24 @@ public class RESTServer {
 			if (query == null)
 				query = request.getParameter("_query");
 		}
-
+		String _var = request.getParameter("_variables");
+		List /*<Namespace>*/ namespaces = null;
+		ElementImpl variables = null;
+		try {
+			if (_var != null)
+			{
+				NamespaceExtractor nsExtractor = new NamespaceExtractor();
+				variables = parseXML(_var, nsExtractor);
+				namespaces = nsExtractor.getNamespaces();
+			}
+		} catch (SAXException e) {
+			XPathException x = new XPathException(e.toString());
+			writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", query, path, x);
+		} catch (ParserConfigurationException e) {
+			XPathException x = new XPathException(e.toString());
+			writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", query, path, x);
+		}
+		
 		if ((option = request.getParameter("_howmany")) != null) {
 			try {
 				howmany = Integer.parseInt(option);
@@ -320,7 +346,7 @@ public class RESTServer {
 			// query parameter specified, search method does all the rest of the
 			// work
 			try {
-				search(broker, query, path, null, howmany, start, outputProperties,
+				search(broker, query, path, null, variables, howmany, start, outputProperties,
 						wrap, cache, request, response);
 
 			} catch (XPathException e) {
@@ -624,6 +650,7 @@ public class RESTServer {
 		// it is an XUpdate or a query request.
 		int howmany = 10;
 		int start = 1;
+		ElementImpl variables = null;
 		boolean enclose = true;
 		boolean cache = false;
 		String mime = MimeType.XML_TYPE.getName();
@@ -689,8 +716,10 @@ public class RESTServer {
 									next = next.getNextSibling();
 								}
 								query = buf.toString();
-							} else if (child.getLocalName()
-									.equals("properties")) {
+							} else if (child.getLocalName().equals("variables")) {
+								variables = (ElementImpl) child;
+								
+							} else if (child.getLocalName().equals("properties")) {
 								Node node = child.getFirstChild();
 								while (node != null) {
 									if (node.getNodeType() == Node.ELEMENT_NODE
@@ -718,7 +747,7 @@ public class RESTServer {
 				if (query != null) {
 					String result;
 					try {
-						search(broker, query, path, nsExtractor.getNamespaces(), howmany, start,
+						search(broker, query, path, nsExtractor.getNamespaces(), variables, howmany, start,
 								outputProperties, enclose, cache, request,
 								response);
                         transact.commit(transaction);
@@ -1065,7 +1094,7 @@ public class RESTServer {
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
-			List/*<Namespace>*/ namespaces, int howmany, int start, Properties outputProperties, boolean wrap,
+			List/*<Namespace>*/ namespaces, ElementImpl variables, int howmany, int start, Properties outputProperties, boolean wrap,
 			boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
@@ -1105,7 +1134,7 @@ public class RESTServer {
 			context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
 			context.setBaseURI(new AnyURIValue(pathUri.toString()));
 			declareNamespaces(context, namespaces);
-			declareVariables(context, request, response);
+			declareVariables(context, variables, request, response);
 
 			if (compiled == null)
 				compiled = xquery.compile(context, source);
@@ -1161,7 +1190,7 @@ public class RESTServer {
 	 * @param response
 	 * @throws XPathException
 	 */
-	private HttpRequestWrapper declareVariables(XQueryContext context,
+	private HttpRequestWrapper declareVariables(XQueryContext context, ElementImpl variables,
 			HttpServletRequest request, HttpServletResponse response)
 			throws XPathException {
 		HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding,
@@ -1172,9 +1201,70 @@ public class RESTServer {
 		context.declareVariable(RequestModule.PREFIX + ":request", reqw);
 		context.declareVariable(ResponseModule.PREFIX + ":response", respw);
 		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
+		
+		if(variables != null){
+            declareExternalAndXQJVariables(context, variables);
+        }
 		return reqw;
 	}
 
+	private void declareExternalAndXQJVariables(XQueryContext context, ElementImpl variables) throws XPathException {
+
+    	ValueSequence varSeq = new ValueSequence();
+    	variables.selectChildren(new NameTest(Type.ELEMENT, new QName("variable", Namespaces.EXIST_NS)), varSeq);
+        for (SequenceIterator i = varSeq.iterate(); i.hasNext(); ) {
+        	ElementImpl variable = (ElementImpl) i.nextItem();
+        	// get the QName of the variable
+        	ElementImpl qname = (ElementImpl) variable.getFirstChild(new NameTest(Type.ELEMENT, new QName("qname", Namespaces.EXIST_NS)));
+        	String localname = null, prefix = null, uri = null;
+        	NodeImpl child = (NodeImpl) qname.getFirstChild();
+        	while (child != null) {
+        		if (child.getLocalName().equals("localname")) {
+        			localname = child.getStringValue();
+
+        		} else if (child.getLocalName().equals("namespace")) {
+        			uri = child.getStringValue();
+
+        		} else if (child.getLocalName().equals("prefix")) {
+        			prefix = child.getStringValue();
+        			
+        		}
+        		child = (NodeImpl) child.getNextSibling();
+        	}
+
+        	if (uri != null && prefix != null)
+        		context.declareNamespace(prefix, uri);
+
+        	if (localname == null)
+        		continue;
+
+        	QName q;
+        	if(prefix != null && localname != null) {
+        		q = new QName(localname, uri, prefix);
+
+        	} else {
+        		q = new QName(localname, uri, XMLConstants.DEFAULT_NS_PREFIX);
+        	}
+
+        	// get serialized sequence
+        	NodeImpl value = variable.getFirstChild(new NameTest(Type.ELEMENT, Marshaller.ROOT_ELEMENT_QNAME));
+        	Sequence sequence;
+        	try {
+        		sequence = value == null ? Sequence.EMPTY_SEQUENCE : Marshaller.demarshall(value);
+
+        	} catch (XMLStreamException xe) {
+        		throw new XPathException(xe.toString());
+        	}
+
+        	// now declare variable
+        	if(prefix != null) {
+        		context.declareVariable(q.getPrefix() + ":" + q.getLocalName(), sequence);
+        	} else {
+        		context.declareVariable(q.getLocalName(), sequence);
+        	}
+		}
+    }
+	
 	/**
 	 * Directly execute an XQuery stored as a binary document in the database.
 	 */
@@ -1201,7 +1291,7 @@ public class RESTServer {
 				resource.getCollection().getURI()).toString());
 		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
 				.getCollection().getURI() });
-		HttpRequestWrapper reqw = declareVariables(context, request, response);
+		HttpRequestWrapper reqw = declareVariables(context, null, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);
 		if (compiled == null) {
@@ -1277,7 +1367,7 @@ public class RESTServer {
 				resource.getCollection().getURI()).toString());
 		context.setStaticallyKnownDocuments(new XmldbURI[] { resource
 				.getCollection().getURI() });
-		HttpRequestWrapper reqw = declareVariables(context, request, response);
+		HttpRequestWrapper reqw = declareVariables(context, null, request, response);
 		reqw.setServletPath(servletPath);
 		reqw.setPathInfo(pathInfo);
 		if (compiled == null) {
