@@ -29,6 +29,7 @@ import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.http.SOAPServer;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -73,13 +74,15 @@ public class EXistServlet extends HttpServlet {
 	private String defaultUsername = SecurityManager.GUEST_USER;
 	private String defaultPassword = SecurityManager.GUEST_USER;
 	
+	private boolean internalOnly = false;
+	
 	private RESTServer srvREST;
 	private SOAPServer srvSOAP; 
         
     private Authenticator authenticator;
         
     private User defaultUser;
-
+    
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
 	 */
@@ -154,10 +157,14 @@ public class EXistServlet extends HttpServlet {
 		if (useDynamicContentType == null)
 			useDynamicContentType = "no";
 		
+		String param = config.getInitParameter("hidden");
+		if (param != null)
+			internalOnly = Boolean.valueOf(param);
+		
 		//Instantiate REST Server
 		srvREST = new RESTServer(pool, formEncoding, containerEncoding, 
 				useDynamicContentType.equalsIgnoreCase("yes") ||
-				useDynamicContentType.equalsIgnoreCase("true"));
+				useDynamicContentType.equalsIgnoreCase("true"), internalOnly);
                 
 		//Instantiate SOAP Server
 		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
@@ -603,6 +610,11 @@ public class EXistServlet extends HttpServlet {
 	private User authenticate(HttpServletRequest request,HttpServletResponse response)
           throws java.io.IOException
         {
+		if (internalOnly && request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return null;
+		}
+		
 		// First try to validate the principal if passed from the Servlet engine
 		Principal principal = request.getUserPrincipal();
 		
