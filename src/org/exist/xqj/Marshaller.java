@@ -61,6 +61,7 @@ public class Marshaller {
     public final static String NAMESPACE = "http://exist-db.org/xquery/types/serialized";
     public final static String PREFIX = "sx";
 
+    
     private final static Properties OUTPUT_PROPERTIES = new Properties();
 
     private final static String VALUE_ELEMENT = "value";
@@ -69,10 +70,12 @@ public class Marshaller {
     
     private final static String SEQ_ELEMENT = "sequence";
     private final static String SEQ_ELEMENT_QNAME = PREFIX + ":sequence";
-
+    
     private final static String ATTR_TYPE = "type";
     private final static String ATTR_ITEM_TYPE = "item-type";
 
+    public final static QName ROOT_ELEMENT_QNAME = new QName(SEQ_ELEMENT, NAMESPACE, PREFIX);
+    
     /**
      * Marshall a sequence in an xml based string representation
      * @param broker

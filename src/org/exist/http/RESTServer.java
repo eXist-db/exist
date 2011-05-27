@@ -42,7 +42,6 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -63,6 +62,7 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
 import org.exist.dom.XMLUtil;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
@@ -98,6 +98,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xqj.Marshaller;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
+import org.exist.xquery.NameTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -107,6 +108,9 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -264,7 +268,7 @@ public class RESTServer {
 		}
 		String _var = request.getParameter("_variables");
 		List /*<Namespace>*/ namespaces = null;
-		NodeImpl variables = null;
+		ElementImpl variables = null;
 		try {
 			if (_var != null)
 			{
@@ -663,7 +667,7 @@ public class RESTServer {
 			int howmany = 10;
 			int start = 1;
 			boolean typed = false;
-			Node variables = null;
+			ElementImpl variables = null;
 			boolean enclose = true;
 			boolean cache = false;
 			@SuppressWarnings("unused")
@@ -676,7 +680,7 @@ public class RESTServer {
 			try {
 				String content = getRequestContent(request);
 				NamespaceExtractor nsExtractor = new NamespaceExtractor();
-				Element root = parseXML(content, nsExtractor);
+				ElementImpl root = parseXML(content, nsExtractor);
 				String rootNS = root.getNamespaceURI();
 
 				if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
@@ -752,7 +756,7 @@ public class RESTServer {
 									query = buf.toString();
 
 								} else if (child.getLocalName().equals("variables")) {
-									variables = child;
+									variables = (ElementImpl) child;
 
 								} else if (child.getLocalName().equals("properties")) {
 									Node node = child.getFirstChild();
@@ -1160,7 +1164,7 @@ public class RESTServer {
 	 * @throws XPathException
 	 */
 	protected void search(DBBroker broker, String query, String path,
-			List<Namespace> namespaces, Node variables, int howmany, int start, boolean typed,
+			List<Namespace> namespaces, ElementImpl variables, int howmany, int start, boolean typed,
             Properties outputProperties, boolean wrap,	boolean cache, HttpServletRequest request,
 			HttpServletResponse response) throws BadRequestException,
 			PermissionDeniedException, XPathException {
@@ -1256,7 +1260,7 @@ public class RESTServer {
 	 * @param response
 	 * @throws XPathException
 	 */
-	private HttpRequestWrapper declareVariables(XQueryContext context, Node variables,
+	private HttpRequestWrapper declareVariables(XQueryContext context, ElementImpl variables,
 			HttpServletRequest request, HttpServletResponse response)
 			throws XPathException {
         
@@ -1276,65 +1280,60 @@ public class RESTServer {
 		return reqw;
 	}
 
-    private void declareExternalAndXQJVariables(XQueryContext context, Node variables) throws XPathException {
+    private void declareExternalAndXQJVariables(XQueryContext context, ElementImpl variables) throws XPathException {
 
-        NodeList childs = variables.getChildNodes();
+    	ValueSequence varSeq = new ValueSequence();
+    	variables.selectChildren(new NameTest(Type.ELEMENT, new QName("variable", Namespaces.EXIST_NS)), varSeq);
+        for (SequenceIterator i = varSeq.iterate(); i.hasNext(); ) {
+        	ElementImpl variable = (ElementImpl) i.nextItem();
+        	// get the QName of the variable
+        	ElementImpl qname = (ElementImpl) variable.getFirstChild(new NameTest(Type.ELEMENT, new QName("qname", Namespaces.EXIST_NS)));
+        	String localname = null, prefix = null, uri = null;
+        	NodeImpl child = (NodeImpl) qname.getFirstChild();
+        	while (child != null) {
+        		if (child.getLocalName().equals("localname")) {
+        			localname = child.getStringValue();
 
-		for (int i = 0; i < childs.getLength(); i++) {
-			Node child = childs.item(i);// <variable> element
+        		} else if (child.getLocalName().equals("namespace")) {
+        			uri = child.getStringValue();
 
-			// get the QName of the variable
-			Node qname = child.getFirstChild();
-			NodeList l = qname.getChildNodes();
-			String localname = null, prefix = null, uri = null;
-            
-			for (int j = 0; j < l.getLength(); j++) {
-				Node c = l.item(j);
-				if (c.getLocalName().equals("localname")) {
-					if ((c.getFirstChild()) != null)
-						localname = c.getFirstChild().getNodeValue();
+        		} else if (child.getLocalName().equals("prefix")) {
+        			prefix = child.getStringValue();
+        			
+        		}
+        		child = (NodeImpl) child.getNextSibling();
+        	}
 
-				} else if (c.getLocalName().equals("namespace")) {
-					if (c.getFirstChild() != null)
-						uri = c.getFirstChild().getNodeValue();
+        	if (uri != null && prefix != null)
+        		context.declareNamespace(prefix, uri);
 
-				} else if (c.getLocalName().equals("prefix")) {
-					if (c.getFirstChild() != null)
-						prefix = c.getFirstChild().getNodeValue();
-				}
-			}
+        	if (localname == null)
+        		continue;
 
-			if (uri != null && prefix != null)
-				context.declareNamespace(prefix, uri);
+        	QName q;
+        	if(prefix != null && localname != null) {
+        		q = new QName(localname, uri, prefix);
 
-			if (localname == null)
-				continue;
+        	} else {
+        		q = new QName(localname, uri, XMLConstants.DEFAULT_NS_PREFIX);
+        	}
 
-			QName q;
-			if(prefix != null && localname != null) {
-                q = new QName(uri, localname, prefix);
-                
-            } else {
-                q = new QName(uri, localname, XMLConstants.DEFAULT_NS_PREFIX);
-            }
+        	// get serialized sequence
+        	NodeImpl value = variable.getFirstChild(new NameTest(Type.ELEMENT, Marshaller.ROOT_ELEMENT_QNAME));
+        	Sequence sequence;
+        	try {
+        		sequence = value == null ? Sequence.EMPTY_SEQUENCE : Marshaller.demarshall(value);
 
-			// get serialized sequence
-			NodeImpl seq = (NodeImpl) qname.getNextSibling();
-			Sequence sequence;
-			try {
-				sequence = Marshaller.demarshall(seq);
-                
-			} catch (XMLStreamException xe) {
-				throw new XPathException(xe.toString());
-			}
+        	} catch (XMLStreamException xe) {
+        		throw new XPathException(xe.toString());
+        	}
 
-			// now declare variable
-			if(prefix != null) {
-                context.declareVariable(q.getPrefix() + ":" + q.getLocalPart(), sequence);
-            } else {
-                context.declareVariable(q.getLocalPart(), sequence);
-            }
-
+        	// now declare variable
+        	if(prefix != null) {
+        		context.declareVariable(q.getPrefix() + ":" + q.getLocalName(), sequence);
+        	} else {
+        		context.declareVariable(q.getLocalName(), sequence);
+        	}
 		}
     }
 
