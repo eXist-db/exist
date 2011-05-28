@@ -31,6 +31,7 @@ import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
@@ -182,7 +183,8 @@ public abstract class Modification extends AbstractExpression
 				Item item = i.nextItem();
 				if (item.getType() == Type.DOCUMENT) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						item = new NodeProxy(((NodeProxy)item).getDocument(), NodeId.ROOT_NODE);
+						StoredNode root = (StoredNode) ((NodeProxy)item).getDocument().getDocumentElement();
+						item = new NodeProxy(root.getDocument(), root.getNodeId(), root.getInternalAddress());
 					} else {
 						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
 					}
