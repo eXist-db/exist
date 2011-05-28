@@ -40,7 +40,7 @@
             .hits { border-bottom: 1px solid black; margin: 8px 15px; }
         ]]></style>
     </bookinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     <chapter>
         <title>Using XForms and KWIC Example</title>
         <div class="form">

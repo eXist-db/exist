@@ -8,7 +8,7 @@
             <affiliation>
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
             </affiliation></author><author><firstname>Wolfgang</firstname><surname>Meier</surname></author></articleinfo>
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
     <section>
         <title>XForms Support in eXist</title>
         <abstract>
