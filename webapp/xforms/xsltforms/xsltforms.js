@@ -1,4 +1,4 @@
-/* Rev. 501
+/* Rev. 506
 
 Copyright (C) 2008-2011 agenceXML - Alain COUTHURES
 Contact at : xsltforms@agencexml.com
@@ -356,7 +356,7 @@ Core.writeFile = function(fname, encoding, xsdtype, title, content) {
 Core.xsltsrc =
  '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">'
 +'	<xsl:output method="xml" omit-xml-declaration="yes"/>'
-+'	<xsl:template match="@*[starts-with(name(),\'xsltforms_\')]" priority="1"/>'
++'	<xsl:template match="@*[starts-with(translate(name(),\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\',\'abcdefghijklmnopqrstuvwxyz\'),\'xsltforms_\')]" priority="1"/>'
 +'	<xsl:template match="@*|node()" priority="0">'
 +'	  <xsl:copy>'
 +'	    <xsl:apply-templates select="@*|node()"/>'
@@ -1422,8 +1422,8 @@ var xforms = {
 		trigger: 0
 	},
 
-	fileVersion : "501",
-	fileVersionNumber: 501,
+	fileVersion : "506",
+	fileVersionNumber: 506,
 
 	debugMode: false,
 	debugButtons: [
@@ -2977,10 +2977,10 @@ XFSubmission.SOAP_ = "application/soap+xml";
 XFSubmission.prototype.requesteventlog = function(evcontext, req) {
 	evcontext["response-status-code"] = req.status;
 	evcontext["response-reason-phrase"] = req.statusText;
-	var rheads = req.getAllResponseHeaders().replace(/\r/, "");
+	var rheads = req.getAllResponseHeaders();
 	var rheaderselts = "";
 	if (rheads) {
-		rheads = rheads.split("\n");
+		rheads = rheads.replace(/\r/, "").split("\n");
 		for (var i = 0, len = rheads.length; i < len; i++) {
 			var colon = rheads[i].indexOf(":");
 			if (colon != -1) {
@@ -4496,6 +4496,8 @@ XFInput.prototype.initEvents = function(input, canActivate) {
 		XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpInputMode);
 	}
 	if (canActivate) {
+		XSLTFormsEvent.attach(input, "keydown", XFInput.keyDownActivate);
+		XSLTFormsEvent.attach(input, "keypress", XFInput.keyPressActivate);
 		if (this.incremental) {
 			XSLTFormsEvent.attach(input, "keyup", XFInput.keyUpIncrementalActivate);
 		} else {
@@ -4560,14 +4562,29 @@ XFInput.keyUpInputMode = function() {
 
 		
 
+XFInput.keyDownActivate = function(a) {
+	this.keyDownCode = a.keyCode;
+};
+
+
+		
+
+XFInput.keyPressActivate = function(a) {
+	this.keyPressCode = a.keyCode;
+};
+
+
+		
+
 XFInput.keyUpActivate = function(a) {
 	var xf = XFControl.getXFElement(this);
-	if (a.keyCode == 13) {
+	if (a.keyCode == 13 && (this.keyDownCode == 13 || this.keyPressCode == 13)) {
 		xforms.openAction();
 		xf.valueChanged(this.value || "");
 		XMLEvents.dispatch(xf, "DOMActivate");
 		xforms.closeAction();
 	}
+	this.keyDownCode = this.keyPressCode = null;
 };
 
 
@@ -4575,7 +4592,7 @@ XFInput.keyUpActivate = function(a) {
 
 XFInput.keyUpIncrementalActivate = function(a) {
 	var xf = XFControl.getXFElement(this);
-	if (a.keyCode == 13) {
+	if (a.keyCode == 13 && (this.keyDownCode == 13 || this.keyPressCode == 13)) {
 		xforms.openAction();
 		xf.valueChanged(this.value || "");
 		XMLEvents.dispatch(xf, "DOMActivate");
@@ -4592,6 +4609,7 @@ XFInput.keyUpIncrementalActivate = function(a) {
 			xforms.closeAction();
 		}
 	}
+	this.keyDownCode = this.keyPressCode = null;
 };
 
 
@@ -7453,11 +7471,10 @@ XMLEvents.dispatch = function(target, name, type, bubbles, cancelable, defaultAc
 					canceler.detach();
 				}
 			} catch (e) {
-				alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
 			}
 		}
 	} catch (e) {
-		alert("XSLTForms Exception\n--------------------------\n\nError initializing :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
+		alert("XSLTForms Exception\n--------------------------\n\nError dispatching event '"+name+"' :\n\n"+(typeof(e.stack)=="undefined"?"":e.stack)+"\n\n"+(e.name?e.name+(e.message?"\n\n"+e.message:""):e));
 	} finally {
 		if (XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1].rheadsdoc) {
 			XMLEvents.EventContexts[XMLEvents.EventContexts.length - 1].rheadsdoc = null;
@@ -8014,7 +8031,7 @@ function NodeTestName(prefix, name) {
 
 		
 
-NodeTestName.prototype.evaluate = function(node, nsresolver) {
+NodeTestName.prototype.evaluate = function(node, nsresolver, csensitive) {
     var pre = this.prefix;
 
     if (this.name == "*") {
@@ -8022,8 +8039,9 @@ NodeTestName.prototype.evaluate = function(node, nsresolver) {
     }
     
     var ns = node.namespaceURI;
+	var nodename = node.localName || node.baseName;
 
-    return (node.localName || node.baseName) == this.name
+    return (csensitive ? nodename.toUpperCase() == this.name.toUpperCase() : nodename == this.name )
        && (pre && pre != "*" ? ns == nsresolver.lookupNamespaceURI(pre)
                : (pre != "*" ? ns == null || ns == "" || ns == nsresolver.lookupNamespaceURI("") : true));
 };
@@ -8187,7 +8205,7 @@ StepExpr.prototype.evaluate = function(ctx) {
 			}
 			break;
 		case XPathAxis.ATTRIBUTE :
-			_pushList(ctx, list, input.attributes, this.nodetest);
+			_pushList(ctx, list, input.attributes, this.nodetest, !input.namespaceURI || input.namespaceURI == "http://www.w3.org/1999/xhtml" || input.namespaceURI == null);
 			break;
 		case XPathAxis.CHILD :
 			_pushList(ctx, list, input.childNodes, this.nodetest);
@@ -8266,15 +8284,15 @@ StepExpr.prototype.evaluate = function(ctx) {
     return list;
 };
 
-function _push(ctx, list, node, test) {
-    if (test.evaluate(node, ctx.nsresolver) && !inArray(node, list)) {
+function _push(ctx, list, node, test, csensitive) {
+    if (test.evaluate(node, ctx.nsresolver, csensitive) && !inArray(node, list)) {
 			list[list.length] = node;
     }
 }
 
-function _pushList(ctx, list, l, test) {
+function _pushList(ctx, list, l, test, csensitive) {
     for (var i = 0, len = l ? l.length : 0; i < len; i++) {
-        _push(ctx, list, l[i], test);
+        _push(ctx, list, l[i], test, csensitive);
     }
 }
 
@@ -8332,7 +8350,7 @@ UnionExpr.prototype.evaluate = function(ctx) {
 		
 function stringValue(value) {
     return typeof value != "object"? "" + value
-        : (value.length === 0? "" : xmlValue(value[0]));
+        : (value === null || value.length === 0 ? "" : xmlValue(value[0]));
 }
 
 
@@ -9552,7 +9570,7 @@ XPathCoreFunctions = {
 				throw XPathCoreFunctionsExceptions.transformInvalidArgumentsNumber;
 			}
 			xslhref = stringValue(xslhref);
-			return Core.transformText(Core.saveXML(nodeSet[0]), xslhref, false);
+			return nodeSet.length === 0? "" : Core.transformText(Core.saveXML(nodeSet[0]), xslhref, false);
 ;
 		} ),
 
@@ -9569,7 +9587,7 @@ XPathCoreFunctions = {
 			if (arguments.length == 0) {
 				throw XPathCoreFunctionsExceptions.serializeNoContext;
 			}
-			return Core.saveXML(nodeSet[0]);
+			return nodeSet.length === 0? "" : Core.saveXML(nodeSet[0]);
 		} ),
 
 		
