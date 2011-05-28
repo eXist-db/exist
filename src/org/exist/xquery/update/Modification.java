@@ -36,6 +36,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
@@ -59,6 +60,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -178,6 +180,13 @@ public abstract class Modification extends AbstractExpression
 			Sequence out = new ValueSequence();
 			for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 				Item item = i.nextItem();
+				if (item.getType() == Type.DOCUMENT) {
+					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+						item = new NodeProxy(((NodeProxy)item).getDocument(), NodeId.ROOT_NODE);
+					} else {
+						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
+					}
+				}
 				if (Type.subTypeOf(item.getType(), Type.NODE)) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 						int last = builder.getDocument().getLastNode();
