@@ -1250,11 +1250,6 @@ elementConstructor throws XPathException
 }
 :
 	( LT qName ~( GT | SLASH ) ) => elementWithAttributes | elementWithoutAttributes
-    exception catch [RecognitionException e]
-        {
-            lexer.wsExplicit = false;
-            throw new XPathException("err:XPST0003: Parse error: element name containing whitespace: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
-        }
 	;
 
 elementWithoutAttributes throws XPathException
@@ -1294,6 +1289,11 @@ elementWithoutAttributes throws XPathException
 		)
 	)
     { #elementWithoutAttributes.copyLexInfo(#q); }
+     exception catch [RecognitionException e]
+        {
+            lexer.wsExplicit = false;
+            throw new XPathException(#q, "err:XPST0003: No closing end tag found for element constructor: " + name);
+        }
 	;
 
 // === XML ===
@@ -1321,10 +1321,10 @@ elementWithAttributes throws XPathException
 			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "found closing tag without opening tag: " + name);
+					throw new XPathException(#qn, "err:XPST0003: Found closing tag without opening tag: " + name);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(name))
-					throw new XPathException(#qn, "found closing tag: " + name + "; expected: " + prev);
+					throw new XPathException(#qn, "err:XPST0003: Found closing tag: " + name + "; expected: " + prev);
 				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
@@ -1333,6 +1333,11 @@ elementWithAttributes throws XPathException
 		)
 	)
     { #elementWithAttributes.copyLexInfo(#q); }
+    exception catch [RecognitionException e]
+        {
+            lexer.wsExplicit = false;
+            throw new XPathException(#q, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+        }
 	;
 
 attributeList throws XPathException
