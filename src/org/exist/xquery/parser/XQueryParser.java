@@ -8972,52 +8972,40 @@ inputState.guessing--;
 		//lexer.wsExplicit = true;
 		
 		
-		try {      // for error handling
-			boolean synPredMatched392 = false;
-			if (((LA(1)==LT))) {
-				int _m392 = mark();
-				synPredMatched392 = true;
-				inputState.guessing++;
-				try {
-					{
-					match(LT);
-					qName();
-					{
-					match(_tokenSet_14);
-					}
-					}
+		boolean synPredMatched392 = false;
+		if (((LA(1)==LT))) {
+			int _m392 = mark();
+			synPredMatched392 = true;
+			inputState.guessing++;
+			try {
+				{
+				match(LT);
+				qName();
+				{
+				match(_tokenSet_14);
 				}
-				catch (RecognitionException pe) {
-					synPredMatched392 = false;
 				}
-				rewind(_m392);
+			}
+			catch (RecognitionException pe) {
+				synPredMatched392 = false;
+			}
+			rewind(_m392);
 inputState.guessing--;
-			}
-			if ( synPredMatched392 ) {
-				elementWithAttributes();
-				astFactory.addASTChild(currentAST, returnAST);
-				elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			}
-			else if ((LA(1)==LT)) {
-				elementWithoutAttributes();
-				astFactory.addASTChild(currentAST, returnAST);
-				elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			}
-			else {
-				throw new NoViableAltException(LT(1), getFilename());
-			}
-			
 		}
-		catch (RecognitionException e) {
-			if (inputState.guessing==0) {
-				
-				lexer.wsExplicit = false;
-				throw new XPathException("err:XPST0003: Parse error: element name containing whitespace: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
-				
-			} else {
-				throw e;
-			}
+		if ( synPredMatched392 ) {
+			elementWithAttributes();
+			astFactory.addASTChild(currentAST, returnAST);
+			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
+		else if ((LA(1)==LT)) {
+			elementWithoutAttributes();
+			astFactory.addASTChild(currentAST, returnAST);
+			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		}
+		else {
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		
 		returnAST = elementConstructor_AST;
 	}
 	
@@ -9895,84 +9883,96 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST qn_AST = null;
 		String name= null;
 		
-		match(LT);
-		name=qName();
-		q_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-		astFactory.addASTChild(currentAST, returnAST);
-		attributeList();
-		attrs_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-		astFactory.addASTChild(currentAST, returnAST);
-		{
-		switch ( LA(1)) {
-		case SLASH:
-		{
-			{
-			match(SLASH);
-			match(GT);
-			if ( inputState.guessing==0 ) {
-				elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				
-								if (!elementStack.isEmpty())
-									lexer.inElementContent= true;
-								elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(attrs_AST));
-							
-				currentAST.root = elementWithAttributes_AST;
-				currentAST.child = elementWithAttributes_AST!=null &&elementWithAttributes_AST.getFirstChild()!=null ?
-					elementWithAttributes_AST.getFirstChild() : elementWithAttributes_AST;
-				currentAST.advanceChildToEnd();
-			}
-			}
-			break;
-		}
-		case GT:
-		{
-			{
-			match(GT);
-			if ( inputState.guessing==0 ) {
-				
-								elementStack.push(name);
-								lexer.inElementContent= true;
-							
-			}
-			mixedElementContent();
-			content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-			astFactory.addASTChild(currentAST, returnAST);
-			match(END_TAG_START);
+		try {      // for error handling
+			match(LT);
 			name=qName();
-			qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-			match(GT);
+			q_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+			astFactory.addASTChild(currentAST, returnAST);
+			attributeList();
+			attrs_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+			astFactory.addASTChild(currentAST, returnAST);
+			{
+			switch ( LA(1)) {
+			case SLASH:
+			{
+				{
+				match(SLASH);
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+					
+									if (!elementStack.isEmpty())
+										lexer.inElementContent= true;
+									elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(attrs_AST));
+								
+					currentAST.root = elementWithAttributes_AST;
+					currentAST.child = elementWithAttributes_AST!=null &&elementWithAttributes_AST.getFirstChild()!=null ?
+						elementWithAttributes_AST.getFirstChild() : elementWithAttributes_AST;
+					currentAST.advanceChildToEnd();
+				}
+				}
+				break;
+			}
+			case GT:
+			{
+				{
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					
+									elementStack.push(name);
+									lexer.inElementContent= true;
+								
+				}
+				mixedElementContent();
+				content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+				astFactory.addASTChild(currentAST, returnAST);
+				match(END_TAG_START);
+				name=qName();
+				qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+					
+									if (elementStack.isEmpty())
+										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag without opening tag: " + name);
+									String prev= (String) elementStack.pop();
+									if (!prev.equals(name))
+										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag: " + name + "; expected: " + prev);
+									elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(attrs_AST));
+									if (!elementStack.isEmpty()) {
+										lexer.inElementContent= true;
+									}
+								
+					currentAST.root = elementWithAttributes_AST;
+					currentAST.child = elementWithAttributes_AST!=null &&elementWithAttributes_AST.getFirstChild()!=null ?
+						elementWithAttributes_AST.getFirstChild() : elementWithAttributes_AST;
+					currentAST.advanceChildToEnd();
+				}
+				}
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			if ( inputState.guessing==0 ) {
 				elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				
-								if (elementStack.isEmpty())
-									throw new XPathException(qn_AST, "found closing tag without opening tag: " + name);
-								String prev= (String) elementStack.pop();
-								if (!prev.equals(name))
-									throw new XPathException(qn_AST, "found closing tag: " + name + "; expected: " + prev);
-								elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(attrs_AST));
-								if (!elementStack.isEmpty()) {
-									lexer.inElementContent= true;
-								}
-							
-				currentAST.root = elementWithAttributes_AST;
-				currentAST.child = elementWithAttributes_AST!=null &&elementWithAttributes_AST.getFirstChild()!=null ?
-					elementWithAttributes_AST.getFirstChild() : elementWithAttributes_AST;
-				currentAST.advanceChildToEnd();
+				elementWithAttributes_AST.copyLexInfo(q_AST);
 			}
-			}
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		}
-		if ( inputState.guessing==0 ) {
 			elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			elementWithAttributes_AST.copyLexInfo(q_AST);
 		}
-		elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		catch (RecognitionException e) {
+			if (inputState.guessing==0) {
+				
+				lexer.wsExplicit = false;
+				throw new XPathException(q_AST, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+				
+			} else {
+				throw e;
+			}
+		}
 		returnAST = elementWithAttributes_AST;
 	}
 	
@@ -9986,86 +9986,98 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST qn_AST = null;
 		String name= null;
 		
-		org.exist.xquery.parser.XQueryAST tmp396_AST = null;
-		tmp396_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp396_AST);
-		match(LT);
-		name=qName();
-		q_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-		astFactory.addASTChild(currentAST, returnAST);
-		{
-		switch ( LA(1)) {
-		case SLASH:
-		{
-			{
-			match(SLASH);
-			match(GT);
-			if ( inputState.guessing==0 ) {
-				elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				
-								lexer.wsExplicit= false;
-								if (!elementStack.isEmpty())
-									lexer.inElementContent= true;
-								elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name);
-							
-				currentAST.root = elementWithoutAttributes_AST;
-				currentAST.child = elementWithoutAttributes_AST!=null &&elementWithoutAttributes_AST.getFirstChild()!=null ?
-					elementWithoutAttributes_AST.getFirstChild() : elementWithoutAttributes_AST;
-				currentAST.advanceChildToEnd();
-			}
-			}
-			break;
-		}
-		case GT:
-		{
-			{
-			match(GT);
-			if ( inputState.guessing==0 ) {
-				
-								elementStack.push(name);
-								lexer.inElementContent= true;
-							
-			}
-			mixedElementContent();
-			content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-			astFactory.addASTChild(currentAST, returnAST);
-			match(END_TAG_START);
+		try {      // for error handling
+			org.exist.xquery.parser.XQueryAST tmp396_AST = null;
+			tmp396_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp396_AST);
+			match(LT);
 			name=qName();
-			qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-			match(GT);
+			q_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+			astFactory.addASTChild(currentAST, returnAST);
+			{
+			switch ( LA(1)) {
+			case SLASH:
+			{
+				{
+				match(SLASH);
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+					
+									lexer.wsExplicit= false;
+									if (!elementStack.isEmpty())
+										lexer.inElementContent= true;
+									elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name);
+								
+					currentAST.root = elementWithoutAttributes_AST;
+					currentAST.child = elementWithoutAttributes_AST!=null &&elementWithoutAttributes_AST.getFirstChild()!=null ?
+						elementWithoutAttributes_AST.getFirstChild() : elementWithoutAttributes_AST;
+					currentAST.advanceChildToEnd();
+				}
+				}
+				break;
+			}
+			case GT:
+			{
+				{
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					
+									elementStack.push(name);
+									lexer.inElementContent= true;
+								
+				}
+				mixedElementContent();
+				content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+				astFactory.addASTChild(currentAST, returnAST);
+				match(END_TAG_START);
+				name=qName();
+				qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
+				match(GT);
+				if ( inputState.guessing==0 ) {
+					elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+					
+									if (elementStack.isEmpty())
+										throw new XPathException(qn_AST, "found additional closing tag: " + name);
+									String prev= (String) elementStack.pop();
+									if (!prev.equals(name))
+										throw new XPathException(qn_AST, "found closing tag: " + name + "; expected: " + prev);
+									elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(content_AST));
+									if (!elementStack.isEmpty()) {
+										lexer.inElementContent= true;
+										//lexer.wsExplicit= false;
+									}
+								
+					currentAST.root = elementWithoutAttributes_AST;
+					currentAST.child = elementWithoutAttributes_AST!=null &&elementWithoutAttributes_AST.getFirstChild()!=null ?
+						elementWithoutAttributes_AST.getFirstChild() : elementWithoutAttributes_AST;
+					currentAST.advanceChildToEnd();
+				}
+				}
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			if ( inputState.guessing==0 ) {
 				elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				
-								if (elementStack.isEmpty())
-									throw new XPathException(qn_AST, "found additional closing tag: " + name);
-								String prev= (String) elementStack.pop();
-								if (!prev.equals(name))
-									throw new XPathException(qn_AST, "found closing tag: " + name + "; expected: " + prev);
-								elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(content_AST));
-								if (!elementStack.isEmpty()) {
-									lexer.inElementContent= true;
-									//lexer.wsExplicit= false;
-								}
-							
-				currentAST.root = elementWithoutAttributes_AST;
-				currentAST.child = elementWithoutAttributes_AST!=null &&elementWithoutAttributes_AST.getFirstChild()!=null ?
-					elementWithoutAttributes_AST.getFirstChild() : elementWithoutAttributes_AST;
-				currentAST.advanceChildToEnd();
+				elementWithoutAttributes_AST.copyLexInfo(q_AST);
 			}
-			}
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltException(LT(1), getFilename());
-		}
-		}
-		}
-		if ( inputState.guessing==0 ) {
 			elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			elementWithoutAttributes_AST.copyLexInfo(q_AST);
 		}
-		elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		catch (RecognitionException e) {
+			if (inputState.guessing==0) {
+				
+				lexer.wsExplicit = false;
+				throw new XPathException(q_AST, "err:XPST0003: No closing end tag found for element constructor: " + name);
+				
+			} else {
+				throw e;
+			}
+		}
 		returnAST = elementWithoutAttributes_AST;
 	}
 	
