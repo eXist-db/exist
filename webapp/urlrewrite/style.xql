@@ -46,7 +46,7 @@ declare function style:sidebar($node) {
                         if (matches($link/@href, "^\w+://")) then
                             $link/@href/string()
                         else
-                            concat($node/@base, "/", $link/@href)
+                            concat($node/@base, "/", ($link/@href)[0])
                     return
                         <li><a href="{$href}">{$link/string()}</a></li>
                 }

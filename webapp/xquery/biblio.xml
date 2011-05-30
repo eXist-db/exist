@@ -8,7 +8,7 @@
    <xi:include href="header.xml"/>
        
    <!-- include sidebar -->
-   <xi:include href="sidebar.xml"/>
+   <xi:include href="../sidebar.xml"/>
        
    <body>
    
