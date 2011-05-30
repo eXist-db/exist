@@ -71,13 +71,8 @@ public class EXistResult implements Result {
 
     @Override
     public void add(Source src) throws HttpClientException {
-        
         try {
-            //TODO badly formed HTML needs tidying into XHTML - would be better
-            //to have seperate methods for HTML and XML retrieval in EXPath.
-            
-            //NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
-            NodeValue nodeValue = ModuleUtils.htmlToXHtml(context, "", src, null, null);
+            NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
             result.add(nodeValue);
         } catch(SAXException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);
