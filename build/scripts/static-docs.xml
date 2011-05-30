@@ -144,7 +144,6 @@
         <get src="${url}/building.xml" dest="${build.docs.html}/building.html"/>
         <get src="${url}/client.xml" dest="${build.docs.html}/client.html"/>
         <get src="${url}/cluster.xml" dest="${build.docs.html}/cluster.html"/>
-        <get src="${url}/configuration.xml" dest="${build.docs.html}/configuration.html"/>
         <get src="${url}/config-cache.xml" dest="${build.docs.html}/config-cache.html"/>
         <get src="${url}/config-compression.xml" dest="${build.docs.html}/config-compression.html"/>
         <get src="${url}/config-context.xml" dest="${build.docs.html}/config-context.html"/>
@@ -157,16 +156,17 @@
         <get src="${url}/config-versioning.xml" dest="${build.docs.html}/config-versioning.html"/>
         <get src="${url}/config-xqdoc.xml" dest="${build.docs.html}/config-xqdoc.html"/>
         <get src="${url}/config-xslt.xml" dest="${build.docs.html}/config-xslt.html"/>
+        <get src="${url}/configuration.xml" dest="${build.docs.html}/configuration.html"/>
         <get src="${url}/credits.xml" dest="${build.docs.html}/credits.html"/>
         <get src="${url}/debugger.xml" dest="${build.docs.html}/debugger.html"/>
         <get src="${url}/deployment.xml" dest="${build.docs.html}/deployment.html"/>
+        <get src="${url}/devguide.xml" dest="${build.docs.html}/devguide.html"/>
         <get src="${url}/devguide_codereview.xml" dest="${build.docs.html}/devguide_codereview.html"/>
         <get src="${url}/devguide_indexes.xml" dest="${build.docs.html}/devguide_indexes.html"/>
         <get src="${url}/devguide_log4j.xml" dest="${build.docs.html}/devguide_log4j.html"/>
         <get src="${url}/devguide_manifesto.xml" dest="${build.docs.html}/devguide_manifesto.html"/>
         <get src="${url}/devguide_rest.xml" dest="${build.docs.html}/devguide_rest.html"/>
         <get src="${url}/devguide_soap.xml" dest="${build.docs.html}/devguide_soap.html"/>
-        <get src="${url}/devguide.xml" dest="${build.docs.html}/devguide.html"/>
         <get src="${url}/devguide_xmldb.xml" dest="${build.docs.html}/devguide_xmldb.html"/>
         <get src="${url}/devguide_xmlrpc.xml" dest="${build.docs.html}/devguide_xmlrpc.html"/>
         <get src="${url}/devguide_xquery.xml" dest="${build.docs.html}/devguide_xquery.html"/>
@@ -178,10 +178,10 @@
         <get src="${url}/extensions.xml" dest="${build.docs.html}/extensions.html"/>
         <get src="${url}/facts.xml" dest="${build.docs.html}/facts.html"/>
         <get src="${url}/ftlegacy.xml" dest="${build.docs.html}/ftlegacy.html"/>
-        <get src="${url}/function_modules.xml" dest="${build.docs.html}/function_modules.xml.html"/>
+        <get src="${url}/function_modules.xml" dest="${build.docs.html}/function_modules.html"/>
         <get src="${url}/header.xml" dest="${build.docs.html}/header.html"/>
-        <get src="${url}/indexing.xml" dest="${build.docs.html}/indexing.html"/>
         <get src="${url}/index.xml" dest="${build.docs.html}/index.html"/>
+        <get src="${url}/indexing.xml" dest="${build.docs.html}/indexing.html"/>
         <get src="${url}/installing-exist-on-amazon-ec2.xml" dest="${build.docs.html}/installing-exist-on-amazon-ec2.html"/>
         <get src="${url}/jmx.xml" dest="${build.docs.html}/jmx.html"/>
         <get src="${url}/journal.xml" dest="${build.docs.html}/journal.html"/>
@@ -198,12 +198,13 @@
         <get src="${url}/security.xml" dest="${build.docs.html}/security.html"/>
         <get src="${url}/sidebar.xml" dest="${build.docs.html}/sidebar.html"/>
         <get src="${url}/template.xml" dest="${build.docs.html}/template.html"/>
+        <mkdir dir="${build.docs.html}/testing"/>
+        <get src="${url}/testing/testing.xml" dest="${build.docs.html}/testing/testing.html"/>
         <get src="${url}/triggers.xml" dest="${build.docs.html}/triggers.html"/>
         <get src="${url}/tuning.xml" dest="${build.docs.html}/tuning.html"/>
         <get src="${url}/ubuntu-server.xml" dest="${build.docs.html}/ubuntu-server.html"/>
         <get src="${url}/update_ext.xml" dest="${build.docs.html}/update_ext.html"/>
         <get src="${url}/upgrading.xml" dest="${build.docs.html}/upgrading.html"/>
-        <get src="${url}/urlrewrite.xml" dest="${build.docs.html}/urlrewrite.html"/>
         <get src="${url}/validation.xml" dest="${build.docs.html}/validation.html"/>
         <get src="${url}/versioning.xml" dest="${build.docs.html}/versioning.html"/>
         <get src="${url}/webdav.xml" dest="${build.docs.html}/webdav.html"/>
@@ -212,23 +213,23 @@
         <get src="${url}/xacml-intro.xml" dest="${build.docs.html}/xacml-intro.html"/>
         <get src="${url}/xacml-usage.xml" dest="${build.docs.html}/xacml-usage.html"/>
         <get src="${url}/xacml.xml" dest="${build.docs.html}/xacml.html"/>
+        <mkdir dir="${build.docs.html}/xforms"/>
+        <get src="${url}/xforms/examples.xml" dest="${build.docs.html}/xforms/examples.html"/>
+        <get src="${url}/xforms/hello.xml" dest="${build.docs.html}/xforms/hello.html"/>
+        <get src="${url}/xforms/hello2.xml" dest="${build.docs.html}/xforms/hello2.html"/>
+        <get src="${url}/xforms/shakespeare.xml" dest="${build.docs.html}/xforms/shakespeare.html"/>
+        <!--get src="${url}/xforms/tasks/sidebar.xml" dest="${build.docs.html}/xforms/tasks/sidebar.html"/-->
+        <!--get src="${url}/xforms/tasks/todo-list.xml" dest="${build.docs.html}/xforms/tasks/todo-list.html"/>
+        <get src="${url}/xforms/tasks/todo-projects.xml" dest="${build.docs.html}/xforms/tasks/todo-projects.html"/-->
+        <get src="${url}/xforms/xforms.xml" dest="${build.docs.html}/xforms/xforms.html"/>
         <get src="${url}/xinclude.xml" dest="${build.docs.html}/xinclude.html"/>
         <get src="${url}/xmlprague06.xml" dest="${build.docs.html}/xmlprague06.html"/>
-        <get src="${url}/xquery.xml" dest="${build.docs.html}/xquery.html"/>
-
-
-        <mkdir dir="${build.docs.html}/xforms"/>
-        <get src="${url}/xforms/xforms.xml" dest="${build.docs.html}/xforms/xforms.html"/>
+        
         <mkdir dir="${build.docs.html}/xproc"/>
         <!--get src='${url}/xproc/xproc.xml' dest='${build.docs.html}/xproc/xproc.html'/-->
-        <!--mkdir dir="${build.docs.html}/gsoc"/>
-        <mkdir dir="${build.docs.html}/gsoc/2008"/>
-        <get src='${url}/gsoc/2008/summer.xml' dest='${build.docs.html}/gsoc/2008/summer.html'/-->
         
         <mkdir dir="${build.docs.html}/repo"/>
         <get src="${url}/repo/repo.xml" dest="${build.docs.html}/repo/repo.html"/>
-        
-        <mkdir dir="${build.docs.html}/testing"/>
-        <get src="${url}/testing/testing.xml" dest="${build.docs.html}/testing/testing.html"/>
+
     </target>
 </project>
