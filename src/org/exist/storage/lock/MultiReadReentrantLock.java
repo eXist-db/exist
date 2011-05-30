@@ -533,10 +533,10 @@ public class MultiReadReentrantLock implements Lock {
      * @param owner the thread
      * @return true if owner has a lock
      */
-    public boolean hasLock(Thread owner) {
+    public synchronized boolean hasLock(Thread owner) {
         if (writeLockedThread == owner)
             return true;
-        return hasReadLock(owner);
+        return isLockedForRead(owner);
     }
 
     public void wakeUp() {
