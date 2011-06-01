@@ -43,6 +43,7 @@ import java.util.List;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
@@ -655,18 +656,20 @@ public class Resource extends File {
     }
     
     public long length() {
-    	return 0;
+		try {
+			init();
+		} catch (IOException e) {
+			return 0;
+		}
+
+    	if (resource != null) {
+    		//report size for binary resource only
+    		if (resource instanceof BinaryDocument) {
+        		return resource.getContentLength();
+			}
+    	}
     	
-//		try {
-//			init();
-//		} catch (IOException e) {
-//			return 0;
-//		}
-//
-//    	if (resource != null)
-//    		return resource.getContentLength();
-//    	
-//    	return 0;
+    	return 0;
     }
     
     public String getPath() {
