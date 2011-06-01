@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
+import org.exist.versioning.svn.wc.ISVNInfoHandler;
 import org.exist.versioning.svn.wc.SVNClientManager;
 import org.exist.versioning.svn.wc.SVNCopySource;
 import org.exist.versioning.svn.wc.SVNUpdateClient;
@@ -203,6 +204,10 @@ public class WorkingCopy {
                 null, null, false, false, SVNDepth.INFINITY);
     }
 
+    public void revert(File[] paths) throws SVNException {
+    	ourClientManager.getWCClient().doRevert(paths, SVNDepth.INFINITY, null);
+    }
+
     /*
      * Checks out a working copy from a repository. Like 'svn checkout URL[@REV] PATH (-r..)'
      * command; It's done by invoking 
@@ -362,13 +367,13 @@ public class WorkingCopy {
      * is passed to a handler's handleInfo(SVNInfo info) method where an implementor
      * decides what to do with it.     
      */
-    public void showInfo(File wcPath, SVNRevision revision, boolean isRecursive) throws SVNException {
+    public void showInfo(File wcPath, SVNRevision revision, boolean isRecursive, ISVNInfoHandler handler) throws SVNException {
         /*
          * InfoHandler displays information for each entry in the console (in the manner of
          * the native Subversion command line client)
          */
         ourClientManager.getWCClient().doInfo(wcPath, SVNRevision.UNDEFINED, revision, 
-                SVNDepth.getInfinityOrEmptyDepth(isRecursive), null, new InfoHandler());
+                SVNDepth.getInfinityOrEmptyDepth(isRecursive), null, handler);
     }
     
     /*
@@ -417,6 +422,10 @@ public class WorkingCopy {
         ourClientManager.getWCClient().doLock(new File[] { wcPath }, isStealLock, lockComment);
     }
     
+    public void unlock(File wcPath, boolean breakLock) throws SVNException {
+        ourClientManager.getWCClient().doUnlock(new File[] { wcPath }, breakLock);
+    }
+
     /*
      * Schedules directories and files for deletion from version control upon the next
      * commit (locally). Like 'svn delete PATH' command. It's done by invoking 
