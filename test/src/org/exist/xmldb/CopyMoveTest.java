@@ -1,107 +1,78 @@
 package org.exist.xmldb;
 
-import org.exist.storage.DBBroker;
+import org.junit.After;
+import org.exist.security.Permission;
+import org.exist.security.Account;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.modules.*;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import static org.exist.xmldb.XmldbLocalTests.*;
 
 
-public class CopyMoveTest extends TestCase {
+public class CopyMoveTest {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
-	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private final static String TEST_COLLECTION = "testCopyMove";
 
-	public static void main(String[] args) {
-		TestRunner.run(CopyMoveTest.class);
-	}
-	
-	public CopyMoveTest(String name) {
-		super(name);
-	}
-	
-	public void testCopyResourceChangeName() {	
-		Collection c =null;
-		try {
-			c = setupTestCollection();
-			XMLResource original = (XMLResource) c.createResource("original", XMLResource.RESOURCE_TYPE);
-			original.setContent("<sample/>");
-			c.storeResource(original);
-			CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) c.getService("CollectionManagementService", "1.0");
-			cms.copyResource("original", "", "duplicate");
-			assertEquals(2, c.getResourceCount());
-			XMLResource duplicate = (XMLResource) c.getResource("duplicate");
-			assertNotNull(duplicate);
-			System.out.println(duplicate.getContent());
-        } catch (Exception e) {            
-            fail(e.getMessage()); 			
-		} finally {
-			closeCollection(c);
-		}
-	}
+    @Test
+    public void copyResourceChangeName() throws XMLDBException {
+        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
+        original.setContent("<sample/>");
+        testCollection.storeResource(original);
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        cms.copyResource("original", "", "duplicate");
+        assertEquals(2, testCollection.getResourceCount());
+        XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
+        assertNotNull(duplicate);
+        System.out.println(duplicate.getContent());
+    }
 
-	public void testQueryCopiedResource() {		
-		Collection c = null;
-		try {
-			c = setupTestCollection();		
-			XMLResource original = (XMLResource) c.createResource("original", XMLResource.RESOURCE_TYPE);
-			original.setContent("<sample/>");
-			c.storeResource(original);
-			CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) c.getService("CollectionManagementService", "1.0");
-			cms.copyResource("original", "", "duplicate");
-			XMLResource duplicate = (XMLResource) c.getResource("duplicate");
-			assertNotNull(duplicate);
-			XPathQueryService xq = (XPathQueryService) c.getService("XPathQueryService", "1.0");
-			ResourceSet rs = xq.queryResource("duplicate", "/sample");
-			assertEquals(1, rs.getSize());
-        } catch (Exception e) {            
-            fail(e.getMessage()); 			
-		} finally {
-			closeCollection(c);
-		}
-	}
+    @Test
+    public void queryCopiedResource() throws XMLDBException {
+        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
+        original.setContent("<sample/>");
+        testCollection.storeResource(original);
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        cms.copyResource("original", "", "duplicate");
+        XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
+        assertNotNull(duplicate);
+        XPathQueryService xq = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        ResourceSet rs = xq.queryResource("duplicate", "/sample");
+        assertEquals(1, rs.getSize());
+    }
 
-	private Collection setupTestCollection() {
-		try {
-			Collection root = DatabaseManager.getCollection(URI);
-			CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-			Collection c = root.getChildCollection("test");
-			if(c != null)
-				rootcms.removeCollection("test");
-			rootcms.createCollection("test");
-			c = DatabaseManager.getCollection(URI+"/test");
-			assertNotNull(c);
-			return c;
-	    } catch (Exception e) {            
-	        fail(e.getMessage()); 
-		}
-	    return null;
-	}
+    @Before
+    public void setUp() throws Exception {
+        // initialize driver
+        Database database = (Database) Class.forName(DRIVER).newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-	protected void setUp() {
-		try {
-			// initialize driver
-			Database database = (Database) Class.forName(DRIVER).newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-        } catch (Exception e) {            
-            fail(e.getMessage()); 
-		}
-	}
-	
-	private void closeCollection(Collection collection) {
-		try {
-			if (null != collection) {		
-				collection.close();
-			}
-	    } catch (Exception e) {            
-	        fail(e.getMessage()); 
-		}
-	}
-	
+        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        CollectionManagementService cms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        Collection testCollection = cms.createCollection(TEST_COLLECTION);
+        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        // change ownership to guest
+        Account guest = ums.getAccount(GUEST_UID);
+        ums.chown(guest, guest.getPrimaryGroup());
+        ums.chmod(Permission.DEFAULT_PERM);
+    }
+
+    @After
+    public void tearDown() throws XMLDBException {
+        //delete the test collection
+        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        cms.removeCollection(TEST_COLLECTION);
+
+        //shutdown the db
+        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
+    }
 }

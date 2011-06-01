@@ -21,14 +21,20 @@
  */
 package org.exist.xmldb;
 
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.exist.security.Permission;
+import org.exist.security.Account;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -38,6 +44,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+import static org.exist.xmldb.XmldbLocalTests.*;
 
 /**
  * Tests XMLResource.getContentAsDOM() for resources retrieved from
@@ -45,10 +52,7 @@ import org.xmldb.api.modules.XQueryService;
  * 
  * @author wolf
  */
-public class ContentAsDOMTest extends TestCase {
-
-    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-    private final static String ROOT_URI = "xmldb:exist://" + XmldbURI.ROOT_COLLECTION;
+public class ContentAsDOMTest {
     
     private final static String XML =
         "<root><test>ABCDEF</test></root>";
@@ -58,77 +62,67 @@ public class ContentAsDOMTest extends TestCase {
         "return (" +
         "<!-- Comment -->," +
         "<output>{$t}</output>)";
-    
-    private Collection root;
-    
-    public ContentAsDOMTest(String name) {
-        super(name);
-    }
-    
-    public void testGetContentAsDOM() {
-        try {
-        	XQueryService service = (XQueryService) root.getService("XQueryService", "1.0");        
-	        ResourceSet result = service.query(XQUERY);
-	        for(long i = 0; i < result.getSize(); i++) {
-	            XMLResource r = (XMLResource) result.getResource(i);
-	            
-	            System.out.println("Output of getContent():");
-	            System.out.println(r.getContent());
-	            
-	            System.out.println("Output of getContentAsDOM():");
-	            Node node = r.getContentAsDOM();
-	            Transformer t = TransformerFactory.newInstance().newTransformer();
-	            t.setOutputProperty(OutputKeys.INDENT, "yes");
-	            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-	            DOMSource source = new DOMSource(node);
-	            StreamResult output = new StreamResult(System.out);
-	            t.transform(source, output);
-	        }
-        } catch (Exception e) {
-        	e.printStackTrace();
-            fail(e.getMessage());            
-        }
-    }
-    
-    /*
-     * @see TestCase#setUp()
-     */
-    protected void setUp() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName(DRIVER);
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            
-            root = DatabaseManager.getCollection(ROOT_URI, "admin", null);
-            Resource resource = root.createResource("test.xml", "XMLResource");
-            resource.setContent(XML);
-            root.storeResource(resource);
-        } catch (Exception e) {
-            fail(e.getMessage());
+
+    private final static String TEST_COLLECTION = "testContentAsDOM";
+
+
+    @Test
+    public void getContentAsDOM() throws XMLDBException, TransformerConfigurationException, TransformerException {
+
+        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        ResourceSet result = service.query(XQUERY);
+        for(long i = 0; i < result.getSize(); i++) {
+            XMLResource r = (XMLResource) result.getResource(i);
+
+            System.out.println("Output of getContent():");
+            System.out.println(r.getContent());
+
+            System.out.println("Output of getContentAsDOM():");
+            Node node = r.getContentAsDOM();
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            DOMSource source = new DOMSource(node);
+            StreamResult output = new StreamResult(System.out);
+            t.transform(source, output);
         }
     }
 
-    /*
-     * @see TestCase#tearDown()
-     */
-    protected void tearDown() {
-    	try {
-	        Resource resource = root.getResource("test.xml");
-	        assertNotNull("text.xml not found", resource);
-	        root.removeResource(resource);
-	        DatabaseInstanceManager mgr = (DatabaseInstanceManager)
-	            root.getService("DatabaseInstanceManager", "1.0");
-	        mgr.shutdown();
-            
-            root = null;
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+
+    @Before
+    public void setUp() throws Exception {
+        // initialize driver
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        Collection testCollection = service.createCollection(TEST_COLLECTION);
+        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        // change ownership to guest
+        Account guest = ums.getAccount(GUEST_UID);
+        ums.chown(guest, guest.getPrimaryGroup());
+        ums.chmod(Permission.DEFAULT_PERM);
+
+        Resource resource = testCollection.createResource("test.xml", "XMLResource");
+        resource.setContent(XML);
+        testCollection.storeResource(resource);
+        ums.chown(resource, guest, GUEST_UID); //change resource ownership to guest
     }
-    
-    public static void main(String[] args) {
-        TestRunner.run(ContentAsDOMTest.class);
+
+    @After
+    public void tearDown() throws XMLDBException {
+
+        //delete the test collection
+        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        service.removeCollection(TEST_COLLECTION);
+
+        //shutdown the db
+        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        dim.shutdown();
     }
 }

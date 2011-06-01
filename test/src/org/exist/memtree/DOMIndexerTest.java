@@ -21,41 +21,45 @@
  */
 package org.exist.memtree;
 
-import java.io.StringReader;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
-import junit.framework.TestCase;
+import org.exist.EXistException;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.Account;
+import org.exist.security.AuthenticationException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * Tests the serializing of constructed in-memory fragments.
  * 
  * @author wolf
  */
-public class DOMIndexerTest extends TestCase {
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(DOMIndexerTest.class);
-    }
+public class DOMIndexerTest {
 
     private final static String XML =
         "<?xml version=\"1.0\"?>" +
@@ -89,13 +93,15 @@ public class DOMIndexerTest extends TestCase {
         "   ) " +
         "return" +
         "   <result>{$a/title, $a/f:name, $a}</result>";
-    
-    public void testStore() {
+
+    @Test
+    public void store() throws PermissionDeniedException, IOException, TriggerException, EXistException, SAXException, LockException, AuthenticationException {
     	BrokerPool pool = null;
     	DBBroker broker = null;    
     	try {
-    		pool = BrokerPool.getInstance();
-            broker = pool.get(pool.getSecurityManager().getGuestSubject());
+            pool = BrokerPool.getInstance();
+            Subject admin = pool.getSecurityManager().authenticate("admin", "");
+            broker = pool.get(admin);
             Collection collection = broker.getOrCreateCollection(null, TestConstants.TEST_COLLECTION_URI);
             IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
@@ -104,18 +110,19 @@ public class DOMIndexerTest extends TestCase {
 			org.exist.dom.DocumentImpl doc = info.getDocument();
             broker.flush();
             broker.saveCollection(null, collection);
-    	} catch (Exception e) {
-    		fail(e.getMessage());                
         } finally {
-        	if (pool != null) pool.release(broker);
+            if (pool != null) {
+                pool.release(broker);
+            }
         }
     }
-    
-    public void testXQuery() {
+
+    @Test
+    public void xQuery() throws EXistException, PermissionDeniedException, SAXException, XPathException {
     	BrokerPool pool = null;
     	DBBroker broker = null;  
         try {
-        	pool = BrokerPool.getInstance();	         
+            pool = BrokerPool.getInstance();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
@@ -125,15 +132,12 @@ public class DOMIndexerTest extends TestCase {
             props.setProperty(OutputKeys.INDENT, "yes");
             SAXSerializer serializer = new SAXSerializer(out, props);
             serializer.startDocument();
-            for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
+            for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
             System.out.println(out.toString());
-    	} catch (Exception e) {
-            e.printStackTrace();
-    		fail(e.getMessage());
         } finally {
             pool.release(broker);
         }
@@ -142,42 +146,17 @@ public class DOMIndexerTest extends TestCase {
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
-    protected void setUp() {
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    @Before
+    public void setUp() throws DatabaseConfigurationException, EXistException {
+        Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
     }  
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
-    }
-    
-    protected DocumentImpl parse(String input) {
-        try {
-	    	SAXParserFactory factory = SAXParserFactory.newInstance();
-	        factory.setNamespaceAware(true);
-	//        factory.setFeature("http://apache.org/xml/features/validation/schema", true);
-	//        factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
-	        InputSource src = new InputSource(new StringReader(input));
-	        SAXParser parser = factory.newSAXParser();
-	        XMLReader reader = parser.getXMLReader();
-	        SAXAdapter adapter = new SAXAdapter();
-	        reader.setContentHandler(adapter);
-	        reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
-	        reader.parse(src);
-	        
-	        return (DocumentImpl) adapter.getDocument();
-	        
-    	} catch (Exception e) {
-    		fail(e.getMessage()); 
-    	}
-    	return null;
     }
 }

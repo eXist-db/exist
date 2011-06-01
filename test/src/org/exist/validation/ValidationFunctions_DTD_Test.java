@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2011 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,36 +21,34 @@
  */
 package org.exist.validation;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.IOException;
+import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.LockException;
 
 import org.junit.*;
 
 import static org.junit.Assert.*;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.exist.collections.IndexInfo;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.XMLReaderObjectFactory;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
 /**
@@ -61,63 +59,285 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class ValidationFunctions_DTD_Test {
     
-    private final static Logger logger = Logger.getLogger(ValidationFunctions_DTD_Test.class);
-    
-    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
-    private static BrokerPool pool = null;
     private static Configuration config = null;
+    
+    private final static String TEST_COLLECTION = "testValidationFunctionsDTD";
 
-    private static XPathQueryService service;
-    private static Collection root = null;
-    private static Database database = null;
+    private final static String ADMIN_UID = "admin";
+    private final static String ADMIN_PWD = "";
+
+    private final static String GUEST_UID = "guest";
+
+    private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
+
+    private static XPathQueryService service = null;
+
+    private final static String VALIDATION_DTD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION;
+    private final static String VALIDATION_XSD_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION;
+    private final static String VALIDATION_TMP_COLLECTION_URI = VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION;
+
+    @Test
+    public void validateUsingSystemCatalog() throws XMLDBException {
+        // DTD for hamlet_valid.xml is registered in system catalog.
+        // result should be "document is valid"
+        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_TMP_COLLECTION_URI + "/hamlet_valid.xml'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals( "hamlet_valid.xml in systemcatalog", "true", r );
+    }
+    
+    @Test
+    public void specifiedCatalog_test1() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml') ," +" xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("valid document", "true", r );
+    }
+
+    @Test
+    public void specifiedCatalog_test2() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/catalog.xml'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals( "invalid document", "false", r );
+    }
+            
+    @Test
+    public void specifiedCatalog_test3() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("wrong catalog", "false", r);
+    }
+
+    @Test
+    public void specifiedCatalog_test4() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/catalog.xml'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("wrong catalog, invalid document", "false", r );
+    }
+
+    @Test
+    public void specifiedGrammar_dtd_forValidDoc() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("valid document", "true", r );
+    }
+
+    @Test
+    public void specifiedGrammar_dtd_forInvalidDoc() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/hamlet.dtd') )");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals( "invalid document", "false", r );
+    }
+
+    @Test
+    public void searchedGrammar_valid_dtd() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_DTD_COLLECTION_URI + "/'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("valid document", "true", r );
+    }
+
+    @Test
+    public void searchedGrammar_valid_xsd() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate( xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('" + VALIDATION_XSD_COLLECTION_URI + "/') )");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals( "valid document, not found", "false", r );
+    }
+            
+    @Test
+    public void searchedGrammar_valid() throws XMLDBException {
+            ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml'), xs:anyURI('/db/'))");
+            String r = (String) result.getResource(0).getContent();
+            assertEquals("valid document", "true", r );
+    }
+            
+    @Test
+    public void searchedGrammar_invalid() throws XMLDBException {
+        ResourceSet result = service.query("validation:validate(xs:anyURI('" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml'), xs:anyURI('/db/'))");
+        String r = (String) result.getResource(0).getContent();
+        assertEquals( "invalid document", "false", r );
+    }
+
+    @Before
+    public void clearGrammarCache() throws XMLDBException {
+        service.query("validation:clear-grammar-cache()");
+    }
+    
 
     @BeforeClass
-    public static void startup() {
+    public static void startup() throws Exception {
         BasicConfigurator.configure();
+        config = new Configuration();
+        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
 
+        BrokerPool.configure(1, 5, config);
+
+        //create the collections we need for these tests
+        createTestCollections();
+
+        //create the documents we need for the tests
+        createTestDocuments();
+
+        //get xmldb xpath query service
+        service = getXPathService();
+    }
+
+
+    @AfterClass
+    public static void shutdown() throws Exception {
+        removeTestCollections();
+        BrokerPool.stopAll(true);
+    }
+
+    private static XPathQueryService getXPathService() throws Exception {
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        return (XPathQueryService) root.getService( "XQueryService", "1.0" );
+    }
+
+    private static void createTestCollections() throws Exception {
+
+        BrokerPool pool = BrokerPool.getInstance();
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn txn = null;
         try {
-            config = new Configuration();
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
+            Subject admin = pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD);
 
-            broker = pool.get(pool.getSecurityManager().getGuestSubject());
+            broker = pool.get(admin);
+
             transact = pool.getTransactionManager();
             txn = transact.beginTransaction();
 
             /** create nessecary collections if they dont exist */
+            org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            testCollection.getPermissions().setOwner(GUEST_UID);
+            broker.saveCollection(txn, testCollection);
 
-            org.exist.collections.Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_DTD));
+            org.exist.collections.Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
+            col.getPermissions().setOwner(GUEST_UID);
             broker.saveCollection(txn, col);
 
-            col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_XSD));
+            col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION));
+            col.getPermissions().setOwner(GUEST_UID);
             broker.saveCollection(txn, col);
 
-            col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_TMP));
+            col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
+            col.getPermissions().setOwner(GUEST_UID);
             broker.saveCollection(txn, col);
 
             transact.commit(txn);
 
-        } catch(Exception e) {
-            if(transact != null && txn != null)
+        } catch (Exception e) {
+            if(transact != null && txn != null) {
                 transact.abort(txn);
-
-            e.printStackTrace();
-            fail(e.getMessage());
+            }
+            throw e;
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 pool.release(broker);
+            }
         }
     }
 
+    private static void createTestDocuments() throws Exception {
+
+        BrokerPool pool = BrokerPool.getInstance();
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try {
+
+            broker = pool.get(pool.getSecurityManager().getGuestSubject());
+
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+            /** create necessary documents  */
+
+            //hamlet
+            String sb = new String(TestTools.getHamlet());
+            sb = sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+
+            org.exist.collections.Collection tmpCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
+            storeDocument(broker, txn, tmpCol, "hamlet_valid.xml", sb);
+            broker.saveCollection(txn, tmpCol);
+
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
+
+            org.exist.collections.Collection dtdCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
+            storeTextDocument(broker, txn, dtdCol, "hamlet.dtd", new String(TestTools.loadSample("validation/dtd/hamlet.dtd")));
+            storeDocument(broker, txn, dtdCol, "catalog.xml", new String(TestTools.loadSample("validation/dtd/catalog.xml")));
+            broker.saveCollection(txn, dtdCol);
+
+            org.exist.collections.Collection homeCol = broker.getCollection(XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            storeDocument(broker, txn, homeCol, "hamlet_valid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_valid.xml")));
+            storeDocument(broker, txn, homeCol, "hamlet_invalid.xml", new String(TestTools.loadSample("validation/dtd/hamlet_invalid.xml")));
+            broker.saveCollection(txn, homeCol);
+
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes");
+
+            transact.commit(txn);
+        } catch (Exception e) {
+            if(transact != null && txn != null) {
+                transact.abort(txn);
+            }
+            throw e;
+        } finally {
+            if(broker != null) {
+                pool.release(broker);
+            }
+        }
+    }
+
+    private static void storeDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        XmldbURI docUri  = XmldbURI.create(name);
+        IndexInfo info = collection.validateXMLResource(txn, broker, docUri, data);
+        collection.store(txn, broker, info, data, false);
+    }
+
+    private static void storeTextDocument(DBBroker broker, Txn txn, org.exist.collections.Collection collection, String name, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        XmldbURI docUri  = XmldbURI.create(name);
+        collection.addBinaryResource(txn, broker, docUri, data.getBytes(), "text/plain");
+    }
+
+    private static void removeTestCollections() throws Exception {
+
+        BrokerPool pool = BrokerPool.getInstance();
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try {
+            Subject admin = pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD);
+
+            broker = pool.get(admin);
+
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+            org.exist.collections.Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            broker.removeCollection(txn, testCollection);
+
+            transact.commit(txn);
+        } catch (Exception e) {
+            if(transact != null && txn != null) {
+                transact.abort(txn);
+            }
+            throw e;
+        } finally {
+            if(broker != null) {
+                pool.release(broker);
+            }
+        }
+    }
+    /*
+
     @Before
     public void setUp() throws Exception {
-      
+
         logger.info("setUp");
-        
+
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
@@ -131,20 +351,20 @@ public class ValidationFunctions_DTD_Test {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             TestTools.copyStream(fis, baos);
             fis.close();
-            
+
             String sb = new String(baos.toByteArray());
             sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
             InputStream is = new ByteArrayInputStream(sb.getBytes());
-            
+
             // -----
-            
+
             URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
             URLConnection connection = url.openConnection();
             OutputStream os = connection.getOutputStream();
-            
+
             TestTools.copyStream(is, os);
-            
+
             is.close();
             os.close();
             
@@ -177,190 +397,7 @@ public class ValidationFunctions_DTD_Test {
             fail(ex.getMessage());
         }
     }
-    
-    // ===========================================================
-    
-    private void clearGrammarCache() {
-        logger.info("Clearing grammar cache");
-        @SuppressWarnings("unused")
-		ResourceSet result = null;
-        try {
-            result = service.query("validation:clear-grammar-cache()");
-            
-        } catch (Exception e) {
-            logger.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
 
-    // ===========================================================
-
-    @Test
-    public void validateUsingSystemCatalog() {
-        
-        logger.info("validateUsingSystemCatalog");
-        
-        ResourceSet result = null;
-        String r = null;
-        try {
-            // DTD for hamlet_valid.xml is registered in system catalog.
-            // result should be "document is valid"
-            result = service.query(
-                "validation:validate( xs:anyURI('"+TestTools.VALIDATION_TMP+"/hamlet_valid.xml') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals( "hamlet_valid.xml in systemcatalog", "true", r );
-            
-        } catch (Exception e) {
-            logger.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-    
-    @Test
-    public void specifiedCatalog() {
-        
-        logger.info("specifiedCatalog");
-        
-        clearGrammarCache();
-        
-        ResourceSet result = null;
-        String r = null;
-        try {
-            logger.info("Test1");
-            result = service.query(
-                "validation:validate( xs:anyURI('"+TestTools.VALIDATION_HOME+"/hamlet_valid.xml') ,"
-                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("valid document", "true", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test2");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml') ,"
-                +" xs:anyURI('/db/validation/dtd/catalog.xml') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals( "invalid document", "false", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test3");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("wrong catalog", "false", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test4");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
-                +" xs:anyURI('/db/validation/xsd/catalog.xml') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("wrong catalog, invalid document", "false", r );
-            
-        } catch (Exception e) {
-            logger.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void specifiedGrammar() {
-        
-        logger.info("specifiedGrammar");
-        
-        clearGrammarCache();
-        
-        ResourceSet result = null;
-        String r = null;
-        try {
-            logger.info("Test1");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validation/dtd/hamlet.dtd') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("valid document", "true", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test2");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
-                +" xs:anyURI('/db/validation/dtd/hamlet.dtd') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals( "invalid document", "false", r );
-            
-            clearGrammarCache();
-            
-            
-        } catch (Exception e) {
-            logger.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void searchedGrammar() {
-        
-        logger.info("searchedGrammar");
-        
-        clearGrammarCache();
-        
-        ResourceSet result = null;
-        String r = null;
-        try {
-            
-            logger.info("Test1");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validation/dtd/') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("valid document", "true", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test2");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/validation/xsd/') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals( "valid document, not found", "false", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test3");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_valid.xml'), "
-                +" xs:anyURI('/db/') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals("valid document", "true", r );
-            
-            clearGrammarCache();
-            
-            logger.info("Test4");
-            result = service.query(
-                "validation:validate( xs:anyURI('/db/validation/hamlet_invalid.xml'), "
-                +" xs:anyURI('/db/') )");
-            r = (String) result.getResource(0).getContent();
-            assertEquals( "invalid document", "false", r );
-            
-            clearGrammarCache();
-            
-            
-        } catch (Exception e) {
-            logger.error(e);
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-    
-    
     @AfterClass
     public static void shutdown() throws Exception {
 
@@ -371,6 +408,6 @@ public class ValidationFunctions_DTD_Test {
             (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
         
-    }
+    }*/
     
 }
