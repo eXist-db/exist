@@ -55,7 +55,8 @@ public class SVNModule extends AbstractInternalModule {
             new FunctionDef(SVNLog.signature, SVNLog.class),
             new FunctionDef(SVNStatus.signature, SVNStatus.class),
             new FunctionDef(SVNUnlock.signature, SVNUnlock.class),
-            new FunctionDef(SVNUpdate.signature, SVNUpdate.class)
+            new FunctionDef(SVNUpdate.signature, SVNUpdate.class),
+            new FunctionDef(SVNRevert.signature, SVNRevert.class)
 	};
 
 	public SVNModule(Map<String, List<? extends Object>> parameters) {
