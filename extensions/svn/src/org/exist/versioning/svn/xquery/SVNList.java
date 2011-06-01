@@ -26,7 +26,6 @@ import java.util.List;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.versioning.svn.WorkingCopy;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -49,16 +48,16 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class SVNList extends BasicFunction {
+public class SVNList extends AbstractSVNFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("list", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Reports the directory entry, and possibly children, for url at revision.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The subversion repository URI from which the list should be retrieved")
+				SVN_URI
             },
-			new FunctionParameterSequenceType("lists", Type.NODE, Cardinality.ZERO_OR_MORE, "a sequence containing the list entries"));
+			new FunctionParameterSequenceType("list", Type.ELEMENT, Cardinality.EXACTLY_ONE, "a sequence containing the list entries"));
 
     public SVNList(XQueryContext context) {
 		super(context, signature);

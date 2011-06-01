@@ -41,16 +41,16 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
-public class SVNLatestRevision extends BasicFunction {
+public class SVNLatestRevision extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-latest-revision-number", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Returns the number of the latest revision of the subversion repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("repository-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location in the subversion repository URI"),
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion username"),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The subversion password")
+				SVN_URI,
+				LOGIN,
+				PASSWORD
             },
 			new FunctionParameterSequenceType("revision-number", Type.LONG, Cardinality.EXACTLY_ONE, "The latest revision number of the repository"));
 
@@ -64,8 +64,7 @@ public class SVNLatestRevision extends BasicFunction {
         SVNRepositoryFactoryImpl.setup();
         String uri = args[0].getStringValue();
         try {
-            SVNRepository repo =
-                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
+            SVNRepository repo = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
             ISVNAuthenticationManager authManager =
                     SVNWCUtil.createDefaultAuthenticationManager(args[1].getStringValue(), args[2].getStringValue());
             repo.setAuthenticationManager(authManager);

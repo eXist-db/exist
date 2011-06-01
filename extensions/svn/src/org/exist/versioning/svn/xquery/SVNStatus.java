@@ -30,12 +30,10 @@ import org.exist.versioning.svn.wc.SVNStatusClient;
 import org.exist.versioning.svn.wc.SVNStatusType;
 import org.exist.versioning.svn.wc.SVNWCClient;
 import org.exist.versioning.svn.wc.SVNWCUtil;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -54,15 +52,15 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class SVNStatus extends BasicFunction {
+public class SVNStatus extends AbstractSVNFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("status", SVNModule.NAMESPACE_URI, SVNModule.PREFIX), "Status information on Working Copy items.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "working copy path")
+				DB_PATH
             },
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
+            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, ""));
 
 	public SVNStatus(XQueryContext context) {
 		super(context, signature);

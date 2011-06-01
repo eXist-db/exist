@@ -24,12 +24,10 @@ package org.exist.versioning.svn.xquery;
 import org.exist.dom.QName;
 import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.WorkingCopy;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -44,17 +42,17 @@ import org.tmatesoft.svn.core.SVNException;
  * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class SVNCommit extends BasicFunction {
+public class SVNCommit extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("commit", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Commits files or directories into repository.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored."),
-                new FunctionParameterSequenceType("message", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN commit message."),
-                new FunctionParameterSequenceType("login", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user login."),
-                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The SVN user password.")
+				DB_PATH,
+				MESSAGE,
+                LOGIN,
+                PASSWORD
             },
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the revision number the repository was committed to"));
 
