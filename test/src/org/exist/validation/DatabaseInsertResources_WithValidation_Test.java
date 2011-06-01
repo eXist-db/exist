@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 20011 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,18 +21,8 @@
  */
 package org.exist.validation;
 
+import org.exist.security.Subject;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-
-import org.apache.log4j.Logger;
 
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
@@ -40,14 +30,12 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.fail;
 
 /**
  *  Insert documents for validation tests.
@@ -56,54 +44,18 @@ import static org.junit.Assert.fail;
  */
 public class DatabaseInsertResources_WithValidation_Test {
     
-    private final static Logger logger = Logger.getLogger(DatabaseInsertResources_WithValidation_Test.class);
-    
-    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
-    private static BrokerPool pool;
     private static Configuration config;
 
+    private final static String TEST_COLLECTION = "testValidationInsert";
+
+    private final static String ADMIN_UID = "admin";
+    private final static String ADMIN_PWD = "";
+
+    private final static String GUEST_UID = "guest";
+
+    private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
     
-    @BeforeClass
-    public static void startup()
-    {
-
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn txn = null;
-        try
-        {
-            config = new Configuration();
-            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-
-
-            broker = pool.get(pool.getSecurityManager().getGuestSubject());
-            transact = pool.getTransactionManager();
-            txn = transact.beginTransaction();
-
-            /** create nessecary collections if they dont exist */
-
-            Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(TestTools.VALIDATION_TMP));
-            broker.saveCollection(txn, col);
-        }
-        catch(Exception e)
-        {
-            if(transact != null && txn != null)
-                transact.abort(txn);
-
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-        finally
-        {
-            if(broker != null)
-                pool.release(broker);
-        }
-    }
-    
-
-        /**
+    /**
      * Test for inserting hamlet.xml, while validating using default registered
      * DTD set in system catalog.
      *
@@ -113,40 +65,19 @@ public class DatabaseInsertResources_WithValidation_Test {
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      */
     @Test
-    public void testValidDocumentSystemCatalog(){
-        
-        try {
-            File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
-            InputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            TestTools.copyStream(fis, baos);
-            fis.close();
-            
-            String sb = new String(baos.toByteArray());
-            sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
-            InputStream is = new ByteArrayInputStream(sb.getBytes());
-            
-            // -----
-            
-            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
-            URLConnection connection = url.openConnection();
-            OutputStream os = connection.getOutputStream();
-            
-            TestTools.copyStream(is, os);
-            
-            is.close();
-            os.close();
-            
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.error(ex);
-            fail(ex.getMessage());
-        }
+    public void testValidDocumentSystemCatalog() throws IOException{
+
+        String hamletWithValid = new String(TestTools.getHamlet());
+        hamletWithValid=hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+            "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+
+        TestTools.insertDocumentToURL(
+                hamletWithValid.getBytes(),
+                "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_valid.xml"
+        );
     }
-    
-        /**
+
+    /**
      * Test for inserting hamlet.xml, while validating using default registered
      * DTD set in system catalog.
      *
@@ -158,50 +89,109 @@ public class DatabaseInsertResources_WithValidation_Test {
      * Aditionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
     @Test
-    public void invalidDocumentSystemCatalog(){
+    public void invalidDocumentSystemCatalog() throws IOException{
+
+        String hamletWithInvalid = new String(TestTools.getHamlet());
+        hamletWithInvalid = hamletWithInvalid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+            "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+
+        hamletWithInvalid = hamletWithInvalid.replaceAll("TITLE", "INVALIDTITLE" );
+
         try {
-            File file = new File(eXistHome, "samples/shakespeare/hamlet.xml");
-            InputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            TestTools.copyStream(fis, baos);
-            fis.close();
-            
-            String sb = new String(baos.toByteArray());
-            sb=sb.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
-            
-            sb=sb.replaceAll("TITLE", "INVALIDTITLE" );
-            
-            InputStream is = new ByteArrayInputStream(sb.getBytes());
-            
-            // -----
-            
-            URL url = new URL("xmldb:exist://" + TestTools.VALIDATION_TMP + "/hamlet_valid.xml");
-            URLConnection connection = url.openConnection();
-            OutputStream os = connection.getOutputStream();
-            
-            TestTools.copyStream(is, os);
-            
-            is.close();
-            os.flush();
-            os.close();
-            
-        } catch (IOException ex) {
-            if(!ex.getCause().getMessage().matches(".*Element type \"INVALIDTITLE\" must be declared.*")){
-                ex.getCause().printStackTrace();
-                logger.error(ex.getCause());
-                fail(ex.getCause().getMessage());
+            TestTools.insertDocumentToURL(
+                hamletWithInvalid.getBytes(),
+                "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_invalid.xml"
+                
+            );
+        } catch(IOException ioe) {
+            //TODO consider how to get better error handling than matching on exception strings!
+            if(!ioe.getCause().getMessage().matches(".*Element type \"INVALIDTITLE\" must be declared.*")){
+                throw ioe;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.error(ex);
-            fail(ex.getMessage());
         }
     }
-    
-    
+
+    @BeforeClass
+    public static void startup() throws Exception {
+        config = new Configuration();
+        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto");
+        BrokerPool.configure(1, 5, config);
+        createTestCollections();
+
+    }
+
     @AfterClass
-    public static void shutdown() {
+    public static void shutdown() throws Exception {
+        removeTestCollections();
         BrokerPool.stopAll(true);
+    }
+
+    private static void createTestCollections() throws Exception {
+
+        BrokerPool pool = BrokerPool.getInstance();
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try {
+            Subject admin = pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD);
+
+            broker = pool.get(admin);
+
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+
+            /** create nessecary collections if they dont exist */
+            Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            testCollection.getPermissions().setOwner(GUEST_UID);
+            broker.saveCollection(txn, testCollection);
+
+            Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
+            col.getPermissions().setOwner(GUEST_UID);
+            broker.saveCollection(txn, col);
+
+            transact.commit(txn);
+
+        } catch (Exception e) {
+            if(transact != null && txn != null) {
+                transact.abort(txn);
+            }
+            throw e;
+        } finally {
+            if(broker != null) {
+                pool.release(broker);
+            }
+        }
+    }
+
+    private static void removeTestCollections() throws Exception {
+
+        BrokerPool pool = BrokerPool.getInstance();
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn txn = null;
+        try {
+            Subject admin = pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD);
+
+            broker = pool.get(admin);
+
+            transact = pool.getTransactionManager();
+            txn = transact.beginTransaction();
+
+            Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
+            broker.removeCollection(txn, testCollection);
+
+            transact.commit(txn);
+
+        } catch (Exception e) {
+            if(transact != null && txn != null) {
+                transact.abort(txn);
+            }
+            throw e;
+        } finally {
+            if(broker != null) {
+                pool.release(broker);
+            }
+        }
     }
 }

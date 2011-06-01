@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2011 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,15 +21,19 @@
  */
 package org.exist.validation;
 
+import org.exist.security.Account;
+import org.exist.security.Permission;
 import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.UserManagementService;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 /**
@@ -39,22 +43,33 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class DatabaseCollectionTest {
     
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String ROOT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
-    private Collection rootCollection = null;
-    
-    private static Database database =null;
+
+    private final static String TEST_COLLECTION = "testValidationDatabaseCollection";
+
+    public final static String ADMIN_UID = "admin";
+    public final static String ADMIN_PWD = "";
+
+    public final static String GUEST_UID = "guest";
 
     @Before
     public void setUp() {
         try {
             System.out.println(">>> setUp");
             Class<?> cl = Class.forName(DRIVER);
-            /* Database */ database = (Database) cl.newInstance();
+            Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            rootCollection = DatabaseManager.getCollection(URI, "admin", "");
-            
+            Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+            CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+            Collection test = cms.createCollection(TEST_COLLECTION);
+            UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+            // change ownership to guest
+            Account guest = ums.getAccount(GUEST_UID);
+            ums.chown(guest, guest.getPrimaryGroup());
+            ums.chmod(Permission.DEFAULT_PERM);
+
             assertNotNull("Could not connect to database.");
             System.out.println("<<<\n");
         } catch (Exception e) {
@@ -64,40 +79,31 @@ public class DatabaseCollectionTest {
 
     @After
     public void tearDown() throws Exception {
-        
-        DatabaseManager.deregisterDatabase(database);
-        DatabaseInstanceManager dim =
-            (DatabaseInstanceManager) rootCollection.getService(
-            "DatabaseInstanceManager", "1.0");
+
+        //delete the test collection
+        Collection root = DatabaseManager.getCollection(ROOT_URI, ADMIN_UID, ADMIN_PWD);
+        CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        cms.removeCollection(TEST_COLLECTION);
+
+        DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
-        database = null;
-        
-        System.out.println("tearDown PASSED");
     }
-    
     
     @Test
-    public void testCreateCollections() {
-        System.out.println("testCreateCollections");
-        try {
-            Collection root = DatabaseManager.getCollection(URI, "guest", "guest");
-            CollectionManagementService service =
-                (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection testCollection = service.createCollection(TestTools.VALIDATION_HOME);
-            assertNotNull(testCollection);
-            
-            testCollection = service.createCollection(TestTools.VALIDATION_TMP);
-            assertNotNull(testCollection);
-            
-            testCollection = service.createCollection(TestTools.VALIDATION_XSD);
-            assertNotNull(testCollection);
-            
-            testCollection = service.createCollection(TestTools.VALIDATION_DTD);
-            assertNotNull(testCollection);
-            
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+    public void createCollections() throws XMLDBException {
+
+        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        Collection validationCollection = service.createCollection(TestTools.VALIDATION_HOME_COLLECTION);
+        assertNotNull(validationCollection);
+
+        validationCollection = service.createCollection(TestTools.VALIDATION_HOME_COLLECTION + "/" + TestTools.VALIDATION_TMP_COLLECTION);
+        assertNotNull(validationCollection);
+
+        validationCollection = service.createCollection(TestTools.VALIDATION_HOME_COLLECTION + "/" + TestTools.VALIDATION_XSD_COLLECTION);
+        assertNotNull(validationCollection);
+
+        validationCollection = service.createCollection(TestTools.VALIDATION_HOME_COLLECTION + "/" + TestTools.VALIDATION_DTD_COLLECTION);
+        assertNotNull(validationCollection);
     }
-    
 }

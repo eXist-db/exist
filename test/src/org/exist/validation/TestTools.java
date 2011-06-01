@@ -22,23 +22,18 @@
 
 package org.exist.validation;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermission;
-import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
-import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XPathQueryService;
 
 /**
  *  A set of helper methods for the validation tests.
@@ -46,13 +41,14 @@ import org.xmldb.api.modules.XPathQueryService;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class TestTools {
-    
-    public final static String VALIDATION_HOME="/db/validation";
-    public final static String VALIDATION_DTD=VALIDATION_HOME+"/dtd";
-    public final static String VALIDATION_XSD=VALIDATION_HOME+"/xsd";
-    public final static String VALIDATION_TMP=VALIDATION_HOME+"/tmp";
+
+    public final static String VALIDATION_HOME_COLLECTION = "validation";
+    public final static String VALIDATION_DTD_COLLECTION = "dtd";
+    public final static String VALIDATION_XSD_COLLECTION = "xsd";
+    public final static String VALIDATION_TMP_COLLECTION = "tmp";
     
 
+    /*
     public static void insertResources(){
 
         try {
@@ -69,7 +65,7 @@ public class TestTools {
             Collection col1 = cmservice.createCollection(TestTools.VALIDATION_HOME);
             Collection col2 = cmservice.createCollection(TestTools.VALIDATION_XSD);
 
-            Permission permission = new UnixStylePermission("guest", "guest", 999);
+            Permission permission = PermissionAiderFactory.getPermission("guest", "guest", 999);
 
             UserManagementService umservice = (UserManagementService) root.getService("UserManagementService", "1.0");
             umservice.setPermissions(col1, permission);
@@ -90,7 +86,7 @@ public class TestTools {
         } catch (Throwable ex) {
             ex.printStackTrace();
         }
-    }
+    }*/
     
     // Transfer bytes from in to out
     public static void copyStream(InputStream is, OutputStream os) throws IOException {
@@ -107,18 +103,69 @@ public class TestTools {
      * @param target  Target URL (e.g. xmldb:exist:///db/collection/document.xml)
      * @throws java.lang.Exception  Oops.....
      */
-    public static void insertDocumentToURL(String file, String target) throws Exception{
-        
-        InputStream is = new FileInputStream(file);
-        
-        URL url = new URL(target);
-        URLConnection connection = url.openConnection();
-        OutputStream os = connection.getOutputStream();
-        
-        TestTools.copyStream(is, os);
-        
-        is.close();
-        os.close();
+    public static void insertDocumentToURL(String file, String target) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(file);
+            final URL url = new URL(target);
+            final URLConnection connection = url.openConnection();
+            os = connection.getOutputStream();
+            TestTools.copyStream(is, os);
+        } finally {
+            if(is != null){
+                is.close();
+            }
+            if(os != null) {
+                os.close();
+            }
+        }
     }
-    
+
+    public static String getEXistHome() {
+        return ConfigurationHelper.getExistHome().getAbsolutePath();
+    }
+
+    public static byte[] getHamlet() throws IOException {
+        return loadSample("shakespeare/hamlet.xml");
+    }
+
+    public static byte[] loadSample(String sampleRelativePath) throws IOException {
+        File file = new File(getEXistHome(), "samples/" + sampleRelativePath);
+        InputStream fis = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            fis = new FileInputStream(file);
+            baos = new ByteArrayOutputStream();
+            TestTools.copyStream(fis, baos);
+        } finally {
+            if(fis != null){
+                fis.close();
+            }
+            if(baos != null) {
+                baos.close();
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    public static void insertDocumentToURL(byte[] data, String target) throws IOException {
+        final URL url = new URL(target);
+        final URLConnection connection = url.openConnection();
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new ByteArrayInputStream(data);
+            os = connection.getOutputStream();
+            TestTools.copyStream(is, os);
+            os.flush();
+         } finally {
+            if(is != null){
+                is.close();
+            }
+            if(os != null) {
+                os.close();
+            }
+        }
+    }
 }
