@@ -26,12 +26,10 @@ import java.io.File;
 import org.exist.dom.QName;
 import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.WorkingCopy;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,14 +42,14 @@ import org.tmatesoft.svn.core.SVNException;
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class SVNRevert extends BasicFunction {
+public class SVNRevert extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("revert", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Restores the pristine version of working copy path, effectively undoing any local mods.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource to be stored.")
+				DB_PATH
             },
 			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
 

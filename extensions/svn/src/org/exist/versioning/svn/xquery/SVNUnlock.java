@@ -22,29 +22,29 @@
 package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
-import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.versioning.svn.Resource;
+import org.exist.versioning.svn.WorkingCopy;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.tmatesoft.svn.core.SVNException;
 
 /**
- * Created by IntelliJ IDEA.
- * User: lcahlander
- * Date: Apr 22, 2010
- * Time: 9:48:14 AM
- * To change this template use File | Settings | File Templates.
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class SVNUnlock extends BasicFunction {
+public class SVNUnlock extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("unlock", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Unlocks a resource in a subversion repository.\n\nThis is a stub and currently does nothing.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("connection", Type.NODE, Cardinality.EXACTLY_ONE, "The connection to a subversion repository"),
-                new FunctionParameterSequenceType("resource", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource.")
+				DB_PATH
             },
 			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
 
@@ -64,19 +64,18 @@ public class SVNUnlock extends BasicFunction {
      * @param contextSequence
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-//        DAVRepositoryFactory.setup();
-//        SVNRepositoryFactoryImpl.setup();
-//        String uri = args[0].getStringValue();
-//        try {
-//            SVNRepository repo =
-//                    SVNRepositoryFactory.create(SVNURL.parseURIDecoded(uri));
-//            ISVNAuthenticationManager authManager =
-//                    SVNWCUtil.createDefaultAuthenticationManager(args[1].getStringValue(), args[2].getStringValue());
-//            repo.setAuthenticationManager(authManager);
-//
-//        } catch (SVNException e) {
-//            throw new XPathException(this, e.getMessage(), e);
-//        }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+		WorkingCopy wc = new WorkingCopy("", "");
+        
+        String uri = args[0].getStringValue();
+       
+        Resource wcDir = new Resource(uri);
+        
+        try {
+			wc.unlock(wcDir, false);
+		} catch (SVNException e) {
+            throw new XPathException(this, e.getMessage(), e);
+		}
+        
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

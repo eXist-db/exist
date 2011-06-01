@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.WorkingCopy;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -41,14 +40,14 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class SVNUpdate extends BasicFunction {
+public class SVNUpdate extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("update", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Updates a working copy (brings changes from the repository into the working copy). Like 'svn update PATH' command.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("url", Type.ANY_URI, Cardinality.EXACTLY_ONE, "a working copy entry that is to be updated")
+				DB_PATH
             },
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "revision to which revision was resolved"));
 

@@ -26,12 +26,10 @@ import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.SVNClientManager;
 import org.exist.versioning.svn.wc.SVNWCUtil;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,14 +42,14 @@ import org.tmatesoft.svn.core.SVNException;
  * @author <a href="mailto:amir.akhmedov@gmail.com">Amir Akhmedov</a>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class SVNCleanup extends BasicFunction {
+public class SVNCleanup extends AbstractSVNFunction {
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("clean-up", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Recursively cleans up the working copy, removing locks and resuming unfinished operations.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "a WC path to start a cleanup from")
+				DB_PATH
             },
 			new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
 
