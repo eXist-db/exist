@@ -447,7 +447,7 @@ public class WorkingCopyTest {
          * in the manner of 'svn info -R' command
          */
         try {
-        	wc.showInfo(wcDir, SVNRevision.WORKING, true);
+        	wc.showInfo(wcDir, SVNRevision.WORKING, true, new InfoHandler());
         } catch (SVNException svne) {
             error("error while recursively getting info for the working copy at'"
                     + wcDir.getAbsolutePath() + "'", svne);
@@ -592,7 +592,7 @@ public class WorkingCopyTest {
          * it was really switched to a new URL
          */
         try {
-        	wc.showInfo(wcDir, SVNRevision.WORKING, true);
+        	wc.showInfo(wcDir, SVNRevision.WORKING, true, new InfoHandler());
         } catch (SVNException svne) {
             error("error while recursively getting info for the working copy at'"
                     + wcDir.getAbsolutePath() + "'", svne);
