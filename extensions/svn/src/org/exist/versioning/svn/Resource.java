@@ -675,4 +675,8 @@ public class Resource extends File {
     public String getPath() {
     	return uri.toString();
     }
+
+    public String getAbsolutePath() {
+    	return uri.toString();
+    }
 }
