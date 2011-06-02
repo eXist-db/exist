@@ -19,7 +19,8 @@ public class ContentExtractionModule extends AbstractInternalModule {
 
     public final static FunctionDef[] functions = {
         new FunctionDef(ContentFunctions.getMeatadata, ContentFunctions.class),
-        new FunctionDef(ContentFunctions.getMetadataAndContent, ContentFunctions.class)
+        new FunctionDef(ContentFunctions.getMetadataAndContent, ContentFunctions.class),
+        new FunctionDef(ContentFunctions.streamContent, ContentFunctions.class)
     };
 
 //    public final static QName EXCEPTION_QNAME =
