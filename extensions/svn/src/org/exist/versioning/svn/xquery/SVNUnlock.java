@@ -42,7 +42,7 @@ public class SVNUnlock extends AbstractSVNFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("unlock", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
-			"Unlocks a resource in a subversion repository.\n\nThis is a stub and currently does nothing.",
+			"Unlocks a resource in a subversion repository.",
 			new SequenceType[] {
 				DB_PATH
             },
