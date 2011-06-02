@@ -1351,7 +1351,7 @@ public class BrokerPool extends Observable implements Database {
 				//increase its number of uses
 				broker.incReferenceCount();
 	            if (user != null)
-	                broker.setUser(user);
+	                broker.setSubject(user);
 	            return broker;
 				//TODO : share the code with what is below (including notifyAll) ?
 	            // WM: notifyAll is not necessary if we don't have to wait for a broker.
@@ -1387,9 +1387,9 @@ public class BrokerPool extends Observable implements Database {
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
             if (user != null)
-                broker.setUser(user);
+                broker.setSubject(user);
             else
-                broker.setUser(securityManager.getGuestSubject());
+                broker.setSubject(securityManager.getGuestSubject());
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();
@@ -1439,6 +1439,8 @@ public class BrokerPool extends Observable implements Database {
 	                }
 	             }
 	         }
+	        Subject lastUser = broker.getSubject();
+			broker.setSubject(securityManager.getGuestSubject());
 			inactiveBrokers.push(broker);
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
@@ -1449,11 +1451,10 @@ public class BrokerPool extends Observable implements Database {
 					this.syncRequired = false;
                     this.checkpoint = false;
 				}				
-                if (serviceModeUser != null && !broker.getSubject().equals(serviceModeUser)) {
+                if (serviceModeUser != null && !lastUser.equals(serviceModeUser)) {
                     inServiceMode = true;
                 }
             }
-			broker.setUser(securityManager.getGuestSubject());
 			//Inform the other threads that someone is gone
 			this.notifyAll();
 		}
@@ -1539,7 +1540,7 @@ public class BrokerPool extends Observable implements Database {
 		broker.sync(syncEvent);
 		Subject user = broker.getSubject();
 		//TODO : strange that it is set *after* the sunc method has been called.
-		broker.setUser(securityManager.getSystemSubject());
+		broker.setSubject(securityManager.getSystemSubject());
         if (status != SHUTDOWN)
             broker.cleanUpTempResources();
         if (syncEvent == Sync.MAJOR_SYNC){
@@ -1559,7 +1560,7 @@ public class BrokerPool extends Observable implements Database {
 	
         //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
         //broker.setUser(User.DEFAULT);
-        broker.setUser(user);
+        broker.setSubject(user);
 	}
 	
 	/**
