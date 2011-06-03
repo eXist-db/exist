@@ -25,8 +25,12 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
+import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.validation.Shared;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -55,7 +59,8 @@ public class Parse extends BasicFunction {
             new QName( "parse", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
-            "empty string or sequence.",
+            "empty string or sequence. If the XML is not well-formed, the function returns an " +
+            "XML fragment to describe the error. The fragment has the form: <report><status>invalid</status><message>...",
             new SequenceType[] { TO_BE_PARSED_PARAMETER },
             RESULT_TYPE
         ),
@@ -84,6 +89,8 @@ public class Parse extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
         StringReader reader = new StringReader(xmlContent);
+        ValidationReport report = new ValidationReport();
+        SAXAdapter adapter = new SAXAdapter(context);
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -107,18 +114,24 @@ public class Parse extends BasicFunction {
                 xr = parser.getXMLReader();
             }
 
-            SAXAdapter adapter = new SAXAdapter(context);
+            xr.setErrorHandler(report);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
-
-            return (DocumentImpl) adapter.getDocument();
         } catch (ParserConfigurationException e) {
             throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);
         } catch (SAXException e) {
-            throw new XPathException(this, "Error while parsing XML: " + e.getMessage(), e);
+            logger.debug("Error while parsing XML: " + e.getMessage(), e);
         } catch (IOException e) {
             throw new XPathException(this, "Error while parsing XML: " + e.getMessage(), e);
+        }
+        
+        if (report.isValid())
+        	return (DocumentImpl) adapter.getDocument();
+        else {
+        	MemTreeBuilder builder = context.getDocumentBuilder();
+            NodeImpl result = Shared.writeReport(report, builder);
+            return result;
         }
     }
 }
