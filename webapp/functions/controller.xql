@@ -62,8 +62,16 @@ let $log := util:log("DEBUG", concat("URL Info: $external-path-to-app:       ", 
 :)
 
 return
+    (: force trailing slash so relative URLs (e.g. "../sidebar.xml") resolve properly :)
+    if ($exist:path eq '') then
+        let $newPath := concat($url, '/')
+        return
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <redirect url="{$newPath}"/>
+            </dispatch>
+
 	(: make sure the global css, js and image files are resolved :)
-    if (matches($exist:path, '((styles|scripts|resources)/|logo.jpg)')) then
+    else if (matches($exist:path, '((styles|scripts|resources)/|logo.jpg)')) then
         let $newPath := replace($exist:path, '^.*(((styles|scripts|resources)/|logo).*)$', '/$1')
         return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
