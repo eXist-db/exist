@@ -1275,9 +1275,8 @@ public class XQueryURLRewrite implements Filter {
 		public void setContentType(String type) {
         	if (contentType != null)
         		return;
-        	if (cache)
-        		this.contentType = type;
-        	else
+    		this.contentType = type;
+    		if (!cache)
         		super.setContentType(type);
 		}
         
