@@ -185,8 +185,6 @@ public class NodePath implements Comparable<NodePath>{
     		component = component.substring(1);
     	}
         String prefix = QName.extractPrefix(component);
-        if (prefix == null)
-        	prefix = "";
         String localName = QName.extractLocalName(component);
         String namespaceURI = "";
         if (prefix != null) {
