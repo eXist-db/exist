@@ -88,6 +88,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         //Nothing to do
     }
 
+    @Override
+    public void visitVariableDeclaration(VariableDeclaration decl) {
+    	// Nothing to do
+    }
+    
     protected void processWrappers(Expression expr) {
         if (expr instanceof Atomize ||
                 expr instanceof DynamicCardinalityCheck ||

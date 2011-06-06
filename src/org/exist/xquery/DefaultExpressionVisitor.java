@@ -121,4 +121,9 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         intersect.left.accept(this);
         intersect.right.accept(this);
     }
+    
+    @Override
+    public void visitVariableDeclaration(VariableDeclaration decl) {
+    	decl.getExpression().accept(this);
+    }
 }
