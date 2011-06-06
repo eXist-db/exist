@@ -78,6 +78,8 @@ return
     			    <forward servlet="XSLTServlet">
     					<set-attribute name="xslt.stylesheet" value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
     				    <set-attribute name="xslt.syntax-highlight" value="no"/>
+						<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
+				        <set-attribute name="xslt.base" value="{$exist:root}"/>
     				</forward>
     			    <forward servlet="XSLTServlet">
     			        (: Apply xsltforms.xsl stylesheet :)
@@ -88,6 +90,7 @@ return
     				    <set-attribute name="xslt.output.method" value="xhtml"/>
     				    <set-attribute name="xslt.baseuri" value="{$relPath}xsltforms/"/>
 						<set-attribute name="xslt.xsltforms_home" value="webapp/xforms/xsltforms/"/>
+						(: new :)
     				</forward>
     			</view>
     			<cache-control cache="yes"/>
