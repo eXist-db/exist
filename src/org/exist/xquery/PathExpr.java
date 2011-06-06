@@ -46,7 +46,7 @@ import org.xmldb.api.base.CompiledExpression;
  * @author ljo
  */
 public class PathExpr extends AbstractExpression implements CompiledXQuery,
-        CompiledExpression {
+        CompiledExpression, RewritableExpression {
 
     protected final static Logger LOG = Logger.getLogger(PathExpr.class);
 

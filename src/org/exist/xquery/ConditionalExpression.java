@@ -33,13 +33,13 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class ConditionalExpression extends AbstractExpression {
+public class ConditionalExpression extends AbstractExpression implements RewritableExpression {
 
-    private final Expression testExpr;
+    private Expression testExpr;
 
-    private final Expression thenExpr;
+    private Expression thenExpr;
 
-    private final Expression elseExpr;
+    private Expression elseExpr;
 
     public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
 		Expression elseExpr) {
@@ -167,4 +167,14 @@ public class ConditionalExpression extends AbstractExpression {
     public void accept(ExpressionVisitor visitor) {
         visitor.visitConditional(this);
     }
+
+	@Override
+	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+		if (testExpr == oldExpr)
+			testExpr = newExpr;
+		else if (thenExpr == oldExpr)
+			thenExpr = newExpr;
+		else if (elseExpr == oldExpr)
+			elseExpr = newExpr;
+	}
 }
