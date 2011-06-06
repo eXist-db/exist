@@ -47,7 +47,7 @@ import org.exist.xquery.value.ValueSequence;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public abstract class BindingExpression extends AbstractExpression {
+public abstract class BindingExpression extends AbstractExpression implements RewritableExpression {
 
 	protected final static Logger LOG =
 		Logger.getLogger(BindingExpression.class);
@@ -325,5 +325,15 @@ public abstract class BindingExpression extends AbstractExpression {
     
 	public int getDependencies() {
 		return returnExpr.getDependencies();
+	}
+	
+	@Override
+	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+		if (inputSequence == oldExpr)
+			inputSequence = newExpr;
+		else if (whereExpr == oldExpr)
+			whereExpr = newExpr;
+		else if (returnExpr == oldExpr)
+			returnExpr = newExpr;
 	}
 }

@@ -88,7 +88,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
             Expression parent = locationStep.getParentExpression();
-            if (!(parent instanceof PathExpr)) {
+            if (!(parent instanceof RewritableExpression)) {
             	if (LOG.isTraceEnabled())
             		LOG.trace("Parent expression of step is not a PathExpr: " + parent);
                 return;
@@ -96,7 +96,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             if (LOG.isTraceEnabled())
                 LOG.trace("Rewriting expression: " + ExpressionDumper.dump(locationStep));
             hasOptimized = true;
-            PathExpr path = (PathExpr) parent;
+            RewritableExpression path = (RewritableExpression) parent;
             try {
                 // Create the pragma
                 ExtensionExpression extension = new ExtensionExpression(context);
@@ -130,15 +130,15 @@ public class Optimizer extends DefaultExpressionVisitor {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
             Expression parent = filtered.getParent();
-            if (!(parent instanceof PathExpr)) {
+            if (!(parent instanceof RewritableExpression)) {
             	if (LOG.isTraceEnabled())
-            		LOG.trace("Parent expression of step is not a PathExpr: " + parent);
+            		LOG.trace("Parent expression: " + parent.getClass().getName() + " of step does not implement RewritableExpression");
                 return;
             }
             if (LOG.isTraceEnabled())
                 LOG.trace("Rewriting expression: " + ExpressionDumper.dump(filtered));
             hasOptimized = true;
-            PathExpr path = (PathExpr) parent;
+            RewritableExpression path = (RewritableExpression) parent;
             try {
                 // Create the pragma
                 ExtensionExpression extension = new ExtensionExpression(context);
