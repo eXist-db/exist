@@ -35,7 +35,7 @@ import org.exist.xquery.value.SequenceType;
  * 
  * @author wolf
  */
-public class VariableDeclaration extends AbstractExpression {
+public class VariableDeclaration extends AbstractExpression implements RewritableExpression {
 
 	String qname;
 	SequenceType sequenceType = null;
@@ -179,6 +179,21 @@ public class VariableDeclaration extends AbstractExpression {
 		return expression.getCardinality();
 	}
 
+	public Expression getExpression() {
+		return expression;
+	}
+	
+	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+		if (expression == oldExpr) {
+			expression = newExpr;
+		}
+	}
+
+	@Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitVariableDeclaration(this);
+    }
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
