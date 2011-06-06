@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import org.exist.Namespaces;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
@@ -213,7 +214,8 @@ public class IndexSpec {
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns")) {
+            if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns") &&
+            		!attr.getValue().equals(CollectionConfiguration.NAMESPACE)) {
                 map.put(attr.getLocalName(), attr.getValue());
             }
         }

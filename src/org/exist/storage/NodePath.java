@@ -186,7 +186,7 @@ public class NodePath implements Comparable<NodePath>{
     	}
         String prefix = QName.extractPrefix(component);
         String localName = QName.extractLocalName(component);
-        String namespaceURI = "";
+        String namespaceURI = null;
         if (prefix != null) {
 	        namespaceURI = namespaces.get(prefix);
 	        if(namespaceURI == null) {
@@ -194,8 +194,13 @@ public class NodePath implements Comparable<NodePath>{
 	            prefix = null;
 	            namespaceURI = "";
 	        }
+        } else if (namespaces != null) {
+        	namespaceURI = namespaces.get("");
         }
+        if (namespaceURI == null)
+    		namespaceURI = "";
         QName qn = new QName(localName, namespaceURI, prefix);
+        LOG.debug("URI = " + namespaceURI);
         if (isAttribute)
         	qn.setNameType(ElementValue.ATTRIBUTE);
         addComponent(qn);
