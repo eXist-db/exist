@@ -46,6 +46,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.DocumentImpl;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
@@ -108,6 +109,7 @@ public class Jaxp extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
         Shared.simplereportText)),
+        
         new FunctionSignature(
         new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         extendedFunctionTxt,
@@ -120,6 +122,7 @@ public class Jaxp extends BasicFunction {
             catalogTxt),},
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
         Shared.simplereportText)),
+        
         new FunctionSignature(
         new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         simpleFunctionTxt + " An XML report is returned.",
@@ -130,6 +133,7 @@ public class Jaxp extends BasicFunction {
             cacheTxt),},
         new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
         Shared.xmlreportText)),
+        
         new FunctionSignature(
         new QName("jaxp-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         extendedFunctionTxt + " An XML report is returned.",
@@ -142,6 +146,7 @@ public class Jaxp extends BasicFunction {
             catalogTxt),},
         new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
         Shared.xmlreportText)),
+        
         new FunctionSignature(
         new QName("jaxp-parse", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         "Parse document in validating mode, all defaults are filled in according to the " +
@@ -257,8 +262,8 @@ public class Jaxp extends BasicFunction {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (IOException ex) {
-            LOG.error(ex);
+        } catch (ExistIOException ex) {
+            LOG.error(ex.getCause());
             report.setException(ex);
 
         } catch (Throwable ex) {
@@ -272,12 +277,12 @@ public class Jaxp extends BasicFunction {
         }
 
         // Create response
-        if (isCalledAs("parse")) {
+        if (isCalledAs("jaxp")) {
             Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
-        } else /* isCalledAs("parse-report") */ {
+        } else /* isCalledAs("jaxp-report or jaxp-parse ") */ {
 
             if(report.getThrowable()!=null){
                 throw new XPathException(report.getThrowable().getMessage(), report.getThrowable());

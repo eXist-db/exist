@@ -157,6 +157,21 @@ public class EmbeddedExistTester {
         ResourceSet result = xqService.execute(compiledQuery);
         return result;
     }
+    
+    protected static String executeOneValue(String query){
+        String r = null;
+        try {
+            ResourceSet results = executeQuery(query);
+            assertEquals(1, results.getSize());
+            r = (String) results.getResource(0).getContent();
+            
+        } catch (Exception ex) {
+            LOG.error(ex);
+            fail(ex.getMessage());
+        }
+        return r;
+    }
+    
 
     protected static byte[] readFile(File directory, String filename) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

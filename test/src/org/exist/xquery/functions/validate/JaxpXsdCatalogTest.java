@@ -164,6 +164,60 @@ public class JaxpXsdCatalogTest extends EmbeddedExistTester {
 
         executeAndEvaluate(query,"invalid");
     }
+    
+    // test boolean function
+    @Test
+    public void xsd_searched_valid_boolean() {
+        String query = "validation:jaxp( " +
+                "doc('/db/parse/instance/valid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+
+        assertEquals("true", executeOneValue(query));
+    }
+    
+    // test boolean function
+    @Test
+    public void xsd_searched_invalid_boolean() {
+        String query = "validation:jaxp( " +
+                "doc('/db/parse/instance/invalid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+
+        assertEquals("false", executeOneValue(query));
+    }
+    
+    // test parse function
+    @Test
+    public void xsd_searched_parse_valid() {
+        String query = "validation:jaxp-parse( " +
+                "doc('/db/parse/instance/valid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+
+        try {
+            String r = executeOneValue(query);
+            LOG.info(r);
+            assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
+        } catch (Exception ex) {
+            LOG.error(ex);
+            fail(ex.getMessage());
+        }
+    }
+    
+    // test parse function
+    @Test
+    public void xsd_searched_parse_invalid() {
+        String query = "validation:jaxp-parse( " +
+                "doc('/db/parse/instance/invalid.xml'), false()," +
+                "xs:anyURI('/db/parse/') )";
+
+        try {
+            String r = executeOneValue(query);
+            LOG.info(r);
+            assertXpathEvaluatesTo("2006-05-04T18:13:51.0Z", "//Y", r);
+        } catch (Exception ex) {
+            LOG.error(ex);
+            fail(ex.getMessage());
+        }
+    }
 
     private void executeAndEvaluate(String query, String expectedValue){
 
