@@ -102,17 +102,6 @@
             <title>Tools We Use in Development</title>
             <table>
                 <tr>
-                    <td class="description">Viewtier's <a
-                            href="http://www.viewtier.com/products/parabuild/index.htm"
-                            >Parabuild</a> ensures that new changes do not break the eXist codebase
-                        by hosting Continuous Integration system for eXist.</td>
-                    <td align="center">
-                        <a href="http://www.viewtier.com/products/parabuild/">
-                            <img border="0" src="resources/parabuild.png"/>
-                        </a>
-                    </td>
-                </tr>
-                <tr>
                     <td class="description">XML and non-XML resources of an eXist database can be
                         edited and processed with XSLT and XQuery seamlessly in <a
                             href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a>
