@@ -1,6 +1,6 @@
 (: 	This is the main controller for the web application. It is called from the
 	XQueryURLRewrite filter configured in web.xml. :)
-xquery version "1.0";
+xquery version "3.0";
 
 (:~ -------------------------------------------------------
     Main controller: handles all requests not matched by
@@ -70,13 +70,10 @@ return
 		
 	(: the following xml files use different stylesheets :)
 	else if ($exist:resource = ('index.xml', 'roadmap.xml', 'facts.xml') or $exist:path = '/examples.xml') then
-		let $stylesheet :=
-			if ($exist:resource eq 'roadmap.xml') then
-				"stylesheets/roadmap.xsl"
-			else if ($exist:resource eq "facts.xml") then
-				"stylesheets/facts.xsl"
-			else
-				"stylesheets/doc2html-2.xsl"
+		let $stylesheet := switch ($exist:resource)
+			case "roadmap.xml" return "stylesheets/roadmap.xsl"
+			case "facts.xml"   return "stylesheets/facts.xsl"
+			default            return "stylesheets/doc2html-2.xsl"
 		return
 			<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 				<view>
