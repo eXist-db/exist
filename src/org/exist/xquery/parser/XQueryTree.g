@@ -124,15 +124,6 @@ options {
 		Expression action;
 		boolean isForClause= true;
 	}
-
-	private static class FunctionParameter {
-		String varName;
-		SequenceType type= FunctionSignature.DEFAULT_TYPE;
-
-		public FunctionParameter(String name) {
-			this.varName= name;
-		}
-	}
 }
 
 xpointer [PathExpr path]
@@ -578,9 +569,9 @@ throws PermissionDeniedException, EXistException, XPathException
 			SequenceType[] types= new SequenceType[varList.size()];
 			int j= 0;
 			for (Iterator i= varList.iterator(); i.hasNext(); j++) {
-				FunctionParameter param= (FunctionParameter) i.next();
-				types[j]= param.type;
-				func.addVariable(param.varName);
+				FunctionParameterSequenceType param= (FunctionParameterSequenceType) i.next();
+				types[j]= param;
+				func.addVariable(param.getAttributeName());
 			}
 			signature.setArgumentTypes(types);
 		}
@@ -627,16 +618,15 @@ throws XPathException
 	#(
 		varname:VARIABLE_BINDING
 		{
-			FunctionParameter var= new FunctionParameter(varname.getText());
+			FunctionParameterSequenceType var = new FunctionParameterSequenceType(varname.getText());
+			var.setCardinality(Cardinality.ZERO_OR_MORE);
 			vars.add(var);
 		}
 		(
 			#(
 				"as"
-				{ SequenceType type= new SequenceType(); }
-				sequenceType [type]
+				sequenceType [var]
 			)
-			{ var.type= type; }
 		)?
 	)
 	;

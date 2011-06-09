@@ -108,15 +108,6 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 		Expression action;
 		boolean isForClause= true;
 	}
-
-	private static class FunctionParameter {
-		String varName;
-		SequenceType type= FunctionSignature.DEFAULT_TYPE;
-
-		public FunctionParameter(String name) {
-			this.varName= name;
-		}
-	}
 public XQueryTreeParser() {
 	tokenNames = _tokenNames;
 }
@@ -5014,9 +5005,9 @@ public XQueryTreeParser() {
 					SequenceType[] types= new SequenceType[varList.size()];
 					int j= 0;
 					for (Iterator i= varList.iterator(); i.hasNext(); j++) {
-						FunctionParameter param= (FunctionParameter) i.next();
-						types[j]= param.type;
-						func.addVariable(param.varName);
+						FunctionParameterSequenceType param= (FunctionParameterSequenceType) i.next();
+						types[j]= param;
+						func.addVariable(param.getAttributeName());
 					}
 					signature.setArgumentTypes(types);
 				
@@ -5361,7 +5352,8 @@ public XQueryTreeParser() {
 		match(_t,VARIABLE_BINDING);
 		_t = _t.getFirstChild();
 		
-					FunctionParameter var= new FunctionParameter(varname.getText());
+					FunctionParameterSequenceType var = new FunctionParameterSequenceType(varname.getText());
+					var.setCardinality(Cardinality.ZERO_OR_MORE);
 					vars.add(var);
 				
 		{
@@ -5373,12 +5365,10 @@ public XQueryTreeParser() {
 			org.exist.xquery.parser.XQueryAST tmp82_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_as);
 			_t = _t.getFirstChild();
-			SequenceType type= new SequenceType();
-			sequenceType(_t,type);
+			sequenceType(_t,var);
 			_t = _retTree;
 			_t = __t57;
 			_t = _t.getNextSibling();
-			var.type= type;
 			break;
 		}
 		case 3:

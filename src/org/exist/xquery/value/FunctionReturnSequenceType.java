@@ -24,6 +24,10 @@ public class FunctionReturnSequenceType extends SequenceType {
 		this.description = description;
 	}
 
+	public FunctionReturnSequenceType() {
+		super();
+	}
+	
 	/**
 	 * @return the description
 	 */
