@@ -25,6 +25,11 @@ public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
 		this.attributeName = attributeName;
 	}
 
+	public FunctionParameterSequenceType(String attributeName) {
+		super();
+		this.attributeName = attributeName;
+	}
+	
 	/**
 	 * @return the attributeName
 	 */
