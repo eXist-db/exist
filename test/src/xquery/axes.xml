@@ -472,7 +472,7 @@
     <test output="xml">
         <task>Following sibling axis 15</task>
         <code>
-            unordered((doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml")))//c[following-sibling::c]
+            unordered((doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[following-sibling::c])
         </code>
         <expected><c>C2</c><c>C5</c></expected>
     </test>
