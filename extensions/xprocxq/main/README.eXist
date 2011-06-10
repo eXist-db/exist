@@ -31,7 +31,7 @@ Prerequisites
 This version of xprocxq requires the current trunk version of eXist XML Database 
 (exist.sourceforge.net), xprocxq is built and enabled by default.
 
-xprocxq uses the EXPath http-client module which is included within the xprocxq.jar
+xprocxq uses the EXPath http-client module which is built in eXist
 
 
 Install
@@ -51,13 +51,13 @@ Manual Install
 
 To manually install xprocxq within eXist XML Database follow these instructions.
 
-I) Place xprocxq.jar and expath.jar into $EXIST_HOME/lib/user directory
+I) Place xprocxq.jar into $EXIST_HOME/lib/user directory
 
 insert these elements in eXist conf.xml, in <built-in-modules/> element (soon this will just be a single module import)
 
 <!-- expath module imports (for p:http-request)//-->
 <module class="org.exist.xquery.modules.httpclient.HTTPClientModule" uri="http://exist-db.org/xquery/httpclient" />
-<module src="resource:org/expath/www/mod/http-client/http-client.xqm" uri="http://www.expath.org/mod/http-client"/>
+<module class="org.expath.exist.HttpClientModule" uri="http://expath.org/ns/http-client"/>
 <!-- uncomment to use p:xsl-formatter step
 <module class="org.exist.xquery.modules.xslfo.XSLFOModule" uri="http://exist-db.org/xquery/xslfo" />
 //-->
@@ -159,7 +159,6 @@ VERSION     	A summary of the distribution version
 LICENSE			Included licenses notice
 ChangeLog   	Generated svn changelog
 xprocxq.jar 	xprocxq application
-expath.jar		expath module deps		
 test/examples	XProc tests and test.xq for testing with eXist XML Database
 
 All release files can be found here http://code.google.com/p/xprocxq/source/browse/#svn/releases
@@ -254,9 +253,8 @@ a copy of this license as well as links to any embedded software
 licenses.
 
 xprocxq uses Florent Georges excellent EXPath http-client module which 
-is also released under MPL v1.1. I have included expath.jar in the release
-distribution for convenience. More information about EXPath can be found 
-at http://www.expath.org.
+is also released under MPL v1.1. More information about EXPath can be
+found at http://expath.org/.
 
 
 Copyright
