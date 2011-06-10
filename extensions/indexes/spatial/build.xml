@@ -135,6 +135,7 @@
         <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="300m">
 
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.junit"/>
 
             <formatter type="plain"/>

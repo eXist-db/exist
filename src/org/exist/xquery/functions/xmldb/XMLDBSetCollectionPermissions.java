@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -45,8 +46,10 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipulator {
-	protected static final Logger logger = Logger.getLogger(XMLDBSetCollectionPermissions.class);
-	public final static FunctionSignature signature =
+
+        protected static final Logger logger = Logger.getLogger(XMLDBSetCollectionPermissions.class);
+
+        public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-collection-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Sets the permissions of the collection $collection-uri. " +
@@ -74,8 +77,7 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
  */
 	
     @Override
-	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
-		throws XPathException {
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
         try {
             UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
@@ -105,13 +107,13 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             perms.setOwner(usr);
             
             ums.setPermissions(collection, perms);
-        } catch (XMLDBException xe) {
-            logger.error("Unable to change collection permissions");
-
-            throw new XPathException(this, "Unable to change collection permissions", xe);
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException(this, "Unable to change collection permissions: " + pde.getMessage(), pde);
+        } catch(XMLDBException xe) {
+            throw new XPathException(this, "Unable to change collection permissions: " + xe.getMessage(), xe);
         }
 
-		return Sequence.EMPTY_SEQUENCE;
-	}
+        return Sequence.EMPTY_SEQUENCE;
+    }
 
 }

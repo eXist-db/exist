@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -45,7 +46,6 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  * @author Wolfgang Meier (wolfgang@exist-db.org)
- *
  */
 public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = Logger.getLogger(XMLDBSetResourcePermissions.class);
@@ -78,7 +78,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
  */
 	
     @Override
-	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 
         try {
@@ -116,13 +116,13 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 
                 throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
             }
+        } catch (PermissionDeniedException pde) {
+            throw new XPathException(this, "Unable to change resource permissions: " + pde.getMessage(), pde);
         } catch (XMLDBException xe) {
-            logger.error("Unable to change resource permissions");
-
-            throw new XPathException(this, "Unable to change resource permissions", xe);
+            throw new XPathException(this, "Unable to change resource permissions:" + xe.getMessage(), xe);
         }
 
-		return Sequence.EMPTY_SEQUENCE;
-	}
+        return Sequence.EMPTY_SEQUENCE;
+    }
 
 }

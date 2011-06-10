@@ -26,39 +26,23 @@ package org.exist.security;
  */
 public class PermissionDeniedException extends Exception {
 
-	private static final long serialVersionUID = 8832813230189409267L;
+    private static final long serialVersionUID = 8832813230189409267L;
 
-	/**  Constructor for the PermissionDeniedException object */
+    /**  Constructor for the PermissionDeniedException object */
     public PermissionDeniedException() {
         super();
     }
-
 
     /**
      *  Constructor for the PermissionDeniedException object
      *
      *@param  message  Description of the Parameter
      */
-    public PermissionDeniedException( String message ) {
-        super( message );
+    public PermissionDeniedException(String message) {
+        super(message);
     }
-    
-    public PermissionDeniedException( Subject subject, String location, int perm ) {
-    	super( "Subject '"+subject.getName()+"' don't have "+getPermissionAsString(perm)+" access to resource '"+location+"'." );
-    }
-    
-    private static String getPermissionAsString(int perm) {
-    	if (perm == Permission.READ)
-    		return "'read'";
-    	
-    	if (perm == Permission.WRITE)
-    		return "'write'";
-    	
-    	if (perm == Permission.UPDATE)
-    		return "'update/execute'";
-    	
-    	return "";
-    }
-    
-}
 
+    public PermissionDeniedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

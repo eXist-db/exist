@@ -24,7 +24,7 @@ import org.exist.xquery.value.ValueSequence;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class GroupMembershipFunctions  extends BasicFunction {
+public class GroupMembershipFunctions extends BasicFunction {
 
     private final static QName qnGetGroupManagers = new QName("get-group-managers", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetGroupMembers = new QName("get-group-members", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);

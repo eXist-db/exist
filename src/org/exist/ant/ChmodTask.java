@@ -24,7 +24,7 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.util.SyntaxException;
 
 import org.xmldb.api.base.Resource;
@@ -51,7 +51,7 @@ public class ChmodTask extends UserTask {
         	// in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
         	// permission string
         	if (mode.indexOf('=') < 0) {
-        		Permission perm = UnixStylePermission.fromString(mode);
+        		Permission perm = UnixStylePermissionAider.fromString(mode);
         		if (resource != null) {
                     Resource res = base.getResource(resource);
                     service.chmod(res, perm.getMode());

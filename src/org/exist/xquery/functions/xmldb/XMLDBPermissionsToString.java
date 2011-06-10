@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
-import org.exist.security.internal.aider.UnixStylePermission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.util.SyntaxException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -94,7 +94,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
         } else {
             String permissionsString = args[0].itemAt(0).getStringValue();
             try {
-                Permission perm = UnixStylePermission.fromString(permissionsString);
+                Permission perm = UnixStylePermissionAider.fromString(permissionsString);
                 return new IntegerValue(perm.getMode());
             } catch(SyntaxException se) {
                 throw new XPathException(se.getMessage(), se);

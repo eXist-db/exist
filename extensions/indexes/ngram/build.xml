@@ -24,6 +24,7 @@
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.aspectj"/>
     
             <formatter type="plain"/>
             <formatter type="xml"/>

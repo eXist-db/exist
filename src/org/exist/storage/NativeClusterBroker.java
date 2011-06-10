@@ -45,13 +45,13 @@ public class NativeClusterBroker extends NativeBroker {
     public Collection openCollection(XmldbURI name, int lockMode) {
         Collection c= super.openCollection(name, lockMode);
 
-        return c==null?null:new ClusterCollection(c);
+        return c==null?null:new ClusterCollection(this, c);
 
     }
 
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException,
     	IOException, TriggerException {
-        super.saveCollection( transaction, new ClusterCollection( collection ));
+        super.saveCollection( transaction, new ClusterCollection(this, collection ));
     }
 
 	/**
@@ -69,7 +69,7 @@ public class NativeClusterBroker extends NativeBroker {
     public Collection getOrCreateCollection(Txn transaction, XmldbURI uri) throws PermissionDeniedException,
     	IOException, TriggerException {
         Collection c=   super.getOrCreateCollection(transaction, uri);
-        return c==null?null:new ClusterCollection(c);
+        return c==null?null:new ClusterCollection(this, c);
 
     }
 

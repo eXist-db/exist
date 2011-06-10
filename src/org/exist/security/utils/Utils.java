@@ -37,15 +37,17 @@ import org.exist.xmldb.XmldbURI;
  */
 public class Utils {
 
-	public static Collection createCollection(DBBroker broker, Txn txn, XmldbURI uri) throws PermissionDeniedException, IOException, LockException, TriggerException {
+    public static Collection createCollection(DBBroker broker, Txn txn, XmldbURI uri) throws PermissionDeniedException, IOException, LockException, TriggerException {
 
-		Collection collection = broker.getOrCreateCollection(txn, uri);
-			
-		if (collection == null) throw new IOException("Collection "+uri+" can't be created.");
-		
-		collection.setPermissions(0770);
-		broker.saveCollection(txn, collection);
+        Collection collection = broker.getOrCreateCollection(txn, uri);
 
-		return collection;
-	}
+        if (collection == null){
+            throw new IOException("Collection "+uri+" can't be created.");
+        }
+
+        collection.setPermissions(0770);
+        broker.saveCollection(txn, collection);
+
+        return collection;
+    }
 }

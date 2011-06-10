@@ -1,10 +1,14 @@
 package org.exist.security;
 
+import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Test;
 import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
-import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
@@ -123,8 +127,7 @@ public class XMLDBSecurityTest {
         assertEquals("<testMe/>", resource.getContent().toString());
     }
 
-    @Ignore
-    @Test
+    @Test(expected=XMLDBException.class)
     public void groupRemoveCollection_canNotWriteParent() throws XMLDBException {
         Collection root = DatabaseManager.getCollection(baseUri + "/db", "test2", "test2");
         CollectionManagementService cms = (CollectionManagementService)
@@ -140,7 +143,6 @@ public class XMLDBSecurityTest {
         cms.removeCollection("securityTest1");
     }
 
-    @Ignore
     @Test(expected=XMLDBException.class)
     public void groupChmodCollection_asNotOwnerAndNotDBA() throws XMLDBException {
     
@@ -158,10 +160,9 @@ public class XMLDBSecurityTest {
         // grant myself all rights ;-)
         ums.chmod(07777);
 
-        assertEquals("agsrwurwurwu", ums.getPermissions(test).toString());
+        assertEquals("rwsrwsrwt", ums.getPermissions(test).toString());
     }
 
-    @Ignore
     @Test(expected=XMLDBException.class)
     public void groupChmodResource_asNotOwnerAndNotDBA() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");

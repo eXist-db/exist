@@ -21,7 +21,11 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.exist.http.RESTTest;
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,6 +58,8 @@ public class GetParameterTest extends RESTTest {
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
         root.storeResource(res);
+        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        ums.chmod(res, 0777);
     }
 
     @AfterClass

@@ -735,7 +735,7 @@ public class SystemExport
                     if( callback != null ) {
                         callback.startCollection( uri );
                     }
-                    Collection        collection = new Collection( XmldbURI.createInternal( uri ) );
+                    Collection        collection = new Collection(broker, XmldbURI.createInternal( uri ) );
                     VariableByteInput istream    = store.getAsStream( pointer );
                     collection.read( broker, istream );
                     BackupDescriptor bd = null;

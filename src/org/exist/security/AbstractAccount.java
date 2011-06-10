@@ -170,6 +170,19 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
     @Override
+        public int[] getGroupIds() {
+            if(groups == null) return new int[0];
+
+		int i = 0;
+		int[] ids = new int[groups.size()];
+		for (Group group : groups) {
+                    ids[i++] = group.getId();
+		}
+
+		return ids;
+        }
+
+    @Override
 	public final boolean hasGroup(String name) {
 		if (groups == null) {
 			return false;

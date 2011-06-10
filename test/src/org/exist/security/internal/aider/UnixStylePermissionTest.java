@@ -35,13 +35,13 @@ public class UnixStylePermissionTest {
         securityTestPairs.add(new SecurityTestPair("r--r--r--", 292));
         securityTestPairs.add(new SecurityTestPair("rwur--r--", 484));
         securityTestPairs.add(new SecurityTestPair("rwur--r--", 484));
-        securityTestPairs.add(new SecurityTestPair("a-----------", 2048));
-        securityTestPairs.add(new SecurityTestPair("-g----------", 1024));
-        securityTestPairs.add(new SecurityTestPair("--s---------", 512));
+        securityTestPairs.add(new SecurityTestPair("--s------", 2048));
+        securityTestPairs.add(new SecurityTestPair("-----s---", 1024));
+        securityTestPairs.add(new SecurityTestPair("--------t", 512));
 
 
         for(SecurityTestPair sec : securityTestPairs) {
-            UnixStylePermission perm = UnixStylePermission.fromString(sec.permissionString);
+            UnixStylePermissionAider perm = UnixStylePermissionAider.fromString(sec.permissionString);
             assertEquals(sec.permission, perm.getMode());
             assertEquals(sec.permissionString, perm.toString());
         }
@@ -49,11 +49,11 @@ public class UnixStylePermissionTest {
 
     @Test(expected=SyntaxException.class)
     public void fromStringInvalidSyntax_tooShort() throws SyntaxException{
-       UnixStylePermission.fromString("rwu");
+       UnixStylePermissionAider.fromString("rwu");
     };
 
     @Test(expected=SyntaxException.class)
     public void fromStringInvalidSyntax_invalidChars() throws SyntaxException{
-       UnixStylePermission.fromString("rwxrwxrwx");
+       UnixStylePermissionAider.fromString("rwxrwxrwx");
     };
 }

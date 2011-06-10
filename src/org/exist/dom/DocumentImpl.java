@@ -39,7 +39,6 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantSelector;
@@ -64,6 +63,8 @@ import org.w3c.dom.UserDataHandler;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
+import org.exist.security.ACLPermission;
+import org.exist.security.Subject;
 
 /**
  *  Represents a persistent document object in the database;
@@ -99,8 +100,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /** the document's file name */
     private XmldbURI fileURI = null;
 
-    //TODO : make private
-    protected Permission permissions = PermissionFactory.getPermission(Permission.DEFAULT_PERM);
+    private Permission permissions = null;
 
     private transient Lock updateLock = null;
 
@@ -145,7 +145,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public DocumentImpl(BrokerPool pool, Collection collection, XmldbURI fileURI) {
         this.pool = pool;
         this.collection = collection;
-        this.fileURI = fileURI;		
+        this.fileURI = fileURI;
+
+        // the permissions assigned to this document
+        Subject currentSubject = pool.getSubject();
+        this.permissions = PermissionFactory.getPermission(currentSubject.getId(), currentSubject.getDefaultGroup().getId());
     }
 
     public BrokerPool getBrokerPool() {
@@ -494,7 +498,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             }
             ostream.writeInt(docId);
             ostream.writeUTF(fileURI.toString());
-            permissions.write(ostream);
+            getPermissions().write(ostream);
             ostream.writeInt(children);
             if (children > 0) {
                 for(int i = 0; i < children; i++) {
@@ -520,7 +524,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         try {
             docId = istream.readInt();
             fileURI = XmldbURI.createInternal(istream.readUTF());
-            permissions.read(istream);
+            getPermissions().read(istream);
             //Should be > 0 ;-)
             children = istream.readInt();
             childAddress = new long[children];
@@ -543,10 +547,20 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         try {
             istream.skip(1); //docId
             istream.readUTF(); //fileURI.toString()
-            istream.skip(2 + 2); //uid, gid
-            istream.skip(children * 2);
+
+            //istream.skip(2 + 2); //uid, gid, mode, children count
+            istream.skip(1); //unix style permission uses a single long
+            if(permissions instanceof ACLPermission) {
+                int aceCount = istream.read();
+                istream.skip(aceCount);
+            }
+            
+            istream.skip(1); //children size
+            istream.skip(children * 2); //actual children
+
             metadata = new DocumentMetadata();
             metadata.read(pool, istream);
+            
         } catch (IOException e) {
             LOG.error("IO error while reading document metadata for " + fileURI, e);
             //TODO : raise exception ?

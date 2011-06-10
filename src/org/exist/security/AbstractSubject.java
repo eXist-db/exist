@@ -72,6 +72,11 @@ public abstract class AbstractSubject implements Subject {
 		return account.getGroups();
 	}
 
+        @Override
+	public int[] getGroupIds() {
+		return account.getGroupIds();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#hasDbaRole()
 	 */

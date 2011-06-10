@@ -1331,77 +1331,77 @@ public class CollectionConfigurationTest {
    }
 
    @Test
-   public void testMultipleConfigurations01() {
+   public void multipleConfigurations01() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_2, false);
    }
 
    @Test
-   public void testMultipleConfigurations02() {
+   public void multipleConfigurations02() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
    @Test
-   public void testMultipleConfigurations03() {
+   public void multipleConfigurations03() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }
 
    @Test
-   public void testMultipleConfigurations04() {
+   public void multipleConfigurations04() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_1, false);
    }
 
    @Test
-   public void testMultipleConfigurations05() {
+   public void multipleConfigurations05() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
    @Test
-   public void testMultipleConfigurations06() {
+   public void multipleConfigurations06() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
    @Test
-   public void testMultipleConfigurations07() {
+   public void multipleConfigurations07() {
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }
 
    @Test
-   public void testMultipleConfigurations08() {          
+   public void multipleConfigurations08() {          
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
    }
 
    @Test
-   public void testMultipleConfigurations09() {
+   public void multipleConfigurations09() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
    @Test
-   public void testMultipleConfigurations10() {
+   public void multipleConfigurations10() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_1, true);
    }
 
    @Test
-   public void testMultipleConfigurations11() {
+   public void multipleConfigurations11() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_1, CONF_COLL_URI2, TEST_CONFIG_NAME_2, false);
    }
 
    @Test
-   public void testMultipleConfigurations12() {
+   public void multipleConfigurations12() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
    }
 
    @Test
-   public void testMultipleConfigurations13() {
+   public void multipleConfigurations13() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI, TEST_CONFIG_NAME_2, true);
    }
 
    @Test
-   public void testMultipleConfigurations14() {
+   public void multipleConfigurations14() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_1, false);
    }
 
    @Test
-   public void testMultipleConfigurations15() {
+   public void multipleConfigurations15() {
        checkStoreConf(CONF_COLL_URI2, TEST_CONFIG_NAME_2, CONF_COLL_URI2, TEST_CONFIG_NAME_2, true);
    }
   
@@ -1424,16 +1424,18 @@ public class CollectionConfigurationTest {
    private void storeConfiguration(XmldbURI collPath, XmldbURI confName, String confContent) throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
        String fullCollPath = ROOT_URI + collPath.toString();
-   	   System.out.println("Storing configuration '" + confName + "' to '" + collPath + "'" );
-   	   Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", null);
-   	   if(configColl == null) {
+       System.out.println("Storing configuration '" + confName + "' to '" + collPath + "'" );
+       Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", null);
+       if(configColl == null) {
      	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
-           configColl = cms.createCollection(collPath.toString());
-   	   }
+            configColl = cms.createCollection(collPath.toString());
+       }
        assertNotNull(configColl);
        Resource res = configColl.createResource(confName.toString(), "XMLResource");
        assertNotNull(res);
        res.setContent(confContent);            
        configColl.storeResource(res);
+       UserManagementService ums = (UserManagementService)configColl.getService("UserManagementService", "1.0");
+       ums.chmod(res, 0744);
    }
 }

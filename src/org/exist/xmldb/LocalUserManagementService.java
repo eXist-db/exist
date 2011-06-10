@@ -2,16 +2,19 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.ACLPermission;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.User;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -115,7 +118,12 @@ public class LocalUserManagementService implements UserManagementService {
 
     @Override
 	public void setPermissions(Resource resource, Permission perm) throws XMLDBException {
-		
+
+            //TODO this will cause problems if perm is of type org.exist.security.interal.aider.UnixStylePermissionAider
+            if(perm instanceof org.exist.security.internal.aider.UnixStylePermissionAider) {
+                throw new RuntimeException("ERROR, aider.UnixStylePermission cannot be used here");
+            }
+
 		org.exist.security.SecurityManager manager = pool.getSecurityManager();
 		DocumentImpl document = null;
 		DBBroker broker = null;
@@ -131,6 +139,7 @@ public class LocalUserManagementService implements UserManagementService {
 						+ document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
+
             if (!manager.hasGroup(perm.getGroup()))
                 manager.addGroup(perm.getGroup());
             broker.storeXMLResource(transaction, document);
@@ -210,6 +219,107 @@ public class LocalUserManagementService implements UserManagementService {
 			pool.release(broker);
 		}
 	}
+    
+        @Override
+	public void setPermissions(Collection child, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
+            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            org.exist.collections.Collection coll = null;
+            DBBroker broker = null;
+            TransactionManager transact = pool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+            try {
+                    broker = pool.get(user);
+                    coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
+                    if(coll == null) {
+                            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + " not found");
+                    }
+                    if(!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
+                        transact.abort(transaction);
+                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not the owner of this collection");
+                    }  
+                    if(!manager.hasGroup(group)) {
+                        manager.addGroup(group);
+                    }
+                    
+                    Permission permission = coll.getPermissions();
+                    permission.setOwner(owner);
+                    permission.setGroup(group);
+                    permission.setMode(mode);
+                    if(permission instanceof ACLPermission) {
+                        ACLPermission aclPermission = (ACLPermission)permission;
+                        aclPermission.clear();
+                        for(ACEAider ace : aces) {
+                            aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+                        }
+                    }
+                    
+                    broker.saveCollection(transaction, coll);
+                    transact.commit(transaction);
+                    broker.flush();
+
+            } catch (IOException e) {
+                transact.abort(transaction);
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR,e.getMessage(),e);
+            } catch (PermissionDeniedException e) {
+                transact.abort(transaction);
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e.getMessage(),e);
+            } catch (Exception e) {
+                transact.abort(transaction);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR,e.getMessage(),e);
+            } finally {
+                if(coll != null) {
+                    coll.release(Lock.WRITE_LOCK);
+                }
+                pool.release(broker);
+            }
+	}
+        
+        @Override
+	public void setPermissions(Resource resource, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
+
+            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            DocumentImpl document = null;
+            DBBroker broker = null;
+            TransactionManager transact = pool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+            try {
+                broker = pool.get(user);
+                document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
+                if(!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
+                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not the owner of this resource; owner = " + document.getPermissions().getOwner());
+                }
+                
+                if(!manager.hasGroup(group)) {
+                    manager.addGroup(group);
+                }
+
+                Permission permission = document.getPermissions();
+                permission.setOwner(owner);
+                permission.setGroup(group);
+                permission.setMode(mode);
+                if(permission instanceof ACLPermission) {
+                    ACLPermission aclPermission = (ACLPermission)permission;
+                    aclPermission.clear();
+                    for(ACEAider ace : aces) {
+                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+                    }
+                }
+
+                broker.storeXMLResource(transaction, document);
+
+                transact.commit(transaction);
+
+            } catch (PermissionDeniedException e) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,e.getMessage(),e);
+            } catch (Exception e) {
+                transact.abort(transaction);
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR,e.getMessage(),e);
+            } finally {
+                ((AbstractEXistResource)resource).closeDocument(document, Lock.WRITE_LOCK);
+                    pool.release(broker);
+            }
+	}
+
 
     @Override
 	public void chmod(String modeStr) throws XMLDBException {
@@ -278,132 +388,96 @@ public class LocalUserManagementService implements UserManagementService {
 	}
 
     @Override
-	public void chmod(Resource resource, int mode) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		DocumentImpl document = null;
-		DBBroker broker = null;
+    public void chmod(Resource resource, int mode) throws XMLDBException {
+        DocumentImpl document = null;
+        DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
-                transact.abort(transaction);
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this resource");
-            }
-			document.getPermissions().setMode(mode);
-			broker.storeXMLResource(transaction, document);
+        try {
+            broker = pool.get(user);
+            document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
+            document.getPermissions().setMode(mode);
+            broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
-		} catch (EXistException e) {
+        } catch(PermissionDeniedException pde) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-		    ((AbstractEXistResource) resource).closeDocument(document, Lock.WRITE_LOCK);
-			pool.release(broker);
-		}
-	}
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+        } catch (EXistException ee) {
+            transact.abort(transaction);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ee.getMessage(), ee);
+        } finally {
+            ((AbstractEXistResource) resource).closeDocument(document, Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
 
     @Override
-	public void chmod(int mode) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		org.exist.collections.Collection coll = null;
-		DBBroker broker = null;
+    public void chmod(int mode) throws XMLDBException {
+        org.exist.security.SecurityManager manager = pool.getSecurityManager();
+        org.exist.collections.Collection coll = null;
+        DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
-			if(coll == null)
-				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
-						" not found");
-			if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
-                transact.abort(transaction);
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this collection");
+        try {
+            broker = pool.get(user);
+            coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
+            if(coll == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + " not found");
             }
-			coll.setPermissions(mode);
-			broker.saveCollection(transaction, coll);
+
+            coll.setPermissions(mode);
+            broker.saveCollection(transaction, coll);
             transact.commit(transaction);
-			broker.flush();
-		} catch (IOException e) {
+            broker.flush();
+        } catch (IOException ioe) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        } catch (EXistException ee) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ee.getMessage(), ee);
+        } catch (PermissionDeniedException pde) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage(),
-				e);
-		} catch (LockException e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+        } catch (LockException le) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"Failed to acquire lock on collections.dbx",
-				e);
-		} catch (TriggerException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to acquire lock on collections.dbx", le);
+        } catch (TriggerException te) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"Failed to acquire lock on collections.dbx",
-				e);
-		} finally {
-			if(coll != null)
-				coll.release(Lock.WRITE_LOCK);
-			pool.release(broker);
-		}
-	}
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to acquire lock on collections.dbx", te);
+        } finally {
+            if(coll != null) {
+                coll.release(Lock.WRITE_LOCK);
+            }
+            pool.release(broker);
+        }
+    }
 
     @Override
-	public void chmod(Resource resource, String modeStr)
-		throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		DocumentImpl document = null;
-		DBBroker broker = null;
+    public void chmod(Resource resource, String modeStr) throws XMLDBException {
+        org.exist.security.SecurityManager manager = pool.getSecurityManager();
+        DocumentImpl document = null;
+        DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-			if (!document.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
-                transact.abort(transaction);
-				throw new XMLDBException(
-					ErrorCodes.PERMISSION_DENIED,
-					"you are not the owner of this resource");
-            }
-			document.getPermissions().setMode(modeStr);
-			broker.storeXMLResource(transaction, document);
-		} catch (EXistException e) {
+        try {
+            broker = pool.get(user);
+            document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
+            document.getPermissions().setMode(modeStr);
+            broker.storeXMLResource(transaction, document);
+        } catch(PermissionDeniedException pde) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} catch (SyntaxException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+        } catch (EXistException ee) {
             transact.abort(transaction);
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			((AbstractEXistResource) resource).closeDocument(document, Lock.WRITE_LOCK);
-			pool.release(broker);
-		}
-	}
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ee.getMessage(), ee);
+        } catch (SyntaxException se) {
+            transact.abort(transaction);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, se.getMessage(), se);
+        } finally {
+            ((AbstractEXistResource) resource).closeDocument(document, Lock.WRITE_LOCK);
+            pool.release(broker);
+        }
+    }
 
     @Override
 	public void chown(Account u, String group) throws XMLDBException {

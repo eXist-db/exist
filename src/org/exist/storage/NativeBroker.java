@@ -632,12 +632,13 @@ public class NativeBroker extends DBBroker {
                 Collection current = getCollection(XmldbURI.ROOT_COLLECTION_URI);
                 if (current == null) {
                     LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
-                    current = new Collection(XmldbURI.ROOT_COLLECTION_URI);
+                    current = new Collection(this, XmldbURI.ROOT_COLLECTION_URI);
                     
-                    Permission perm = current.getPermissions();
-                    perm.setMode(0777);
-                    perm.setOwner(getSubject());
-                    perm.setGroup(getSubject().getPrimaryGroup());
+                    //Note - permissions are now automaticlaly taken care of at Collection object instantiation time
+       			//Permission perm = current.getPermissions();
+                    //perm.setMode(0777);
+                    //perm.setOwner(getSubject());
+                    //perm.setGroup(getSubject().getPrimaryGroup());
                     
                     current.setId(getNextCollectionId(transaction));
                     current.setCreationTime(System.currentTimeMillis());
@@ -669,12 +670,13 @@ public class NativeBroker extends DBBroker {
                         	trigger.beforeCreateCollection(this, transaction, path);
             	        }
             	        
-                        sub = new Collection(path);
-
-                        Permission perm = current.getPermissions();
-                        perm.setMode(0777);
-                        perm.setOwner(getSubject());
-                        perm.setGroup(getSubject().getPrimaryGroup());
+                        sub = new Collection(this, path);
+			
+			//Note - permissions are now automaticlaly taken care of at Collection object instantiation time
+                        //Permission perm = current.getPermissions();
+                        //perm.setMode(0777);
+                        //perm.setOwner(getSubject());
+                        //perm.setGroup(getSubject().getPrimaryGroup());
 
                         sub.setId(getNextCollectionId(transaction));
                         
@@ -739,7 +741,7 @@ public class NativeBroker extends DBBroker {
                     }
                     if (is == null)
                         return null;
-                    collection = new Collection(uri);
+                    collection = new Collection(this, uri);
                     collection.read(this, is);
                     //TODO : manage this from within the cache -pb
                     if(!pool.isInitializing())

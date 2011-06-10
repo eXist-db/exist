@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.regex.*;
 
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 
 /**
  * A named resource in the contents tree of the database:  either a folder or a document.
@@ -24,9 +26,11 @@ public abstract class NamedResource extends Resource {
 		private static final Pattern SEGMENT_REGEX = Pattern.compile("([augo]+)([-+=])([rwu]*)");
 		
 		private Permission permissions;
-		
-		protected MetadataFacet(Permission permissions) {
+                private final Database db;
+
+		protected MetadataFacet(Permission permissions, Database db) {
 			this.permissions = permissions;
+                        this.db = db;
 		}
 		
 		/**
@@ -48,7 +52,19 @@ public abstract class NamedResource extends Resource {
 		 *
 		 * @param owner the new owner of this resource
 		 */
-		public void owner(String owner) {permissions.setOwner(owner);}
+		public void owner(String owner) {
+                    DBBroker broker = null;
+                    try {
+                        broker = db.acquireBroker();
+                        permissions.setOwner(owner);
+                    } catch(PermissionDeniedException pde) {
+                        throw new DatabaseException(pde.getMessage(), pde);
+                    } finally {
+                        if(broker != null) {
+                            db.releaseBroker(broker);
+                        }
+                    }
+                }
 		
 		/**
 		 * Return the group who has privileged access to this resource for purposes of permission management.
@@ -62,7 +78,19 @@ public abstract class NamedResource extends Resource {
 		 *
 		 * @param group the new owning group of this resource
 		 */
-		public void group(String group) {permissions.setGroup(group);}
+		public void group(String group) {
+                    DBBroker broker = null;
+                    try {
+                        broker = db.acquireBroker();
+                        permissions.setGroup(group);
+                    } catch(PermissionDeniedException pde) {
+                        throw new DatabaseException(pde.getMessage(), pde);
+                    } finally {
+                        if(broker != null) {
+                            db.releaseBroker(broker);
+                        }
+                    }
+                }
 		
 		/**
 		 * Return whether the given subject has the given permission.  The "who" character refers to
@@ -133,27 +161,32 @@ public abstract class NamedResource extends Resource {
 		 * @param instructions an instruction string encoding the desired changes to the permissions
 		 */
 		public void changePermissions(String instructions) {
-			if (!INSTRUCTIONS_REGEX.matcher(instructions).matches())
-				throw new IllegalArgumentException("bad permissions instructions: " + instructions);
-			StringTokenizer tokenizer = new StringTokenizer(instructions, ",");
-			while (tokenizer.hasMoreTokens()) {
-				Matcher matcher = SEGMENT_REGEX.matcher(tokenizer.nextToken());
-				if (!matcher.matches()) throw new RuntimeException("internal error: illegal segment got through syntax regex, instruction string " + instructions);
-				int perms = convertPermissionBits(matcher.group(3));
-				int mask = 0;
-				boolean all = matcher.group(1).equals("a");
-				if (all || matcher.group(1).indexOf('u') != -1) mask |= perms << 6;
-				if (all || matcher.group(1).indexOf('g') != -1) mask |= perms << 3;
-				if (all || matcher.group(1).indexOf('o') != -1) mask |= perms;
-				int newPerms;
-				switch(matcher.group(2).charAt(0)) {
-					case '=': newPerms = mask; break;
-					case '+': newPerms = permissions.getMode() | mask;
-					case '-': newPerms = permissions.getMode() & ~mask;
-					default: throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
-				}
-				permissions.setMode(newPerms);
-			}
+                    if (!INSTRUCTIONS_REGEX.matcher(instructions).matches())
+                            throw new IllegalArgumentException("bad permissions instructions: " + instructions);
+                    StringTokenizer tokenizer = new StringTokenizer(instructions, ",");
+
+                    try {
+                        while (tokenizer.hasMoreTokens()) {
+                                Matcher matcher = SEGMENT_REGEX.matcher(tokenizer.nextToken());
+                                if (!matcher.matches()) throw new RuntimeException("internal error: illegal segment got through syntax regex, instruction string " + instructions);
+                                int perms = convertPermissionBits(matcher.group(3));
+                                int mask = 0;
+                                boolean all = matcher.group(1).equals("a");
+                                if (all || matcher.group(1).indexOf('u') != -1) mask |= perms << 6;
+                                if (all || matcher.group(1).indexOf('g') != -1) mask |= perms << 3;
+                                if (all || matcher.group(1).indexOf('o') != -1) mask |= perms;
+                                int newPerms;
+                                switch(matcher.group(2).charAt(0)) {
+                                        case '=': newPerms = mask; break;
+                                        case '+': newPerms = permissions.getMode() | mask;
+                                        case '-': newPerms = permissions.getMode() & ~mask;
+                                        default: throw new RuntimeException("internal error: illegal segment operator got through syntax regex, instruction string " + instructions);
+                                }
+                                permissions.setMode(newPerms);
+                        }
+                    } catch(PermissionDeniedException pde) {
+                        throw new DatabaseException(pde.getMessage(), pde);
+                    }
 		}
 		
 		public String toString() {

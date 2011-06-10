@@ -151,10 +151,10 @@ public class DBSource extends AbstractSource {
     	return doc.getDocumentURI();
     }
 
-	@Override
-	public void validate(Subject subject, int perm) throws PermissionDeniedException {
-		if (!doc.getPermissions().validate(subject, perm)) {
-			throw new PermissionDeniedException(subject, doc.getURI().toString(), perm);
-		}
-	}
+    @Override
+    public void validate(Subject subject, int perm) throws PermissionDeniedException {
+        if(!doc.getPermissions().validate(subject, perm)) {
+            throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have " + Integer.toOctalString(perm) + " access to resource '" + doc.getURI() + "'.");
+        }
+    }
 }

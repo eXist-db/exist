@@ -1,7 +1,6 @@
 /*
- *  eXist SecurityManager Module Extension
- *  Copyright (C) 2010 Adam Retter <adam@existsolutions.com>
- *  www.adamretter.co.uk
+ *  eXist-db SecurityManager Module Extension
+ *  Copyright (C) 2011 Adam Retter <adam@existsolutions.com>
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -45,13 +44,29 @@ public class SecurityManagerModule extends AbstractInternalModule {
     private final static FunctionDef[] functions = {
         new FunctionDef(FindUserFunction.signatures[0], FindUserFunction.class),
         new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
+
         new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
+
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
+
         new FunctionDef(GroupMembershipFunctions.signatures[0], GroupMembershipFunctions.class),
         new FunctionDef(GroupMembershipFunctions.signatures[1], GroupMembershipFunctions.class),
-        new FunctionDef(FindGroupFunction.signatures[0], FindGroupFunction.class)
+
+        new FunctionDef(FindGroupFunction.signatures[0], FindGroupFunction.class),
+
+        new FunctionDef(PermissionsFunctions.signatures[0], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[1], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[2], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[3], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[4], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[5], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[6], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[7], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[8], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[9], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[10], PermissionsFunctions.class)
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {

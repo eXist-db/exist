@@ -102,7 +102,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void topFolderOwner() {
 		Folder folder = db.getFolder("/");
-		assertEquals("admin", folder.metadata().owner());
+		assertEquals("SYSTEM", folder.metadata().owner());
 		folder.metadata().owner("guest");
 		assertEquals("guest", folder.metadata().owner());
 	}

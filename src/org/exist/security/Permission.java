@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -29,7 +29,11 @@ import org.exist.util.SyntaxException;
 
 public interface Permission {
 	
-    public final static int DEFAULT_PERM = 0755;
+    public final static int DEFAULT_PERM = 0644;
+
+    public final static int SET_UID = 4;
+    public final static int SET_GID = 2;
+    public final static int STICKY = 1;
 
     public final static int READ = 4;
     public final static int WRITE = 2;
@@ -39,6 +43,23 @@ public interface Permission {
     public final static String USER_STRING = "user";
     public final static String GROUP_STRING = "group";
     public final static String OTHER_STRING = "other";
+
+    public final static String READ_STRING = "read";
+    public final static String WRITE_STRING = "write";
+    public final static String UPDATE_STRING = "update";
+
+    public final static char SETUID_CHAR = 's';
+    public final static char SETGID_CHAR = 's';
+    public final static char STICKY_CHAR = 't';
+    public final static char READ_CHAR = 'r';
+    public final static char WRITE_CHAR = 'w';
+    public final static char UPDATE_CHAR = 'u';
+    public final static char UNSET_CHAR = '-';
+
+    public final static char ALL_CHAR = 'a';
+    public final static char USER_CHAR = 'u';
+    public final static char GROUP_CHAR = 'g';
+    public final static char OTHER_CHAR = 'o';
 	
     public int getGroupMode();
 
@@ -82,61 +103,67 @@ public interface Permission {
      *
      * @param  id  The group id
      */
-    public void setGroup(int id);
+    public void setGroup(int id) throws PermissionDeniedException;
+
     @Deprecated
-    public void setGroup(Subject invokingUser, int id);
+    public void setGroup(Subject invokingUser, int id) throws PermissionDeniedException;
 
     /**
      * Set the owner group
      *
      * @param  group  The group value
      */
-    public void setGroup(Group group);
+    public void setGroup(Group group) throws PermissionDeniedException;
+
     @Deprecated
-    public void setGroup(Subject invokingUser, Group group);
+    public void setGroup(Subject invokingUser, Group group) throws PermissionDeniedException;
 
     /**
      * Set the owner group
      *
      * @param  name The group's name
      */
-    public void setGroup(String name);
+    public void setGroup(String name) throws PermissionDeniedException;
+
     @Deprecated
-    public void setGroup(Subject invokingUser, String name);
+    public void setGroup(Subject invokingUser, String name) throws PermissionDeniedException;
 
     /**
      * Sets mode for group
      *
      * @param  perm  The new group mode value
      */
-    public void setGroupMode(int perm);
+    public void setGroupMode(int perm) throws PermissionDeniedException;
 
     /**
      * Set the owner passed as account id
      *
      * @param  id  The new owner id
      */
-    public void setOwner(int id);
+    public void setOwner(int id) throws PermissionDeniedException;
+
     @Deprecated
-    public void setOwner(Subject invokingUser, int id);
+    public void setOwner(Subject invokingUser, int id) throws PermissionDeniedException;
 
     /**
      * Set the owner passed as User object
      *
      * @param  user  The new owner value
      */
-    public void setOwner(Account user);
+    public void setOwner(Account user) throws PermissionDeniedException;
+
     @Deprecated
-    public void setOwner(Subject invokingUser, Account user);
+    public void setOwner(Subject invokingUser, Account user) throws PermissionDeniedException;
 
     /**
      * Set the owner
      *
      * @param  user  The new owner value
      */
-    public void setOwner(String user);
+    public void setOwner(String user) throws PermissionDeniedException;
+
     @Deprecated
-    public void setOwner(Subject invokingUser, String user);
+    public void setOwner(Subject invokingUser, String user) throws PermissionDeniedException;
 
     /**
      *  Set mode using a string. The string has the
@@ -153,37 +180,40 @@ public interface Permission {
      * 
      *@param  modeStr                  The new mode
      *@exception  SyntaxException  Description of the Exception
+     *
+     * @deprecated Setting permissions via string is not very efficient!
      */
-    public void setMode(String modeStr) throws SyntaxException;
+    @Deprecated
+    public void setMode(String str) throws SyntaxException, PermissionDeniedException;
 
     /**
      *  Set mode
      *
      *@param  mode  The new mode value
      */
-    public void setMode( int mode );
+    public void setMode(int mode) throws PermissionDeniedException;
 
     /**
      *  Set mode for others
      *
      *@param  mode  The new mode value
      */
-    public void setOtherMode( int mode );
+    public void setOtherMode(int perm) throws PermissionDeniedException;
 
     /**
      *  Set mode for the owner
      *
      *@param  mode  The new mode value
      */
-    public void setOwnerMode( int mode );
+    public void setOwnerMode(int other) throws PermissionDeniedException;
 
-    /**
-     *  Format mode
-     *
-     *@return    Description of the Return Value
-     */
-    @Override
-    public String toString();
+    public boolean isSetUid();
+    public boolean isSetGid();
+    public boolean isSticky();
+
+    public void setSetUid(boolean setUid) throws PermissionDeniedException;
+    public void setSetGid(boolean setGid) throws PermissionDeniedException;
+    public void setSticky(boolean sticky) throws PermissionDeniedException;
 
     /**
      *  Check  if user has the requested mode for this resource.
@@ -197,4 +227,10 @@ public interface Permission {
     public void write(VariableByteOutputStream ostream);
 
     public void read(VariableByteInput istream) throws IOException;
+
+    public boolean isCurrentSubjectDBA();
+
+    public boolean isCurrentSubjectOwner();
+
+    public boolean isCurrentSubjectInGroup();
 }

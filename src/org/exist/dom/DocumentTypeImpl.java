@@ -18,10 +18,8 @@
 
 package org.exist.dom;
 
-import java.io.DataOutput;
 import java.io.IOException;
 
-import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
@@ -59,6 +57,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         this.name = null;
     }     
 
+    @Override
     public String getName() {
         return name;
     }
@@ -68,6 +67,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         return false;
     } 
 
+    @Override
     public String getPublicId() {
         return publicId;
     }
@@ -76,6 +76,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         this.publicId = publicId;
     }
 
+    @Override
     public String getSystemId() {
         return systemId;
     }
@@ -84,22 +85,19 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         this.systemId = systemId;
     }
 
+    @Override
     public NamedNodeMap getEntities() {
         return null;
     }
 
+    @Override
     public NamedNodeMap getNotations() {
         return null;
     }
 
+    @Override
     public String getInternalSubset() {
         return null;
-    }
-
-    protected void write(DataOutput ostream) throws IOException {
-        ostream.writeUTF(name);
-        ostream.writeUTF(systemId != null ? systemId : "");
-        ostream.writeUTF(publicId != null ? publicId : "");
     }
 
     protected void write(VariableByteOutputStream ostream) throws IOException {
@@ -111,13 +109,23 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     protected void read(VariableByteInput istream) throws IOException {
         name = istream.readUTF();
         systemId = istream.readUTF();
-        if (systemId.length() == 0)
+        if(systemId.length() == 0) {
             systemId = null;
+        }
         publicId = istream.readUTF();
-        if (publicId.length() == 0)
+        if(publicId.length() == 0) {
             publicId = null;
+        }
     }
 
+    /*
+    protected void write(DataOutput ostream) throws IOException {
+        ostream.writeUTF(name);
+        ostream.writeUTF(systemId != null ? systemId : "");
+        ostream.writeUTF(publicId != null ? publicId : "");
+    }*/
+
+    /*
     protected void read(VariableByteArrayInput istream) throws IOException {
         name = istream.readUTF();
         systemId = istream.readUTF();
@@ -127,4 +135,5 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         if (publicId.length() == 0)
             publicId = null;
     }
+     */
 }
